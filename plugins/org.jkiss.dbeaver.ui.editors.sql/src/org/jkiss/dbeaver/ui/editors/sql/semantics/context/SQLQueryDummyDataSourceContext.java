@@ -23,9 +23,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryQualifiedName;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolClass;
@@ -377,7 +377,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     private DummyDbObject prepareDataSource() {
         return new DummyDbObject(
             null,
-            UIIcon.DATABASES,
+            DBIcon.TREE_FOLDER_DATABASE, // UIIcon.DATABASES,
             "DummyDataSource",
             "Dummy data source for purposes of static query semantic analysis",
             0,
@@ -466,14 +466,19 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     
     @NotNull
     @Override
-    public SQLQueryRowsSourceModel getDefaultTable(@NotNull Interval range) {
-        return new DummyTableRowsSource(range);
+    public SQLQueryRowsSourceModel getDefaultTable(@NotNull STMTreeNode syntaxNode) {
+        return new DummyTableRowsSource(syntaxNode);
+    }
+    
+    @Override
+    protected void collectKnownSources(KnownSourcesInfo result) {
+        // no sources have been referenced yet, so nothing to register
     }
     
     public class DummyTableRowsSource extends SQLQueryRowsTableDataModel {
         
-        public DummyTableRowsSource(@NotNull Interval range) {
-            super(range, new SQLQueryQualifiedName(new SQLQuerySymbolEntry(range, "DummyTable", "DummyTable")));
+        public DummyTableRowsSource(@NotNull STMTreeNode syntaxNode) {
+            super(syntaxNode, new SQLQueryQualifiedName(syntaxNode, new SQLQuerySymbolEntry(syntaxNode, "DummyTable", "DummyTable")));
         }
 
         @Override

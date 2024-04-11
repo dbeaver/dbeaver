@@ -19,7 +19,10 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.*;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryQualifiedName;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SourceResolutionResult;
 
@@ -30,10 +33,10 @@ public class SQLQueryValueTupleReferenceExpression extends SQLQueryValueExpressi
     private SQLQueryRowsSourceModel tupleSource = null;
     
     public SQLQueryValueTupleReferenceExpression(
-        @NotNull Interval range,
+        @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryQualifiedName tableName
     ) {
-        super(range);
+        super(syntaxNode);
         this.tableName = tableName;
     }
 
@@ -48,7 +51,7 @@ public class SQLQueryValueTupleReferenceExpression extends SQLQueryValueExpressi
     }
     
     @Override
-    void propagateContext(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+    protected void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         if (this.tableName.isNotClassified()) {
             SourceResolutionResult rr = context.resolveSource(statistics.getMonitor(), this.tableName.toListOfStrings());
             if (rr != null) {
