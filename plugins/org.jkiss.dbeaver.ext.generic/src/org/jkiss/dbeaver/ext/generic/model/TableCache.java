@@ -153,7 +153,7 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
     }
 
     @Override
-    public void afterCacheLoading(JDBCSession session, GenericStructContainer owner) {
+    public void afterCacheLoading(JDBCSession session, GenericStructContainer owner) throws DBException {
         // Do nothing
     }
 }
