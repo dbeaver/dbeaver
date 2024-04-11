@@ -117,25 +117,25 @@ public class DBIcon implements DBPImage {
 
     public static final DBIcon PROJECT = new DBIcon("project", "project.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
-    public static final DBIcon TYPE_BOOLEAN = new DBIcon("boolean", "types/boolean.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TYPE_NUMBER = new DBIcon("number", "types/number.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TYPE_STRING = new DBIcon("string", "types/string.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TYPE_DATETIME = new DBIcon("datetime", "types/datetime.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TYPE_BINARY = new DBIcon("binary", "types/binary.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TYPE_TEXT = new DBIcon("text", "types/text.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TYPE_JSON = new DBIcon("json", "types/json.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TYPE_XML = new DBIcon("xml", "types/xml.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TYPE_LOB = new DBIcon("lob", "types/lob.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TYPE_ARRAY = new DBIcon("array", "types/array.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TYPE_STRUCT = new DBIcon("struct", "types/struct.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TYPE_DOCUMENT = new DBIcon("document", "types/document.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TYPE_OBJECT = new DBIcon("object", "types/object.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TYPE_IMAGE = new DBIcon("image", "types/image.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TYPE_REFERENCE = new DBIcon("reference", "types/reference.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TYPE_ROWID = new DBIcon("rowid", "types/rowid.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TYPE_ANY = new DBIcon("any", "types/any.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TYPE_UUID = new DBIcon("uuid", "types/uuid.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TYPE_UNKNOWN = new DBIcon("unknown", "types/unknown.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TYPE_BOOLEAN = new DBIcon("boolean", "types/boolean.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TYPE_NUMBER = new DBIcon("number", "types/number.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TYPE_STRING = new DBIcon("string", "types/string.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TYPE_DATETIME = new DBIcon("datetime", "types/datetime.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TYPE_BINARY = new DBIcon("binary", "types/binary.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TYPE_TEXT = new DBIcon("text", "types/text.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TYPE_JSON = new DBIcon("json", "types/json.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TYPE_XML = new DBIcon("xml", "types/xml.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TYPE_LOB = new DBIcon("lob", "types/lob.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TYPE_ARRAY = new DBIcon("array", "types/array.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TYPE_STRUCT = new DBIcon("struct", "types/struct.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TYPE_DOCUMENT = new DBIcon("document", "types/document.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TYPE_OBJECT = new DBIcon("object", "types/object.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TYPE_IMAGE = new DBIcon("image", "types/image.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TYPE_REFERENCE = new DBIcon("reference", "types/reference.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TYPE_ROWID = new DBIcon("rowid", "types/rowid.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TYPE_ANY = new DBIcon("any", "types/any.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TYPE_UUID = new DBIcon("uuid", "types/uuid.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TYPE_UNKNOWN = new DBIcon("unknown", "types/unknown.svg"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon OVER_ADD = new DBIcon("over_add", "over/add_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon OVER_SUCCESS = new DBIcon("over_success", "over/success_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$

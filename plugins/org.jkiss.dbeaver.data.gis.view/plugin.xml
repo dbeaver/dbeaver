@@ -21,7 +21,7 @@
         <geometryViewer
                 label="%extension-point.org.jkiss.dbeaver.ui.gis.panel.GISTextViewer.label"
                 description="%extension-point.org.jkiss.dbeaver.ui.gis.panel.GISTextViewer.description"
-                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/text.png"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/text.svg"
                 id="text"
                 class="org.jkiss.dbeaver.ui.gis.panel.GISTextViewer"
                 supportsInline="true"/>
