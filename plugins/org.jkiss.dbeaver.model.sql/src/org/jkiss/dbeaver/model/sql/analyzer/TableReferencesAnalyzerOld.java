@@ -181,7 +181,7 @@ public class TableReferencesAnalyzerOld implements TableReferencesAnalyzer {
     }
 
     @Override
-    public Map<String, String> getTableAliasesFromQuery(String query) {
+    public Map<String, String> getTableAliasesFromQuery() {
         return Collections.emptyMap();
     }
 

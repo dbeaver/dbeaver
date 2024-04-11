@@ -20,12 +20,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsCteModel.SQLQueryRowsCteSubqueryModel;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsSourceModel;
 
 public class SourceResolutionResult {
     public final SQLQueryRowsSourceModel source;
     public final DBSEntity tableOrNull;
     public final SQLQuerySymbol aliasOrNull;
+    public final boolean isCteSubquery;
 
     private SourceResolutionResult(
         @NotNull SQLQueryRowsSourceModel source,
@@ -35,6 +37,7 @@ public class SourceResolutionResult {
         this.source = source;
         this.tableOrNull = tableOrNull;
         this.aliasOrNull = aliasOrNull;
+        this.isCteSubquery = source instanceof SQLQueryRowsCteSubqueryModel;
     }
 
     @NotNull
@@ -45,5 +48,15 @@ public class SourceResolutionResult {
     @NotNull
     public static SourceResolutionResult forSourceByAlias(@NotNull SQLQueryRowsSourceModel source, @Nullable SQLQuerySymbol alias) {
         return new SourceResolutionResult(source, null, alias);
+    }
+
+    @NotNull
+    public static SourceResolutionResult withRealTable(@NotNull SourceResolutionResult rr, @Nullable DBSEntity table) {
+        return new SourceResolutionResult(rr.source, table, rr.aliasOrNull);
+    }
+
+    @NotNull
+    public static SourceResolutionResult withAlias(@NotNull SourceResolutionResult rr, @Nullable SQLQuerySymbol alias) {
+        return new SourceResolutionResult(rr.source, rr.tableOrNull, alias);
     }
 }

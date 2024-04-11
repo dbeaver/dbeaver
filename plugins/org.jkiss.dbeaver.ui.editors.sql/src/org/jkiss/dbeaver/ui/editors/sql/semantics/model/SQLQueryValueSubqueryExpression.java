@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryExprType;
@@ -25,8 +26,8 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryExprType;
 public class SQLQueryValueSubqueryExpression extends SQLQueryValueExpression {
     private final SQLQueryRowsSourceModel source;
 
-    public SQLQueryValueSubqueryExpression(@NotNull Interval range, @NotNull SQLQueryRowsSourceModel source) {
-        super(range);
+    public SQLQueryValueSubqueryExpression(@NotNull STMTreeNode syntaxNode, @NotNull SQLQueryRowsSourceModel source) {
+        super(syntaxNode, source);
         this.source = source;
     }
 
@@ -35,7 +36,7 @@ public class SQLQueryValueSubqueryExpression extends SQLQueryValueExpression {
     }
 
     @Override
-    void propagateContext(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+    protected void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         this.source.propagateContext(context, statistics);
         this.type = SQLQueryExprType.forScalarSubquery(this.source);
     }
