@@ -23,13 +23,12 @@ import org.jkiss.dbeaver.model.connection.InternalDatabaseConfig;
 import org.jkiss.dbeaver.model.sql.backup.BackupConstant;
 import org.jkiss.dbeaver.model.sql.backup.BackupDatabase;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
 
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
-
-import static java.util.concurrent.TimeUnit.MINUTES;
 
 public class PostgresDatabaseBackup implements BackupDatabase {
 
@@ -77,18 +76,21 @@ public class PostgresDatabaseBackup implements BackupDatabase {
     }
 
     private static ProcessBuilder getBuilder(@NotNull InternalDatabaseConfig databaseConfig, URI uri, Path backupFile) {
-
-        return new ProcessBuilder(
+        ProcessBuilder processBuilder = new ProcessBuilder(
                 "pg_dump",
-                "-h", uri.getHost(),
-                "-p", String.valueOf(uri.getPort()),
-                "-U", databaseConfig.getUser(),
-                "-W", databaseConfig.getPassword(),
+                "--host", uri.getHost(),
+                "--port", String.valueOf(uri.getPort()),
+                "--username", databaseConfig.getUser(),
                 "--schema", databaseConfig.getSchema(),
-                "-F", "c",
-                "-b",
-                "-v",
-                "-f", backupFile.toAbsolutePath().toString()
+                "--format", "c",
+                "--blobs",
+                "--verbose",
+                "--file", backupFile.toAbsolutePath().toString()
         );
+
+        if (CommonUtils.isNotEmpty(databaseConfig.getPassword())) {
+            processBuilder.environment().put("PGPASSWORD", databaseConfig.getPassword());
+        }
+        return processBuilder;
     }
 }
