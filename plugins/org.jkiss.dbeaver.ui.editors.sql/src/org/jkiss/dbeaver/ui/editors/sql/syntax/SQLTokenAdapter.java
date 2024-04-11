@@ -125,7 +125,7 @@ public class SQLTokenAdapter extends Token {
                     break;
                 case T_SEMANTIC_ERROR:
                     colorKey = SQLConstants.CONFIG_COLOR_SEMANTIC_ERROR;
-                    style = SWT.BOLD | SWT.ITALIC | TextAttribute.UNDERLINE;
+                    style = SWT.BOLD | SWT.ITALIC;
                     break;
                 default:
                     colorKey = SQLConstants.CONFIG_COLOR_TEXT;
