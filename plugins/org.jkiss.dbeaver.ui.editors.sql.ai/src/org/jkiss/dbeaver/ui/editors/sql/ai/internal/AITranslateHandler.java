@@ -151,7 +151,7 @@ public class AITranslateHandler extends AbstractHandler {
             popup.getInputText()
         );
 
-        if (CommonUtils.isEmptyTrimmed(message.content())) {
+        if (CommonUtils.isEmptyTrimmed(message.getContent())) {
             return;
         }
 
@@ -194,7 +194,7 @@ public class AITranslateHandler extends AbstractHandler {
         }
         StringBuilder completion = new StringBuilder();
         if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AICompletionConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT)) {
-            completion.append(SQLUtils.generateCommentLine(executionContext.getDataSource(), message.content()));
+            completion.append(SQLUtils.generateCommentLine(executionContext.getDataSource(), message.getContent()));
         }
         for (MessageChunk messageChunk : messageChunks) {
             if (messageChunk instanceof MessageChunk.Code code) {
@@ -215,7 +215,7 @@ public class AITranslateHandler extends AbstractHandler {
                         monitor,
                         lDataSource,
                         executionContext,
-                        message.content(),
+                        message.getContent(),
                         finalCompletion);
                 } catch (DBException e) {
                     return GeneralUtils.makeExceptionStatus(e);

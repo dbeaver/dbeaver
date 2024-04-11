@@ -72,7 +72,7 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
         if (includeAssistantMessages) {
             return messages;
         }
-        return messages.stream().filter(it -> DAICompletionMessage.Role.USER.equals(it.role())).toList();
+        return messages.stream().filter(it -> DAICompletionMessage.Role.USER.equals(it.getRole())).toList();
     }
 
     public abstract Map<String, SERVICE> getServiceMap();

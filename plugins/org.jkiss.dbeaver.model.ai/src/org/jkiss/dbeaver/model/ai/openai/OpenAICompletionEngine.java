@@ -80,7 +80,7 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
         return CompletionRequest.builder()
             .prompt(buildSingleMessage(truncateMessages(chatMode, messages, maxTokens)))
             .temperature(temperature)
-            .maxTokens(maxTokens)
+            //.maxTokens(maxTokens)
             .frequencyPenalty(0.0)
             .n(1)
             .presencePenalty(0.0)
@@ -99,10 +99,10 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
     ) {
         return ChatCompletionRequest.builder()
             .messages(truncateMessages(chatMode, messages, maxTokens).stream()
-                .map(m -> new ChatMessage(m.role().getId(), m.content()))
+                .map(m -> new ChatMessage(m.getRole().getId(), m.getContent()))
                 .toList())
             .temperature(temperature)
-            .maxTokens(maxTokens)
+            //.maxTokens(maxTokens)
             .frequencyPenalty(0.0)
             .presencePenalty(0.0)
             .n(1)
@@ -379,15 +379,15 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
         final StringJoiner buffer = new StringJoiner("\n");
 
         for (DAICompletionMessage message : messages) {
-            if (message.role() == DAICompletionMessage.Role.SYSTEM) {
+            if (message.getRole() == DAICompletionMessage.Role.SYSTEM) {
                 buffer.add("###");
-                buffer.add(message.content()
+                buffer.add(message.getContent()
                     .lines()
                     .map(line -> '#' + line)
                     .collect(Collectors.joining("\n")));
                 buffer.add("###");
             } else {
-                buffer.add(message.content());
+                buffer.add(message.getContent());
             }
         }
 
@@ -400,21 +400,24 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
     private static List<DAICompletionMessage> truncateMessages(
         boolean chatMode,
         @NotNull List<DAICompletionMessage> messages,
-        int maxTokens) {
-        final Deque<DAICompletionMessage> pending = new LinkedList<>(messages);
+        int maxTokens
+    ) {
+        final List<DAICompletionMessage> pending = new ArrayList<>(messages);
+        Collections.reverse(pending);
         final List<DAICompletionMessage> truncated = new ArrayList<>();
         int remainingTokens = maxTokens - 20; // Just to be sure
 
-        if (chatMode) {
-            if (pending.getFirst().role() == DAICompletionMessage.Role.SYSTEM) {
-                // Always append system message
-                truncated.add(pending.remove());
+        {
+            if (pending.get(pending.size() - 1).getRole() == DAICompletionMessage.Role.SYSTEM) {
+                // Always append main system message and leave space for the next one
+                DAICompletionMessage msg = pending.remove(pending.size() - 1);
+                remainingTokens -= truncateMessage(msg, remainingTokens - 50);
+                truncated.add(msg);
             }
         }
 
-        while (!pending.isEmpty()) {
-            final DAICompletionMessage message = pending.remove();
-            final int messageTokens = message.content().length();
+        for (DAICompletionMessage message : pending) {
+            final int messageTokens = message.getContent().length();
 
             if (remainingTokens < 0 || messageTokens > remainingTokens) {
                 // Exclude old messages that don't fit into given number of tokens
@@ -425,10 +428,38 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
                 }
             }
 
+            remainingTokens -= truncateMessage(message, remainingTokens);
             truncated.add(message);
-            remainingTokens -= messageTokens;
         }
 
         return truncated;
+    }
+
+    /**
+     * 1 token = 2 bytes
+     * It is sooooo approximately
+     */
+    private static int truncateMessage(DAICompletionMessage message, int remainingTokens) {
+        String content = message.getContent();
+        int contentTokens = countContentTokens(content);
+        if (contentTokens > remainingTokens) {
+            int tokensToRemove = contentTokens - remainingTokens;
+            content = removeContentTokens(content, tokensToRemove);
+            message.setContent(content);
+            return contentTokens - tokensToRemove;
+        }
+        return contentTokens;
+    }
+
+    private static String removeContentTokens(String content, int tokensToRemove) {
+        int charsToRemove = tokensToRemove * 4;
+        if (charsToRemove >= content.length()) {
+            return "";
+        }
+        return content.substring(0, content.length() - charsToRemove) + "..";
+    }
+
+    private static int countContentTokens(String content) {
+        return content.length() / 4;
     }
 }
