@@ -16,11 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
-import org.antlr.v4.runtime.BufferedTokenStream;
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.misc.Interval;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -31,7 +26,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -55,10 +49,9 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryModel;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.utils.ListNode;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class SQLBackgroundParsingJob {
 
@@ -208,7 +201,7 @@ public class SQLBackgroundParsingJob {
             
             ArrayDeque<STMTreeTermNode> nameNodes = new ArrayDeque<>();
             List<STMTreeTermNode> allTerms = SQLQuerySyntaxTreeInspections.prepareTerms(syntaxNode);
-            int index = AbstractSyntaxNode.binarySearchByKey(allTerms, t -> t.getRealInterval().a, position, Comparator.comparingInt(k -> k));
+            int index = CommonUtils.binarySearchByKey(allTerms, t -> t.getRealInterval().a, position, Comparator.comparingInt(k -> k));
             if (index < 0) {
                 index = ~index - 1;
             }

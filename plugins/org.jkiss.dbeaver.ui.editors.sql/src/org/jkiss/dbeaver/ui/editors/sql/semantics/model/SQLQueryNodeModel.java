@@ -18,10 +18,10 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryLexicalScope;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -70,7 +70,7 @@ public abstract class SQLQueryNodeModel {
     }
 
     protected void registerSubnode(SQLQueryNodeModel subnode) {
-        this.subnodes = AbstractSyntaxNode.orderedInsert(this.subnodes, n -> n.region.a, subnode, Comparator.comparingInt(x -> x));
+        this.subnodes = CommonUtils.orderedInsert(this.subnodes, n -> n.region.a, subnode, Comparator.comparingInt(x -> x));
     }  
 
     @NotNull
@@ -94,7 +94,7 @@ public abstract class SQLQueryNodeModel {
                 SQLQueryNodeModel node = this.subnodes.get(0);
                 return node.region.a <= position && node.region.b >= position - 1 ? node : null;
             } else {
-                int index = AbstractSyntaxNode.binarySearchByKey(this.subnodes, n -> n.region.a, position, Comparator.comparingInt(x -> x));
+                int index = CommonUtils.binarySearchByKey(this.subnodes, n -> n.region.a, position, Comparator.comparingInt(x -> x));
                 if (index >= 0) {
                     SQLQueryNodeModel node = this.subnodes.get(index);
                     int i = index + 1;

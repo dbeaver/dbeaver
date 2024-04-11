@@ -138,6 +138,8 @@ public class AISettings {
         try {
             AISettings settings;
             String content = DBWorkbench.getPlatform().getConfigurationController().loadConfigurationFile(AI_CONFIGURATION_JSON);
+            System.out.println("prefStore:" + AICompletionConstants.AI_DISABLED + ": " + DBWorkbench.getPlatform().getPreferenceStore().getString(AICompletionConstants.AI_DISABLED));
+            System.out.println("JSON: " + content);
             if (CommonUtils.isEmpty(content)) {
                 settings = new AISettings();
             } else {
