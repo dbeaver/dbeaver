@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
@@ -31,8 +32,8 @@ import java.util.stream.Collectors;
 public class SQLQueryRowsTableValueModel extends SQLQueryRowsSourceModel {
     private final List<SQLQueryValueExpression> values;
     
-    public SQLQueryRowsTableValueModel(@NotNull Interval range, @NotNull List<SQLQueryValueExpression> values) {
-        super(range);
+    public SQLQueryRowsTableValueModel(@NotNull STMTreeNode syntaxNode, @NotNull List<SQLQueryValueExpression> values) {
+        super(syntaxNode);
         this.values = values;
     }
 

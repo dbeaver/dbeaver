@@ -16,15 +16,20 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
-import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.*;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryModelRecognizer;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryQualifiedName;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolClass;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryExprType;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SourceResolutionResult;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SourceResolutionResult;
 
 public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpression {
     private final SQLQueryQualifiedName tableName;
@@ -32,18 +37,18 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
     
     private SQLQueryResultColumn column = null;
     
-    public SQLQueryValueColumnReferenceExpression(@NotNull Interval range, @NotNull SQLQuerySymbolEntry columnName) {
-        super(range);
+    public SQLQueryValueColumnReferenceExpression(@NotNull STMTreeNode syntaxNode, @NotNull SQLQuerySymbolEntry columnName) {
+        super(syntaxNode);
         this.tableName = null;
         this.columnName = columnName;
     }
 
     public SQLQueryValueColumnReferenceExpression(
-        @NotNull Interval range,
+        @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryQualifiedName tableName,
         @NotNull SQLQuerySymbolEntry columnName
     ) {
-        super(range);
+        super(syntaxNode);
         this.tableName = tableName;
         this.columnName = columnName;
     }
@@ -74,14 +79,14 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
     }
 
     @Override
-    void propagateContext(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+    protected void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         SQLDialect dialect = context.getDialect();
         SQLQueryExprType type;
         if (this.tableName != null && this.tableName.isNotClassified() && this.columnName.isNotClassified()) {
             SourceResolutionResult rr = context.resolveSource(statistics.getMonitor(), this.tableName.toListOfStrings());
             if (rr != null) {
                 this.tableName.setDefinition(rr);
-                SQLQueryResultColumn resultColumn = rr.source.getDataContext().resolveColumn(statistics.getMonitor(), this.columnName.getName());
+                SQLQueryResultColumn resultColumn = rr.source.getResultDataContext().resolveColumn(statistics.getMonitor(), this.columnName.getName());
                 propagateColumnDefinition(this.columnName, resultColumn, statistics);
                 this.column = resultColumn;
                 type = resultColumn != null ? resultColumn.type : SQLQueryExprType.UNKNOWN;

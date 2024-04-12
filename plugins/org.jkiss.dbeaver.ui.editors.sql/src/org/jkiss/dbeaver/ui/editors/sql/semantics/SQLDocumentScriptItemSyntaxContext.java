@@ -18,10 +18,14 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryModel;
 
 public class SQLDocumentScriptItemSyntaxContext {
+
+    private static final Log log = Log.getLog(SQLDocumentScriptItemSyntaxContext.class);
+
     public static class TokenEntryAtOffset {
         public final int offset;
         public final SQLQuerySymbolEntry entry;
@@ -32,10 +36,12 @@ public class SQLDocumentScriptItemSyntaxContext {
         }
     }
 
+    private final Object lock = new Object();
     private final OffsetKeyedTreeMap<SQLQuerySymbolEntry> entries = new OffsetKeyedTreeMap<>();
     private final String originalText;
     private final SQLQueryModel queryModel;
     private int length;
+    private boolean isDirty = false;
 
     public SQLDocumentScriptItemSyntaxContext(
         @NotNull String originalText,
@@ -61,37 +67,59 @@ public class SQLDocumentScriptItemSyntaxContext {
         return this.length;
     }
 
+    public boolean isDirty() {
+        synchronized (this.lock) {
+            return this.isDirty;
+        }
+    }
+
     @Nullable
     public TokenEntryAtOffset findToken(int offset) {
-        NodesIterator<SQLQuerySymbolEntry> it = entries.nodesIteratorAt(offset);
-        SQLQuerySymbolEntry entry = it.getCurrValue();
-        int entryOffset = it.getCurrOffset();
-        if (entry == null && it.prev()) {
-            entry = it.getCurrValue();
-            entryOffset = it.getCurrOffset();
-        }
-        if (entry != null && entryOffset <= offset && entryOffset + entry.getInterval().length() > offset) { 
-            return new TokenEntryAtOffset(entryOffset, entry);
-        } else {
-            return null;
+        synchronized (this.lock) {
+            NodesIterator<SQLQuerySymbolEntry> it = entries.nodesIteratorAt(offset);
+            SQLQuerySymbolEntry entry = it.getCurrValue();
+            int entryOffset = it.getCurrOffset();
+            if (entry == null && it.prev()) {
+                entry = it.getCurrValue();
+                entryOffset = it.getCurrOffset();
+            }
+            if (entry != null && entryOffset <= offset && entryOffset + entry.getInterval().length() > offset) {
+                return new TokenEntryAtOffset(entryOffset, entry);
+            } else {
+                return null;
+            }
         }
     }
 
     public void registerToken(int offset, @NotNull SQLQuerySymbolEntry token) {
-        entries.put(offset, token);
+        synchronized (this.lock) {
+            entries.put(offset, token);
+            this.isDirty = true;
+        }
     }
 
     public void applyDelta(int offset, int oldLength, int newLength) {
-        if (oldLength > 0) {
-            // TODO remove the affected fragment and apply offset for the rest
-            throw new UnsupportedOperationException(); 
-        } else { // simple insertion
-            this.entries.applyOffset(offset, newLength);
+        synchronized (this.lock) {
+            if (oldLength > 0) {
+                // TODO remove the affected fragment and apply offset for the rest
+                throw new UnsupportedOperationException();
+            } else { // simple insertion
+                this.entries.applyOffset(offset, newLength);
+            }
+            this.length += newLength - oldLength;
+            this.isDirty = true;
         }
-        this.length += newLength - oldLength;
     }
 
     public void clear() {
-        this.entries.clear();
+        synchronized (this.lock) {
+            this.entries.clear();
+        }
+    }
+
+    void refreshCompleted() {
+        synchronized (this.lock) {
+            this.isDirty = false;
+        }
     }
 }

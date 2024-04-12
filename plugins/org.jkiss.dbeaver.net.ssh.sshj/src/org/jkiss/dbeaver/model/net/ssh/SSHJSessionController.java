@@ -79,11 +79,10 @@ public class SSHJSessionController extends AbstractSessionController<SSHJSession
             if (auth instanceof SSHAuthConfiguration.Password password) {
                 client.authPassword(host.username(), password.password());
             } else if (auth instanceof SSHAuthConfiguration.KeyFile key) {
-                final String location = key.path().toAbsolutePath().toString();
                 if (CommonUtils.isEmpty(key.password())) {
-                    client.authPublickey(host.username(), location);
+                    client.authPublickey(host.username(), key.path());
                 } else {
-                    client.authPublickey(host.username(), client.loadKeys(location, key.password().toCharArray()));
+                    client.authPublickey(host.username(), client.loadKeys(key.path(), key.password().toCharArray()));
                 }
             } else if (auth instanceof SSHAuthConfiguration.KeyData key) {
                 final PasswordFinder finder = CommonUtils.isEmpty(key.password())
