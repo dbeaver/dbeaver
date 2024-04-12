@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.ModelPreferences.SQLScriptStatementDelimiterMode;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -59,7 +60,7 @@ public class SQLSyntaxManager {
     private String[] statementDelimiters = new String[0];
 
     private char escapeChar;
-    private boolean blankLineDelimiter;
+    private SQLScriptStatementDelimiterMode statementDelimiterMode;
 
     public SQLSyntaxManager()
     {
@@ -92,8 +93,8 @@ public class SQLSyntaxManager {
         return statementDelimiters;
     }
 
-    public boolean isBlankLineDelimiter() {
-        return blankLineDelimiter;
+    public SQLScriptStatementDelimiterMode getStatementDelimiterMode() {
+        return statementDelimiterMode;
     }
 
     @Nullable
@@ -159,7 +160,7 @@ public class SQLSyntaxManager {
                 this.statementDelimiters = ArrayUtils.add(String.class, this.statementDelimiters, delim);
             }
         }
-        blankLineDelimiter = preferenceStore.getBoolean(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK);
+        this.statementDelimiterMode = SQLScriptStatementDelimiterMode.fromPreferences(preferenceStore);
 
         this.parametersEnabled = preferenceStore.getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED);
         this.anonymousParametersEnabled = preferenceStore.getBoolean(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED);
