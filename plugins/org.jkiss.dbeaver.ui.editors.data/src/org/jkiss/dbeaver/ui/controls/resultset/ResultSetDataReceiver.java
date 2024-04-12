@@ -155,16 +155,20 @@ class ResultSetDataReceiver implements DBDDataReceiver, DBDDataReceiverInteracti
     @Override
     public void fetchEnd(@NotNull DBCSession session, @NotNull final DBCResultSet resultSet) {
         if (!nextSegmentRead) {
-            try {
-                // Read locators' metadata
-                DBSEntity entity = null;
-                DBSDataContainer dataContainer = getDataContainer();
-                if (dataContainer instanceof DBSEntity) {
-                    entity = (DBSEntity) dataContainer;
+            if (metaColumns != null) {
+                try {
+                    // Read locators' metadata
+                    DBSEntity entity = null;
+                    DBSDataContainer dataContainer = getDataContainer();
+                    if (dataContainer instanceof DBSEntity) {
+                        entity = (DBSEntity) dataContainer;
+                    }
+                    DBExecUtils.bindAttributes(session, entity, resultSet, metaColumns, rows);
+                } catch (Throwable e) {
+                    errorList.add(e);
                 }
-                DBExecUtils.bindAttributes(session, entity, resultSet, metaColumns, rows);
-            } catch (Throwable e) {
-                errorList.add(e);
+            } else {
+                // fetchStart was failed
             }
         }
 

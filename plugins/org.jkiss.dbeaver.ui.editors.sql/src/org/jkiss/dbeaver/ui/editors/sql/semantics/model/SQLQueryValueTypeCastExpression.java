@@ -22,6 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolClass;
@@ -37,11 +38,11 @@ public class SQLQueryValueTypeCastExpression extends SQLQueryValueExpression {
     private final String typeRefString;
 
     public SQLQueryValueTypeCastExpression(
-        @NotNull Interval range,
+        @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryValueExpression value,
         @NotNull String typeRefString
     ) {
-        super(range);
+        super(syntaxNode);
         this.value = value;
         this.typeRefString = typeRefString;
     }
@@ -63,7 +64,7 @@ public class SQLQueryValueTypeCastExpression extends SQLQueryValueExpression {
     }
     
     @Override
-    void propagateContext(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+    protected void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         this.value.propagateContext(context, statistics);
         this.type = SQLQueryExprType.forExplicitTypeRef(this.typeRefString);
     }
