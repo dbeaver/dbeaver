@@ -37,20 +37,6 @@ public class SQLDataReceiverAdapter extends AbstractTypeAdapter<DBDDataReceiver>
     @Override
     public void write(JsonWriter jsonWriter, DBDDataReceiver dataReceiver) throws IOException {
         jsonWriter.beginObject();
-
-//        if (dataReceiver instanceof DPICServerSmartProxyDataReceiver dpiReceiver) {
-//            jsonWriter.name("maxRows");
-//            jsonWriter.value(dpiReceiver.getMaxRows());
-//            jsonWriter.name("offset");
-//            jsonWriter.value(dpiReceiver.getOffset());
-//            jsonWriter.name("resultSet");
-//            jsonWriter.value(gson.toJson(dpiReceiver.getDpiResultSet()));
-//            jsonWriter.name("session");
-//            jsonWriter.value(gson.toJson(dpiReceiver.getSession()));
-//
-//        }
-
-        //"{}"
         jsonWriter.endObject();
     }
 
@@ -58,25 +44,6 @@ public class SQLDataReceiverAdapter extends AbstractTypeAdapter<DBDDataReceiver>
     public DBDDataReceiver read(JsonReader jsonReader) throws IOException {
         var proxy = new DPIServerSmartProxyDataReceiver();
         jsonReader.beginObject();
-//        while (jsonReader.peek() == JsonToken.NAME) {
-//            String attrName = jsonReader.nextName();
-//            switch (attrName) {
-//                case "maxRows":
-//                    proxy.setMaxRows(jsonReader.nextLong());
-//                    break;
-//                case "offset":
-//                    proxy.setOffset(jsonReader.nextLong());
-//                    break;
-//                case "resultSet":
-//                    var resultSet = gson.fromJson(jsonReader.nextString(), DPIResultSet.class);
-//                    proxy.setDpiResultSet(resultSet);
-//                    break;
-//                case "session":
-//                    var session = gson.fromJson(jsonReader.nextString(), DBCSession.class);
-//                    proxy.setSession(session);
-//                    break;
-//            }
-//        }
         jsonReader.endObject();
         return proxy;
     }
