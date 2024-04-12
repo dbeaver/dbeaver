@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfigurationList;
 import org.jkiss.dbeaver.ui.dashboard.view.DataSourceDashboardView;
 
 import java.util.List;
+import java.util.Map;
 
 public class DashboardDynamicMenuContributor extends DataSourceMenuContributor {
 
@@ -70,7 +71,10 @@ public class DashboardDynamicMenuContributor extends DataSourceMenuContributor {
         }
 
         menuItems.add(new Separator());
-        menuItems.add(ActionUtils.makeCommandContribution(window, DashboardUIConstants.CMD_CREATE_DASHBOARD));
+        menuItems.add(ActionUtils.makeCommandContribution(
+            window,
+            DashboardUIConstants.CMD_CREATE_DASHBOARD,
+            Map.of("datasource", String.valueOf(true))));
     }
 
 

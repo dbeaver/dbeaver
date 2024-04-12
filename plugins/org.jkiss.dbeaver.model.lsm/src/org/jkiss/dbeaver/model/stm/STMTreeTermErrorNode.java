@@ -34,6 +34,11 @@ public class STMTreeTermErrorNode extends ErrorNodeImpl implements STMTreeNode {
     public void fixup(@NotNull STMParserOverrides parserCtx) {
     }
     
+    @Override
+    public int getAtnState() {
+        return -1;
+    }
+    
     @NotNull
     @Override
     public String getNodeName() {

@@ -39,12 +39,13 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
 
     public SQLQueryRowsSetCorrespondingOperationModel(
         @NotNull Interval range,
+        STMTreeNode syntaxNode,
         @NotNull SQLQueryRowsSourceModel left,
         @NotNull SQLQueryRowsSourceModel right,
         @NotNull List<SQLQuerySymbolEntry> correspondingColumnNames,
         @NotNull SQLQueryRowsSetCorrespondingOperationKind kind
     ) {
-        super(range, left, right);
+        super(range, syntaxNode, left, right);
         this.correspondingColumnNames = correspondingColumnNames;
         this.kind = kind;
     }
