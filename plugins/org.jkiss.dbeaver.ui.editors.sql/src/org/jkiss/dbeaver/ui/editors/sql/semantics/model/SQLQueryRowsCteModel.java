@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolEntry;
@@ -41,12 +42,12 @@ public class SQLQueryRowsCteModel extends SQLQueryRowsSourceModel {
         public final SQLQueryRowsSourceModel source;
 
         public SQLQueryRowsCteSubqueryModel(
-            @NotNull Interval region,
+            @NotNull STMTreeNode syntaxNode,
             @NotNull SQLQuerySymbolEntry subqueryName,
             @NotNull List<SQLQuerySymbolEntry> columNames,
             @NotNull SQLQueryRowsSourceModel source
         ) {
-            super(region);
+            super(syntaxNode);
             this.subqueryName = subqueryName;
             this.columNames = columNames;
             this.source = source;
@@ -75,19 +76,21 @@ public class SQLQueryRowsCteModel extends SQLQueryRowsSourceModel {
         }
     }
 
-    public SQLQueryRowsCteModel(@NotNull Interval region, boolean isRecursive, @NotNull SQLQueryRowsSourceModel resultQuery) {
-        super(region);
+    public SQLQueryRowsCteModel(@NotNull STMTreeNode syntaxNode, boolean isRecursive, @NotNull SQLQueryRowsSourceModel resultQuery) {
+        super(syntaxNode, resultQuery);
         this.isRecursive = isRecursive;
         this.resultQuery = resultQuery;
     }
     
     public void addSubquery(
-        @NotNull Interval range,
+        @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQuerySymbolEntry subqueryName,
         @NotNull List<SQLQuerySymbolEntry> columnNames,
         @NotNull SQLQueryRowsSourceModel source
     ) {
-        this.subqueries.add(new SQLQueryRowsCteSubqueryModel(range, subqueryName, columnNames, source));
+        SQLQueryRowsCteSubqueryModel subquery = new SQLQueryRowsCteSubqueryModel(syntaxNode, subqueryName, columnNames, source);
+        this.subqueries.add(subquery);
+        super.registerSubnode(subquery);
     }
 
     @NotNull
