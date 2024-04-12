@@ -25,9 +25,9 @@ import org.jkiss.dbeaver.dpi.model.DPIContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
-import org.jkiss.dbeaver.model.impl.dpi.DPICServerSmartProxyDataReceiver;
 import org.jkiss.dbeaver.model.impl.dpi.DPIResultSet;
 import org.jkiss.dbeaver.model.impl.dpi.DPIResultSetColumn;
+import org.jkiss.dbeaver.model.impl.dpi.DPIServerSmartProxyDataReceiver;
 
 import java.io.IOException;
 import java.util.List;
@@ -50,7 +50,7 @@ public class DPIResultSetAdapter extends AbstractTypeAdapter<DBCResultSet> {
         if (resultSet instanceof DPIResultSet) {
             dpiResultSet = (DPIResultSet) resultSet;
         } else {
-            try (var dataReceiver = new DPICServerSmartProxyDataReceiver()) {
+            try (var dataReceiver = new DPIServerSmartProxyDataReceiver()) {
                 DBCSession session = resultSet.getSession();
                 dataReceiver.fetchStart(session, resultSet, 0, 0);
                 while (resultSet.nextRow()) {

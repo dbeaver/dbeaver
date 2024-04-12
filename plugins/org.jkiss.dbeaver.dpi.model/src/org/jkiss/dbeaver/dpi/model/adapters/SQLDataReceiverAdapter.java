@@ -22,7 +22,7 @@ import com.google.gson.stream.JsonWriter;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.dpi.model.DPIContext;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.impl.dpi.DPICServerSmartProxyDataReceiver;
+import org.jkiss.dbeaver.model.impl.dpi.DPIServerSmartProxyDataReceiver;
 
 import java.io.IOException;
 
@@ -56,7 +56,7 @@ public class SQLDataReceiverAdapter extends AbstractTypeAdapter<DBDDataReceiver>
 
     @Override
     public DBDDataReceiver read(JsonReader jsonReader) throws IOException {
-        var proxy = new DPICServerSmartProxyDataReceiver();
+        var proxy = new DPIServerSmartProxyDataReceiver();
         jsonReader.beginObject();
 //        while (jsonReader.peek() == JsonToken.NAME) {
 //            String attrName = jsonReader.nextName();

@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.impl.data.DBDValueError;
 
 import java.util.List;
 
-public class DPICServerSmartProxyDataReceiver implements DBDDataReceiver, DPIServerSmartObject {
+public class DPIServerSmartProxyDataReceiver implements DBDDataReceiver, DPIServerSmartObject {
     private transient DBDAttributeBinding[] bindings;
     private DBCSession session;
     private DPIResultSet dpiResultSet;
