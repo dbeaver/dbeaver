@@ -46,6 +46,8 @@ public class CoreApplicationMessages extends NLS {
 	public static String confirmation_cancel_database_tasks_message;
 
     public static String collect_diagnostic_info_pick_path_title;
+    public static String collect_diagnostic_info_pick_path_label;
+    public static String collect_diagnostic_info_pick_path_warning;
     public static String collect_diagnostic_info_error_message_title;
     public static String collect_diagnostic_info_error_message_text;
     public static String collect_diagnostic_info_error_message_hint;
