@@ -150,7 +150,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
             }
         }
 
-        addCustomObjects(tmpObjectList);
+        addCustomObjects(monitor, owner, tmpObjectList);
 
         Comparator<OBJECT> comparator = getListOrderComparator();
         if (comparator != null && !CommonUtils.isEmpty(tmpObjectList)) {
@@ -166,7 +166,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
         // Do nothing
     }
 
-    public void afterCacheLoading(JDBCSession session, OWNER owner) {
+    public void afterCacheLoading(JDBCSession session, OWNER owner) throws DBException {
         // Do nothing
     }
 

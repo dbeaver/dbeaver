@@ -37,19 +37,23 @@ public class TimezoneRegistry {
     private TimezoneRegistry() {
     }
 
-    public static void setDefaultZone(@Nullable ZoneId id) {
+    public static void setDefaultZone(@Nullable ZoneId id, boolean updatePreferences) {
         DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
         if (id != null) {
             if (!TimeZone.getDefault().getID().equals(id.getId())) {
                 TimeZone.setDefault(TimeZone.getTimeZone(id));
                 System.setProperty("user.timezone", id.getId());
-                preferenceStore.setValue(ModelPreferences.CLIENT_TIMEZONE, id.getId());
+                if (updatePreferences) {
+                    preferenceStore.setValue(ModelPreferences.CLIENT_TIMEZONE, id.getId());
+                }
             }
         } else {
             if (!TimeZone.getDefault().getID().equals(userDefaultTimezone)) {
                 TimeZone.setDefault(TimeZone.getTimeZone(userDefaultTimezone));
                 System.setProperty("user.timezone", userDefaultTimezone);
-                preferenceStore.setToDefault(ModelPreferences.CLIENT_TIMEZONE);
+                if (updatePreferences) {
+                    preferenceStore.setToDefault(ModelPreferences.CLIENT_TIMEZONE);
+                }
             }
         }
     }

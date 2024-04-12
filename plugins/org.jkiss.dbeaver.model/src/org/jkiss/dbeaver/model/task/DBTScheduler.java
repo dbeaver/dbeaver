@@ -62,7 +62,7 @@ public interface DBTScheduler {
     RecurrenceType getRecurrenceType();
 
     @NotNull
-    List<DBTTaskScheduleInfo> getAllScheduledTasks();
+    List<DBTTaskScheduleInfo> getAllScheduledTasks() throws DBException;
 
     @Nullable
     DBTTaskScheduleInfo getScheduledTaskInfo(@NotNull DBTTask task);

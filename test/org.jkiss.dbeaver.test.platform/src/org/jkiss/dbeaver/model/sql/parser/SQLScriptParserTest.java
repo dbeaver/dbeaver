@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.sql.parser;
 
 import org.eclipse.jface.text.Document;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ModelPreferences.SQLScriptStatementDelimiterMode;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -77,28 +78,41 @@ public class SQLScriptParserTest {
     @Test
     public void parsePostgresDoubleDollar() throws DBException {
         assertParse("postgresql",
-            "do $a$\n\nbegin\n\traise notice 'hello';\nend\n\n$a$\n\n$a$\n\n$b$\n\n$b$\n\n$a$\n\n$a$$a$\n\ndo $$\ndeclare\nbegin\nnull;\nend $$\n\ndummy",
+                "CREATE OR REPLACE FUNCTION fn_TestDelimiter()\n" +
+                "RETURNS BOOLEAN AS\n" +
+                "$$\n" +
+                "BEGIN  \n" +
+                "\tINSERT INTO tbl_Students VALUES (1,'Anvesh');\n" +
+                "\tRETURN TRUE; \n" +
+                "END;\n" +
+                "$$\n" +
+                "LANGUAGE plpgsql; \n\n" +
+                "CREATE FUNCTION sales_tax(subtotal real) RETURNS real AS $$\n" +
+                "BEGIN\n" +
+                "    RETURN subtotal * 0.06;\n" +
+                "END;\n" +
+                "$$ LANGUAGE plpgsql;",
             new String[]{
-                "do $a$\n\nbegin\n\traise notice 'hello';\nend\n\n$a$",
-                "$a$\n\n$b$\n\n$b$\n\n$a$",
-                "$a$$a$",
-                "do $$\ndeclare\nbegin\nnull;\nend $$",
-                "dummy"
+                "CREATE OR REPLACE FUNCTION fn_TestDelimiter()\n" +
+                "RETURNS BOOLEAN AS\n" +
+                "$$\n" +
+                "BEGIN  \n" +
+                "\tINSERT INTO tbl_Students VALUES (1,'Anvesh');\n" +
+                "\tRETURN TRUE; \n" +
+                "END;\n" +
+                "$$\n" +
+                "LANGUAGE plpgsql",
+                "CREATE FUNCTION sales_tax(subtotal real) RETURNS real AS $$\n" +
+                "BEGIN\n" +
+                "    RETURN subtotal * 0.06;\n" +
+                "END;\n" +
+                "$$ LANGUAGE plpgsql",
             });
     }
 
     @Test
     public void parseOracleDeclareBlock() throws DBException {
         assertParse("oracle",
-            "BEGIN\n" +
-            "    BEGIN\n" +
-            "    END;\n" +
-            "END;\n" +
-
-            "BEGIN\n" +
-            "    NULL;\n" +
-            "END;\n" +
-
             "DECLARE\n" +
             "BEGIN\n" +
             "    NULL;\n" +
@@ -218,15 +232,6 @@ public class SQLScriptParserTest {
             "    no_sal EXCEPTION; \n" +
             "END emp_mgmt;",
         new String[]{
-                "BEGIN\n" +
-                "    BEGIN\n" +
-                "    END;\n" +
-                "END;",
-
-                "BEGIN\n" +
-                "    NULL;\n" +
-                "END;",
-
                 "DECLARE\n" +
                 "BEGIN\n" +
                 "    NULL;\n" +

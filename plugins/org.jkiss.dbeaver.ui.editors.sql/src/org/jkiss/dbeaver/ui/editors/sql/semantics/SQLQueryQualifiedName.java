@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SourceResolutionResult;
@@ -25,28 +26,50 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsTableDataMod
 
 import java.util.List;
 
-public class SQLQueryQualifiedName { // qualifier
+public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem { // qualifier
     
     public final SQLQuerySymbolEntry catalogName;
     public final SQLQuerySymbolEntry schemaName;
     public final SQLQuerySymbolEntry entityName;
 
-    public SQLQueryQualifiedName(@NotNull SQLQuerySymbolEntry entityName) {
-        this(null, null, entityName);
+    public SQLQueryQualifiedName(STMTreeNode syntaxNode, @NotNull SQLQuerySymbolEntry entityName) {
+        this(syntaxNode, null, null, entityName);
     }
 
-    public SQLQueryQualifiedName(@Nullable SQLQuerySymbolEntry schemaName, @NotNull SQLQuerySymbolEntry entityName) {
-        this(null, schemaName, entityName);
+    public SQLQueryQualifiedName(STMTreeNode syntaxNode, @Nullable SQLQuerySymbolEntry schemaName, @NotNull SQLQuerySymbolEntry entityName) {
+        this(syntaxNode, null, schemaName, entityName);
     }
 
     public SQLQueryQualifiedName(
+        STMTreeNode syntaxNode, 
         @Nullable SQLQuerySymbolEntry catalogName,
         @Nullable SQLQuerySymbolEntry schemaName,
         @NotNull SQLQuerySymbolEntry entityName
     ) {
+        super(syntaxNode);
         this.catalogName = catalogName;
         this.schemaName = schemaName;
         this.entityName = entityName;
+    }
+
+    @Override
+    public STMTreeNode[] getSyntaxComponents() {
+        if (catalogName != null && schemaName != null) {
+            return new STMTreeNode[] {
+                this.catalogName.getSyntaxNode(),
+                this.schemaName.getSyntaxNode(), 
+                this.entityName.getSyntaxNode() 
+            };
+        } else if (schemaName != null) {
+            return new STMTreeNode[] {
+                this.schemaName.getSyntaxNode(), 
+                this.entityName.getSyntaxNode() 
+            };
+        } else {
+            return new STMTreeNode[] { 
+                this.entityName.getSyntaxNode() 
+            };
+        }
     }
     
     public void setSymbolClass(@NotNull SQLQuerySymbolClass symbolClass) {
@@ -72,7 +95,7 @@ public class SQLQueryQualifiedName { // qualifier
                     this.schemaName.getSymbol().setSymbolClass(SQLQuerySymbolClass.SCHEMA);
                 }
                 if (this.catalogName != null) {
-                    DBSObject catalog = realTable.getParentObject();
+                    DBSObject catalog = schema.getParentObject();
                     if (catalog != null) {
                         this.catalogName.setDefinition(new SQLQuerySymbolByDbObjectDefinition(catalog, SQLQuerySymbolClass.CATALOG));
                     } else {
