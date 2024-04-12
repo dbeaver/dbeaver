@@ -175,14 +175,13 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
         int maxTokens
     ) {
         final List<DAICompletionMessage> pending = new ArrayList<>(messages);
-        Collections.reverse(pending);
         final List<DAICompletionMessage> truncated = new ArrayList<>();
         int remainingTokens = maxTokens - 20; // Just to be sure
 
-        {
-            if (pending.get(pending.size() - 1).getRole() == DAICompletionMessage.Role.SYSTEM) {
+        if (!pending.isEmpty()) {
+            if (pending.get(0).getRole() == DAICompletionMessage.Role.SYSTEM) {
                 // Always append main system message and leave space for the next one
-                DAICompletionMessage msg = pending.remove(pending.size() - 1);
+                DAICompletionMessage msg = pending.remove(0);
                 remainingTokens -= truncateMessage(msg, remainingTokens - 50);
                 truncated.add(msg);
             }
