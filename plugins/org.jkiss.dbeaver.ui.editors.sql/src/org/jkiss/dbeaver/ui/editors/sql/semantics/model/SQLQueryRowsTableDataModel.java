@@ -17,16 +17,22 @@
 package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
 
-import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.*;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryQualifiedName;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolByDbObjectDefinition;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolClass;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolDefinition;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
@@ -42,8 +48,8 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
     private final SQLQueryQualifiedName name;
     private DBSEntity table = null;
 
-    public SQLQueryRowsTableDataModel(@NotNull Interval range, @NotNull SQLQueryQualifiedName name) {
-        super(range);
+    public SQLQueryRowsTableDataModel(@NotNull STMTreeNode syntaxNode, @NotNull SQLQueryQualifiedName name) {
+        super(syntaxNode);
         this.name = name;
     }
 
@@ -128,7 +134,7 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
                 if (rr != null && rr.tableOrNull == null && rr.source != null && rr.aliasOrNull != null && nameStrings.size() == 1) {
                     // seems cte reference resolved
                     this.name.entityName.setDefinition(rr.aliasOrNull.getDefinition());
-                    context = context.overrideResultTuple(rr.source.getDataContext().getColumnsList());
+                    context = context.overrideResultTuple(rr.source.getResultDataContext().getColumnsList());
                 } else {
                     this.name.setSymbolClass(SQLQuerySymbolClass.ERROR);
                     statistics.appendError(this.name.entityName, "Table not found");

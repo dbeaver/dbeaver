@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.model.net.ssh.config;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-import java.nio.file.Path;
-
 public sealed interface SSHAuthConfiguration {
     sealed interface WithPassword extends SSHAuthConfiguration {
         @Nullable
@@ -32,7 +30,7 @@ public sealed interface SSHAuthConfiguration {
     record Password(@Nullable String password, boolean savePassword) implements WithPassword {
     }
 
-    record KeyFile(@NotNull Path path, @Nullable String password, boolean savePassword) implements WithPassword {
+    record KeyFile(@NotNull String path, @Nullable String password, boolean savePassword) implements WithPassword {
     }
 
     record KeyData(@NotNull String data, @Nullable String password, boolean savePassword) implements WithPassword {

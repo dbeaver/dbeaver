@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLModelPreferences;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 
@@ -60,10 +62,52 @@ public class SQLPreferenceConstants {
         }
 
     }
+    
+    public enum SQLExperimentalAutocompletionMode {
+        DEFAULT(true, false, SQLEditorMessages.pref_page_sql_completion_label_completion_mode_default),
+        NEW(false, true, SQLEditorMessages.pref_page_sql_completion_label_completion_mode_new_engine),
+        COMBINED(true, true, SQLEditorMessages.pref_page_sql_completion_label_completion_mode_combined);
+    
+        public final boolean useOldAnalyzer;
+        public final boolean useNewAnalyzer;
+
+        public final String title;
+    
+        SQLExperimentalAutocompletionMode(boolean useOldAnalyzer, boolean useNewAnalyzer, String title) {
+            this.useOldAnalyzer = useOldAnalyzer;
+            this.useNewAnalyzer = useNewAnalyzer;
+            this.title = title;
+        }
+        
+        public String getName() {
+            return this.toString();
+        }
+
+        public static SQLExperimentalAutocompletionMode valueByName(String name) {
+            if (name == null) {
+                return DEFAULT;
+            }  else {
+                try {
+                    return SQLExperimentalAutocompletionMode.valueOf(name);
+                } catch (IllegalArgumentException e) {
+                    return SQLExperimentalAutocompletionMode.DEFAULT;
+                }
+            }
+        }
+
+        @NotNull
+        public static SQLExperimentalAutocompletionMode fromPreferences(@NotNull DBPPreferenceStore preferenceStore) {
+            return valueByName(preferenceStore.getString(SQLModelPreferences.EXPERIMENTAL_AUTOCOMPLETION_MODE));	        
+        }
+
+    }
+    
+    
     public static final String INSERT_SINGLE_PROPOSALS_AUTO            = "SQLEditor.ContentAssistant.insert.single.proposal";
     public static final String ENABLE_HIPPIE                           = "SQLEditor.ContentAssistant.activate.hippie";
     public static final String ENABLE_AUTO_ACTIVATION                  = "SQLEditor.ContentAssistant.auto.activation.enable";
     public static final String ENABLE_EXPERIMENTAL_FEATURES            = SQLModelPreferences.EXPERIMENTAL_AUTOCOMPLETION_ENABLE;
+    public static final String EXPERIMENTAL_AUTOCOMPLETION_MODE        = SQLModelPreferences.EXPERIMENTAL_AUTOCOMPLETION_MODE;
     public static final String ADVANCED_HIGHLIGHTING_ENABLE            = SQLModelPreferences.ADVANCED_HIGHLIGHTING_ENABLE;
     public static final String READ_METADATA_FOR_SEMANTIC_ANALYSIS     = SQLModelPreferences.READ_METADATA_FOR_SEMANTIC_ANALYSIS;
     public static final String ENABLE_KEYSTROKE_ACTIVATION             = "SQLEditor.ContentAssistant.auto.keystrokes.activation";
