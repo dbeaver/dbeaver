@@ -37,6 +37,8 @@ public interface InternalDatabaseConfig {
 
     Pool getPool();
 
+    boolean doBackup();
+
     class Pool {
         private int minIdleConnections = 2;
         private int maxIdleConnections = 10;

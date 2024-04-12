@@ -117,13 +117,16 @@ public final class SQLSchemaManager {
                             versionManager.getLatestSchemaVersion()
                         );
                     } else if (schemaVersionActual > currentSchemaVersion) {
-                        JDBCDatabaseBackupDescriptor descriptor =
-                                JDBCDatabaseBackupRegistry.getInstance().getCurrentDescriptor(this.targetDatabaseDialect);
-                        if (descriptor != null) {
-                            try {
-                                descriptor.getInstance().doBackup(dbCon, currentSchemaVersion, databaseConfig);
-                            } catch (DBException e) {
-                                throw new DBException("Internal database backup has failed");
+                        if (databaseConfig.doBackup()) {
+                            JDBCDatabaseBackupDescriptor descriptor =
+                                    JDBCDatabaseBackupRegistry.getInstance().getCurrentDescriptor(this.targetDatabaseDialect);
+                            if (descriptor != null) {
+                                try {
+                                    descriptor.getInstance().doBackup(dbCon, currentSchemaVersion, databaseConfig);
+                                    log.info("Starting backup execution");
+                                } catch (DBException e) {
+                                    throw new DBException("Internal database backup has failed");
+                                }
                             }
                         }
                         upgradeSchemaVersion(monitor, dbCon, txn, currentSchemaVersion);
