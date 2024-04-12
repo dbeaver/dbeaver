@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.ai;
 
 import com.google.gson.Gson;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
 import org.jkiss.dbeaver.model.auth.SMSession;
@@ -137,7 +138,7 @@ public class AISettings {
     private static AISettings loadConfigurationFile() {
         try {
             AISettings settings;
-            String content = DBWorkbench.getPlatform().getConfigurationController().loadConfigurationFile(AI_CONFIGURATION_JSON);
+            String content = loadConfig();
             if (CommonUtils.isEmpty(content)) {
                 settings = new AISettings();
             } else {
@@ -152,6 +153,17 @@ public class AISettings {
             log.error(e);
             return new AISettings();
         }
+    }
+
+    private static String loadConfig() throws DBException {
+        return DBWorkbench.getPlatform()
+            .getConfigurationController()
+            .loadConfigurationFile(AI_CONFIGURATION_JSON);
+    }
+
+    public static boolean isExists() throws DBException {
+        String content = loadConfig();
+        return CommonUtils.isNotEmpty(content);
     }
 
     public void saveSettings() {
