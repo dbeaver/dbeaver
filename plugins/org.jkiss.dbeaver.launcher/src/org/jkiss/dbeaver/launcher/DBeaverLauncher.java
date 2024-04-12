@@ -1310,7 +1310,7 @@ public class DBeaverLauncher {
      * current product.  The given appendage is added to this base location
      *
      * @param pathAppendage the path segments to add to computed base
-     * @return a file system location in the user.home area related the the current
+     * @return a file system location in the user.home area related the current
      * product and the given appendage
      */
     private String computeDefaultUserAreaLocation(String pathAppendage) {
