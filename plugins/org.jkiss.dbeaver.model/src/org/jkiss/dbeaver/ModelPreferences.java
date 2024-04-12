@@ -201,6 +201,10 @@ public final class ModelPreferences
         return mainBundle;
     }
 
+    public static DBPPreferenceStore getPreferences() {
+        return preferences;
+    }
+
     private static void initializeDefaultPreferences(DBPPreferenceStore store) {
         // Notifications
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.NOTIFICATIONS_ENABLED, true);
