@@ -428,6 +428,17 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
         return SQLServerConstants.TYPE_BIT;
     }
 
+    @NotNull
+    @Override
+    public String getAlterColumnOperation() {
+        return SQLServerConstants.OPERATION_ALTER;
+    }
+
+    @Override
+    public boolean supportsAlterColumnSet() {
+        return false;
+    }
+
     @Override
     public boolean supportsNoActionIndex() {
         return true;

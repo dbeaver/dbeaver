@@ -20,6 +20,7 @@ import net.sf.jsqlparser.statement.ReferentialAction;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterExpression;
+import net.sf.jsqlparser.statement.alter.AlterOperation;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.ForeignKeyIndex;
@@ -210,6 +211,9 @@ public class SQLQueryTranslator implements SQLTranslator {
                     if (columnDataTypeList == null) {
                         continue;
                     }
+                    if (extendedDialect != null) {
+                        expr.setOperation(AlterOperation.valueOf(extendedDialect.getAlterColumnOperation().toUpperCase()));
+                    }
                     for (ColumnDefinition columnDataType : columnDataTypeList) {
                         defChanged |= translateColumnDataType(columnDataType, extendedDialect, targetDialect);
                     }
@@ -267,6 +271,11 @@ public class SQLQueryTranslator implements SQLTranslator {
             case "BOOLEAN":
                 if (extendedDialect != null) {
                     newDataType = extendedDialect.getBooleanDataType();
+                }
+                break;
+            case "SET":
+                if (extendedDialect != null && !extendedDialect.supportsAlterColumnSet()) {
+                    newDataType = "";
                 }
                 break;
             default:

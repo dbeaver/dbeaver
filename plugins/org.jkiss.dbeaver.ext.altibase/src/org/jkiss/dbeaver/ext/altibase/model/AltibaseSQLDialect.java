@@ -566,6 +566,17 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
         // Not supported data type
         return "";
     }
+
+    @NotNull
+    @Override
+    public String getAlterColumnOperation() {
+        return AltibaseConstants.OPERATION_MODIFY;
+    }
+
+    @Override
+    public boolean supportsAlterColumnSet() {
+        return false;
+    }
     
     @Override
     public String getSchemaExistQuery(String schemaName) {

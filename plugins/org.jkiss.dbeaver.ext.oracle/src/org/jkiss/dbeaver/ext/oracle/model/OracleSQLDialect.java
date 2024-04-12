@@ -765,8 +765,19 @@ public class OracleSQLDialect extends JDBCSQLDialect
         return OracleConstants.TYPE_BOOLEAN;
     }
 
+    @NotNull
+    @Override
+    public String getAlterColumnOperation() {
+        return OracleConstants.OPERATION_MODIFY;
+    }
+
     @Override
     public boolean supportsNoActionIndex() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsAlterColumnSet() {
         return false;
     }
 
