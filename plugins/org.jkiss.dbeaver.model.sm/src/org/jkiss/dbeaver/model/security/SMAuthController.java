@@ -38,8 +38,7 @@ public interface SMAuthController {
         @NotNull SMSessionType sessionType,
         @NotNull String authProviderId,
         @Nullable String authProviderConfigurationId,
-        @NotNull Map<String, Object> userCredentials,
-        boolean forceSessionsLogout
+        @NotNull Map<String, Object> userCredentials
     ) throws DBException;
 
     SMAuthInfo getAuthStatus(@NotNull String authId) throws DBException;
