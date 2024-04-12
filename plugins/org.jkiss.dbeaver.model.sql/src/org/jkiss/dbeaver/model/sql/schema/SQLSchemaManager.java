@@ -117,7 +117,7 @@ public final class SQLSchemaManager {
                             versionManager.getLatestSchemaVersion()
                         );
                     } else if (schemaVersionActual > currentSchemaVersion) {
-                        if (databaseConfig.doBackup()) {
+                        if (databaseConfig.isBackupEnabled()) {
                             JDBCDatabaseBackupDescriptor descriptor =
                                     JDBCDatabaseBackupRegistry.getInstance().getCurrentDescriptor(this.targetDatabaseDialect);
                             if (descriptor != null) {
