@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLSearchUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
+import org.jkiss.dbeaver.model.stm.LSMInspections;
 import org.jkiss.dbeaver.model.stm.STMTreeTermNode;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
@@ -35,7 +36,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.*;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.completion.SQLQuerySyntaxTreeInspections.SynaxInspectionResult;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SourceResolutionResult;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsSourceModel;
@@ -58,8 +58,8 @@ public abstract class SQLQueryCompletionContext {
     @NotNull
     public static SQLQueryCompletionContext prepareOffquery(int scriptItemOffset) {
         return new SQLQueryCompletionContext(scriptItemOffset) {
-            private static final Collection<SQLQueryCompletionItem> keywords = SQLQuerySyntaxTreeInspections.prepareOffquerySyntaxInspection()
-                    .predictedWords.stream().sorted().map(SQLQueryCompletionItem::forReservedWord).collect(Collectors.toList());
+            private static final Collection<SQLQueryCompletionItem> keywords = LSMInspections.prepareOffquerySyntaxInspection()
+                .predictedWords.stream().sorted().map(SQLQueryCompletionItem::forReservedWord).collect(Collectors.toList());
             
             @Override
             public SQLQueryCompletionSet prepareProposal(@NotNull DBRProgressMonitor monitor, int position) {
@@ -83,7 +83,7 @@ public abstract class SQLQueryCompletionContext {
     public static SQLQueryCompletionContext prepare(
         @NotNull SQLDocumentSyntaxContext.ScriptItemAtOffset scriptItem,
         @NotNull DBCExecutionContext dbcExecutionContext,
-        @NotNull SynaxInspectionResult syntaxInspectionResult,
+        @NotNull LSMInspections.SynaxInspectionResult syntaxInspectionResult,
         @NotNull SQLQueryDataContext context,
         @Nullable SQLQueryLexicalScopeItem lexicalItem,
         @NotNull STMTreeTermNode[] nameNodes
