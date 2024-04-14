@@ -70,6 +70,26 @@ public class DashboardItemViewSettings {
         this.description = dashboardDescriptor.getDescription();
     }
 
+
+    public DashboardItemViewSettings(DashboardConfiguration viewConfiguration, String id, Element element) {
+        this.viewConfiguration = viewConfiguration;
+        this.itemId = id;
+
+        this.viewTypeId = element.getAttribute("viewType");
+        this.index = CommonUtils.toInt(element.getAttribute("index"));
+        this.widthRatio = (float) CommonUtils.toDouble(element.getAttribute("widthRatio"));
+        this.updatePeriod = CommonUtils.toLong(element.getAttribute("updatePeriod"));
+        this.maxItems = CommonUtils.toInt(element.getAttribute("maxItems"));
+        this.maxAge = CommonUtils.toLong(element.getAttribute("maxAge"));
+
+        this.legendVisible = CommonUtils.getBoolean(element.getAttribute("legendVisible"), true);
+        this.gridVisible = CommonUtils.getBoolean(element.getAttribute("gridVisible"), true);
+        this.domainTicksVisible = CommonUtils.getBoolean(element.getAttribute("domainTicksVisible"), true);
+        this.rangeTicksVisible = CommonUtils.getBoolean(element.getAttribute("rangeTicksVisible"), true);
+
+        this.description = element.getAttribute("description");
+    }
+
     public DashboardItemViewSettings(DashboardItemViewSettings source) {
         this.viewConfiguration = source.viewConfiguration;
         copyFrom(source);
@@ -77,6 +97,10 @@ public class DashboardItemViewSettings {
 
     public DashboardConfiguration getViewConfiguration() {
         return viewConfiguration;
+    }
+
+    public DashboardItemConfiguration getDashboardItem() {
+        return dashboardItem;
     }
 
     public String getItemId() {
@@ -249,25 +273,6 @@ public class DashboardItemViewSettings {
         if (!CommonUtils.isEmpty(description)) {
             xml.addAttribute("description", description);
         }
-    }
-
-    public DashboardItemViewSettings(DashboardConfiguration viewConfiguration, String id, Element element) {
-        this.viewConfiguration = viewConfiguration;
-        this.itemId = id;
-
-        this.viewTypeId = element.getAttribute("viewType");
-        this.index = CommonUtils.toInt(element.getAttribute("index"));
-        this.widthRatio = (float) CommonUtils.toDouble(element.getAttribute("widthRatio"));
-        this.updatePeriod = CommonUtils.toLong(element.getAttribute("updatePeriod"));
-        this.maxItems = CommonUtils.toInt(element.getAttribute("maxItems"));
-        this.maxAge = CommonUtils.toLong(element.getAttribute("maxAge"));
-
-        this.legendVisible = CommonUtils.getBoolean(element.getAttribute("legendVisible"), true);
-        this.gridVisible = CommonUtils.getBoolean(element.getAttribute("gridVisible"), true);
-        this.domainTicksVisible = CommonUtils.getBoolean(element.getAttribute("domainTicksVisible"), true);
-        this.rangeTicksVisible = CommonUtils.getBoolean(element.getAttribute("rangeTicksVisible"), true);
-
-        this.description = element.getAttribute("description");
     }
 
     @Override

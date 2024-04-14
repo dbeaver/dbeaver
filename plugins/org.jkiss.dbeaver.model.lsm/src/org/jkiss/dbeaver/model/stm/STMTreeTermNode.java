@@ -36,7 +36,7 @@ public class STMTreeTermNode extends TerminalNodeImpl implements STMTreeNode {
         super(symbol);
         this.atnState = atnState;
     }
-    
+
     public int getAtnState() {
         return this.atnState;
     }

@@ -210,6 +210,7 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
     public void removeItem(@NotNull DashboardItemContainer container) {
         DashboardViewItem item = (DashboardViewItem) container;
         item.dispose();
+        computeGridSize();
         layout(true, true);
         viewContainer.getViewConfiguration().removeItem(item.getItemDescriptor().getId());
         viewContainer.saveChanges();
@@ -220,6 +221,7 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
         viewContainer.getViewConfiguration().readDashboardItemConfiguration(dashboard);
         new DashboardViewItem(this, dashboard);
         viewContainer.saveChanges();
+        computeGridSize();
         layout(true, true);
     }
 
