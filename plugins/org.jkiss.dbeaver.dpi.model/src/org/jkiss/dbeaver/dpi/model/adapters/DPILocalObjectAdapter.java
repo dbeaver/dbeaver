@@ -14,26 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.dpi.model.adapters;
 
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.dpi.DPIElement;
-import org.jkiss.dbeaver.model.dpi.DPIObject;
-import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
+import org.jkiss.dbeaver.dpi.model.DPIContext;
 
-/**
- * DBPObjectStatistics
- */
-@DPIObject
-public interface DBPObjectStatistics {
+import java.io.IOException;
 
-    @DPIElement(objectState = true)
-    boolean hasStatistics();
+public class DPILocalObjectAdapter<T> extends AbstractTypeAdapter<T> {
+    public DPILocalObjectAdapter(DPIContext context) {
+        super(context);
+    }
 
-    @DPIElement(objectState = true)
-    long getStatObjectSize();
+    @Override
+    public void write(JsonWriter jsonWriter, T t) throws IOException {
+        jsonWriter.nullValue();
+    }
 
-    @Nullable
-    DBPPropertySource getStatProperties();
-
+    @Override
+    public T read(JsonReader jsonReader) throws IOException {
+        return null;
+    }
 }

@@ -196,7 +196,7 @@ public class CursorViewComposite extends Composite implements IResultSetContaine
         @NotNull
         @Override
         public DBCStatistics readData(
-            @NotNull DBCExecutionSource source,
+            @Nullable DBCExecutionSource source,
             @NotNull DBCSession session,
             @NotNull DBDDataReceiver dataReceiver,
             DBDDataFilter dataFilter,

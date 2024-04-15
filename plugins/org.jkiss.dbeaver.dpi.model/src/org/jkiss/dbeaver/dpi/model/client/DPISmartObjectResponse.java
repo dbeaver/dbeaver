@@ -14,37 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.dpi.model.client;
 
-package org.jkiss.dbeaver.model.exec;
-
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.dpi.DPILocalObject;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 
-/**
- * Execution source.
- * The thing which initiates statement execution
- */
-@DPILocalObject
-public interface DBCExecutionSource
-{
-    @Nullable
-    DBSDataContainer getDataContainer();
+import java.util.List;
 
-    /**
-     * UI controller which initiated execution
-     * @return execution controller
-     */
+public class DPISmartObjectResponse {
     @Nullable
-    Object getExecutionController();
+    private final Object methodInvocationResult;
+    @NotNull
+    private final List<DPISmartObjectWrapper> smartObjects;
 
-    /**
-     * Additional source descriptor
-     */
-    @Nullable
-    Object getSourceDescriptor();
+    public DPISmartObjectResponse(
+        @Nullable Object methodInvocationResult,
+        @NotNull List<DPISmartObjectWrapper> smartObjects
+    ) {
+        this.methodInvocationResult = methodInvocationResult;
+        this.smartObjects = smartObjects;
+    }
 
     @Nullable
-    DBCScriptContext getScriptContext();
+    public Object getMethodInvocationResult() {
+        return methodInvocationResult;
+    }
 
+    @NotNull
+    public List<DPISmartObjectWrapper> getSmartObjects() {
+        return smartObjects;
+    }
 }

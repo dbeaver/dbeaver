@@ -14,26 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.model.dpi;
 
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.dpi.DPIElement;
-import org.jkiss.dbeaver.model.dpi.DPIObject;
-import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
-
-/**
- * DBPObjectStatistics
- */
-@DPIObject
-public interface DBPObjectStatistics {
-
-    @DPIElement(objectState = true)
-    boolean hasStatistics();
-
-    @DPIElement(objectState = true)
-    long getStatObjectSize();
-
-    @Nullable
-    DBPPropertySource getStatProperties();
-
+public interface DPIServerSmartObject {
+    DPISmartCallback getCallback();
 }

@@ -8,7 +8,9 @@ Bundle-Release-Date: 20240422
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Export-Package: org.jkiss.dbeaver.dpi.model,
- org.jkiss.dbeaver.dpi.model.client
+ org.jkiss.dbeaver.dpi.model.client,
+ org.jkiss.dbeaver.dpi.model.adapters,
+ org.jkiss.dbeaver.dpi.model.model
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model;visibility:=reexport,
