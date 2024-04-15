@@ -214,7 +214,7 @@ public class DiagramPart extends PropertyAwarePart {
         monitor.beginTask(ERDUIMessages.erd_job_rearrange_diagram, getChildren().size() + 2);
         getChildren().forEach(c -> {
             if (c instanceof NodePart nodePart) {
-                resetConnectionConstraints(monitor, nodePart.getSourceConnections());
+                UIUtils.syncExec(() -> resetConnectionConstraints(monitor, nodePart.getSourceConnections()));
                 monitor.worked(1);
             }
         });
