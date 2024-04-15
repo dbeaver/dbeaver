@@ -75,7 +75,7 @@ public class HANADataSource extends GenericDataSource implements DBCQueryPlanner
     
     @Override
     public DBPDataKind resolveDataKind(String typeName, int valueType) {
-        if (HANAConstants.DATATYPENAME_REAL_VECTOR.equalsIgnoreCase(typeName)) {
+        if (HANAConstants.DATA_TYPE_NAME_REAL_VECTOR.equalsIgnoreCase(typeName)) {
             return DBPDataKind.ARRAY;
         }
         return super.resolveDataKind(typeName, valueType);
