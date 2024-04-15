@@ -244,7 +244,7 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
         }
 
         private void createControl(Composite parent, DAICompletionEngine<?> engine) {
-            composite = UIUtils.createComposite(parent, 2);
+            composite = UIUtils.createComposite(parent, 1);
             composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             configurator.createControl(composite, engine, () -> {});
         }
@@ -261,6 +261,8 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
             configurator.saveSettings(settings);
         }
     }
+
+
 
     @Override
     protected boolean hasAccessToPage() {
