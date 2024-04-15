@@ -60,7 +60,7 @@ public class MetadataProcessor {
             return "";
         }
         StringBuilder description = new StringBuilder();
-        if (object instanceof DBSEntity) {
+        if (object instanceof DBSEntity entity) {
             String name = useFullyQualifiedName && context != null ? DBUtils.getObjectFullName(
                 context.getDataSource(),
                 object,
@@ -69,18 +69,18 @@ public class MetadataProcessor {
             description.append('\n');
             formatter.addObjectDescriptionIfNeeded(description, object, monitor);
             if (object instanceof DBSTable table) {
-                description.append(table.isView() ? "Create View: " : "Create Table: ");
+                description.append(table.isView() ? "CREATE VIEW" : "CREATE TABLE");
             }
-            description.append(name).append("(\n\t");
-            DBSEntityAttribute firstAttr = addPromptAttributes(monitor, (DBSEntity) object, description, formatter);
-            formatter.addExtraDescription(monitor, (DBSEntity) object, description, firstAttr);
-            description.append("\n);");
-        } else if (object instanceof DBSObjectContainer) {
+            description.append(" ").append(name).append("(");
+            DBSEntityAttribute firstAttr = addPromptAttributes(monitor, entity, description, formatter);
+            formatter.addExtraDescription(monitor, entity, description, firstAttr);
+            description.append(");");
+        } else if (object instanceof DBSObjectContainer objectContainer) {
             monitor.subTask("Load cache of " + object.getName());
-            ((DBSObjectContainer) object).cacheStructure(
+            objectContainer.cacheStructure(
                 monitor,
                 DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ATTRIBUTES);
-            for (DBSObject child : ((DBSObjectContainer) object).getChildren(monitor)) {
+            for (DBSObject child : objectContainer.getChildren(monitor)) {
                 if (DBUtils.isSystemObject(child) || DBUtils.isHiddenObject(child) || child instanceof DBSTablePartition) {
                     continue;
                 }
@@ -206,7 +206,7 @@ public class MetadataProcessor {
                     if (prevAttribute != null) {
                         prompt.append(",");
                         formatter.addObjectDescriptionIfNeeded(prompt, prevAttribute, monitor);
-                        prompt.append("\n\t");
+                        //prompt.append("\n\t");
                     }
                     prompt.append(attribute.getName());
                     formatter.addColumnTypeIfNeeded(prompt, attribute, monitor);
@@ -222,7 +222,7 @@ public class MetadataProcessor {
             return false;
         }
         DBSObject parent = object.getParentObject();
-        DBCExecutionContextDefaults contextDefaults = context.getContextDefaults();
+        DBCExecutionContextDefaults<?,?> contextDefaults = context.getContextDefaults();
         return parent != null && !(parent.equals(contextDefaults.getDefaultCatalog())
             || parent.equals(contextDefaults.getDefaultSchema()));
     }

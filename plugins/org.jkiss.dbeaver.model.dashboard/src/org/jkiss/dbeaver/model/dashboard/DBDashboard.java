@@ -14,17 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.dashboard;
 
-package org.jkiss.dbeaver.registry;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.app.DBPProject;
+
+import java.util.List;
 
 /**
- * DBConnectionConstants
+ * Dashboard
  */
-public class DBConnectionConstants {
+public interface DBDashboard {
 
-    public static final String PRODUCT_FEATURE_ADVANCED_DATABASE_ADMINISTRATION = "database/administration/advanced";
+    @NotNull
+    DBPProject getProject();
 
-    public static final String PRODUCT_FEATURE_SIMPLE_TRUSTSTORE = "connection/simpleTruststore";
+    @NotNull
+    String getDashboardId();
 
-    public static final String POLICY_RESTRICT_PASSWORD_SAVE = "connection.credentials.save.restricted"; //$NON-NLS-1$
+    @NotNull
+    String getDashboardName();
+
+    @NotNull
+    List<DBDashboardItem> getDashboardItems();
+
 }
