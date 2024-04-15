@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectDDLExtension;
 import org.jkiss.dbeaver.model.sql.SQLDialectSchemaController;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
@@ -42,7 +43,7 @@ import java.util.regex.Pattern;
 /**
  * MySQL dialect
  */
-public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaController {
+public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaController, SQLDialectDDLExtension {
 
     public static final String[] MYSQL_NON_TRANSACTIONAL_KEYWORDS = ArrayUtils.concatArrays(
         BasicSQLDialect.NON_TRANSACTIONAL_KEYWORDS,
@@ -328,6 +329,11 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
         return procedure.getProcedureType() == DBSProcedureType.PROCEDURE;
     }
 
+    @Override
+    public boolean supportsUuid() {
+        return false;
+    }
+
     @NotNull
     @Override
     public String escapeScriptValue(DBSTypedObject attribute, @NotNull Object value, @NotNull String strValue) {
@@ -371,5 +377,57 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
             ProjectionAliasVisibilityScope.HAVING,
             ProjectionAliasVisibilityScope.ORDER_BY
         );
+    }
+
+    @Nullable
+    @Override
+    public String getAutoIncrementKeyword() {
+        return "AUTO_INCREMENT";
+    }
+
+    @Override
+    public boolean supportsCreateIfExists() {
+        return true;
+    }
+
+    @NotNull
+    @Override
+    public String getTimestampDataType() {
+        return "TIMESTAMP";
+    }
+
+    @NotNull
+    @Override
+    public String getBigIntegerType() {
+        return "BIGINT";
+    }
+
+    @NotNull
+    @Override
+    public String getClobDataType() {
+        return "TEXT";
+    }
+
+    @NotNull
+    @Override
+    public String getBlobDataType() {
+        return "BLOB";
+    }
+
+    @NotNull
+    @Override
+    public String getUuidDataType() {
+        return "CHAR(36)";
+    }
+
+    @NotNull
+    @Override
+    public String getBooleanDataType() {
+        return "TINYINT(1)";
+    }
+
+    @Override
+    public boolean supportsNoActionIndex() {
+        return true;
     }
 }
