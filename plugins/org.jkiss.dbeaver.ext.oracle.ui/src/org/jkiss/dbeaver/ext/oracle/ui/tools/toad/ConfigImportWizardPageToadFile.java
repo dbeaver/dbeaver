@@ -50,7 +50,7 @@ public class ConfigImportWizardPageToadFile extends WizardPage {
         filePathText = new TextWithOpenFile(
             placeholder,
             "Toad connections export file (.xml)",
-            new String[]{"Connections.xml", "*.xml", "*"});
+            new String[]{"*.xml", "*"});
         filePathText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         filePathText.getTextControl().addModifyListener(e -> {
             inputFile = new File(filePathText.getText());
