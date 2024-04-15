@@ -17,29 +17,25 @@
 package org.jkiss.dbeaver.model.dashboard;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
-import org.jkiss.dbeaver.model.dashboard.registry.DashboardProviderDescriptor;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.app.DBPProject;
 
 import java.util.List;
 
 /**
- * Dashboard provider
+ * Dashboard
  */
-public interface DBDashboardProvider {
+public interface DBDashboard {
 
     @NotNull
-    String getId();
-
-    List<DashboardItemConfiguration> loadStaticDashboards(@NotNull DashboardProviderDescriptor dp);
+    DBPProject getProject();
 
     @NotNull
-    List<DBDashboardFolder> loadRootFolders(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DashboardProviderDescriptor provider,
-        @NotNull DBDashboardContext context);
+    String getDashboardId();
 
-    boolean appliesTo(@NotNull DBPDataSourceContainer dataSource);
+    @NotNull
+    String getDashboardName();
+
+    @NotNull
+    List<DBDashboardItem> getDashboardItems();
 
 }

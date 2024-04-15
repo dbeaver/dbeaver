@@ -16,11 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
-import org.antlr.v4.runtime.BufferedTokenStream;
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.misc.Interval;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -40,6 +35,7 @@ import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserContext;
 import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
+import org.jkiss.dbeaver.model.stm.LSMInspections;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.stm.STMTreeTermNode;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -48,8 +44,6 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLDocumentSyntaxContext.ScriptItemAtOffset;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.completion.SQLQueryCompletionContext;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.completion.SQLQuerySyntaxTreeInspections;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.completion.SQLQuerySyntaxTreeInspections.SynaxInspectionResult;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryModel;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryNodeModel;
@@ -57,13 +51,11 @@ import org.jkiss.dbeaver.utils.ListNode;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class SQLBackgroundParsingJob {
 
     private static final Log log = Log.getLog(SQLBackgroundParsingJob.class);
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     private static final long schedulingTimeoutMilliseconds = 500;
     
@@ -189,8 +181,7 @@ public class SQLBackgroundParsingJob {
         SQLQueryModel model = scriptItem.item.getQueryModel();
         if (model != null) {
             STMTreeNode syntaxNode = model.getSyntaxNode();
-            
-            SynaxInspectionResult sr = SQLQuerySyntaxTreeInspections.prepareAbstractSyntaxInspection(syntaxNode, position);
+            LSMInspections.SynaxInspectionResult sr = LSMInspections.prepareAbstractSyntaxInspection(syntaxNode, position);
             SQLQueryDataContext context = null;
             
             SQLQueryNodeModel node = model.findNodeContaining(position);
@@ -207,7 +198,7 @@ public class SQLBackgroundParsingJob {
             }
             
             ArrayDeque<STMTreeTermNode> nameNodes = new ArrayDeque<>();
-            List<STMTreeTermNode> allTerms = SQLQuerySyntaxTreeInspections.prepareTerms(syntaxNode);
+            List<STMTreeTermNode> allTerms = LSMInspections.prepareTerms(syntaxNode);
             int index = AbstractSyntaxNode.binarySearchByKey(allTerms, t -> t.getRealInterval().a, position, Comparator.comparingInt(k -> k));
             if (index < 0) {
                 index = ~index - 1;

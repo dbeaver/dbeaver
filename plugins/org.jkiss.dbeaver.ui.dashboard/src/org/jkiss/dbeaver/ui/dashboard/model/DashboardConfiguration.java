@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.dashboard.DBDashboard;
+import org.jkiss.dbeaver.model.dashboard.DBDashboardItem;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLBuilder;
@@ -33,11 +35,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * DashboardViewConfiguration
  */
-public class DashboardConfiguration {
+public class DashboardConfiguration implements DBDashboard {
 
     public static final String REF_PREFIX = "ref#";
 
@@ -82,12 +85,20 @@ public class DashboardConfiguration {
         this.dashboardFile = dashboardFile;
     }
 
+    @NotNull
     public String getDashboardId() {
         return dashboardId;
     }
 
+    @NotNull
     public String getDashboardName() {
         return dashboardName;
+    }
+
+    @NotNull
+    @Override
+    public List<DBDashboardItem> getDashboardItems() {
+        return items.stream().map(DashboardItemViewSettings::getDashboardItem).collect(Collectors.toList());
     }
 
     public void setDashboardName(String dashboardName) {
@@ -108,7 +119,7 @@ public class DashboardConfiguration {
     }
 
     public List<DashboardItemViewSettings> getDashboardItemConfigs() {
-        return items;
+        return new ArrayList<>(items);
     }
 
     public boolean isOpenConnectionOnActivate() {
