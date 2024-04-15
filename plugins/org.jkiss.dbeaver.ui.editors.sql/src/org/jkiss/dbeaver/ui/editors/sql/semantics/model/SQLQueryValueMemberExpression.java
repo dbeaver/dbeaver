@@ -29,6 +29,9 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryExprType;
 
+/**
+ * Describes a member access to the element of the composite type
+ */
 public class SQLQueryValueMemberExpression extends SQLQueryValueExpression {
 
     private static final Log log = Log.getLog(SQLQueryValueMemberExpression.class);

@@ -16,18 +16,19 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
-import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultColumn;
 
 import java.util.List;
 
-
+/**
+ * Describes INSERT statement
+ */
 public class SQLQueryTableInsertModel extends SQLQueryTableStatementModel {
     @Nullable
     private final List<SQLQuerySymbolEntry> columnNames;

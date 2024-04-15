@@ -16,20 +16,22 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
-import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryExprType;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultColumn;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-
+/**
+ * Describes a table constructed by VALUES clause
+ */
 public class SQLQueryRowsTableValueModel extends SQLQueryRowsSourceModel {
+    @NotNull
     private final List<SQLQueryValueExpression> values;
     
     public SQLQueryRowsTableValueModel(@NotNull STMTreeNode syntaxNode, @NotNull List<SQLQueryValueExpression> values) {
@@ -44,7 +46,10 @@ public class SQLQueryRowsTableValueModel extends SQLQueryRowsSourceModel {
 
     @NotNull
     @Override
-    protected SQLQueryDataContext propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+    protected SQLQueryDataContext propagateContextImpl(
+        @NotNull SQLQueryDataContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
         this.values.forEach(v -> v.propagateContext(context, statistics));
         return context.hideSources().overrideResultTuple(this.values.stream()
             .map(e -> new SQLQueryResultColumn(new SQLQuerySymbol("?"), this, null, null, SQLQueryExprType.UNKNOWN))

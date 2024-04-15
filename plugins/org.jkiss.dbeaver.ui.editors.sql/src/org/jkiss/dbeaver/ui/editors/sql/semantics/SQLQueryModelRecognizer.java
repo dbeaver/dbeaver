@@ -707,7 +707,7 @@ public class SQLQueryModelRecognizer {
         STMTreeNode targetTableNode = node.findChildOfName(STMKnownRuleNames.tableReference);
         SQLQueryRowsSourceModel targetSet = targetTableNode == null ? null : this.collectQueryExpression(targetTableNode);
         
-        List<SQLQueryTableUpdateModel.SetClauseModel> setClauseList = new ArrayList<>();
+        List<SQLQueryTableUpdateSetClauseModel> setClauseList = new ArrayList<>();
         STMTreeNode setClauseListNode = node.findChildOfName(STMKnownRuleNames.setClauseList);
         if (setClauseListNode != null) {
             for (int i = 0; i < setClauseListNode.getChildCount(); i += 2) {
@@ -737,7 +737,7 @@ public class SQLQueryModelRecognizer {
                             Set.of(STMKnownRuleNames.updateValue)
                         ).stream().map(v -> this.collectValueExpression(v.getStmChild(0))).collect(Collectors.toList());
                     setClauseList.add(
-                        new SQLQueryTableUpdateModel.SetClauseModel(
+                        new SQLQueryTableUpdateSetClauseModel(
                             setClauseNode,
                             targets,
                             sources,

@@ -20,11 +20,19 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
+/**
+ * Describes set operations (for example, join or corresponding subquery)
+ */
 public abstract class SQLQueryRowsSetOperationModel extends SQLQueryRowsSourceModel {
     protected final SQLQueryRowsSourceModel left;
     protected final SQLQueryRowsSourceModel right;
 
-    public SQLQueryRowsSetOperationModel(@NotNull Interval range, STMTreeNode syntaxNode, @NotNull SQLQueryRowsSourceModel left, @NotNull SQLQueryRowsSourceModel right) {
+    public SQLQueryRowsSetOperationModel(
+        @NotNull Interval range,
+        @NotNull STMTreeNode syntaxNode,
+        @NotNull SQLQueryRowsSourceModel left,
+        @NotNull SQLQueryRowsSourceModel right
+    ) {
         super(range, syntaxNode, left, right);
         this.left = left;
         this.right = right;

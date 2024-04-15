@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -35,17 +36,22 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolDefinition;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryExprType;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SourceResolutionResult;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 
+/**
+ * Describes table definition
+ */
 public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implements SQLQuerySymbolDefinition {
 
     private static final Log log = Log.getLog(SQLQueryRowsTableDataModel.class);
+    @NotNull
     private final SQLQueryQualifiedName name;
+    @Nullable
     private DBSEntity table = null;
 
     public SQLQueryRowsTableDataModel(@NotNull STMTreeNode syntaxNode, @NotNull SQLQueryQualifiedName name) {
@@ -53,15 +59,17 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
         this.name = name;
     }
 
+    @NotNull
     public SQLQueryQualifiedName getName() {
         return this.name;
     }
 
+    @Nullable
     public DBSEntity getTable() {
         return this.table;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public SQLQuerySymbolClass getSymbolClass() {
         return this.table != null ? SQLQuerySymbolClass.TABLE : SQLQuerySymbolClass.ERROR;
@@ -92,8 +100,13 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
             )).collect(Collectors.toList());
         return columns;
     }
-    
-    private SQLQueryExprType obtainColumnType(SQLQuerySymbolEntry reason, SQLQueryRecognitionContext statistics, DBSAttributeBase attr) {
+
+    @NotNull
+    private SQLQueryExprType obtainColumnType(
+        @NotNull SQLQuerySymbolEntry reason,
+        @NotNull SQLQueryRecognitionContext statistics,
+        @NotNull DBSAttributeBase attr
+    ) {
         SQLQueryExprType type;
         try {
             type = SQLQueryExprType.forTypedObject(statistics.getMonitor(), attr, SQLQuerySymbolClass.COLUMN);

@@ -1,16 +1,20 @@
 package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
-import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
+/**
+ * Describes a statements operating with the table (INSERT, DELETE, ...)
+ */
 public abstract class SQLQueryTableStatementModel extends SQLQueryModelContent {
     @Nullable
     private final SQLQueryRowsTableDataModel tableModel;
+    @Nullable
     private SQLQueryDataContext givenContext = null;
+    @Nullable
     private SQLQueryDataContext resultContext = null;
     
     public SQLQueryTableStatementModel(@NotNull STMTreeNode syntaxNode, @Nullable SQLQueryRowsTableDataModel tableModel) {
@@ -31,12 +35,14 @@ public abstract class SQLQueryTableStatementModel extends SQLQueryModelContent {
             this.propagateContextImpl(this.resultContext, statistics);
         }
     }
-    
+
+    @Nullable
     @Override
     public SQLQueryDataContext getGivenDataContext() {
         return this.givenContext;
     }
-    
+
+    @Nullable
     @Override
     public SQLQueryDataContext getResultDataContext() {
         return this.resultContext;

@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
-
-import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.SQLDialect.ProjectionAliasVisibilityScope;
@@ -25,20 +23,30 @@ import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryLexicalScope;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultColumn;
 
 import java.util.EnumSet;
 import java.util.List;
 
+/**
+ * Describes SELECT clause
+ */
 public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
+    @NotNull
     private final SQLQueryLexicalScope selectListScope;
+    @NotNull
     
     private final SQLQueryRowsSourceModel fromSource; // from tableExpression
+    @NotNull
     private final SQLQuerySelectionResultModel result; // selectList
 
+    @Nullable
     private final SQLQueryValueExpression whereClause;
+    @Nullable
     private final SQLQueryValueExpression havingClause;
+    @Nullable
     private final SQLQueryValueExpression groupByClause;
+    @Nullable
     private final SQLQueryValueExpression orderByClause;
 
 
@@ -73,26 +81,32 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
         this.registerLexicalScope(selectListScope);
     }
 
+    @NotNull
     public SQLQueryRowsSourceModel getFromSource() {
         return fromSource;
     }
 
+    @NotNull
     public SQLQuerySelectionResultModel getResult() {
         return result;
     }
 
+    @Nullable
     public SQLQueryValueExpression getWhereClause() {
         return whereClause;
     }
 
+    @Nullable
     public SQLQueryValueExpression getHavingClause() {
         return havingClause;
     }
 
+    @Nullable
     public SQLQueryValueExpression getGroupByClause() {
         return groupByClause;
     }
 
+    @Nullable
     public SQLQueryValueExpression getOrderByClause() {
         return orderByClause;
     }

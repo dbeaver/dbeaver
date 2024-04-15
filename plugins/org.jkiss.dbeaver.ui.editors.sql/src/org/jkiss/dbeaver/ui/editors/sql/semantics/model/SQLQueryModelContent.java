@@ -18,13 +18,17 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
+/**
+ * Describes sql query or query part
+ */
 public abstract class SQLQueryModelContent extends SQLQueryNodeModel {
 
-    public SQLQueryModelContent(Interval interval, @NotNull STMTreeNode syntaxNode, SQLQueryNodeModel ... subnodes) {
+    public SQLQueryModelContent(@NotNull Interval interval, @NotNull STMTreeNode syntaxNode, @Nullable SQLQueryNodeModel ... subnodes) {
         super(interval, syntaxNode, subnodes);
     }
 

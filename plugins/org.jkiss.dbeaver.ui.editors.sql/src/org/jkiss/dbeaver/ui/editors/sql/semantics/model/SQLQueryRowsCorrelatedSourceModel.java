@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
-import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
@@ -24,14 +23,20 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultColumn;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Describes a subquery source that have an alias and optionally columns list
+ */
 public class SQLQueryRowsCorrelatedSourceModel extends SQLQueryRowsSourceModel {
+    @NotNull
     private final SQLQueryRowsSourceModel source;
+    @NotNull
     private final SQLQuerySymbolEntry alias;
+    @NotNull
     private final List<SQLQuerySymbolEntry> correlationColumNames;
 
     public SQLQueryRowsCorrelatedSourceModel(
@@ -46,14 +51,17 @@ public class SQLQueryRowsCorrelatedSourceModel extends SQLQueryRowsSourceModel {
         this.correlationColumNames = correlationColumNames;
     }
 
+    @NotNull
     public SQLQueryRowsSourceModel getSource() {
         return this.source;
     }
 
+    @NotNull
     public SQLQuerySymbolEntry getAlias() {
         return this.alias;
     }
 
+    @NotNull
     public List<SQLQuerySymbolEntry> getCorrelationColumNames() {
         return this.correlationColumNames;
     }
@@ -79,6 +87,9 @@ public class SQLQueryRowsCorrelatedSourceModel extends SQLQueryRowsSourceModel {
         return context;
     }
 
+    /**
+     * Associate correlated source column names symbols with its definition
+     */
     @NotNull
     public static SQLQueryDataContext prepareColumnsCorrelation(
         @NotNull SQLQueryDataContext context,

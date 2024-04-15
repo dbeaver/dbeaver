@@ -16,31 +16,39 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
-
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
-
+/**
+ * Describes a query part providing source (table, join, columns list, etc.)
+ */
 public abstract class SQLQueryRowsSourceModel extends SQLQueryModelContent {
+    @Nullable
     private SQLQueryDataContext givenDataContext = null;
+    @Nullable
     private SQLQueryDataContext resultDataContext = null;
 
-    public SQLQueryRowsSourceModel(@NotNull STMTreeNode syntaxNode, SQLQueryNodeModel ... subnodes) {
+    public SQLQueryRowsSourceModel(@NotNull STMTreeNode syntaxNode, @Nullable SQLQueryNodeModel ... subnodes) {
         super(syntaxNode.getRealInterval(), syntaxNode, subnodes);
     }
 
-    public SQLQueryRowsSourceModel(@NotNull Interval region, STMTreeNode syntaxNode, SQLQueryNodeModel ... subnodes) {
+    public SQLQueryRowsSourceModel(@NotNull Interval region, @NotNull STMTreeNode syntaxNode, @Nullable SQLQueryNodeModel ... subnodes) {
         super(region, syntaxNode, subnodes);
     }
     
+    @Nullable
     @Override
     public SQLQueryDataContext getGivenDataContext() {
         return this.givenDataContext;
     }
 
+    /**
+     * Returns result data context, if it has been resolved. Otherwise, throws UnsupportedOperationException.
+     */
     @NotNull
     public SQLQueryDataContext getResultDataContext() {
         if (this.resultDataContext == null) {
@@ -55,6 +63,9 @@ public abstract class SQLQueryRowsSourceModel extends SQLQueryModelContent {
         this.propagateContext(dataContext, recognitionContext);
     }
 
+    /**
+     * Propagate semantics context and establish relations through the query model
+     */
     @NotNull
     public final SQLQueryDataContext propagateContext(
         @NotNull SQLQueryDataContext context,

@@ -28,13 +28,18 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryExprType;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SourceResolutionResult;
 
+/**
+ * Describes column reference specified by column nae and optionally table name
+ */
 public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpression {
+    @Nullable
     private final SQLQueryQualifiedName tableName;
+    @NotNull
     private final SQLQuerySymbolEntry columnName;
-    
+    @Nullable
     private SQLQueryResultColumn column = null;
     
     public SQLQueryValueColumnReferenceExpression(@NotNull STMTreeNode syntaxNode, @NotNull SQLQuerySymbolEntry columnName) {
@@ -53,7 +58,8 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
         this.columnName = columnName;
     }
 
-    public @Nullable SQLQueryQualifiedName getTableName() {
+    @Nullable
+    public SQLQueryQualifiedName getTableName() {
         return this.tableName;
     }
 
@@ -62,12 +68,16 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
     public SQLQuerySymbol getColumnNameIfTrivialExpression() {
         return this.columnName.getSymbol();
     }
-    
+
+    @Nullable
     @Override
     public SQLQueryResultColumn getColumnIfTrivialExpression() {
         return this.column;
     }
 
+    /**
+     * Propagate semantics context and establish relations through the query model for column definition
+     */
     public static void propagateColumnDefinition(@NotNull SQLQuerySymbolEntry columnName, @Nullable SQLQueryResultColumn resultColumn, @NotNull SQLQueryRecognitionContext statistics) {
         // TODO consider ambiguity
         if (resultColumn != null) {
@@ -130,8 +140,9 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
     
     @Override
     public String toString() {
-        String name = this.tableName == null ? this.columnName.getName() 
-                : this.tableName.toIdentifierString() + "." + this.columnName.getName();
+        String name = this.tableName == null
+            ? this.columnName.getName()
+            : this.tableName.toIdentifierString() + "." + this.columnName.getName();
         String type = this.type == null ? "<NULL>" : this.type.toString();
         return "ColumnReference[" + name + ":" + type + "]";
     }

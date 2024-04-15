@@ -17,71 +17,36 @@
 package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
 
-import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * Describes Common Table Expression (CTE)
+ */
 public class SQLQueryRowsCteModel extends SQLQueryRowsSourceModel {
 
     private final boolean isRecursive;
+    @NotNull
     private final List<SQLQueryRowsCteSubqueryModel> subqueries = new ArrayList<>();
+    @NotNull
     private final SQLQueryRowsSourceModel resultQuery;
-
-    public static class SQLQueryRowsCteSubqueryModel extends SQLQueryRowsSourceModel {
-        public final SQLQuerySymbolEntry subqueryName;
-        public final List<SQLQuerySymbolEntry> columNames;
-        public final SQLQueryRowsSourceModel source;
-
-        public SQLQueryRowsCteSubqueryModel(
-            @NotNull STMTreeNode syntaxNode,
-            @NotNull SQLQuerySymbolEntry subqueryName,
-            @NotNull List<SQLQuerySymbolEntry> columNames,
-            @NotNull SQLQueryRowsSourceModel source
-        ) {
-            super(syntaxNode);
-            this.subqueryName = subqueryName;
-            this.columNames = columNames;
-            this.source = source;
-        }
-        
-        public void prepareAliasDefinition() {
-            this.subqueryName.getSymbol().setDefinition(this.subqueryName);
-            if (this.subqueryName.isNotClassified()) {
-                this.subqueryName.getSymbol().setSymbolClass(SQLQuerySymbolClass.TABLE_ALIAS);
-            }
-        }
-        
-        @NotNull
-        @Override
-        protected SQLQueryDataContext propagateContextImpl(
-            @NotNull SQLQueryDataContext context,
-            @NotNull SQLQueryRecognitionContext statistics
-        ) {
-            return context; // just apply given context 
-        }
-
-        @Nullable
-        @Override
-        protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
-            return visitor.visitRowsCteSubquery(this, node);
-        }
-    }
 
     public SQLQueryRowsCteModel(@NotNull STMTreeNode syntaxNode, boolean isRecursive, @NotNull SQLQueryRowsSourceModel resultQuery) {
         super(syntaxNode, resultQuery);
         this.isRecursive = isRecursive;
         this.resultQuery = resultQuery;
     }
-    
+
+    /**
+     * Add CTE subquery to the CTE model
+     */
     public void addSubquery(
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQuerySymbolEntry subqueryName,
@@ -93,6 +58,9 @@ public class SQLQueryRowsCteModel extends SQLQueryRowsSourceModel {
         super.registerSubnode(subquery);
     }
 
+    /**
+     * Get all subqueries of the CTE and CTE query itself
+     */
     @NotNull
     public List<SQLQueryRowsSourceModel> getAllQueries() {
         List<SQLQueryRowsSourceModel> queries = new ArrayList<>(this.subqueries.size() + 1);

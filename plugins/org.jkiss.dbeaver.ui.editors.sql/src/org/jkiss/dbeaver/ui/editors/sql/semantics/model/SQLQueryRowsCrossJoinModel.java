@@ -22,8 +22,16 @@ import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
+/**
+ * Describes cross join clause
+ */
 public class SQLQueryRowsCrossJoinModel extends SQLQueryRowsSetOperationModel {
-    public SQLQueryRowsCrossJoinModel(@NotNull Interval range, STMTreeNode syntaxNode, @NotNull SQLQueryRowsSourceModel left, @NotNull SQLQueryRowsSourceModel right) {
+    public SQLQueryRowsCrossJoinModel(
+        @NotNull Interval range,
+        @NotNull STMTreeNode syntaxNode,
+        @NotNull SQLQueryRowsSourceModel left,
+        @NotNull SQLQueryRowsSourceModel right
+    ) {
         super(range, syntaxNode, left, right);
     }
 

@@ -16,36 +16,37 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
-import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryCombinedContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
 import java.util.List;
 
-
+/**
+ * Describes UPDATE statement
+ */
 public class SQLQueryTableUpdateModel extends SQLQueryModelContent {
     @Nullable
     private final SQLQueryRowsSourceModel targetRows;
     @Nullable
-    private final List<SetClauseModel> setClauseList;
+    private final List<SQLQueryTableUpdateSetClauseModel> setClauseList;
     @Nullable
     private final SQLQueryRowsSourceModel sourceRows;
     @Nullable
     private final SQLQueryValueExpression whereClause;
     @Nullable
     private final SQLQueryValueExpression orderByClause;
-    
+    @Nullable
     private SQLQueryDataContext givenContext = null;
+    @Nullable
     private SQLQueryDataContext resultContext = null;
     
     public SQLQueryTableUpdateModel(
         @NotNull STMTreeNode syntaxNode,
         @Nullable SQLQueryRowsSourceModel targetRows,
-        @Nullable List<SetClauseModel> setClauseList,
+        @Nullable List<SQLQueryTableUpdateSetClauseModel> setClauseList,
         @Nullable SQLQueryRowsSourceModel sourceRows,
         @Nullable SQLQueryValueExpression whereClause,
         @Nullable SQLQueryValueExpression orderByClause
@@ -64,7 +65,7 @@ public class SQLQueryTableUpdateModel extends SQLQueryModelContent {
     }
 
     @Nullable
-    public List<SetClauseModel> getSetClauseList() {
+    public List<SQLQueryTableUpdateSetClauseModel> getSetClauseList() {
         return setClauseList;
     }
 
@@ -91,7 +92,7 @@ public class SQLQueryTableUpdateModel extends SQLQueryModelContent {
             targetContext = this.targetRows.propagateContext(context, statistics);
             
             if (this.setClauseList != null) {
-                for (SetClauseModel updateSetClauseModel : this.setClauseList) {
+                for (SQLQueryTableUpdateSetClauseModel updateSetClauseModel : this.setClauseList) {
                     // resolve target columns against target set
                     for (SQLQueryValueExpression valueExpression : updateSetClauseModel.targets) {
                         valueExpression.propagateContext(targetContext, statistics);
@@ -110,7 +111,7 @@ public class SQLQueryTableUpdateModel extends SQLQueryModelContent {
         }
         
         if (this.setClauseList != null) {
-            for (SetClauseModel setClauseModel : this.setClauseList) {
+            for (SQLQueryTableUpdateSetClauseModel setClauseModel : this.setClauseList) {
                 // resolve source value expressions against combined participating sets
                 for (SQLQueryValueExpression valueExpression : setClauseModel.sources) {
                     valueExpression.propagateContext(targetContext, statistics);
@@ -143,41 +144,5 @@ public class SQLQueryTableUpdateModel extends SQLQueryModelContent {
     @Override
     protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg) {
         return visitor.visitTableStatementUpdate(this, arg);
-    }
-
-    public static class SetClauseModel extends SQLQueryNodeModel {
-        @NotNull
-        public final List<SQLQueryValueExpression> targets;
-        @NotNull
-        public final List<SQLQueryValueExpression> sources;
-        @NotNull
-        public final String contents;
-
-        public SetClauseModel(
-            @NotNull STMTreeNode syntaxNode,
-            @NotNull List<SQLQueryValueExpression> targets,
-            @NotNull List<SQLQueryValueExpression> sources,
-            @NotNull String contents
-        ) {
-            super(syntaxNode.getRealInterval(), syntaxNode, SQLQueryCombinedContext.combineLists(targets, sources).toArray(SQLQueryValueExpression[]::new));
-            this.targets = targets;
-            this.sources = sources;
-            this.contents = contents;
-        }
-
-        @Override
-        protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg) {
-            return visitor.visitTableStatementUpdateSetClause(this, arg);
-        }
-
-        @Override
-        public SQLQueryDataContext getGivenDataContext() {
-            return this.sources.get(0).getGivenDataContext();
-        }
-
-        @Override
-        public SQLQueryDataContext getResultDataContext() {
-            return this.sources.get(0).getResultDataContext();
-        }
     }
 }

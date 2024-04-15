@@ -25,11 +25,16 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryExprType;
 
+/**
+ * Describes arrays
+ */
 public class SQLQueryValueIndexingExpression extends SQLQueryValueExpression {
 
     private static final Log log = Log.getLog(SQLQueryValueIndexingExpression.class);
-    
+
+    @NotNull
     private final SQLQueryValueExpression owner;
+    @NotNull
     private final boolean[] slicingDepthSpec;
     
     public SQLQueryValueIndexingExpression(

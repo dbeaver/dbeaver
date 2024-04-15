@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
 import org.antlr.v4.runtime.misc.Interval;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
@@ -26,12 +28,18 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class SQLQueryLexicalScope {
+    @Nullable
     private SQLQueryDataContext context = null;
-    private List<SQLQueryLexicalScopeItem> items = new ArrayList<>();
-    private List<STMTreeNode> syntaxNodes = new ArrayList<>();
-    
+    @NotNull
+    private final List<SQLQueryLexicalScopeItem> items = new ArrayList<>();
+    @NotNull
+    private final List<STMTreeNode> syntaxNodes = new ArrayList<>();
+    @Nullable
     private Interval interval = null;
 
+    /**
+     * Returns a text interval for this lexical scope
+     */
     public Interval getInterval() {
         if (this.interval == null) {
     
@@ -51,22 +59,35 @@ public class SQLQueryLexicalScope {
         return this.interval;
     }
 
+    /**
+     * Returns lexical scope context. If it is not set, then use context of the model node, from which the scope was obtained.
+     */
+    @Nullable
     public SQLQueryDataContext getContext() {
-        return this.context; // if it is not set, then use context of the model node, from which the scope was obtained
+        return this.context;
     }
     
-    public void setContext(SQLQueryDataContext context) {
+    public void setContext(@Nullable SQLQueryDataContext context) {
         this.context = context;
     }
-    
+
+    /**
+     * Register item in the lexical scope
+     */
     public void registerItem(SQLQueryLexicalScopeItem item) {
         this.items.add(item);
     }
-    
+
+    /**
+     * Register syntax node in the lexical scope
+     */
     public void registerSyntaxNode(STMTreeNode syntaxNode) {
         this.syntaxNodes.add(syntaxNode);
     }
-    
+
+    /**
+     * Find lexical scope item in the provided position in the source text
+     */
     public SQLQueryLexicalScopeItem findItem(int position) {
         return this.items.stream()
            .filter(t -> t.getSyntaxNode().getRealInterval().properlyContains(Interval.of(position, position)))

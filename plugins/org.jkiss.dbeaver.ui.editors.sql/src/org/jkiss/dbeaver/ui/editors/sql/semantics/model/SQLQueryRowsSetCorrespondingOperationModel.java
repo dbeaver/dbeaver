@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryExprType;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultColumn;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,12 +34,14 @@ import java.util.List;
  * Represents INTERSECT, UNION and EXCEPT operation model in the context of SQL query semantics
  */
 public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetOperationModel {
+    @NotNull
     private final List<SQLQuerySymbolEntry> correspondingColumnNames;
+    @NotNull
     private final SQLQueryRowsSetCorrespondingOperationKind kind;
 
     public SQLQueryRowsSetCorrespondingOperationModel(
         @NotNull Interval range,
-        STMTreeNode syntaxNode,
+        @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryRowsSourceModel left,
         @NotNull SQLQueryRowsSourceModel right,
         @NotNull List<SQLQuerySymbolEntry> correspondingColumnNames,
@@ -50,6 +52,7 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
         this.kind = kind;
     }
 
+    @NotNull
     public SQLQueryRowsSetCorrespondingOperationKind getKind() {
         return this.kind;
     }

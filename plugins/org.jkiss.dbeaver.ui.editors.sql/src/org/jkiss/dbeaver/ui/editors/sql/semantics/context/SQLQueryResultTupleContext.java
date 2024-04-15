@@ -37,31 +37,12 @@ import java.util.stream.Collectors;
 public class SQLQueryResultTupleContext extends SQLQuerySyntaxContext {
 
     private static final Log log = Log.getLog(SQLQueryResultTupleContext.class);
-    
-    public static class SQLQueryResultColumn {
-        public final SQLQuerySymbol symbol;
-        public final SQLQueryRowsSourceModel source;
-        public final DBSEntity realSource;
-        public final DBSEntityAttribute realAttr;
-        public final SQLQueryExprType type;
-        
-        public SQLQueryResultColumn(
-            @NotNull SQLQuerySymbol symbol,
-            @NotNull SQLQueryRowsSourceModel source,
-            @Nullable DBSEntity realSource,
-            @Nullable DBSEntityAttribute realAttr, 
-            @NotNull SQLQueryExprType type
-        ) {
-            this.symbol = symbol;
-            this.source = source;
-            this.realSource = realSource;
-            this.realAttr = realAttr;
-            this.type = type;
-        }   
-    }
-    
+    @NotNull
     private final List<SQLQueryResultColumn> columns;
+    @NotNull
     private final Set<DBSEntity> realSources;
+    
+
 
     public SQLQueryResultTupleContext(@NotNull SQLQueryDataContext parent, @NotNull List<SQLQueryResultColumn> columns) {
         super(parent);

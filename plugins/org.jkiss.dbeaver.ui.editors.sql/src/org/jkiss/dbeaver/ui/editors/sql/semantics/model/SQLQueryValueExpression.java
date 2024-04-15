@@ -24,23 +24,24 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryExprType;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultColumn;
 
 public abstract class SQLQueryValueExpression extends SQLQueryNodeModel {
 
     @NotNull
     protected SQLQueryExprType type = SQLQueryExprType.UNKNOWN;
-    
+    @Nullable
     protected SQLQueryDataContext dataContext = null;
 
-    public SQLQueryValueExpression(STMTreeNode syntaxNode, SQLQueryNodeModel ... subnodes) {
+    public SQLQueryValueExpression(@NotNull STMTreeNode syntaxNode, @Nullable SQLQueryNodeModel ... subnodes) {
         this(syntaxNode.getRealInterval(), syntaxNode, subnodes);
     }
 
-    public SQLQueryValueExpression(Interval region, STMTreeNode syntaxNode, SQLQueryNodeModel ... subnodes) {
+    public SQLQueryValueExpression(@NotNull Interval region, STMTreeNode syntaxNode, @Nullable SQLQueryNodeModel ... subnodes) {
         super(region, syntaxNode, subnodes);
     }
-    
+
+    @Nullable
     public String getExprContent() {
         return this.getSyntaxNode().getTextContent();
     }
@@ -60,16 +61,21 @@ public abstract class SQLQueryValueExpression extends SQLQueryNodeModel {
         return null;
     }
 
+    @Nullable
     @Override
     public SQLQueryDataContext getGivenDataContext() {
         return this.dataContext;
     }
-    
+
+    @Nullable
     @Override
     public SQLQueryDataContext getResultDataContext() {
         return this.dataContext;
     }
 
+    /**
+     *  Propagate semantics context and establish relations through the query model
+     */
     public final void propagateContext(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         this.dataContext = context;
         this.propagateContextImpl(context, statistics);

@@ -26,17 +26,22 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultColumn;
 
 import java.util.List;
 
+/**
+ * Describes natural join clause
+ */
 public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel {
+    @Nullable
     private final SQLQueryValueExpression condition;
+    @Nullable
     private final List<SQLQuerySymbolEntry> columsToJoin;
 
     public SQLQueryRowsNaturalJoinModel(
         @NotNull Interval range,
-        STMTreeNode syntaxNode,
+        @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryRowsSourceModel left,
         @NotNull SQLQueryRowsSourceModel right,
         @Nullable SQLQueryValueExpression condition
@@ -48,7 +53,7 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
 
     public SQLQueryRowsNaturalJoinModel(
         @NotNull Interval range,
-        STMTreeNode syntaxNode,
+        @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryRowsSourceModel left,
         @NotNull SQLQueryRowsSourceModel right,
         @Nullable List<SQLQuerySymbolEntry> columsToJoin
@@ -58,17 +63,22 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
         this.columsToJoin = columsToJoin;
     }
 
-    public @Nullable SQLQueryValueExpression getCondition() {
+    @Nullable
+    public SQLQueryValueExpression getCondition() {
         return condition;
     }
 
-    public @Nullable List<SQLQuerySymbolEntry> getColumsToJoin() {
+    @Nullable
+    public List<SQLQuerySymbolEntry> getColumsToJoin() {
         return columsToJoin;
     }
 
     @NotNull
     @Override
-    protected SQLQueryDataContext propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+    protected SQLQueryDataContext propagateContextImpl(
+        @NotNull SQLQueryDataContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
         SQLQueryDataContext left = this.left.propagateContext(context, statistics);
         SQLQueryDataContext right = this.right.propagateContext(context, statistics);
         if (this.columsToJoin != null) {

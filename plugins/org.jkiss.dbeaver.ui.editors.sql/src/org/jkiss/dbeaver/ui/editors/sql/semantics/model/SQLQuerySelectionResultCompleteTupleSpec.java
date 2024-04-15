@@ -20,33 +20,31 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryExprType;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultColumn;
+
+import java.util.stream.Stream;
 
 /**
- * Describes subquery
+ * Describes all columns of the table of a selection result
  */
-public class SQLQueryValueSubqueryExpression extends SQLQueryValueExpression {
-    @NotNull
-    private final SQLQueryRowsSourceModel source;
+public class SQLQuerySelectionResultCompleteTupleSpec extends SQLQuerySelectionResultSublistSpec {
 
-    public SQLQueryValueSubqueryExpression(@NotNull STMTreeNode syntaxNode, @NotNull SQLQueryRowsSourceModel source) {
-        super(syntaxNode, source);
-        this.source = source;
+    public SQLQuerySelectionResultCompleteTupleSpec(@NotNull SQLQuerySelectionResultModel resultModel, @NotNull STMTreeNode syntaxNode) {
+        super(resultModel, syntaxNode);
     }
 
     @NotNull
-    public SQLQueryRowsSourceModel getSource() {
-        return this.source;
-    }
-
     @Override
-    protected void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
-        this.source.propagateContext(context, statistics);
-        this.type = SQLQueryExprType.forScalarSubquery(this.source);
+    protected Stream<SQLQueryResultColumn> expand(
+        @NotNull SQLQueryDataContext context,
+        @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        return context.getColumnsList().stream();
     }
 
     @Override
     protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg) {
-        return visitor.visitValueSubqueryExpr(this, arg);
+        return visitor.visitSelectCompleteTupleSpec(this, arg);
     }
 }

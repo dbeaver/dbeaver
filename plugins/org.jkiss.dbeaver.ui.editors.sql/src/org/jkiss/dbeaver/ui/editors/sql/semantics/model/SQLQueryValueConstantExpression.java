@@ -16,18 +16,17 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
-import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryExprType;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
 
+/**
+ * Describes a constant expression in the query, like string or number
+ */
 public class SQLQueryValueConstantExpression extends SQLQueryValueExpression {
-    
+    @NotNull
     protected String valueString;
     
     public SQLQueryValueConstantExpression(@NotNull STMTreeNode syntaxNode, @NotNull String valueString, @NotNull SQLQueryExprType type) {
@@ -36,6 +35,7 @@ public class SQLQueryValueConstantExpression extends SQLQueryValueExpression {
         this.type = type;
     }
     
+    @NotNull
     public String getValueString() {
         return this.valueString;
     }
@@ -46,7 +46,7 @@ public class SQLQueryValueConstantExpression extends SQLQueryValueExpression {
     }
     
     @Override
-    protected <R, T> R applyImpl(SQLQueryNodeModelVisitor<T, R> visitor, T arg) {
+    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, T arg) {
         return visitor.visitValueConstantExpr(this, arg);
     }
 }

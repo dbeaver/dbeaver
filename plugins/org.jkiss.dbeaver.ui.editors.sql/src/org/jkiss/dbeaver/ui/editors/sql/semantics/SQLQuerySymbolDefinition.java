@@ -16,9 +16,15 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
-import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
+/**
+ *
+ */
 public interface SQLQuerySymbolDefinition {
-    @NotNull
+    /**
+     *
+     */
+    @Nullable
     SQLQuerySymbolClass getSymbolClass();
 }

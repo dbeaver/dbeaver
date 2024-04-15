@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
+/**
+ * Set operations
+ */
 public enum SQLQueryRowsSetCorrespondingOperationKind {
     INTERSECT,
     EXCEPT,

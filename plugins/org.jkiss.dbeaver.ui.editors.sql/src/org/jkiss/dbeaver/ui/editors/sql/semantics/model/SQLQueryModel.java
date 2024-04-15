@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
-import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
@@ -27,6 +26,9 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 import java.util.Collection;
 import java.util.HashSet;
 
+/**
+ * Query model for recognition
+ */
 public class SQLQueryModel extends SQLQueryNodeModel {
     @NotNull
     private final HashSet<SQLQuerySymbolEntry> symbolEntries;
@@ -53,23 +55,31 @@ public class SQLQueryModel extends SQLQueryNodeModel {
     public SQLQueryModelContent getQueryModel() {
         return this.queryContent;
     }
-    
+
+    @Nullable
     @Override
     public SQLQueryDataContext getGivenDataContext() {
         return this.queryContent == null ? null : this.queryContent.getGivenDataContext();
     }
-    
+
+    @Nullable
     @Override
     public SQLQueryDataContext getResultDataContext() {
         return this.queryContent == null ? null : this.queryContent.getResultDataContext();
     }
 
+    /**
+     * Propagate semantics context and establish relations through the query model
+     */
     public void propagateContext(@NotNull SQLQueryDataContext dataContext, @NotNull SQLQueryRecognitionContext recognitionContext) {
         if (this.queryContent != null) {
             this.queryContent.applyContext(dataContext, recognitionContext);
         }
     }
-    
+
+    /**
+     * Returns nested node of the query model for the specified offset in the source text
+     */
     public SQLQueryNodeModel findNodeContaining(int textOffset) {
         SQLQueryNodeModel node = this;
         SQLQueryNodeModel nested = node.findChildNodeContaining(textOffset); 

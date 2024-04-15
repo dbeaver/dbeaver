@@ -24,7 +24,11 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
 import java.util.List;
 
+/**
+ * Describes value expressions tree hierarchy
+ */
 public class SQLQueryValueFlattenedExpression extends SQLQueryValueExpression {
+    @NotNull
     private final List<SQLQueryValueExpression> operands;
 
     public SQLQueryValueFlattenedExpression(
@@ -35,6 +39,7 @@ public class SQLQueryValueFlattenedExpression extends SQLQueryValueExpression {
         this.operands = operands;
     }
 
+    @NotNull
     public List<SQLQueryValueExpression> getOperands() {
         return operands;
     }

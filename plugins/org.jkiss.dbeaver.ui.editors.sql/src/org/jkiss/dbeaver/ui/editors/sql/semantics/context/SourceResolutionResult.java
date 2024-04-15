@@ -20,12 +20,18 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsCteModel.SQLQueryRowsCteSubqueryModel;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsCteSubqueryModel;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsSourceModel;
 
+/**
+ * Describes the result of the query source resolution
+ */
 public class SourceResolutionResult {
+    @NotNull
     public final SQLQueryRowsSourceModel source;
+    @Nullable
     public final DBSEntity tableOrNull;
+    @Nullable
     public final SQLQuerySymbol aliasOrNull;
     public final boolean isCteSubquery;
 
@@ -40,21 +46,33 @@ public class SourceResolutionResult {
         this.isCteSubquery = source instanceof SQLQueryRowsCteSubqueryModel;
     }
 
+    /**
+     * Builds a new instance for a table by metadata without alias
+     */
     @NotNull
     public static SourceResolutionResult forRealTableByName(@NotNull SQLQueryRowsSourceModel source, @Nullable DBSEntity table) {
         return new SourceResolutionResult(source, table, null);
     }
 
+    /**
+     * Builds a new instance for a table by its alias
+     */
     @NotNull
     public static SourceResolutionResult forSourceByAlias(@NotNull SQLQueryRowsSourceModel source, @Nullable SQLQuerySymbol alias) {
         return new SourceResolutionResult(source, null, alias);
     }
 
+    /**
+     * Builds a new instance for a table from metadata with alias
+     */
     @NotNull
     public static SourceResolutionResult withRealTable(@NotNull SourceResolutionResult rr, @Nullable DBSEntity table) {
         return new SourceResolutionResult(rr.source, table, rr.aliasOrNull);
     }
 
+    /**
+     * Builds a new instance for a table by its name and alias
+     */
     @NotNull
     public static SourceResolutionResult withAlias(@NotNull SourceResolutionResult rr, @Nullable SQLQuerySymbol alias) {
         return new SourceResolutionResult(rr.source, rr.tableOrNull, alias);

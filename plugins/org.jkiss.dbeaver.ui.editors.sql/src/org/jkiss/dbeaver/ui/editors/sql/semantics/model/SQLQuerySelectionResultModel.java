@@ -16,27 +16,26 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
-import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryQualifiedName;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryExprType;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultColumn;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
+/**
+ * Describes the structure of the result of select clause
+ */
 public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
 
-    private final List<ResultSublistSpec> sublists;
+    @NotNull
+    private final List<SQLQuerySelectionResultSublistSpec> sublists;
+    @Nullable
     private SQLQueryDataContext dataContext = null;
 
     public SQLQuerySelectionResultModel(@NotNull STMTreeNode syntaxNode, int capacity) {
@@ -44,45 +43,66 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
         this.sublists = new ArrayList<>(capacity);
     }
 
-    public List<ResultSublistSpec> getSublists() {
+    @NotNull
+    public List<SQLQuerySelectionResultSublistSpec> getSublists() {
         return this.sublists;
     }
-    
+
+    @Nullable
     @Override
     public SQLQueryDataContext getGivenDataContext() {
         return this.dataContext;
     }
-    
+
+    @Nullable
     @Override
     public SQLQueryDataContext getResultDataContext() {
         return this.dataContext;
     }
     
-    private void registerSublist(ResultSublistSpec sublist) {
+    private void registerSublist(SQLQuerySelectionResultSublistSpec sublist) {
         this.sublists.add(sublist);
         super.registerSubnode(sublist);
     }
 
+    /**
+     * Add single column to the selection result model
+     */
     public void addColumnSpec(@NotNull STMTreeNode syntaxNode, @NotNull SQLQueryValueExpression valueExpression) {
-        this.registerSublist(new ColumnSpec(syntaxNode, valueExpression)); 
+        this.registerSublist(new SQLQuerySelectionResultColumnSpec(this, syntaxNode, valueExpression));
     }
 
+
+    /**
+     * Add single column with alias to the selection result model
+     */
     public void addColumnSpec(
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryValueExpression valueExpression,
         @Nullable SQLQuerySymbolEntry alias
     ) {
-        this.registerSublist(new ColumnSpec(syntaxNode, valueExpression, alias));
+        this.registerSublist(new SQLQuerySelectionResultColumnSpec(this, syntaxNode, valueExpression, alias));
     }
 
+
+    /**
+     * Add several columns of some table to the selection result model
+     */
     public void addTupleSpec(@NotNull STMTreeNode syntaxNode, @NotNull SQLQueryValueTupleReferenceExpression tupleRef) {
-        this.registerSublist(new TupleSpec(syntaxNode, tupleRef));
+        this.registerSublist(new SQLQuerySelectionResultTupleSpec(this, syntaxNode, tupleRef));
     }
 
+    /**
+     * Add all columns of some table to the selection result model
+     */
     public void addCompleteTupleSpec(@NotNull STMTreeNode syntaxNode) {
-        this.registerSublist(new CompleteTupleSpec(syntaxNode));
+        this.registerSublist(new SQLQuerySelectionResultCompleteTupleSpec(this, syntaxNode));
     }
 
+    /**
+     * Prepare a list of result columns
+     */
+    @NotNull
     public List<SQLQueryResultColumn> expandColumns(
         @NotNull SQLQueryDataContext context,
         @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
@@ -92,164 +112,9 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
         return this.sublists.stream().flatMap(s -> s.expand(context, rowsSourceModel, statistics)).collect(Collectors.toList());
     }
 
+    @Nullable
     @Override
     protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
         return visitor.visitSelectionResult(this, node);
-    }
-
-    public abstract class ResultSublistSpec extends SQLQueryNodeModel {
-
-        protected ResultSublistSpec(STMTreeNode syntaxNode) {
-            super(syntaxNode.getRealInterval(), syntaxNode);
-        }
-        
-        @Override
-        public SQLQueryDataContext getGivenDataContext() {
-            return SQLQuerySelectionResultModel.this.dataContext;
-        }
-        
-        @Override
-        public SQLQueryDataContext getResultDataContext() {
-            return SQLQuerySelectionResultModel.this.dataContext;
-        }
-
-        @NotNull
-        protected abstract Stream<SQLQueryResultColumn> expand(
-            @NotNull SQLQueryDataContext context,
-            @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
-            @NotNull SQLQueryRecognitionContext statistics
-        );
-    }
-
-    public class ColumnSpec extends ResultSublistSpec {
-        private final SQLQueryValueExpression valueExpression;
-        private final SQLQuerySymbolEntry alias;
-
-        public ColumnSpec(@NotNull STMTreeNode syntaxNode, @NotNull SQLQueryValueExpression valueExpression) {
-            this(syntaxNode, valueExpression, null);
-        }
-
-        public ColumnSpec(@NotNull STMTreeNode syntaxNode, @NotNull SQLQueryValueExpression valueExpression, @Nullable SQLQuerySymbolEntry alias) {
-            super(syntaxNode);
-            this.valueExpression = valueExpression;
-            this.alias = alias;
-            
-            this.registerSubnode(valueExpression);
-        }
-
-        @NotNull
-        public SQLQueryValueExpression getValueExpression() {
-            return this.valueExpression;
-        }
-
-        @Nullable
-        public SQLQuerySymbolEntry getAlias() {
-            return this.alias;
-        }
-
-        @NotNull
-        @Override
-        protected Stream<SQLQueryResultColumn> expand(
-            @NotNull SQLQueryDataContext context,
-            @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
-            @NotNull SQLQueryRecognitionContext statistics
-        ) {
-            this.valueExpression.propagateContext(context, statistics);
-
-            SQLQuerySymbol columnName;
-            SQLQueryResultColumn underlyingColumn;
-            if (this.alias != null) {
-                if (this.alias.isNotClassified()) {
-                    columnName = this.alias.getSymbol();
-                    columnName.setDefinition(this.alias);
-                    columnName.setSymbolClass(SQLQuerySymbolClass.COLUMN_DERIVED);
-                } else {
-                    return Stream.empty();
-                }
-                underlyingColumn = null;
-            } else {
-                columnName = this.valueExpression.getColumnNameIfTrivialExpression();
-                underlyingColumn = this.valueExpression.getColumnIfTrivialExpression();
-                if (columnName == null) {
-                    columnName = new SQLQuerySymbol("?");
-                }
-            }
-
-            SQLQueryExprType type = valueExpression.getValueType();
-            return Stream.of(underlyingColumn == null
-                ? new SQLQueryResultColumn(columnName, rowsSourceModel, null, null, type)
-                : new SQLQueryResultColumn(columnName, rowsSourceModel, underlyingColumn.realSource, underlyingColumn.realAttr, type)
-            );
-        }
-
-        @Override
-        protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
-            return visitor.visitSelectColumnSpec(this, node);
-        }
-    }
-
-    public class TupleSpec extends ResultSublistSpec {
-        private final SQLQueryValueTupleReferenceExpression tupleReference;
-        
-        public TupleSpec(STMTreeNode syntaxNode, @NotNull SQLQueryValueTupleReferenceExpression tupleReference) {
-            super(syntaxNode);
-            this.tupleReference = tupleReference;
-            
-            this.registerSubnode(tupleReference);
-        }
-
-        @NotNull
-        public SQLQueryQualifiedName getTableName() {
-            return this.tupleReference.getTableName();
-        }
-
-        @Nullable
-        public SQLQueryRowsSourceModel getTupleSource() {
-            return this.tupleReference.getTupleSource();
-        }
-
-        @NotNull
-        @Override
-        protected Stream<SQLQueryResultColumn> expand(
-            @NotNull SQLQueryDataContext context,
-            @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
-            @NotNull SQLQueryRecognitionContext statistics
-        ) {
-            this.tupleReference.propagateContext(context, statistics);
-            
-            SQLQueryRowsSourceModel tupleSource = this.tupleReference.getTupleSource();
-            if (tupleSource != null) {
-                return tupleSource.getResultDataContext().getColumnsList().stream();
-            } else {
-                return Stream.empty();
-            }
-        }
-
-        @Override
-        protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
-            return visitor.visitSelectTupleSpec(this, node);
-        }
-    }
-
-    public class CompleteTupleSpec extends ResultSublistSpec {
-
-        public CompleteTupleSpec(@NotNull STMTreeNode syntaxNode) {
-            super(syntaxNode);
-        }
-
-        @NotNull
-        @Override
-        protected Stream<SQLQueryResultColumn> expand(
-            @NotNull SQLQueryDataContext context,
-            @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
-            @NotNull SQLQueryRecognitionContext statistics
-        ) {
-            return context.getColumnsList().stream();
-        }
-
-        @Override
-        protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg) {
-            return visitor.visitSelectCompleteTupleSpec(this, arg);
-        }
     }
 }

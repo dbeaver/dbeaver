@@ -37,6 +37,7 @@ public class SQLConstants {
     public static final String SL_COMMENT = "--";
     public static final String ASTERISK = "*";
     public static final String QUESTION = "?";
+    public static final String DOT = ".";
 
     public static final String KEYWORD_SELECT = "SELECT";
     public static final String KEYWORD_INSERT = "INSERT";
@@ -49,6 +50,8 @@ public class SQLConstants {
     public static final String KEYWORD_FROM = "FROM";
     public static final String KEYWORD_INTO = "INTO";
     public static final String KEYWORD_JOIN = "JOIN";
+    public static final String KEYWORD_CROSS_JOIN = "CROSS JOIN";
+    public static final String KEYWORD_NATURAL_JOIN = "NATURAL JOIN";
     public static final String KEYWORD_WHERE = "WHERE";
     public static final String KEYWORD_SET = "SET";
     public static final String KEYWORD_ON = "ON";
@@ -60,6 +63,8 @@ public class SQLConstants {
     public static final String KEYWORD_IN = "IN";
     public static final String KEYWORD_VALUES = "VALUES";
     public static final String KEYWORD_ORDER_BY = "ORDER BY";
+    public static final String KEYWORD_GROUP_BY = "GROUP BY";
+    public static final String KEYWORD_HAVING = "HAVING";
 
     public static final String KEYWORD_LIKE = "LIKE";
     public static final String KEYWORD_ILIKE = "ILIKE";
@@ -75,6 +80,9 @@ public class SQLConstants {
     public static final String KEYWORD_CASE = "CASE";
     
     public static final String KEYWORD_QUALIFY = "QUALIFY";
+
+    public static final String KEYWORD_AS = "AS";
+    public static final String KEYWORD_USING = "USING";
 
     public static final String DATA_TYPE_VARCHAR = "varchar";
     public static final String DATA_TYPE_BIGINT = "BIGINT";

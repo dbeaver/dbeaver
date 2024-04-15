@@ -26,7 +26,9 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
 import java.util.Collections;
 
-
+/**
+ * Describes DELETE statement
+ */
 public class SQLQueryTableDeleteModel extends SQLQueryTableStatementModel {
 
     @Nullable

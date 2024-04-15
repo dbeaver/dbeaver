@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryLexicalScope;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
@@ -27,34 +29,49 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Represents a query model part in the source text. Connects model with syntax tree and text region.
+ */
 public abstract class SQLQueryNodeModel {
 
+    @NotNull
     private final Interval region;
+    @NotNull
     private final STMTreeNode syntaxNode;
-    private List<SQLQueryNodeModel> subnodes = null; // TODO validate that subnodes are being registeger correctly for all nodes 
+    @Nullable
+    private List<SQLQueryNodeModel> subnodes; // TODO validate that subnodes are being registeger correctly for all nodes
+    @Nullable
     private List<SQLQueryLexicalScope> lexicalScopes  = null;
 
     
-    protected SQLQueryNodeModel(@NotNull Interval region, STMTreeNode syntaxNode, SQLQueryNodeModel ... subnodes) {
+    protected SQLQueryNodeModel(@NotNull Interval region, @NotNull STMTreeNode syntaxNode, @Nullable SQLQueryNodeModel ... subnodes) {
         this.region = region;
         this.syntaxNode = syntaxNode;
         
         if (subnodes == null || subnodes.length == 0) {
             this.subnodes = null;
         } else {
-            this.subnodes = Stream.of(subnodes).filter(Objects::nonNull).collect(Collectors.toCollection(() -> new ArrayList<>(subnodes.length)));
+            this.subnodes = Stream.of(subnodes)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toCollection(() -> new ArrayList<>(subnodes.length)));
             this.subnodes.sort(Comparator.comparingInt(n -> n.region.a));
         }
     }
 
-    public void registerLexicalScope(SQLQueryLexicalScope lexicalScope) {
+    /**
+     * Register lexical scopes, if they haven't been registered yet
+     */
+    public void registerLexicalScope(@NotNull SQLQueryLexicalScope lexicalScope) {
         List<SQLQueryLexicalScope> scopes = this.lexicalScopes;
         if (scopes == null) {
             this.lexicalScopes = scopes = new ArrayList<>();
         }
         scopes.add(lexicalScope);
     }
-    
+
+    /**
+     * Returns lexical scope for the text part in the corresponding position
+     */
     public SQLQueryLexicalScope findLexicalScope(int position) {
         List<SQLQueryLexicalScope> scopes = this.lexicalScopes;
         if (scopes != null) {
@@ -69,7 +86,7 @@ public abstract class SQLQueryNodeModel {
         return null;
     }
 
-    protected void registerSubnode(SQLQueryNodeModel subnode) {
+    protected void registerSubnode(@NotNull SQLQueryNodeModel subnode) {
         this.subnodes = CommonUtils.orderedInsert(this.subnodes, n -> n.region.a, subnode, Comparator.comparingInt(x -> x));
     }  
 
@@ -78,15 +95,19 @@ public abstract class SQLQueryNodeModel {
         return this.region;
     }
     
+    @NotNull
     public final STMTreeNode getSyntaxNode() {
         return this.syntaxNode;
     }
 
+    /**
+     * Apply the visitor
+     */
     public final <T, R> R apply(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg) {
         return this.applyImpl(visitor, arg);
     }
 
-    protected abstract <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg);
+    protected abstract <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, T arg);
     
     protected SQLQueryNodeModel findChildNodeContaining(int position) { // TODO check it
         if (this.subnodes != null) {
@@ -122,16 +143,29 @@ public abstract class SQLQueryNodeModel {
         }
         return null;
     }
-    
+
+    /**
+     * Get initial data context
+     */
+    @Nullable
     public abstract SQLQueryDataContext getGivenDataContext();
-    
+
+    /**
+     * Get result data context
+     */
+    @Nullable
     public abstract SQLQueryDataContext getResultDataContext();
-    
+
+    /**
+     * Debugging stuff
+     */
     public String collectScopesHierarchyDebugView() {
         interface ITextBlock {
             Interval getInterval();
+
             String prepareText(int widthToFill);
         }
+
         class ColumnInfo {
             public final int position;
             public int width = 0;
@@ -140,6 +174,7 @@ public abstract class SQLQueryNodeModel {
                 this.position = position;
             }
         }
+
         class TextBlocksColumnsMap {
             private final TreeMap<Integer, ColumnInfo> columns = new TreeMap<>();
             
@@ -150,8 +185,8 @@ public abstract class SQLQueryNodeModel {
             public void register(int position) {
                 this.columns.put(position, new ColumnInfo(position));
             }
-            
         }
+
         class TextBlockInfo {
             public final ITextBlock block;
             public final int contentWidth;
@@ -162,6 +197,7 @@ public abstract class SQLQueryNodeModel {
                 this.contentWidth = contentWidth;
             }
         }
+
         class TextBlocksLine {
             private final List<TextBlockInfo> blocks = new ArrayList<>();
             
@@ -170,10 +206,10 @@ public abstract class SQLQueryNodeModel {
             }
             
             public void collectColumns(TextBlocksColumnsMap columns) {
-                for (var b: this.blocks) {
+                for (var b : this.blocks) {
                     Interval r = b.block.getInterval();
                     columns.register(r.a); // 7
-                     columns.register((r.b + r.a) / 2);
+                    columns.register((r.b + r.a) / 2);
                     columns.register(r.b + 1); // 8
                     b.columns = columns.columns.subMap(r.a, true, r.b + 1, false); // [7,8)
                     System.out.println(r + " : " +  b.columns.size());
@@ -181,7 +217,7 @@ public abstract class SQLQueryNodeModel {
             }
             
             public void adjustComlumns() {
-                for (var b: this.blocks) {
+                for (var b : this.blocks) {
                     // TODO b.columns.values().stream().mapToInt(c -> c.width).sum() >= b.contentWidth
                     var currWidth = b.columns.values().stream().mapToInt(c -> c.width).sum();
                     var delta = b.contentWidth - currWidth;
@@ -189,7 +225,7 @@ public abstract class SQLQueryNodeModel {
                         System.out.println("adjusting " + currWidth + " to " + b.contentWidth);
                         var eqstep = delta / b.columns.size();
                         var rest = b.contentWidth;
-                        for (var c: b.columns.values()) {
+                        for (var c : b.columns.values()) {
                             if (c.width < eqstep) {
                                 c.width = eqstep;
                                 System.out.println("  column " + c.position + " for " + c.width);
@@ -214,7 +250,7 @@ public abstract class SQLQueryNodeModel {
             public void collectContents(StringBuilder sb, TextBlocksColumnsMap columns) {
                 sb.append("|");
                 var currColumn = columns.columns.firstEntry().getValue();
-                for (var b: this.blocks) {
+                for (var b : this.blocks) {
                     var headColumnPos = b.columns.firstEntry().getValue().position;
                     if (currColumn.position < headColumnPos) {
                         int indent = columns.columns.subMap(0, true, headColumnPos, false).values().stream().mapToInt(c -> c.width).sum();
@@ -228,19 +264,20 @@ public abstract class SQLQueryNodeModel {
                 }
             }
         }
+
         class TextBlocks {
             private final List<TextBlocksLine> lines = new ArrayList<>();
             
             public String getContents() {
                 TextBlocksColumnsMap columnsMap = new TextBlocksColumnsMap();
-                for (var l: this.lines) {
+                for (var l : this.lines) {
                     l.collectColumns(columnsMap);
                 }
-                for (var l: this.lines) {
+                for (var l : this.lines) {
                     l.adjustComlumns();
                 }
                 StringBuilder sb = new StringBuilder();
-                for (var l: this.lines) {
+                for (var l : this.lines) {
                     l.collectContents(sb, columnsMap);
                     sb.append(System.lineSeparator());
                 }
@@ -253,6 +290,7 @@ public abstract class SQLQueryNodeModel {
                 return line;
             }
         }
+
         class Range implements ITextBlock {
             public final String label;
             public final Interval interval;
@@ -274,14 +312,11 @@ public abstract class SQLQueryNodeModel {
                 int space = Math.max(0,  widthToFill - minWidth); 
                 int space1 = space / 2;
                 int space2 = space - space1;
-                
-                StringBuilder sb = new StringBuilder();
-                sb.append(a);
-                sb.append(" ".repeat(1 + space1));
-                sb.append(this.label);
-                sb.append(" ".repeat(1 + space2));
-                sb.append(b);
-                return sb.toString();
+                return a +
+                    " ".repeat(1 + space1) +
+                    this.label +
+                    " ".repeat(1 + space2) +
+                    b;
             }
             
             public List<Range> createSubrangesLayer() {
@@ -296,10 +331,10 @@ public abstract class SQLQueryNodeModel {
 
             private int collectTextInternal(TextBlocks text, TextBlocksLine line) {
                 int width = this.prepareText(0).length();
-                for (List<Range> rr: this.subranges) {
+                for (List<Range> rr : this.subranges) {
                     TextBlocksLine l = text.appendLine();
                     int lineWidth = rr.size() - 1;
-                    for (Range r: rr) {
+                    for (Range r : rr) {
                         lineWidth += r.collectTextInternal(text, l);
                     }
                     width = Math.max(lineWidth, width);
@@ -307,31 +342,41 @@ public abstract class SQLQueryNodeModel {
                 line.add(this, width);
                 return width;
             }
-        };
+        }
         
         var local = new Object() {
             public Range collectModel(SQLQueryNodeModel node) {
-                var range = new Range(node.getClass().getSimpleName() + ": " + node.getGivenDataContext().getClass().getSimpleName(), node.getInterval());
-                if (node.lexicalScopes != null && node.lexicalScopes.size() > 0) {
-                    List<Range> layer = range.createSubrangesLayer();
-                    for (var s: node.lexicalScopes) {
-                        layer.add(new Range("lexical: " + s.getContext().getClass().getSimpleName(), s.getInterval()));
+                if (node.getGivenDataContext() != null) {
+                    var range = new Range(
+                        node.getClass().getSimpleName() + ": " + node.getGivenDataContext().getClass().getSimpleName(),
+                        node.getInterval()
+                    );
+                    if (node.lexicalScopes != null && node.lexicalScopes.size() > 0) {
+                        List<Range> layer = range.createSubrangesLayer();
+                        for (var s : node.lexicalScopes) {
+                            if (s.getContext() != null) {
+                                layer.add(new Range("lexical: " + s.getContext().getClass().getSimpleName(), s.getInterval()));
+                            }
+                        }
                     }
+                    if (node.subnodes != null && node.subnodes.size() > 0) {
+                        List<Range> layer = range.createSubrangesLayer();
+                        for (var n : node.subnodes) {
+                            layer.add(collectModel(n));
+                        }
+                    }
+                    return range;
                 }
-                if (node.subnodes != null && node.subnodes.size() > 0) {
-                    List<Range> layer = range.createSubrangesLayer();
-                    for (var n: node.subnodes) {
-                        layer.add(collectModel(n));
-                    }    
-                }
-                return range;
+                return null;
             }
         };
         
         Range root = local.collectModel(this);
         
         TextBlocks text = new TextBlocks();
-        root.collectText(text);
+        if (root != null) {
+            root.collectText(text);
+        }
         
         return text.getContents();
     }

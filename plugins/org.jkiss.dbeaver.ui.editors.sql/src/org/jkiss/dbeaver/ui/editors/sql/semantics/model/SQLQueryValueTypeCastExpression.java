@@ -16,20 +16,17 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
-
-import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolClass;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryExprType;
 
+/**
+ * Describes type cast expression
+ */
 public class SQLQueryValueTypeCastExpression extends SQLQueryValueExpression {
 
     @NotNull
@@ -57,12 +54,6 @@ public class SQLQueryValueTypeCastExpression extends SQLQueryValueExpression {
         return this.value;
     }
 
-    @Nullable
-    @Override
-    public SQLQuerySymbol getColumnNameIfTrivialExpression() {
-        return null;
-    }
-    
     @Override
     protected void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         this.value.propagateContext(context, statistics);
