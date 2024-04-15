@@ -20,9 +20,11 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.swt.SWT;
+import org.eclipse.jface.window.Window;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.internal.ConfigurationInfo;
 import org.jkiss.code.NotNull;
@@ -35,12 +37,16 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
+import org.jkiss.dbeaver.ui.controls.TextWithOpen;
+import org.jkiss.dbeaver.ui.controls.TextWithOpenFolder;
+import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.dialogs.MessageBoxBuilder;
 import org.jkiss.dbeaver.ui.dialogs.Reply;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StandardConstants;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -64,11 +70,13 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
     @Nullable
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        File archive = getArchive(event);
-        if (archive == null) {
-            log.trace("User cancelled path picker dialog");
+        CollectDiagnosticInfoDialog dialog = new CollectDiagnosticInfoDialog(event);
+        int returnCode = dialog.open();
+        if (returnCode != Window.OK) {
+            log.trace("User cancelled %s".formatted(CollectDiagnosticInfoDialog.class.getName()));
             return null;
         }
+        File archive = new File(dialog.getOutputFolder(), "dbeaver-diagnostic-info-%d.zip".formatted(System.currentTimeMillis()));
         if (archive.exists()) {
             // Happens once in a blue moon
             log.warn("File %s already exists".formatted(archive));
@@ -95,18 +103,6 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
         UIUtils.asyncExec(() -> ShellUtils.showInSystemExplorer(archive));
 
         return null;
-    }
-
-    @Nullable
-    private static File getArchive(ExecutionEvent event) {
-        var dialog = new DirectoryDialog(HandlerUtil.getActiveShell(event), SWT.SAVE);
-        dialog.setFilterPath(System.getProperty("user.home"));
-        dialog.setText(CoreApplicationMessages.collect_diagnostic_info_pick_path_title);
-        String response = dialog.open();
-        if (response == null) {
-            return null;
-        }
-        return new File(response, "dbeaver-diagnostic-info-%d.zip".formatted(System.currentTimeMillis()));
     }
 
     private static void showError() {
@@ -172,5 +168,76 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
         String linkToDocs = HelpUtils.getHelpExternalReference("Log-files");
         String href = "<a href=\"" + linkToDocs + "\">" + text + "</a>";
         UIUtils.createInfoLink(parent, href, () -> ShellUtils.launchProgram(linkToDocs));
+    }
+
+    private static final class CollectDiagnosticInfoDialog extends BaseDialog {
+        @Nullable
+        private TextWithOpen textWithOpen;
+        @Nullable
+        private File outputFolder;
+
+        private CollectDiagnosticInfoDialog(ExecutionEvent event) {
+            super(HandlerUtil.getActiveShell(event), CoreApplicationMessages.collect_diagnostic_info_pick_path_title, null);
+        }
+
+        @Override
+        protected Composite createDialogArea(Composite parent) {
+            Composite dialogArea = super.createDialogArea(parent);
+            dialogArea = UIUtils.createComposite(dialogArea, 1);
+            dialogArea.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+            Composite outputFolderPickerComposite = UIUtils.createComposite(dialogArea, 2);
+            outputFolderPickerComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+            UIUtils.createControlLabel(outputFolderPickerComposite, CoreApplicationMessages.collect_diagnostic_info_pick_path_label);
+            textWithOpen = new TextWithOpenFolder(
+                outputFolderPickerComposite,
+                CoreApplicationMessages.collect_diagnostic_info_pick_path_title
+            );
+            textWithOpen.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            String userHome = System.getProperty(StandardConstants.ENV_USER_HOME);
+            if (userHome != null) {
+                textWithOpen.setText(userHome);
+            } else {
+                enableOk(false);
+            }
+            Text textControl = textWithOpen.getTextControl();
+            textControl.addModifyListener(event -> {
+                File file = new File(textControl.getText());
+                enableOk(file.isDirectory());
+            });
+
+            // Warning about potentially sensitive data
+            UIUtils.createWarningLabel(
+                dialogArea,
+                CoreApplicationMessages.collect_diagnostic_info_pick_path_warning,
+                GridData.FILL_HORIZONTAL,
+                1
+            );
+
+            return dialogArea;
+        }
+
+        private void enableOk(boolean enable) {
+            Button okButton = getButton(OK);
+            if (okButton != null) {
+                okButton.setEnabled(enable);
+            }
+        }
+
+        @Override
+        protected void okPressed() {
+            if (textWithOpen != null) {
+                String outputFolderPathString = textWithOpen.getText();
+                if (!CommonUtils.isEmpty(outputFolderPathString)) {
+                    outputFolder = new File(outputFolderPathString);
+                }
+            }
+            super.okPressed();
+        }
+
+        @Nullable
+        private File getOutputFolder() {
+            return outputFolder;
+        }
     }
 }
