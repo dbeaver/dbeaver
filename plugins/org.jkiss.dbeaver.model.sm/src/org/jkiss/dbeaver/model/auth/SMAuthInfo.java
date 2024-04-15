@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.security.user.SMAuthPermissions;
 
 import java.util.Map;
 
-public class SMAuthInfo {
+public class SMAuthInfo { //create flag
     @NotNull
     private final SMAuthStatus authStatus;
     @Nullable
@@ -56,6 +56,7 @@ public class SMAuthInfo {
     private final SMAuthPermissions authPermissions;
 
     private final boolean mainAuth;
+    private final boolean forceSessionsLogout;
 
     private SMAuthInfo(
         @NotNull SMAuthStatus authStatus,
@@ -68,7 +69,8 @@ public class SMAuthInfo {
         @Nullable String smRefreshToken,
         @Nullable String authRole,
         @Nullable SMAuthPermissions authPermissions,
-        boolean mainAuth
+        boolean mainAuth,
+        boolean forceSessionsLogout
     ) {
         this.authStatus = authStatus;
         this.error = error;
@@ -81,6 +83,7 @@ public class SMAuthInfo {
         this.authRole = authRole;
         this.authPermissions = authPermissions;
         this.mainAuth = mainAuth;
+        this.forceSessionsLogout = forceSessionsLogout;
     }
 
     public static SMAuthInfo expired(
@@ -233,6 +236,7 @@ public class SMAuthInfo {
         private String authRole;
         private SMAuthPermissions authPermissions;
         private boolean mainAuth;
+        private boolean forceSessionsLogout;
 
         private Builder() {
         }
@@ -292,6 +296,11 @@ public class SMAuthInfo {
             return this;
         }
 
+        public Builder serForceSessionsLogout(boolean mainAuth) {
+            this.mainAuth = mainAuth;
+            return this;
+        }
+
         public SMAuthInfo build() {
             return new SMAuthInfo(
                 authStatus,
@@ -304,7 +313,8 @@ public class SMAuthInfo {
                 smRefreshToken,
                 authRole,
                 authPermissions,
-                mainAuth
+                mainAuth,
+                forceSessionsLogout
             );
         }
     }
