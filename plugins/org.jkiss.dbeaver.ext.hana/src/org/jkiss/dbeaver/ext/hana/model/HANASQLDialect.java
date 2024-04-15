@@ -172,13 +172,14 @@ public class HANASQLDialect extends GenericSQLDialect implements TPRuleProvider 
     public String getColumnTypeModifiers(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject column,
             @NotNull String typeName, @NotNull DBPDataKind dataKind) {
         String ucTypeName = CommonUtils.notEmpty(typeName).toUpperCase(Locale.ENGLISH);
-        if ("REAL_VECTOR".equals(ucTypeName)) {
+        if (HANAConstants.DATATYPENAME_REAL_VECTOR.equals(ucTypeName)) {
             long dim = column.getMaxLength();
             if ((dim > 0) && (dim <= 65000)) {
                 return "(" + Long.toString(dim) + ")";
             }
             return "";
-        } else if (("ST_POINT".equals(ucTypeName) || "ST_GEOMETRY".equals(ucTypeName))
+        } else if ((HANAConstants.DATATYPENAME_ST_POINT.equals(ucTypeName)
+                || HANAConstants.DATATYPENAME_ST_GEOMETRY.equals(ucTypeName))
                 && (column instanceof HANATableColumn)) {
             HANATableColumn hanaColumn = (HANATableColumn) column;
             try {

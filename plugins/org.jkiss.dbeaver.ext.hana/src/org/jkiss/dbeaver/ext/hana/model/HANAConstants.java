@@ -27,4 +27,6 @@ public class HANAConstants {
 
     // Data type names
     public static final String DATATYPENAME_REAL_VECTOR = "REAL_VECTOR";
+    public static final String DATATYPENAME_ST_GEOMETRY = "ST_GEOMETRY";
+    public static final String DATATYPENAME_ST_POINT = "ST_POINT";
 }
