@@ -234,6 +234,12 @@ public class AITranslateHandler extends AbstractHandler {
                 if (query != null) {
                     offset = query.getOffset();
                     length = query.getLength();
+                    // Trim trailing semicolon if needed
+                    if (length > 0 && !query.getText().endsWith(";") && !completion.isEmpty()) {
+                        if (completion.charAt(completion.length() - 1) == ';') {
+                            completion.setLength(completion.length() - 1);
+                        }
+                    }
                 }
                 document.replace(
                     offset,

@@ -44,6 +44,12 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
         @NotNull IAIFormatter formatter
     ) throws DBException {
         String result = requestCompletion(monitor, context, List.of(message), formatter, false);
+        if (result == null) {
+            return Collections.emptyList();
+        }
+        // Remove empty lines
+        result = result.replaceAll("\n\n", "\n");
+
         DAICompletionResponse response = createCompletionResponse(context, result);
         return Collections.singletonList(response);
     }
