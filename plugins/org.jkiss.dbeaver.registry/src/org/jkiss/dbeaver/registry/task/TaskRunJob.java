@@ -63,7 +63,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
     private DBRProgressMonitor activeMonitor;
     private DBTTaskRunStatus taskRunStatus = new DBTTaskRunStatus();
 
-    private long startTime;
+    private long taskStartTime;
     private long elapsedTime;
     private Throwable taskError;
 
@@ -161,14 +161,14 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
 
         @Override
         public void taskStarted(@Nullable DBTTask task) {
-            startTime = System.currentTimeMillis();
+            taskStartTime = System.currentTimeMillis();
             parent.taskStarted(task);
         }
 
         @Override
         public void taskFinished(@Nullable DBTTask task, @Nullable Object result, @Nullable Throwable error, @Nullable Object settings) {
             parent.taskFinished(task, result, error, settings);
-            elapsedTime = System.currentTimeMillis() - startTime;
+            elapsedTime = System.currentTimeMillis() - taskStartTime;
             taskError = error;
         }
 
