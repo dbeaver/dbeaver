@@ -51,7 +51,7 @@ public class BaseAuthDialog extends BaseDialog implements BlockingPopupDialog {
         super(parentShell, title, DBIcon.TREE_USER);
         this.passwordOnly = passwordOnly;
         this.showSavePassword = showSavePassword &&
-            BasePolicyDataProvider.getInstance()
+            !BasePolicyDataProvider.getInstance()
                 .isPolicyEnabled(DBConnectionConstants.POLICY_RESTRICT_PASSWORD_SAVE);
     }
 
