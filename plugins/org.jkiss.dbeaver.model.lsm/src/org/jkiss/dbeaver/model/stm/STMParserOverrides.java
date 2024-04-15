@@ -40,7 +40,6 @@ public abstract class STMParserOverrides extends Parser {
     @NotNull
     @Override
     public TerminalNode createTerminalNode(@NotNull ParserRuleContext parent, @NotNull Token t) {
-        return new STMTreeTermNode(t);
+        return new STMTreeTermNode(t, this.getState());
     }
-
 }

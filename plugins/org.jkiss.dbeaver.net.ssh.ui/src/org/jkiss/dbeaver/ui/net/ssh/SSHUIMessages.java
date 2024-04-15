@@ -55,7 +55,6 @@ public class SSHUIMessages extends NLS {
     public static String model_ssh_configurator_group_timeouts_text;
     public static String model_ssh_configurator_group_port_forwarding_text;
     public static String model_ssh_configurator_group_jump_server_settings_text;
-    public static String model_ssh_configurator_group_jump_server_checkbox_label;
     public static String model_ssh_configurator_variables_hint_label;
     public static String model_ssh_configurator_ssh_documentation_link;
 

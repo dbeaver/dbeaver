@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -67,6 +68,55 @@ public final class ModelPreferences
             } else {
                 return CommonUtils.valueOf(SeparateConnectionBehavior.class, value, DEFAULT);
             }
+        }
+    }
+    
+
+    public enum SQLScriptStatementDelimiterMode {
+        BLANK_LINE_AND_SEPARATOR(true, false, "Always"),
+        ONLY_SEPARATOR(false, false, "Never"),
+        SMART(true, true, "Smart");
+
+        public final boolean useBlankLine;
+        public final boolean useSmart;
+
+        public final String title;
+
+        SQLScriptStatementDelimiterMode(boolean useBlankLine, boolean useSmart, String title) {
+            this.useBlankLine = useBlankLine;
+            this.useSmart = useSmart;
+            this.title = title;
+        }
+
+        public String getName() {
+            return this.toString();
+        }
+
+        public static SQLScriptStatementDelimiterMode valueByName(String name) {
+            if (name == null) {
+                return SMART;
+            }  else {
+                switch (name) {
+                    case "true" -> {
+                        return SQLScriptStatementDelimiterMode.BLANK_LINE_AND_SEPARATOR;
+                    }
+                    case "false" -> {
+                        return SQLScriptStatementDelimiterMode.ONLY_SEPARATOR;
+                    }
+                    default -> {
+                        try {
+                            return SQLScriptStatementDelimiterMode.valueOf(name);
+                        } catch (IllegalArgumentException e) {
+                            return SQLScriptStatementDelimiterMode.SMART;
+                        }
+                    }
+                }
+            }
+        }
+
+        @NotNull
+        public static SQLScriptStatementDelimiterMode fromPreferences(@NotNull DBPPreferenceStore preferenceStore) {
+            return valueByName(preferenceStore.getString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK));            
         }
     }
     
@@ -201,6 +251,10 @@ public final class ModelPreferences
         return mainBundle;
     }
 
+    public static DBPPreferenceStore getPreferences() {
+        return preferences;
+    }
+
     private static void initializeDefaultPreferences(DBPPreferenceStore store) {
         // Notifications
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.NOTIFICATIONS_ENABLED, true);
@@ -223,7 +277,7 @@ public final class ModelPreferences
         // SQL execution
         PrefUtils.setDefaultPreferenceValue(store, SCRIPT_STATEMENT_DELIMITER, SQLConstants.DEFAULT_STATEMENT_DELIMITER);
         PrefUtils.setDefaultPreferenceValue(store, SCRIPT_IGNORE_NATIVE_DELIMITER, false);
-        PrefUtils.setDefaultPreferenceValue(store, SCRIPT_STATEMENT_DELIMITER_BLANK, true);
+        PrefUtils.setDefaultPreferenceValue(store, SCRIPT_STATEMENT_DELIMITER_BLANK, SQLScriptStatementDelimiterMode.SMART);
         PrefUtils.setDefaultPreferenceValue(store, QUERY_REMOVE_TRAILING_DELIMITER, true);
 
         PrefUtils.setDefaultPreferenceValue(store, MEMORY_CONTENT_MAX_SIZE, 10000);
