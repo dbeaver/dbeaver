@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AIEngineSettings;
-import org.jkiss.dbeaver.model.ai.AISettings;
+import org.jkiss.dbeaver.model.ai.AISettingsRegistry;
 import org.jkiss.dbeaver.model.ai.completion.AbstractAICompletionEngine;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionContext;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionMessage;
@@ -217,7 +217,7 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
 
     @NotNull
     protected AIEngineSettings getSettings() {
-        return AISettings.getSettings().getEngineConfiguration(AIConstants.OPENAI_ENGINE);
+        return AISettingsRegistry.getInstance().getSettings().getEngineConfiguration(AIConstants.OPENAI_ENGINE);
     }
 
     @Nullable
