@@ -59,7 +59,7 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
 
     protected DBPDataSourceContainer dataSource;
 
-    public final boolean CREDENTIALS_SAVE_RESTRICTED = BasePolicyDataProvider.getInstance()
+    public static final boolean CREDENTIALS_SAVE_RESTRICTED = BasePolicyDataProvider.getInstance()
         .isPolicyEnabled(DBConnectionConstants.POLICY_RESTRICT_PASSWORD_SAVE);
 
     public void createControl(@NotNull Composite authPanel, DBAAuthModel<?> object, @NotNull Runnable propertyChangeListener) {
