@@ -14,27 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.dpi.model.adapters;
 
-package org.jkiss.dbeaver.model.impl.local;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
+import org.jkiss.dbeaver.dpi.model.DPIContext;
 
-import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
-import org.jkiss.dbeaver.model.exec.DBCResultSetMetaData;
+import java.io.IOException;
+import java.util.TimeZone;
 
-import java.util.List;
-
-/**
- * LocalResultSetMeta
- */
-public class LocalResultSetMeta implements DBCResultSetMetaData {
-
-    private final List<? extends DBCAttributeMetaData> attributes;
-
-    public LocalResultSetMeta(List<? extends DBCAttributeMetaData> attributes) {
-        this.attributes = attributes;
+public class TimeZoneAdapter extends AbstractTypeAdapter<TimeZone> {
+    public TimeZoneAdapter(DPIContext context) {
+        super(context);
     }
 
     @Override
-    public List<? extends DBCAttributeMetaData> getAttributes() {
-        return attributes;
+    public void write(JsonWriter jsonWriter, TimeZone timeZone) throws IOException {
+        jsonWriter.value(timeZone.getID());
+    }
+
+    @Override
+    public TimeZone read(JsonReader jsonReader) throws IOException {
+        return TimeZone.getTimeZone(jsonReader.nextString());
     }
 }
