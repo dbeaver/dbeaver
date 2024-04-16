@@ -217,7 +217,7 @@ public abstract class DBVUtils {
         boolean containsCount) throws DBCException
     {
         List<DBDLabelValuePair> values = new ArrayList<>();
-        List<DBCAttributeMetaData> metaColumns = dbResult.getMeta().getAttributes();
+        List<? extends DBCAttributeMetaData> metaColumns = dbResult.getMeta().getAttributes();
         List<DBDValueHandler> colHandlers = new ArrayList<>(metaColumns.size());
         for (DBCAttributeMetaData col : metaColumns) {
             colHandlers.add(DBUtils.findValueHandler(session, col));

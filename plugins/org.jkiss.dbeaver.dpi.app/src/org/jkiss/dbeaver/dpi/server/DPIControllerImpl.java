@@ -25,14 +25,15 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.dpi.app.DPIApplication;
 import org.jkiss.dbeaver.dpi.model.DPIContext;
+import org.jkiss.dbeaver.dpi.model.adapters.DPISerializer;
+import org.jkiss.dbeaver.dpi.model.client.DPISmartObjectResponse;
+import org.jkiss.dbeaver.dpi.model.client.DPISmartObjectWrapper;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.dpi.DPIController;
-import org.jkiss.dbeaver.model.dpi.DPIDataSourceParameters;
-import org.jkiss.dbeaver.model.dpi.DPISession;
+import org.jkiss.dbeaver.model.dpi.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -45,10 +46,8 @@ import org.jkiss.utils.rest.RestServer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.text.MessageFormat;
+import java.util.*;
 
 public class DPIControllerImpl implements DPIController {
 
@@ -134,6 +133,7 @@ public class DPIControllerImpl implements DPIController {
 
     @Override
     public synchronized Object callMethod(@NotNull String objectId, @NotNull String method, @Nullable Object[] args) throws DBException {
+        log.debug(MessageFormat.format("Invoke method: {0} object: {1}", method, objectId));
         Object object = context.getObject(objectId);
         if (object == null) {
             throw new DBException("DPI object '" + objectId + "' not found");
@@ -194,11 +194,35 @@ public class DPIControllerImpl implements DPIController {
                 } else if (args[i] instanceof Map<?,?> && !Map.class.isAssignableFrom(parameterTypes[i])) {
                     // Double convert of map
                     realArgs[i] = gson.fromJson(gson.toJsonTree(args[i], Map.class), parameterTypes[i]);
+                } else if (args[i] instanceof Number) {
+                    realArgs[i] = gson.fromJson(gson.toJson(args[i], parameterTypes[i]), parameterTypes[i]);
                 } else {
                     realArgs[i] = args[i];
                 }
             }
-            return method.invoke(object, realArgs);
+            Object result = method.invoke(object, realArgs);
+            List<DPISmartObjectWrapper> smartObjects = new ArrayList<>();
+            for (int i = 0; i < parameterTypes.length; i++) {
+                Class<?> parameterType = parameterTypes[i];
+                if (DPISerializer.isSmartObject(parameterType)) {
+                    Object serverSideSmartObject = realArgs[i];
+                    if (serverSideSmartObject instanceof DPIServerSmartObject serverSmartObject) {
+                        DPISmartCallback callback = serverSmartObject.getCallback();
+                        var dpiWrapper = new DPISmartObjectWrapper(
+                            callback.getClass(),
+                            i,
+                            callback
+                        );
+                        smartObjects.add(dpiWrapper);
+                    }
+                }
+            }
+            if (smartObjects.isEmpty()) {
+                return result;
+            } else {
+                log.debug("Smart arguments detected, return smart objects wrapper instead of original method results");
+                return new DPISmartObjectResponse(result, smartObjects);
+            }
         } catch (Throwable e) {
             if (e instanceof InvocationTargetException) {
                 e = ((InvocationTargetException) e).getTargetException();

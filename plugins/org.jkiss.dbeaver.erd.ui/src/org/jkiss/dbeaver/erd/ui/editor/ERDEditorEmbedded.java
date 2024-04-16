@@ -173,27 +173,31 @@ public class ERDEditorEmbedded extends ERDEditorPart
             return;
         }
         diagramLoadingJob = LoadingJob.createService(
-                new DatabaseLoadService<EntityDiagram>("Load diagram '" + object.getName() + "'", object.getDataSource()) {
-                    @Override
-                    public EntityDiagram evaluate(DBRProgressMonitor monitor) {
-                        try {
-                            return loadFromDatabase(monitor);
-                        } catch (DBException e) {
-                            String msg = NLS.bind(ERDUIMessages.erd_error_of_loading_diagram_label, e.getMessage());
-                            log.error(msg, e);
-                            UIUtils.showMessageBox(null,
-                                    ERDUIMessages.erd_error_of_loading_diagram_title,
-                                    msg, SWT.ICON_ERROR);
-                        }
-
-                        return null;
+            new DatabaseLoadService<EntityDiagram>("Load diagram '" + object.getName() + "'", object.getDataSource()) {
+                @Override
+                public EntityDiagram evaluate(DBRProgressMonitor monitor) {
+                    try {
+                        getDiagram().setDiagramMonitor(monitor);
+                        EntityDiagram diagram = loadFromDatabase(monitor);
+                        visuallize(monitor, diagram);
+                        return diagram;
+                    } catch (DBException e) {
+                        String msg = NLS.bind(ERDUIMessages.erd_error_of_loading_diagram_label, e.getMessage());
+                        log.error(msg, e);
+                        UIUtils.showMessageBox(null,
+                            ERDUIMessages.erd_error_of_loading_diagram_title,
+                            msg, SWT.ICON_ERROR);
+                    } finally {
+                        monitor.done();
+                        getDiagram().disableDiagramMonitor();
                     }
-                },
-                progressControl.createLoadVisualizer());
+                    return null;
+                }
+            },
+            progressControl.createLoadVisualizer());
         diagramLoadingJob.addJobChangeListener(new JobChangeAdapter() {
             @Override
-            public void done(IJobChangeEvent event)
-            {
+            public void done(IJobChangeEvent event) {
                 diagramLoadingJob = null;
             }
         });
@@ -215,8 +219,10 @@ public class ERDEditorEmbedded extends ERDEditorPart
         return getEditorInput().getExecutionContext();
     }
 
-    private EntityDiagram loadFromDatabase(DBRProgressMonitor monitor)
-            throws DBException {
+    private EntityDiagram loadFromDatabase(DBRProgressMonitor monitor) throws DBException {
+        if (monitor.isCanceled()) {
+            return null;
+        }
         monitor.beginTask("Load database entities", 1);
 
         // validate connections first
@@ -238,6 +244,8 @@ public class ERDEditorEmbedded extends ERDEditorPart
         }
         EntityDiagram oldDiagram = getDiagram();
         EntityDiagram diagram = oldDiagram;
+        //diagram.setMonitorForDiagram(monitor);
+        monitor.subTask("Clear diagram");
         diagram.clear();
         if (!dbObject.isPersisted()) {
             //diagram = new EntityDiagram(dbObject, "New Object", getContentProvider(), getDecorator());
@@ -277,10 +285,10 @@ public class ERDEditorEmbedded extends ERDEditorPart
             } catch (Exception e) {
                 log.error("Error loading ER diagram from saved state", e);
             }
+           
             diagram.setLayoutManualAllowed(true);
             diagram.setNeedsAutoLayout(!hasPersistedState);
         }
-        monitor.done();
         return diagram;
     }
 

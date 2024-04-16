@@ -63,7 +63,7 @@ public class AITranslateHandler extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         AIFeatures.SQL_AI_POPUP.use();
 
-        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AICompletionConstants.AI_DISABLED)) {
+        if (AISettingsRegistry.getInstance().getSettings().isAiDisabled()) {
             return null;
         }
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
@@ -76,7 +76,7 @@ public class AITranslateHandler extends AbstractHandler {
 
         DAICompletionEngine engine;
         try {
-            engine = AIEngineRegistry.getInstance().getCompletionEngine(AISettings.getSettings().getActiveEngine());
+            engine = AIEngineRegistry.getInstance().getCompletionEngine(AISettingsRegistry.getInstance().getSettings().getActiveEngine());
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError("AI error", "Cannot determine AI engine", e);
             return null;
@@ -123,7 +123,7 @@ public class AITranslateHandler extends AbstractHandler {
         );
         if (aiCompletionPopup.open() == IDialogConstants.OK_ID) {
             try {
-                engine = AIEngineRegistry.getInstance().getCompletionEngine(AISettings.getSettings().getActiveEngine());
+                engine = AIEngineRegistry.getInstance().getCompletionEngine(AISettingsRegistry.getInstance().getSettings().getActiveEngine());
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError("AI error", "Cannot determine AI engine", e);
                 return null;

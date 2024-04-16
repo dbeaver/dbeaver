@@ -18,12 +18,14 @@
 package org.jkiss.dbeaver.model.exec;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.dpi.DPILocalObject;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 
 /**
  * Execution source.
  * The thing which initiates statement execution
  */
+@DPILocalObject
 public interface DBCExecutionSource
 {
     @Nullable

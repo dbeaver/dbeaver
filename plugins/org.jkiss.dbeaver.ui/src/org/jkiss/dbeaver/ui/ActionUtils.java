@@ -430,7 +430,7 @@ public class ActionUtils {
             try {
                 service.requestEvaluation(propertyName);
             } catch (Exception e) {
-                log.warn("Error evaluating property [" + propertyName + "]");
+                log.warn("Error evaluating property [" + propertyName + "]", e);
             }
 
             PropertyChangeEvent ev = new PropertyChangeEvent(service, propertyName, null, null);

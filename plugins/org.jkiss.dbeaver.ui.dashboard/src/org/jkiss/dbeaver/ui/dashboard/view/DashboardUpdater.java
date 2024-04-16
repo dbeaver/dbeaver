@@ -317,7 +317,7 @@ public class DashboardUpdater {
 
     private void fetchDashboardData(DashboardItemContainer dashboardContainer, DBCResultSet dbResults) throws DBCException {
         DBCResultSetMetaData meta = dbResults.getMeta();
-        List<DBCAttributeMetaData> rsAttrs = meta.getAttributes();
+        List<? extends DBCAttributeMetaData> rsAttrs = meta.getAttributes();
         List<String> colNames = new ArrayList<>();
         String tsColName = null;
         for (DBCAttributeMetaData rsAttr : rsAttrs) {

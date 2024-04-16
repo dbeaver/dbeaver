@@ -33,7 +33,7 @@ public class DPIRestServer {
     private final RestServer<?> restServer;
 
     public DPIRestServer(DBPApplication application, int portNumber) throws IOException {
-        DPIContext dpiContext = new DPIContext(new LoggingProgressMonitor(log), application);
+        DPIContext dpiContext = new DPIContext(new LoggingProgressMonitor(log), application, true);
 
         DPIControllerImpl dpiController = new DPIControllerImpl(dpiContext);
         restServer = RestServer
