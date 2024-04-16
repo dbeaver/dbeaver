@@ -16,22 +16,13 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
-import com.google.gson.Gson;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
-import org.jkiss.dbeaver.model.auth.SMSession;
-import org.jkiss.dbeaver.model.auth.SMSessionPersistent;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.utils.CommonUtils;
 
-import java.io.StringReader;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * AI integration
@@ -40,17 +31,14 @@ public class AISettings {
 
     private static final Log log = Log.getLog(AISettings.class);
 
-    private static final Gson gson = new Gson();
-    public static final String AI_CONFIGURATION_JSON = "ai-configuration.json";
 
     private boolean aiDisabled;
     private String activeEngine;
 
     private final Map<String, AIEngineSettings> engineConfigurations = new LinkedHashMap<>();
-    private final Set<String> disabledConnections = new LinkedHashSet<>();
-    private final Set<String> enabledConnections = new LinkedHashSet<>();
 
-    private AISettings() {
+
+    public AISettings() {
     }
 
     public boolean isAiDisabled() {
@@ -68,16 +56,6 @@ public class AISettings {
 
     public void setActiveEngine(String activeEngine) {
         this.activeEngine = activeEngine;
-    }
-
-    @NotNull
-    public Set<String> getDisabledConnections() {
-        return disabledConnections;
-    }
-
-    @NotNull
-    public Set<String> getEnabledConnections() {
-        return enabledConnections;
     }
 
     @NotNull
@@ -111,58 +89,5 @@ public class AISettings {
             settings.getProperties().put(AIConstants.AI_LOG_QUERY, logQuery);
         }
     }
-
-    @NotNull
-    public static AISettings getSettings() {
-        AISettings settings = null;
-        final SMSession session = DBWorkbench.getPlatform().getWorkspace().getWorkspaceSession();
-        if (session instanceof SMSessionPersistent) {
-            settings = ((SMSessionPersistent) session).getAttribute(AISettings.class.getName());
-        }
-        if (settings == null) {
-            WorkspaceConfigEventManager.addConfigChangedListener(AI_CONFIGURATION_JSON, o -> {
-                loadConfigurationFile();
-            });
-            settings = loadConfigurationFile();
-        }
-        if (settings.getActiveEngine() == null) {
-            settings.setActiveEngine(AIConstants.OPENAI_ENGINE);
-        }
-        if (DBWorkbench.getPlatform().getPreferenceStore().getString(AICompletionConstants.AI_DISABLED) != null) {
-            settings.setAiDisabled(DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AICompletionConstants.AI_DISABLED));
-        }
-        return settings;
-    }
-
-    private static AISettings loadConfigurationFile() {
-        try {
-            AISettings settings;
-            String content = DBWorkbench.getPlatform().getConfigurationController().loadConfigurationFile(AI_CONFIGURATION_JSON);
-            if (CommonUtils.isEmpty(content)) {
-                settings = new AISettings();
-            } else {
-                settings = gson.fromJson(new StringReader(content), AISettings.class);
-            }
-            final SMSession session = DBWorkbench.getPlatform().getWorkspace().getWorkspaceSession();
-            if (session instanceof SMSessionPersistent) {
-                ((SMSessionPersistent) session).setAttribute(AISettings.class.getName(), settings);
-            }
-            return settings;
-        } catch (Exception e) {
-            log.error(e);
-            return new AISettings();
-        }
-    }
-
-    public void saveSettings() {
-        try {
-            String content = gson.toJson(this, AISettings.class);
-            DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(AI_CONFIGURATION_JSON, content);
-            DBWorkbench.getPlatform().getPreferenceStore().setValue(AICompletionConstants.AI_DISABLED, aiDisabled);
-        } catch (Exception e) {
-            log.error(e);
-        }
-    }
-
 }
 
