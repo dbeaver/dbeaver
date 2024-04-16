@@ -23,22 +23,14 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.OffsetKeyedTreeMap.NodesIterat
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryModel;
 
 public class SQLDocumentScriptItemSyntaxContext {
-
     private static final Log log = Log.getLog(SQLDocumentScriptItemSyntaxContext.class);
-
-    public static class TokenEntryAtOffset {
-        public final int offset;
-        public final SQLQuerySymbolEntry entry;
-
-        public TokenEntryAtOffset(int offset, @NotNull SQLQuerySymbolEntry entry) {
-            this.offset = offset;
-            this.entry = entry;
-        }
-    }
-
+    @NotNull
     private final Object lock = new Object();
+    @NotNull
     private final OffsetKeyedTreeMap<SQLQuerySymbolEntry> entries = new OffsetKeyedTreeMap<>();
+    @NotNull
     private final String originalText;
+    @NotNull
     private final SQLQueryModel queryModel;
     private int length;
     private boolean isDirty = false;
@@ -74,7 +66,7 @@ public class SQLDocumentScriptItemSyntaxContext {
     }
 
     @Nullable
-    public TokenEntryAtOffset findToken(int offset) {
+    public SQLTokenEntryAtOffset findToken(int offset) {
         synchronized (this.lock) {
             NodesIterator<SQLQuerySymbolEntry> it = entries.nodesIteratorAt(offset);
             SQLQuerySymbolEntry entry = it.getCurrValue();
@@ -84,7 +76,7 @@ public class SQLDocumentScriptItemSyntaxContext {
                 entryOffset = it.getCurrOffset();
             }
             if (entry != null && entryOffset <= offset && entryOffset + entry.getInterval().length() > offset) {
-                return new TokenEntryAtOffset(entryOffset, entry);
+                return new SQLTokenEntryAtOffset(entryOffset, entry);
             } else {
                 return null;
             }

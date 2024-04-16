@@ -16,15 +16,23 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
-import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 /**
- * An entity responsible for the meaning of the symbol
+ * Syntax context change listener
  */
-public interface SQLQuerySymbolDefinition {
+public interface SQLDocumentSyntaxContextListener {
     /**
-     * Returns the symbol token class type
+     * Occurs when a new script item is introduced to the document syntax context
      */
-    @NotNull
-    SQLQuerySymbolClass getSymbolClass();
+    void onScriptItemIntroduced(@Nullable SQLDocumentScriptItemSyntaxContext item);
+    /**
+     * Occurs when the script item is removed from the document syntax context
+     */
+    void onScriptItemInvalidated(@Nullable SQLDocumentScriptItemSyntaxContext item);
+
+    /**
+     * Occurs when all script item are removed to the document syntax context
+     */
+    void onAllScriptItemsInvalidated();
 }

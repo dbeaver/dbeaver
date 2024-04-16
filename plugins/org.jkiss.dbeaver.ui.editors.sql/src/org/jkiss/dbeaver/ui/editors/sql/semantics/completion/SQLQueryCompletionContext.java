@@ -81,8 +81,8 @@ public abstract class SQLQueryCompletionContext {
     public abstract SQLQueryCompletionSet prepareProposal(@NotNull DBRProgressMonitor monitor, int position);
     
     public static SQLQueryCompletionContext prepare(
-        @NotNull SQLDocumentSyntaxContext.ScriptItemAtOffset scriptItem,
-        @NotNull DBCExecutionContext dbcExecutionContext,
+        @NotNull SQLScriptItemAtOffset scriptItem,
+        @Nullable DBCExecutionContext dbcExecutionContext,
         @NotNull SynaxInspectionResult syntaxInspectionResult,
         @NotNull SQLQueryDataContext context,
         @Nullable SQLQueryLexicalScopeItem lexicalItem,
@@ -131,8 +131,7 @@ public abstract class SQLQueryCompletionContext {
                 STMTreeTermNode lastNode = nameNodes[nameNodes.length - 1];
                 Interval wordRange = lastNode.getRealInterval();
                 if (wordRange.b >= position - 1 && lastNode.symbol.getType() != SQLStandardLexer.Period) {
-                    String word = lastNode.getTextContent().substring(0, position - lastNode.getRealInterval().a);
-                    return word;
+                    return lastNode.getTextContent().substring(0, position - lastNode.getRealInterval().a);
                 } else {
                     return null;
                 }
@@ -160,11 +159,10 @@ public abstract class SQLQueryCompletionContext {
                         .filter(rr -> rr.aliasOrNull != null && rr.aliasOrNull.getName().toLowerCase().equals(mayBeAliasName))
                         .findFirst().orElse(null);
                     if (srr != null) {
-                        List<SQLQueryCompletionItem> subqueryColumns = srr.source.getResultDataContext().getColumnsList().stream()
+                        return srr.source.getResultDataContext().getColumnsList().stream()
                             .filter(c -> c.symbol.getName().toLowerCase().contains(tail))
                             .map(c -> SQLQueryCompletionItem.forSubsetColumn(c, srr, false))
                             .toList();
-                        return subqueryColumns;
                     }
                 } else if (prefix.size() == 0) {
                     List<SQLQueryCompletionItem> subqueries = this.referencedSources.values().stream()

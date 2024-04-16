@@ -40,6 +40,7 @@ public class SQLQueryLexicalScope {
     /**
      * Returns a text interval for this lexical scope
      */
+    @NotNull
     public Interval getInterval() {
         if (this.interval == null) {
     
@@ -74,20 +75,21 @@ public class SQLQueryLexicalScope {
     /**
      * Register item in the lexical scope
      */
-    public void registerItem(SQLQueryLexicalScopeItem item) {
+    public void registerItem(@NotNull SQLQueryLexicalScopeItem item) {
         this.items.add(item);
     }
 
     /**
      * Register syntax node in the lexical scope
      */
-    public void registerSyntaxNode(STMTreeNode syntaxNode) {
+    public void registerSyntaxNode(@NotNull STMTreeNode syntaxNode) {
         this.syntaxNodes.add(syntaxNode);
     }
 
     /**
      * Find lexical scope item in the provided position in the source text
      */
+    @Nullable
     public SQLQueryLexicalScopeItem findItem(int position) {
         return this.items.stream()
            .filter(t -> t.getSyntaxNode().getRealInterval().properlyContains(Interval.of(position, position)))

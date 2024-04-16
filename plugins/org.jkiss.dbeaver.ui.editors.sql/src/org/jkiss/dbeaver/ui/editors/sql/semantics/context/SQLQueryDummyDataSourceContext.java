@@ -479,6 +479,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
             super(syntaxNode, new SQLQueryQualifiedName(syntaxNode, new SQLQuerySymbolEntry(syntaxNode, "DummyTable", "DummyTable")));
         }
 
+        @NotNull
         @Override
         public SQLQuerySymbolClass getSymbolClass() {
             return SQLQuerySymbolClass.TABLE;

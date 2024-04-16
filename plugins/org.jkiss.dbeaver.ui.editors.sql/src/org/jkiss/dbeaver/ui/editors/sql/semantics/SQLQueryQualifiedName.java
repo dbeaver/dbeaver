@@ -26,24 +26,33 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsTableDataMod
 
 import java.util.List;
 
-public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem { // qualifier
-    
+/**
+ * Describes database entity name
+ */
+public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem {
+    @Nullable
     public final SQLQuerySymbolEntry catalogName;
+    @Nullable
     public final SQLQuerySymbolEntry schemaName;
+    @NotNull
     public final SQLQuerySymbolEntry entityName;
 
-    public SQLQueryQualifiedName(STMTreeNode syntaxNode, @NotNull SQLQuerySymbolEntry entityName) {
+    public SQLQueryQualifiedName(@NotNull STMTreeNode syntaxNode, @NotNull SQLQuerySymbolEntry entityName) {
         this(syntaxNode, null, null, entityName);
     }
 
-    public SQLQueryQualifiedName(STMTreeNode syntaxNode, @Nullable SQLQuerySymbolEntry schemaName, @NotNull SQLQuerySymbolEntry entityName) {
+    public SQLQueryQualifiedName(
+        @NotNull STMTreeNode syntaxNode,
+        @NotNull SQLQuerySymbolEntry schemaName,
+        @NotNull SQLQuerySymbolEntry entityName
+    ) {
         this(syntaxNode, null, schemaName, entityName);
     }
 
     public SQLQueryQualifiedName(
-        STMTreeNode syntaxNode, 
-        @Nullable SQLQuerySymbolEntry catalogName,
-        @Nullable SQLQuerySymbolEntry schemaName,
+        @NotNull STMTreeNode syntaxNode,
+        @NotNull SQLQuerySymbolEntry catalogName,
+        @NotNull SQLQuerySymbolEntry schemaName,
         @NotNull SQLQuerySymbolEntry entityName
     ) {
         super(syntaxNode);
@@ -52,6 +61,7 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem { // qualifi
         this.entityName = entityName;
     }
 
+    @NotNull
     @Override
     public STMTreeNode[] getSyntaxComponents() {
         if (catalogName != null && schemaName != null) {
@@ -71,7 +81,10 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem { // qualifi
             };
         }
     }
-    
+
+    /**
+     * Set the class to the qaulfied name components
+     */
     public void setSymbolClass(@NotNull SQLQuerySymbolClass symbolClass) {
         if (this.entityName != null) {
             this.entityName.getSymbol().setSymbolClass(symbolClass);
@@ -84,6 +97,9 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem { // qualifi
         }
     }
 
+    /**
+     * Set the definition to the qaulfied name components based on the database metadata
+     */
     public void setDefinition(@NotNull DBSEntity realTable) {
         if (this.entityName != null) {
             this.entityName.setDefinition(new SQLQuerySymbolByDbObjectDefinition(realTable, SQLQuerySymbolClass.TABLE));
@@ -94,7 +110,7 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem { // qualifi
                 } else {
                     this.schemaName.getSymbol().setSymbolClass(SQLQuerySymbolClass.SCHEMA);
                 }
-                if (this.catalogName != null) {
+                if (this.catalogName != null && schema != null) {
                     DBSObject catalog = schema.getParentObject();
                     if (catalog != null) {
                         this.catalogName.setDefinition(new SQLQuerySymbolByDbObjectDefinition(catalog, SQLQuerySymbolClass.CATALOG));
@@ -106,6 +122,9 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem { // qualifi
         }
     }
 
+    /**
+     * Set the definition to the qaulfied name components based on the query structure
+     */
     public void setDefinition(@NotNull SourceResolutionResult rr) {
         if (rr.aliasOrNull != null) {
             this.entityName.merge(rr.aliasOrNull);
@@ -126,6 +145,9 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem { // qualifi
         }
     }
 
+    /**
+     * Get list of the qualified name parts in the hierarchical order
+     */
     @NotNull
     public List<String> toListOfStrings() {
         if (catalogName != null && schemaName != null) {
@@ -137,6 +159,9 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem { // qualifi
         }
     }
 
+    /**
+     * Get the qualified name string representation
+     */
     @NotNull
     public String toIdentifierString() {
         if (catalogName != null && schemaName != null) {

@@ -16,19 +16,26 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 public abstract class SQLQueryLexicalScopeItem {
+    @NotNull
     protected final STMTreeNode syntaxNode;
 
-    public SQLQueryLexicalScopeItem(STMTreeNode syntaxNode) {
+    public SQLQueryLexicalScopeItem(@NotNull STMTreeNode syntaxNode) {
         super();
         this.syntaxNode = syntaxNode;
     }
     
+    @NotNull
     public STMTreeNode getSyntaxNode() {
         return this.syntaxNode;
     }
-    
+
+    /**
+     * Return syntax tree nodes corresponding to this lexical scope
+     */
+    @NotNull
     public abstract STMTreeNode[] getSyntaxComponents();
 }

@@ -19,6 +19,9 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
+/**
+ * A database entity responsible for the meaning of the symbol
+ */
 public class SQLQuerySymbolByDbObjectDefinition implements SQLQuerySymbolDefinition {
     private final DBSObject dbObject;
     private final SQLQuerySymbolClass symbolClass;

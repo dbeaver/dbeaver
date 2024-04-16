@@ -23,7 +23,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLDocumentScriptItemSyntaxContext.TokenEntryAtOffset;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryModel;
 import org.jkiss.dbeaver.utils.ListNode;
 
@@ -35,46 +34,34 @@ import java.util.function.Consumer;
 
 
 public class SQLDocumentSyntaxContext {
-
     private static final Log log = Log.getLog(SQLDocumentSyntaxContext.class);
-
-    public interface SQLDocumentSyntaxContextListener {
-        void onScriptItemIntroduced(@Nullable SQLDocumentScriptItemSyntaxContext item);
-
-        void onScriptItemInvalidated(@Nullable SQLDocumentScriptItemSyntaxContext item);
-
-        void onAllScriptItemsInvalidated();
-    }
-
-    public static class ScriptItemAtOffset {
-        public final int offset;
-        public final SQLDocumentScriptItemSyntaxContext item;
-
-        public ScriptItemAtOffset(int offset, @NotNull SQLDocumentScriptItemSyntaxContext item) {
-            this.offset = offset;
-            this.item = item;
-        }
-    }
-
+    @NotNull
     private final Set<SQLDocumentSyntaxContextListener> listeners = new HashSet<>();
-    
+    @NotNull
     private final OffsetKeyedTreeMap<SQLDocumentScriptItemSyntaxContext> scriptItems = new OffsetKeyedTreeMap<>();
 
+    @Nullable
+    private SQLQuerySymbolEntry lastAccessedTokenEntry = null;
+    @Nullable
+    private SQLDocumentScriptItemSyntaxContext lastAccessedScriptItem = null;
     private int lastTokenAccessOffset = Integer.MAX_VALUE;
     private int lastAccessedTokenOffset = Integer.MAX_VALUE;
-    private SQLQuerySymbolEntry lastAccessedTokenEntry = null;
-
     private int lastItemAccessOffset = Integer.MAX_VALUE;
     private int lastAccessedItemOffset = Integer.MAX_VALUE;
-    private SQLDocumentScriptItemSyntaxContext lastAccessedScriptItem = null;
 
     public SQLDocumentSyntaxContext() {
     }
 
+    /**
+     * Add syntax context event listener
+     */
     public void addListener(@NotNull SQLDocumentSyntaxContextListener listener) {
         this.listeners.add(listener);
     }
-    
+
+    /**
+     * Remove syntax context event listener
+     */
     public void removeListener(@NotNull SQLDocumentSyntaxContextListener listener) {
         this.listeners.remove(listener);
     }
@@ -85,18 +72,24 @@ public class SQLDocumentSyntaxContext {
         }
     }
 
+    /**
+     * Get all script items from the document syntax context
+     */
     @NotNull
-    public List<ScriptItemAtOffset> getScriptItems() {
-        List<ScriptItemAtOffset> result = new ArrayList<>();
+    public List<SQLScriptItemAtOffset> getScriptItems() {
+        List<SQLScriptItemAtOffset> result = new ArrayList<>();
         NodesIterator<SQLDocumentScriptItemSyntaxContext> it = this.scriptItems.nodesIteratorAt(Integer.MIN_VALUE);
         while (it.next()) {
-            result.add(new ScriptItemAtOffset(it.getCurrOffset(), it.getCurrValue()));
+            result.add(new SQLScriptItemAtOffset(it.getCurrOffset(), it.getCurrValue()));
         }
         return result;
     }
 
+    /**
+     * Find script item from the document syntax context at the provided offset
+     */
     @Nullable
-    public ScriptItemAtOffset findScriptItem(int offset) {
+    public SQLScriptItemAtOffset findScriptItem(int offset) {
         if (offset == this.lastItemAccessOffset) {
             // found, do nothing
         } else if (offset >= this.lastAccessedItemOffset && this.lastAccessedScriptItem != null &&
@@ -123,7 +116,7 @@ public class SQLDocumentSyntaxContext {
         }
         return this.lastAccessedScriptItem == null ?
             null :
-            new ScriptItemAtOffset(this.lastAccessedItemOffset, this.lastAccessedScriptItem);
+            new SQLScriptItemAtOffset(this.lastAccessedItemOffset, this.lastAccessedScriptItem);
     }
 
     /**
@@ -137,8 +130,8 @@ public class SQLDocumentSyntaxContext {
             offset < this.lastAccessedTokenOffset + this.lastAccessedTokenEntry.getInterval().length()) {
             this.lastTokenAccessOffset = offset;
         } else {
-            ScriptItemAtOffset scriptItem = this.findScriptItem(offset);
-            TokenEntryAtOffset token = scriptItem == null ? null : scriptItem.item.findToken(offset - scriptItem.offset);
+            SQLScriptItemAtOffset scriptItem = this.findScriptItem(offset);
+            SQLTokenEntryAtOffset token = scriptItem == null ? null : scriptItem.item.findToken(offset - scriptItem.offset);
 
             this.lastTokenAccessOffset = offset;
             if (token != null) {
@@ -161,6 +154,9 @@ public class SQLDocumentSyntaxContext {
         return this.lastAccessedItemOffset;
     }
 
+    /**
+     * Reset the cached information about document context items
+     */
     public void resetLastAccessCache() {
         this.lastTokenAccessOffset = Integer.MAX_VALUE;
         this.lastAccessedTokenOffset = Integer.MAX_VALUE;
@@ -171,6 +167,9 @@ public class SQLDocumentSyntaxContext {
         this.lastAccessedScriptItem = null;
     }
 
+    /**
+     * Introduce new script item to the document syntax context
+     */
     public SQLDocumentScriptItemSyntaxContext registerScriptItemContext(
         @NotNull String elementOriginalText,
         @NotNull SQLQueryModel queryModel,
@@ -183,6 +182,9 @@ public class SQLDocumentSyntaxContext {
         return scriptItem;
     }
 
+    /**
+     * Update script items according to the document text changes
+     */
     @NotNull
     public IRegion applyDelta(int offset, int oldLength, int newLength) {
         IRegion affectedRegion;
@@ -241,7 +243,7 @@ public class SQLDocumentSyntaxContext {
             // TODO removeAtRange(..) is needed either way
 
         } else { // simple insertion
-            ScriptItemAtOffset scriptItem = this.findScriptItem(offset);
+            SQLScriptItemAtOffset scriptItem = this.findScriptItem(offset);
             if (scriptItem != null) {
                 scriptItem.item.applyDelta(offset, oldLength, newLength);
                 affectedRegion = new Region(scriptItem.offset, scriptItem.item.length());
@@ -261,12 +263,18 @@ public class SQLDocumentSyntaxContext {
         return affectedRegion;
     }
 
+    /**
+     * Reset document syntax context state
+     */
     public void clear() {
         this.forEachListener(SQLDocumentSyntaxContextListener::onAllScriptItemsInvalidated);
         this.scriptItems.clear();
         this.resetLastAccessCache();
     }
 
+    /**
+     * Drop script items outside the given text fragment range
+     */
     @NotNull
     public Interval dropInvisibleScriptItems(@NotNull Interval actualFragment) {
         int rangeStart = actualFragment.a;

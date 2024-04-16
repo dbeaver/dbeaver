@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryLexicalScope;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;

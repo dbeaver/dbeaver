@@ -18,13 +18,12 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
 import org.jkiss.code.NotNull;
 
-/**
- * An entity responsible for the meaning of the symbol
- */
-public interface SQLQuerySymbolDefinition {
-    /**
-     * Returns the symbol token class type
-     */
-    @NotNull
-    SQLQuerySymbolClass getSymbolClass();
+public class SQLTokenEntryAtOffset {
+    public final int offset;
+    public final SQLQuerySymbolEntry entry;
+
+    public SQLTokenEntryAtOffset(int offset, @NotNull SQLQuerySymbolEntry entry) {
+        this.offset = offset;
+        this.entry = entry;
+    }
 }

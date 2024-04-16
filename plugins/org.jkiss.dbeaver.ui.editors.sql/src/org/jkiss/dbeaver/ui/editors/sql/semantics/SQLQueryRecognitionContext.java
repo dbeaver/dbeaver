@@ -21,6 +21,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
+/**
+ * Accumulates the statistics about recognition process
+ */
 public interface SQLQueryRecognitionContext {
 
     DBRProgressMonitor getMonitor();

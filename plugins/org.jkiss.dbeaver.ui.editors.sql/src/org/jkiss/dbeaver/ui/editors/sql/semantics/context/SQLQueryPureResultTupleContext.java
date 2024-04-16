@@ -44,7 +44,7 @@ public class SQLQueryPureResultTupleContext extends SQLQuerySyntaxContext {
 
     @Nullable
     @Override
-    public SQLQueryRowsSourceModel findRealSource(DBSEntity table) {
+    public SQLQueryRowsSourceModel findRealSource(@NotNull DBSEntity table) {
         return null;
     }
     

@@ -21,11 +21,18 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
+/**
+ * Symbol entry in the text
+ */
 public class SQLQuerySymbolEntry extends SQLQueryLexicalScopeItem implements SQLQuerySymbolDefinition {
+    @NotNull
     private final String name;
+    @NotNull
     private final String rawName;
-    
+
+    @Nullable
     private SQLQuerySymbol symbol = null;
+    @Nullable
     private SQLQuerySymbolDefinition definition = null;
     
     public SQLQuerySymbolEntry(@NotNull STMTreeNode syntaxNode, @NotNull String name, @NotNull String rawName) {
@@ -34,6 +41,7 @@ public class SQLQuerySymbolEntry extends SQLQueryLexicalScopeItem implements SQL
         this.rawName = rawName;
     }
 
+    @NotNull
     @Override
     public STMTreeNode[] getSyntaxComponents() {
         return new STMTreeNode[] { this.syntaxNode };
@@ -59,7 +67,10 @@ public class SQLQuerySymbolEntry extends SQLQueryLexicalScopeItem implements SQL
         return this.definition != null ? this.definition 
                 : (this.symbol != null ? this.symbol.getDefinition() : null);
     }
-    
+
+    /**
+     * Set symbol definition to the token
+     */
     public void setDefinition(@Nullable SQLQuerySymbolDefinition definition) {
         if (this.definition != null) {
             throw new UnsupportedOperationException("Symbol entry definition has already been set");
@@ -72,6 +83,9 @@ public class SQLQuerySymbolEntry extends SQLQueryLexicalScopeItem implements SQL
         }
     }
 
+    /**
+     * Returns symbol associated with this symbol entry
+     */
     @NotNull
     public SQLQuerySymbol getSymbol() {
         if (symbol == null) {
@@ -86,7 +100,10 @@ public class SQLQuerySymbolEntry extends SQLQueryLexicalScopeItem implements SQL
     public SQLQuerySymbolClass getSymbolClass() {
         return this.getSymbol().getSymbolClass();
     }
-    
+
+    /**
+     * Merge the other symbol with this one
+     */
     public void merge(@NotNull SQLQuerySymbol symbol) {
         if (this.symbol != null) {
             // TODO: illegal operation?
@@ -96,6 +113,10 @@ public class SQLQuerySymbolEntry extends SQLQueryLexicalScopeItem implements SQL
         }
     }
 
+    /**
+     * Merge the other symbol with this one and returns a new symbol
+     */
+    @NotNull
     public SQLQuerySymbol merge(@NotNull SQLQuerySymbolEntry other) {
         SQLQuerySymbol symbol;
         if (this.symbol != null && other.symbol != null) {

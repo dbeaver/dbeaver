@@ -44,9 +44,13 @@ public class SQLQuerySymbol {
         return this.symbolClass;
     }
 
+    /**
+     * Set symbol class to this symbol.
+     * Throws IllegalStateException, if symbol has been already classified
+     */
     public void setSymbolClass(@NotNull SQLQuerySymbolClass symbolClass) {
         if (this.symbolClass != SQLQuerySymbolClass.UNKNOWN) {
-            throw new UnsupportedOperationException("Symbol already classified");
+            throw new IllegalStateException("Symbol already classified");
         } else {
             this.symbolClass = symbolClass;
         }
@@ -61,24 +65,35 @@ public class SQLQuerySymbol {
     public SQLQuerySymbolDefinition getDefinition() {
         return this.definition;
     }
-    
+
+    /**
+     * Set symbol definition to this symbol.
+     * Throws IllegalStateException, if symbol definition has already been set
+     */
     public void setDefinition(@Nullable SQLQuerySymbolDefinition definition) {
         if (this.definition != null) {
-            throw new UnsupportedOperationException("Symbol definition has already been set");
+            throw new IllegalStateException("Symbol definition has already been set");
         } else if (definition != null) {
             this.definition = definition;
             this.setSymbolClass(definition.getSymbolClass());
         }
     }
-    
+
+    /**
+     * Register symbol entry.
+     * Throws IllegalStateException, if symbol has already been registered
+     */
     public void registerEntry(@NotNull SQLQuerySymbolEntry entry) {
         if (!entry.getName().equals(this.name)) {
-            throw new UnsupportedOperationException("Cannot treat symbols '" + entry.getName() + "' as an instance of '" + this.name + "'");
+            throw new IllegalStateException("Cannot treat symbols '" + entry.getName() + "' as an instance of '" + this.name + "'");
         }
         
         this.entries.add(entry);
     }
 
+    /**
+     * Merge this symbol with the other one
+     */
     @NotNull
     public SQLQuerySymbol merge(@NotNull SQLQuerySymbol other) { // TODO merge multiple definitions and check for symbolClass
         if (!other.name.equals(this.name)) {

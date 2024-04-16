@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.editors.sql.semantics.context;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsSourceModel;
@@ -35,13 +36,13 @@ public class SQLQueryCombinedContext extends SQLQueryResultTupleContext {
         this.otherParent = right;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public SQLQueryRowsSourceModel findRealSource(@NotNull DBSEntity table) {
         return anyOfTwo(parent.findRealSource(table), otherParent.findRealSource(table)); // TODO consider ambiguity
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBSEntity findRealTable(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
         return anyOfTwo(parent.findRealTable(monitor, tableName), otherParent.findRealTable(monitor, tableName)); // TODO consider ambiguity
