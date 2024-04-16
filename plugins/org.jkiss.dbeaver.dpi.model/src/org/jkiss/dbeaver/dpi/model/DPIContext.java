@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.dpi.model;
 import com.google.gson.Gson;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.dpi.model.adapters.DPISerializer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.dpi.DPIController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -42,10 +43,10 @@ public class DPIContext {
     private final Gson gson;
     private DPIController dpiController;
 
-    public DPIContext(@NotNull DBRProgressMonitor monitor, @NotNull Object rootObject) {
+    public DPIContext(@NotNull DBRProgressMonitor monitor, @NotNull Object rootObject, boolean server) {
         this.monitor = monitor;
         this.rootObject = rootObject;
-        this.gson = DPISerializer.createSerializer(this);
+        this.gson = server ? DPISerializer.createServerSerializer(this) : DPISerializer.createClientSerializer(this);
     }
 
     public DPIController getDpiController() {

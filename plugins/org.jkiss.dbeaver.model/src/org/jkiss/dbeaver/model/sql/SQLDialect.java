@@ -24,8 +24,6 @@ import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
-import org.jkiss.dbeaver.model.dpi.DPIElement;
-import org.jkiss.dbeaver.model.dpi.DPIObject;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.impl.sql.SQLDialectQueryGenerator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -43,8 +41,6 @@ import java.util.List;
 /**
  * SQL dialect
  */
-@DPIObject
-@DPIElement
 public interface SQLDialect {
 
     int USAGE_NONE = 0;
