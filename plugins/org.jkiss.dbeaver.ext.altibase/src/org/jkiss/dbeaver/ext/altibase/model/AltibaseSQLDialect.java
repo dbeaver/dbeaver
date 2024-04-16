@@ -428,6 +428,11 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
     public boolean supportsAliasInConditions() {
         return false;
     }
+
+    @Override
+    public String getClobComparingPart(@NotNull String columnName) {
+        return "DBMS_LOB.COMPARE(%s,?) = 0".formatted(columnName);
+    }
     
     @Override
     public boolean supportsAliasInSelect() {
@@ -561,7 +566,23 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
         // Not supported data type
         return "";
     }
-    
+
+    @NotNull
+    @Override
+    public String getAlterColumnOperation() {
+        return AltibaseConstants.OPERATION_MODIFY;
+    }
+
+    @Override
+    public boolean supportsAlterColumnSet() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsAlterHasColumn() {
+        return false;
+    }
+
     @Override
     public String getSchemaExistQuery(String schemaName) {
         return "SELECT 1 FROM SYSTEM_.SYS_USERS_ WHERE USER_NAME='" + schemaName + "'";

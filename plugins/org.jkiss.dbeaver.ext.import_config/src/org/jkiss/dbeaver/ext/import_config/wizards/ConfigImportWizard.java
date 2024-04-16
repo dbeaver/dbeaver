@@ -200,6 +200,9 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         } else {
             config.setConfigurationType(DBPDriverConfigurationType.MANUAL);
         }
+        if (!connectionInfo.getNetworkHandlers().isEmpty()) {
+            config.setHandlers(connectionInfo.getNetworkHandlers());
+        }
         
         DataSourceDescriptor dataSource = new DataSourceDescriptor(
             dataSourceRegistry,

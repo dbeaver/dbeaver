@@ -238,7 +238,7 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
             }
 
             jumpPortForward = origin.setupPortForward(new SSHPortForwardConfiguration(
-                SSHPortForwardConfiguration.LOCAL_HOST,
+                SSHConstants.LOCAL_HOST,
                 0,
                 host.hostname(),
                 host.port()
@@ -394,10 +394,9 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
             this.session = controller.createSession();
         }
 
-
         @Property(viewable = true, order = 1, name = "Destination")
-        public SSHHostConfiguration getDestination() {
-            return destination;
+        public String getDestinationInfo() {
+            return destination.toDisplayString();
         }
 
         @Property(viewable = true, order = 2, name = "Used By")
@@ -410,7 +409,7 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
         @Property(viewable = true, order = 3, name = "Port Forwards")
         public String getPortForwardingInfo() {
             return portForwards.values().stream()
-                .map(info -> "%s (%d)".formatted(info.resolved, info.usages.get()))
+                .map(info -> "%s (%d)".formatted(info.resolved.toDisplayString(), info.usages.get()))
                 .collect(Collectors.joining(", "));
         }
 
