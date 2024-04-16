@@ -1075,8 +1075,24 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         return PostgreConstants.TYPE_BOOLEAN;
     }
 
+    @NotNull
+    @Override
+    public String getAlterColumnOperation() {
+        return PostgreConstants.OPERATION_ALTER;
+    }
+
     @Override
     public boolean supportsNoActionIndex() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsAlterColumnSet() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsAlterHasColumn() {
         return true;
     }
 
