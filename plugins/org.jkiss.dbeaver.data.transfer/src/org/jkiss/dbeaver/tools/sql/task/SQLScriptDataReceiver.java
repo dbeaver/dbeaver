@@ -33,7 +33,7 @@ public class SQLScriptDataReceiver implements DBDDataReceiver {
 
     private Integer rowSize;
     private Writer dumpWriter;
-    private List<DBCAttributeMetaData> attributes;
+    private List<? extends DBCAttributeMetaData> attributes;
 
     @Override
     public void fetchStart(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, long offset, long maxRows) throws DBCException {

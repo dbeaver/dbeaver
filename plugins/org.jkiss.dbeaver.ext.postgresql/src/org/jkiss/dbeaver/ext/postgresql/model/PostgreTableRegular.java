@@ -33,8 +33,7 @@ import java.sql.SQLException;
  * PostgreTableRegular
  */
 public class PostgreTableRegular extends PostgreTable implements DBPReferentialIntegrityController {
-    public PostgreTableRegular(PostgreSchema catalog)
-    {
+    public PostgreTableRegular(PostgreSchema catalog) {
         super(catalog);
     }
 
