@@ -43,6 +43,9 @@ public abstract class SQLQueryExprType {
 
     public static final SQLQueryExprType UNKNOWN = new SQLQueryExprPredefinedType("UNKNOWN", DBPDataKind.UNKNOWN);
     public static final SQLQueryExprType STRING = new SQLQueryExprPredefinedType("STRING", DBPDataKind.STRING);
+    public static final SQLQueryExprType BOOLEAN = new SQLQueryExprPredefinedType("BOOLEAN", DBPDataKind.BOOLEAN);
+    public static final SQLQueryExprType NUMERIC = new SQLQueryExprPredefinedType("NUMERIC", DBPDataKind.NUMERIC);
+    public static final SQLQueryExprType DATETIME = new SQLQueryExprPredefinedType("DATETIME", DBPDataKind.DATETIME);
     public static final SQLQueryExprType DUMMY = new SQLQueryExprDummyType(null);
     private static final SQLQueryExprType DUMMY_FIELD = new SQLQueryExprDummyType(() -> SQLQuerySymbolClass.COMPOSITE_FIELD);
 
@@ -97,7 +100,7 @@ public abstract class SQLQueryExprType {
 
     @NotNull
     public static SQLQueryExprType forScalarSubquery(@NotNull SQLQueryRowsSourceModel source) {
-        List<SQLQueryResultColumn> columns = source.getDataContext().getColumnsList();
+        List<SQLQueryResultColumn> columns = source.getResultDataContext().getColumnsList();
         SQLQueryExprType type = columns.isEmpty() ? SQLQueryExprType.UNKNOWN : columns.get(0).type; 
         return type;
     }

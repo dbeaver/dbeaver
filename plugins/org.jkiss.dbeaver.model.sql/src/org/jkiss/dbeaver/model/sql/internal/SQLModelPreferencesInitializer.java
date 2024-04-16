@@ -17,11 +17,11 @@
 package org.jkiss.dbeaver.model.sql.internal;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLModelPreferences;
 import org.jkiss.dbeaver.model.sql.SQLTableAliasInsertMode;
 import org.jkiss.dbeaver.model.sql.format.tokenized.SQLFormatterTokenized;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
 public class SQLModelPreferencesInitializer extends AbstractPreferenceInitializer {
@@ -32,11 +32,16 @@ public class SQLModelPreferencesInitializer extends AbstractPreferenceInitialize
     @Override
     public void initializeDefaultPreferences() {
         // Init default preferences
-        DBPPreferenceStore store = ModelPreferences.getPreferences();
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         // Common
         PrefUtils.setDefaultPreferenceValue(store, SQLModelPreferences.SQL_FORMAT_FORMATTER, SQLFormatterTokenized.FORMATTER_ID);
         PrefUtils.setDefaultPreferenceValue(store, SQLModelPreferences.SQL_PROPOSAL_INSERT_TABLE_ALIAS, SQLTableAliasInsertMode.PLAIN);
+
+        //SQL Editor
+        PrefUtils.setDefaultPreferenceValue(store, SQLModelPreferences.SQL_EDITOR_PROPOSAL_SHORT_NAME, false);
+        PrefUtils.setDefaultPreferenceValue(store, SQLModelPreferences.SQL_EDITOR_PROPOSAL_ALWAYS_FQ, false);
+
     }
 
 }

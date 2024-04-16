@@ -296,9 +296,9 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
         dataSource.setSelectedEntityType(GenericConstants.ENTITY_TYPE_CATALOG);
 
         if (oldSelectedCatalog != null) {
-            DBUtils.fireObjectSelect(oldSelectedCatalog, false);
+            DBUtils.fireObjectSelect(oldSelectedCatalog, false, this);
         }
-        DBUtils.fireObjectSelect(catalog, true);
+        DBUtils.fireObjectSelect(catalog, true, this);
     }
 
     @Override
@@ -313,9 +313,9 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
         setDefaultSchema(monitor, schema.getName());
 
         if (oldSelectedSchema != null) {
-            DBUtils.fireObjectSelect(oldSelectedSchema, false);
+            DBUtils.fireObjectSelect(oldSelectedSchema, false, this);
         }
-        DBUtils.fireObjectSelect(schema, true);
+        DBUtils.fireObjectSelect(schema, true, this);
     }
 
     private void setDefaultSchema(DBRProgressMonitor monitor, String schemaName) throws DBCException {
@@ -362,7 +362,7 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
         if (!CommonUtils.equalObjects(oldEntityName, selectedEntityName)) {
             final DBSObject newDefaultObject = getDefaultObject();
             if (newDefaultObject != null) {
-                DBUtils.fireObjectSelectionChange(oldDefaultObject, newDefaultObject);
+                DBUtils.fireObjectSelectionChange(oldDefaultObject, newDefaultObject, this);
                 return true;
             }
         }

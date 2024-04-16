@@ -88,7 +88,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     public static final String WORKSPACE_DIR_LEGACY = "${user.home}/.dbeaver"; //$NON-NLS-1$
     public static final String WORKSPACE_DIR_4 = "${user.home}/.dbeaver4"; //$NON-NLS-1$
-    public static final String DBEAVER_DATA_DIR = "DBeaverData";
 
     public static final String[] WORKSPACE_DIR_PREVIOUS = {
         WORKSPACE_DIR_4,
@@ -135,7 +134,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private long lastUserActivityTime = -1;
 
     public DBeaverApplication() {
-        this(DBEAVER_DATA_DIR, DEFAULT_WORKSPACE_FOLDER);
+        this(DesktopPlatform.DBEAVER_DATA_DIR, DEFAULT_WORKSPACE_FOLDER);
     }
 
     protected DBeaverApplication(String defaultWorkspaceLocation, String defaultAppWorkspaceName) {
@@ -273,7 +272,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         try {
             instanceServer = DBeaverInstanceServer.createServer();
         } catch (Exception e) {
-            log.error("Can't start instance server", e);
+            log.error("Can't start instance server: " + e.getMessage());
         }
 
         TimezoneRegistry.overrideTimezone();
@@ -281,7 +280,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         if (RuntimeUtils.isWindows()
             && CommonUtils.isEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE))
             && CommonUtils.isEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE_TYPE))
-            && ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
+            && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
         ) {
             System.setProperty(GeneralUtils.PROP_TRUST_STORE_TYPE, GeneralUtils.VALUE_TRUST_STORE_TYPE_WINDOWS);
         }

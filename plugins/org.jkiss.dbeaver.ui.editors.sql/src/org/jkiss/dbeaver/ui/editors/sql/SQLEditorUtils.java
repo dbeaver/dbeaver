@@ -498,8 +498,7 @@ public class SQLEditorUtils {
             for (IWorkbenchPage page : window.getPages()) {
                 for (IEditorReference editorRef : page.getEditorReferences()) {
                     IEditorPart editor = editorRef.getEditor(false);
-                    if (editor instanceof SQLEditorBase) {
-                        SQLEditorBase sqlEditor = (SQLEditorBase) editor;
+                    if (editor instanceof SQLEditorBase sqlEditor) {
                         EditorFileInfo editorFile = EditorFileInfo.getFromEditor(editor.getEditorInput());
                         if (editorFile != null && editorFile.equals(file)) {
                             affectedPrefs.add(sqlEditor.getActivePreferenceStore());
@@ -517,6 +516,9 @@ public class SQLEditorUtils {
         }
         for (SQLEditor sqlEditor : affectedEditors) {
             sqlEditor.refreshEditorIconAndTitle();
+            if (sqlEditor.getOverviewOutlinePage() instanceof SQLEditorOutlinePage outline) {
+                outline.refresh();
+            }
         }
 
         PlatformUI.getWorkbench().getService(ICommandService.class).refreshElements(DisableSQLSyntaxParserHandler.COMMAND_ID, null);

@@ -284,6 +284,10 @@ public class DBeaverLauncher {
     private static final String LOCATION_DATA_HOME_MAC = "~/Library"; //$NON-NLS-1$
     private static final String DB_DATA_HOME = "@data.home"; //$NON-NLS-1$
 
+    private static final String DBEAVER_CONFIG_FOLDER = "settings";
+    private static final String DBEAVER_CONFIG_FILE = "global-settings.ini";
+    private static final String DBEAVER_PROP_LANGUAGE = "nl";
+
     /**
      * A structured form for a version identifier.
      *
@@ -568,6 +572,7 @@ public class DBeaverLauncher {
             debug = System.getProperty(PROP_DEBUG) != null;
         setupVMProperties();
         processConfiguration();
+        processGlobalConfiguration();
 
         if (protectBase && (System.getProperty(PROP_SHARED_CONFIG_AREA) == null)) {
             System.err.println("This application is configured to run in a cascaded mode only."); //$NON-NLS-1$
@@ -591,8 +596,9 @@ public class DBeaverLauncher {
             return;
 
         // verify configuration location is writable
-        if (!checkConfigurationLocation(configurationLocation))
-            return;
+        // FIXME: disable this check for products which run in read-only environment, e.g. cloud based
+        //if (!checkConfigurationLocation(configurationLocation))
+        //    return;
 
         // splash handling is done here, because the default case needs to know
         // the location of the boot plugin we are going to use
@@ -1865,6 +1871,38 @@ public class DBeaverLauncher {
             }
         }
         return productPath;
+    }
+
+    private void processGlobalConfiguration() {
+        try {
+            final Properties config = readGlobalConfiguration();
+            setSystemPropertyIfNotSet(PROP_NL, config.getProperty(DBEAVER_PROP_LANGUAGE));
+        } catch (IOException e) {
+            log("Unable to read global configuration file: " + e.getMessage());
+        }
+    }
+
+    private Properties readGlobalConfiguration() throws IOException {
+        final Path root = Path.of(getWorkingDirectory(DBEAVER_DATA_FOLDER));
+        final Path file = root.resolve(DBEAVER_CONFIG_FOLDER).resolve(DBEAVER_CONFIG_FILE);
+        final Properties properties = new Properties();
+
+        if (Files.exists(file)) {
+            try (Reader reader = Files.newBufferedReader(file)) {
+                properties.load(reader);
+            }
+        }
+
+        return properties;
+    }
+
+    private static void setSystemPropertyIfNotSet(String key, String value) {
+        if (value == null || value.isBlank()) {
+            return;
+        }
+        if (System.getProperty(key) == null) {
+            System.setProperty(key, value);
+        }
     }
 
     private void processConfiguration() {

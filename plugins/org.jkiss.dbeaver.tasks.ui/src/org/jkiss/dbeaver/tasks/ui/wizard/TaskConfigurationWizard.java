@@ -91,7 +91,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
 
     public abstract String getTaskTypeId();
 
-    public abstract void saveTaskState(DBRRunnableContext runnableContext, DBTTask task, Map<String, Object> state);
+    public abstract void saveTaskState(DBRRunnableContext runnableContext, DBTTask task, Map<String, Object> state) throws DBException;
 
     public boolean isRunTaskOnFinish() {
         return getCurrentTask() != null && !getCurrentTask().isTemporary() && !getContainer().isSelectorMode();
@@ -312,21 +312,22 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     }
 
     protected void saveConfigurationToTask(DBTTask theTask) {
-        Map<String, Object> state = new LinkedHashMap<>();
-        saveTaskState(getRunnableContext(), theTask, state);
-
-        DBTTaskContext context = getTaskContext();
-        if (context != null) {
-            DBTaskUtils.saveTaskContext(state, context);
-        }
-        if (theTask.getType().supportsVariables()) {
-            DBTaskUtils.setVariables(state, getTaskVariables());
-            if (promptVariables) {
-                state.put(DBTaskUtils.TASK_PROMPT_VARIABLES, true);
-            }
-        }
-        theTask.setProperties(state);
         try {
+            Map<String, Object> state = new LinkedHashMap<>();
+            saveTaskState(getRunnableContext(), theTask, state);
+
+            DBTTaskContext context = getTaskContext();
+            if (context != null) {
+                DBTaskUtils.saveTaskContext(state, context);
+            }
+            if (theTask.getType().supportsVariables()) {
+                DBTaskUtils.setVariables(state, getTaskVariables());
+                if (promptVariables) {
+                    state.put(DBTaskUtils.TASK_PROMPT_VARIABLES, true);
+                }
+            }
+            theTask.setProperties(state);
+
             theTask.getProject().getTaskManager().updateTaskConfiguration(theTask);
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Task save error", "Error saving task configuration", e);

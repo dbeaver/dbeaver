@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 import org.jkiss.utils.CommonUtils;
@@ -164,7 +165,7 @@ public class EditDictionaryPage extends AttributesSelectorPage {
 
     public void saveDictionarySettings() {
         dictionary.setDescriptionColumnNames(criteriaText.getText());
-        ModelPreferences.getPreferences().setValue(
+        DBWorkbench.getPlatform().getPreferenceStore().setValue(
             ModelPreferences.DICTIONARY_COLUMN_DIVIDER,
             columnDividerText.getText());
     }

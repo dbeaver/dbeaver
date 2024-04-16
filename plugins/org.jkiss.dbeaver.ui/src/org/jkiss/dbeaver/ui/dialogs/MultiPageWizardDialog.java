@@ -191,7 +191,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         pageArea.setLayoutData(gd);
         pageArea.setLayout(new GridLayout(1, true));
 
-        wizardSash.setWeights(new int[]{220, 780});
+        wizardSash.setWeights(220, 780);
 
         Point size = leftPane.computeSize(SWT.DEFAULT, SWT.DEFAULT);
         if (size.x > 0) {
@@ -269,12 +269,12 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         IWizard wizard = getWizard();
         try {
             GridData gd;
-            if (prevPage != null) {
+            if (prevPage != null && prevPage.getControl() != null) {
                 gd = (GridData) prevPage.getControl().getLayoutData();
                 gd.exclude = true;
                 prevPage.setVisible(false);
-                if (prevPage instanceof ActiveWizardPage) {
-                    ((ActiveWizardPage) prevPage).deactivatePage();
+                if (prevPage instanceof ActiveWizardPage<?> awp) {
+                    awp.deactivatePage();
                 }
             }
 
@@ -311,7 +311,9 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
             prevPage = page;
             pageArea.layout();
-            prevPage.getControl().setFocus();
+            if (prevPage.getControl() != null) {
+                prevPage.getControl().setFocus();
+            }
             if (pageCreated && isAutoLayoutAvailable()) {
                 UIUtils.asyncExec(() -> {
                     if (wizard.getContainer().getShell() != null) {
@@ -320,8 +322,8 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                 });
             }
 
-            if (page instanceof ActiveWizardPage) {
-                ((ActiveWizardPage)page).updatePageCompletion();
+            if (page instanceof ActiveWizardPage<?> awp) {
+                awp.updatePageCompletion();
             }
         } catch (Throwable e) {
             DBWorkbench.getPlatformUI().showError("Page switch", "Error switching active page", e);
@@ -430,8 +432,6 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
             pagesTree.removeAll();
 
-            Point maxSize = new Point(0, 0);
-
             IWizardPage[] pages = wizard.getPages();
             for (IWizardPage page : pages) {
                 addNavigationItem(null, page);
@@ -503,8 +503,8 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
     protected void updatePageCompletion() {
         IWizardPage page = getCurrentPage();
-        if (page instanceof ActiveWizardPage) {
-            ((ActiveWizardPage)page).updatePageCompletion();
+        if (page instanceof ActiveWizardPage<?> awp) {
+            awp.updatePageCompletion();
         }
     }
 
@@ -535,12 +535,15 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         if (currentPage == null) {
             return;
         }
-        String errorMessage = currentPage.getErrorMessage();
-        if (!CommonUtils.isEmpty(errorMessage)) {
-            setMessage(errorMessage, IMessageProvider.ERROR);
+        final String message = currentPage.getMessage();
+        if (message == null) {
+            setMessage(currentPage.getDescription());
+        } else if (currentPage instanceof IMessageProvider provider) {
+            setMessage(message, provider.getMessageType());
         } else {
-            setMessage(CommonUtils.notEmpty(currentPage.getDescription()), IMessageProvider.NONE);
+            setMessage(message);
         }
+        setErrorMessage(currentPage.getErrorMessage());
     }
 
     @Override

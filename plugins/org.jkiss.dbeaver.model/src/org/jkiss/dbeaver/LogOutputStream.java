@@ -64,6 +64,7 @@ public class LogOutputStream extends OutputStream {
             );
         }
 
+        // Use ModelPReferences because we don't want to trigger platform activation by logger initialization
         final DBPPreferenceStore prefStore = ModelPreferences.getPreferences();
         this.currentLogFile = debugLogFile;
         this.logFileLocation = debugLogFile.getParentFile();

@@ -685,7 +685,7 @@ public final class DBUtils {
 
     @NotNull
     public static DBDAttributeBinding[] getAttributeBindings(@NotNull DBCSession session, @NotNull DBSDataContainer dataContainer, @NotNull DBCResultSetMetaData metaData) {
-        List<DBCAttributeMetaData> metaAttributes = metaData.getAttributes();
+        List<? extends DBCAttributeMetaData> metaAttributes = metaData.getAttributes();
         int columnsCount = metaAttributes.size();
         DBDAttributeBinding[] bindings = new DBDAttributeBinding[columnsCount];
         for (int i = 0; i < columnsCount; i++) {
@@ -732,7 +732,7 @@ public final class DBUtils {
     @NotNull
     public static DBDAttributeBinding[] makeLeafAttributeBindings(@NotNull DBCSession session, @NotNull DBSDataContainer dataContainer, @NotNull DBCResultSet resultSet) throws DBCException {
         List<DBDAttributeBinding> metaColumns = new ArrayList<>();
-        List<DBCAttributeMetaData> attributes = resultSet.getMeta().getAttributes();
+        List<? extends DBCAttributeMetaData> attributes = resultSet.getMeta().getAttributes();
         boolean isDocumentAttribute = attributes.size() == 1 && attributes.get(0).getDataKind() == DBPDataKind.DOCUMENT;
         if (isDocumentAttribute) {
             DBCAttributeMetaData attributeMeta = attributes.get(0);
@@ -1321,7 +1321,7 @@ public final class DBUtils {
 
     @NotNull
     public static DBCStatement makeStatement(
-        @NotNull DBCExecutionSource executionSource,
+        @Nullable DBCExecutionSource executionSource,
         @NotNull DBCSession session,
         @NotNull DBCStatementType statementType,
         @NotNull String query,
@@ -1339,7 +1339,7 @@ public final class DBUtils {
 
     @NotNull
     public static DBCStatement makeStatement(
-        @NotNull DBCExecutionSource executionSource,
+        @Nullable DBCExecutionSource executionSource,
         @NotNull DBCSession session,
         @NotNull DBCStatementType statementType,
         @NotNull SQLQuery sqlQuery,
@@ -1502,10 +1502,13 @@ public final class DBUtils {
         }
     }
 
-    public static void fireObjectSelect(DBSObject object, boolean select) {
+    /**
+     * Fire event that the object was selected or unselected
+     */
+    public static void fireObjectSelect(@Nullable DBSObject object, boolean select, @Nullable DBCExecutionContext context) {
         final DBPDataSourceContainer container = getContainer(object);
         if (container != null) {
-            container.fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_SELECT, object, select));
+            container.fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_SELECT, object, select, context));
         }
     }
 
@@ -1514,7 +1517,7 @@ public final class DBUtils {
      */
     public static void fireObjectRefresh(DBSObject object) {
         // Select with true parameter is the same as refresh
-        fireObjectSelect(object, true);
+        fireObjectSelect(object, true, null);
     }
 
     @NotNull
@@ -1893,26 +1896,40 @@ public final class DBUtils {
         return new DBSObject[0];
     }
 
-    public static void refreshContextDefaultsAndReflect(DBRProgressMonitor monitor, DBCExecutionContextDefaults contextDefaults) {
+    /**
+     * Update execution context default schema and catalog
+     */
+    public static void refreshContextDefaultsAndReflect(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContextDefaults contextDefaults,
+        @Nullable DBCExecutionContext context
+    ) {
         try {
             DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
             DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
             if (contextDefaults.refreshDefaults(monitor, false)) {
-                fireObjectSelectionChange(defaultCatalog, contextDefaults.getDefaultCatalog());
-                fireObjectSelectionChange(defaultSchema, contextDefaults.getDefaultSchema());
+                fireObjectSelectionChange(defaultCatalog, contextDefaults.getDefaultCatalog(), context);
+                fireObjectSelectionChange(defaultSchema, contextDefaults.getDefaultSchema(), context);
             }
         } catch (Exception e) {
             log.debug(e);
         }
     }
 
-    public static void fireObjectSelectionChange(DBSObject oldDefaultObject, DBSObject newDefaultObject) {
+    /**
+     * Fire event to unselecting the oldDefaultObject and selecting the newDefaultObject
+     */
+    public static void fireObjectSelectionChange(
+        @Nullable DBSObject oldDefaultObject,
+        @Nullable DBSObject newDefaultObject,
+        @Nullable DBCExecutionContext context
+    ) {
         if (oldDefaultObject != newDefaultObject) {
             if (oldDefaultObject != null) {
-                DBUtils.fireObjectSelect(oldDefaultObject, false);
+                DBUtils.fireObjectSelect(oldDefaultObject, false, context);
             }
             if (newDefaultObject != null) {
-                DBUtils.fireObjectSelect(newDefaultObject, true);
+                DBUtils.fireObjectSelect(newDefaultObject, true, context);
             }
         }
     }
@@ -2533,7 +2550,7 @@ public final class DBUtils {
             if (dbStatement.executeStatement()) {
                 try (DBCResultSet rs = dbStatement.openResultSet()) {
                     if (rs.nextRow()) {
-                        List<DBCAttributeMetaData> resultAttrs = rs.getMeta().getAttributes();
+                        List<? extends DBCAttributeMetaData> resultAttrs = rs.getMeta().getAttributes();
                         Object countValue = null;
                         if (resultAttrs.size() == 1) {
                             countValue = rs.getAttributeValue(0);

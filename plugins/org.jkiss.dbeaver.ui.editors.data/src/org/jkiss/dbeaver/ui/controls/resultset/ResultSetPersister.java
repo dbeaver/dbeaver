@@ -888,7 +888,7 @@ class ResultSetPersister {
         public void fetchRow(@NotNull DBCSession session, @NotNull DBCResultSet resultSet)
             throws DBCException {
             DBCResultSetMetaData rsMeta = resultSet.getMeta();
-            List<DBCAttributeMetaData> keyAttributes = rsMeta.getAttributes();
+            List<? extends DBCAttributeMetaData> keyAttributes = rsMeta.getAttributes();
             for (int i = 0; i < keyAttributes.size(); i++) {
                 DBCAttributeMetaData keyAttribute = keyAttributes.get(i);
                 DBDValueHandler valueHandler = DBUtils.findValueHandler(session, keyAttribute);

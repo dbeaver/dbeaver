@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
@@ -34,12 +35,12 @@ public class SQLQueryTableInsertModel extends SQLQueryTableStatementModel {
     private final SQLQueryRowsSourceModel valuesRows;
     
     public SQLQueryTableInsertModel(
-        @NotNull Interval region,
+        @NotNull STMTreeNode syntaxNode,
         @Nullable SQLQueryRowsTableDataModel tableModel,
         @Nullable List<SQLQuerySymbolEntry> columnNames,
         @Nullable SQLQueryRowsSourceModel valuesRows
     ) {
-        super(region, tableModel);
+        super(syntaxNode, tableModel);
         this.columnNames = columnNames;
         this.valuesRows = valuesRows;
     }
@@ -58,8 +59,10 @@ public class SQLQueryTableInsertModel extends SQLQueryTableStatementModel {
     public void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         if (this.columnNames != null) {
             for (SQLQuerySymbolEntry columnName : this.columnNames) {
-                SQLQueryResultColumn column = context.resolveColumn(statistics.getMonitor(), columnName.getName());
-                SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(columnName, column, statistics);
+                if (columnName.isNotClassified()) {
+                    SQLQueryResultColumn column = context.resolveColumn(statistics.getMonitor(), columnName.getName());
+                    SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(columnName, column, statistics);
+                }
             }
         }
 

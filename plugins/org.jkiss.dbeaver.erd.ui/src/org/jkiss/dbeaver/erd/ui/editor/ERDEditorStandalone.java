@@ -162,7 +162,9 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
                 @Override
                 public EntityDiagram evaluate(DBRProgressMonitor monitor) throws InvocationTargetException {
                     try {
-                        return loadContentFromFile(monitor);
+                        EntityDiagram entityDiagram = loadContentFromFile(monitor);
+                        visuallize(monitor, entityDiagram);
+                        return entityDiagram;
                     } catch (DBException e) {
                         throw new InvocationTargetException(e);
                     }

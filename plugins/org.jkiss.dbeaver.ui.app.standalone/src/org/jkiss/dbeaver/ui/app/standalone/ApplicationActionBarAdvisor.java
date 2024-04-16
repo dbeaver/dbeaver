@@ -157,6 +157,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     protected void makeActions(final IWorkbenchWindow window)
     {
         removeUnWantedActions();
+        log.debug("Create workbench actions");
 
         register(ActionFactory.SAVE.create(window));
         register(ActionFactory.SAVE_AS.create(window));
@@ -362,7 +363,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
             DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(event -> {
                 if (event.getProperty().equals(ModelPreferences.CLIENT_TIMEZONE)) {
-                    updateTimezoneItem(tzItem);
+                    UIUtils.syncExec(() -> updateTimezoneItem(tzItem));
                 }
             });
 

@@ -426,6 +426,23 @@ public class GeneralUtils {
         return divPos == -1 ? message : message.substring(divPos + 1);
     }
 
+    public static String trimAllWhitespaces(String str) {
+        int len = str.length();
+        int st = 0;
+        while (st < len && isWhitespaceExt(str.charAt(st))) {
+            st++;
+        }
+        while (st < len && isWhitespaceExt(str.charAt(len - 1))) {
+            len--;
+        }
+        return ((st > 0) || (len < str.length() )) ?
+            str.substring(st, len) : str;
+    }
+
+    public static boolean isWhitespaceExt(char c) {
+        return c <= ' ' || c == 0x160;
+    }
+
     public interface IParameterHandler {
         boolean setParameter(String name, String value);
     }

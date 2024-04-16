@@ -40,7 +40,6 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractSessionController<T extends AbstractSession> implements SSHSessionController {
     private static final Log log = Log.getLog(AbstractSessionController.class);
-    private static final boolean DISABLE_SESSION_SHARING = Boolean.getBoolean("dbeaver.ssh.disableSessionSharing");
 
     protected final Map<SSHHostConfiguration, ShareableSession<T>> sessions = new ConcurrentHashMap<>();
     protected AgentIdentityRepository agentIdentityRepository;
@@ -56,9 +55,9 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
     ) throws DBException {
         final AbstractSession session;
         if (origin != null) {
-            session = createJumpSession(getShareableSession(origin), destination, portForward);
+            session = createJumpSession(getDelegateSession(origin), destination, portForward);
         } else {
-            session = createDirectSession(destination, portForward);
+            session = createDirectSession(configuration, destination, portForward);
         }
 
         session.connect(monitor, destination, configuration);
@@ -68,10 +67,11 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
 
     @NotNull
     private DirectSession<T> createDirectSession(
+        @NotNull DBWHandlerConfiguration configuration,
         @NotNull SSHHostConfiguration destination,
         @Nullable SSHPortForwardConfiguration portForward
     ) {
-        ShareableSession<T> session = sessions.get(destination);
+        ShareableSession<T> session = getSharedSession(configuration, destination);
         if (session == null) {
             // Session will be registered during connect
             session = new ShareableSession<>(this, destination);
@@ -81,11 +81,11 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
 
     @NotNull
     private JumpSession<T> createJumpSession(
-        @NotNull ShareableSession<T> origin,
+        @NotNull DelegateSession origin,
         @NotNull SSHHostConfiguration destination,
         @Nullable SSHPortForwardConfiguration portForward
     ) {
-        return new JumpSession<>(origin, destination, portForward);
+        return new JumpSession<>(this, origin, destination, portForward);
     }
 
     @Override
@@ -164,16 +164,6 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
     protected abstract T createSession();
 
     @NotNull
-    @SuppressWarnings("unchecked")
-    protected ShareableSession<T> getShareableSession(@NotNull SSHSession session) {
-        if (session instanceof DirectSession<?> ds) {
-            return (ShareableSession<T>) ds.inner;
-        } else {
-            throw new IllegalStateException("Unexpected session type: " + session + " (" + session.getClass().getName() + ")");
-        }
-    }
-
-    @NotNull
     protected DelegateSession getDelegateSession(@NotNull SSHSession session) {
         if (session instanceof DelegateSession delegate) {
             return delegate;
@@ -194,24 +184,41 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
         }
     }
 
+    @Nullable
+    private ShareableSession<T> getSharedSession(
+        @NotNull DBWHandlerConfiguration configuration,
+        @NotNull SSHHostConfiguration destination
+    ) {
+        if (canShareSessionForConfiguration(configuration)) {
+            return sessions.get(destination);
+        } else {
+            return null;
+        }
+    }
+
     protected static boolean canShareSessionForConfiguration(@NotNull DBWHandlerConfiguration configuration) {
         // Data source might be null if this tunnel is used for connection testing
-        return !DISABLE_SESSION_SHARING && configuration.getDataSource() != null;
+        return !SSHUtils.DISABLE_SESSION_SHARING
+            && configuration.getDataSource() != null
+            && configuration.getBooleanProperty(SSHConstants.PROP_SHARE_TUNNELS, true);
     }
 
     protected static class JumpSession<T extends AbstractSession> extends DelegateSession {
-        private final ShareableSession<T> origin;
+        private final AbstractSessionController<T> controller;
+        private final DelegateSession origin;
         private final SSHPortForwardConfiguration portForward;
         private DelegateSession jumpDestination;
         private SSHPortForwardConfiguration jumpPortForward;
         private boolean registered;
 
         public JumpSession(
-            @NotNull ShareableSession<T> origin,
+            @NotNull AbstractSessionController<T> controller,
+            @NotNull DelegateSession origin,
             @NotNull SSHHostConfiguration destination,
             @Nullable SSHPortForwardConfiguration portForward
         ) {
             super(destination);
+            this.controller = controller;
             this.origin = origin;
             this.portForward = portForward;
             this.registered = true;
@@ -231,20 +238,20 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
             }
 
             jumpPortForward = origin.setupPortForward(new SSHPortForwardConfiguration(
-                SSHPortForwardConfiguration.LOCAL_HOST,
+                SSHConstants.LOCAL_HOST,
                 0,
-                host.getHostname(),
-                host.getPort()
+                host.hostname(),
+                host.port()
             ));
 
             final SSHHostConfiguration jumpHost = new SSHHostConfiguration(
-                host.getUsername(),
+                host.username(),
                 jumpPortForward.localHost(),
                 jumpPortForward.localPort(),
-                host.getAuthConfiguration()
+                host.auth()
             );
 
-            jumpDestination = origin.controller.createDirectSession(jumpHost, null);
+            jumpDestination = controller.createDirectSession(configuration, jumpHost, null);
             jumpDestination.connect(monitor, jumpHost, configuration);
 
             if (portForward != null) {
@@ -387,10 +394,9 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
             this.session = controller.createSession();
         }
 
-
         @Property(viewable = true, order = 1, name = "Destination")
-        public SSHHostConfiguration getDestination() {
-            return destination;
+        public String getDestinationInfo() {
+            return destination.toDisplayString();
         }
 
         @Property(viewable = true, order = 2, name = "Used By")
@@ -403,7 +409,7 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
         @Property(viewable = true, order = 3, name = "Port Forwards")
         public String getPortForwardingInfo() {
             return portForwards.values().stream()
-                .map(info -> "%s (%d)".formatted(info.resolved, info.usages.get()))
+                .map(info -> "%s (%d)".formatted(info.resolved.toDisplayString(), info.usages.get()))
                 .collect(Collectors.joining(", "));
         }
 

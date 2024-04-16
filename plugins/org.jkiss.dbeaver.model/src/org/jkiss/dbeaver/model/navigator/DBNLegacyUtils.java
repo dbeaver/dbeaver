@@ -171,9 +171,13 @@ public class DBNLegacyUtils {
                 curNode = nextChild;
             }
         }
-        if (!pathItems.isEmpty() && !nodeMatchesPath(nodePath, curNode, pathItems.get(pathItems.size() - 1))) {
-            // Tail node doesn't match tail node from the desired path
-            return null;
+
+        if (!pathItems.isEmpty()) {
+            String lastItemName = pathItems.get(pathItems.size() - 1).replace(DBNModel.SLASH_ESCAPE_TOKEN, "/");
+            if (!nodeMatchesPath(nodePath, curNode, lastItemName)) {
+                // Tail node doesn't match tail node from the desired path
+                return null;
+            }
         }
         return curNode;
     }
