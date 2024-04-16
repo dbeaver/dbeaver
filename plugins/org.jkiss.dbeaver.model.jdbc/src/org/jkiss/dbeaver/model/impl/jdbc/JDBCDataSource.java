@@ -281,7 +281,11 @@ public abstract class JDBCDataSource extends AbstractDataSource
             try {
                 driverInstance = getDriverInstance(monitor);
             } catch (DBException e) {
-                throw new DBCConnectException("Can't create driver instance", e, this);
+                throw new DBCConnectException("Can't create driver instance"
+                    + " (class '"
+                    + driverClassName
+                    + "').",
+                    e, this);
             }
         } else {
             if (!CommonUtils.isEmpty(driverClassName)) {
@@ -289,7 +293,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
                     driver.loadDriver(monitor);
                     Class.forName(driverClassName, true, driver.getClassLoader());
                 } catch (Exception e) {
-                    throw new DBCException("Driver class '" + driverClassName + "' not found", e);
+                    throw new DBCConnectException("Driver class '" + driverClassName + "' not found", e, this);
                 }
             }
         }

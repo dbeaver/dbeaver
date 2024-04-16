@@ -123,6 +123,7 @@ public class OracleConstants {
     public static final String TYPE_NAME_NUMERIC = "NUMERIC";
     public static final String TYPE_UUID = "VARCHAR2(36)";
     public static final String TYPE_BOOLEAN = "VARCHAR(1)";
+    public static final String OPERATION_MODIFY = "MODIFY";
 
 
     public static final int TIMESTAMP_TYPE_LENGTH = 13;

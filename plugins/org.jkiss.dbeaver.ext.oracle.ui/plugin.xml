@@ -162,6 +162,14 @@
                 icon="icons/sqldeveloper.png">
             <description>Oracle SQL Developer</description>
         </wizard>
+        <wizard
+                category="org.jkiss.dbeaver.import_config.third-party"
+                class="org.jkiss.dbeaver.ext.oracle.ui.tools.toad.ConfigImportWizardToad"
+                id="org.jkiss.dbeaver.import_config.toad"
+                name="Toad"
+                icon="icons/toad_icon.png">
+            <description>Toad</description>
+        </wizard>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceView">
