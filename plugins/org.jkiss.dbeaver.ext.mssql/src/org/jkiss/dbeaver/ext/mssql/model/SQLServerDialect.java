@@ -440,6 +440,11 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
     }
 
     @Override
+    public boolean supportsAlterHasColumn() {
+        return true;
+    }
+
+    @Override
     public boolean supportsNoActionIndex() {
         return true;
     }

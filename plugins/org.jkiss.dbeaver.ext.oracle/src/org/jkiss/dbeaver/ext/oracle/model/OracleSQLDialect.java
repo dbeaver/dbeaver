@@ -782,6 +782,11 @@ public class OracleSQLDialect extends JDBCSQLDialect
     }
 
     @Override
+    public boolean supportsAlterHasColumn() {
+        return false;
+    }
+
+    @Override
     public boolean needsDefaultDataTypes() {
         return false;
     }

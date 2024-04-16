@@ -577,7 +577,12 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
     public boolean supportsAlterColumnSet() {
         return false;
     }
-    
+
+    @Override
+    public boolean supportsAlterHasColumn() {
+        return false;
+    }
+
     @Override
     public String getSchemaExistQuery(String schemaName) {
         return "SELECT 1 FROM SYSTEM_.SYS_USERS_ WHERE USER_NAME='" + schemaName + "'";

@@ -213,7 +213,10 @@ public class SQLQueryTranslator implements SQLTranslator {
                     }
                     if (extendedDialect != null) {
                         expr.setOperation(AlterOperation.valueOf(extendedDialect.getAlterColumnOperation().toUpperCase()));
+                        expr.hasColumn(extendedDialect.supportsAlterHasColumn());
+                        defChanged = true;
                     }
+
                     for (ColumnDefinition columnDataType : columnDataTypeList) {
                         defChanged |= translateColumnDataType(columnDataType, extendedDialect, targetDialect);
                     }

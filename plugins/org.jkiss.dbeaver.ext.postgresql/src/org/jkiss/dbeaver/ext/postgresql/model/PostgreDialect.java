@@ -1091,6 +1091,11 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         return true;
     }
 
+    @Override
+    public boolean supportsAlterHasColumn() {
+        return true;
+    }
+
     @NotNull
     @Override
     public String getSchemaExistQuery(@NotNull String schemaName) {
