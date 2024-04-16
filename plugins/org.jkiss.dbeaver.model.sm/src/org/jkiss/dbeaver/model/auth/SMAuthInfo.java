@@ -224,6 +224,10 @@ public class SMAuthInfo { //create flag
         return mainAuth;
     }
 
+    public boolean isForceSessionsLogout() {
+        return forceSessionsLogout;
+    }
+
     private static final class Builder {
         private SMAuthStatus authStatus;
         private String error;
