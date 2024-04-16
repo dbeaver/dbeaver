@@ -104,7 +104,7 @@ class ResultSetDataReceiver implements DBDDataReceiver, DBDDataReceiverInteracti
                 throw new DBCException("Null resultset metadata");
             }
 
-            List<DBCAttributeMetaData> rsAttributes = metaData.getAttributes();
+            List<? extends DBCAttributeMetaData> rsAttributes = metaData.getAttributes();
             columnsCount = rsAttributes.size();
 
             // Extract column info

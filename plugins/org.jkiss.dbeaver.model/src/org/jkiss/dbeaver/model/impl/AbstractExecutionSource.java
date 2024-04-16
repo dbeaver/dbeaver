@@ -30,7 +30,7 @@ public class AbstractExecutionSource implements DBCExecutionSource {
 
     private final DBSDataContainer dataContainer;
     private final DBCExecutionContext executionContext;
-    private final Object controller;
+    private final transient Object controller;
     private final Object descriptor;
     private DBCScriptContext scriptContext;
 

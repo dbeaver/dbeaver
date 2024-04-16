@@ -21,7 +21,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIEngineSettings;
 import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
-import org.jkiss.dbeaver.model.ai.openai.GPTModel;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
@@ -29,6 +28,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +44,12 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
         @NotNull IAIFormatter formatter
     ) throws DBException {
         String result = requestCompletion(monitor, context, List.of(message), formatter, false);
+        if (result == null) {
+            return Collections.emptyList();
+        }
+        // Remove empty lines
+        result = result.replaceAll("\n\n", "\n");
+
         DAICompletionResponse response = createCompletionResponse(context, result);
         return Collections.singletonList(response);
     }
@@ -73,7 +79,7 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
         if (includeAssistantMessages) {
             return messages;
         }
-        return messages.stream().filter(it -> DAICompletionMessage.Role.USER.equals(it.role())).toList();
+        return messages.stream().filter(it -> DAICompletionMessage.Role.USER.equals(it.getRole())).toList();
     }
 
     public abstract Map<String, SERVICE> getServiceMap();
@@ -102,6 +108,7 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
     @Nullable
     protected abstract String callCompletion(
         @NotNull DBRProgressMonitor monitor,
+        boolean chatMode,
         @NotNull List<DAICompletionMessage> messages,
         @NotNull SERVICE service,
         @NotNull REQUEST completionRequest
@@ -137,9 +144,9 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
         return mainObject;
     }
 
-    protected abstract REQUEST createCompletionRequest(@NotNull List<DAICompletionMessage> messages) throws DBCException;
+    protected abstract REQUEST createCompletionRequest(boolean chatMode, @NotNull List<DAICompletionMessage> messages) throws DBCException;
 
-    protected abstract REQUEST createCompletionRequest(@NotNull List<DAICompletionMessage> messages, int responseSize) throws DBCException;
+    protected abstract REQUEST createCompletionRequest(boolean chatMode, @NotNull List<DAICompletionMessage> messages, int maxTokens) throws DBCException;
 
     protected abstract SERVICE getServiceInstance(@NotNull DBCExecutionContext executionContext) throws DBException;
 
@@ -164,6 +171,74 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
         }
 
         return formatter.postProcessGeneratedQuery(monitor, mainObject, executionContext, completionText).trim();
+    }
+
+
+    @NotNull
+    protected static List<DAICompletionMessage> truncateMessages(
+        boolean chatMode,
+        @NotNull List<DAICompletionMessage> messages,
+        int maxTokens
+    ) {
+        final List<DAICompletionMessage> pending = new ArrayList<>(messages);
+        final List<DAICompletionMessage> truncated = new ArrayList<>();
+        int remainingTokens = maxTokens - 20; // Just to be sure
+
+        if (!pending.isEmpty()) {
+            if (pending.get(0).getRole() == DAICompletionMessage.Role.SYSTEM) {
+                // Always append main system message and leave space for the next one
+                DAICompletionMessage msg = pending.remove(0);
+                remainingTokens -= truncateMessage(msg, remainingTokens - 50);
+                truncated.add(msg);
+            }
+        }
+
+        for (DAICompletionMessage message : pending) {
+            final int messageTokens = message.getContent().length();
+
+            if (remainingTokens < 0 || messageTokens > remainingTokens) {
+                // Exclude old messages that don't fit into given number of tokens
+                if (chatMode) {
+                    break;
+                } else {
+                    // Truncate message itself
+                }
+            }
+
+            remainingTokens -= truncateMessage(message, remainingTokens);
+            truncated.add(message);
+        }
+
+        return truncated;
+    }
+
+    /**
+     * 1 token = 2 bytes
+     * It is sooooo approximately
+     * We should use https://github.com/knuddelsgmbh/jtokkit/ or something similar
+     */
+    protected static int truncateMessage(DAICompletionMessage message, int remainingTokens) {
+        String content = message.getContent();
+        int contentTokens = countContentTokens(content);
+        if (contentTokens > remainingTokens) {
+            int tokensToRemove = contentTokens - remainingTokens;
+            content = removeContentTokens(content, tokensToRemove);
+            message.setContent(content);
+            return contentTokens - tokensToRemove;
+        }
+        return contentTokens;
+    }
+
+    protected static String removeContentTokens(String content, int tokensToRemove) {
+        int charsToRemove = tokensToRemove * 2;
+        if (charsToRemove >= content.length()) {
+            return "";
+        }
+        return content.substring(0, content.length() - charsToRemove) + "..";
+    }
+
+    protected static int countContentTokens(String content) {
+        return content.length() / 2;
     }
 
 }

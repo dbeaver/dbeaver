@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserContext;
 import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
+import org.jkiss.dbeaver.model.stm.LSMInspections;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.stm.STMTreeTermNode;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -41,8 +42,6 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.completion.SQLQueryCompletionContext;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.completion.SQLQuerySyntaxTreeInspections;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.completion.SQLQuerySyntaxTreeInspections.SynaxInspectionResult;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryModel;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryNodeModel;
@@ -55,7 +54,7 @@ import java.util.*;
 public class SQLBackgroundParsingJob {
 
     private static final Log log = Log.getLog(SQLBackgroundParsingJob.class);
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     private static final long schedulingTimeoutMilliseconds = 500;
     
@@ -190,7 +189,7 @@ public class SQLBackgroundParsingJob {
         SQLQueryModel model = scriptItem.item.getQueryModel();
         if (model != null) {
             STMTreeNode syntaxNode = model.getSyntaxNode();
-            SynaxInspectionResult synaxInspectionResult = SQLQuerySyntaxTreeInspections.prepareAbstractSyntaxInspection(syntaxNode, position);
+            LSMInspections.SynaxInspectionResult sr = LSMInspections.prepareAbstractSyntaxInspection(syntaxNode, position);
             SQLQueryDataContext context = null;
             SQLQueryNodeModel node = model.findNodeContaining(position);
             SQLQueryLexicalScopeItem lexicalItem = null;
@@ -206,7 +205,7 @@ public class SQLBackgroundParsingJob {
             }
             
             ArrayDeque<STMTreeTermNode> nameNodes = new ArrayDeque<>();
-            List<STMTreeTermNode> allTerms = SQLQuerySyntaxTreeInspections.prepareTerms(syntaxNode);
+            List<STMTreeTermNode> allTerms = LSMInspections.prepareTerms(syntaxNode);
             int index = CommonUtils.binarySearchByKey(allTerms, t -> t.getRealInterval().a, position, Comparator.comparingInt(k -> k));
             if (index < 0) {
                 index = ~index - 1;
