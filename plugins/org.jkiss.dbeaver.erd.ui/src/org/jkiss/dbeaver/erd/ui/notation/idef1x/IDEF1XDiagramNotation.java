@@ -20,6 +20,7 @@ import org.eclipse.draw2d.PolygonDecoration;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.erd.model.ERDEntity;
 import org.jkiss.dbeaver.erd.model.ERDUtils;
@@ -29,11 +30,18 @@ import org.jkiss.dbeaver.erd.ui.part.AssociationPart.CircleDecoration;
 import org.jkiss.dbeaver.erd.ui.part.AssociationPart.RhombusDecoration;
 import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterDescriptor;
 import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
 public class IDEF1XDiagramNotation extends ERDNotationBase implements ERDNotation {
     @Override
-    public void applyNotationForArrows(PolylineConnection conn, ERDAssociation association, Color bckColor, Color frgColor) {
+    public void applyNotationForArrows(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PolylineConnection conn,
+        @NotNull ERDAssociation association,
+        @NotNull Color bckColor,
+        @NotNull Color frgColor
+    ) {
         boolean identifying = ERDUtils.isIdentifyingAssociation(association);
         DBSEntityConstraintType constraintType = association.getObject().getConstraintType();
         if (constraintType == DBSEntityConstraintType.INHERITANCE) {
@@ -69,13 +77,18 @@ public class IDEF1XDiagramNotation extends ERDNotationBase implements ERDNotatio
     }
 
     @Override
-    public void applyNotationForEntities(PolylineConnection conn, ERDAssociation association, Color bckColor, Color frgColor) {
+    public void applyNotationForEntities(
+        @NotNull PolylineConnection conn,
+        @NotNull ERDAssociation association,
+        @NotNull Color bckColor,
+        @NotNull Color frgColor
+    ) {
         // nothing
     }
 
     @Override
     public double getIndentation() {
-        return 0;
+        return 20;
     }
 
 }

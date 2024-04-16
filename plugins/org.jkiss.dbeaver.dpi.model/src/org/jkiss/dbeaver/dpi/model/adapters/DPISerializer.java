@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.dpi.model;
+package org.jkiss.dbeaver.dpi.model.adapters;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -27,16 +27,18 @@ import com.google.gson.stream.JsonWriter;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.dpi.model.DPIContext;
 import org.jkiss.dbeaver.dpi.model.client.DPIClientProxy;
+import org.jkiss.dbeaver.dpi.model.client.DPISmartObjectWrapper;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.dbeaver.model.dpi.DPIClientObject;
-import org.jkiss.dbeaver.model.dpi.DPIContainer;
-import org.jkiss.dbeaver.model.dpi.DPIElement;
-import org.jkiss.dbeaver.model.dpi.DPIObject;
+import org.jkiss.dbeaver.model.dpi.*;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.utils.BeanUtils;
 
@@ -52,8 +54,8 @@ import java.util.*;
  * DPI utils
  */
 public class DPISerializer {
-
     private static final Log log = Log.getLog(DPISerializer.class);
+
     public static final String ATTR_OBJECT_ID = "id";
     public static final String ATTR_ROOT = "root";
     public static final String ATTR_OBJECT_TYPE = "type";
@@ -63,27 +65,65 @@ public class DPISerializer {
     private static final String ATTR_PROPS = "properties";
     private static final String ATTR_CONTAINERS = "containers";
 
-    public static Gson createSerializer(DPIContext context) {
+    public static Gson createServerSerializer(DPIContext context) {
+        Map<Class<?>, AdapterCreator> adapters = new HashMap<>(getCommonAdapters());
         return new GsonBuilder()
-            .registerTypeAdapterFactory(new DPITypeAdapterFactory(context))
-            .registerTypeAdapterFactory(new ThrowableAdapterFactory())
+            .registerTypeAdapterFactory(new DPITypeAdapterFactory(context, adapters))
             .create();
     }
 
+    public static Gson createClientSerializer(@NotNull DPIContext context) {
+        Map<Class<?>, AdapterCreator> adapters = new HashMap<>(getCommonAdapters());
+
+        return new GsonBuilder()
+            .registerTypeAdapterFactory(new DPITypeAdapterFactory(context, adapters))
+            .create();
+    }
+
+    private static Map<Class<?>, AdapterCreator> getCommonAdapters() {
+        Map<Class<?>, AdapterCreator> common = new HashMap<>();
+        common.put(DBRProgressMonitor.class, (context, gson) -> new DPIProgressMonitorAdapter(context));
+        common.put(DPIClientObject.class, (context, gson) -> new DPIObjectRefAdapter(context));
+        common.put(Throwable.class, (context, gson) -> new DPIThrowableAdapter(context));
+        common.put(SQLDialect.class, (context, gson) -> new SQLDialectAdapter(context));
+        common.put(TimeZone.class, (context, gson) -> new TimeZoneAdapter(context));
+        common.put(DBCResultSet.class, DPIResultSetAdapter::new);
+        common.put(DBDDataReceiver.class, SQLDataReceiverAdapter::new);
+        common.put(DPISmartObjectWrapper.class, DPIServerSmartObjectsAdapter::new);
+        return common;
+    }
+
+
+    @FunctionalInterface
+    private interface AdapterCreator {
+        TypeAdapter<?> createAdapter(@NotNull DPIContext context, @NotNull Gson gson);
+    }
+
+
     static final class DPITypeAdapterFactory implements TypeAdapterFactory {
         private final DPIContext context;
-        public DPITypeAdapterFactory(DPIContext context) {
+        private final Map<Class<?>, AdapterCreator> classAdapters;
+
+        public DPITypeAdapterFactory(DPIContext context, Map<Class<?>, AdapterCreator> classAdapters) {
             this.context = context;
+            this.classAdapters = classAdapters;
         }
 
         @Override
         public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> typeToken) {
-            if (typeToken.getType() instanceof Class<?>) {
+
+            if (typeToken.getType() == Class.class) {
+                return (TypeAdapter<T>) new DPIClassAdapter(context);
+            } else if (typeToken.getType() instanceof Class<?>) {
                 Class<?> theClass = (Class<?>) typeToken.getType();
-                if (DBRProgressMonitor.class.isAssignableFrom(theClass)) {
-                    return (TypeAdapter<T>) new DPIProgressMonitorAdapter(context);
-                } else if (DPIClientObject.class.isAssignableFrom(theClass)) {
-                    return (TypeAdapter<T>) new DPIObjectRefAdapter(context);
+                for (Map.Entry<Class<?>, AdapterCreator> entry : classAdapters.entrySet()) {
+                    if (entry.getKey().isAssignableFrom(theClass)) {
+                        return (TypeAdapter<T>) entry.getValue().createAdapter(context, gson);
+                    }
+                }
+
+                if (getClassAnnotation(theClass, DPILocalObject.class) != null) {
+                    return new DPILocalObjectAdapter<>(context);
                 }
 
                 DPIObject annotation = getDPIAnno(theClass);
@@ -98,25 +138,32 @@ public class DPISerializer {
                         return new DPIObjectTypeAdapter<>(context, typeToken.getType());
                     }
                 }
-            } else if (typeToken.getType() == Class.class) {
-                return (TypeAdapter<T>) new DPIClassAdapter(context);
-            } else if (typeToken.getType() instanceof Class<?> &&
-                Throwable.class.isAssignableFrom((Class<?>) typeToken.getType())) {
-                return (TypeAdapter<T>) new DPIThrowableAdapter(context);
             }
             return null;
         }
 
     }
 
+    @Nullable
+    public static DPIObject getDPIAnno(@NotNull Class<?> type) {
+        return getClassAnnotation(type, DPIObject.class);
+    }
 
-    public static <T> DPIObject getDPIAnno(@NotNull Class<?> type) {
-        DPIObject annotation = type.getAnnotation(DPIObject.class);
+    public static boolean isSmartObject(@NotNull Class<?> type) {
+        return getClassAnnotation(type, DPISmartObject.class) != null;
+    }
+
+    @Nullable
+    public static <T extends Annotation> T getClassAnnotation(
+        @NotNull Class<?> type,
+        @NotNull Class<T> annotationClass
+    ) {
+        T annotation = type.getAnnotation(annotationClass);
         if (annotation != null) {
             return annotation;
         }
         for (Class<?> i : type.getInterfaces()) {
-            annotation = getDPIAnno(i);
+            annotation = getClassAnnotation(i, annotationClass);
             if (annotation != null) {
                 return annotation;
             }
@@ -125,7 +172,7 @@ public class DPISerializer {
         if (superclass == null || superclass == Object.class) {
             return null;
         }
-        return getDPIAnno(superclass);
+        return getClassAnnotation(superclass, annotationClass);
     }
 
     public static <T extends Annotation> T getMethodAnno(@NotNull Method method, Class<T> annoType) {
@@ -137,7 +184,11 @@ public class DPISerializer {
     }
 
     @Nullable
-    private static <T extends Annotation> T getMethodAnno(@NotNull Method method, Class<T> annoType, Class<?> methodClass) {
+    private static <T extends Annotation> T getMethodAnno(
+        @NotNull Method method,
+        Class<T> annoType,
+        Class<?> methodClass
+    ) {
         for (Class<?> mi : methodClass.getInterfaces()) {
             if (mi.getAnnotation(DPIObject.class) != null) {
                 try {
@@ -156,14 +207,6 @@ public class DPISerializer {
             }
         }
         return null;
-    }
-
-    static abstract class AbstractTypeAdapter<T> extends TypeAdapter<T> {
-        protected final DPIContext context;
-
-        public AbstractTypeAdapter(DPIContext context) {
-            this.context = context;
-        }
     }
 
     static class DPIObjectRefAdapter extends AbstractTypeAdapter<DPIClientObject> {
@@ -213,21 +256,25 @@ public class DPISerializer {
 
         @Override
         public void write(JsonWriter jsonWriter, Throwable error) throws IOException {
-            jsonWriter.name("class");
-            jsonWriter.value(error.getClass().getName());
-            if (error.getMessage() != null) {
-                jsonWriter.name("message");
-                jsonWriter.value(error.getMessage());
-            }
-            jsonWriter.name("stacktrace");
-            jsonWriter.value(Arrays.toString(error.getStackTrace()));
-            if (error instanceof SQLException) {
-                SQLException sqlError = (SQLException) error;
-                jsonWriter.name("errorCode");
-                jsonWriter.value(sqlError.getErrorCode());
-                if (sqlError.getSQLState() != null) {
-                    jsonWriter.name("sqlState");
-                    jsonWriter.value(sqlError.getSQLState());
+            if (error == null) {
+                jsonWriter.nullValue();
+            } else {
+                jsonWriter.name("class");
+                jsonWriter.value(error.getClass().getName());
+                if (error.getMessage() != null) {
+                    jsonWriter.name("message");
+                    jsonWriter.value(error.getMessage());
+                }
+                jsonWriter.name("stacktrace");
+                jsonWriter.value(Arrays.toString(error.getStackTrace()));
+                if (error instanceof SQLException) {
+                    SQLException sqlError = (SQLException) error;
+                    jsonWriter.name("errorCode");
+                    jsonWriter.value(sqlError.getErrorCode());
+                    if (sqlError.getSQLState() != null) {
+                        jsonWriter.name("sqlState");
+                        jsonWriter.value(sqlError.getSQLState());
+                    }
                 }
             }
         }
@@ -275,12 +322,16 @@ public class DPISerializer {
         }
 
         @Override
-        public void write(JsonWriter jsonWriter, DBRProgressMonitor aClass) {
+        public void write(JsonWriter jsonWriter, DBRProgressMonitor aClass) throws IOException {
+            jsonWriter.beginObject();
+            jsonWriter.endObject();
             // do-nothing
         }
 
         @Override
         public DBRProgressMonitor read(JsonReader jsonReader) throws IOException {
+            jsonReader.beginObject();
+            jsonReader.endObject();
             return context.getProgressMonitor();
         }
     }
@@ -289,6 +340,7 @@ public class DPISerializer {
 
         private final DPIContext context;
         private final Type type;
+
         public DPIObjectTypeAdapter(DPIContext context, Type type) {
             this.context = context;
             this.type = type;
@@ -408,6 +460,9 @@ public class DPISerializer {
 
         @Override
         public T read(JsonReader jsonReader) throws IOException {
+            if (jsonReader.peek() == JsonToken.NULL) {
+                return null;
+            }
             jsonReader.beginObject();
             String objectId = null;
             String objectType = null;
@@ -454,7 +509,8 @@ public class DPISerializer {
                         while (jsonReader.peek() == JsonToken.NAME) {
                             String containerName = jsonReader.nextName();
                             String containerId = jsonReader.nextString();
-                            Object objectContainer = containerId.equals(objectId) ? DPIClientProxy.SELF_REFERENCE : context.getObject(containerId);
+                            Object objectContainer = containerId.equals(objectId) ? DPIClientProxy.SELF_REFERENCE : context.getObject(
+                                containerId);
                             if (objectContainer != null) {
                                 if (objectContainers == null) {
                                     objectContainers = new HashMap<>();
@@ -473,12 +529,19 @@ public class DPISerializer {
                             String propName = jsonReader.nextName();
                             Object propValue = null;
                             switch (jsonReader.peek()) {
-                                case BOOLEAN: propValue = jsonReader.nextBoolean(); break;
-                                case NUMBER: propValue = jsonReader.nextLong(); break;
-                                case STRING: propValue = jsonReader.nextString(); break;
+                                case BOOLEAN:
+                                    propValue = jsonReader.nextBoolean();
+                                    break;
+                                case NUMBER:
+                                    propValue = jsonReader.nextLong();
+                                    break;
+                                case STRING:
+                                    propValue = jsonReader.nextString();
+                                    break;
                                 default:
                                     log.debug("Skip property '" + propName + "' value");
-                                    jsonReader.skipValue(); break;
+                                    jsonReader.skipValue();
+                                    break;
                             }
                             if (objectProperties == null) {
                                 objectProperties = new LinkedHashMap<>();
@@ -497,7 +560,7 @@ public class DPISerializer {
             }
             Object object = context.getObject(objectId);
             if (object != null) {
-                return (T)object;
+                return (T) object;
             }
             Class<?> theClass;
             if (type instanceof Class<?>) {
@@ -528,7 +591,7 @@ public class DPISerializer {
                 objectProperties);
             object = objectHandler.getObjectInstance();
             context.addObject(objectId, object);
-            return (T)object;
+            return (T) object;
         }
 
         private ClassLoader getClassLoader() {

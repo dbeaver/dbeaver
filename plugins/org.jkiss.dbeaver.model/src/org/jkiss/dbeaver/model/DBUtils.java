@@ -685,7 +685,7 @@ public final class DBUtils {
 
     @NotNull
     public static DBDAttributeBinding[] getAttributeBindings(@NotNull DBCSession session, @NotNull DBSDataContainer dataContainer, @NotNull DBCResultSetMetaData metaData) {
-        List<DBCAttributeMetaData> metaAttributes = metaData.getAttributes();
+        List<? extends DBCAttributeMetaData> metaAttributes = metaData.getAttributes();
         int columnsCount = metaAttributes.size();
         DBDAttributeBinding[] bindings = new DBDAttributeBinding[columnsCount];
         for (int i = 0; i < columnsCount; i++) {
@@ -732,7 +732,7 @@ public final class DBUtils {
     @NotNull
     public static DBDAttributeBinding[] makeLeafAttributeBindings(@NotNull DBCSession session, @NotNull DBSDataContainer dataContainer, @NotNull DBCResultSet resultSet) throws DBCException {
         List<DBDAttributeBinding> metaColumns = new ArrayList<>();
-        List<DBCAttributeMetaData> attributes = resultSet.getMeta().getAttributes();
+        List<? extends DBCAttributeMetaData> attributes = resultSet.getMeta().getAttributes();
         boolean isDocumentAttribute = attributes.size() == 1 && attributes.get(0).getDataKind() == DBPDataKind.DOCUMENT;
         if (isDocumentAttribute) {
             DBCAttributeMetaData attributeMeta = attributes.get(0);
@@ -1321,7 +1321,7 @@ public final class DBUtils {
 
     @NotNull
     public static DBCStatement makeStatement(
-        @NotNull DBCExecutionSource executionSource,
+        @Nullable DBCExecutionSource executionSource,
         @NotNull DBCSession session,
         @NotNull DBCStatementType statementType,
         @NotNull String query,
@@ -1339,7 +1339,7 @@ public final class DBUtils {
 
     @NotNull
     public static DBCStatement makeStatement(
-        @NotNull DBCExecutionSource executionSource,
+        @Nullable DBCExecutionSource executionSource,
         @NotNull DBCSession session,
         @NotNull DBCStatementType statementType,
         @NotNull SQLQuery sqlQuery,
@@ -2550,7 +2550,7 @@ public final class DBUtils {
             if (dbStatement.executeStatement()) {
                 try (DBCResultSet rs = dbStatement.openResultSet()) {
                     if (rs.nextRow()) {
-                        List<DBCAttributeMetaData> resultAttrs = rs.getMeta().getAttributes();
+                        List<? extends DBCAttributeMetaData> resultAttrs = rs.getMeta().getAttributes();
                         Object countValue = null;
                         if (resultAttrs.size() == 1) {
                             countValue = rs.getAttributeValue(0);

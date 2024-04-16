@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.dpi.DPIObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -33,6 +34,7 @@ import org.jkiss.utils.ArrayUtils;
  * Provides facilities to query object for data.
  * Any data container MUST support data read. Other function may be not supported (client can check it with {@link #getSupportedFeatures()}).
  */
+@DPIObject
 public interface DBSDataContainer extends DBSObject {
 
     String FEATURE_DATA_SELECT = "data.select";
@@ -78,7 +80,7 @@ public interface DBSDataContainer extends DBSObject {
      */
     @NotNull
     DBCStatistics readData(
-        @NotNull DBCExecutionSource source,
+        @Nullable DBCExecutionSource source,
         @NotNull DBCSession session,
         @NotNull DBDDataReceiver dataReceiver,
         @Nullable DBDDataFilter dataFilter,

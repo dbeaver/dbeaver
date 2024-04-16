@@ -207,17 +207,26 @@ class BundleProcessConfig {
         String javaExePath = resolveJavaExePath();
         cmd.add(javaExePath);
 
+        String launcherApp = "org.eclipse.equinox.launcher.Main";
         ModuleWiring launcherWiring = dependencies.get("org.jkiss.dbeaver.launcher");
         if (launcherWiring != null) {
-            cmd.add("-cp");
-            cmd.add(getBundleReference(launcherWiring, false));
+            String bundleReference = getBundleReference(launcherWiring, false);
+            if (Files.isDirectory(Path.of(bundleReference))) {
+                // Seems to be dev env
+                bundleReference += "/target/classes";
+            }
+            if (Files.exists(Path.of(bundleReference))) {
+                cmd.add("-cp");
+                cmd.add(bundleReference);
+                launcherApp = "org.jkiss.dbeaver.launcher.DBeaverLauncher";
+            }
         }
         String debugParams = System.getProperty("dbeaver.debug.dpi.launch.parameters");
         if (CommonUtils.isNotEmpty(debugParams)) {
             //-Ddbeaver.debug.dpi.launch.parameters=-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=localhost:15005
             cmd.add(debugParams);
         }
-        cmd.add("org.jkiss.dbeaver.launcher.DBeaverLauncher");
+        cmd.add(launcherApp);
 
         cmd.add("-launcher");
         cmd.add(System.getProperty("eclipse.launcher"));
@@ -252,6 +261,10 @@ class BundleProcessConfig {
         }
 
         exePath = javaInstallationDir.getParent().resolve("bin/java");
+        if (Files.exists(exePath)) {
+            return exePath.toString();
+        }
+        exePath = javaInstallationDir.getParent().resolve("bin/java.exe");
         if (Files.exists(exePath)) {
             return exePath.toString();
         }

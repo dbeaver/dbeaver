@@ -126,6 +126,7 @@ public abstract class ConfigImportWizardPage extends ActiveWizardPage<ConfigImpo
             if (CommonUtils.isEmpty(importData.getConnections())) {
                 setMessage(ImportConfigMessages.config_import_wizard_page_label_connection_list, IMessageProvider.WARNING);
             } else {
+                setMessage(null);
                 for (ImportConnectionInfo connectionInfo : importData.getConnections()) {
                     TableItem item = new TableItem(connectionTable, SWT.NONE);
                     item.setImage(0, DBeaverIcons.getImage(DBIcon.TREE_DATABASE));
