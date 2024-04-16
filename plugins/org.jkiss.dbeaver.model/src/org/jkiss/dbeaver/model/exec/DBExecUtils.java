@@ -676,8 +676,8 @@ public class DBExecUtils {
         @NotNull DBDAttributeBinding[] bindings,
         @Nullable List<Object[]> rows) throws DBException
     {
-        final DBRProgressMonitor monitor = session.getProgressMonitor();
-        final DBPDataSource dataSource = session.getDataSource();
+        DBRProgressMonitor monitor = session.getProgressMonitor();
+        DBPDataSource dataSource = session.getDataSource();
         boolean readMetaData = dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_READ_METADATA);
         if (!readMetaData && sourceEntity == null) {
             // Do not read metadata if source entity is not known

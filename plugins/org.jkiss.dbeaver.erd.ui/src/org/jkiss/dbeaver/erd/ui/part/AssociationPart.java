@@ -30,15 +30,14 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.ERDUIUtils;
 import org.jkiss.dbeaver.erd.ui.connector.ERDConnection;
-import org.jkiss.dbeaver.erd.ui.editor.ERDGraphicalViewer;
-import org.jkiss.dbeaver.erd.ui.editor.ERDHighlightingHandle;
-import org.jkiss.dbeaver.erd.ui.editor.ERDViewStyle;
+import org.jkiss.dbeaver.erd.ui.editor.*;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotation;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationDescriptor;
@@ -48,8 +47,10 @@ import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouter;
 import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterDescriptor;
 import org.jkiss.dbeaver.erd.ui.router.shortpath.ShortPathRouting;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.ListNode;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -105,14 +106,28 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
     @Override
     protected IFigure createFigure() {
-        PolylineConnection conn;
+        DBRProgressMonitor monitor = getDiagramPart().getDiagram().getMonitor();
+        PolylineConnection conn = createConnectionFigure(monitor);
+        UIUtils.syncExec(() -> {
+            setConnectionStyles(monitor, conn);
+            setConnectionRouting(monitor, conn);
+            setConnectionToolTip(monitor, conn);
+        });
+        return conn;
+    }
+
+    private PolylineConnection createConnectionFigure(@NotNull DBRProgressMonitor monitor) {
         ERDConnectionRouter router = getDiagramPart().getActiveRouter();
+        PolylineConnection conn;
         if (router != null) {
             conn = router.getConnectionInstance();
         } else {
             conn = new ERDConnection();
         }
         conn.setForegroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_LINES_FOREGROUND));
+        if (monitor.isCanceled()) {
+            return conn;
+        }
         boolean showComments = getDiagramPart().getDiagram().hasAttributeStyle(ERDViewStyle.COMMENTS);
         if (showComments) {
             ERDAssociation association = getAssociation();
@@ -123,13 +138,16 @@ public class AssociationPart extends PropertyAwareConnectionPart {
                 conn.add(descLabel, descLabelLocator);
             }
         }
-        setConnectionStyles(conn);
-        setConnectionRouting(conn);
-        setConnectionToolTip(conn);
         return conn;
     }
 
-    protected void setConnectionRouting(PolylineConnection conn) {
+    protected void setConnectionRouting(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PolylineConnection conn
+    ) {
+        if (monitor.isCanceled()) {
+            return;
+        }
         ERDAssociation association = getAssociation();
         // Set router and initial bends
         ConnectionLayer cLayer = (ConnectionLayer) getLayer(LayerConstants.CONNECTION_LAYER);
@@ -177,7 +195,13 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         }
     }
 
-    protected void setConnectionStyles(PolylineConnection conn) {
+    protected void setConnectionStyles(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PolylineConnection conn
+    ) {
+        if (monitor.isCanceled()) {
+            return;
+        }
         ERDNotationDescriptor diagramNotationDescriptor = getDiagramPart().getEditor().getDiagramNotation();
         if (diagramNotationDescriptor == null) {
             log.error("ERD notation descriptor is not defined");
@@ -186,19 +210,22 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             Color background = getParent().getViewer().getControl().getBackground();
             ERDNotation notation = diagramNotationDescriptor.getNotation();
             if (notation != null) {
-                notation.applyNotationForArrows(conn, getAssociation(), background, labelForegroundColor);
+                notation.applyNotationForArrows(monitor, conn, getAssociation(), background, labelForegroundColor);
             } else {
                 log.error("ERD notation instance not created for id: " + diagramNotationDescriptor.getId());
             }
         }
     }
 
-    protected void setConnectionToolTip(PolylineConnection conn) {
-        // Set tool tip
+    protected void setConnectionToolTip(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PolylineConnection conn
+    ) {
+        if (monitor.isCanceled()) {
+            return;
+        }
         Label toolTip = new Label(getAssociation().getObject().getName() + " [" + getAssociation().getObject().getConstraintType().getName() + "]");
         toolTip.setIcon(DBeaverIcons.getImage(DBIcon.TREE_FOREIGN_KEY));
-        //toolTip.setTextPlacement(PositionConstants.SOUTH);
-        //toolTip.setIconTextGap();
         conn.setToolTip(toolTip);
     }
 
@@ -226,11 +253,14 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             return;
         }
 
-
         if (value != EditPart.SELECTED_NONE) {
             if (this.getViewer() instanceof ERDGraphicalViewer && associatedAttributesHighlighing == null) {
-                Color color = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_FK_HIGHLIGHTING);
-                associatedAttributesHighlighing = ((ERDGraphicalViewer)this.getViewer()).getEditor().getHighlightingManager().highlightAssociationAndRelatedAttributes(this, color);
+                Color attributeColor = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_FK_HIGHLIGHTING);
+                Color associationColor = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_FK_HIGHLIGHTING);
+                ERDHighlightingManager highlightingManager = ((ERDGraphicalViewer) this.getViewer()).getEditor().getHighlightingManager();
+                ListNode<ERDHighlightingHandle> nodes = highlightingManager.highlightRelatedAttributes(this, attributeColor);
+                nodes = highlightingManager.highlightAssociation(nodes, this, associationColor);
+                associatedAttributesHighlighing = highlightingManager.makeHighlightingGroupHandle(nodes);
             }
         } else if (associatedAttributesHighlighing != null) {
             associatedAttributesHighlighing.release();

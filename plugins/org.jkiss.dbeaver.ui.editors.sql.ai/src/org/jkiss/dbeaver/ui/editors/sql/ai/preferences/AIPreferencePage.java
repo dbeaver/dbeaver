@@ -83,8 +83,8 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
         if (formatterConfigurator == null) {
             formatterConfigurator = new DefaultFormattingConfigurator();
         }
-        settings = AISettings.getSettings();
-        String activeEngine = settings.getActiveEngine();
+        this.settings = AISettingsRegistry.getInstance().getSettings();
+        String activeEngine = this.settings.getActiveEngine();
         try {
             completionEngine = AIEngineRegistry.getInstance().getCompletionEngine(activeEngine);
         } catch (DBException e) {
@@ -111,8 +111,8 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
         if (!hasAccessToPage()) {
             return;
         }
-        enableAICheck.setSelection(!settings.isAiDisabled());
-        formatterConfigurator.loadSettings(settings);
+        enableAICheck.setSelection(!this.settings.isAiDisabled());
+        formatterConfigurator.loadSettings(this.settings);
     }
 
     @Override
@@ -120,19 +120,17 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
         if (!hasAccessToPage()) {
             return false;
         }
-        settings.setAiDisabled(!enableAICheck.getSelection());
+        this.settings.setAiDisabled(!enableAICheck.getSelection());
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        settings.setActiveEngine(serviceNameMappings.get(serviceCombo.getText()));
+        this.settings.setActiveEngine(serviceNameMappings.get(serviceCombo.getText()));
         if (!serviceCombo.getText().isEmpty()) {
             for (Map.Entry<String, EngineConfiguratorPage> entry : engineConfiguratorMapping.entrySet()) {
-                AIEngineSettings engineConfiguration = settings.getEngineConfiguration(entry.getKey());
+                AIEngineSettings engineConfiguration = this.settings.getEngineConfiguration(entry.getKey());
                 entry.getValue().saveSettings(engineConfiguration);
             }
         }
-        formatterConfigurator.saveSettings(settings);
-        if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
-            settings.saveSettings();
-        }
+        formatterConfigurator.saveSettings(this.settings);
+        AISettingsRegistry.getInstance().saveSettings(this.settings);
         try {
             store.save();
         } catch (IOException e) {
@@ -146,10 +144,6 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
                 log.error("Error clearing existing services");
             }
         }
-
-        // Required for evaluating SQL presentation enabledWhen
-        GlobalPropertyTester.firePropertyChange(GlobalPropertyTester.PROP_HAS_PREFERENCE);
-
         return true;
     }
 
@@ -179,7 +173,7 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
             if (completionEngines.get(i).isDefault()) {
                 defaultEngineSelection = i;
             }
-            if (completionEngines.get(i).getId().equals(settings.getActiveEngine())) {
+            if (completionEngines.get(i).getId().equals(this.settings.getActiveEngine())) {
                 serviceCombo.select(i);
             }
         }
@@ -190,7 +184,7 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
         final Group engineGroup = UIUtils.createControlGroup(composite, "Engine Settings", 2, SWT.BORDER, 5);
         engineGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
         if (completionEngine != null) {
-            drawConfiguratorComposite(settings.getActiveEngine(), engineGroup);
+            drawConfiguratorComposite(this.settings.getActiveEngine(), engineGroup);
         }
         serviceCombo.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -223,7 +217,7 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
                 = createEngineConfigurator();
             activeEngineConfiguratorPage = new EngineConfiguratorPage(engineConfigurator);
             activeEngineConfiguratorPage.createControl(engineGroup, completionEngine);
-            activeEngineConfiguratorPage.loadSettings(settings.getEngineConfiguration(id));
+            activeEngineConfiguratorPage.loadSettings(this.settings.getEngineConfiguration(id));
             engineConfiguratorMapping.put(id, activeEngineConfiguratorPage);
         } else {
             activeEngineConfiguratorPage.createControl(engineGroup, completionEngine);

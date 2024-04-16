@@ -21,10 +21,8 @@ import org.jkiss.code.NotNull;
 /**
  * Represents a single completion message
  *
- * @param role    role of the message
- * @param content content of the message
  */
-public record DAICompletionMessage(@NotNull Role role, @NotNull String content) {
+public class DAICompletionMessage {
     /**
      * Role of the message
      */
@@ -41,5 +39,38 @@ public record DAICompletionMessage(@NotNull Role role, @NotNull String content) 
                 case ASSISTANT -> "assistant";
             };
         }
+    }
+
+    @NotNull
+    private Role role;
+    @NotNull
+    private String content;
+
+    public DAICompletionMessage(@NotNull Role role, @NotNull String content) {
+        this.role = role;
+        this.content = content;
+    }
+
+    @NotNull
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(@NotNull Role role) {
+        this.role = role;
+    }
+
+    @NotNull
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(@NotNull String content) {
+        this.content = content;
+    }
+
+    @Override
+    public String toString() {
+        return role + ":" + content;
     }
 }
