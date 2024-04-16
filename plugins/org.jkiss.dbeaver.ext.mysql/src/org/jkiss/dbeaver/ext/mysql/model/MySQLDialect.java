@@ -426,8 +426,24 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
         return "TINYINT(1)";
     }
 
+    @NotNull
+    @Override
+    public String getAlterColumnOperation() {
+        return "MODIFY";
+    }
+
     @Override
     public boolean supportsNoActionIndex() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsAlterColumnSet() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsAlterHasColumn() {
         return true;
     }
 }
