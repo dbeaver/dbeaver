@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry.storage;
+package org.jkiss.dbeaver.model.connection;
 
 import org.jkiss.code.NotNull;
 
@@ -36,6 +36,8 @@ public interface InternalDatabaseConfig {
     String getSchema();
 
     Pool getPool();
+
+    boolean isBackupEnabled();
 
     class Pool {
         private int minIdleConnections = 2;
