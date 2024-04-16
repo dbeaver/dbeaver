@@ -21,10 +21,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSearchUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -107,7 +107,12 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
 
     @NotNull
     @Override
-    public SQLQueryRowsSourceModel getDefaultTable(@NotNull Interval range) {
-        return new SQLQueryRowsTableValueModel(range, Collections.emptyList());
+    public SQLQueryRowsSourceModel getDefaultTable(@NotNull STMTreeNode syntaxNode) {
+        return new SQLQueryRowsTableValueModel(syntaxNode, Collections.emptyList());
+    }
+    
+    @Override
+    protected void collectKnownSources(KnownSourcesInfo result) {
+        // no sources have been referenced yet, so nothing to register
     }
 }

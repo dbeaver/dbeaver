@@ -28,17 +28,15 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.*;
-import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMTransactionState;
 import org.jkiss.dbeaver.model.qm.QMUtils;
-import org.jkiss.dbeaver.model.qm.meta.QMMConnectionInfo;
-import org.jkiss.dbeaver.model.qm.meta.QMMStatementExecuteInfo;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
@@ -46,7 +44,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 
 import java.util.*;
-import java.util.function.LongSupplier;
 
 /**
  * DataSourceMonitorJob.
@@ -200,10 +197,6 @@ public class DataSourceMonitorJob extends AbstractJob {
             if (DisconnectJob.isInProcess(dsDescriptor)) {
                 return false;
             }
-            if (isExecutionInProgress(dataSource)) {
-                return false;
-            }
-
             // Kill idle connection
             DisconnectJob disconnectJob = new DisconnectJob(dsDescriptor);
             disconnectJob.schedule();
@@ -212,14 +205,10 @@ public class DataSourceMonitorJob extends AbstractJob {
             return true;
         }
 
-        if (rollbackTimeoutSeconds <= 0 || idleInterval < rollbackTimeoutSeconds) {
-            return false;
-        }
-        if (EndIdleTransactionsJob.isInProcess(dsDescriptor)) {
-            return false;
-        }
-
-        if (dataSource != null) {
+        if (dataSource != null && rollbackTimeoutSeconds > 0 && idleInterval > rollbackTimeoutSeconds) {
+            if (EndIdleTransactionsJob.isInProcess(dsDescriptor) || DBExecUtils.isExecutionInProgress(dataSource)) {
+                return false;
+            }
             try {
                 Map<DBCExecutionContext, DBCTransactionManager> txnToEnd = new IdentityHashMap<>();
                 for (DBSInstance instance : dataSource.getAvailableInstances()) {
@@ -245,22 +234,6 @@ public class DataSourceMonitorJob extends AbstractJob {
             return true;
         }
 
-        return false;
-    }
-
-    private static boolean isExecutionInProgress(DBPDataSource dataSource) {
-        for (DBSInstance instance : dataSource.getAvailableInstances()) {
-            for (DBCExecutionContext context : instance.getAllContexts()) {
-                QMMConnectionInfo qmConnection = QMUtils.getCurrentConnection(context);
-                if (qmConnection != null) {
-                    QMMStatementExecuteInfo lastExec = qmConnection.getExecutionStack();
-                    if (lastExec != null && !lastExec.isClosed()) {
-                        // It is in progress
-                        return true;
-                    }
-                }
-            }
-        }
         return false;
     }
 

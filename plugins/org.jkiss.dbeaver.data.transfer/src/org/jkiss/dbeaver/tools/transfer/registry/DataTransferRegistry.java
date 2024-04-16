@@ -159,7 +159,6 @@ public class DataTransferRegistry {
 
     @Nullable
     public List<DataTransferProcessorDescriptor> getAvailableProcessors(Class<? extends IDataTransferNode> nodeType, Class<?> objectType) {
-        List<DataTransferProcessorDescriptor> processors = null;
         for (DataTransferNodeDescriptor node : nodes) {
             if (node.getNodeClass() == nodeType) {
                 if (node.appliesToType(objectType)) {

@@ -17,14 +17,18 @@
 
 package org.jkiss.dbeaver.ui.dashboard.browser;
 
+import org.eclipse.jface.action.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.IActionBars;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
+import org.jkiss.dbeaver.ui.ActionBars;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardViewCompositeControl;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemContainer;
@@ -41,6 +45,8 @@ public class DashboardBrowserComposite extends Composite implements DashboardVie
 
     public DashboardBrowserComposite(DashboardItemContainer dashboardContainer, DashboardContainer viewContainer, Composite parent, int style, Point preferredSize) {
         super(parent, style);
+
+        initializeGlobalBrowser(viewContainer);
         this.dashboardContainer = dashboardContainer;
         this.viewContainer = viewContainer;
 
@@ -70,5 +76,41 @@ public class DashboardBrowserComposite extends Composite implements DashboardVie
     @Override
     public Control getDashboardControl() {
         return browser;
+    }
+
+    private static void initializeGlobalBrowser(DashboardContainer viewContainer) {
+        IActionBars actionBars = ActionBars.extractActionBars(viewContainer.getWorkbenchSite());
+        if (actionBars != null) {
+            IStatusLineManager statusLineManager = actionBars.getStatusLineManager();
+            if (statusLineManager != null) {
+                if (statusLineManager instanceof SubStatusLineManager sslm) {
+                    statusLineManager = (IStatusLineManager) sslm.getParent();
+                }
+                for (IContributionItem item : statusLineManager.getItems()) {
+                    if (item instanceof BrowserContributionItem bci) {
+                        return;
+                    }
+                }
+                // Create global browser control
+                // It will be disposed when entire application is disposed
+                BrowserContributionItem item = new BrowserContributionItem();
+                statusLineManager.add(item);
+            }
+        }
+    }
+
+
+    private static class BrowserContributionItem extends ContributionItem {
+        private Composite globalComposite;
+
+        @Override
+        public void fill(Composite parent) {
+            globalComposite = new Browser(parent, SWT.NONE);
+            globalComposite.setLayout(new RowLayout());
+            StatusLineLayoutData ld = new StatusLineLayoutData();
+            ld.widthHint = 0;
+            ld.heightHint = 0;
+            globalComposite.setLayoutData(ld);
+        }
     }
 }

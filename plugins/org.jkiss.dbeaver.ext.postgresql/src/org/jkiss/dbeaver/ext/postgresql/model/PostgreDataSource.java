@@ -43,7 +43,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
-import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -71,7 +70,8 @@ import java.util.regex.Pattern;
 /**
  * PostgreDataSource
  */
-public class PostgreDataSource extends JDBCDataSource implements DBSInstanceContainer, DBPAdaptable, DBPObjectStatisticsCollector {
+public class PostgreDataSource extends JDBCDataSource implements DBSInstanceContainer, DBPAdaptable,
+    DBPObjectStatisticsCollector {
 
     private static final Log log = Log.getLog(PostgreDataSource.class);
     private static final PostgrePrivilegeType[] SUPPORTED_PRIVILEGE_TYPES = new PostgrePrivilegeType[]{
@@ -97,10 +97,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     private volatile boolean hasStatistics;
     private boolean supportsEnumTable;
     private boolean supportsReltypeColumn = true;
-    private boolean supportsJobs;
-
-    private static final String LEGACY_UA_TIMEZONE = "Europe/Kiev";
-    private static final String NEW_UA_TIMEZONE = "Europe/Kyiv";
 
     public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -465,13 +461,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                 log.debug("Error reading pg_class.reltype " + e.getMessage());
                 supportsReltypeColumn = false;
             }
-            try {
-                JDBCUtils.queryString(session, "SELECT 1 FROM pgagent.pga_job WHERE 1<>1 LIMIT 1");
-                supportsJobs = true;
-            } catch (Exception e) {
-                log.debug("Error reading pgagent.pga_job " + e.getMessage());
-                supportsJobs = false;
-            }
         }
 
         // Read databases
@@ -533,9 +522,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             // Old versions of postgres and some linux distributions, on which docker images are made, may not contain
             // new timezone, which will lead to the error while connecting, there is no way to know before connecting
             // so to be sure we will use the old name
-            if (NEW_UA_TIMEZONE.equals(TimeZone.getDefault().getID())) { //$NON-NLS-1$
+            if (PostgreConstants.NEW_UA_TIMEZONE.equals(TimeZone.getDefault().getID())) {
+                TimezoneRegistry.setDefaultZone(ZoneId.of(PostgreConstants.LEGACY_UA_TIMEZONE), false);
                 timezoneOverridden = true;
-                TimezoneRegistry.setDefaultZone(ZoneId.of(LEGACY_UA_TIMEZONE)); //$NON-NLS-1$
             }
             if (conConfig.getConfigurationType() != DBPDriverConfigurationType.URL &&
                 instance instanceof PostgreDatabase &&
@@ -595,8 +584,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
             throw e;
         } finally {
-            if (timezoneOverridden && LEGACY_UA_TIMEZONE.equals(TimeZone.getDefault().getID())) { //$NON-NLS-1$
-                TimezoneRegistry.setDefaultZone(ZoneId.of(NEW_UA_TIMEZONE)); //$NON-NLS-1$
+            if (timezoneOverridden && PostgreConstants.LEGACY_UA_TIMEZONE.equals(TimeZone.getDefault().getID())) {
+                TimezoneRegistry.setDefaultZone(ZoneId.of(PostgreConstants.NEW_UA_TIMEZONE), false);
             }
         }
 
@@ -745,14 +734,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     public boolean supportsRoles() {
         return getServerType().supportsRoles() && !getContainer().getNavigatorSettings().isShowOnlyEntities() && !getContainer().getNavigatorSettings().isHideFolders();
-    }
-
-    /**
-     * Show Jobs and Scheduling only if a database has pgagent extension.
-     */
-    @Association
-    public boolean supportsJobs() {
-        return supportsJobs;
     }
 
     @NotNull

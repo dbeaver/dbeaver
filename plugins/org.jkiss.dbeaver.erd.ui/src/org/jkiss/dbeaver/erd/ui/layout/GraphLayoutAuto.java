@@ -24,8 +24,11 @@ import org.eclipse.draw2d.Animation;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.layout.algorithm.direct.DirectedGraphLayoutVisitor;
 import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.List;
 
@@ -34,47 +37,33 @@ import java.util.List;
  * Uses the DirectedGraphLayoutVisitor to automatically lay out figures on diagram
  * @author Serge Rider
  */
-public class GraphLayoutAuto extends AbstractLayout
-{
+public class GraphLayoutAuto extends AbstractLayout {
 
-	private DiagramPart diagram;
+    private DiagramPart diagram;
 
-	public GraphLayoutAuto(DiagramPart diagram)
-	{
-		this.diagram = diagram;
-	}
+    public GraphLayoutAuto(DiagramPart diagram) {
+        this.diagram = diagram;
+    }
 
-	
-	@Override
-    protected Dimension calculatePreferredSize(IFigure container, int wHint, int hHint)
-	{		
-		container.validate();
-		List<? extends IFigure> children = container.getChildren();
-		Rectangle result = new Rectangle().setLocation(container.getClientArea().getLocation());
-		for (IFigure child : children) {
-			result.union(child.getBounds());
-		}
-		result.resize(container.getInsets().getWidth(), container.getInsets().getHeight());
-		return result.getSize();		
-	}
+    @Override
+    protected Dimension calculatePreferredSize(IFigure container, int widthHint, int heightHint) {
+        container.validate();
+        List<? extends IFigure> children = container.getChildren();
+        Rectangle result = new Rectangle().setLocation(container.getClientArea().getLocation());
+        for (IFigure child : children) {
+            result.union(child.getBounds());
+        }
+        result.resize(container.getInsets().getWidth(), container.getInsets().getHeight());
+        return result.getSize();
+    }
 
-	
-	@Override
-    public void layout(IFigure container)
-	{
-        Animation.markBegin();
-/*
-		GraphAnimation.recordInitialState(container);
-		if (GraphAnimation.playbackState(container))
-			return;
-*/
-
-        // TODO: REPLACE WITH ZEST!
-		new DirectedGraphLayoutVisitor(diagram.getDiagram().getDecorator()).layoutDiagram(diagram);
-        diagram.setTableModelBounds();
-        //new ZestGraphLayout().layoutDiagram(diagram);
-
-        Animation.run(400);
-	}
-	
+    @Override
+    public void layout(IFigure container) {
+        DBRProgressMonitor monitor = diagram.getDiagram().getMonitor();
+        monitor.subTask(ERDUIMessages.erd_job_layout_diagram);
+        UIUtils.syncExec(() -> {
+            new DirectedGraphLayoutVisitor(diagram.getDiagram().getDecorator()).layoutDiagram(diagram);
+            diagram.setTableModelBounds();
+        });
+    }
 }

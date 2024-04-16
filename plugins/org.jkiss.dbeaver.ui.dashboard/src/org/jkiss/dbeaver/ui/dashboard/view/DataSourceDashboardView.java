@@ -228,6 +228,9 @@ public class DataSourceDashboardView extends ViewPart implements DashboardViewer
 
     @Override
     public void updateStatus() {
+        if (configuration == null) {
+            return;
+        }
         String partName;
         if (DashboardConfigurationList.DEFAULT_DASHBOARD_NAME.equals(configuration.getDashboardName())) {
             if (dataSourceContainer != null) {

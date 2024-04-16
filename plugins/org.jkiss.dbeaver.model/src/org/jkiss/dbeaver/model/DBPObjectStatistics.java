@@ -18,11 +18,13 @@ package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.dpi.DPIElement;
+import org.jkiss.dbeaver.model.dpi.DPIObject;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 
 /**
  * DBPObjectStatistics
  */
+@DPIObject
 public interface DBPObjectStatistics {
 
     @DPIElement(objectState = true)

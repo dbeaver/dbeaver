@@ -47,10 +47,8 @@ public class StatusLineContributionItemEx extends ContributionItem {
 
     @Override
     public void fill(Composite parent) {
-        Composite statusLine = parent;
-
         Label sep = new Label(parent, SWT.SEPARATOR);
-        label = new CLabel(statusLine, SWT.SHADOW_NONE);
+        label = new CLabel(parent, SWT.SHADOW_NONE);
         label.setText(text);
         if (toolTip != null) {
             label.setToolTipText(toolTip);

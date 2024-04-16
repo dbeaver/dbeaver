@@ -272,7 +272,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         try {
             instanceServer = DBeaverInstanceServer.createServer();
         } catch (Exception e) {
-            log.error("Can't start instance server", e);
+            log.error("Can't start instance server: " + e.getMessage());
         }
 
         TimezoneRegistry.overrideTimezone();

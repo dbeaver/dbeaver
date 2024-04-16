@@ -363,7 +363,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
             DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(event -> {
                 if (event.getProperty().equals(ModelPreferences.CLIENT_TIMEZONE)) {
-                    updateTimezoneItem(tzItem);
+                    UIUtils.syncExec(() -> updateTimezoneItem(tzItem));
                 }
             });
 

@@ -32,7 +32,7 @@ public interface DTObjectSerializer<CONTEXT_TYPE, OBJECT_TYPE> {
         @NotNull DBRRunnableContext runnableContext,
         @NotNull CONTEXT_TYPE context,
         @NotNull OBJECT_TYPE object,
-        @NotNull Map<String, Object> state);
+        @NotNull Map<String, Object> state) throws DBException;
 
     OBJECT_TYPE deserializeObject(
         @NotNull DBRRunnableContext runnableContext,

@@ -4109,7 +4109,7 @@ public class SQLEditor extends SQLEditorBase implements
         @NotNull
         @Override
         public DBCStatistics readData(
-            @NotNull DBCExecutionSource source,
+            @Nullable DBCExecutionSource source,
             @NotNull DBCSession session,
             @NotNull DBDDataReceiver dataReceiver,
             DBDDataFilter dataFilter,
@@ -5538,7 +5538,8 @@ public class SQLEditor extends SQLEditorBase implements
 
         if ((isTransactionInProgress && rollbackTimeoutSeconds > 0) &&
             (rollbackTimeoutSeconds > elapsedSeconds) &&
-            (disconnectTimeoutSeconds <= 0 || rollbackTimeoutSeconds < disconnectTimeoutSeconds)
+            (disconnectTimeoutSeconds <= 0 || rollbackTimeoutSeconds < disconnectTimeoutSeconds) &&
+            !DBExecUtils.isExecutionInProgress(dataSourceContainer.getDataSource())
         ) {
             return NLS.bind(
                 SQLEditorMessages.sql_editor_status_bar_rollback_label,

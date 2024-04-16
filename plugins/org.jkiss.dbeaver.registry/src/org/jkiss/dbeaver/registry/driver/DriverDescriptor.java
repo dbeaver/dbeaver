@@ -428,11 +428,20 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         {
             IConfigurationElement[] pp = config.getChildren(RegistryConstants.TAG_PROVIDER_PROPERTIES);
             if (!ArrayUtils.isEmpty(pp)) {
+                String copyFromDriverId = pp[0].getAttribute("copyFrom");
+                if (!CommonUtils.isEmpty(copyFromDriverId)) {
+                    DriverDescriptor copyFromDriver = providerDescriptor.getDriver(copyFromDriverId);
+                    if (copyFromDriver == null) {
+                        log.debug("Driver '" + copyFromDriverId + "' not found. Cannot copy provider properties into '" + getId() + "'");
+                    } else {
+                        this.providerPropertyDescriptors.addAll(copyFromDriver.providerPropertyDescriptors);
+                    }
+                }
                 this.providerPropertyDescriptors.addAll(
                     Arrays.stream(pp[0].getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP))
                         .map(ProviderPropertyDescriptor::extractProviderProperties)
                         .flatMap(List<ProviderPropertyDescriptor>::stream)
-                        .collect(Collectors.toList()));
+                        .toList());
             }
         }
 

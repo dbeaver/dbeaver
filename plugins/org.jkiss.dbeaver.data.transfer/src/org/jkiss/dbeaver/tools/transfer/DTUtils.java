@@ -258,7 +258,7 @@ public class DTUtils {
         DBRRunnableContext runnableContext,
         OBJECT_CONTEXT context,
         @NotNull OBJECT_TYPE object
-    ) {
+    )  throws DBException {
         DTObjectSerializer<OBJECT_CONTEXT, OBJECT_TYPE> serializer = SerializerRegistry.getInstance().createSerializer(object);
         if (serializer == null) {
             return null;
