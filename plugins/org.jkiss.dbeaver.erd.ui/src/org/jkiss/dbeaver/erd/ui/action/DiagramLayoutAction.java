@@ -41,7 +41,7 @@ public class DiagramLayoutAction extends Action {
 
     @Override
     public void run() {
-        editor.getDiagramPart().rearrangeDiagram();
+        editor.getDiagramPart().resetArrangement();
         editor.setDirty(true);
     }
 

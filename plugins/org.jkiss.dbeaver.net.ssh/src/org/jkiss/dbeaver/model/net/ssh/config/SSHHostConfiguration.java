@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.net.ssh.config;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.utils.SecurityUtils;
 
 public record SSHHostConfiguration(
     @NotNull String username,
@@ -24,8 +25,13 @@ public record SSHHostConfiguration(
     int port,
     @NotNull SSHAuthConfiguration auth
 ) {
+    @NotNull
+    public String toDisplayString() {
+        return username + "@" + hostname + ":" + port;
+    }
+
     @Override
     public String toString() {
-        return username + "@" + hostname + ":" + port;
+        return SecurityUtils.mask(username) + "@" + SecurityUtils.mask(hostname) + ":" + port;
     }
 }
