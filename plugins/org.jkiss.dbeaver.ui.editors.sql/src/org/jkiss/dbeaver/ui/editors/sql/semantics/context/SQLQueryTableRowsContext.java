@@ -45,8 +45,8 @@ public class SQLQueryTableRowsContext extends SQLQuerySyntaxContext {
     }
     
     @Override
-    protected void collectKnownSources(KnownSourcesInfo info) {
-        super.collectKnownSources(info);
+    protected void collectKnownSourcesImpl(@NotNull KnownSourcesInfo info) {
+        super.collectKnownSourcesImpl(info);
         info.registerTableReference(this.source, this.table);
     }
 }

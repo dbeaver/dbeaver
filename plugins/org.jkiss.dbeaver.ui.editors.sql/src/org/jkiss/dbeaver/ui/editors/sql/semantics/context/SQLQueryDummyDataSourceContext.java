@@ -432,6 +432,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         );
     }
     
+    @NotNull
     @Override
     public List<SQLQueryResultColumn> getColumnsList() {
         return Collections.emptyList();
@@ -448,7 +449,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     }
     
     @Override
-    public SQLQueryRowsSourceModel findRealSource(DBSEntity table) {
+    public SQLQueryRowsSourceModel findRealSource(@NotNull DBSEntity table) {
         return null;
     }
     
@@ -469,7 +470,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     }
     
     @Override
-    protected void collectKnownSources(KnownSourcesInfo result) {
+    protected void collectKnownSourcesImpl(@NotNull KnownSourcesInfo result) {
         // no sources have been referenced yet, so nothing to register
     }
     

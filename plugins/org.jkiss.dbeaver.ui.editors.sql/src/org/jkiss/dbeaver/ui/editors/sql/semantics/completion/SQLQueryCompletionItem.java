@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.completion;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -30,66 +32,87 @@ public abstract class SQLQueryCompletionItem {
     
     private SQLQueryCompletionItem() {
     }
-    
+
+    @NotNull
     public abstract SQLQueryCompletionItemKind getKind();
-    
+
+    @NotNull
     public abstract String getText();
     
-    public String getExtraText() { 
+    @Nullable
+    public String getExtraText() {
         return null; 
-    } 
-    
+    }
+
+    @Nullable
     public String getDescription() {
         return null;
     }
-    
+
+    @Nullable
     public DBPNamedObject getObject() {
         return null;
     }
-    
-    
-    public static SQLQueryCompletionItem forReservedWord(String text) {
+
+    /**
+     * Pepare completion item for reserved word
+     */
+    @NotNull
+    public static SQLQueryCompletionItem forReservedWord(@NotNull String text) {
         return new SQLReservedWordCompletionItem(text);
     }
-    
-    public static SQLQueryCompletionItem forSubqueryAlias(SQLQuerySymbol aliasSymbol) {
+
+    @NotNull
+    public static SQLQueryCompletionItem forSubqueryAlias(@NotNull SQLQuerySymbol aliasSymbol) {
         return new SQLSubqueryAliasCompletionItem(aliasSymbol);
     }
-    
-    public static SQLQueryCompletionItem forRealTable(DBSEntity table, boolean isUsed) {
+
+    @NotNull
+    public static SQLQueryCompletionItem forRealTable(@NotNull DBSEntity table, boolean isUsed) {
         return new SQLTableNameCompletionItem(table, isUsed);
     }
-    
-    public static SQLQueryCompletionItem forSubsetColumn(SQLQueryResultColumn columnInfo, SourceResolutionResult sourceInfo, boolean absolute) {
+
+    @NotNull
+    public static SQLQueryCompletionItem forSubsetColumn(
+        @NotNull SQLQueryResultColumn columnInfo,
+        @NotNull SourceResolutionResult sourceInfo,
+        boolean absolute
+    ) {
         return new SQLColumnNameCompletionItem(columnInfo, sourceInfo, absolute);
     }
-    
-    public static SQLQueryCompletionItem forDbObject(DBPNamedObject object) {
+
+    @NotNull
+    public static SQLQueryCompletionItem forDbObject(@NotNull DBPNamedObject object) {
         return new SQLDbNamedObjectCompletionItem(object);
     }
     
     private static class SQLSubqueryAliasCompletionItem extends SQLQueryCompletionItem {
+        @NotNull
         private final SQLQuerySymbol symbol;
 
-        public SQLSubqueryAliasCompletionItem(SQLQuerySymbol symbol) {
+        public SQLSubqueryAliasCompletionItem(@NotNull SQLQuerySymbol symbol) {
             this.symbol = symbol;
         }
         
+        @NotNull
         @Override
         public SQLQueryCompletionItemKind getKind() {
             return SQLQueryCompletionItemKind.SUBQUERY_ALIAS;
         }
         
+        @NotNull
         @Override
         public String getText() {
             return this.symbol.getName();
         }
         
+        @NotNull
         @Override
         public String getExtraText() {
             return "Subquery alias"; 
         }
         
+        @NotNull
         @Override
         public String getDescription() {
             return "TODO"; // TODO add subquery text here
@@ -97,36 +120,45 @@ public abstract class SQLQueryCompletionItem {
     }
     
     private static class SQLColumnNameCompletionItem extends SQLQueryCompletionItem {
+        @NotNull
         private final SQLQueryResultColumn columnInfo;
+        @NotNull
         private final SourceResolutionResult sourceInfo;
+        // TODO consider removing this flag in favor of refactoring for explicit formatting mechanism
         private final boolean absolute;
 
-        public SQLColumnNameCompletionItem(SQLQueryResultColumn columnInfo, SourceResolutionResult sourceInfo, boolean absolute) {
+        public SQLColumnNameCompletionItem(
+            @NotNull SQLQueryResultColumn columnInfo,
+            @NotNull SourceResolutionResult sourceInfo,
+            boolean absolute
+        ) {
             this.columnInfo = columnInfo;
             this.sourceInfo = sourceInfo;
             this.absolute = absolute;
         }        
         
+        @NotNull
         @Override
         public String getText() {
             if (this.absolute) {
-                String prefix = this.sourceInfo != null && this.sourceInfo.aliasOrNull != null ? this.sourceInfo.aliasOrNull.getName() + "." : ""; 
+                @NotNull String prefix = this.sourceInfo != null && this.sourceInfo.aliasOrNull != null ? this.sourceInfo.aliasOrNull.getName() + "." : "";
                 return prefix + this.columnInfo.symbol.getName();
             } else {
                 return this.columnInfo.symbol.getName();
             }
         }
         
+        @Nullable
         @Override
         public String getExtraText() {
-            SQLQueryExprType type = this.columnInfo.type;
-            String typeName = type == null || type == SQLQueryExprType.UNKNOWN ? null : type.getDisplayName();
+            @NotNull SQLQueryExprType type = this.columnInfo.type;
+            @Nullable String typeName = type == null || type == SQLQueryExprType.UNKNOWN ? null : type.getDisplayName();
             return typeName == null ? null : (" : " + typeName);
         }
         
         @Override
         public String getDescription() {
-            String originalColumnName = this.columnInfo.realAttr == null ? null 
+            @Nullable String originalColumnName = this.columnInfo.realAttr == null ? null
                     : DBUtils.getObjectFullName(this.columnInfo.realAttr, DBPEvaluationContext.DML);
 
             if (this.columnInfo.symbol.getSymbolClass() == SQLQuerySymbolClass.COLUMN_DERIVED) {
@@ -142,13 +174,15 @@ public abstract class SQLQueryCompletionItem {
             }
         }
         
+        @NotNull
         @Override
         public SQLQueryCompletionItemKind getKind() {
             return this.columnInfo.symbol.getSymbolClass() == SQLQuerySymbolClass.COLUMN_DERIVED 
                     ? SQLQueryCompletionItemKind.DERIVED_COLUMN_NAME
                     : SQLQueryCompletionItemKind.TABLE_COLUMN_NAME;
         }
-        
+
+        @Nullable
         @Override
         public DBPNamedObject getObject() {
             return this.columnInfo.realAttr;
@@ -157,28 +191,32 @@ public abstract class SQLQueryCompletionItem {
     
     private static class SQLTableNameCompletionItem extends SQLQueryCompletionItem {  
         private final boolean isUsed;
+        @NotNull
         private final DBSEntity table;
 
-        public SQLTableNameCompletionItem(DBSEntity table, boolean isUsed) {
+        public SQLTableNameCompletionItem(@NotNull DBSEntity table, boolean isUsed) {
             this.isUsed = isUsed;
             this.table = table;
         }
         
+        @NotNull
         @Override
         public String getText() {
             return this.table.getName();
         }
-        
+
+        @NotNull
         @Override
         public String getExtraText() {
             return (DBUtils.isView(this.table) ? "View " : "Table ") + DBUtils.getObjectFullName(this.table, DBPEvaluationContext.DML);
         }
-        
+
         @Override
         public String getDescription() {
             return this.table.getDescription();
         }
         
+        @NotNull
         @Override
         public SQLQueryCompletionItemKind getKind() {
             return this.isUsed ? SQLQueryCompletionItemKind.USED_TABLE_NAME : SQLQueryCompletionItemKind.NEW_TABLE_NAME;
@@ -197,16 +235,19 @@ public abstract class SQLQueryCompletionItem {
             this.text = text;
         }
     
+        @NotNull
         @Override
         public SQLQueryCompletionItemKind getKind() {
             return SQLQueryCompletionItemKind.RESERVED;
         }
         
+        @NotNull
         @Override
         public String getText() {
             return this.text;
         }
         
+        @NotNull
         @Override
         public String getDescription() {
             return "Reserved word of the query language";
@@ -220,24 +261,28 @@ public abstract class SQLQueryCompletionItem {
             this.object = object;
         }
         
+        @NotNull
         @Override
         public String getText() {
             return this.object.getName();
         }
         
+        @NotNull
         @Override
         public String getExtraText() {
             return DBUtils.getObjectFullName(this.object, DBPEvaluationContext.DML);
         }
         
+        @NotNull
         @Override
         public String getDescription() {
             return this.getExtraText();
         }
         
+        @NotNull
         @Override
         public SQLQueryCompletionItemKind getKind() {
-            return null;
+            return SQLQueryCompletionItemKind.UNKNOWN;
         }
         
         @Override

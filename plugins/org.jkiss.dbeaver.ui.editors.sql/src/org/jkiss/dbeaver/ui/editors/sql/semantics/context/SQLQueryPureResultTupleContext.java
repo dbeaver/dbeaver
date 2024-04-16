@@ -33,9 +33,6 @@ public class SQLQueryPureResultTupleContext extends SQLQuerySyntaxContext {
         super(parent);
     }
 
-    // @Override
-    // public SQLQuerySymbolDefinition resolveColumn(List<String> tableName, String columnName) { return null; }
-
     @Nullable
     @Override
     public SourceResolutionResult resolveSource(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
@@ -49,13 +46,13 @@ public class SQLQueryPureResultTupleContext extends SQLQuerySyntaxContext {
     }
     
     @Override
-    protected void collectKnownSources(KnownSourcesInfo result) {
+    protected void collectKnownSourcesImpl(@NotNull KnownSourcesInfo result) {
         // no further sources visible
     }
     
     @Override
-    public KnownSourcesInfo getKnownSources() {
-        return this.parent.getKnownSources();
+    public KnownSourcesInfo collectKnownSources() {
+        return this.parent.collectKnownSources();
     }
 }
 

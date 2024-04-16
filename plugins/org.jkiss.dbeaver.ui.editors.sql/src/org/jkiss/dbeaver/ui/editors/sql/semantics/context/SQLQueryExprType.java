@@ -82,11 +82,17 @@ public abstract class SQLQueryExprType {
         return this.typedObject;
     }
 
+    /**
+     * Find a member with the specified name and return its type if exists
+     */
     @Nullable
     public SQLQueryExprType findNamedMemberType(@NotNull DBRProgressMonitor monitor, @NotNull String memberName) throws DBException {
         return null;
     }
 
+    /**
+     * Find an indexed member by the specified indexes and return corresponding item type if exists
+     */
     @Nullable
     public SQLQueryExprType findIndexedItemType(
         @NotNull DBRProgressMonitor monitor,
@@ -96,19 +102,26 @@ public abstract class SQLQueryExprType {
         return null;
     }
 
-
+    /**
+     * Prepare type info based on the scalar subquery result
+     */
     @NotNull
     public static SQLQueryExprType forScalarSubquery(@NotNull SQLQueryRowsSourceModel source) {
         List<SQLQueryResultColumn> columns = source.getResultDataContext().getColumnsList();
-        SQLQueryExprType type = columns.isEmpty() ? SQLQueryExprType.UNKNOWN : columns.get(0).type; 
-        return type;
+        return columns.isEmpty() ? SQLQueryExprType.UNKNOWN : columns.get(0).type;
     }
-    
+
+    /**
+     * Prepare predefined type info based on the type name
+     */
     @NotNull
     public static SQLQueryExprType forExplicitTypeRef(@NotNull String typeRefString) {
         return new SQLQueryExprPredefinedType(typeRefString, DBPDataKind.UNKNOWN);
     }
 
+    /**
+     * Prepare type info based on the metadata
+     */
     @NotNull
     public static SQLQueryExprType forTypedObject(
         @NotNull DBRProgressMonitor monitor,

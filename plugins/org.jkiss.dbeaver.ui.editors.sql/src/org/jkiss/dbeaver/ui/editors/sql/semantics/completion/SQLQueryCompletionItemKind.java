@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.editors.sql.semantics.completion;
 
 public enum SQLQueryCompletionItemKind {
+    UNKNOWN,
     /**
      * Keywords and alike
      */

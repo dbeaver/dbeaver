@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 import org.jkiss.dbeaver.model.stm.LSMInspections;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.stm.STMTreeTermNode;
+import org.jkiss.dbeaver.model.stm.STMUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
@@ -47,7 +48,6 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryModel;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.utils.ListNode;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
@@ -189,7 +189,7 @@ public class SQLBackgroundParsingJob {
         SQLQueryModel model = scriptItem.item.getQueryModel();
         if (model != null) {
             STMTreeNode syntaxNode = model.getSyntaxNode();
-            LSMInspections.SynaxInspectionResult sr = LSMInspections.prepareAbstractSyntaxInspection(syntaxNode, position);
+            LSMInspections.SyntaxInspectionResult syntaxInspectionResult = LSMInspections.prepareAbstractSyntaxInspection(syntaxNode, position);
             SQLQueryDataContext context = null;
             SQLQueryNodeModel node = model.findNodeContaining(position);
             SQLQueryLexicalScopeItem lexicalItem = null;
@@ -206,7 +206,7 @@ public class SQLBackgroundParsingJob {
             
             ArrayDeque<STMTreeTermNode> nameNodes = new ArrayDeque<>();
             List<STMTreeTermNode> allTerms = LSMInspections.prepareTerms(syntaxNode);
-            int index = CommonUtils.binarySearchByKey(allTerms, t -> t.getRealInterval().a, position, Comparator.comparingInt(k -> k));
+            int index = STMUtils.binarySearchByKey(allTerms, t -> t.getRealInterval().a, position, Comparator.comparingInt(k -> k));
             if (index < 0) {
                 index = ~index - 1;
             }
@@ -225,7 +225,7 @@ public class SQLBackgroundParsingJob {
             return SQLQueryCompletionContext.prepare(
                 scriptItem,
                 this.editor.getExecutionContext(),
-                synaxInspectionResult,
+                syntaxInspectionResult,
                 context,
                 lexicalItem,
                 nameNodes.toArray(STMTreeTermNode[]::new)

@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
 /**
- * Describes a query part providing source (table, join, columns list, etc.)
+ * Describes the semantics of a query part responsible for a data rows source representation (table, join, table-value, etc.)
  */
 public abstract class SQLQueryRowsSourceModel extends SQLQueryModelContent {
     @Nullable
@@ -39,7 +39,10 @@ public abstract class SQLQueryRowsSourceModel extends SQLQueryModelContent {
     public SQLQueryRowsSourceModel(@NotNull Interval region, @NotNull STMTreeNode syntaxNode, @Nullable SQLQueryNodeModel ... subnodes) {
         super(region, syntaxNode, subnodes);
     }
-    
+
+    /**
+     * Returns given data context before the semantics of this model item was applied
+     */
     @Nullable
     @Override
     public SQLQueryDataContext getGivenDataContext() {
@@ -52,7 +55,7 @@ public abstract class SQLQueryRowsSourceModel extends SQLQueryModelContent {
     @NotNull
     public SQLQueryDataContext getResultDataContext() {
         if (this.resultDataContext == null) {
-            throw new UnsupportedOperationException("Data context was not resolved for the rows source yet");
+            throw new IllegalStateException("Data context was not resolved for the rows source yet");
         } else {
             return this.resultDataContext;
         }
@@ -64,7 +67,7 @@ public abstract class SQLQueryRowsSourceModel extends SQLQueryModelContent {
     }
 
     /**
-     * Propagate semantics context and establish relations through the query model
+     * Propagate semantics context and establish relations through the query model by applying this model item's semantics
      */
     @NotNull
     public final SQLQueryDataContext propagateContext(

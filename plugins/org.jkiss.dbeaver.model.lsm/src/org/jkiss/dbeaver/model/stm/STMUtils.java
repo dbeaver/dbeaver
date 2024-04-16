@@ -19,10 +19,8 @@ package org.jkiss.dbeaver.model.stm;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
+import java.util.function.Function;
 
 public class STMUtils {
 
@@ -92,4 +90,66 @@ public class STMUtils {
     }
 
 
+    public static <T, K> int binarySearchByKey(
+        @NotNull List<T> list,
+        @NotNull Function<T, K> keyGetter,
+        @NotNull K key,
+        @NotNull Comparator<K> comparator
+    ) {
+        int low = 0;
+        int high = list.size() - 1;
+
+        while (low <= high) {
+            int mid = (low + high) >>> 1;
+            K midVal = keyGetter.apply(list.get(mid));
+            int cmp = comparator.compare(midVal, key);
+
+            if (cmp < 0) {
+                low = mid + 1;
+            } else if (cmp > 0) {
+                high = mid - 1;
+            } else {
+                return mid; // key found
+            }
+        }
+        return -(low + 1);  // key not found
+    }
+
+    public static <T, K> List<T> orderedInsert(
+        @Nullable List<T> list,
+        @NotNull Function<T, K> keyGetter,
+        @NotNull T value,
+        @NotNull Comparator<K> comparator
+    ) {
+        if (list == null) {
+            list = new ArrayList<>();
+        }
+        if (list.isEmpty()) {
+            list.add(value);
+        } else {
+            K key = keyGetter.apply(value);
+            K lastKey = keyGetter.apply(list.get(list.size() - 1));
+            if (comparator.compare(key, lastKey) > 0) {
+                list.add(value);
+            } else {
+                int index = binarySearchByKey(list, keyGetter, key, comparator);
+                if (index < 0) {
+                    index = ~index;
+                }
+                list.add(index, value);
+            }
+        }
+        return list;
+    }
+
+    @NotNull
+    public static <T> List<T> combineLists(
+        @NotNull List<T> leftColumns,
+        @NotNull List<T> rightColumns
+    ) {
+        List<T> symbols = new ArrayList<>(leftColumns.size() + rightColumns.size());
+        symbols.addAll(leftColumns);
+        symbols.addAll(rightColumns);
+        return symbols;
+    }
 }

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.editors.sql.semantics.context;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsSourceModel;
@@ -40,17 +41,17 @@ public class SQLQueryAliasedRowsContext extends SQLQuerySyntaxContext {
         this.source = source;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public SourceResolutionResult resolveSource(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
         return tableName.size() == 1 && tableName.get(0).equals(this.alias.getName())
-                ? SourceResolutionResult.forSourceByAlias(this.source, this.alias)
-                : super.resolveSource(monitor, tableName);
+            ? SourceResolutionResult.forSourceByAlias(this.source, this.alias)
+            : super.resolveSource(monitor, tableName);
     }
     
     @Override
-    protected void collectKnownSources(KnownSourcesInfo info) {
-        super.collectKnownSources(info);
+    protected void collectKnownSourcesImpl(@NotNull KnownSourcesInfo info) {
+        super.collectKnownSourcesImpl(info);
         info.registerAlias(this.source, this.alias);
     }
 }

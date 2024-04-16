@@ -80,8 +80,8 @@ public abstract class SQLQuerySyntaxContext extends SQLQueryDataContext {
     }
     
     @Override
-    protected void collectKnownSources(KnownSourcesInfo result) {
-        this.parent.collectKnownSources(result);
+    protected void collectKnownSourcesImpl(@NotNull KnownSourcesInfo result) {
+        this.parent.collectKnownSourcesImpl(result);
     }
 }
 

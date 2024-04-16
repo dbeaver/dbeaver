@@ -47,49 +47,64 @@ import java.util.stream.Stream;
 public abstract class SQLQueryCompletionContext {
 
     private static final Log log = Log.getLog(SQLQueryCompletionContext.class);
-    
+
+    /**
+     * Empty completion context which always provides no completion items
+     */
     public static final SQLQueryCompletionContext EMPTY = new SQLQueryCompletionContext(0) {
+        @NotNull
         @Override
         public SQLQueryCompletionSet prepareProposal(@NotNull DBRProgressMonitor monitor, int position) {
             return new SQLQueryCompletionSet(position, 0, Collections.emptyList());
         }
     };
 
+    /**
+     * Prepare completion context for the script item at given offset treating current position as outside-of-query
+     */
     @NotNull
     public static SQLQueryCompletionContext prepareOffquery(int scriptItemOffset) {
         return new SQLQueryCompletionContext(scriptItemOffset) {
             private static final Collection<SQLQueryCompletionItem> keywords = LSMInspections.prepareOffquerySyntaxInspection()
                 .predictedWords.stream().sorted().map(SQLQueryCompletionItem::forReservedWord).collect(Collectors.toList());
             
+            @NotNull
             @Override
             public SQLQueryCompletionSet prepareProposal(@NotNull DBRProgressMonitor monitor, int position) {
                 return new SQLQueryCompletionSet(position, 0, keywords);
             }
         };
     }
-    
+
     private final int scriptItemOffset;
-    
+
     private SQLQueryCompletionContext(int scriptItemOffset) {
         this.scriptItemOffset = scriptItemOffset;
     }
-    
+
     public int getOffset() {
         return this.scriptItemOffset;
     }
 
+    /**
+     * Prepare a set of completion proposal items for a given position in the text of the script item
+     */
+    @NotNull
     public abstract SQLQueryCompletionSet prepareProposal(@NotNull DBRProgressMonitor monitor, int position);
-    
+
+    /**
+     * Prepare completion context for the script item in the given contexts (execution, syntax and semantics)
+     */
     public static SQLQueryCompletionContext prepare(
         @NotNull SQLScriptItemAtOffset scriptItem,
         @Nullable DBCExecutionContext dbcExecutionContext,
-        @NotNull LSMInspections.SynaxInspectionResult syntaxInspectionResult,
+        @NotNull LSMInspections.SyntaxInspectionResult syntaxInspectionResult,
         @NotNull SQLQueryDataContext context,
         @Nullable SQLQueryLexicalScopeItem lexicalItem,
         @NotNull STMTreeTermNode[] nameNodes
     ) {
         return new SQLQueryCompletionContext(scriptItem.offset) {
-            final Map<SQLQueryRowsSourceModel, SourceResolutionResult> referencedSources = context.getKnownSources().getResolutionResults();
+            final Map<SQLQueryRowsSourceModel, SourceResolutionResult> referencedSources = context.collectKnownSources().getResolutionResults();
 
             @NotNull
             @Override

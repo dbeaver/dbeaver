@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.completion;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -41,13 +42,14 @@ import java.util.List;
 public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonitor> {
 
     private static final Log log = Log.getLog(SQLCompletionAnalyzer.class);
-    
+    @NotNull
     private final SQLEditorBase editor;
+    @NotNull
     private final SQLCompletionRequest request;
-    
+    @NotNull
     private volatile List<SQLCompletionProposalBase> proposals = Collections.emptyList();
 
-    public SQLQueryCompletionAnalyzer(SQLEditorBase editor, SQLCompletionRequest request) {
+    public SQLQueryCompletionAnalyzer(@NotNull SQLEditorBase editor, @NotNull SQLCompletionRequest request) {
         this.editor = editor;
         this.request = request;
     }
@@ -62,7 +64,8 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
             this.proposals = new ArrayList<>(completionSet.getItems().size()); 
             for (SQLQueryCompletionItem item : completionSet.getItems()) {
                 DBPNamedObject object = null;
-                DBPImage image = item.getKind() == null ? DBValueFormatting.getObjectImage(item.getObject()) : switch (item.getKind()) {
+                DBPImage image = switch (item.getKind()) {
+                    case UNKNOWN ->  DBValueFormatting.getObjectImage(item.getObject());
                     case RESERVED -> UIIcon.SQL_TEXT;
                     case SUBQUERY_ALIAS -> DBIcon.TREE_TABLE_ALIAS;
                     case DERIVED_COLUMN_NAME -> DBIcon.TREE_FOREIGN_KEY_COLUMN;
@@ -77,6 +80,7 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
         }
     }
 
+    @NotNull
     public List<SQLCompletionProposalBase> getProposals() {
         return this.proposals;
     }

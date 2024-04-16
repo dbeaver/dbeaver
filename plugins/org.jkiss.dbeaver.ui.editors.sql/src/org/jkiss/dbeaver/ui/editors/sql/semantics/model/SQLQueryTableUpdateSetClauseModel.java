@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryCombinedContext;
+import org.jkiss.dbeaver.model.stm.STMUtils;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
 import java.util.List;
@@ -44,7 +44,7 @@ public class SQLQueryTableUpdateSetClauseModel extends SQLQueryNodeModel {
         super(
             syntaxNode.getRealInterval(),
             syntaxNode,
-            SQLQueryCombinedContext.combineLists(targets, sources).toArray(SQLQueryValueExpression[]::new)
+            STMUtils.combineLists(targets, sources).toArray(SQLQueryValueExpression[]::new)
         );
         this.targets = targets;
         this.sources = sources;

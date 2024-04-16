@@ -19,10 +19,10 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics.context;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.stm.STMUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsSourceModel;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -32,7 +32,7 @@ public class SQLQueryCombinedContext extends SQLQueryResultTupleContext {
     private final SQLQueryDataContext otherParent;
 
     public SQLQueryCombinedContext(@NotNull SQLQueryDataContext left, @NotNull SQLQueryDataContext right) {
-        super(left, combineLists(left.getColumnsList(), right.getColumnsList()));
+        super(left, STMUtils.combineLists(left.getColumnsList(), right.getColumnsList()));
         this.otherParent = right;
     }
 
@@ -48,31 +48,20 @@ public class SQLQueryCombinedContext extends SQLQueryResultTupleContext {
         return anyOfTwo(parent.findRealTable(monitor, tableName), otherParent.findRealTable(monitor, tableName)); // TODO consider ambiguity
     }
 
-    @NotNull
+    @Nullable
     @Override
     public SourceResolutionResult resolveSource(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
         return anyOfTwo(parent.resolveSource(monitor, tableName), otherParent.resolveSource(monitor, tableName)); // TODO consider ambiguity
     }
 
-
-    @NotNull
-    public static <T> List<T> combineLists(
-        @NotNull List<T> leftColumns,
-        @NotNull List<T> rightColumns
-    ) {
-        List<T> symbols = new ArrayList<>(leftColumns.size() + rightColumns.size());
-        symbols.addAll(leftColumns);
-        symbols.addAll(rightColumns);
-        return symbols;
-    }
-
-    private static <T> T anyOfTwo(T a, T b) {
+    @Nullable
+    private static <T> T anyOfTwo(@Nullable T a, @Nullable T b) {
         return a != null ? a : b;
     }
     
     @Override
-    protected void collectKnownSources(KnownSourcesInfo result) {
-        this.parent.collectKnownSources(result);
-        this.otherParent.collectKnownSources(result);
+    protected void collectKnownSourcesImpl(@NotNull KnownSourcesInfo result) {
+        this.parent.collectKnownSourcesImpl(result);
+        this.otherParent.collectKnownSourcesImpl(result);
     }
 }

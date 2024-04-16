@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.context;
 
-import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -30,7 +29,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSView;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsTableValueModel;
 
@@ -42,8 +40,11 @@ import java.util.List;
  * Represents underlying database context having real tables
  */
 public class SQLQueryDataSourceContext extends SQLQueryDataContext {
+    @NotNull
     private final DBCExecutionContext executionContext;
+    @NotNull
     private final SQLDialect dialect;
+    @NotNull
     private final SQLIdentifierDetector identifierDetector;
 
     public SQLQueryDataSourceContext(@NotNull DBCExecutionContext executionContext, @NotNull SQLDialect dialect) {
@@ -83,16 +84,6 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
         return null;
     }
 
-//    @Override
-//    public SQLQuerySymbolDefinition resolveColumn(List<String> tableName, String columnName) {
-//        if (tableName.size() == 0) {
-//            return null;
-//        } else {
-//            SQLQueryRowsSource table = this.resolveSource(tableName);
-//            return table.getDataContext().resolveColumn(columnName);
-//        }
-//    }
-
     @Nullable
     @Override
     public SQLQueryResultColumn resolveColumn(@NotNull DBRProgressMonitor monitor, @NotNull String simpleName) {
@@ -112,7 +103,7 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
     }
     
     @Override
-    protected void collectKnownSources(KnownSourcesInfo result) {
+    protected void collectKnownSourcesImpl(@NotNull KnownSourcesInfo result) {
         // no sources have been referenced yet, so nothing to register
     }
 }

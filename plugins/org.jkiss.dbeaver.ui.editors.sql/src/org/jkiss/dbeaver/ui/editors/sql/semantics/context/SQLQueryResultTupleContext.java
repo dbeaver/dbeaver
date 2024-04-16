@@ -41,8 +41,6 @@ public class SQLQueryResultTupleContext extends SQLQuerySyntaxContext {
     private final List<SQLQueryResultColumn> columns;
     @NotNull
     private final Set<DBSEntity> realSources;
-    
-
 
     public SQLQueryResultTupleContext(@NotNull SQLQueryDataContext parent, @NotNull List<SQLQueryResultColumn> columns) {
         super(parent);
