@@ -698,6 +698,13 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         return isLoaded;
     }
 
+    /**
+     * The method designed to refresh diagram with metadata request  
+     *
+     * @param rearrange - re-arrange layout
+     * @param reload - load diagram
+     * @param refreshMetadata - reload metadata  
+     */
     public void refreshDiagram(boolean rearrange, boolean reload, boolean refreshMetadata) {
         DiagramPart diagramPart = getDiagramPart();
         if (diagramPart == null) {
@@ -711,17 +718,14 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         }
     }
 
+    /**
+     * The method designed to refresh diagram without metadata request  
+     *
+     * @param rearrange - re-arrange layout
+     * @param reload - load diagram 
+     */
     public void refreshDiagram(boolean rearrange, boolean reload) {
-        DiagramPart diagramPart = getDiagramPart();
-        if (diagramPart == null) {
-            return;
-        }
-        if (reload) {
-            loadDiagram(false);
-        }
-        if (rearrange) {
-            diagramPart.resetArrangement();
-        }
+        refreshDiagram(rearrange, reload, false);
     }
 
     @Override
@@ -1635,7 +1639,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                     MultiStatus status = new MultiStatus(ERDUIActivator.PLUGIN_ID, 0, messageStatuses.toArray(new IStatus[0]), null, null);
                     DBWorkbench.getPlatformUI().showError(
                         "VQB Diagram loading errors",
-                        "Error(s) occurred during diagram loading. If these errors are recoverable then fix errors and then refresh/reopen diagram",
+                        "Error(s) occurred during diagram loading."
+                        + " If these errors are recoverable then fix errors and then refresh/reopen diagram",
                         status);
                 }
             }
