@@ -79,8 +79,9 @@ public class YashanDBTableColumnManager extends SQLTableColumnManager<YashanDBTa
     protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext,
                                           List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
         super.addObjectCreateActions(monitor, executionContext, actions, command, options);
-        if (command.getProperty("comment") != null) {
-//            addColumnCommentAction(actions, command.getObject(), command.getObject().getParentObject());
+        YashanDBTableColumn column = command.getObject();
+        String comment = column.getComment(monitor);
+        if (comment != null && comment.length() != 0) {
             addColumnCommentAction(actions, command.getObject(),true);
         }
     }

@@ -28,14 +28,12 @@ import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
-import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
@@ -153,7 +151,7 @@ public class YashanDBExecutionContext extends JDBCExecutionContext implements DB
             DBSObject newDefaultSchema = getDefaultSchema();
             DBUtils.fireObjectSelectionChange(oldDefaultSchema, newDefaultSchema);
         } catch (SQLException e) {
-            throw new DBCException(e, this);
+            log.fatal(String.format("change current schema to %s failed",activeSchemaName),e);
         }
     }
 
