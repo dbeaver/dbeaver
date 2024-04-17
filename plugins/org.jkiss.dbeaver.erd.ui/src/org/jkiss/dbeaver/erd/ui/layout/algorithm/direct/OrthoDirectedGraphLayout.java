@@ -214,14 +214,15 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
         for (Node nodeSource : islands) {
             for (Edge edge : nodeSource.outgoing) {
                 Node nodeTarget = edge.target;
-                if (nodeSource.height > nodeTarget.height) {
+                if (offsetY < nodeSource.height) {
                     offsetY = nodeSource.height;
-                } else {
+                }
+                if (offsetY < nodeTarget.height) {
                     offsetY = nodeTarget.height;
                 }
             }
             if ((islands.indexOf(nodeSource) + 1) % COLUMN_ISLAND_MAX == 0) {
-                positionY += offsetY + DISTANCE_ENTITIES_Y/2;
+                positionY += offsetY + DISTANCE_ENTITIES_Y / 2;
                 offsetY = 0;
             }
         }
