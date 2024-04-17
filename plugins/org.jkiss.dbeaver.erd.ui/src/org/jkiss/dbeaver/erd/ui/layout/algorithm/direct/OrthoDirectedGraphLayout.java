@@ -166,7 +166,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
                     currentX += nodeSource.width + nodeTarget.width + distanceX + DISTANCE_ENTITIES_X;
                 } else {
                     currentX = OFFSET_FROM_LEFT;
-                    currentY += offsetY + DISTANCE_ENTITIES_Y/2;
+                    currentY += offsetY + DISTANCE_ENTITIES_Y / 2;
                 }
             }
         }
