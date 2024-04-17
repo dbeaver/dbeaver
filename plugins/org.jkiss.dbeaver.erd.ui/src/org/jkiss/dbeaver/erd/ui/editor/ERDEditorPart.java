@@ -1444,7 +1444,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         return entityDiagram;
     }
 
-    private boolean restoreVisualSettings(DiagramPart oldDiagram, EntityDiagram newDiagram) {
+    protected boolean restoreVisualSettings(DiagramPart oldDiagram, EntityDiagram newDiagram) {
         boolean hasChanges = false;
         // Collect visual settings from old diagram and apply them to the new one
         for (ERDEntity newEntity : newDiagram.getEntities()) {
