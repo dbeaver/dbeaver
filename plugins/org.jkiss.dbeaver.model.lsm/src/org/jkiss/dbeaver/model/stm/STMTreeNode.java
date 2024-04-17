@@ -28,7 +28,7 @@ public interface STMTreeNode extends Tree {
 
 
     /**
-     * Get the name of the syntaxt tree node
+     * Get the name of the syntax tree node
      */
     @NotNull
     String getNodeName();

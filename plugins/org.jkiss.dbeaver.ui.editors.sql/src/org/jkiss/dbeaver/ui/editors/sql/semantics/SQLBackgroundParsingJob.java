@@ -34,6 +34,12 @@ import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserContext;
 import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
+import org.jkiss.dbeaver.model.sql.semantics.*;
+import org.jkiss.dbeaver.model.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
+import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.stm.LSMInspections;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.stm.STMTreeTermNode;
@@ -41,15 +47,13 @@ import org.jkiss.dbeaver.model.stm.STMUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.completion.SQLQueryCompletionContext;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryModel;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.utils.ListNode;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 
 public class SQLBackgroundParsingJob {
 

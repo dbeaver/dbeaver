@@ -14,37 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.stm;
+package org.jkiss.dbeaver.model.sql.semantics;
 
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CharStreams;
 import org.jkiss.code.NotNull;
 
-import java.io.IOException;
-import java.io.Reader;
-
 /**
- * Source stream for syntax analysis
+ * An entity responsible for the meaning of the symbol
  */
-public interface STMSource {
-
+public interface SQLQuerySymbolDefinition {
     /**
-     * Get characters stream
-     */
-    CharStream getStream();
-
-    /**
-     * Prepare source based on text reader
+     * Returns the symbol token class type
      */
     @NotNull
-    public static STMSource fromReader(@NotNull Reader reader) throws IOException {
-        return new STMSourceImpl(reader);
-    }
-
-    /**
-     * Prepare source based on text string
-     */
-    public static STMSource fromString(String string) {
-        return () -> CharStreams.fromString(string);
-    }
+    SQLQuerySymbolClass getSymbolClass();
 }

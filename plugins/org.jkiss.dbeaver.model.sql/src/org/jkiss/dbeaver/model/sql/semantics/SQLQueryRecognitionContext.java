@@ -14,37 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.stm;
+package org.jkiss.dbeaver.model.sql.semantics;
 
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CharStreams;
 import org.jkiss.code.NotNull;
-
-import java.io.IOException;
-import java.io.Reader;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 /**
- * Source stream for syntax analysis
+ * Accumulates the statistics about recognition process
  */
-public interface STMSource {
+public interface SQLQueryRecognitionContext {
 
-    /**
-     * Get characters stream
-     */
-    CharStream getStream();
+    DBRProgressMonitor getMonitor();
 
-    /**
-     * Prepare source based on text reader
-     */
-    @NotNull
-    public static STMSource fromReader(@NotNull Reader reader) throws IOException {
-        return new STMSourceImpl(reader);
-    }
+    void appendError(@NotNull STMTreeNode treeNode, @NotNull String error);
 
-    /**
-     * Prepare source based on text string
-     */
-    public static STMSource fromString(String string) {
-        return () -> CharStreams.fromString(string);
-    }
+    void appendError(@NotNull SQLQuerySymbolEntry symbol, @NotNull String error);
+
+    void appendError(@NotNull SQLQuerySymbolEntry symbol, @NotNull String error, @NotNull DBException ex);
 }

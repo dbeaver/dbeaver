@@ -90,6 +90,17 @@ public class STMUtils {
     }
 
 
+    /**
+     * Perform binary search by the key in the sorted collection
+     *
+     * @param list - list to search in
+     * @param keyGetter - Function to apply to the element of the collection before comparison
+     * @param key - key to search for
+     * @param comparator - elements comparator
+     * @param <T> - type of the element
+     * @param <K> - type of the return value of keyGetter
+     * @return index of the found element or -1 if not found
+     */
     public static <T, K> int binarySearchByKey(
         @NotNull List<T> list,
         @NotNull Function<T, K> keyGetter,
@@ -115,6 +126,18 @@ public class STMUtils {
         return -(low + 1);  // key not found
     }
 
+    /**
+     * Insert element to the sorted collection
+     *
+     * @param list - collection to insert to
+     * @param keyGetter - Function to apply to the element of the collection before comparison
+     * @param value - value to insert
+     * @param comparator - elements comparator
+     * @param <T> - type of the element
+     * @param <K> - type of the return value of keyGetter
+     *
+     * @return a list with inserted value
+     */
     public static <T, K> List<T> orderedInsert(
         @Nullable List<T> list,
         @NotNull Function<T, K> keyGetter,
@@ -142,6 +165,9 @@ public class STMUtils {
         return list;
     }
 
+    /**
+     * Provides a new list containing leftColumns list elements and then rightColumns list elements
+     */
     @NotNull
     public static <T> List<T> combineLists(
         @NotNull List<T> leftColumns,

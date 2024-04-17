@@ -14,37 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.stm;
+package org.jkiss.dbeaver.model.sql.semantics;
 
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CharStreams;
-import org.jkiss.code.NotNull;
-
-import java.io.IOException;
-import java.io.Reader;
+import org.jkiss.code.Nullable;
 
 /**
- * Source stream for syntax analysis
+ * Syntax context change listener
  */
-public interface STMSource {
+public interface SQLDocumentSyntaxContextListener {
+    /**
+     * Occurs when a new script item is introduced to the document syntax context
+     */
+    void onScriptItemIntroduced(@Nullable SQLDocumentScriptItemSyntaxContext item);
+    /**
+     * Occurs when the script item is removed from the document syntax context
+     */
+    void onScriptItemInvalidated(@Nullable SQLDocumentScriptItemSyntaxContext item);
 
     /**
-     * Get characters stream
+     * Occurs when all script item are removed to the document syntax context
      */
-    CharStream getStream();
-
-    /**
-     * Prepare source based on text reader
-     */
-    @NotNull
-    public static STMSource fromReader(@NotNull Reader reader) throws IOException {
-        return new STMSourceImpl(reader);
-    }
-
-    /**
-     * Prepare source based on text string
-     */
-    public static STMSource fromString(String string) {
-        return () -> CharStreams.fromString(string);
-    }
+    void onAllScriptItemsInvalidated();
 }
