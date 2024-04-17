@@ -134,7 +134,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 final ConfigurationWrapper host = (ConfigurationWrapper) hostsViewer.getStructuredSelection().getFirstElement();
                 if (DBWorkbench.getPlatformUI().confirmAction(
                     "Confirm host deletion",
-                    "Are you sure you want to delete host '" + host.configuration + "'?"
+                    "Are you sure you want to delete host '" + host.configuration.toDisplayString() + "'?"
                 )) {
                     credentialsPanel.lastConfiguration = null;
                     final int index = configurations.indexOf(host);

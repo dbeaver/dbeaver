@@ -81,6 +81,10 @@ public class JSCHSession extends AbstractSession {
 
     @Override
     public void removePortForward(@NotNull SSHPortForwardConfiguration configuration) throws DBException {
+        if (!session.isConnected()) {
+            // The connection might already have been closed due to a network error
+            return;
+        }
         try {
             session.delPortForwardingL(configuration.localHost(), configuration.localPort());
         } catch (JSchException e) {
