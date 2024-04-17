@@ -1678,6 +1678,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     }
 
     public ProgressControl getProgressControl() {
+        if (progressControl == null || progressControl.isDisposed()) {
+            progressControl = new ProgressControl((Composite) super.getGraphicalControl(), SWT.SHEET);
+            progressControl.setShowDivider(true);
+        }
         return this.progressControl;
     }
 }

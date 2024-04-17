@@ -20,11 +20,14 @@ package org.jkiss.dbeaver.model.sql.schema;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.connection.InternalDatabaseConfig;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCTransaction;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.backup.JDBCDatabaseBackupRegistry;
+import org.jkiss.dbeaver.model.sql.backup.JDBCDatabaseBackupDescriptor;
 import org.jkiss.dbeaver.model.sql.translate.SQLQueryTranslator;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
@@ -56,6 +59,7 @@ public final class SQLSchemaManager {
 
     private final int schemaVersionActual;
     private final int schemaVersionObsolete;
+    private final InternalDatabaseConfig databaseConfig;
 
     public SQLSchemaManager(
         String schemaId,
@@ -66,7 +70,8 @@ public final class SQLSchemaManager {
         String targetDatabaseName,
         String targetSchemaName,
         int schemaVersionActual,
-        int schemaVersionObsolete
+        int schemaVersionObsolete,
+        @NotNull InternalDatabaseConfig databaseConfig
     ) {
         this.schemaId = schemaId;
 
@@ -79,6 +84,7 @@ public final class SQLSchemaManager {
 
         this.schemaVersionActual = schemaVersionActual;
         this.schemaVersionObsolete = schemaVersionObsolete;
+        this.databaseConfig = databaseConfig;
     }
 
     public void updateSchema(DBRProgressMonitor monitor) throws DBException {
@@ -111,6 +117,18 @@ public final class SQLSchemaManager {
                             versionManager.getLatestSchemaVersion()
                         );
                     } else if (schemaVersionActual > currentSchemaVersion) {
+                        if (databaseConfig.isBackupEnabled()) {
+                            JDBCDatabaseBackupDescriptor descriptor =
+                                    JDBCDatabaseBackupRegistry.getInstance().getCurrentDescriptor(this.targetDatabaseDialect);
+                            if (descriptor != null) {
+                                try {
+                                    descriptor.getInstance().doBackup(dbCon, currentSchemaVersion, databaseConfig);
+                                    log.info("Starting backup execution");
+                                } catch (DBException e) {
+                                    throw new DBException("Internal database backup has failed");
+                                }
+                            }
+                        }
                         upgradeSchemaVersion(monitor, dbCon, txn, currentSchemaVersion);
                     }
 

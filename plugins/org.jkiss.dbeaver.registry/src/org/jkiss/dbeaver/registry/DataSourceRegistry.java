@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfileProvider;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -73,6 +74,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
 
     private final DBPProject project;
     private final DataSourceConfigurationManager configurationManager;
+    @NotNull
+    private final DBPPreferenceStore preferenceStore;
 
     private final List<DBPDataSourceConfigurationStorage> storages = new ArrayList<>();
     private final Map<String, DataSourceDescriptor> dataSources = new LinkedHashMap<>();
@@ -89,13 +92,17 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     protected Throwable lastError;
 
     public DataSourceRegistry(DBPProject project) {
-        this(project, new DataSourceConfigurationManagerNIO(project));
+        this(project, new DataSourceConfigurationManagerNIO(project), DBWorkbench.getPlatform().getPreferenceStore());
     }
 
-    public DataSourceRegistry(@NotNull DBPProject project, DataSourceConfigurationManager configurationManager) {
+    public DataSourceRegistry(
+        @NotNull DBPProject project,
+        DataSourceConfigurationManager configurationManager,
+        @NotNull DBPPreferenceStore preferenceStore
+    ) {
         this.project = project;
         this.configurationManager = configurationManager;
-
+        this.preferenceStore = preferenceStore;
         boolean isLoaded = loadDataSources(true);
         if (!isMultiUser() && isLoaded) {
             DataSourceProviderRegistry.getInstance().fireRegistryChange(this, true);
@@ -158,6 +165,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         if (!RuntimeUtils.runTask(disconnectTask, "Disconnect from data sources", waitTime)) {
             log.warn("Some data source connections wasn't closed on shutdown in " + waitTime + "ms. Probably network timeout occurred.");
         }
+    }
+
+    @NotNull
+    public DBPPreferenceStore getPreferenceStore() {
+        return preferenceStore;
     }
 
     @NotNull
