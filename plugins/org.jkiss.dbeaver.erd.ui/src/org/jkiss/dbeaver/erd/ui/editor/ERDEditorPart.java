@@ -107,7 +107,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 /**
- * Editor implementation based on the the example editor skeleton that is built in <i>Building
+ * Editor implementation based on the example editor skeleton that is built in <i>Building
  * an editor </i> in chapter <i>Introduction to .gef </i>
  */
 public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
