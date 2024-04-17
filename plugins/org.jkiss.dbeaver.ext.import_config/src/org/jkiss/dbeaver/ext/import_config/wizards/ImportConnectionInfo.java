@@ -17,9 +17,12 @@
 
 package org.jkiss.dbeaver.ext.import_config.wizards;
 
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -28,17 +31,19 @@ import java.util.Map;
 public class ImportConnectionInfo {
 
     private DriverDescriptor driver;
-    private ImportDriverInfo driverInfo;
-    private String id;
-    private String alias;
+    private final ImportDriverInfo driverInfo;
+    private final String id;
+    private final String alias;
     private String url;
     private String host;
     private String port;
     private String database;
     private String user;
-    private String password;
-    private Map<String, String> properties = new HashMap<>();
-    private Map<String, String> providerProperties = new HashMap<>();
+    private final String password;
+    private final Map<String, String> properties = new HashMap<>();
+    private final Map<String, String> providerProperties = new HashMap<>();
+    private final List<DBWHandlerConfiguration> networkHandlers = new ArrayList<>();
+
     private boolean checked = false;
     
     @Override
@@ -165,6 +170,10 @@ public class ImportConnectionInfo {
         this.host = host;
     }
 
+    public List<DBWHandlerConfiguration> getNetworkHandlers() {
+        return networkHandlers;
+    }
+
     public boolean isChecked()
     {
         return checked;
@@ -173,5 +182,9 @@ public class ImportConnectionInfo {
     public void setChecked(boolean checked)
     {
         this.checked = checked;
+    }
+
+    public void addNetworkHandler(DBWHandlerConfiguration handler) {
+        networkHandlers.add(handler);
     }
 }
