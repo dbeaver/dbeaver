@@ -122,7 +122,8 @@ public class SMAuthInfo { //create flag
         @Nullable String signInLink,
         @Nullable String signOutLink,
         @NotNull Map<SMAuthConfigurationReference, Object> authData,
-        boolean mainAuth
+        boolean mainAuth,
+        boolean forceSessionsLogout
     ) {
         return new Builder()
             .setAuthStatus(SMAuthStatus.IN_PROGRESS)
@@ -131,6 +132,7 @@ public class SMAuthInfo { //create flag
             .setSignOutLink(signOutLink)
             .setAuthData(authData)
             .setMainAuth(mainAuth)
+            .serForceSessionsLogout(forceSessionsLogout)
             .build();
     }
 
