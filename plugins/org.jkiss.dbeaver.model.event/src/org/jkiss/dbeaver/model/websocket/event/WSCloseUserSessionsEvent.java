@@ -14,22 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.auth;
+package org.jkiss.dbeaver.model.websocket.event;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 
-import java.util.Map;
+import java.util.List;
 
-public interface SMAuthenticationManager {
-    void updateAuthStatus(
-        @NotNull String authId,
-        @NotNull SMAuthStatus authStatus,
-        @NotNull Map<SMAuthConfigurationReference, Object> authInfo,
-        @Nullable String error,
-        @Nullable String errorCode
-    ) throws DBException;
+public class WSCloseUserSessionsEvent extends WSAbstractEvent {
 
-    SMAuthInfo finishAuthentication(@NotNull String authId, boolean forceSessionsLogout) throws DBException;
+    @NotNull
+    private final List<String> smSessionsId;
+
+    public WSCloseUserSessionsEvent(@NotNull List<String> smSessionsId) {
+        super(WSEventType.CLOSE_USER_SESSIONS);
+        this.smSessionsId = smSessionsId;
+    }
+
+    @NotNull
+    public List<String> getSmSessionsId() {
+        return smSessionsId;
+    }
 }

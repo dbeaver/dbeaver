@@ -14,22 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.auth;
+package org.jkiss.dbeaver.model.security.exception;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
+public class SMExceptionTooManySessions extends SMException {
 
-import java.util.Map;
+    private final String errorName;
 
-public interface SMAuthenticationManager {
-    void updateAuthStatus(
-        @NotNull String authId,
-        @NotNull SMAuthStatus authStatus,
-        @NotNull Map<SMAuthConfigurationReference, Object> authInfo,
-        @Nullable String error,
-        @Nullable String errorCode
-    ) throws DBException;
+    public SMExceptionTooManySessions(String message, String errorName) {
+        super(message);
+        this.errorName = errorName;
+    }
 
-    SMAuthInfo finishAuthentication(@NotNull String authId, boolean forceSessionsLogout) throws DBException;
+    public String getErrorName() {
+        return errorName;
+    }
 }
