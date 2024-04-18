@@ -58,6 +58,8 @@ public class SMAuthInfo { //create flag
     private final boolean mainAuth;
     private final boolean forceSessionsLogout;
 
+    private final String errorCode;
+
     private SMAuthInfo(
         @NotNull SMAuthStatus authStatus,
         @Nullable String error,
@@ -70,7 +72,7 @@ public class SMAuthInfo { //create flag
         @Nullable String authRole,
         @Nullable SMAuthPermissions authPermissions,
         boolean mainAuth,
-        boolean forceSessionsLogout
+        boolean forceSessionsLogout, String errorCode
     ) {
         this.authStatus = authStatus;
         this.error = error;
@@ -84,6 +86,7 @@ public class SMAuthInfo { //create flag
         this.authPermissions = authPermissions;
         this.mainAuth = mainAuth;
         this.forceSessionsLogout = forceSessionsLogout;
+        this.errorCode = errorCode;
     }
 
     public static SMAuthInfo expired(
@@ -102,13 +105,15 @@ public class SMAuthInfo { //create flag
     public static SMAuthInfo error(
         @NotNull String authAttemptId,
         @NotNull String error,
-        boolean mainAuth
+        boolean mainAuth,
+        @Nullable String errorCode
     ) {
         return new Builder()
             .setAuthStatus(SMAuthStatus.ERROR)
             .setAuthAttemptId(authAttemptId)
             .setError(error)
             .setMainAuth(mainAuth)
+            .setErrorCode(errorCode)
             .build();
     }
 
@@ -228,6 +233,10 @@ public class SMAuthInfo { //create flag
         return forceSessionsLogout;
     }
 
+    public String getErrorCode() {
+        return errorCode;
+    }
+
     private static final class Builder {
         private SMAuthStatus authStatus;
         private String error;
@@ -241,6 +250,7 @@ public class SMAuthInfo { //create flag
         private SMAuthPermissions authPermissions;
         private boolean mainAuth;
         private boolean forceSessionsLogout;
+        private String errorCode;
 
         private Builder() {
         }
@@ -300,8 +310,13 @@ public class SMAuthInfo { //create flag
             return this;
         }
 
-        public Builder serForceSessionsLogout(boolean mainAuth) {
-            this.mainAuth = mainAuth;
+        public Builder serForceSessionsLogout(boolean forceSessionsLogout) {
+            this.forceSessionsLogout = forceSessionsLogout;
+            return this;
+        }
+
+        public Builder setErrorCode(String errorCode) {
+            this.errorCode = errorCode;
             return this;
         }
 
@@ -318,7 +333,8 @@ public class SMAuthInfo { //create flag
                 authRole,
                 authPermissions,
                 mainAuth,
-                forceSessionsLogout
+                forceSessionsLogout,
+                errorCode
             );
         }
     }
