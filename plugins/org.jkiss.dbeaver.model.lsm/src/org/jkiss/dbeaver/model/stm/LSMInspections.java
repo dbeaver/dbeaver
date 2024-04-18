@@ -74,7 +74,7 @@ public class LSMInspections {
     }
 
     @NotNull
-    public static SynaxInspectionResult prepareOffquerySyntaxInspection() {
+    public static SyntaxInspectionResult prepareOffquerySyntaxInspection() {
         ATN atn = SQLStandardParser._ATN;
         ListNode<Integer> emptyStack = ListNode.of(null);
         ATNState initialState = atn.states.get(atn.ruleToStartState[SQLStandardParser.RULE_sqlQueries].stateNumber);
@@ -82,7 +82,7 @@ public class LSMInspections {
     }
 
     @Nullable
-    public static SynaxInspectionResult prepareAbstractSyntaxInspection(@NotNull STMTreeNode root, int position) {
+    public static SyntaxInspectionResult prepareAbstractSyntaxInspection(@NotNull STMTreeNode root, int position) {
         STMTreeNode subroot = root;
         ATN atn = SQLStandardParser._ATN;
 
@@ -165,7 +165,7 @@ public class LSMInspections {
     }
 
     @Nullable
-    private static SynaxInspectionResult inspectAbstractSyntaxAtTreeState(@NotNull STMTreeNode node, @NotNull ATNState initialState) {
+    private static SyntaxInspectionResult inspectAbstractSyntaxAtTreeState(@NotNull STMTreeNode node, @NotNull ATNState initialState) {
         ListNode<Integer> stack = ListNode.of(null);
         {
             var path = new LinkedList<RuleNode>();
@@ -187,7 +187,7 @@ public class LSMInspections {
         }
     }
 
-    public static class SynaxInspectionResult {
+    public static class SyntaxInspectionResult {
         @NotNull
         public final Set<Integer> predictedTokensIds;
         @NotNull
@@ -199,7 +199,7 @@ public class LSMInspections {
         public final boolean expectingColumnReference;
         public final boolean expectingIdentifier;
 
-        public SynaxInspectionResult(
+        public SyntaxInspectionResult(
             @NotNull Set<Integer> predictedTokenIds,
             @NotNull Set<String> predictedWords,
             @NotNull Map<Integer, Boolean> reachabilityTests,
@@ -223,7 +223,7 @@ public class LSMInspections {
     }
 
     @NotNull
-    private static SynaxInspectionResult inspectAbstractSyntaxAtState(@NotNull ListNode<Integer> stack, @NotNull ATNState initialState) {
+    private static SyntaxInspectionResult inspectAbstractSyntaxAtState(@NotNull ListNode<Integer> stack, @NotNull ATNState initialState) {
         Set<String> predictedWords = new HashSet<>();
         Set<Integer> predictedTokenIds = new HashSet<>();
 
@@ -245,7 +245,7 @@ public class LSMInspections {
             }
         }
 
-        return new SynaxInspectionResult(
+        return new SyntaxInspectionResult(
             predictedTokenIds,
             predictedWords,
             reachabilityTests,

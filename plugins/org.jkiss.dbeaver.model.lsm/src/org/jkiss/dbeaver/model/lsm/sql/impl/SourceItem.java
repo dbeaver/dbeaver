@@ -16,26 +16,13 @@
  */
 package org.jkiss.dbeaver.model.lsm.sql.impl;
 
-import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
-import org.jkiss.dbeaver.model.lsm.mapping.SyntaxNode;
-import org.jkiss.dbeaver.model.lsm.mapping.SyntaxTerm;
-
 import java.util.List;
 
-@SyntaxNode(name = "nonjoinedTableReference")
-public class SourceItem extends AbstractSyntaxNode {
-    
-    @SyntaxTerm(xpath = ".//tableName//qualifiedName/schemaName/catalogName/identifier")
+public class SourceItem {
     public String catalogName;
-    @SyntaxTerm(xpath = ".//tableName//qualifiedName/schemaName/unqualifiedSchemaName/identifier")
     public String schemaName;
-    @SyntaxTerm(xpath = ".//tableName//qualifiedName/qualifiedIdentifier/identifier")
     public String tableName;
-    
-    @SyntaxTerm(xpath = "./correlationSpecification/correlationName/identifier")
     public String alias;
-
-    //TODO:
     public List<String> derivedColumns;
 
 }

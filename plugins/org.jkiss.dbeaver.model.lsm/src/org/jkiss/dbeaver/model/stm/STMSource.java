@@ -23,16 +23,27 @@ import org.jkiss.code.NotNull;
 import java.io.IOException;
 import java.io.Reader;
 
-
+/**
+ * Source stream for syntax analysis
+ */
 public interface STMSource {
 
+    /**
+     * Get characters stream
+     */
     CharStream getStream();
 
+    /**
+     * Prepare source based on text reader
+     */
     @NotNull
     public static STMSource fromReader(@NotNull Reader reader) throws IOException {
         return new STMSourceImpl(reader);
     }
-    
+
+    /**
+     * Prepare source based on text string
+     */
     public static STMSource fromString(String string) {
         return () -> CharStreams.fromString(string);
     }

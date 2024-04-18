@@ -17,33 +17,16 @@
 package org.jkiss.dbeaver.model.lsm.sql.impl;
 
 import org.jkiss.dbeaver.model.lsm.LSMElement;
-import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
-import org.jkiss.dbeaver.model.lsm.mapping.SyntaxNode;
-import org.jkiss.dbeaver.model.lsm.mapping.SyntaxSubnode;
-import org.jkiss.dbeaver.model.lsm.mapping.SyntaxTerm;
 import org.jkiss.dbeaver.model.lsm.sql.LSMSelectStatement;
 
 import java.util.List;
 
-@SyntaxNode(name = "selectStatement")
-public class SelectStatement extends AbstractSyntaxNode implements LSMSelectStatement, LSMElement {
-
-    private static final String nonJoinSimpleQuerySpecPath = "./queryExpression/nonJoinQueryTerm/queryPrimary/nonJoinQueryPrimary/simpleTable/querySpecification";
-    
-    @SyntaxTerm(xpath = nonJoinSimpleQuerySpecPath + "/setQuantifier")
+public class SelectStatement implements LSMSelectStatement, LSMElement {
     public SelectQuantifier quantifier;
-    
-    @SyntaxSubnode(type = SelectionItem.class, xpath = nonJoinSimpleQuerySpecPath + "/selectList/selectSublist")
     public List<SelectionItem> columns;
-    
-    @SyntaxSubnode(type = SelectionSource.Table.class, xpath = nonJoinSimpleQuerySpecPath + "/tableExpression/fromClause/tableReference/nonjoinedTableReference")
-    @SyntaxSubnode(type = SelectionSource.Table.class, xpath = nonJoinSimpleQuerySpecPath + "/tableExpression/fromClause/tableReference/joinedTable/nonjoinedTableReference")
-    @SyntaxSubnode(type = SelectionSource.CrossJoin.class, xpath = nonJoinSimpleQuerySpecPath + "/tableExpression/fromClause/tableReference/joinedTable/crossJoinTerm")
-    @SyntaxSubnode(type = SelectionSource.NaturalJoin.class, xpath = nonJoinSimpleQuerySpecPath + "/tableExpression/fromClause/tableReference/joinedTable/naturalJoinTerm")
     public List<SelectionSource> sources;
-
-    @SyntaxSubnode(type = OrderingSpec.class, xpath = "./orderByClause")
+    public SearchCondition.BooleanExpression where;
+    public SearchCondition.BooleanExpression having;
     public OrderingSpec orderBy;
-    @SyntaxSubnode(type = GroupingSpec.class, xpath = nonJoinSimpleQuerySpecPath + "/tableExpression/groupByClause")
     public GroupingSpec groupBy;
 }
