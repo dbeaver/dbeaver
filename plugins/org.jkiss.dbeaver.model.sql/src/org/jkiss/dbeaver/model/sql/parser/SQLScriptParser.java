@@ -1064,7 +1064,7 @@ public class SQLScriptParser {
         private int findSmartStatementBoundary(@NotNull SQLScriptElement element, boolean forward) {
             SQLScriptElement lastElement = element;
             SQLScriptElement nextElement = extractNextQueryImpl(this.context, element, forward);
-            while (nextElement != null && !elementStartsProperly(nextElement)) {
+            while (nextElement != null && !elementStartsProperly(nextElement) && nextElement.getOffset() != lastElement.getOffset()) {
                 lastElement = nextElement;
                 nextElement = extractNextQueryImpl(this.context, lastElement, forward);
             }

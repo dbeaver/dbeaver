@@ -44,7 +44,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants.SQLExperimentalAutocompletionMode;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.completion.SQLQueryCompletionAnalyzer;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryCompletionAnalyzer;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContext;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplateCompletionProposal;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesRegistry;
@@ -56,7 +56,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 /**
  * The SQL content assist processor. This content assist processor proposes text

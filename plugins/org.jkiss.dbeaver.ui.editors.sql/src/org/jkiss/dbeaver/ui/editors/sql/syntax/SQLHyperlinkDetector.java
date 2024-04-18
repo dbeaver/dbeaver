@@ -28,10 +28,10 @@ import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.ui.editors.entity.EntityHyperlink;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLDocumentSyntaxContext;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolByDbObjectDefinition;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolEntry;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsTableDataModel;
+import org.jkiss.dbeaver.model.sql.semantics.SQLDocumentSyntaxContext;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolByDbObjectDefinition;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryRowsTableDataModel;
 
 import java.util.List;
 
