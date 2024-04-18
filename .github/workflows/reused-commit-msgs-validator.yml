@@ -8,10 +8,12 @@ on:
 jobs:
   validate-commit-message:
     name: Validate Commit Message
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
+    permissions: 
+      contents: write
     steps:
       - name: Validate Commit Message Content
-        uses: gsactions/commit-message-checker@v1
+        uses: gsactions/commit-message-checker@b88ee88552f16f594ca19cb2c7fcd90df95c9bd4  # v1
         with:
           pattern: '^(#\d{3,6}|((Merge|dbeaver|cloudbeaver).+?#\d{3,6})|((DB-|CB-|web-)\d+)).*$'
           excludeDescription: 'true'
