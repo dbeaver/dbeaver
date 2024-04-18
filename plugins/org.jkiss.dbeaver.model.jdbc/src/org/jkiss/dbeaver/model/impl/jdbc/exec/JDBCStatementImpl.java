@@ -161,7 +161,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     public JDBCResultSet openResultSet() throws DBCException
     {
         // Some driver perform real RS fetch at this moment.
-        // So let's start thge block
+        // So let's start the block
         this.startBlock();
         try {
             return getResultSet();

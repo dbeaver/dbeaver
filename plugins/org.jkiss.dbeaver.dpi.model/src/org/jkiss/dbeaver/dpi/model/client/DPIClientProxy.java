@@ -21,7 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.dpi.model.DPIContext;
-import org.jkiss.dbeaver.dpi.model.DPISerializer;
+import org.jkiss.dbeaver.dpi.model.adapters.DPISerializer;
 import org.jkiss.dbeaver.model.dpi.*;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
@@ -35,6 +35,8 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
+import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -262,11 +264,32 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
         if (controller == null) {
             throw new DBException("No DPI controller in client context");
         }
-
-        if (controller instanceof RestProxy) {
-            ((RestProxy) controller).setNextCallResultType(returnType);
+        boolean expectSmartProxy = args != null && Arrays.stream(args).anyMatch(
+            argument -> (argument != null && DPISerializer.isSmartObject(argument.getClass()))
+        );
+        if (controller instanceof RestProxy restProxy) {
+            restProxy.setNextCallResultType(expectSmartProxy ? DPISmartObjectResponse.class : returnType);
         }
-        return controller.callMethod(this.objectId, methodName, args);
+        try {
+            log.debug(MessageFormat.format("Call method: {0} object: {1}", methodName, objectId));
+            var result = controller.callMethod(this.objectId, methodName, args);
+            if (expectSmartProxy && result instanceof DPISmartObjectResponse smartResponse) {
+                var gson = context.getGson();
+                result = gson.fromJson(gson.toJson(smartResponse.getMethodInvocationResult()), returnType);
+                for (DPISmartObjectWrapper smartObject : smartResponse.getSmartObjects()) {
+                    Object realObject = args[smartObject.getArgumentNumber()];
+                    if (smartObject.getProxyObject() != null && smartObject.getProxyObject() instanceof DPISmartCallback
+                        dpiClientSmartObject) {
+                        dpiClientSmartObject.callback(realObject);
+                    }
+                }
+            }
+            log.debug(MessageFormat.format("Return method result: {0} object: {1}", methodName, objectId));
+            return result;
+        } catch (Throwable e) {
+            log.debug(MessageFormat.format("Method invocation error: {0} object: {1}", methodName, objectId));
+            throw e;
+        }
     }
 
     private static Object wrapObjectValue(Object result) {
