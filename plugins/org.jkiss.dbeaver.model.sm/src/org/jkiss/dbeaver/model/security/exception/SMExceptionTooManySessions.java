@@ -18,14 +18,14 @@ package org.jkiss.dbeaver.model.security.exception;
 
 public class SMExceptionTooManySessions extends SMException {
 
-    private final String errorName;
+    private final String errorType;
 
-    public SMExceptionTooManySessions(String message, String errorName) {
+    public SMExceptionTooManySessions(String message, String errorType) {
         super(message);
-        this.errorName = errorName;
+        this.errorType = errorType;
     }
 
-    public String getErrorName() {
-        return errorName;
+    public String getErrorType() {
+        return errorType;
     }
 }
