@@ -92,7 +92,8 @@ public class CubridServer implements DBSObject {
 
     @Nullable
     @Override
-    @Property(viewable = true, order = 8)
+    @Property(viewable = true, length = PropertyLength.MULTILINE, order = 8)
+
     public String getDescription() {
         return description;
     }
