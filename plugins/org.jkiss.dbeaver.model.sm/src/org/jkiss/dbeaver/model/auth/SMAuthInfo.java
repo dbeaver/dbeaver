@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.security.user.SMAuthPermissions;
 
 import java.util.Map;
 
-public class SMAuthInfo { //create flag
+public class SMAuthInfo {
     @NotNull
     private final SMAuthStatus authStatus;
     @Nullable

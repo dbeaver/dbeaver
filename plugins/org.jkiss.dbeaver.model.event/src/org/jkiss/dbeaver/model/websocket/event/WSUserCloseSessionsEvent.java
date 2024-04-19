@@ -14,18 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.security.exception;
+package org.jkiss.dbeaver.model.websocket.event;
 
-public class SMExceptionTooManySessions extends SMException {
+import org.jkiss.code.NotNull;
 
-    private final String errorType;
+import java.util.List;
 
-    public SMExceptionTooManySessions(String message, String errorType) {
-        super(message);
-        this.errorType = errorType;
-    }
-
-    public String getErrorType() {
-        return errorType;
+public class WSUserCloseSessionsEvent extends WSUserEvent{
+    public WSUserCloseSessionsEvent(@NotNull List<String> ids, @NotNull WSEventType eventType) {
+        super(ids, eventType);
     }
 }
