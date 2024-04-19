@@ -22,8 +22,11 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.graphics.*;
-import org.eclipse.swt.internal.DPIUtil;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Event;
@@ -32,12 +35,13 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.awt.*;
 
 public class VerticalButton extends Canvas {
 
-    public static final int BORDER_MARGIN = 2;
+    public static final Insets BORDER_MARGIN = new Insets(6, 2, 6, 2);
     public static final int VERT_INDENT = 8;
 
     private static final Point EMPTY_SIZE = new Point(0, 0);
@@ -59,8 +63,8 @@ public class VerticalButton extends Canvas {
     private String commandId;
     private ICommandListener commandListener;
     private boolean checked;
-    //float[] angles = {0, 90, 180, 270};
-    //int index = 0;
+    // float[] angles = {0, 90, 180, 270};
+    // int index = 0;
 
     public VerticalButton(VerticalFolder parent, int style) {
         super(parent, style | SWT.NO_FOCUS);
@@ -179,36 +183,35 @@ public class VerticalButton extends Canvas {
     public Point computeSize(int wHint, int hHint, boolean changed) {
         GC gc = new GC(this);
         try {
-            return computeSize(gc, wHint, hHint, changed);
+            return computeSize(gc);
         } finally {
             gc.dispose();
         }
     }
 
-    public Point computeSize(GC gc, int wHint, int hHint, boolean changed) {
-        String text = getText();
-        Point textSize = CommonUtils.isEmpty(text) ? EMPTY_SIZE : gc.stringExtent(text);
+    @NotNull
+    public Point computeSize(@NotNull GC gc) {
+        final Point size = gc.stringExtent(getText());
 
-        Point iconSize = EMPTY_SIZE;
         if (image != null) {
             Rectangle imageBounds = image.getBounds();
-            iconSize = new Point(imageBounds.width + BORDER_MARGIN, imageBounds.height + BORDER_MARGIN * 2);
-            if (textSize == EMPTY_SIZE) {
-                return iconSize;
-            }
+            // noinspection SuspiciousNameCombination
+            size.x += imageBounds.height;
+            size.y = Math.max(size.y, imageBounds.width);
         }
 
         return new Point(
-            Math.max(iconSize.y, textSize.y + BORDER_MARGIN * 2),
-            textSize.x + (BORDER_MARGIN + VERT_INDENT) * 2 + iconSize.x);
+            size.y + BORDER_MARGIN.left + BORDER_MARGIN.right,
+            size.x + BORDER_MARGIN.top + BORDER_MARGIN.bottom + VERT_INDENT
+        );
     }
 
     public void paint(PaintEvent e) {
         boolean selected = isSelected();
-        Point size = computeSize(e.gc, -1, -1, false);
+        Point size = computeSize(e.gc);
         Color curBackground = e.gc.getBackground();
         boolean isDarkBG = UIUtils.isDark(curBackground.getRGB());
-        
+
         boolean enabled = true;
         if (getFolder().isCheckCommandEnablement()) {
             if (action != null && !action.isEnabled()) {
@@ -240,54 +243,42 @@ public class VerticalButton extends Canvas {
             }
         }
 
-        // In fact X and Y offsets are reversed because of transform
-        int xOffset = 0;
-        int yOffset = BORDER_MARGIN;
-
+        int offset = BORDER_MARGIN.top;
         Transform transform = null;
 
         String text = getText();
         if (!CommonUtils.isEmpty(text)) {
-            // Offset shift. Windows only? (14048)
-            boolean shiftOffset = IS_TRANSFORM_BUG_PRESENT && RuntimeUtils.isWindows() && (DPIUtil.getDeviceZoom() >= 200);
-
             transform = new Transform(e.display);
 
-            e.gc.setAntialias(SWT.ON);
             if ((getStyle() & SWT.RIGHT) == SWT.RIGHT) {
                 transform.translate(size.x, 0);
                 transform.rotate(90);
-                if (shiftOffset) {
-                    yOffset -= size.x / 2;
-                }
             } else {
                 transform.translate(0, size.y);
                 transform.rotate(-90);
-                if (shiftOffset) {
-                    xOffset -= size.y / 2;
-                }
             }
             e.gc.setTransform(transform);
-
-            xOffset += VERT_INDENT;
         }
 
         if (image != null) {
+            final Rectangle bounds = image.getBounds();
             if (!enabled) {
                 if (imageDisabled == null) {
                     imageDisabled = new Image(e.display, image, SWT.IMAGE_GRAY);
                     addDisposeListener(e1 -> imageDisabled.dispose());
                 }
-                e.gc.drawImage(imageDisabled, xOffset, yOffset);
+                e.gc.drawImage(imageDisabled, offset, (size.x - bounds.height) / 2);
             } else {
-                e.gc.drawImage(image, xOffset, yOffset);
+                e.gc.drawImage(image, offset, (size.x - bounds.height) / 2);
             }
-            xOffset += image.getBounds().width + BORDER_MARGIN;
+            offset += bounds.height + VERT_INDENT;
         }
 
         if (!CommonUtils.isEmpty(text)) {
+            final Point bounds = e.gc.textExtent(text);
+            e.gc.setAntialias(SWT.ON);
             e.gc.setForeground(isDarkBG ? UIUtils.COLOR_WHITE : UIStyles.getDefaultTextForeground());
-            e.gc.drawString(this.text, xOffset, yOffset);
+            e.gc.drawString(this.text, offset, (size.x - bounds.y) / 2);
         }
 
         if (transform != null) {
