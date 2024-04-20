@@ -41,15 +41,9 @@ import java.awt.*;
 
 public class VerticalButton extends Canvas {
 
-    public static final Insets BORDER_MARGIN = new Insets(6, 2, 6, 2);
-    public static final int VERT_INDENT = 8;
+    private static final Insets BORDER_MARGIN = new Insets(6, 2, 6, 2);
+    private static final int VERT_INDENT = 8;
 
-    private static final Point EMPTY_SIZE = new Point(0, 0);
-
-    // Transform bug in SWT appeared in 2021-06 and was fixed in 2021-09
-    private static final boolean IS_TRANSFORM_BUG_PRESENT = false;
-
-    private int mouse = 0;
     private boolean hit = false;
 
     private String text = "";
@@ -63,8 +57,6 @@ public class VerticalButton extends Canvas {
     private String commandId;
     private ICommandListener commandListener;
     private boolean checked;
-    // float[] angles = {0, 90, 180, 270};
-    // int index = 0;
 
     public VerticalButton(VerticalFolder parent, int style) {
         super(parent, style | SWT.NO_FOCUS);
@@ -190,7 +182,7 @@ public class VerticalButton extends Canvas {
     }
 
     @NotNull
-    public Point computeSize(@NotNull GC gc) {
+    private Point computeSize(@NotNull GC gc) {
         final Point size = gc.stringExtent(getText());
 
         if (image != null) {
@@ -206,7 +198,7 @@ public class VerticalButton extends Canvas {
         );
     }
 
-    public void paint(PaintEvent e) {
+    private void paint(@NotNull PaintEvent e) {
         boolean selected = isSelected();
         Point size = computeSize(e.gc);
         Color curBackground = e.gc.getBackground();
