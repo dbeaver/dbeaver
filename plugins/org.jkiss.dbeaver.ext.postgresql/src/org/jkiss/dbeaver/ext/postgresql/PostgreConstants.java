@@ -120,6 +120,8 @@ public class PostgreConstants {
     public static final String TYPE_BOOLEAN = "boolean";
     public static final String TYPE_BYTEA = "bytea";
 
+    public static final String OPERATION_ALTER = "alter";
+
     public static final String HANDLER_SSL = "postgre_ssl";
 
     /**

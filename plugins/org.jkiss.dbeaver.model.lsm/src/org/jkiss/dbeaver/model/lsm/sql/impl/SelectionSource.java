@@ -16,33 +16,23 @@
  */
 package org.jkiss.dbeaver.model.lsm.sql.impl;
 
-import org.jkiss.dbeaver.model.lsm.mapping.*;
 
 import java.util.List;
 
 
-public abstract class SelectionSource extends AbstractSyntaxNode {
-    @SyntaxNode(name = "nonjoinedTableReference")
+public abstract class SelectionSource {
     public static class Table extends SelectionSource {
-        @SyntaxTerm(xpath = "./tableName//qualifiedName/schemaName/catalogName/identifier")
         public String catalogName;
-        @SyntaxTerm(xpath = "./tableName//qualifiedName/schemaName/unqualifiedSchemaName/identifier")
         public String schemaName;
-        @SyntaxTerm(xpath = "./tableName/qualifiedName/qualifiedIdentifier/identifier")
         public String tableName;
-        @SyntaxTerm(xpath = "./correlationSpecification/correlationName//actualIdentifier")
         public String alias;
-        @SyntaxTerm(xpath = "./correlationSpecification/derivedColumnList/columnNameList/columnName//actualIdentifier")
         public List<String> columnNames;
     }
-    
-    @SyntaxNode(name = "crossJoinTerm")
+
     public static class CrossJoin extends SelectionSource {
-        @SyntaxSubnode(xpath = "./tableReference/nonjoinedTableReference")
         public Table table;
     }
 
-    @SyntaxLiteral(name = "joinType", xstring = "x:joinStrings('_', ./parent::*[text()[1]='NATURAL']/text()[1], x:flatten(., \"./*|./text()\", true(), false()))")
     public enum JoinKind {
         INNER,
         LEFT,
@@ -63,15 +53,15 @@ public abstract class SelectionSource extends AbstractSyntaxNode {
         NATURAL_UNION
     }
 
-    @SyntaxNode(name = "naturalJoinTerm")
     public static class NaturalJoin extends SelectionSource {
-        @SyntaxTerm(xpath = "./joinType")
         public JoinKind kind;
-        @SyntaxSubnode(xpath = "./tableReference/nonjoinedTableReference")
         public Table table;
-//        @SyntaxSubnode(xpath = "./joinSpecification/searchCondition")
-//        public ValueExpression condition;
-        @SyntaxTerm(xpath = "./joinSpecification/namedColumnsJoin/joinColumnList/columnNameList/columnName/identifier/actualIdentifier")
+        public ValueExpression condition;
         public List<String> columnNames;
+    }
+
+    public static class Subquery extends SelectionSource {
+        public SelectionQuery selectionQuery;
+        public String alias;
     }
 }
