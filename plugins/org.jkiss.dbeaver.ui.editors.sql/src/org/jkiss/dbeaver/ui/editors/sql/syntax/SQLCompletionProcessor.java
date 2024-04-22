@@ -150,7 +150,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
                 try {
                     String commandPrefix = editor.getSyntaxManager().getControlCommandPrefix();
-                    if (wordDetector.getStartOffset() >= commandPrefix.length() &&
+                    if (commandPrefix != null && wordDetector.getStartOffset() >= commandPrefix.length() &&
                         viewer.getDocument().get(wordDetector.getStartOffset() - commandPrefix.length(), commandPrefix.length()).equals(commandPrefix)) {
                         return makeCommandProposals(request, request.getWordPart());
                     }
