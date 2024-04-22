@@ -42,6 +42,9 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerType;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.qm.QMUtils;
+import org.jkiss.dbeaver.model.qm.meta.QMMConnectionInfo;
+import org.jkiss.dbeaver.model.qm.meta.QMMStatementExecuteInfo;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
@@ -59,6 +62,7 @@ import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.jobs.DefaultInvalidationFeedbackHandler;
 import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
 import org.jkiss.dbeaver.runtime.net.GlobalProxyAuthenticator;
 import org.jkiss.utils.CommonUtils;
@@ -231,7 +235,8 @@ public class DBExecUtils {
                                 dataSource,
                                 false,
                                 true,
-                                () -> DBWorkbench.getPlatformUI().openConnectionEditor(dataSource.getContainer()));
+                                new DefaultInvalidationFeedbackHandler()
+                            );
                             if (i < tryCount - 1) {
                                 log.error("Operation failed. Retry count remains = " + (tryCount - i - 1), lastError);
                             }
@@ -671,8 +676,8 @@ public class DBExecUtils {
         @NotNull DBDAttributeBinding[] bindings,
         @Nullable List<Object[]> rows) throws DBException
     {
-        final DBRProgressMonitor monitor = session.getProgressMonitor();
-        final DBPDataSource dataSource = session.getDataSource();
+        DBRProgressMonitor monitor = session.getProgressMonitor();
+        DBPDataSource dataSource = session.getDataSource();
         boolean readMetaData = dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_READ_METADATA);
         if (!readMetaData && sourceEntity == null) {
             // Do not read metadata if source entity is not known
@@ -994,5 +999,24 @@ public class DBExecUtils {
             }
         }
         return sourceTable;
+    }
+
+    /**
+     * Checks if the data source has pending statements that are still executing.
+     */
+    public static boolean isExecutionInProgress(@NotNull DBPDataSource dataSource) {
+        for (DBSInstance instance : dataSource.getAvailableInstances()) {
+            for (DBCExecutionContext context : instance.getAllContexts()) {
+                QMMConnectionInfo qmConnection = QMUtils.getCurrentConnection(context);
+                if (qmConnection != null) {
+                    QMMStatementExecuteInfo lastExec = qmConnection.getExecutionStack();
+                    if (lastExec != null && !lastExec.isClosed()) {
+                        // It is in progress
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 }

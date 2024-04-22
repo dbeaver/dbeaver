@@ -176,13 +176,37 @@ public class SQLScriptParserGenericsTest {
             "DROP TABLE\n"
                 + "IF EXISTS dim_test;",
             null,
-            "IF (i=1) THEN\n"
-                + "i:=2;\n"
-                + "END IF;",
+            "CREATE or replace PROCEDURE example_if(flag INTEGER)\n" +
+                "RETURNS VARCHAR\n" +
+                "LANGUAGE SQL\n" +
+                "AS\n" +
+                "$$\n" +
+                "BEGIN\n" +
+                "    IF (FLAG = 1) THEN\n" +
+                "        RETURN 'one';\n" +
+                "    ELSEIF (FLAG = 2) THEN\n" +
+                "        RETURN 'two';\n" +
+                "    ELSE\n" +
+                "        RETURN 'Unexpected input.';\n" +
+                "    END IF;\n" +
+                "END;\n" +
+                "$$\n" +
+                ";",
             null,
-            "IF (i=2) THEN\n"
-                + "i:=1;\n"
-                + "END IF;",
+            "create or replace procedure test (customer_number integer)\n" +
+                "    returns integer not null\n" +
+                "    language sql\n" +
+                "    as \n" +
+                "declare \n" +
+                "seq integer;\n" +
+                "\n" +
+                "begin seq := 0;\n" +
+                "if (customer_number = 1) then seq := 1;\n" +
+                "    else if (customer_number = 0) then seq := seq + 10;\n" +
+                "    end if;\n" +
+                "end if;\n" +
+                "    return seq;\n" +
+                "end;",
             null,
             "CREATE TABLE IF NOT EXISTS MART_FLSEDW_CI.DEPLOYMENT_SCRIPTS\n"
                 + "(\r\n"
@@ -266,18 +290,18 @@ public class SQLScriptParserGenericsTest {
     public void parseParameterFromSetCommand() throws DBException {
         List<String> varNames = List.of("aBc", "\"aBc\"", "\"a@c=\"");
         ArrayList<String> expectedCommandsText = new ArrayList<>();
-        String script = "";
+        StringBuilder script = new StringBuilder();
         for (int i = 0; i < varNames.size(); i++) {
             expectedCommandsText.add("@set " + varNames.get(i) + " = 1");
-            script += expectedCommandsText.get(i) + "\n";
+            script.append(expectedCommandsText.get(i)).append("\n");
         }
-        SQLParserContext context = createParserContext(setDialect("snowflake"), script);
-        List<SQLScriptElement> elements = SQLScriptParser.parseScript(context.getDataSource(), script);
+        SQLParserContext context = createParserContext(setDialect("snowflake"), script.toString());
+        assert context.getDataSource() != null;
+        List<SQLScriptElement> elements = SQLScriptParser.parseScript(context.getDataSource(), script.toString());
         List<SQLControlCommand> commands = new ArrayList<>();
         List<String> actualCommandsText = new ArrayList<>();
         for (SQLScriptElement sqlScriptElement : elements) {
-            if (sqlScriptElement instanceof SQLControlCommand) {
-                SQLControlCommand cmd = (SQLControlCommand) sqlScriptElement;
+            if (sqlScriptElement instanceof SQLControlCommand cmd) {
                 commands.add(cmd);
                 actualCommandsText.add(cmd.getText());
             }

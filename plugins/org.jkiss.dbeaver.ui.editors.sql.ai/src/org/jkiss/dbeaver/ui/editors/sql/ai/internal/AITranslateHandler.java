@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.ai.AIUIUtils;
+import org.jkiss.dbeaver.ui.editors.sql.ai.model.MessageChunk;
 import org.jkiss.dbeaver.ui.editors.sql.ai.popup.AISuggestionPopup;
 import org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencePage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -62,7 +63,7 @@ public class AITranslateHandler extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         AIFeatures.SQL_AI_POPUP.use();
 
-        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AICompletionConstants.AI_DISABLED)) {
+        if (AISettingsRegistry.getInstance().getSettings().isAiDisabled()) {
             return null;
         }
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
@@ -75,7 +76,7 @@ public class AITranslateHandler extends AbstractHandler {
 
         DAICompletionEngine engine;
         try {
-            engine = AIEngineRegistry.getInstance().getCompletionEngine(AISettings.getSettings().getActiveEngine());
+            engine = AIEngineRegistry.getInstance().getCompletionEngine(AISettingsRegistry.getInstance().getSettings().getActiveEngine());
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError("AI error", "Cannot determine AI engine", e);
             return null;
@@ -122,7 +123,7 @@ public class AITranslateHandler extends AbstractHandler {
         );
         if (aiCompletionPopup.open() == IDialogConstants.OK_ID) {
             try {
-                engine = AIEngineRegistry.getInstance().getCompletionEngine(AISettings.getSettings().getActiveEngine());
+                engine = AIEngineRegistry.getInstance().getCompletionEngine(AISettingsRegistry.getInstance().getSettings().getActiveEngine());
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError("AI error", "Cannot determine AI engine", e);
                 return null;
@@ -150,7 +151,7 @@ public class AITranslateHandler extends AbstractHandler {
             popup.getInputText()
         );
 
-        if (CommonUtils.isEmptyTrimmed(message.content())) {
+        if (CommonUtils.isEmptyTrimmed(message.getContent())) {
             return;
         }
 
@@ -186,16 +187,24 @@ public class AITranslateHandler extends AbstractHandler {
         }
 
         DAICompletionResponse response = completionResult.get(0);
-        String completion = response.getResultCompletion();
-        if (CommonUtils.isEmptyTrimmed(completion)) {
+        MessageChunk[] messageChunks = MessageChunk.splitIntoChunks(CommonUtils.notEmpty(response.getResultCompletion()));
+
+        if (messageChunks.length == 0) {
             return;
         }
-
+        StringBuilder completion = new StringBuilder();
         if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AICompletionConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT)) {
-            completion = SQLUtils.generateCommentLine(executionContext.getDataSource(), message.content()) + completion;
+            completion.append(SQLUtils.generateCommentLine(executionContext.getDataSource(), message.getContent()));
+        }
+        for (MessageChunk messageChunk : messageChunks) {
+            if (messageChunk instanceof MessageChunk.Code code) {
+                completion.append(code.text());
+            } else if (messageChunk instanceof MessageChunk.Text text) {
+                completion.append(SQLUtils.generateCommentLine(executionContext.getDataSource(), text.text()));
+            }
         }
 
-        final String finalCompletion = completion;
+        final String finalCompletion = completion.toString();
 
         // Save to history
         new AbstractJob("Save smart completion history") {
@@ -206,7 +215,7 @@ public class AITranslateHandler extends AbstractHandler {
                         monitor,
                         lDataSource,
                         executionContext,
-                        message.content(),
+                        message.getContent(),
                         finalCompletion);
                 } catch (DBException e) {
                     return GeneralUtils.makeExceptionStatus(e);
@@ -225,11 +234,17 @@ public class AITranslateHandler extends AbstractHandler {
                 if (query != null) {
                     offset = query.getOffset();
                     length = query.getLength();
+                    // Trim trailing semicolon if needed
+                    if (length > 0 && !query.getText().endsWith(";") && !completion.isEmpty()) {
+                        if (completion.charAt(completion.length() - 1) == ';') {
+                            completion.setLength(completion.length() - 1);
+                        }
+                    }
                 }
                 document.replace(
                     offset,
                     length,
-                    completion);
+                    completion.toString());
                 editor.getSelectionProvider().setSelection(new TextSelection(offset + completion.length(), 0));
             } catch (BadLocationException e) {
                 DBWorkbench.getPlatformUI().showError("Insert SQL", "Error inserting SQL completion in text editor", e);

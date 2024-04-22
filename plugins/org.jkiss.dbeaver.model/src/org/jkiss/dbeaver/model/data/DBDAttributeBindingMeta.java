@@ -38,7 +38,7 @@ import java.util.List;
  * Attribute value binding info
  */
 public class DBDAttributeBindingMeta extends DBDAttributeBinding {
-    @NotNull
+    @Nullable
     private final DBSDataContainer dataContainer;
     @NotNull
     private final DBCAttributeMetaData metaAttribute;
@@ -56,20 +56,20 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
     private boolean showLabel;
 
     public DBDAttributeBindingMeta(
-        @NotNull DBSDataContainer dataContainer,
+        @Nullable DBSDataContainer dataContainer,
         @NotNull DBCSession session,
         @NotNull DBCAttributeMetaData metaAttribute) {
         super(DBUtils.findValueHandler(session, metaAttribute));
         this.dataContainer = dataContainer;
         this.metaAttribute = metaAttribute;
 
-        DBPDataSource dataSource = dataContainer.getDataSource();
+        DBPDataSource dataSource = dataContainer == null ? null : dataContainer.getDataSource();
         showLabel = dataSource == null || !dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL);
     }
 
     @Override
     public DBPDataSource getDataSource() {
-        return dataContainer.getDataSource();
+        return dataContainer == null ? null : dataContainer.getDataSource();
     }
 
     @Nullable

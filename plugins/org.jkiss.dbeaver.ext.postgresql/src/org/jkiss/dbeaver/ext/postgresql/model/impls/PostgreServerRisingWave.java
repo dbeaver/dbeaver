@@ -128,7 +128,7 @@ public class PostgreServerRisingWave extends PostgreServerExtensionBase {
 
     @Override
     public boolean supportsAggregates() {
-        return true;
+        return false;
     }
 
     @Override

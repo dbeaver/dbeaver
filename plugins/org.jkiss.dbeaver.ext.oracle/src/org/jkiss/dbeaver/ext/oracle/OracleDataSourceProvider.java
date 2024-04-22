@@ -33,8 +33,8 @@ import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
+import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -228,7 +228,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements
             if (connectionType == OracleConstants.ConnectionType.TNS) {
                 return databaseName;
             } else {
-                String hostName = DataSourceUtils.getTargetTunnelHostName(connectionInfo);
+                String hostName = DBWUtils.getTargetTunnelHostName(connectionInfo);
                 String hostPort = connectionInfo.getHostPort();
                 if (CommonUtils.isEmpty(hostName)) {
                     return null;

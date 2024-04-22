@@ -17,12 +17,11 @@
 
 package org.jkiss.dbeaver.core;
 
-import org.eclipse.core.internal.registry.IRegistryConstants;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
@@ -49,9 +48,9 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -65,9 +64,12 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
 
     // The plug-in ID
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.core"; //$NON-NLS-1$
+    public static final String DBEAVER_DATA_DIR = "DBeaverData";
 
     private static final String TEMP_PROJECT_NAME = ".dbeaver-temp"; //$NON-NLS-1$
-    private static final String OSGI_CONFIG_FILE = "config.ini";
+    private static final String DBEAVER_CONFIG_FOLDER = "settings";
+    private static final String DBEAVER_CONFIG_FILE = "global-settings.ini";
+    private static final String DBEAVER_PROP_LANGUAGE = "nl";
 
     private static final Log log = Log.getLog(DesktopPlatform.class);
 
@@ -100,10 +102,6 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
         isClosing = closing;
     }
 
-    public static DBPPreferenceStore getGlobalPreferenceStore() {
-        return DBeaverActivator.getInstance().getPreferences();
-    }
-
     public DesktopPlatform() {
         instance = this;
     }
@@ -111,7 +109,6 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
     protected void initialize() {
         long startTime = System.currentTimeMillis();
         log.debug("Initialize desktop platform...");
-
         {
             this.language = PlatformLanguageRegistry.getInstance().getLanguage(Locale.getDefault());
             if (this.language == null) {
@@ -214,8 +211,8 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
 
     @NotNull
     @Override
-    public DBPApplication getApplication() {
-        return BaseApplicationImpl.getInstance();
+    public DBPApplicationDesktop getApplication() {
+        return (DBPApplicationDesktop) BaseApplicationImpl.getInstance();
     }
 
     @NotNull
@@ -231,27 +228,38 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
         }
 
         try {
-            final File config = new File(RuntimeUtils.getLocalFileFromURL(Platform.getConfigurationLocation().getURL()), OSGI_CONFIG_FILE);
-            final Properties properties = new Properties();
-
-            if (config.exists()) {
-                try (FileInputStream is = new FileInputStream(config)) {
-                    properties.load(is);
-                }
-            }
-
-            properties.put(IRegistryConstants.PROP_NL, language.getCode());
-
-            try (FileOutputStream os = new FileOutputStream(config)) {
-                properties.store(os, null);
-            }
-
+            setConfigProperty(DBEAVER_PROP_LANGUAGE, language.getCode());
             this.language = language;
             // This property is fake. But we set it to trigger property change listener
             // which will ask to restart workbench.
             getPreferenceStore().setValue(ModelPreferences.PLATFORM_LANGUAGE, language.getCode());
         } catch (IOException e) {
-            throw new DBException("Unexpected error while saving startup configuration", e);
+            throw new DBException("Can't change platform language: " + e.getMessage(), e);
+        }
+    }
+
+    private void setConfigProperty(@NotNull String key, @Nullable String value) throws IOException {
+        final Path root = Path.of(RuntimeUtils.getWorkingDirectory(DBEAVER_DATA_DIR));
+        final Path file = root.resolve(DBEAVER_CONFIG_FOLDER).resolve(DBEAVER_CONFIG_FILE);
+        final Properties properties = new Properties();
+
+        if (Files.exists(file)) {
+            try (Reader reader = Files.newBufferedReader(file)) {
+                properties.load(reader);
+            }
+        }
+
+        if (value != null) {
+            properties.setProperty(key, value);
+        } else {
+            properties.remove(key);
+        }
+
+        // Ensure the config directory exists
+        Files.createDirectories(file.getParent());
+
+        try (Writer writer = Files.newBufferedWriter(file)) {
+            properties.store(writer, "DBeaver configuration");
         }
     }
 
@@ -292,7 +300,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
     @NotNull
     @Override
     public DBPPreferenceStore getPreferenceStore() {
-        return DBeaverActivator.getInstance().getPreferences();
+        return getApplication().getPreferenceStore();
     }
 
     @NotNull

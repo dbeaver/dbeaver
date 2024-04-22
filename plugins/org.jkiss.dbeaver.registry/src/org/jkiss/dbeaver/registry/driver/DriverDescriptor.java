@@ -428,11 +428,20 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         {
             IConfigurationElement[] pp = config.getChildren(RegistryConstants.TAG_PROVIDER_PROPERTIES);
             if (!ArrayUtils.isEmpty(pp)) {
+                String copyFromDriverId = pp[0].getAttribute("copyFrom");
+                if (!CommonUtils.isEmpty(copyFromDriverId)) {
+                    DriverDescriptor copyFromDriver = providerDescriptor.getDriver(copyFromDriverId);
+                    if (copyFromDriver == null) {
+                        log.debug("Driver '" + copyFromDriverId + "' not found. Cannot copy provider properties into '" + getId() + "'");
+                    } else {
+                        this.providerPropertyDescriptors.addAll(copyFromDriver.providerPropertyDescriptors);
+                    }
+                }
                 this.providerPropertyDescriptors.addAll(
                     Arrays.stream(pp[0].getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP))
                         .map(ProviderPropertyDescriptor::extractProviderProperties)
                         .flatMap(List<ProviderPropertyDescriptor>::stream)
-                        .collect(Collectors.toList()));
+                        .toList());
             }
         }
 
@@ -1275,7 +1284,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                     // Load driver classes into core module using plugin class loader
                     driverClass = Class.forName(driverClassName, true, classLoader);
                 } catch (Throwable ex) {
-                    throw new DBException("Error creating driver '" + getFullName() + "' instance.\nMost likely required jar files are missing.\nYou should configure jars in driver settings.\n\nReason: can't load driver class '" + driverClassName + "'", ex);
+                    throw new DBException("Error creating driver '" + getFullName()
+                        + "' instance.\nMost likely required jar files are missing.\nYou should configure jars in driver settings.\n\n"
+                        + "Reason: can't load driver class '" + driverClassName + "'",
+                        ex);
                 }
 
                 // Create driver instance

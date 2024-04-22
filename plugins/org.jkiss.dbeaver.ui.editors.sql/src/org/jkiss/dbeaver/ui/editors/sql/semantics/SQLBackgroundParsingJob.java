@@ -26,21 +26,34 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserContext;
 import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
+import org.jkiss.dbeaver.model.sql.semantics.*;
+import org.jkiss.dbeaver.model.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
+import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
+import org.jkiss.dbeaver.model.stm.LSMInspections;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
+import org.jkiss.dbeaver.model.stm.STMTreeTermNode;
+import org.jkiss.dbeaver.model.stm.STMUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryModel;
 import org.jkiss.dbeaver.utils.ListNode;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
+import java.util.ArrayDeque;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 public class SQLBackgroundParsingJob {
 
@@ -56,14 +69,19 @@ public class SQLBackgroundParsingJob {
             this.length = length;
         }
     }
-    
-    // TODO consider if we don't need such a detailed collection for reparse regions, and one expandable input region is enough
-    private final OffsetKeyedTreeMap<QueuedRegionInfo> queuedForReparse = new OffsetKeyedTreeMap<>();
 
+    // TODO consider if we don't need such a detailed collection for reparse regions, and one expandable input region is enough
+    @NotNull
+    private final OffsetKeyedTreeMap<QueuedRegionInfo> queuedForReparse = new OffsetKeyedTreeMap<>();
+    @NotNull
     private final Object syncRoot = new Object();
+    @NotNull
     private final SQLEditorBase editor;
+    @NotNull
     private final SQLDocumentSyntaxContext context = new SQLDocumentSyntaxContext();
+    @Nullable
     private IDocument document = null;
+    @NotNull
     private final AbstractJob job = new AbstractJob("Background parsing job") {
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
@@ -80,13 +98,14 @@ public class SQLBackgroundParsingJob {
     private volatile boolean isRunning = false;
     private volatile int knownRegionStart = 0;
     private volatile int knownRegionEnd = 0;
-    
+    @NotNull
     private final DocumentLifecycleListener documentListener = new DocumentLifecycleListener();
 
-    public SQLBackgroundParsingJob(SQLEditorBase editor) {
+    public SQLBackgroundParsingJob(@NotNull SQLEditorBase editor) {
         this.editor = editor;
     }
 
+    @NotNull
     public SQLDocumentSyntaxContext getCurrentContext() {
         return context;
     }
@@ -125,6 +144,98 @@ public class SQLBackgroundParsingJob {
                     this.document.removeDocumentListener(this.documentListener);
                 }
             }
+        }
+    }
+    
+    private final Set<Integer> knownIdentifierPartTerms = Set.of(
+        SQLStandardLexer.Period,
+        SQLStandardLexer.Identifier,
+        SQLStandardLexer.DelimitedIdentifier,
+        SQLStandardLexer.Quotted
+    );
+
+    /**
+     * Prepare completion context for the specified position in the text
+     */
+    @NotNull
+    public SQLQueryCompletionContext obtainCompletionContext(int offset) {
+        SQLScriptItemAtOffset scriptItem = null;
+        do {
+            synchronized (this.syncRoot) {
+                if (scriptItem == null || this.queuedForReparse.size() == 0) {
+                    scriptItem = this.context.findScriptItem(offset);
+                    if (scriptItem != null) { // TODO consider statements separation which is ignored for now
+                        if (scriptItem.item.isDirty()) {
+                            // awaiting reparse, so proceed to release lock and wait for the job to finish, then retry
+                        } else {
+                            return this.prepareCompletionContext(scriptItem, offset); 
+                        }
+                    } else {
+                        // no script items here, so fallback to offquery context
+                        break;
+                    }
+                }
+            }
+            
+            try {
+                this.job.join();
+            } catch (InterruptedException e) {
+                break;
+            }
+        } while (scriptItem != null);
+        return SQLQueryCompletionContext.prepareOffquery(0);
+    }
+
+    @NotNull
+    private SQLQueryCompletionContext prepareCompletionContext(@NotNull SQLScriptItemAtOffset scriptItem, int offset) {
+        int position = offset - scriptItem.offset;
+    
+        SQLQueryModel model = scriptItem.item.getQueryModel();
+        if (model != null) {
+            STMTreeNode syntaxNode = model.getSyntaxNode();
+            LSMInspections.SyntaxInspectionResult syntaxInspectionResult = LSMInspections.prepareAbstractSyntaxInspection(syntaxNode, position);
+            SQLQueryDataContext context = null;
+            SQLQueryNodeModel node = model.findNodeContaining(position);
+            SQLQueryLexicalScopeItem lexicalItem = null;
+            if (node != null) {
+                SQLQueryLexicalScope scope = node.findLexicalScope(position);
+                if (scope != null) {
+                    context = scope.getContext();
+                    lexicalItem = scope.findItem(position);
+                }
+                if (context == null) {
+                    context = node.getGivenDataContext();
+                }
+            }
+            
+            ArrayDeque<STMTreeTermNode> nameNodes = new ArrayDeque<>();
+            List<STMTreeTermNode> allTerms = LSMInspections.prepareTerms(syntaxNode);
+            int index = STMUtils.binarySearchByKey(allTerms, t -> t.getRealInterval().a, position, Comparator.comparingInt(k -> k));
+            if (index < 0) {
+                index = ~index - 1;
+            }
+            if (allTerms.get(index).getRealInterval().b == position  - 1) {
+                for (int i = index; i >= 0; i--) {
+                    STMTreeTermNode term = allTerms.get(i);
+                    if (knownIdentifierPartTerms.contains(term.symbol.getType())
+                        || (term.getStmParent() != null && term.getStmParent().getNodeKindId() == SQLStandardParser.RULE_nonReserved)
+                    ) {
+                        nameNodes.addFirst(term);
+                    } else {
+                        break;
+                    }
+                }
+            }
+            return SQLQueryCompletionContext.prepare(
+                scriptItem,
+                this.editor.getExecutionContext(),
+                syntaxInspectionResult,
+                context,
+                lexicalItem,
+                nameNodes.toArray(STMTreeTermNode[]::new)
+            );
+        } else {
+            return SQLQueryCompletionContext.EMPTY;
         }
     }
 
@@ -424,9 +535,10 @@ public class SQLBackgroundParsingJob {
                         for (SQLQuerySymbolEntry entry : queryModel.getAllSymbols()) {
                             itemContext.registerToken(entry.getInterval().a, entry);
                         }
+                        itemContext.refreshCompleted();
                     }
                 } catch (Throwable ex) {
-                    log.debug(ex);
+                    log.debug("Error while analyzing query text: " + element.getOriginalText(), ex);
                 }
                 monitor.worked(1);
                 monitor.setTaskName("Background query analysis: subtask #" + (i++));

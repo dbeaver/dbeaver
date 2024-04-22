@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AIEngineSettings;
-import org.jkiss.dbeaver.model.ai.AISettings;
+import org.jkiss.dbeaver.model.ai.AISettingsRegistry;
 import org.jkiss.dbeaver.model.ai.completion.AbstractAICompletionEngine;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionContext;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionMessage;
@@ -65,24 +65,22 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
 
     private static final Map<String, GPTCompletionAdapter> clientInstances = new HashMap<>();
 
-    private static final Pattern sizeErrorPattern = Pattern.compile("This model's maximum context length is [0-9]+ tokens. "
-        + "\\wowever[, ]+you requested [0-9]+ tokens \\(([0-9]+) in \\w+ \\w+[;,] [0-9]+ \\w+ \\w+ completion\\). "
-        + "Please reduce .+");
-
+    private static final Pattern sizeErrorPattern = Pattern.compile(".+context length is ([0-9]+) tokens.+([0-9]+) tokens.+");
 
     public OpenAICompletionEngine() {
     }
 
-    private static CompletionRequest buildLegacyAPIRequest(
+    private static CompletionRequest buildSingleRequest(
+        boolean chatMode,
         @NotNull List<DAICompletionMessage> messages,
         int maxTokens,
         Double temperature,
         String modelId
     ) {
         return CompletionRequest.builder()
-            .prompt(buildSingleMessage(truncateMessages(messages, maxTokens)))
+            .prompt(buildSingleMessage(truncateMessages(chatMode, messages, maxTokens)))
             .temperature(temperature)
-            .maxTokens(maxTokens)
+            //.maxTokens(maxTokens)
             .frequencyPenalty(0.0)
             .n(1)
             .presencePenalty(0.0)
@@ -93,17 +91,18 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
     }
 
     private static ChatCompletionRequest buildChatRequest(
+        boolean chatMode,
         @NotNull List<DAICompletionMessage> messages,
         int maxTokens,
         Double temperature,
         String modelId
     ) {
         return ChatCompletionRequest.builder()
-            .messages(truncateMessages(messages, maxTokens).stream()
-                .map(m -> new ChatMessage(m.role().getId(), m.content()))
+            .messages(truncateMessages(chatMode, messages, maxTokens).stream()
+                .map(m -> new ChatMessage(m.getRole().getId(), m.getContent()))
                 .toList())
             .temperature(temperature)
-            .maxTokens(maxTokens)
+            //.maxTokens(maxTokens)
             .frequencyPenalty(0.0)
             .presencePenalty(0.0)
             .n(1)
@@ -177,8 +176,8 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
         }
 
         GPTCompletionAdapter service = getServiceInstance(executionContext);
-        Object completionRequest = createCompletionRequest(mergedMessages);
-        String completionText = callCompletion(monitor, mergedMessages, service, completionRequest);
+        Object completionRequest = createCompletionRequest(chatCompletion, mergedMessages);
+        String completionText = callCompletion(monitor, chatCompletion, mergedMessages, service, completionRequest);
 
         return processCompletion(
             mergedMessages,
@@ -217,12 +216,13 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
 
     @NotNull
     protected AIEngineSettings getSettings() {
-        return AISettings.getSettings().getEngineConfiguration(AIConstants.OPENAI_ENGINE);
+        return AISettingsRegistry.getInstance().getSettings().getEngineConfiguration(AIConstants.OPENAI_ENGINE);
     }
 
     @Nullable
     protected String callCompletion(
         @NotNull DBRProgressMonitor monitor,
+        boolean chatMode,
         @NotNull List<DAICompletionMessage> messages,
         @NotNull GPTCompletionAdapter service,
         @NotNull Object completionRequest
@@ -244,7 +244,6 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
 
             try {
                 List<?> choices;
-                int responseSize = AIConstants.MAX_RESPONSE_TOKENS;
                 for (int i = 0; ; i++) {
                     try {
                         choices = getCompletionChoices(service, completionRequest);
@@ -265,12 +264,11 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
                                 } else {
                                     throw e;
                                 }
-                                responseSize = Math.min(responseSize,
-                                    getMaxTokens() - promptSize - 1);
-                                if (responseSize < 0) {
+                                if (promptSize >= getMaxTokens()) {
+                                    // Already at maximum
                                     throw e;
                                 }
-                                completionRequest = createCompletionRequest(messages, responseSize);
+                                completionRequest = createCompletionRequest(chatMode, messages, promptSize);
                             }
                             if (i >= MAX_REQUEST_ATTEMPTS - 1) {
                                 throw e;
@@ -347,18 +345,18 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
         return service;
     }
 
-    protected Object createCompletionRequest(@NotNull List<DAICompletionMessage> messages) {
-        return createCompletionRequest(messages, AIConstants.MAX_RESPONSE_TOKENS);
+    protected Object createCompletionRequest(boolean chatMode, @NotNull List<DAICompletionMessage> messages) {
+        return createCompletionRequest(chatMode, messages, getMaxTokens());
     }
 
-    protected Object createCompletionRequest(@NotNull List<DAICompletionMessage> messages, int responseSize) {
+    protected Object createCompletionRequest(boolean chatMode, @NotNull List<DAICompletionMessage> messages, int maxTokens) {
         Double temperature =
             CommonUtils.toDouble(getSettings().getProperties().get(AIConstants.AI_TEMPERATURE), 0.0);
         final GPTModel model = getModel();
         if (model.isChatAPI()) {
-            return buildChatRequest(messages, responseSize, temperature, model.getName());
+            return buildChatRequest(chatMode, messages, maxTokens, temperature, model.getName());
         } else {
-            return buildLegacyAPIRequest(messages, responseSize, temperature, model.getName());
+            return buildSingleRequest(chatMode, messages, maxTokens, temperature, model.getName());
         }
     }
 
@@ -381,15 +379,15 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
         final StringJoiner buffer = new StringJoiner("\n");
 
         for (DAICompletionMessage message : messages) {
-            if (message.role() == DAICompletionMessage.Role.SYSTEM) {
+            if (message.getRole() == DAICompletionMessage.Role.SYSTEM) {
                 buffer.add("###");
-                buffer.add(message.content()
+                buffer.add(message.getContent()
                     .lines()
                     .map(line -> '#' + line)
                     .collect(Collectors.joining("\n")));
                 buffer.add("###");
             } else {
-                buffer.add(message.content());
+                buffer.add(message.getContent());
             }
         }
 
@@ -398,30 +396,4 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
         return buffer.toString();
     }
 
-    @NotNull
-    private static List<DAICompletionMessage> truncateMessages(@NotNull List<DAICompletionMessage> messages, int maxTokens) {
-        final Deque<DAICompletionMessage> pending = new LinkedList<>(messages);
-        final List<DAICompletionMessage> truncated = new ArrayList<>();
-        int remainingTokens = maxTokens - 20; // Just to be sure
-
-        if (pending.getFirst().role() == DAICompletionMessage.Role.SYSTEM) {
-            // Always append system message
-            truncated.add(pending.remove());
-        }
-
-        while (!pending.isEmpty()) {
-            final DAICompletionMessage message = pending.remove();
-            final int messageTokens = message.content().length();
-
-            if (remainingTokens < 0 || messageTokens > remainingTokens) {
-                // Exclude old messages that don't fit into given number of tokens
-                break;
-            }
-
-            truncated.add(message);
-            remainingTokens -= messageTokens;
-        }
-
-        return truncated;
-    }
 }

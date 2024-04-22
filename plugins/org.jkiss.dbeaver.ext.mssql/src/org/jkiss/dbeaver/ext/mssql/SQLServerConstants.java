@@ -92,6 +92,8 @@ public class SQLServerConstants {
     public static final String TYPE_HIERARCHYID = "hierarchyid";
     public static final String TYPE_XML = "xml";
 
+    public static final String OPERATION_ALTER = "alter";
+
     public static final int MAX_NUMERIC_PRECISION = 38;
     public static final int TABLE_TYPE_SYSTEM_ID = 243;
 

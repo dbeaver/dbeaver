@@ -17,35 +17,21 @@
 package org.jkiss.dbeaver.model.net.ssh.config;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.utils.SecurityUtils;
 
-public class SSHPortForwardConfiguration {
-    private final String localHost;
-    private final int localPort;
-    private final String remoteHost;
-    private final int remotePort;
-
-    public SSHPortForwardConfiguration(@NotNull String localHost, int localPort, @NotNull String remoteHost, int remotePort) {
-        this.localHost = localHost;
-        this.localPort = localPort;
-        this.remoteHost = remoteHost;
-        this.remotePort = remotePort;
-    }
-
+public record SSHPortForwardConfiguration(
+    @NotNull String localHost,
+    int localPort,
+    @NotNull String remoteHost,
+    int remotePort
+) {
     @NotNull
-    public String getLocalHost() {
-        return localHost;
+    public String toDisplayString() {
+        return localHost + ":" + localPort + " <- " + remoteHost + ":" + remotePort;
     }
 
-    public int getLocalPort() {
-        return localPort;
-    }
-
-    @NotNull
-    public String getRemoteHost() {
-        return remoteHost;
-    }
-
-    public int getRemotePort() {
-        return remotePort;
+    @Override
+    public String toString() {
+        return SecurityUtils.mask(localHost) + ":" + localPort + " <- " + SecurityUtils.mask(remoteHost) + ":" + remotePort;
     }
 }

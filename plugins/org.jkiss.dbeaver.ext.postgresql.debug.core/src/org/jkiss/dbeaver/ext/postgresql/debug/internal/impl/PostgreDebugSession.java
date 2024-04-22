@@ -272,7 +272,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
             log.debug("Start local port waiting....");
             SQLWarning warn = null;
             while (!statement.isClosed() && totalWaitMs < LOCAL_TIMEOT_MS && warn == null) {
-                warn = statement.getWarnings(); // poll the the first warn on the statement itself
+                warn = statement.getWarnings(); // poll the first warn on the statement itself
                 if (warn == null) {
                     Thread.sleep(LOCAL_WAIT_MS);
                     totalWaitMs += LOCAL_WAIT_MS;

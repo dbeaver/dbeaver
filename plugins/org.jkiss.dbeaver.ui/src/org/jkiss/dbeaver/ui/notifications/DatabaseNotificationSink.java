@@ -139,7 +139,7 @@ public class DatabaseNotificationSink {
         popup = new DatabaseNotificationPopup(shell);
         popup.setFadingEnabled(isAnimationsEnabled());
 
-        popup.setDelayClose(ModelPreferences.getPreferences().getInt(ModelPreferences.NOTIFICATIONS_CLOSE_DELAY_TIMEOUT));
+        popup.setDelayClose(DBWorkbench.getPlatform().getPreferenceStore().getInt(ModelPreferences.NOTIFICATIONS_CLOSE_DELAY_TIMEOUT));
 
         List<AbstractNotification> toDisplay = new ArrayList<>(currentlyNotifying);
         Collections.sort(toDisplay);

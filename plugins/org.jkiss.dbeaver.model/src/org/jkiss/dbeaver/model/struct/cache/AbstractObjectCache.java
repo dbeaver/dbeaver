@@ -198,10 +198,16 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
 
     /**
      * Adds custom objects to cache after rea; cache data was read
+     *
+     * @param monitor
+     * @param owner
      * @param objectList object list which will be saved in the cache.
-     *  It can be modified by this functions
+     *                   It can be modified by this functions
      */
-    protected void addCustomObjects(List<OBJECT> objectList) {
+    protected void addCustomObjects(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull OWNER owner,
+        @NotNull List<OBJECT> objectList) throws DBException {
 
     }
 
