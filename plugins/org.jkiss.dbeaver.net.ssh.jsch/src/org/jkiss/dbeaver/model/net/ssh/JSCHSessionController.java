@@ -47,10 +47,7 @@ import java.util.stream.Collectors;
 public class JSCHSessionController extends AbstractSessionController<JSCHSession> {
     private static final Log log = Log.getLog(JSCHSessionController.class);
 
-    private final JSch jsch;
-
     public JSCHSessionController() {
-        jsch = new JSch();
         JSch.setLogger(new JschLogger());
     }
 
@@ -66,6 +63,7 @@ public class JSCHSessionController extends AbstractSessionController<JSCHSession
         @NotNull DBWHandlerConfiguration configuration,
         @NotNull SSHHostConfiguration destination
     ) throws DBException {
+        final JSch jsch = new JSch();
         final SSHAuthConfiguration auth = destination.auth();
 
         if (auth instanceof SSHAuthConfiguration.Password) {
@@ -73,14 +71,14 @@ public class JSCHSessionController extends AbstractSessionController<JSCHSession
         } else if (auth instanceof SSHAuthConfiguration.KeyFile key) {
             log.debug("SSHSessionController: Using public key authentication");
             try {
-                addIdentityKeyFile(monitor, configuration.getDataSource(), Path.of(key.path()), key.password());
+                addIdentityKeyFile(jsch, monitor, configuration.getDataSource(), Path.of(key.path()), key.password());
             } catch (Exception e) {
                 throw new DBException("Error adding identity key", e);
             }
         } else if (auth instanceof SSHAuthConfiguration.KeyData key) {
             log.debug("SSHSessionController: Using public key authentication");
             try {
-                addIdentityKeyValue(key.data(), key.password());
+                addIdentityKeyValue(jsch, key.data(), key.password());
             } catch (Exception e) {
                 throw new DBException("Error adding identity key", e);
             }
@@ -109,7 +107,7 @@ public class JSCHSessionController extends AbstractSessionController<JSCHSession
             session.setHostKeyAlias(destination.hostname());
             session.setServerAliveInterval(configuration.getIntProperty(SSHConstants.PROP_ALIVE_INTERVAL));
             session.setTimeout(configuration.getIntProperty(SSHConstants.PROP_CONNECT_TIMEOUT));
-            setupHostKeyVerification(session, configuration);
+            setupHostKeyVerification(jsch, session, configuration);
 
             if (auth instanceof SSHAuthConfiguration.Password) {
                 session.setConfig("PreferredAuthentications", "password,keyboard-interactive");
@@ -126,6 +124,7 @@ public class JSCHSessionController extends AbstractSessionController<JSCHSession
     }
 
     private void setupHostKeyVerification(
+        @NotNull JSch jsch,
         @NotNull Session session,
         @NotNull DBWHandlerConfiguration configuration
     ) throws JSchException {
@@ -158,7 +157,7 @@ public class JSCHSessionController extends AbstractSessionController<JSCHSession
         }
     }
 
-    private void addIdentityKeyValue(String keyValue, String password) throws JSchException {
+    private void addIdentityKeyValue(@NotNull JSch jsch, String keyValue, String password) throws JSchException {
         byte[] keyBinary = keyValue.getBytes(StandardCharsets.UTF_8);
         if (!CommonUtils.isEmpty(password)) {
             jsch.addIdentity("key", keyBinary, null, password.getBytes());
@@ -168,6 +167,7 @@ public class JSCHSessionController extends AbstractSessionController<JSCHSession
     }
 
     private void addIdentityKeyFile(
+        @NotNull JSch jsch,
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDataSourceContainer dataSource,
         @NotNull Path key,
@@ -228,7 +228,7 @@ public class JSCHSessionController extends AbstractSessionController<JSCHSession
                     throw new IOException("Specified private key cannot be converted:\n" + message);
                 }
 
-                addIdentityKey0(tmp, password);
+                addIdentityKey0(jsch, tmp, password);
             } catch (InterruptedException e) {
                 throw new IOException(e);
             } finally {
@@ -239,11 +239,11 @@ public class JSCHSessionController extends AbstractSessionController<JSCHSession
                 }
             }
         } else {
-            addIdentityKey0(key, password);
+            addIdentityKey0(jsch, key, password);
         }
     }
 
-    private void addIdentityKey0(Path key, String password) throws JSchException {
+    private void addIdentityKey0(@NotNull JSch jsch, Path key, String password) throws JSchException {
         if (!CommonUtils.isEmpty(password)) {
             jsch.addIdentity(key.toAbsolutePath().toString(), password);
         } else {
