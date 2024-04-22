@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.websocket.event.session.WSSessionStateEvent;
 import org.jkiss.dbeaver.model.websocket.event.session.WSSocketConnectedEvent;
 
 public enum WSEventType {
-    CLOSE_USER_SESSIONS("cb_close_user_sessions", WSEventTopic.USER, WSUserEvent.class),
+    CLOSE_USER_SESSIONS("cb_close_user_sessions", WSEventTopic.USER, WSUserCloseSessionsEvent.class),
 
     SERVER_CONFIG_CHANGED(
         "cb_config_changed",
@@ -95,7 +95,7 @@ public enum WSEventType {
 
     DB_LOG_UPDATED("cb_database_output_log_updated", WSEventTopic.DB_OUTPUT_LOG, WSOutputDBLogEvent.class),
 
-    USER_DELETED("cb_user_deleted", WSEventTopic.USER, WSUserEvent.class);
+    USER_DELETED("cb_user_deleted", WSEventTopic.USER, WSUserDeletedEvent.class);
 
     private final String eventId;
     private final WSEventTopic topic;

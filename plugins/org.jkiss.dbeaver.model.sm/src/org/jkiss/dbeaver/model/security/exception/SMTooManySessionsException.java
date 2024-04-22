@@ -16,14 +16,17 @@
  */
 package org.jkiss.dbeaver.model.security.exception;
 
+import org.jkiss.code.NotNull;
+
 public class SMTooManySessionsException extends SMException {
 
-    private final String errorType = "tooManySessions";;
+    private final String errorType = "tooManySessions";
 
     public SMTooManySessionsException(String message) {
         super(message);
     }
 
+    @NotNull
     public String getErrorType() {
         return errorType;
     }

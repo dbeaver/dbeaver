@@ -58,6 +58,7 @@ public class SMAuthInfo {
     private final boolean mainAuth;
     private final boolean forceSessionsLogout;
 
+    @Nullable
     private final String errorCode;
 
     private SMAuthInfo(

@@ -18,24 +18,13 @@ package org.jkiss.dbeaver.model.websocket.event;
 
 import org.jkiss.code.NotNull;
 
-import java.util.List;
-
 public class WSUserEvent extends WSAbstractEvent {
-
-    @NotNull
-    private final List<String> ids;
 
     @NotNull
     private final WSEventType eventType;
 
-    public WSUserEvent(@NotNull List<String> ids, @NotNull WSEventType eventType) {
+    public WSUserEvent(@NotNull WSEventType eventType) {
         super(eventType);
-        this.ids = ids;
         this.eventType = eventType;
-    }
-
-    @NotNull
-    public List<String> getIds() {
-        return ids;
     }
 }

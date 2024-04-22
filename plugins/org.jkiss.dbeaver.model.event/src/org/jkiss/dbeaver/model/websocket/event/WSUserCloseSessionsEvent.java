@@ -21,7 +21,16 @@ import org.jkiss.code.NotNull;
 import java.util.List;
 
 public class WSUserCloseSessionsEvent extends WSUserEvent{
-    public WSUserCloseSessionsEvent(@NotNull List<String> ids, @NotNull WSEventType eventType) {
-        super(ids, eventType);
+    @NotNull
+    private final List<String> sessionIds;
+
+    public WSUserCloseSessionsEvent(@NotNull List<String> sessionIds, @NotNull WSEventType eventType) {
+        super(eventType);
+        this.sessionIds = sessionIds;
+    }
+
+    @NotNull
+    public List<String> getSessionIds() {
+        return sessionIds;
     }
 }

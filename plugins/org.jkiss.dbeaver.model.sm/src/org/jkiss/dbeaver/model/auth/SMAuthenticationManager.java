@@ -31,5 +31,5 @@ public interface SMAuthenticationManager {
         @Nullable String errorCode
     ) throws DBException;
 
-    SMAuthInfo finishAuthentication(@NotNull String authId, boolean forceSessionsLogout) throws DBException;
+    SMAuthInfo finishAuthentication(@NotNull String authId) throws DBException;
 }
