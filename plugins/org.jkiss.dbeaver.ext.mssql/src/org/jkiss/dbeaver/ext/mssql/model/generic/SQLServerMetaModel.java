@@ -102,7 +102,6 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     @Override
     public void loadProcedures(DBRProgressMonitor monitor, @NotNull GenericObjectContainer container) throws DBException {
         if (!isSqlServer()) {
-            // #4378
             GenericDataSource dataSource = container.getDataSource();
             String dbName = DBUtils.getQuotedIdentifier(container.getParentObject());
             try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Sybase procedure list")) {
@@ -172,7 +171,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         if (getServerType() == ServerType.SYBASE) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read routine definition")) {
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT proc_defn from SYS.SYSPROCEDURE s\n" +
+                    "SELECT source, proc_defn from SYS.SYSPROCEDURE s\n" +
                         "LEFT JOIN " + DBUtils.getQuotedIdentifier(sourceObject.getCatalog()) + ".dbo.sysobjects so " +
                         "ON so.id = s.object_id\n" +
                         "WHERE s.proc_name=?"
@@ -180,7 +179,10 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                     dbStat.setString(1, objectName);
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         if (dbResult.nextRow()) {
-                            return dbResult.getString(1);
+                            if (dbResult.getString(1) != null) {
+                                return dbResult.getString(1);
+                            }
+                            return dbResult.getString(2);
                         }
                         return "-- Routine '" + objectName + "' definition not found";
                     }
