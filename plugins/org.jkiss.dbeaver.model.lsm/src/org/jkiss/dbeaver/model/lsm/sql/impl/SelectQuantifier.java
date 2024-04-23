@@ -16,9 +16,7 @@
  */
 package org.jkiss.dbeaver.model.lsm.sql.impl;
 
-import org.jkiss.dbeaver.model.lsm.mapping.SyntaxLiteral;
 
-@SyntaxLiteral(name = "setQuantifier")
 public enum SelectQuantifier {
     DISTINCT,
     ALL
