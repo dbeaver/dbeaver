@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.registry.policy.ApplicationPolicyService;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIFonts;
@@ -245,7 +246,8 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         filterPreferencePages();
         filterWizards();
 
-        if (!application.isDistributed()) {
+        if (!application.isDistributed() &&
+            !ApplicationPolicyService.getInstance().isPolicySoftwareInstallUpdateEnabled()) {
             startVersionChecker();
         }
     }

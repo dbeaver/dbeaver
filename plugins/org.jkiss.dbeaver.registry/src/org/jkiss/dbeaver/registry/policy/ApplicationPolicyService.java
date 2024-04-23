@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.app.standalone.services;
+package org.jkiss.dbeaver.registry.policy;
 
 import org.eclipse.core.commands.Command;
 import org.eclipse.ui.commands.ICommandService;
@@ -67,4 +67,11 @@ public class ApplicationPolicyService {
         }
     }
 
+    /**
+     * Return true, if software install/update policy enabled
+     */
+    public boolean isPolicySoftwareInstallUpdateEnabled() {
+        return BasePolicyDataProvider.getInstance().isPolicyEnabled(POLICY_SOFTWARE_INSTALL)
+            || BasePolicyDataProvider.getInstance().isPolicyEnabled(POLICY_SOFTWARE_UPDATE);
+    }
 }
