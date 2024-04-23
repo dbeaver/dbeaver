@@ -23,8 +23,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.util.function.Function;
-
 /**
  * Base data policy provider designed to provide specific policy property value.
  * The general logic catch policy value in .ini file as system property next in
@@ -52,39 +50,44 @@ public class BasePolicyDataProvider {
      * @return - boolean value
      */
     public boolean isPolicyEnabled(@NotNull String propertyName) {
-        return getPolicyValue(propertyName, Boolean::valueOf) == Boolean.TRUE;
+        return convertToBooleanValue(getPolicyProperty(propertyName));
     }
 
     @Nullable
     public String getPolicyValue(@NotNull String propertyName) {
-        return getPolicyValue(propertyName, Function.identity());
+        return getPolicyProperty(propertyName);
+    }
+
+    private boolean convertToBooleanValue(String value) {
+        if (value == null || value.isBlank()) {
+            return false;
+        }
+        return value.equalsIgnoreCase("true") ||
+            value.equalsIgnoreCase("yes") ||
+            value.equalsIgnoreCase("on") ||
+            value.equals("1");
     }
 
     /**
      * Retrieves policy data value from system environment or Windows registry
      *
      * @param property  policy data property
-     * @param converter converter function
      * @return policy data value or {@code null} if not found
      */
     @Nullable
-    public <T> T getPolicyValue(@NotNull String property, @NotNull Function<String, T> converter) {
+    public String getPolicyProperty(@NotNull String property) {
         String value = System.getProperty(property);
         if (value != null) {
-            return converter.apply(value);
+            return value;
         }
 
         value = getRegistryPolicyValue(WinReg.HKEY_CURRENT_USER, property);
         if (value != null) {
-            return converter.apply(value);
+            return value;
         }
 
         value = getRegistryPolicyValue(WinReg.HKEY_LOCAL_MACHINE, property);
-        if (value != null) {
-            return converter.apply(value);
-        }
-
-        return null;
+        return value;
     }
 
     @Nullable

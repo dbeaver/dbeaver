@@ -237,6 +237,7 @@ public abstract class PostgreTable extends PostgreTableReal
     public synchronized Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
+
         final List<PostgreTableInheritance> superTables = getSuperInheritance(monitor);
         final Collection<PostgreTableForeignKey> foreignKeys = getForeignKeys(monitor);
         if (CommonUtils.isEmpty(superTables)) {

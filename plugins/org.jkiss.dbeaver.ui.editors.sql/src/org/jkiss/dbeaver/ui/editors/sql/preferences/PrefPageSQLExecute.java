@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.ModelPreferences.SQLScriptStatementDelimiterMode;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLScriptCommitType;
@@ -68,7 +69,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
 
     private Text statementDelimiterText;
     private Button ignoreNativeDelimiter;
-    private Button blankLineDelimiter;
+    private Combo blankLineDelimiterCombo;
     private Button removeTrailingDelimiter;
 
     private Button enableSQLParameters;
@@ -282,7 +283,12 @@ public class PrefPageSQLExecute extends TargetPrefPage
             statementDelimiterText = UIUtils.createLabelText(delimGroup, SQLEditorMessages.pref_page_sql_editor_text_statement_delimiter, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
             //statementDelimiterText.setTextLimit(1);
             ignoreNativeDelimiter = UIUtils.createCheckbox(delimGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_ignore_native_delimiter, SQLEditorMessages.pref_page_sql_editor_checkbox_ignore_native_delimiter_tip, false, 2);
-            blankLineDelimiter = UIUtils.createCheckbox(delimGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_blank_line_delimiter, SQLEditorMessages.pref_page_sql_editor_checkbox_blank_line_delimiter_tip, false, 2);
+            
+            blankLineDelimiterCombo = UIUtils.createLabelCombo(delimGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_blank_line_delimiter, SWT.READ_ONLY | SWT.DROP_DOWN);
+            for (SQLScriptStatementDelimiterMode mode : SQLScriptStatementDelimiterMode.values()) {
+                blankLineDelimiterCombo.add(mode.title);
+            }
+            
             removeTrailingDelimiter = UIUtils.createCheckbox(delimGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_remove_trailing_delimiter, SQLEditorMessages.pref_page_sql_editor_checkbox_remove_trailing_delimiter_tip, false, 2);
         }
 
@@ -316,7 +322,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             );
             statementDelimiterText.setText(store.getString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER));
             ignoreNativeDelimiter.setSelection(store.getBoolean(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER));
-            blankLineDelimiter.setSelection(store.getBoolean(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK));
+            blankLineDelimiterCombo.select(SQLScriptStatementDelimiterMode.fromPreferences(store).ordinal());
             removeTrailingDelimiter.setSelection(store.getBoolean(ModelPreferences.QUERY_REMOVE_TRAILING_DELIMITER));
 
             enableSQLParameters.setSelection(store.getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED));
@@ -362,7 +368,10 @@ public class PrefPageSQLExecute extends TargetPrefPage
 
             store.setValue(ModelPreferences.SCRIPT_STATEMENT_DELIMITER, statementDelimiterText.getText());
             store.setValue(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER, ignoreNativeDelimiter.getSelection());
-            store.setValue(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK, blankLineDelimiter.getSelection());
+            store.setValue(
+                ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK,
+                SQLScriptStatementDelimiterMode.values()[blankLineDelimiterCombo.getSelectionIndex()].getName()
+            );
             store.setValue(ModelPreferences.QUERY_REMOVE_TRAILING_DELIMITER, removeTrailingDelimiter.getSelection());
 
             store.setValue(ModelPreferences.SQL_PARAMETERS_ENABLED, enableSQLParameters.getSelection());
@@ -433,7 +442,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.getDefaultBoolean(SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION));
         statementDelimiterText.setText(store.getDefaultString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER));
         ignoreNativeDelimiter.setSelection(store.getDefaultBoolean(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER));
-        blankLineDelimiter.setSelection(store.getDefaultBoolean(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK));
+        blankLineDelimiterCombo.select(SQLScriptStatementDelimiterMode.valueByName(store.getDefaultString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK)).ordinal());
         removeTrailingDelimiter.setSelection(store.getDefaultBoolean(ModelPreferences.QUERY_REMOVE_TRAILING_DELIMITER));
         enableSQLParameters.setSelection(store.getDefaultBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED));
         enableSQLAnonymousParameters.setSelection(store.getDefaultBoolean(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED));

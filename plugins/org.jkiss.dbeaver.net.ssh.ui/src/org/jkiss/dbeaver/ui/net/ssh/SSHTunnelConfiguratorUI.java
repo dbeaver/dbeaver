@@ -65,9 +65,6 @@ import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -137,7 +134,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 final ConfigurationWrapper host = (ConfigurationWrapper) hostsViewer.getStructuredSelection().getFirstElement();
                 if (DBWorkbench.getPlatformUI().confirmAction(
                     "Confirm host deletion",
-                    "Are you sure you want to delete host '" + host.configuration + "'?"
+                    "Are you sure you want to delete host '" + host.configuration.toDisplayString() + "'?"
                 )) {
                     credentialsPanel.lastConfiguration = null;
                     final int index = configurations.indexOf(host);
@@ -760,23 +757,10 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 case PASSWORD -> new SSHAuthConfiguration.Password(password, savePassword);
                 case PUBLIC_KEY -> {
                     final String privateKey = privateKeyText.getText().trim();
-                    if (privateKey.isEmpty()) {
-                        throw new DBException("Private key must not be empty");
-                    }
                     if (DBWorkbench.isDistributed()) {
                         yield new SSHAuthConfiguration.KeyData(privateKey, password, savePassword);
                     } else {
-                        final Path path;
-                        try {
-                            path = Path.of(privateKey);
-                        } catch (InvalidPathException e) {
-                            // https://github.com/eclipse-jdt/eclipse.jdt.core/issues/1394
-                            throw new DBException("Invalid private key path: %s".formatted(privateKey));
-                        }
-                        if (Files.notExists(path)) {
-                            throw new DBException("Private key file does not exist: " + path);
-                        }
-                        yield new SSHAuthConfiguration.KeyFile(path, password, savePassword);
+                        yield new SSHAuthConfiguration.KeyFile(privateKey, password, savePassword);
                     }
                 }
                 case AGENT -> new SSHAuthConfiguration.Agent();

@@ -68,7 +68,7 @@ public class JDBCResultSetMetaDataImpl implements JDBCResultSetMetaData
     }
 
     @Override
-    public List<DBCAttributeMetaData> getAttributes()
+    public List<? extends DBCAttributeMetaData> getAttributes()
     {
         return columns;
     }

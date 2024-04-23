@@ -7,20 +7,41 @@ import org.antlr.v4.runtime.tree.Tree;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
+/**
+ * The interface describing the node of the syntax tree
+ */
 public interface STMTreeNode extends Tree {
-    
+
+    /**
+     * Provides information about the grammar rule to the syntax tree nodes
+     */
     void fixup(@NotNull STMParserOverrides parserCtx);
 
     default int getNodeKindId() {
         return -1;
-    } 
-    
+    }
+
+    /**
+     * Get the state of the antlr parser finite state machine associated with the entry point to the corresponding syntax rule for the text
+     */
+    int getAtnState();
+
+
+    /**
+     * Get the name of the syntax tree node
+     */
     @NotNull
     String getNodeName();
-        
+
+    /**
+     * Get the text range interval covered by the node
+     */
     @NotNull
     Interval getRealInterval();
 
+    /**
+     * Get the text fragment covered by the node
+     */
     @Nullable
     default String getTextContent() {
         String result = null;
@@ -50,6 +71,9 @@ public interface STMTreeNode extends Tree {
         return result;
     }
 
+    /**
+     * Get the text fragment provided by antlr (without hidden channel tokens)
+     */
     @NotNull
     String getText();
 

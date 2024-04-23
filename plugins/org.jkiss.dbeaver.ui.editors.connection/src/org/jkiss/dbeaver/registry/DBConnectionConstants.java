@@ -25,4 +25,6 @@ public class DBConnectionConstants {
     public static final String PRODUCT_FEATURE_ADVANCED_DATABASE_ADMINISTRATION = "database/administration/advanced";
 
     public static final String PRODUCT_FEATURE_SIMPLE_TRUSTSTORE = "connection/simpleTruststore";
+
+    public static final String POLICY_RESTRICT_PASSWORD_SAVE = "connection.credentials.save.restricted"; //$NON-NLS-1$
 }

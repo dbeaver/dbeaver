@@ -163,21 +163,12 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
 
         configurator.createControl(handlerComposite, handlerDescriptor, this::updatePageCompletion);
 
-        configurator.loadSettings(handlerConfiguration);
-
         if (useHandlerCheck != null) {
             useHandlerCheck.setSelection(handlerConfiguration.isEnabled());
         }
 
         enableHandlerContent();
         updateProfileList();
-
-        if (activeProfile != null) {
-            DBWHandlerConfiguration profileConfig = activeProfile.getConfiguration(handlerDescriptor);
-            if (profileConfig != null) {
-                configurator.loadSettings(profileConfig);
-            }
-        }
 
         setControl(composite);
     }

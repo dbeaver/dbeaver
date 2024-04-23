@@ -23,6 +23,8 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
+import org.jkiss.dbeaver.registry.BasePolicyDataProvider;
+import org.jkiss.dbeaver.registry.DBConnectionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
@@ -30,15 +32,13 @@ import org.jkiss.utils.CommonUtils;
 /**
  * Base authentication dialog
  */
-public class BaseAuthDialog extends BaseDialog implements BlockingPopupDialog
-{
-    private static final String DIALOG_ID = "DBeaver.BaseAuthDialog";//$NON-NLS-1$
+public class BaseAuthDialog extends BaseDialog implements BlockingPopupDialog {
 
     private String userNameLabel = UIConnectionMessages.dialog_connection_auth_label_username;
     private String passwordLabel = UIConnectionMessages.dialog_connection_auth_label_password;
-    private boolean passwordOnly;
-    private boolean showSavePassword;
-    private DBPAuthInfo authInfo = new DBPAuthInfo();
+    private final boolean passwordOnly;
+    private final boolean showSavePassword;
+    private final DBPAuthInfo authInfo = new DBPAuthInfo();
     private String savePasswordText;
     private String savePasswordToolTipText;
     private String description;
@@ -47,11 +47,12 @@ public class BaseAuthDialog extends BaseDialog implements BlockingPopupDialog
     private Text passwordText;
     private Button savePasswordCheck;
 
-    public BaseAuthDialog(Shell parentShell, String title, boolean passwordOnly, boolean showSavePassword)
-    {
+    public BaseAuthDialog(Shell parentShell, String title, boolean passwordOnly, boolean showSavePassword) {
         super(parentShell, title, DBIcon.TREE_USER);
         this.passwordOnly = passwordOnly;
-        this.showSavePassword = showSavePassword;
+        this.showSavePassword = showSavePassword &&
+            !BasePolicyDataProvider.getInstance()
+                .isPolicyEnabled(DBConnectionConstants.POLICY_RESTRICT_PASSWORD_SAVE);
     }
 
 //    @Override
@@ -67,8 +68,7 @@ public class BaseAuthDialog extends BaseDialog implements BlockingPopupDialog
         this.passwordLabel = passwordLabel;
     }
 
-    public DBPAuthInfo getAuthInfo()
-    {
+    public DBPAuthInfo getAuthInfo() {
         return authInfo;
     }
 
@@ -122,8 +122,7 @@ public class BaseAuthDialog extends BaseDialog implements BlockingPopupDialog
     }
 
     @Override
-    protected Composite createDialogArea(Composite parent)
-    {
+    protected Composite createDialogArea(Composite parent) {
         Composite addrGroup = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(1, false);
         gl.marginHeight = 10;

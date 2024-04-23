@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -36,12 +37,15 @@ public class DataSourcePreferenceStore extends SimplePreferenceStore implements 
 {
     private final DataSourceDescriptor dataSourceDescriptor;
 
-    DataSourcePreferenceStore(DataSourceDescriptor dataSourceDescriptor)
-    {
-        super(DBWorkbench.getPlatform().getPreferenceStore());
+    DataSourcePreferenceStore(
+        @NotNull DBPPreferenceStore parentStore,
+        @NotNull DataSourceDescriptor dataSourceDescriptor
+    ) {
+        super(parentStore);
         this.dataSourceDescriptor = dataSourceDescriptor;
         // Init default properties from driver overrides
-        Map<String,Object> defaultConnectionProperties = dataSourceDescriptor.getDriver().getDefaultConnectionProperties();
+        Map<String, Object> defaultConnectionProperties = dataSourceDescriptor.getDriver()
+            .getDefaultConnectionProperties();
         for (Map.Entry<String, Object> prop : defaultConnectionProperties.entrySet()) {
             String propName = prop.getKey();
             if (propName.startsWith(DBConstants.DEFAULT_DRIVER_PROP_PREFIX)) {
@@ -50,6 +54,10 @@ public class DataSourcePreferenceStore extends SimplePreferenceStore implements 
                     CommonUtils.toString(prop.getValue()));
             }
         }
+    }
+
+    DataSourcePreferenceStore(DataSourceDescriptor dataSourceDescriptor) {
+        this(DBWorkbench.getPlatform().getPreferenceStore(), dataSourceDescriptor);
     }
 
     @Override
