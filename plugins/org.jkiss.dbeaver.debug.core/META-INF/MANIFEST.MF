@@ -6,8 +6,7 @@ Bundle-Version: 1.0.158.qualifier
 Bundle-Release-Date: 20240422
 Bundle-Vendor: DBeaver Corp
 Bundle-RequiredExecutionEnvironment: JavaSE-17
-Require-Bundle: org.eclipse.osgi.services,
- org.eclipse.e4.core.services,
+Require-Bundle: org.eclipse.e4.core.services,
  org.eclipse.e4.core.contexts,
  org.eclipse.core.runtime,
  org.eclipse.debug.core;visibility:=reexport,
