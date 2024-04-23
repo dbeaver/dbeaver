@@ -250,7 +250,6 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
                 0
             );
-            ((GridData) generalGroup.getLayoutData()).horizontalSpan = 2;
 
             tunnelImplCombo = UIUtils.createLabelCombo(
                 generalGroup,
@@ -287,6 +286,26 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             // Hide tunnel sharing option if it's disabled
             UIUtils.setControlVisible(enableTunnelSharingCheck, !SSHUtils.DISABLE_SESSION_SHARING);
 
+            final Group timeoutsGroup = UIUtils.createControlGroup(
+                client,
+                SSHUIMessages.model_ssh_configurator_group_timeouts_text,
+                2,
+                GridData.VERTICAL_ALIGN_FILL,
+                0
+            );
+            keepAliveText = UIUtils.createLabelText(
+                timeoutsGroup,
+                SSHUIMessages.model_ssh_configurator_label_keep_alive,
+                String.valueOf(0)
+            );
+            setNumberEditStyles(keepAliveText);
+            tunnelTimeout = UIUtils.createLabelText(
+                timeoutsGroup,
+                SSHUIMessages.model_ssh_configurator_label_tunnel_timeout,
+                String.valueOf(SSHConstants.DEFAULT_CONNECT_TIMEOUT)
+            );
+            setNumberEditStyles(tunnelTimeout);
+
             final Group portForwardingGroup = UIUtils.createControlGroup(
                 client,
                 SSHUIMessages.model_ssh_configurator_group_port_forwarding_text,
@@ -294,6 +313,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 GridData.FILL_HORIZONTAL,
                 0
             );
+            ((GridData) portForwardingGroup.getLayoutData()).horizontalSpan = 2;
             localHostText = UIUtils.createLabelText(
                 portForwardingGroup,
                 SSHUIMessages.model_ssh_configurator_label_local_host,
@@ -328,28 +348,6 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             );
             remotePortSpinner.setToolTipText(SSHUIMessages.model_ssh_configurator_label_remote_port_description);
             setNumberEditStyles(remotePortSpinner);
-
-            final Group timeoutsGroup = UIUtils.createControlGroup(
-                client,
-                SSHUIMessages.model_ssh_configurator_group_timeouts_text,
-                2,
-                GridData.VERTICAL_ALIGN_BEGINNING,
-                0
-            );
-            keepAliveText = UIUtils.createLabelText(
-                timeoutsGroup,
-                SSHUIMessages.model_ssh_configurator_label_keep_alive,
-                String.valueOf(0)
-            );
-            setNumberEditStyles(keepAliveText);
-
-
-            tunnelTimeout = UIUtils.createLabelText(
-                timeoutsGroup,
-                SSHUIMessages.model_ssh_configurator_label_tunnel_timeout,
-                String.valueOf(SSHConstants.DEFAULT_CONNECT_TIMEOUT)
-            );
-            setNumberEditStyles(tunnelTimeout);
         }
 
         {
