@@ -80,9 +80,6 @@ public class GenericForeignKeyManager extends SQLForeignKeyManager<GenericTableF
 
     @Override
     protected StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, GenericTableBase owner, DBECommandAbstract<GenericTableForeignKey> command, Map<String, Object> options) {
-        if (!owner.getDataSource().getMetaModel().supportNestedForeignKeys()) {
-            return null;
-        }
         return super.getNestedDeclaration(monitor, owner, command, options);
     }
 
