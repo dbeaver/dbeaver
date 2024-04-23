@@ -180,6 +180,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         instance = this;
 
         Location instanceLoc = Platform.getInstanceLocation();
+        loadStartupActions(instanceLoc);
 
         CommandLine commandLine = DBeaverCommandLine.getCommandLine();
         String defaultHomePath = getDefaultInstanceLocation();
@@ -239,7 +240,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
         final Runtime runtime = Runtime.getRuntime();
 
-        loadStartupActions(instanceLoc);
         initializeConfiguration();
 
         // Debug logger

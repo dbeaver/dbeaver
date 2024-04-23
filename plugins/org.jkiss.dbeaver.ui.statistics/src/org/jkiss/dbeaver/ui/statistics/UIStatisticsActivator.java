@@ -92,7 +92,6 @@ public class UIStatisticsActivator extends AbstractUIPlugin {
     public void start(BundleContext context) throws Exception {
         super.start(context);
         plugin = this;
-        preferences = new BundlePreferenceStore(getBundle());
     }
 
     @Override
@@ -110,6 +109,9 @@ public class UIStatisticsActivator extends AbstractUIPlugin {
     }
 
     public DBPPreferenceStore getPreferences() {
+        if (preferences == null) {
+            preferences = new BundlePreferenceStore(getBundle());
+        }
         return preferences;
     }
 }
