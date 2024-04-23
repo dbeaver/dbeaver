@@ -255,6 +255,7 @@ public class SQLScriptParserGenericsTest {
                 "    returns integer not null\n" +
                 "    language sql\n" +
                 "    as \n" +
+                "$$\n" +
                 "declare \n" +
                 "seq integer;\n" +
                 "\n" +
@@ -264,7 +265,8 @@ public class SQLScriptParserGenericsTest {
                 "    end if;\n" +
                 "end if;\n" +
                 "    return seq;\n" +
-                "end;",
+                "end;\n" +
+                "$$;",
             null,
             "CREATE TABLE IF NOT EXISTS MART_FLSEDW_CI.DEPLOYMENT_SCRIPTS\n"
                 + "(\r\n"
@@ -279,28 +281,7 @@ public class SQLScriptParserGenericsTest {
             "ALTER PROCEDURE IF EXISTS procedure1(FLOAT) RENAME TO procedure2;",
             null
         };
-        String source = Arrays.stream(query).filter(e -> e != null).collect(Collectors.joining());
-        List<String> expectedParts = new ArrayList<>(query.length);
-        for (int i = 0; i < query.length; i++) {
-            if (i + 1 < query.length && query[i + 1] == null) {
-                expectedParts.add(query[i].replaceAll("[\\;]+$", ""));
-                i++;
-            } else {
-                expectedParts.add(query[i]);
-            }
-        }
-        SQLParserContext context = createParserContext(setDialect("snowflake"), source);
-        int docLen = context.getDocument().getLength();
-        List<SQLScriptElement> elements = SQLScriptParser.extractScriptQueries(context, 0, docLen, false, false, false);
-        //Assert.assertEquals(query.length, elements.size());
-        for (int index = 0; index < query.length; index++) {
-            System.out.println(">>>>>Comparing");
-            System.out.println(query[index]);
-            System.out.println(">>>>>AND");
-            System.out.println(elements.get(index).getText());
-            Assert.assertEquals(query[index], elements.get(index).getText());
-        }
-        //assertParse("snowflake", query);
+        assertParse("snowflake", query);
     }
 
     @Test
@@ -414,10 +395,10 @@ public class SQLScriptParserGenericsTest {
         SQLParserContext context = createParserContext(setDialect(dialectName), query);
         int docLen = context.getDocument().getLength();
         List<SQLScriptElement> elements = SQLScriptParser.extractScriptQueries(context, 0, docLen, false, false, false);
-        Assert.assertEquals(expected.length, elements.size());
         for (int index = 0; index < expected.length; index++) {
             Assert.assertEquals(expected[index], elements.get(index).getText());
         }
+        Assert.assertEquals(expected.length, elements.size());
     }
 
     private SQLParserContext createParserContext(SQLDialect dialect, String query) {
