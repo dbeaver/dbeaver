@@ -73,7 +73,8 @@ public class SMAuthInfo {
         @Nullable String authRole,
         @Nullable SMAuthPermissions authPermissions,
         boolean mainAuth,
-        boolean forceSessionsLogout, String errorCode
+        boolean forceSessionsLogout,
+        @Nullable String errorCode
     ) {
         this.authStatus = authStatus;
         this.error = error;
@@ -236,6 +237,7 @@ public class SMAuthInfo {
         return forceSessionsLogout;
     }
 
+    @Nullable
     public String getErrorCode() {
         return errorCode;
     }

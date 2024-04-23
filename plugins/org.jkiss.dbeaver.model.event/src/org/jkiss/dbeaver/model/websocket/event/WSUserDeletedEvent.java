@@ -18,9 +18,7 @@ package org.jkiss.dbeaver.model.websocket.event;
 
 import org.jkiss.code.NotNull;
 
-import java.util.List;
-
-public class WSUserDeletedEvent extends WSUserEvent{
+public class WSUserDeletedEvent extends WSAbstractEvent{
 
     @NotNull
     private final String userId;
