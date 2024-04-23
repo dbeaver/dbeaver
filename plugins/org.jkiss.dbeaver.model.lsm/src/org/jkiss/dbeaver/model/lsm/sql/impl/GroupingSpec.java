@@ -16,24 +16,14 @@
  */
 package org.jkiss.dbeaver.model.lsm.sql.impl;
 
-import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
-import org.jkiss.dbeaver.model.lsm.mapping.SyntaxNode;
-import org.jkiss.dbeaver.model.lsm.mapping.SyntaxSubnode;
-import org.jkiss.dbeaver.model.lsm.mapping.SyntaxTerm;
-
 import java.util.List;
 
-@SyntaxNode(name = "groupByClause")
-public class GroupingSpec extends AbstractSyntaxNode{
-    
-    @SyntaxNode(name = "groupingColumnReference")
-    public static class GroupingColumnSpec extends AbstractSyntaxNode {
-        @SyntaxSubnode(xpath = "./columnReference")
+public class GroupingSpec {
+
+    public static class GroupingColumnSpec {
         public ColumnReference column;
-        @SyntaxTerm(xpath = "./collateClause/collationName/qualifiedName/qualifiedIdentifier/identifier/actualIdentifier")
         public String collation;
     }
-    
-    @SyntaxSubnode(type = GroupingColumnSpec.class, xpath = "./groupingColumnReferenceList/groupingColumnReference")
+
     public List<GroupingColumnSpec> columns;
 }
