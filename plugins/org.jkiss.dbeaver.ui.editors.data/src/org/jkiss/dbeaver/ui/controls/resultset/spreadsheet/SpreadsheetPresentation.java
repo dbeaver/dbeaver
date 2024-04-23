@@ -2018,6 +2018,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
             final DBDAttributeBinding attr = getExpandableAttribute(getAttributeFromGrid(colElement, rowElement));
             final ResultSetRow row = getResultRowFromGrid(colElement, rowElement);
 
+            if (attr == null || row == null) {
+                log.debug("Can't get collectoion size, because attribute binding or result set row is null");
+                return 0;
+            }
             final ResultSetCellLocation cellLocation = new ResultSetCellLocation(attr, row, getRowNestedIndexes(rowElement));
             final Object cellValue = controller.getModel().getCellValue(cellLocation);
 
