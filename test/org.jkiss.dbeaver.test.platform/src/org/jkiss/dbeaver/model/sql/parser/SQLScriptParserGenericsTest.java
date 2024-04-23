@@ -180,7 +180,6 @@ public class SQLScriptParserGenericsTest {
                 "RETURNS VARCHAR\n" +
                 "LANGUAGE SQL\n" +
                 "AS\n" +
-                "$$\n" +
                 "BEGIN\n" +
                 "    IF (FLAG = 1) THEN\n" +
                 "        RETURN 'one';\n" +
@@ -190,7 +189,6 @@ public class SQLScriptParserGenericsTest {
                 "        RETURN 'Unexpected input.';\n" +
                 "    END IF;\n" +
                 "END;\n" +
-                "$$\n" +
                 ";",
             null,
             "create or replace procedure test (customer_number integer)\n" +
