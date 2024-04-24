@@ -72,6 +72,8 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
 
     @Override
     protected void addStructObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
+        // Make options modifiable
+        options = new HashMap<>(options);
         final OBJECT_TYPE table = command.getObject();
 
         final NestedObjectCommand<?,?> tableProps = command.getObjectCommands().get(table);
