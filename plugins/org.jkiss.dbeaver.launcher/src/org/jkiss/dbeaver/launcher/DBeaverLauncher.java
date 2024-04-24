@@ -191,6 +191,7 @@ public class DBeaverLauncher {
     private static final String PRODUCT_SITE_MARKER = ".eclipseproduct"; //$NON-NLS-1$
     private static final String PRODUCT_SITE_ID = "id"; //$NON-NLS-1$
     private static final String PRODUCT_SITE_VERSION = "version"; //$NON-NLS-1$
+    private static final String PRODUCT_SNAPSHOT_VERSION = "snapshot"; //$NON-NLS-1$
 
     // constants: System property keys and/or configuration file elements
     private static final String PROP_USER_HOME = "user.home"; //$NON-NLS-1$
@@ -1310,7 +1311,7 @@ public class DBeaverLauncher {
      * current product.  The given appendage is added to this base location
      *
      * @param pathAppendage the path segments to add to computed base
-     * @return a file system location in the user.home area related the the current
+     * @return a file system location in the user.home area related the current
      * product and the given appendage
      */
     private String computeDefaultUserAreaLocation(String pathAppendage) {
@@ -1859,7 +1860,10 @@ public class DBeaverLauncher {
                 if (appId == null || appId.trim().isEmpty()) {
                     appId = ECLIPSE;
                 }
-                String appVersion = props.getProperty(PRODUCT_SITE_VERSION);
+                String appVersion = props.getProperty(PRODUCT_SNAPSHOT_VERSION);
+                if (appVersion == null || appVersion.isBlank()) {
+                    appVersion = props.getProperty(PRODUCT_SITE_VERSION);
+                }
                 if (appVersion == null || appVersion.trim().isEmpty()) {
                     appVersion = ""; //$NON-NLS-1$
                 }

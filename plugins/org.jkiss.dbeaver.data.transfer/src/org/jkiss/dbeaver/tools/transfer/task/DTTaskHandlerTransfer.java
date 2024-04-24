@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.tools.transfer.task;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.jobs.JobGroup;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -24,6 +26,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.*;
@@ -162,18 +165,39 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
         final Throwable[] error = new Throwable[1];
         try {
             runnableContext.run(true, true, monitor -> {
+                final JobGroup group;
+                if (totalJobs > 1) {
+                    group = new JobGroup("Data transfer", totalJobs, totalJobs);
+                } else {
+                    group = null;
+                }
+
                 final DataTransferJob[] jobs = new DataTransferJob[totalJobs];
                 for (int i = 0; i < totalJobs; i++) {
-                    DataTransferJob job = new DataTransferJob(settings, task, log, monitor, i);
+                    DataTransferJob job = new DataTransferJob(settings, task, log, totalJobs == 1 ? monitor : null, i);
+                    job.setJobGroup(group);
                     job.schedule();
                     jobs[i] = job;
                 }
+
                 monitor.beginTask("Performing data transfer in parallel", settings.getDataPipes().size());
-                for (DataTransferJob job : jobs) {
+
+                if (group != null) {
                     try {
-                        job.join();
-                    } catch (InterruptedException e) {
-                        break;
+                        group.join(0, new ProxyProgressMonitor(monitor));
+                    } catch (InterruptedException | OperationCanceledException e) {
+                        group.cancel();
+                        return;
+                    }
+                }
+
+                for (DataTransferJob job : jobs) {
+                    if (group == null) {
+                        try {
+                            job.join();
+                        } catch (InterruptedException e) {
+                            break;
+                        }
                     }
                     final IStatus result = job.getResult();
                     if (result.getException() != null) {
