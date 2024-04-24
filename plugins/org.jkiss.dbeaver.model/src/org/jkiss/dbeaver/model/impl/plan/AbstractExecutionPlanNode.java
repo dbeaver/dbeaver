@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.impl.plan;
 
+import org.eclipse.swt.graphics.Color;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNodeKind;
 
@@ -37,6 +38,10 @@ public abstract class AbstractExecutionPlanNode implements DBCPlanNode {
 
     @Override
     public String getNodeDescription() {
+        return null;
+    }
+
+    public Color getNodeColor() {
         return null;
     }
 }

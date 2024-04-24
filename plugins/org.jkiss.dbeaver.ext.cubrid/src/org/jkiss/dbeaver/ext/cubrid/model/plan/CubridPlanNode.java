@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.model.plan;
 
+import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
@@ -98,6 +99,17 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
     @Override
     public Collection<CubridPlanNode> getNested() {
         return nested;
+    }
+    
+    @Nullable
+    @Override
+    public Color getNodeColor() {
+        if (name.equals("iscan")) {
+            return new Color(0, 255, 0);
+        } else if (name.equals("sscan")) {
+            return new Color(255, 0, 0);
+        }
+        return null;
     }
 
     @Nullable

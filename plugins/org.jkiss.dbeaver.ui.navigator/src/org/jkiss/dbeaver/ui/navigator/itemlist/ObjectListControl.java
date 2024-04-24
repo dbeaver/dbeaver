@@ -41,6 +41,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -1154,6 +1155,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         public Color getForeground(Object element) {
             if (element instanceof ObjectsGroupingWrapper) {
                 return null;
+            } else if (element instanceof AbstractExecutionPlanNode) {
+                return ((AbstractExecutionPlanNode)element).getNodeColor();
             }
             return getObjectForeground((OBJECT_TYPE) element);
         }

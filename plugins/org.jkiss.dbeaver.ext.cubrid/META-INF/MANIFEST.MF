@@ -6,7 +6,8 @@ Bundle-Version: 1.0.5.qualifier
 Bundle-Release-Date: 20240422
 Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model;visibility:=reexport,
- org.jkiss.dbeaver.ext.generic
+ org.jkiss.dbeaver.ext.generic,
+ org.eclipse.swt
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp
