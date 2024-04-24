@@ -108,7 +108,7 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
 
     private void addItemDropSupport() {
         final DropTarget target = new DropTarget(this, DND.DROP_MOVE);
-        target.setTransfer(DashboardItemTransfer.INSTANCE);
+        target.setTransfer(DashboardTransfer.INSTANCE, DashboardItemTransfer.INSTANCE);
         target.addDropListener(new DropTargetAdapter() {
             @Override
             public void dragEnter(DropTargetEvent event) {
@@ -134,7 +134,11 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
             public void drop(DropTargetEvent event) {
                 handleDragEvent(event);
                 if (event.detail == DND.DROP_MOVE || event.detail == DND.DROP_COPY) {
-                    addItem((DashboardItemConfiguration) event.data);
+                    if (event.data instanceof DashboardItemConfiguration itemConfiguration) {
+                        addItem(itemConfiguration);
+                    } else if (event.data instanceof DashboardViewItem item) {
+                        addItem(item.getItemConfiguration().getDashboardItem());
+                    }
                 }
             }
 
@@ -159,7 +163,8 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
                     return false;
                 }
                 for (TransferData td : event.dataTypes) {
-                    if (td.type == DashboardItemTransfer.INSTANCE.getSupportedTypes()[0].type) {
+                    if (td.type == DashboardItemTransfer.INSTANCE.getSupportedTypes()[0].type ||
+                        td.type == DashboardTransfer.INSTANCE.getSupportedTypes()[0].type) {
                         return true;
                     }
                 }
