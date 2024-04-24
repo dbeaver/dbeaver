@@ -215,6 +215,9 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
     }
 
     private void paintItem(PaintEvent e) {
+        if (UIUtils.isInDialog(this)) {
+            return;
+        }
         Point itemSize = getSize();
         e.gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
         if (groupContainer.getSelectedItem() == this) {

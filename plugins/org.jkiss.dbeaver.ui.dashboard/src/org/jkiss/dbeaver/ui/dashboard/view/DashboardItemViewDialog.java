@@ -59,9 +59,7 @@ public class DashboardItemViewDialog extends BaseDialog {
 
     @Override
     protected Composite createDialogArea(Composite parent) {
-        Composite dialogArea = super.createDialogArea(parent);
-
-        Composite chartGroup = UIUtils.createPlaceholder(dialogArea, 1);
+        Composite chartGroup = UIUtils.createPlaceholder(parent, 1);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 450;
         gd.heightHint = 300;
@@ -81,7 +79,7 @@ public class DashboardItemViewDialog extends BaseDialog {
             sourceItem.getItemDescriptor());
         targetItem.moveViewFrom(sourceItem, false);
 
-        return dialogArea;
+        return chartGroup;
     }
 
     @Override

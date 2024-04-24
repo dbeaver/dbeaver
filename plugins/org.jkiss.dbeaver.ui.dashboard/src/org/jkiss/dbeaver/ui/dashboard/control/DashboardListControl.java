@@ -77,7 +77,9 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
         GridLayout layout = new GridLayout(1, true);
         this.setLayout(layout);
 
-        createIntroItem();
+        if (!UIUtils.isInDialog(parent)) {
+            createIntroItem();
+        }
 
         registerContextMenu();
 
@@ -180,7 +182,7 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
         titleLabel.setText("Customize your dashboard");
         String addCommandName = ActionUtils.findCommandName(DashboardUIConstants.CMD_ADD_DASHBOARD);
         UIUtils.createLink(intro,
-            "<a>" + addCommandName + "</a> to this dashboard by drag-n-drop from the <a>right panel</a>.\n" +
+            "<a>" + addCommandName + "</a> to this dashboard by drag-n-drop or double-click from the <a>right panel</a>.\n" +
                 "You can also create new charts in the <a>Configuration</a> dialog",
             new SelectionAdapter() {
                 @Override
