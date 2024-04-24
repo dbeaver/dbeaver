@@ -181,8 +181,9 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                         dbStat.setString(1, objectName);
                         try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                             if (dbResult.nextRow()) {
-                                if (dbResult.getString(1) != null) {
-                                    return dbResult.getString(1);
+                                String source = dbResult.getString(1);
+                                if (!CommonUtils.isEmpty(source)) {
+                                    return source;
                                 }
                                 return dbResult.getString(2);
                             }
