@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorVariablesResolver;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
 import org.jkiss.dbeaver.ui.editors.sql.scripts.ScriptsHandlerImpl;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLEditorOutlinePage;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContextTypeBase;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContextTypeDriver;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContextTypeProvider;
