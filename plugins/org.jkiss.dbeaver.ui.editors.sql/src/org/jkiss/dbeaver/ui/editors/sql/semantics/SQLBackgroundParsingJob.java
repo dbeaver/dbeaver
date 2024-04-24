@@ -16,11 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
-import org.antlr.v4.runtime.BufferedTokenStream;
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.misc.Interval;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -31,7 +26,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -40,30 +34,31 @@ import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserContext;
 import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
+import org.jkiss.dbeaver.model.sql.semantics.*;
+import org.jkiss.dbeaver.model.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
+import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
+import org.jkiss.dbeaver.model.stm.LSMInspections;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.stm.STMTreeTermNode;
+import org.jkiss.dbeaver.model.stm.STMUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLDocumentSyntaxContext.ScriptItemAtOffset;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.completion.SQLQueryCompletionContext;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.completion.SQLQuerySyntaxTreeInspections;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.completion.SQLQuerySyntaxTreeInspections.SynaxInspectionResult;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryModel;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.utils.ListNode;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.ArrayDeque;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 
 public class SQLBackgroundParsingJob {
 
     private static final Log log = Log.getLog(SQLBackgroundParsingJob.class);
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     private static final long schedulingTimeoutMilliseconds = 500;
     
@@ -74,14 +69,19 @@ public class SQLBackgroundParsingJob {
             this.length = length;
         }
     }
-    
-    // TODO consider if we don't need such a detailed collection for reparse regions, and one expandable input region is enough
-    private final OffsetKeyedTreeMap<QueuedRegionInfo> queuedForReparse = new OffsetKeyedTreeMap<>();
 
+    // TODO consider if we don't need such a detailed collection for reparse regions, and one expandable input region is enough
+    @NotNull
+    private final OffsetKeyedTreeMap<QueuedRegionInfo> queuedForReparse = new OffsetKeyedTreeMap<>();
+    @NotNull
     private final Object syncRoot = new Object();
+    @NotNull
     private final SQLEditorBase editor;
+    @NotNull
     private final SQLDocumentSyntaxContext context = new SQLDocumentSyntaxContext();
+    @Nullable
     private IDocument document = null;
+    @NotNull
     private final AbstractJob job = new AbstractJob("Background parsing job") {
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
@@ -98,13 +98,14 @@ public class SQLBackgroundParsingJob {
     private volatile boolean isRunning = false;
     private volatile int knownRegionStart = 0;
     private volatile int knownRegionEnd = 0;
-    
+    @NotNull
     private final DocumentLifecycleListener documentListener = new DocumentLifecycleListener();
 
-    public SQLBackgroundParsingJob(SQLEditorBase editor) {
+    public SQLBackgroundParsingJob(@NotNull SQLEditorBase editor) {
         this.editor = editor;
     }
 
+    @NotNull
     public SQLDocumentSyntaxContext getCurrentContext() {
         return context;
     }
@@ -152,17 +153,20 @@ public class SQLBackgroundParsingJob {
         SQLStandardLexer.DelimitedIdentifier,
         SQLStandardLexer.Quotted
     );
-    
+
+    /**
+     * Prepare completion context for the specified position in the text
+     */
     @NotNull
     public SQLQueryCompletionContext obtainCompletionContext(int offset) {
-        ScriptItemAtOffset scriptItem = null;
+        SQLScriptItemAtOffset scriptItem = null;
         do {
             synchronized (this.syncRoot) {
                 if (scriptItem == null || this.queuedForReparse.size() == 0) {
                     scriptItem = this.context.findScriptItem(offset);
                     if (scriptItem != null) { // TODO consider statements separation which is ignored for now
                         if (scriptItem.item.isDirty()) {
-                            // awaiting reparse, so release lock and wait for the job to finish, then retry
+                            // awaiting reparse, so proceed to release lock and wait for the job to finish, then retry
                         } else {
                             return this.prepareCompletionContext(scriptItem, offset); 
                         }
@@ -183,16 +187,14 @@ public class SQLBackgroundParsingJob {
     }
 
     @NotNull
-    private SQLQueryCompletionContext prepareCompletionContext(@NotNull ScriptItemAtOffset scriptItem, int offset) {
+    private SQLQueryCompletionContext prepareCompletionContext(@NotNull SQLScriptItemAtOffset scriptItem, int offset) {
         int position = offset - scriptItem.offset;
     
         SQLQueryModel model = scriptItem.item.getQueryModel();
         if (model != null) {
             STMTreeNode syntaxNode = model.getSyntaxNode();
-            
-            SynaxInspectionResult sr = SQLQuerySyntaxTreeInspections.prepareAbstractSyntaxInspection(syntaxNode, position);
+            LSMInspections.SyntaxInspectionResult syntaxInspectionResult = LSMInspections.prepareAbstractSyntaxInspection(syntaxNode, position);
             SQLQueryDataContext context = null;
-            
             SQLQueryNodeModel node = model.findNodeContaining(position);
             SQLQueryLexicalScopeItem lexicalItem = null;
             if (node != null) {
@@ -207,8 +209,8 @@ public class SQLBackgroundParsingJob {
             }
             
             ArrayDeque<STMTreeTermNode> nameNodes = new ArrayDeque<>();
-            List<STMTreeTermNode> allTerms = SQLQuerySyntaxTreeInspections.prepareTerms(syntaxNode);
-            int index = AbstractSyntaxNode.binarySearchByKey(allTerms, t -> t.getRealInterval().a, position, Comparator.comparingInt(k -> k));
+            List<STMTreeTermNode> allTerms = LSMInspections.prepareTerms(syntaxNode);
+            int index = STMUtils.binarySearchByKey(allTerms, t -> t.getRealInterval().a, position, Comparator.comparingInt(k -> k));
             if (index < 0) {
                 index = ~index - 1;
             }
@@ -216,7 +218,7 @@ public class SQLBackgroundParsingJob {
                 for (int i = index; i >= 0; i--) {
                     STMTreeTermNode term = allTerms.get(i);
                     if (knownIdentifierPartTerms.contains(term.symbol.getType())
-                        || term.getStmParent().getNodeKindId() == SQLStandardParser.RULE_nonReserved
+                        || (term.getStmParent() != null && term.getStmParent().getNodeKindId() == SQLStandardParser.RULE_nonReserved)
                     ) {
                         nameNodes.addFirst(term);
                     } else {
@@ -224,7 +226,14 @@ public class SQLBackgroundParsingJob {
                     }
                 }
             }
-            return SQLQueryCompletionContext.prepare(scriptItem, this.editor.getExecutionContext(), sr, context, lexicalItem, nameNodes.toArray(STMTreeTermNode[]::new));
+            return SQLQueryCompletionContext.prepare(
+                scriptItem,
+                this.editor.getExecutionContext(),
+                syntaxInspectionResult,
+                context,
+                lexicalItem,
+                nameNodes.toArray(STMTreeTermNode[]::new)
+            );
         } else {
             return SQLQueryCompletionContext.EMPTY;
         }

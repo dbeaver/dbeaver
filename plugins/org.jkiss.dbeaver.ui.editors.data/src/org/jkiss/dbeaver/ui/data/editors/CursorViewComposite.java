@@ -110,7 +110,11 @@ public class CursorViewComposite extends Composite implements IResultSetContaine
     @Nullable
     @Override
     public DBPProject getProject() {
-        return valueController == null ? null : valueController.getExecutionContext().getDataSource().getContainer().getProject();
+        DBCExecutionContext executionContext = getExecutionContext();
+        if (executionContext != null) {
+            return executionContext.getDataSource().getContainer().getProject();
+        }
+        return null;
     }
 
     @Override
@@ -196,7 +200,7 @@ public class CursorViewComposite extends Composite implements IResultSetContaine
         @NotNull
         @Override
         public DBCStatistics readData(
-            @NotNull DBCExecutionSource source,
+            @Nullable DBCExecutionSource source,
             @NotNull DBCSession session,
             @NotNull DBDDataReceiver dataReceiver,
             DBDDataFilter dataFilter,

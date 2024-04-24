@@ -20,6 +20,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -40,7 +41,7 @@ import java.util.Base64;
  */
 public class TextWithOpenFile extends TextWithOpen {
     private final String title;
-    private final String[] filterExt;
+    private String[] filterExt;
     private final int style;
     private final boolean binary;
     private boolean openFolder = false;
@@ -71,6 +72,10 @@ public class TextWithOpenFile extends TextWithOpen {
 
     public void setOpenFolder(boolean openFolder) {
         this.openFolder = openFolder;
+    }
+
+    public void setFilterExtensions(@NotNull String[] filterExtensions) {
+        this.filterExt = filterExtensions;
     }
 
     @Override

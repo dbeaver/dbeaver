@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.dpi.DPISmartObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -28,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.DBCStatistics;
  * Used to receive some result set data.
  * Result set can be a result of some query execution, cursor returned from stored procedure, generated keys result set, etc.
  */
+@DPISmartObject
 public interface DBDDataReceiver extends AutoCloseable {
 
     void fetchStart(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, long offset, long maxRows)
