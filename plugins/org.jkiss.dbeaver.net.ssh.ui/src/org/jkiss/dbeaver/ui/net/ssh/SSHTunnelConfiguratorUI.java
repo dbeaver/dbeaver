@@ -758,7 +758,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 case PUBLIC_KEY -> {
                     final String privateKey = privateKeyText.getText().trim();
                     if (DBWorkbench.isDistributed()) {
-                        yield new SSHAuthConfiguration.KeyData(privateKey, password, savePassword);
+                        yield new SSHAuthConfiguration.KeyData(SSHUtils.trimLinesInKeyData(privateKey), password, savePassword);
                     } else {
                         yield new SSHAuthConfiguration.KeyFile(privateKey, password, savePassword);
                     }
