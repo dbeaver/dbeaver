@@ -134,7 +134,7 @@ public class SMAuthInfo {
             .setSignOutLink(signOutLink)
             .setAuthData(authData)
             .setMainAuth(mainAuth)
-            .serForceSessionsLogout(forceSessionsLogout)
+            .setForceSessionsLogout(forceSessionsLogout)
             .build();
     }
 
@@ -315,7 +315,7 @@ public class SMAuthInfo {
             return this;
         }
 
-        public Builder serForceSessionsLogout(boolean forceSessionsLogout) {
+        public Builder setForceSessionsLogout(boolean forceSessionsLogout) {
             this.forceSessionsLogout = forceSessionsLogout;
             return this;
         }
