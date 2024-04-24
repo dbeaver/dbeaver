@@ -23,14 +23,12 @@ import org.jkiss.dbeaver.model.sql.SQLDialectInsertReplaceMethod;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadataRegistry;
 import org.jkiss.utils.CommonUtils;
-import org.osgi.service.component.annotations.Component;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-@Component
 public class SQLDialectRegistry implements SQLDialectMetadataRegistry {
     static final String TAG_DIALECT = "dialect"; //$NON-NLS-1$
     private static final String TAG_METHOD = "method"; //$NON-NLS-1$
