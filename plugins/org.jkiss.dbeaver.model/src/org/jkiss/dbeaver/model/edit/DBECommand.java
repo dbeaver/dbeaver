@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.edit;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -58,9 +59,9 @@ public interface DBECommand<OBJECT_TYPE extends DBPObject> {
 
     void updateModel();
 
-    @NotNull
+    @Nullable
     DBECommand<?> merge(
-        @NotNull DBECommand<?> prevCommand,
+        @Nullable DBECommand<?> prevCommand,
         @NotNull Map<Object, Object> userParams);
 
     @NotNull
