@@ -203,12 +203,10 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
     }
 
     private void chooseSourceFile(DataTransferPipe pipe, boolean remoteFS) {
-        List<String> extensions = new ArrayList<>();
-        String extensionProp = CommonUtils.toString(propertySource.getPropertyValue(null, "extension"));
-        for (String ext : extensionProp.split(",")) {
-            extensions.add("*." + ext);
-        }
-        extensions.add("*");
+        final String[] extensions = new String[]{
+            "*." + CommonUtils.toString(propertySource.getPropertyValue(null, "extension")).replace(",", ";*."),
+            "*.*"
+        };
 
         DBRRunnableWithProgress initializer = null;
 
@@ -219,7 +217,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
                 false,
                 SWT.OPEN,
                 false,
-                extensions.toArray(new String[0]),
+                extensions,
                 pipe.getConsumer().getObjectName());
             if (selected != null) {
                 initializer = monitor -> {
@@ -230,7 +228,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             File[] files = DialogUtils.openFileList(
                 getShell(),
                 DTUIMessages.stream_producer_select_input_file,
-                extensions.toArray(new String[0]));
+                extensions);
             if (files != null && files.length > 0) {
                 initializer = monitor -> updateMultiConsumers(
                     monitor,
@@ -238,7 +236,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
                     Arrays.stream(files).map(File::toPath).toArray(Path[]::new));
             }
         } else {
-            File file = DialogUtils.openFile(getShell(), extensions.toArray(new String[0]));
+            File file = DialogUtils.openFile(getShell(), extensions);
             if (file != null) {
                 initializer = monitor -> updateSingleConsumer(monitor, pipe, file.toPath());
             }
