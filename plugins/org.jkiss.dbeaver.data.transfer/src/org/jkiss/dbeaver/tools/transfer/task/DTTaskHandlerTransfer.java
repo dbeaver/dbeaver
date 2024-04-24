@@ -166,7 +166,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
         try {
             runnableContext.run(true, true, monitor -> {
                 final JobGroup group;
-                if (dataPipes.size() > 1) {
+                if (totalJobs > 1) {
                     group = new JobGroup("Data transfer", totalJobs, totalJobs);
                 } else {
                     group = null;
@@ -174,7 +174,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
 
                 final DataTransferJob[] jobs = new DataTransferJob[totalJobs];
                 for (int i = 0; i < totalJobs; i++) {
-                    DataTransferJob job = new DataTransferJob(settings, task, log, monitor, i);
+                    DataTransferJob job = new DataTransferJob(settings, task, log, totalJobs == 1 ? monitor : null, i);
                     job.setJobGroup(group);
                     job.schedule();
                     jobs[i] = job;
