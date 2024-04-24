@@ -26,10 +26,7 @@ import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerView;
 import org.jkiss.dbeaver.ext.mssql.model.ServerType;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPErrorAssistant;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
@@ -209,7 +206,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     private boolean isMetaDataViewExists(@NotNull JDBCSession session) {
         boolean result = false;
         try (Statement dbStat = session.createStatement()) {
-            try (ResultSet resultSet = dbStat.executeQuery("SELECT 1 FROM SYS.SYSPROCEDURE")) {
+            try (ResultSet resultSet = dbStat.executeQuery("SELECT 1 FROM SYS.SYSPROCEDURE WHERE 1<>1 LIMIT 1")) {
                 result = resultSet.next();
             }
         } catch (SQLException e) {
