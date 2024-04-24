@@ -206,11 +206,11 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     private boolean isMetaDataViewExists(@NotNull JDBCSession session) {
         boolean result = false;
         try (Statement dbStat = session.createStatement()) {
-            try (ResultSet resultSet = dbStat.executeQuery("SELECT 1 FROM SYS.SYSPROCEDURE WHERE 1<>1 LIMIT 1")) {
-                result = resultSet.next();
+            try (ResultSet resultSet = dbStat.executeQuery("SELECT TOP 1 1 FROM SYS.SYSPROCEDURE WHERE 1 <> 1")) {
+                result = true;
             }
         } catch (SQLException e) {
-            return false;
+            result = false;
         }
         return result;
     }
