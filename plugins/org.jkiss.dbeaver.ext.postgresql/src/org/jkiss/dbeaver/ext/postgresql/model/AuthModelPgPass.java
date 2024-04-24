@@ -33,7 +33,10 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Properties;
 
 public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCredentials> {
@@ -106,12 +109,12 @@ public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCred
                 pgPassPath = System.getProperty("user.home") + "/.pgpass";
             }
         }
-        File pgPassFile = new File(pgPassPath);
-        if (!pgPassFile.exists()) {
-            throw new DBException("PgPass file '" + pgPassFile.getAbsolutePath() + "' not found");
+        Path pgPassFile = Path.of(pgPassPath);
+        if (!Files.exists(pgPassFile)) {
+            throw new DBException("PgPass file '" + pgPassFile + "' not found");
         }
 
-        try (Reader r = new InputStreamReader(new FileInputStream(pgPassFile), GeneralUtils.UTF8_CHARSET)) {
+        try (Reader r = Files.newBufferedReader(pgPassFile, GeneralUtils.UTF8_CHARSET)) {
             String passString = IOUtils.readToString(r);
             String[] lines = passString.split("\n");
             if (findHostCredentials(credentials, configuration, dataSource, sshHost, lines)) {
@@ -120,7 +123,7 @@ public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCred
                 return;
             }
         } catch (IOException e) {
-            throw new DBException("Error reading pgpass", e);
+            throw new DBException("Error reading pgpass at '" + pgPassFile + "'", e);
         }
 
         throw new DBException("No matches in pgpass");
