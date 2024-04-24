@@ -60,7 +60,7 @@ public class DashboardAddItemDialog extends BaseDialog {
             dialogArea,
             viewConfiguration.getProject(),
             viewConfiguration.getDataSourceContainer(),
-            item -> viewConfiguration.getItemConfig(item.getId()) == null,
+            item -> viewConfiguration.getItemConfig(item.getId()) != null,
             false) {
             @Override
             protected void handleChartSelected() {

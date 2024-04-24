@@ -19,10 +19,17 @@ package org.jkiss.dbeaver.ui.dashboard.view;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.*;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeItem;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -219,7 +226,61 @@ public abstract class DashboardCatalogPanel extends Composite {
         dashboardTable.setInput(dbProviders);
         dashboardTable.expandToLevel(2);
 
+        if (isFlat) {
+            addDragAndDropSupport(table);
+        }
+
+
         UIUtils.asyncExec(() -> UIUtils.packColumns(table, true, null));
+    }
+
+    private static void addDragAndDropSupport(Tree table) {
+        final DragSource source = new DragSource(table, DND.DROP_MOVE);
+        source.setTransfer(TextTransfer.getInstance(), DashboardItemTransfer.INSTANCE);
+        source.addDragListener (new DragSourceListener() {
+            private TreeItem dragItem;
+            private Image dragImage;
+            @Override
+            public void dragStart(DragSourceEvent event) {
+                Point point = table.toControl(table.getDisplay().getCursorLocation());
+                dragItem = table.getItem(point);
+
+                if (dragItem == null || !(dragItem.getData() instanceof DashboardItemConfiguration)) {
+                    return;
+                }
+                Rectangle columnBounds = dragItem.getBounds();
+                if (dragImage != null) {
+                    dragImage.dispose();
+                    dragImage = null;
+                }
+                GC gc = new GC(table);
+                dragImage = new Image(Display.getCurrent(), columnBounds.width, columnBounds.height);
+                gc.copyArea(
+                    dragImage,
+                    columnBounds.x,
+                    columnBounds.y);
+                event.image = dragImage;
+                gc.dispose();
+            }
+
+            @Override
+            public void dragSetData (DragSourceEvent event) {
+                if (dragItem.getData() instanceof DashboardItemConfiguration dashboardDescriptor &&
+                    DashboardItemTransfer.INSTANCE.isSupportedType(event.dataType)
+                ) {
+                    event.data = dashboardDescriptor;
+                } else {
+                    event.data = dragItem.getText();
+                }
+            }
+            @Override
+            public void dragFinished(DragSourceEvent event) {
+                if (dragImage != null) {
+                    dragImage.dispose();
+                    dragImage = null;
+                }
+            }
+        });
     }
 
     @NotNull

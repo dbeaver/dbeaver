@@ -37,9 +37,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
-import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dashboard.DashboardUIConstants;
 import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.dbeaver.ui.dashboard.view.DashboardCatalogPanel;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -129,7 +127,7 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
             dashDivider,
             viewConfiguration.getProject(),
             viewConfiguration.getDataSourceContainer(),
-            item -> viewConfiguration.getItemConfig(item.getId()) == null,
+            item -> viewConfiguration.getItemConfig(item.getId()) != null,
             true) {
             @Override
             protected void handleChartSelected() {
@@ -227,7 +225,12 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
 
     @Override
     public void showChartCatalog() {
-        ActionUtils.runCommand(DashboardUIConstants.CMD_ADD_DASHBOARD, site);
+        if (dashDivider.getMaximizedControl() != null) {
+            dashDivider.setMaximizedControl(null);
+        } else if (dashDivider.getWeights()[1] == 0){
+            dashDivider.setWeights(650, 350);
+        }
+        catalogPanel.setFocus();
     }
 
     @Override

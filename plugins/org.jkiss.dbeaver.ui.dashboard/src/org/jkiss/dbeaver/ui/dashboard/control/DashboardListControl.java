@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.DashboardUIConstants;
 import org.jkiss.dbeaver.ui.dashboard.model.*;
+import org.jkiss.dbeaver.ui.dashboard.view.DashboardItemTransfer;
 import org.jkiss.dbeaver.ui.dashboard.view.DashboardManagerDialog;
 import org.jkiss.dbeaver.ui.dnd.LocalObjectTransfer;
 import org.jkiss.utils.CommonUtils;
@@ -101,6 +102,70 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
                 layout(true, true);
             }
         });
+
+        addItemDropSupport();
+    }
+
+    private void addItemDropSupport() {
+        final DropTarget target = new DropTarget(this, DND.DROP_MOVE);
+        target.setTransfer(DashboardItemTransfer.INSTANCE);
+        target.addDropListener(new DropTargetAdapter() {
+            @Override
+            public void dragEnter(DropTargetEvent event) {
+                handleDragEvent(event);
+            }
+
+            @Override
+            public void dragLeave(DropTargetEvent event) {
+                handleDragEvent(event);
+            }
+
+            @Override
+            public void dragOperationChanged(DropTargetEvent event) {
+                handleDragEvent(event);
+            }
+
+            @Override
+            public void dragOver(DropTargetEvent event) {
+                handleDragEvent(event);
+            }
+
+            @Override
+            public void drop(DropTargetEvent event) {
+                handleDragEvent(event);
+                if (event.detail == DND.DROP_MOVE || event.detail == DND.DROP_COPY) {
+                    addItem((DashboardItemConfiguration) event.data);
+                }
+            }
+
+            @Override
+            public void dropAccept(DropTargetEvent event) {
+                handleDragEvent(event);
+            }
+
+            private void handleDragEvent(DropTargetEvent event) {
+                if (!isDropSupported(event)) {
+                    event.detail = DND.DROP_NONE;
+                } else {
+                    if (event.detail == DND.DROP_NONE) {
+                        event.detail = DND.DROP_MOVE;
+                    }
+                }
+                event.feedback = DND.FEEDBACK_SELECT;
+            }
+
+            private boolean isDropSupported(DropTargetEvent event) {
+                if (event.dataTypes == null) {
+                    return false;
+                }
+                for (TransferData td : event.dataTypes) {
+                    if (td.type == DashboardItemTransfer.INSTANCE.getSupportedTypes()[0].type) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
     }
 
     private void createIntroItem() {
@@ -110,14 +175,15 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
         titleLabel.setText("Customize your dashboard");
         String addCommandName = ActionUtils.findCommandName(DashboardUIConstants.CMD_ADD_DASHBOARD);
         UIUtils.createLink(intro,
-            "<a>" + addCommandName + "</a> to this dashboard by clicking on '" + addCommandName + "' icon in the toolbar.\n" +
+            "<a>" + addCommandName + "</a> to this dashboard by drag-n-drop from the <a>right panel</a>.\n" +
                 "You can also create new charts in the <a>Configuration</a> dialog",
             new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     if (CommonUtils.equalObjects(addCommandName, e.text)) {
+                        ActionUtils.runCommand(DashboardUIConstants.CMD_ADD_DASHBOARD, site);
+                    } else if (CommonUtils.equalObjects("right panel", e.text)) {
                         viewContainer.showChartCatalog();
-                        //ActionUtils.runCommand(DashboardUIConstants.CMD_ADD_DASHBOARD, site);
                     } else {
                         new DashboardManagerDialog(UIUtils.getActiveWorkbenchShell()).open();
                     }
