@@ -180,7 +180,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         instance = this;
 
         Location instanceLoc = Platform.getInstanceLocation();
-        log.info("loadStartupActions(instanceLoc) " + instanceLoc.toString());
         loadStartupActions(instanceLoc);
 
         CommandLine commandLine = DBeaverCommandLine.getCommandLine();
@@ -831,7 +830,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     private void loadStartupActions(@NotNull Location instanceLoc) {
         final Path path = GeneralUtils.getMetadataFolder().resolve(STARTUP_ACTIONS_FILE);
-        log.info(path);
         if (Files.notExists(path)) {
             return;
         }
@@ -839,7 +837,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         try (Reader reader = Files.newBufferedReader(path)) {
             final Properties properties = new Properties();
             properties.load(reader);
-            log.info(properties);
 
             if (!properties.isEmpty()) {
                 processStartupActions(instanceLoc, properties.stringPropertyNames());
@@ -856,7 +853,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     }
 
     private void saveStartupActions() {
-        log.info("saveStartupActions");
         final Properties props = new Properties();
 
         if (resetWorkspaceConfigurationOnRestart) {
@@ -866,10 +862,8 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         if (resetUserPreferencesOnRestart) {
             props.setProperty(RESET_USER_PREFERENCES, Boolean.TRUE.toString());
         }
-        log.info("saveStartupActions props " + props );
         if (!props.isEmpty()) {
             Path path = GeneralUtils.getMetadataFolder().resolve(STARTUP_ACTIONS_FILE);
-            log.info("saveStartupActions path " + path);
             try (Writer writer = Files.newBufferedWriter(path)) {
                 props.store(writer, "DBeaver startup actions");
             } catch (Exception e) {
