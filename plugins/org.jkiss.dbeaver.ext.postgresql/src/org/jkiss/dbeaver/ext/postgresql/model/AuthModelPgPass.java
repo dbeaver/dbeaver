@@ -123,7 +123,7 @@ public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCred
                 return;
             }
         } catch (IOException e) {
-            throw new DBException("Error reading pgpass", e);
+            throw new DBException("Error reading pgpass at '" + pgPassFile + "'", e);
         }
 
         throw new DBException("No matches in pgpass");
