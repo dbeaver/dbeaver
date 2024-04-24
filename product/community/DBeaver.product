@@ -10,7 +10,7 @@
 
     <launcherArgs>
         <programArgs></programArgs>
-        <programArgsMac>-vm ../Eclipse/jre/Contents/Home/bin/java</programArgsMac>
+        <programArgsMac>-vm ../Eclipse/jre/Contents/Home/lib/libjli.dylib</programArgsMac>
 
         <vmArgs>
             -XX:+IgnoreUnrecognizedVMOptions
@@ -43,7 +43,7 @@
             --add-opens=java.sql/java.sql=ALL-UNNAMED
             -Xms64m
             -Xmx1024m</vmArgs>
-        <vmArgsMac>-XstartOnFirstThread</vmArgsMac>
+        <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.cocoa.useNativeItemHeight=false</vmArgsMac>
     </launcherArgs>
 
     <splash location="org.jkiss.dbeaver.ui.app.standalone"/>
