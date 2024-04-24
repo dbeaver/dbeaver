@@ -116,7 +116,8 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     if (CommonUtils.equalObjects(addCommandName, e.text)) {
-                        ActionUtils.runCommand(DashboardUIConstants.CMD_ADD_DASHBOARD, site);
+                        viewContainer.showChartCatalog();
+                        //ActionUtils.runCommand(DashboardUIConstants.CMD_ADD_DASHBOARD, site);
                     } else {
                         new DashboardManagerDialog(UIUtils.getActiveWorkbenchShell()).open();
                     }
