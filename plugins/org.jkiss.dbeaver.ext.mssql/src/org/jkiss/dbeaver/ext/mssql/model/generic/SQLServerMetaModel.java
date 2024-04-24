@@ -46,7 +46,9 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -170,28 +172,50 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         }
         if (getServerType() == ServerType.SYBASE) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read routine definition")) {
-                try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT source, proc_defn from SYS.SYSPROCEDURE s\n" +
-                        "LEFT JOIN " + DBUtils.getQuotedIdentifier(sourceObject.getCatalog()) + ".dbo.sysobjects so " +
+                if (isMetaDataViewExists(session)) {
+                    try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                        "SELECT source, proc_defn " +
+                        "FROM SYS.SYSPROCEDURE s\n" +
+                        "LEFT JOIN " +
+                        DBUtils.getQuotedIdentifier(sourceObject.getCatalog()) + ".dbo.sysobjects so " +
                         "ON so.id = s.object_id\n" +
                         "WHERE s.proc_name=?"
-                )) {
-                    dbStat.setString(1, objectName);
-                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                        if (dbResult.nextRow()) {
-                            if (dbResult.getString(1) != null) {
-                                return dbResult.getString(1);
+                    )) {
+                        dbStat.setString(1, objectName);
+                        try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                            if (dbResult.nextRow()) {
+                                if (dbResult.getString(1) != null) {
+                                    return dbResult.getString(1);
+                                }
+                                return dbResult.getString(2);
                             }
-                            return dbResult.getString(2);
+                            return "-- Routine '" + objectName + "' definition not found";
                         }
-                        return "-- Routine '" + objectName + "' definition not found";
                     }
                 }
+                return extractSource(monitor,
+                    dataSource,
+                    sourceObject,
+                    sourceObject.getCatalog(),
+                    sourceObject.getSchema().getName(),
+                    objectName);
             } catch (SQLException e) {
                 throw new DBException(e, dataSource);
             }
         }
         return extractSource(monitor, dataSource, sourceObject, sourceObject.getCatalog(), sourceObject.getSchema().getName(), objectName);
+    }
+
+    private boolean isMetaDataViewExists(@NotNull JDBCSession session) {
+        boolean result = false;
+        try (Statement dbStat = session.createStatement()) {
+            try (ResultSet resultSet = dbStat.executeQuery("SELECT 1 FROM SYS.SYSPROCEDURE")) {
+                result = resultSet.next();
+            }
+        } catch (SQLException e) {
+            return false;
+        }
+        return result;
     }
 
     @Override
