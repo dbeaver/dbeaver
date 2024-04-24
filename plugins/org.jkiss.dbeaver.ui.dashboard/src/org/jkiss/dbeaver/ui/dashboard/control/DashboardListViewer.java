@@ -136,7 +136,7 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
 
             @Override
             protected void handleChartSelectedFinal() {
-                //okPressed();
+                dashContainer.addItem(getSelectedDashboard());
             }
         };
 
