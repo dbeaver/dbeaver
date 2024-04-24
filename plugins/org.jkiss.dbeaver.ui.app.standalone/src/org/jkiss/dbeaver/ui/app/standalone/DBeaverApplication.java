@@ -879,9 +879,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         if (!resetUserPreferences && !resetWorkspaceConfiguration || !instanceLoc.isSet()) {
             return;
         }
-
-        final Path path = new File(instanceLoc.getDataArea("").toURI()).toPath();
-
+        Path path = GeneralUtils.getMetadataFolder().resolve(PLUGINS_FOLDER);
         if (Files.notExists(path) || !Files.isDirectory(path)) {
             return;
         }
