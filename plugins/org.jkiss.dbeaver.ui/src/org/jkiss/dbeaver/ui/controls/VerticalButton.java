@@ -41,8 +41,9 @@ import java.awt.*;
 
 public class VerticalButton extends Canvas {
 
-    private static final Insets BORDER_MARGIN = new Insets(6, 2, 6, 2);
-    private static final int VERT_INDENT = 4;
+    private static final Insets BASE_MARGIN = new Insets(2, 2, 2, 2);
+    private static final Insets TEXT_MARGIN = new Insets(4, 0, 4, 0);
+    private static final int TEXT_SPACING = TEXT_MARGIN.bottom;
 
     private boolean hit = false;
 
@@ -193,17 +194,21 @@ public class VerticalButton extends Canvas {
 
         if (!CommonUtils.isEmpty(text)) {
             Point extent = gc.stringExtent(text);
-            size.x += extent.x;
+            size.x = size.x + extent.x;
             size.y = Math.max(size.y, extent.y);
 
+            // Extra margins so the text is not too close to the border
+            size.x += TEXT_MARGIN.top + TEXT_MARGIN.bottom;
+            size.y += TEXT_MARGIN.left + TEXT_MARGIN.right;
+
             if (image != null) {
-                size.x += VERT_INDENT;
+                size.x += TEXT_SPACING;
             }
         }
 
         return new Point(
-            size.y + BORDER_MARGIN.left + BORDER_MARGIN.right,
-            size.x + BORDER_MARGIN.top + BORDER_MARGIN.bottom
+            size.y + BASE_MARGIN.left + BASE_MARGIN.right,
+            size.x + BASE_MARGIN.top + BASE_MARGIN.bottom
         );
     }
 
@@ -244,7 +249,12 @@ public class VerticalButton extends Canvas {
             }
         }
 
-        int offset = BORDER_MARGIN.top;
+        int offset = BASE_MARGIN.top;
+
+        if (!CommonUtils.isEmpty(text)) {
+            offset += TEXT_MARGIN.top;
+        }
+
         Transform transform = null;
 
         String text = getText();
@@ -276,10 +286,10 @@ public class VerticalButton extends Canvas {
             final Rectangle bounds = image.getBounds();
             if (transform != null) {
                 e.gc.drawImage(image, offset, (size.x - bounds.height) / 2);
-                offset += bounds.height + VERT_INDENT;
+                offset += bounds.height + TEXT_SPACING;
             } else {
                 e.gc.drawImage(image, (size.x - bounds.width) / 2, offset);
-                offset += bounds.width + VERT_INDENT;
+                offset += bounds.width + TEXT_SPACING;
             }
         }
 
