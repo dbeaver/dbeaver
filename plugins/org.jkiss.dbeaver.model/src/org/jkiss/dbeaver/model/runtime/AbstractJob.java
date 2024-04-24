@@ -169,11 +169,19 @@ public abstract class AbstractJob extends Job
         }
     }
 
+    public boolean isForceCancel() {
+        return true;
+    }
+
     private void runBlockCanceler() {
         final List<DBRBlockingObject> activeBlocks = new ArrayList<>(
             CommonUtils.safeList(progressMonitor.getActiveBlocks()));
         if (activeBlocks.isEmpty()) {
             // Nothing to cancel
+            return;
+        }
+
+        if (!isForceCancel() && activeBlocks.size() < 2) {
             return;
         }
 
