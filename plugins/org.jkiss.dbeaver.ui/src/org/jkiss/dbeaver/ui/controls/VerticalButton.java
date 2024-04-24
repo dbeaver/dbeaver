@@ -42,7 +42,7 @@ import java.awt.*;
 public class VerticalButton extends Canvas {
 
     private static final Insets BORDER_MARGIN = new Insets(6, 2, 6, 2);
-    private static final int VERT_INDENT = 8;
+    private static final int VERT_INDENT = 4;
 
     private boolean hit = false;
 
@@ -183,18 +183,27 @@ public class VerticalButton extends Canvas {
 
     @NotNull
     private Point computeSize(@NotNull GC gc) {
-        final Point size = gc.stringExtent(getText());
+        final Point size = new Point(0, 0);
 
         if (image != null) {
             Rectangle imageBounds = image.getBounds();
-            // noinspection SuspiciousNameCombination
-            size.x += imageBounds.height;
-            size.y = Math.max(size.y, imageBounds.width);
+            size.x = imageBounds.width;
+            size.y = imageBounds.height;
+        }
+
+        if (!CommonUtils.isEmpty(text)) {
+            Point extent = gc.stringExtent(text);
+            size.x += extent.x;
+            size.y = Math.max(size.y, extent.y);
+
+            if (image != null) {
+                size.x += VERT_INDENT;
+            }
         }
 
         return new Point(
             size.y + BORDER_MARGIN.left + BORDER_MARGIN.right,
-            size.x + BORDER_MARGIN.top + BORDER_MARGIN.bottom + VERT_INDENT
+            size.x + BORDER_MARGIN.top + BORDER_MARGIN.bottom
         );
     }
 
@@ -253,17 +262,25 @@ public class VerticalButton extends Canvas {
         }
 
         if (image != null) {
-            final Rectangle bounds = image.getBounds();
+            final Image image;
             if (!enabled) {
                 if (imageDisabled == null) {
-                    imageDisabled = new Image(e.display, image, SWT.IMAGE_GRAY);
+                    imageDisabled = new Image(e.display, this.image, SWT.IMAGE_GRAY);
                     addDisposeListener(e1 -> imageDisabled.dispose());
                 }
-                e.gc.drawImage(imageDisabled, offset, (size.x - bounds.height) / 2);
+                image = imageDisabled;
             } else {
-                e.gc.drawImage(image, offset, (size.x - bounds.height) / 2);
+                image = this.image;
             }
-            offset += bounds.height + VERT_INDENT;
+
+            final Rectangle bounds = image.getBounds();
+            if (transform != null) {
+                e.gc.drawImage(image, offset, (size.x - bounds.height) / 2);
+                offset += bounds.height + VERT_INDENT;
+            } else {
+                e.gc.drawImage(image, (size.x - bounds.width) / 2, offset);
+                offset += bounds.width + VERT_INDENT;
+            }
         }
 
         if (!CommonUtils.isEmpty(text)) {
