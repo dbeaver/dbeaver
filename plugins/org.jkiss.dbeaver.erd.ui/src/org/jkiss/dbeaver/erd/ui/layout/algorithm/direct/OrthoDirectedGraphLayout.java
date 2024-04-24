@@ -146,7 +146,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
             }
         }
         int currentX = OFFSET_FROM_LEFT;
-        int currentY = findBottomPosition(mainNodes);
+        int currentY = DISTANCE_ENTITIES_Y + findBottomPosition(mainNodes);
         int distanceX = computeDistance(islandNodes);
         int offsetY = 0;
         for (Node nodeSource : islandNodes) {
@@ -162,11 +162,12 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
                 if (offsetY < nodeTarget.height) {
                     offsetY = nodeTarget.height;
                 }
+                System.out.println("OrthoDirectedGraphLayout.drawIsolatedNodes() " + (islandNodes.indexOf(nodeSource) + 1));
                 if ((islandNodes.indexOf(nodeSource) + 1) % COLUMN_ISLAND_MAX != 0) {
                     currentX += nodeSource.width + nodeTarget.width + distanceX + DISTANCE_ENTITIES_X;
                 } else {
                     currentX = OFFSET_FROM_LEFT;
-                    currentY += offsetY + DISTANCE_ENTITIES_Y / 2;
+                    currentY += offsetY + DISTANCE_ENTITIES_Y;
                 }
             }
         }
@@ -185,7 +186,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
             }
         }
         int currentX = OFFSET_FROM_LEFT;
-        int currentY = findBottomPosition(nodeByLevels) + getBottomPositionIslands(islands);
+        int currentY =  DISTANCE_ENTITIES_Y + findBottomPosition(nodeByLevels) + getBottomPositionIslands(islands);
         int curColumnIndex = 0;
         offsetX = currentX;
         int offsetY = currentY;
@@ -201,7 +202,6 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
                 // next row
                 offsetY += height + DISTANCE_ENTITIES_Y;
                 offsetX = currentX;
-                height = 0;
             } else {
                 offsetX += node.width + DISTANCE_ENTITIES_X / 2;
             }
@@ -214,22 +214,17 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
         for (Node nodeSource : islands) {
             for (Edge edge : nodeSource.outgoing) {
                 Node nodeTarget = edge.target;
-                if (offsetY < nodeSource.height) {
+                if (nodeSource.height > nodeTarget.height) {
                     offsetY = nodeSource.height;
-                }
-                if (offsetY < nodeTarget.height) {
+                } else {
                     offsetY = nodeTarget.height;
                 }
-            }
-            if ((islands.indexOf(nodeSource) + 1) % COLUMN_ISLAND_MAX == 0) {
-                positionY += offsetY + DISTANCE_ENTITIES_Y / 2;
-                offsetY = 0;
+                if ((islands.indexOf(nodeSource) + 1) % (COLUMN_ISLAND_MAX) == 0) {
+                    positionY += offsetY;
+                }
             }
         }
-        if (offsetY != 0) {
-            offsetY += DISTANCE_ENTITIES_Y;
-        }
-        return positionY + offsetY;
+        return OFFSET_FROM_TOP + positionY + offsetY + DISTANCE_ENTITIES_Y;
     }
 
     private void drawGraphNodes(@NotNull TreeMap<Integer, List<Node>> nodeByEdges) {
@@ -472,6 +467,6 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
      * Compute last position value by Y of main connected graph
      */
     private int findBottomPosition(@NotNull TreeMap<Integer, List<Node>> nodeByEdges) {
-        return OFFSET_FROM_TOP + DISTANCE_ENTITIES_Y + Collections.max(computeHeight(nodeByEdges).values());
+        return OFFSET_FROM_TOP + Collections.max(computeHeight(nodeByEdges).values());
     }
 }

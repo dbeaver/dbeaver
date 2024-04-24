@@ -10,16 +10,9 @@
 
 	<properties>
 		<tycho-version>4.0.4</tycho-version>
-		<reficio-p2-version>1.4.1</reficio-p2-version>
+		<reficio-p2-version>2.1.0</reficio-p2-version>
 		<repo-name>DBeaver CE Update</repo-name>
 	</properties>
-
-	<pluginRepositories>
-		<!--<pluginRepository>
-			<id>reficio</id>
-			<url>http://repo.reficio.org/maven/</url>
-		</pluginRepository>-->
-	</pluginRepositories>
 
 	<build>
 		<plugins>
@@ -28,7 +21,7 @@
 			<plugin>
 				<groupId>org.reficio</groupId>
 				<artifactId>p2-maven-plugin</artifactId>
-				<version>${reficio-p2-version}-SNAPSHOT</version>
+				<version>${reficio-p2-version}</version>
 				<executions>
 					<execution>
 						<id>default-cli</id>
@@ -39,7 +32,12 @@
 
 								<artifact><id>org.apache.commons:commons-jexl3:3.1</id></artifact>
 								<artifact><id>commons-cli:commons-cli:1.3.1</id></artifact>
+
 								<artifact><id>com.ibm.icu:com.ibm.icu.base:58.2.0</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
+								<artifact><id>org.bouncycastle:bcpkix-jdk18on:1.78.1</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
+								<artifact><id>org.bouncycastle:bcpg-jdk18on:1.78.1</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
+								<artifact><id>org.bouncycastle:bcprov-jdk18on:1.78.1</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
+								<artifact><id>org.bouncycastle:bcutil-jdk18on:1.78.1</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
 
 								<!-- ANTLR -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.antlr4:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-antlr4 -->
