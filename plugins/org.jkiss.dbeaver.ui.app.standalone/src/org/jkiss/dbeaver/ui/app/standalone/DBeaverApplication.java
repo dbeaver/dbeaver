@@ -180,7 +180,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         instance = this;
 
         Location instanceLoc = Platform.getInstanceLocation();
-        
 
         CommandLine commandLine = DBeaverCommandLine.getCommandLine();
         String defaultHomePath = getDefaultInstanceLocation();
@@ -192,7 +191,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         }
 
         boolean ideWorkspaceSet = setIDEWorkspace(instanceLoc);
-       
+
         {
             // Lock the workspace
             try {
