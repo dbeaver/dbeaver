@@ -101,10 +101,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     public static final String DEFAULT_WORKSPACE_FOLDER = "workspace6";
 
-    private static final String PLUGINS_FOLDER = ".plugins";
-    private static final String CORE_RESOURCES_PLUGIN_FOLDER = "org.eclipse.core.resources";
     private static final String STARTUP_ACTIONS_FILE = "dbeaver-startup-actions.properties";
-
     private static final String RESET_USER_PREFERENCES = "reset_user_preferences";
     private static final String RESET_WORKSPACE_CONFIGURATION = "reset_workspace_configuration";
 
@@ -218,7 +215,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                 e.printStackTrace();
             }
         }
-        loadStartupActions(instanceLoc);
         // Register core components
         initializeApplicationServices();
 
@@ -827,30 +823,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         this.ignoreRecentWorkspaces = ignoreRecentWorkspaces;
     }
 
-    private void loadStartupActions(@NotNull Location instanceLoc) {
-        final Path path = GeneralUtils.getMetadataFolder().resolve(STARTUP_ACTIONS_FILE);
-        if (Files.notExists(path)) {
-            return;
-        }
-
-        try (Reader reader = Files.newBufferedReader(path)) {
-            final Properties properties = new Properties();
-            properties.load(reader);
-
-            if (!properties.isEmpty()) {
-                processStartupActions(instanceLoc, properties.stringPropertyNames());
-            }
-        } catch (Exception e) {
-            log.error("Unable to read startup actions", e);
-        } finally {
-            try {
-                Files.delete(path);
-            } catch (IOException e) {
-                log.error("Unable to delete startup actions file: " + e.getMessage());
-            }
-        }
-    }
-
     private void saveStartupActions() {
         final Properties props = new Properties();
 
@@ -869,66 +841,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                 log.error("Unable to save startup actions", e);
             }
         }
-    }
-
-    private void processStartupActions(@NotNull Location instanceLoc, @NotNull Set<String> actions) throws Exception {
-        final boolean resetUserPreferences = actions.contains(RESET_USER_PREFERENCES);
-        final boolean resetWorkspaceConfiguration = actions.contains(RESET_WORKSPACE_CONFIGURATION);
-
-        if (!resetUserPreferences && !resetWorkspaceConfiguration || !instanceLoc.isSet()) {
-            return;
-        }
-        Path path = GeneralUtils.getMetadataFolder().resolve(PLUGINS_FOLDER);
-        if (Files.notExists(path) || !Files.isDirectory(path)) {
-            return;
-        }
-
-        Files.walkFileTree(path, new SimpleFileVisitor<>() {
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                log.trace("Deleting " + file);
-
-                try {
-                    Files.delete(file);
-                } catch (IOException e) {
-                    log.trace("Unable to delete " + file + ":" + e.getMessage());
-                }
-
-                return FileVisitResult.CONTINUE;
-            }
-
-            @Override
-            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
-                if (dir.endsWith(PLUGINS_FOLDER)) {
-                    return FileVisitResult.CONTINUE;
-                }
-
-                final Path relative = path.relativize(dir);
-
-                if (resetUserPreferences && !relative.startsWith(CORE_RESOURCES_PLUGIN_FOLDER)) {
-                    return FileVisitResult.CONTINUE;
-                }
-
-                if (resetWorkspaceConfiguration && relative.startsWith(CORE_RESOURCES_PLUGIN_FOLDER)) {
-                    return FileVisitResult.CONTINUE;
-                }
-
-                return FileVisitResult.SKIP_SUBTREE;
-            }
-
-            @Override
-            public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
-                log.trace("Deleting " + dir);
-
-                try {
-                    Files.delete(dir);
-                } catch (IOException e) {
-                    log.trace("Unable to delete " + dir + ":" + e.getMessage());
-                }
-
-                return FileVisitResult.CONTINUE;
-            }
-        });
     }
 
     private class ProxyPrintStream extends OutputStream {
