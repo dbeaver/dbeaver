@@ -34,4 +34,12 @@ public interface ILoadService<RESULT> {
     boolean cancel() throws InvocationTargetException;
 
     Object getFamily();
+
+    /**
+     * Force cancel will kill database service/job if there are no other active blocks
+     */
+    default boolean isForceCancel() {
+        return true;
+    }
+
 }
