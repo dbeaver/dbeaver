@@ -14,22 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.websocket.event;
+package org.jkiss.dbeaver.model.security.exception;
 
 import org.jkiss.code.NotNull;
 
-public class WSUserDeletedEvent extends WSAbstractEvent{
+public class SMTooManySessionsException extends SMException {
 
-    @NotNull
-    private final String userId;
-    public WSUserDeletedEvent(@NotNull WSEventType eventType, @NotNull String userId) {
-        super(eventType);
-        this.userId = userId;
+    private final String errorType = "tooManySessions";
+
+    public SMTooManySessionsException(String message) {
+        super(message);
     }
 
     @NotNull
-    @Override
-    public String getUserId() {
-        return userId;
+    public String getErrorType() {
+        return errorType;
     }
 }
