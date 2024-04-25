@@ -48,26 +48,26 @@ import java.util.List;
 
 /**
  * DB2 Utils
- * 
+ *
  * @author Denis Forveille
  */
 public class DB2Utils {
 
-    private static final Log    LOG                  = Log.getLog(DB2Utils.class);
+    private static final Log LOG = Log.getLog(DB2Utils.class);
 
-    private static final String LINE_SEP             = ";\n";
+    private static final String LINE_SEP = ";\n";
 
     // TODO DF: many things in this class could probably be factorized or generic-field
 
     // DB2LOOK
-    private static final String CALL_DB2LK_GEN       = "CALL SYSPROC.DB2LK_GENERATE_DDL(?,?)";
-    private static final String CALL_DB2LK_CLEAN     = "CALL SYSPROC.DB2LK_CLEAN_TABLE(?)";
-    private static final String SEL_DB2LK            = "SELECT SQL_STMT FROM SYSTOOLS.DB2LOOK_INFO WHERE OP_TOKEN = ? ORDER BY OP_SEQUENCE WITH UR";
-    private static final String DB2LK_COMMAND        = "-e -x -xd -td %s -t %s";
+    private static final String CALL_DB2LK_GEN = "CALL SYSPROC.DB2LK_GENERATE_DDL(?,?)";
+    private static final String CALL_DB2LK_CLEAN = "CALL SYSPROC.DB2LK_CLEAN_TABLE(?)";
+    private static final String SEL_DB2LK = "SELECT SQL_STMT FROM SYSTOOLS.DB2LOOK_INFO WHERE OP_TOKEN = ? ORDER BY OP_SEQUENCE WITH UR";
+    private static final String DB2LK_COMMAND = "-e -x -xd -td %s -t %s";
 
     // EXPLAIN
-    private static final String CALL_INST_OBJ        = "CALL SYSPROC.SYSINSTALLOBJECTS(?,?,?,?)";
-    private static final int    CALL_INST_OBJ_BAD_RC = -438;
+    private static final String CALL_INST_OBJ = "CALL SYSPROC.SYSINSTALLOBJECTS(?,?,?,?)";
+    private static final int CALL_INST_OBJ_BAD_RC = -438;
     private static final String SEL_LIST_TS_EXPLAIN;
 
     static {
@@ -91,14 +91,14 @@ public class DB2Utils {
     private static final String CALL_ADMIN_CMD = "CALL SYSPROC.ADMIN_CMD('%s')";
 
     // DBCFG/DBMCFG/XMLStrings
-    private static final String SEL_DBCFG      = "SELECT * FROM SYSIBMADM.DBCFG ORDER BY NAME  WITH UR";
-    private static final String SEL_DBMCFG     = "SELECT * FROM SYSIBMADM.DBMCFG ORDER BY NAME WITH UR";
+    private static final String SEL_DBCFG = "SELECT * FROM SYSIBMADM.DBCFG ORDER BY NAME  WITH UR";
+    private static final String SEL_DBMCFG = "SELECT * FROM SYSIBMADM.DBMCFG ORDER BY NAME WITH UR";
     private static final String SEL_XMLSTRINGS = "SELECT * FROM SYSCAT.XMLSTRINGS ORDER BY STRINGID WITH UR";
 
     // APPLICATIONS
-    public static final String SEL_APP        = "SELECT * FROM SYSIBMADM.APPLICATIONS WITH UR";
+    public static final String SEL_APP = "SELECT * FROM SYSIBMADM.APPLICATIONS WITH UR";
 
-    private static final String GET_MSG        = "VALUES (SYSPROC.SQLERRM(?))";
+    private static final String GET_MSG = "VALUES (SYSPROC.SQLERRM(?))";
 
     // ------------------------
     // Admin Command
@@ -119,7 +119,6 @@ public class DB2Utils {
     // ------------------------
     // Generate DDL
     // ------------------------
-
     // DF: Use "Undocumented" SYSPROC.DB2LK_GENERATE_DDL stored proc
     // Ref to db2look :
     // http://pic.dhe.ibm.com/infocenter/db2luw/v10r5/topic/com.ibm.db2.luw.admin.cmd.doc/doc/r0002051.html
@@ -127,14 +126,12 @@ public class DB2Utils {
     // Options of db2look that do not seem to work: -dp . "-a" seems to work on v10.1+, "-l" seems OK in all versions
     //
     // TODO DF: Tables in SYSTOOLS tables must exist first
-    public static String generateDDLforTable(DBRProgressMonitor monitor, String statementDelimiter, DB2DataSource dataSource,
-        DB2Table db2Table, boolean includeViews) throws DBException
-    {
-        LOG.debug("Generate DDL for " + db2Table.getFullyQualifiedName(DBPEvaluationContext.DDL));
+    public static String generateDDLforTable(DBRProgressMonitor monitor, GenerateDDLParams params) throws DBException {
+        LOG.debug("Generate DDL for " + params.getDb2Table().getFullyQualifiedName(DBPEvaluationContext.DDL));
 
         // The DB2LK_GENERATE_DDL SP does not generate DDL for System Tables for some reason...
         // As a workaround, display a message to the end-user
-        if (db2Table.getSchema().isSystem()) {
+        if (params.getDb2Table().getSchema().isSystem()) {
             return DB2Messages.no_ddl_for_system_tables;
         }
 
@@ -145,7 +142,7 @@ public class DB2Utils {
         // to prevent the pairing from being evaluated word-by-word by the command line processor (CLP).
         // If you use only one set of double quotation marks (for example, "My Table"), all words are converted into uppercase,
         // and the db2look command looks for an uppercase table name (for example, MY TABLE).
-        if (db2Table.getFullyQualifiedName(DBPEvaluationContext.DDL).contains(" ")) {
+        if (params.getDb2Table().getFullyQualifiedName(DBPEvaluationContext.DDL).contains(" ")) {
             return DB2Messages.no_ddl_for_spaces_in_name;
         }
 
@@ -154,11 +151,12 @@ public class DB2Utils {
         int token;
         StringBuilder sb = new StringBuilder(2048);
         String command = String.format(
-            (includeViews ? "" : "-noview ") + DB2LK_COMMAND,
-            statementDelimiter,
-            db2Table.getFullyQualifiedName(DBPEvaluationContext.DDL));
-
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Generate DDL")) {
+                (params.isIncludeViews() ? "" : "-noview ") + DB2LK_COMMAND,
+                params.getStatementDelimiter(),
+                params.getDb2Table().getFullyQualifiedName(DBPEvaluationContext.DDL),
+                params.getStatementDelimiter(),
+                params.getDb2Table().getFullyQualifiedName(DBPEvaluationContext.DDL));
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, params.getDataSource(), "Generate DDL")) {
             LOG.debug("Calling DB2LK_GENERATE_DDL with command : " + command);
 
             try (JDBCCallableStatement stmtSP = session.prepareCall(CALL_DB2LK_GEN)) {
@@ -211,7 +209,7 @@ public class DB2Utils {
             return sb.toString();
 
         } catch (SQLException e) {
-            throw new DBException(e, dataSource);
+            throw new DBException(e, params.getDataSource());
         } finally {
             monitor.done();
         }
@@ -231,8 +229,7 @@ public class DB2Utils {
     // EXPLAIN
     // ------------------------
 
-    public static List<String> getListOfUsableTsForExplain(DBRProgressMonitor monitor, JDBCSession session) throws SQLException
-    {
+    public static List<String> getListOfUsableTsForExplain(DBRProgressMonitor monitor, JDBCSession session) throws SQLException {
         LOG.debug("Get List Of Usable Tablespaces For Explain Tables");
 
         List<String> listTablespaces = new ArrayList<>();
@@ -248,8 +245,7 @@ public class DB2Utils {
     }
 
     public static Boolean checkExplainTables(DBRProgressMonitor monitor, DB2DataSource dataSource, String explainTableSchemaName)
-        throws DBCException
-    {
+            throws DBCException {
         LOG.debug("Check EXPLAIN tables in '" + explainTableSchemaName + "'");
 
         monitor.beginTask("Check EXPLAIN tables", 1);
@@ -279,8 +275,7 @@ public class DB2Utils {
     }
 
     public static void createExplainTables(DBRProgressMonitor monitor, DB2DataSource dataSource, String explainTableSchemaName,
-        String tablespaceName) throws DBCException
-    {
+                                           String tablespaceName) throws DBCException {
         LOG.debug("Create EXPLAIN tables in " + explainTableSchemaName);
 
         monitor.beginTask("Create EXPLAIN Tables", 1);
@@ -307,8 +302,7 @@ public class DB2Utils {
     // DBA Data and Actions
     // ---------------------
 
-    public static List<DB2ServerApplication> readApplications(DBRProgressMonitor monitor, JDBCSession session) throws SQLException
-    {
+    public static List<DB2ServerApplication> readApplications(DBRProgressMonitor monitor, JDBCSession session) throws SQLException {
         LOG.debug("readApplications");
 
         List<DB2ServerApplication> listApplications = new ArrayList<>();
@@ -322,8 +316,7 @@ public class DB2Utils {
         return listApplications;
     }
 
-    public static List<DB2Parameter> readDBCfg(DBRProgressMonitor monitor, JDBCSession session) throws SQLException
-    {
+    public static List<DB2Parameter> readDBCfg(DBRProgressMonitor monitor, JDBCSession session) throws SQLException {
         LOG.debug("readDBCfg");
 
         List<DB2Parameter> listDBParameters = new ArrayList<>();
@@ -337,8 +330,7 @@ public class DB2Utils {
         return listDBParameters;
     }
 
-    public static List<DB2Parameter> readDBMCfg(DBRProgressMonitor monitor, JDBCSession session) throws SQLException
-    {
+    public static List<DB2Parameter> readDBMCfg(DBRProgressMonitor monitor, JDBCSession session) throws SQLException {
         LOG.debug("readDBMCfg");
 
         List<DB2Parameter> listDBMParameters = new ArrayList<>();
@@ -352,8 +344,7 @@ public class DB2Utils {
         return listDBMParameters;
     }
 
-    public static List<DB2XMLString> readXMLStrings(DBRProgressMonitor monitor, JDBCSession session) throws SQLException
-    {
+    public static List<DB2XMLString> readXMLStrings(DBRProgressMonitor monitor, JDBCSession session) throws SQLException {
         LOG.debug("readXMLStrings");
 
         List<DB2XMLString> listXMLStrings = new ArrayList<>();
@@ -372,8 +363,7 @@ public class DB2Utils {
     // ---------------
 
     public static DB2Tablespace findTablespaceById(DBRProgressMonitor monitor, DB2DataSource db2DataSource, Integer tablespaceId)
-        throws DBException
-    {
+            throws DBException {
         if (db2DataSource == null) {
             return null;
         }
@@ -386,8 +376,7 @@ public class DB2Utils {
     }
 
     public static DB2Bufferpool findBufferpoolById(DBRProgressMonitor monitor, DB2DataSource db2DataSource, Integer bufferpoolId)
-        throws DBException
-    {
+            throws DBException {
         if (db2DataSource == null) {
             return null;
         }
@@ -400,8 +389,7 @@ public class DB2Utils {
     }
 
     public static DB2TableColumn findColumnBySchemaNameAndTableNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,
-        String db2SchemaName, String db2TableName, String db2ColumnName) throws DBException
-    {
+                                                                           String db2SchemaName, String db2TableName, String db2ColumnName) throws DBException {
         DB2Schema db2Schema = db2DataSource.getSchema(monitor, db2SchemaName);
         if (db2Schema == null) {
             return null;
@@ -414,8 +402,7 @@ public class DB2Utils {
     }
 
     public static DB2Index findIndexBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,
-        String db2SchemaName, String db2IndexName) throws DBException
-    {
+                                                        String db2SchemaName, String db2IndexName) throws DBException {
         DB2Schema db2Schema = db2DataSource.getSchema(monitor, db2SchemaName);
         if (db2Schema == null) {
             return null;
@@ -424,8 +411,7 @@ public class DB2Utils {
     }
 
     public static DB2Module findModuleBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,
-        String db2SchemaName, String db2ModuleName) throws DBException
-    {
+                                                          String db2SchemaName, String db2ModuleName) throws DBException {
         DB2Schema db2Schema = db2DataSource.getSchema(monitor, db2SchemaName);
         if (db2Schema == null) {
             return null;
@@ -434,8 +420,7 @@ public class DB2Utils {
     }
 
     public static DB2Nickname findNicknameBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,
-        String db2SchemaName, String db2NicknameName) throws DBException
-    {
+                                                              String db2SchemaName, String db2NicknameName) throws DBException {
         DB2Schema db2Schema = db2DataSource.getSchema(monitor, db2SchemaName);
         if (db2Schema == null) {
             return null;
@@ -444,8 +429,7 @@ public class DB2Utils {
     }
 
     public static DB2MaterializedQueryTable findMaterializedQueryTableBySchemaNameAndName(DBRProgressMonitor monitor,
-        DB2DataSource db2DataSource, String db2SchemaName, String db2NicknameName) throws DBException
-    {
+                                                                                          DB2DataSource db2DataSource, String db2SchemaName, String db2NicknameName) throws DBException {
         DB2Schema db2Schema = db2DataSource.getSchema(monitor, db2SchemaName);
         if (db2Schema == null) {
             return null;
@@ -454,8 +438,7 @@ public class DB2Utils {
     }
 
     public static DB2Package findPackageBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,
-        String db2SchemaName, String db2PackageName) throws DBException
-    {
+                                                            String db2SchemaName, String db2PackageName) throws DBException {
         DB2Schema db2Schema = db2DataSource.getSchema(monitor, db2SchemaName);
         if (db2Schema == null) {
             return null;
@@ -464,8 +447,7 @@ public class DB2Utils {
     }
 
     public static DB2Routine findMethodBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,
-        String db2SchemaName, String db2MethodName) throws DBException
-    {
+                                                           String db2SchemaName, String db2MethodName) throws DBException {
         DB2Schema db2Schema = db2DataSource.getSchema(monitor, db2SchemaName);
         if (db2Schema == null) {
             return null;
@@ -474,8 +456,7 @@ public class DB2Utils {
     }
 
     public static DB2Routine findProcedureBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,
-        String db2SchemaName, String db2ProcedureName) throws DBException
-    {
+                                                              String db2SchemaName, String db2ProcedureName) throws DBException {
         DB2Schema db2Schema = db2DataSource.getSchema(monitor, db2SchemaName);
         if (db2Schema == null) {
             return null;
@@ -484,8 +465,7 @@ public class DB2Utils {
     }
 
     public static DB2Sequence findSequenceBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,
-        String db2SchemaName, String db2SequenceName) throws DBException
-    {
+                                                              String db2SchemaName, String db2SequenceName) throws DBException {
         DB2Schema db2Schema = db2DataSource.getSchema(monitor, db2SchemaName);
         if (db2Schema == null) {
             return null;
@@ -494,8 +474,7 @@ public class DB2Utils {
     }
 
     public static DB2Table findTableBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,
-        String db2SchemaName, String db2TableName) throws DBException
-    {
+                                                        String db2SchemaName, String db2TableName) throws DBException {
         DB2Schema db2Schema = db2DataSource.getSchema(monitor, db2SchemaName);
         if (db2Schema == null) {
             return null;
@@ -504,8 +483,7 @@ public class DB2Utils {
     }
 
     public static DB2Trigger findTriggerBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,
-        String db2SchemaName, String db2TriggerName) throws DBException
-    {
+                                                            String db2SchemaName, String db2TriggerName) throws DBException {
         DB2Schema db2Schema = db2DataSource.getSchema(monitor, db2SchemaName);
         if (db2Schema == null) {
             return null;
@@ -514,8 +492,7 @@ public class DB2Utils {
     }
 
     public static DB2Routine findUDFBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,
-        String db2SchemaName, String db2FunctionName) throws DBException
-    {
+                                                        String db2SchemaName, String db2FunctionName) throws DBException {
         DB2Schema db2Schema = db2DataSource.getSchema(monitor, db2SchemaName);
         if (db2Schema == null) {
             return null;
@@ -524,8 +501,7 @@ public class DB2Utils {
     }
 
     public static DB2View findViewBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource, String db2SchemaName,
-        String db2ViewName) throws DBException
-    {
+                                                      String db2ViewName) throws DBException {
         DB2Schema db2Schema = db2DataSource.getSchema(monitor, db2SchemaName);
         if (db2Schema == null) {
             return null;
@@ -534,8 +510,7 @@ public class DB2Utils {
     }
 
     public static DB2MaterializedQueryTable findMQTBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,
-        String db2SchemaName, String db2MQTName) throws DBException
-    {
+                                                                       String db2SchemaName, String db2MQTName) throws DBException {
         DB2Schema db2Schema = db2DataSource.getSchema(monitor, db2SchemaName);
         if (db2Schema == null) {
             return null;
@@ -544,8 +519,7 @@ public class DB2Utils {
     }
 
     public static DB2XMLSchema findXMLSchemaByById(DBRProgressMonitor monitor, DB2DataSource db2DataSource, Long xmlSchemaId)
-        throws DBException
-    {
+            throws DBException {
         if (db2DataSource == null) {
             return null;
         }
@@ -560,8 +534,7 @@ public class DB2Utils {
         return null;
     }
 
-    public static String formatSQLProcedureDDL(DB2DataSource db2DataSource, String rawText)
-    {
+    public static String formatSQLProcedureDDL(DB2DataSource db2DataSource, String rawText) {
 
         // First let the defaut SQL formater operate
         String result = SQLFormatUtils.formatSQL(db2DataSource, rawText);
@@ -608,7 +581,7 @@ public class DB2Utils {
 
         return result;
     }
-    
+
     /**
      * Retrieves the server variant information from the DB2 SQLCA.
      */
@@ -617,17 +590,16 @@ public class DB2Utils {
         if (sqlca == null) {
             return 0;
         }
-        
+
         char[] sqlwarn = sqlca.getSqlWarn();
         if (sqlwarn == null || sqlwarn.length < 8) {
             return 0;
         }
-        
+
         return sqlwarn[7];
     }
 
-    private DB2Utils()
-    {
+    private DB2Utils() {
         // Pure utility class, no instanciation allowed
     }
 
