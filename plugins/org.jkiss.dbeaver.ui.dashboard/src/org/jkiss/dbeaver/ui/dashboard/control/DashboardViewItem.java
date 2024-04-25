@@ -33,9 +33,11 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardMapQuery;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardQuery;
+import org.jkiss.dbeaver.model.dashboard.DashboardIcons;
 import org.jkiss.dbeaver.model.dashboard.data.DashboardDataset;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -90,10 +92,20 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
             titleComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             titleComposite.setBackground(defBG);
             titleComposite.setForeground(defFG);
-            GridLayout gridLayout = new GridLayout(2, false);
+            GridLayout gridLayout = new GridLayout(3, false);
             gridLayout.marginHeight = 3;
             gridLayout.marginWidth = 3;
             titleComposite.setLayout(gridLayout);
+
+            DBPImage icon = DashboardIcons.DASHBOARD;
+            DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
+            if (getItemDescriptor().getDashboardProvider().isDatabaseRequired() && dataSourceContainer != null) {
+                icon = dataSourceContainer.getDriver().getIcon();
+            } else {
+                icon = getItemDescriptor().getDashboardProvider().getIcon();
+            }
+            Label titleIcon = new Label(titleComposite, SWT.NONE);
+            titleIcon.setImage(DBeaverIcons.getImage(icon));
 
             titleLabel = new Label(titleComposite, SWT.NONE);
             titleLabel.setFont(parent.getTitleFont());

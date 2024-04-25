@@ -63,7 +63,7 @@ public class DashboardRendererBrowser extends DashboardRendererAbstract {
                 }
             }
         });
-        UIUtils.createToolItem(toolBar, "Open in external browser", UIIcon.BROWSER, new SelectionAdapter() {
+        UIUtils.createToolItem(toolBar, "Open in external browser", UIIcon.LINK, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 DashboardItemConfiguration dashboard = dashboardConfig.getDashboardDescriptor();

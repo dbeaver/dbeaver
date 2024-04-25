@@ -182,14 +182,14 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
         titleLabel.setText("Customize your dashboard");
         String addCommandName = ActionUtils.findCommandName(DashboardUIConstants.CMD_ADD_DASHBOARD);
         UIUtils.createLink(intro,
-            "<a>" + addCommandName + "</a> to this dashboard by drag-n-drop or double-click from the <a>right panel</a>.\n" +
+            "<a>" + addCommandName + "</a> to this dashboard by drag-n-drop or double-click from the <a>catalog</a> or another dashboard.\n" +
                 "You can also create new charts in the <a>Configuration</a> dialog",
             new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     if (CommonUtils.equalObjects(addCommandName, e.text)) {
                         ActionUtils.runCommand(DashboardUIConstants.CMD_ADD_DASHBOARD, site);
-                    } else if (CommonUtils.equalObjects("right panel", e.text)) {
+                    } else if (CommonUtils.equalObjects("catalog", e.text)) {
                         viewContainer.showChartCatalog();
                     } else {
                         new DashboardManagerDialog(UIUtils.getActiveWorkbenchShell()).open();
@@ -310,6 +310,12 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
         DashboardViewItem item = (DashboardViewItem) container;
         item.dispose();
         computeGridSize();
+
+        if (this.items.isEmpty()) {
+            createIntroItem();
+            viewContainer.showChartCatalog();
+        }
+
         layout(true, true);
         viewContainer.getViewConfiguration().removeItem(item.getItemDescriptor().getId());
         viewContainer.saveChanges();
