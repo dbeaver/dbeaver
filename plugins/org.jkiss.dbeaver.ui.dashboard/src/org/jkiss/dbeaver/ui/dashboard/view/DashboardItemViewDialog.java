@@ -31,12 +31,12 @@ import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfigurationList;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
-import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 
 /**
  * Dashboard view dialog
  */
-public class DashboardItemViewDialog extends BaseDialog {
+public class DashboardItemViewDialog extends AbstractPopupPanel {
 
     private static final String DIALOG_ID = "DBeaver.DashboardItemViewDialog";//$NON-NLS-1$
 
@@ -45,7 +45,7 @@ public class DashboardItemViewDialog extends BaseDialog {
     private final DashboardViewItem sourceItem;
 
     public DashboardItemViewDialog(DashboardContainer parentPart, DashboardConfigurationList configuration, DashboardViewItem sourceItem) {
-        super(parentPart.getWorkbenchSite().getShell(), UIDashboardMessages.dialog_dashboard_item_view_title, null);
+        super(parentPart.getWorkbenchSite().getShell(), UIDashboardMessages.dialog_dashboard_item_view_title);
 
         this.parentPart = parentPart;
         this.configuration = configuration;
@@ -78,6 +78,10 @@ public class DashboardItemViewDialog extends BaseDialog {
             (DashboardListControl) dashboardListViewer.getDefaultGroup(),
             sourceItem.getItemDescriptor());
         targetItem.moveViewFrom(sourceItem, false);
+
+        closeOnFocusLost(
+            dashboardListViewer.getControl(),
+            chartGroup);
 
         return chartGroup;
     }

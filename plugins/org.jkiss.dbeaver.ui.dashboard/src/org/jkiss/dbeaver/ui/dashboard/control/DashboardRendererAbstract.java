@@ -49,7 +49,7 @@ public abstract class DashboardRendererAbstract implements DashboardItemRenderer
                 UIUtils.createToolBarSeparator(toolBar, SWT.VERTICAL);
             }
 
-            UIUtils.createToolItem(toolBar, "View", UIIcon.OPEN_EXTERNAL, new SelectionAdapter() {
+            UIUtils.createToolItem(toolBar, "View in popup", UIIcon.FIT_WINDOW, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     HandlerDashboardViewItem.openDashboardViewDialog(itemContainer);
