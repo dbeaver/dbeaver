@@ -331,9 +331,10 @@ dropColumnDefaultClause: DROP DEFAULT;
 dropColumnDefinition: DROP (COLUMN)? columnName dropBehaviour;
 addTableConstraintDefinition: ADD tableConstraintDefinition;
 dropTableConstraintDefinition: DROP CONSTRAINT constraintName dropBehaviour;
-dropTableStatement: DROP TABLE tableName dropBehaviour;
+dropTableStatement: DROP TABLE ifExistsSpec? (tableName (Comma tableName)*)? dropBehaviour?;
 dropViewStatement: DROP VIEW tableName dropBehaviour;
 dropCharacterSetStatement: DROP CHARACTER SET characterSetName;
+ifExistsSpec: IF EXISTS ;
 
 // data statements
 selectStatementSingleRow: SELECT (setQuantifier)? selectList INTO selectTargetList tableExpression;

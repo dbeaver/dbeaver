@@ -1260,6 +1260,22 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             return null;
         }
 
+        @Nullable
+        @Override
+        public Object visitTableStatementDrop(@NotNull SQLQueryTableDropModel dropStatement, OutlineQueryNode node) {
+            String tableNames = dropStatement.getTables().isEmpty() ? SQLConstants.QUESTION
+                : dropStatement.getTables().stream().map(t -> t.getName().toIdentifierString()).collect(Collectors.joining(", "));
+            String nodeName =  "DROP TABLE" + (dropStatement.getIfExists() ? " IF EXISTS " : " ") + tableNames;
+            this.makeNode(
+                node,
+                dropStatement,
+                nodeName,
+                UIIcon.REMOVE,
+                dropStatement.getTables().toArray(SQLQueryRowsTableDataModel[]::new)
+            );
+            return null;
+        }
+
         private void makeNode(
             @NotNull OutlineQueryNode parent,
             @NotNull SQLQueryNodeModel model,

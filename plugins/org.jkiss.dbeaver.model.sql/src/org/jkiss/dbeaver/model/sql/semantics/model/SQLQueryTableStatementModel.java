@@ -28,7 +28,7 @@ public abstract class SQLQueryTableStatementModel extends SQLQueryModelContent {
     }
 
     @Override
-    final void applyContext(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+    protected final void applyContext(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         this.givenContext = context;
         if (this.tableModel != null) {
             this.resultContext = this.tableModel.propagateContext(context, statistics);

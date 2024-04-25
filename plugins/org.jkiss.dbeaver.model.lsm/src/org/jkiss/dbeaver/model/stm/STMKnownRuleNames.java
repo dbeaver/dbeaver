@@ -297,6 +297,7 @@ public class STMKnownRuleNames {
     public static final String dropTableStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dropTableStatement];
     public static final String dropViewStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dropViewStatement];
     public static final String dropCharacterSetStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dropCharacterSetStatement];
+    public static final String ifExistsSpec = SQLStandardParser.ruleNames[SQLStandardParser.RULE_ifExistsSpec];
 
     // data statements
     public static final String selectStatementSingleRow = SQLStandardParser.ruleNames[SQLStandardParser.RULE_selectStatementSingleRow];

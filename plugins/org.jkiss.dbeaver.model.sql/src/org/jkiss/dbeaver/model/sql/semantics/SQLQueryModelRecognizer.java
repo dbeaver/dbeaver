@@ -82,29 +82,39 @@ public class SQLQueryModelRecognizer {
 
         if (tree != null) {
             this.queryDataContext = this.prepareDataContext(tree);
-
-            STMTreeNode dataStmt = tree.findChildOfName(STMKnownRuleNames.directSqlDataStatement);
-            if (dataStmt != null) { // TODO collect CTE for insert-update-delete as well as recursive CTE
-                STMTreeNode stmtBodyNode = dataStmt.getStmChild(dataStmt.getChildCount() - 1);
-                SQLQueryModelContent contents = switch (stmtBodyNode.getNodeKindId()) {
-                    case SQLStandardParser.RULE_deleteStatement -> this.collectDeleteStatement(stmtBodyNode);
-                    case SQLStandardParser.RULE_insertStatement -> this.collectInsertStatement(stmtBodyNode);
-                    case SQLStandardParser.RULE_updateStatement -> this.collectUpdateStatement(stmtBodyNode);
-                    case SQLStandardParser.RULE_selectStatement -> this.collectQueryExpression(tree);
-                    default -> this.collectQueryExpression(tree);
-                };
-
-                if (contents != null) {
-                    SQLQueryModel model = new SQLQueryModel(tree, contents, symbolEntries);
-
-                    model.propagateContext(this.queryDataContext, new RecognitionContext(monitor));
-
-                    // var tt = new DebugGraphBuilder();
-                    // tt.traverseObjs(model);
-                    // tt.graph.saveToFile("c:/temp/outx.dgml");
-
-                    return model;
+            STMTreeNode queryNode = tree.getStmChild(0);
+            SQLQueryModelContent contents = switch (queryNode.getNodeKindId()) {
+                case SQLStandardParser.RULE_directSqlDataStatement -> {
+                    STMTreeNode stmtBodyNode = queryNode.getStmChild(queryNode.getChildCount() - 1);
+                    // TODO collect CTE for insert-update-delete as well as recursive CTE
+                    yield switch (stmtBodyNode.getNodeKindId()) {
+                        case SQLStandardParser.RULE_deleteStatement -> this.collectDeleteStatement(stmtBodyNode);
+                        case SQLStandardParser.RULE_insertStatement -> this.collectInsertStatement(stmtBodyNode);
+                        case SQLStandardParser.RULE_updateStatement -> this.collectUpdateStatement(stmtBodyNode);
+                        case SQLStandardParser.RULE_selectStatement -> this.collectQueryExpression(tree);
+                        default -> this.collectQueryExpression(tree);
+                    };
                 }
+                case SQLStandardParser.RULE_sqlSchemaStatement -> {
+                    STMTreeNode stmtBodyNode = queryNode.getStmChild(0).getStmChild(0);
+                    yield switch (stmtBodyNode.getNodeKindId()) {
+                        case SQLStandardParser.RULE_dropTableStatement -> this.collectDropTableStatement(stmtBodyNode);
+                        default -> null;
+                    };
+                }
+                default -> null;
+            };
+
+            if (contents != null) {
+                SQLQueryModel model = new SQLQueryModel(tree, contents, symbolEntries);
+
+                model.propagateContext(this.queryDataContext, new RecognitionContext(monitor));
+
+                // var tt = new DebugGraphBuilder();
+                // tt.traverseObjs(model);
+                // tt.graph.saveToFile("c:/temp/outx.dgml");
+
+                return model;
             }
 
             // TODO log query model collection error
@@ -340,6 +350,19 @@ public class SQLQueryModelRecognizer {
         SQLQueryValueExpression whereClauseExpr = whereClauseNode == null ? null : this.collectValueExpression(whereClauseNode);
         
         return new SQLQueryTableDeleteModel(node, tableModel, alias, whereClauseExpr);
+    }
+
+    @NotNull
+    private SQLQueryModelContent collectDropTableStatement(@NotNull STMTreeNode node) {
+        List<SQLQueryRowsTableDataModel> tables = new ArrayList<>(node.getChildCount());
+        for (int i = 0; i < node.getChildCount(); i++) {
+            STMTreeNode tableNameNode = node.getStmChild(i);
+            if (tableNameNode.getNodeName().equals(STMKnownRuleNames.tableName)) {
+                tables.add(this.collectTableReference(tableNameNode));
+            }
+        }
+        boolean ifExists = node.findChildOfName(STMKnownRuleNames.ifExistsSpec) != null; // "IF EXISTS" presented
+        return new SQLQueryTableDropModel(node, tables, ifExists);
     }
 
     @NotNull

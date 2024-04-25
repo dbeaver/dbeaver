@@ -239,6 +239,7 @@ GLOBAL: G L O B A L ;
 GROUP: G R O U P ;
 HAVING: H A V I N G ;
 HOUR: H O U R ;
+IF: I F ;
 IMMEDIATE: I M M E D I A T E ;
 IN: I N ;
 INDICATOR: I N D I C A T O R ;

@@ -32,5 +32,5 @@ public abstract class SQLQueryModelContent extends SQLQueryNodeModel {
         super(interval, syntaxNode, subnodes);
     }
 
-    abstract void applyContext(@NotNull SQLQueryDataContext dataContext, @NotNull SQLQueryRecognitionContext recognitionContext);
+    protected abstract void applyContext(@NotNull SQLQueryDataContext dataContext, @NotNull SQLQueryRecognitionContext recognitionContext);
 }

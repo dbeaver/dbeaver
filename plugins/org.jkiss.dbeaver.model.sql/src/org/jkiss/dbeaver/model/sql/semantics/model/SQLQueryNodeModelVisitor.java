@@ -192,4 +192,7 @@ public interface SQLQueryNodeModelVisitor<T, R> {
      */
     @Nullable
     R visitTableStatementUpdateSetClause(@NotNull SQLQueryTableUpdateSetClauseModel setClause, T arg);
+
+    @Nullable
+    R visitTableStatementDrop(@NotNull SQLQueryTableDropModel dropStatement, T arg);
 }

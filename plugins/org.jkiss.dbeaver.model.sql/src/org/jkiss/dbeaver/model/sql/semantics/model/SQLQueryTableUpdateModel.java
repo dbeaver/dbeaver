@@ -85,7 +85,7 @@ public class SQLQueryTableUpdateModel extends SQLQueryModelContent {
     }
 
     @Override
-    void applyContext(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+    protected void applyContext(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         this.givenContext = context;
         SQLQueryDataContext targetContext;
         if (this.targetRows != null) {

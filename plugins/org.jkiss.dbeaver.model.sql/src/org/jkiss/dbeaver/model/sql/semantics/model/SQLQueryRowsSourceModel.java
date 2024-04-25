@@ -62,7 +62,7 @@ public abstract class SQLQueryRowsSourceModel extends SQLQueryModelContent {
     }
     
     @Override
-    void applyContext(@NotNull SQLQueryDataContext dataContext, @NotNull SQLQueryRecognitionContext recognitionContext) {
+    protected void applyContext(@NotNull SQLQueryDataContext dataContext, @NotNull SQLQueryRecognitionContext recognitionContext) {
         this.propagateContext(dataContext, recognitionContext);
     }
 
