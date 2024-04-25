@@ -77,10 +77,10 @@ public class DBeaverActivator extends AbstractUIPlugin {
         instance = this;
 
         Bundle bundle = getBundle();
+        resetSettingsStartupActions(Platform.getInstanceLocation());
 
         ModelPreferences.setMainBundle(bundle);
         preferences = new BundlePreferenceStore(bundle);
-
         DBRFeatureRegistry.getInstance().registerFeatures(CoreFeatures.class);
 
         try {
@@ -108,7 +108,7 @@ public class DBeaverActivator extends AbstractUIPlugin {
         } catch (Throwable e) {
             getLog().error("Unable to inject SVG file format support", e);
         }
-        resetSettingsStartupActions(Platform.getInstanceLocation());
+       
     }
 
     private void injectProxyPeer() throws NoSuchFieldException, IllegalAccessException {
