@@ -979,7 +979,6 @@ public class ResultSetViewer extends Viewer
                     VerticalButton panelButton = new VerticalButton(panelSwitchFolder, SWT.RIGHT | SWT.CHECK);
                     GridData gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
                     gd.verticalIndent = 2;
-                    gd.horizontalIndent = 1;
                     panelButton.setLayoutData(gd);
                     panelButton.setData(panel);
                     panelButton.setImage(DBeaverIcons.getImage(panel.getIcon()));

@@ -198,6 +198,9 @@ public class DiagramPart extends PropertyAwarePart {
      * to original
      */
     public void resetArrangement() {
+        if (getEditor() == null) {
+            return;
+        }
         RearrangeDiagramService diagramService = new RearrangeDiagramService(this);
         LoadingJob.createService(
             diagramService,
