@@ -69,6 +69,7 @@ import org.jkiss.dbeaver.erd.ui.export.ERDExportFormatRegistry;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.model.*;
+import org.jkiss.dbeaver.erd.ui.model.ERDContainerDecorated.NodeVisualInfo;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationDescriptor;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationRegistry;
 import org.jkiss.dbeaver.erd.ui.part.*;
@@ -697,14 +698,34 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         return isLoaded;
     }
 
-    public void refreshDiagram(boolean force, boolean refreshMetadata) {
+    /**
+     * The method designed to refresh diagram with metadata request  
+     *
+     * @param rearrange - re-arrange layout
+     * @param reload - load diagram
+     * @param refreshMetadata - reload metadata  
+     */
+    public void refreshDiagram(boolean rearrange, boolean reload, boolean refreshMetadata) {
         DiagramPart diagramPart = getDiagramPart();
-        if (diagramPart != null) {
-            if (force) {
-                loadDiagram(refreshMetadata);
-            }
+        if (diagramPart == null) {
+            return;
+        }
+        if (reload) {
+            loadDiagram(refreshMetadata);
+        }
+        if (rearrange) {
             diagramPart.resetArrangement();
         }
+    }
+
+    /**
+     * The method designed to refresh diagram without metadata request  
+     *
+     * @param rearrange - re-arrange layout
+     * @param reload - load diagram 
+     */
+    public void refreshDiagram(boolean rearrange, boolean reload) {
+        refreshDiagram(rearrange, reload, false);
     }
 
     @Override
@@ -1154,7 +1175,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         @Override
         public void run() {
             setDiagramRouter(router);
-            refreshDiagram(true, false);
+            refreshDiagram(false, true);
         }
     }
 
@@ -1427,7 +1448,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         return entityDiagram;
     }
 
-    private boolean restoreVisualSettings(DiagramPart oldDiagram, EntityDiagram newDiagram) {
+    protected boolean restoreVisualSettings(DiagramPart oldDiagram, EntityDiagram newDiagram) {
         boolean hasChanges = false;
         // Collect visual settings from old diagram and apply them to the new one
         for (ERDEntity newEntity : newDiagram.getEntities()) {
@@ -1448,7 +1469,15 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 hasChanges = true;
             }
         }
-        return hasChanges;
+        boolean hasLayout = false;
+        for (ERDEntity entity : newDiagram.getEntities()) {
+            NodeVisualInfo visualInfo = newDiagram.getVisualInfo(entity.getObject());
+            if (visualInfo != null && visualInfo.initBounds != null && visualInfo.initBounds.x != 0 && visualInfo.initBounds.y != 0) {
+                hasLayout = true;
+                break;
+            }
+        }
+        return hasChanges && hasLayout;
     }
 
     private class Searcher implements ISearchExecutor {
@@ -1595,15 +1624,26 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         }
 
         @Override
-        public void completeLoading(EntityDiagram result) {
-            super.completeLoading(result);
+        public void completeLoading(EntityDiagram entityDiagram) {
+            super.completeLoading(entityDiagram);
             super.visualizeLoading();
-            if (result != null && !result.getEntities().isEmpty()) {
+            if (entityDiagram != null && !entityDiagram.getEntities().isEmpty()) {
                 setErrorMessage(null);
+            } else {
+                List<String> errorMessages = entityDiagram.getErrorMessages();
+                if (!errorMessages.isEmpty()) {
+                    List<Status> messageStatuses = new ArrayList<>(errorMessages.size());
+                    for (String error : errorMessages) {
+                        messageStatuses.add(new Status(Status.ERROR, ERDUIActivator.PLUGIN_ID, error));
+                    }
+                    MultiStatus status = new MultiStatus(ERDUIActivator.PLUGIN_ID, 0, messageStatuses.toArray(new IStatus[0]), null, null);
+                    DBWorkbench.getPlatformUI().showError(
+                        "VQB Diagram loading errors",
+                        "Error(s) occurred during diagram loading."
+                        + " If these errors are recoverable then fix errors and then refresh/reopen diagram",
+                        status);
+                }
             }
-            getGraphicalViewer().setContents(result);
-            getDiagramPart().resetArrangement();
-            finishLoading();
         }
 
         protected abstract void finishLoading();
