@@ -20,7 +20,7 @@ import org.jkiss.code.NotNull;
 
 import java.util.List;
 
-public class WSUserCloseSessionsEvent extends WSAbstractEvent{
+public class WSUserCloseSessionsEvent extends WSAbstractEvent {
     @NotNull
     private final List<String> sessionIds;
 
