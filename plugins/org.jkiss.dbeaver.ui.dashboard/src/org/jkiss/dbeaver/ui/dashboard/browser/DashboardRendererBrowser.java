@@ -23,6 +23,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.ToolBar;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.dashboard.data.DashboardDataset;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
 import org.jkiss.dbeaver.ui.ShellUtils;
@@ -49,9 +50,7 @@ public class DashboardRendererBrowser extends DashboardRendererAbstract {
     }
 
     @Override
-    public void fillDashboardToolbar(DashboardItemContainer itemContainer, ToolBar toolBar, Composite chartComposite, DashboardItemViewSettings dashboardConfig) {
-        super.fillDashboardToolbar(itemContainer, toolBar, chartComposite, dashboardConfig);
-
+    public void fillDashboardToolbar(@NotNull DashboardItemContainer itemContainer, @NotNull ToolBar toolBar, @NotNull Composite chartComposite, @NotNull DashboardItemViewSettings dashboardConfig) {
         UIUtils.createToolItem(toolBar, "Refresh", UIIcon.REFRESH, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -80,30 +79,32 @@ public class DashboardRendererBrowser extends DashboardRendererAbstract {
                 }
             }
         });
+
+        super.fillDashboardToolbar(itemContainer, toolBar, chartComposite, dashboardConfig);
     }
 
     @Override
-    public void updateDashboardData(DashboardItemContainer container, Date lastUpdateTime, DashboardDataset dataset) {
+    public void updateDashboardData(@NotNull DashboardItemContainer container, @Nullable Date lastUpdateTime, @NotNull DashboardDataset dataset) {
 
     }
 
     @Override
-    public void resetDashboardData(DashboardItemContainer dashboardItem, Date lastUpdateTime) {
+    public void resetDashboardData(@NotNull DashboardItemContainer dashboardItem, Date lastUpdateTime) {
 
     }
 
     @Override
-    public void moveDashboardView(DashboardViewItem toItem, DashboardViewItem fromItem, boolean clearOriginal) {
+    public void moveDashboardView(@NotNull DashboardViewItem toItem, @NotNull DashboardViewItem fromItem, boolean clearOriginal) {
         // Do nothing
     }
 
     @Override
-    public void updateDashboardView(DashboardViewItem dashboardItem) {
+    public void updateDashboardView(@NotNull DashboardViewItem dashboardItem) {
 
     }
 
     @Override
-    public void disposeDashboard(DashboardItemContainer container) {
+    public void disposeDashboard(@NotNull DashboardItemContainer container) {
         // nothing special
     }
 
