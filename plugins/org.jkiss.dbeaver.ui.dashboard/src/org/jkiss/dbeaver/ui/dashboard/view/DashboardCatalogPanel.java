@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.model.dashboard.DBDashboardFolder;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardProviderDescriptor;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistry;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistryListener;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -63,9 +64,10 @@ import java.util.function.Function;
 /**
  * Dashboard add dialog
  */
-public abstract class DashboardCatalogPanel extends Composite {
+public abstract class DashboardCatalogPanel extends Composite implements DashboardRegistryListener {
 
     private static final Log log = Log.getLog(DashboardCatalogPanel.class);
+    private final TreeViewer dashboardTable;
 
     private DashboardItemConfiguration selectedDashboard;
 
@@ -94,7 +96,7 @@ public abstract class DashboardCatalogPanel extends Composite {
         if (!isFlat) {
             style |= SWT.BORDER;
         }
-        TreeViewer dashboardTable = new TreeViewer(this, style);
+        dashboardTable = new TreeViewer(this, style);
 
         dashboardTable.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
         Tree table = dashboardTable.getTree();
@@ -220,11 +222,7 @@ public abstract class DashboardCatalogPanel extends Composite {
             }
         });
 
-        List<DashboardProviderDescriptor> dbProviders = DashboardRegistry.getInstance().getDashboardProviders(
-            dataSourceContainer);
-
-        dashboardTable.setInput(dbProviders);
-        dashboardTable.expandToLevel(2);
+        refreshInput();
 
         if (isFlat) {
             addDragAndDropSupport(table);
@@ -232,6 +230,18 @@ public abstract class DashboardCatalogPanel extends Composite {
 
 
         UIUtils.asyncExec(() -> UIUtils.packColumns(table, true, null));
+
+        // Add listeners
+        DashboardRegistry.getInstance().addListener(this);
+        addDisposeListener(e -> DashboardRegistry.getInstance().removeListener(this));
+    }
+
+    private void refreshInput() {
+        List<DashboardProviderDescriptor> dbProviders = DashboardRegistry.getInstance().getDashboardProviders(
+            dataSourceContainer);
+
+        dashboardTable.setInput(dbProviders);
+        dashboardTable.expandToLevel(2);
     }
 
     private static void addDragAndDropSupport(Tree table) {
@@ -301,4 +311,13 @@ public abstract class DashboardCatalogPanel extends Composite {
 
     protected abstract void handleChartSelectedFinal();
 
+    @Override
+    public void handleItemCreate(@NotNull DashboardItemConfiguration item) {
+        refreshInput();
+    }
+
+    @Override
+    public void handleItemDelete(@NotNull DashboardItemConfiguration item) {
+        refreshInput();
+    }
 }
