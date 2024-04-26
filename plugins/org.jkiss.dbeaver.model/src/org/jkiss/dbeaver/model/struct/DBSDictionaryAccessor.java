@@ -19,12 +19,16 @@ package org.jkiss.dbeaver.model.struct;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
 
 
 public interface DBSDictionaryAccessor extends AutoCloseable {
-    
+
+    @NotNull
+    DBRProgressMonitor getProgressMonitor();
+
     boolean isKeyComparable();
 
     @NotNull

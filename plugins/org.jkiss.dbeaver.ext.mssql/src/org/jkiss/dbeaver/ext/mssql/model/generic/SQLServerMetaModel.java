@@ -43,7 +43,9 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -58,6 +60,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     private final boolean sqlServer;
     private final Map<String, Boolean> sysViewsCache = new HashMap<>();
+    private boolean hasMetaDataProcedureView;
 
     public SQLServerMetaModel() {
         this(true);
