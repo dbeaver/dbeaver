@@ -16,27 +16,28 @@
  */
 package org.jkiss.dbeaver.model.websocket.event;
 
-import org.jkiss.dbeaver.model.app.DBPProject;
 
-public class WSTaskExecuteEvent extends WSAbstractEvent {
+import org.jkiss.code.NotNull;
+
+public class WSTaskFinishedEvent extends WSAbstractEvent {
+    @NotNull
     private final String taskId;
-    private final DBPProject project;
+    @NotNull
+    private final String projectId;
 
-    public WSTaskExecuteEvent(String taskId, DBPProject project) {
-        super(WSEventType.TASK_EXECUTED);
+    public WSTaskFinishedEvent(@NotNull String taskId, @NotNull String projectId) {
+        super(WSEventType.TASK_FINISHED);
         this.taskId = taskId;
-        this.project = project;
+        this.projectId = projectId;
     }
 
+    @NotNull
     public String getTaskId() {
         return taskId;
     }
 
-    public DBPProject getProject() {
-        return project;
-    }
-
-    public String getProjectName() {
-        return project.getName();
+    @NotNull
+    public String getProjectId() {
+        return projectId;
     }
 }
