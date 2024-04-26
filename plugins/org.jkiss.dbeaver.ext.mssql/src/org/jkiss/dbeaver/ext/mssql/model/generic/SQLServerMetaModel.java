@@ -43,9 +43,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -60,7 +58,6 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     private final boolean sqlServer;
     private final Map<String, Boolean> sysViewsCache = new HashMap<>();
-    private boolean hasMetaDataProcedureView;
 
     public SQLServerMetaModel() {
         this(true);
@@ -105,7 +102,6 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
             GenericDataSource dataSource = container.getDataSource();
             String dbName = DBUtils.getQuotedIdentifier(container.getParentObject());
             try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Sybase procedure list")) {
-                hasMetaDataProcedureView = hasMetaDataProcedureView(session);
                 // P – Transact-SQL or SQLJ procedure
                 // SF – scalar or user-defined functions - from SAP Adaptive Server version 16
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -171,14 +167,15 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         }
         if (getServerType() == ServerType.SYBASE) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read routine definition")) {
-                if (hasMetaDataProcedureView) {
+                if (dataSource instanceof SQLServerGenericDataSource sqlDataSource &&
+                    sqlDataSource.hasMetaDataProcedureView()) {
                     try (JDBCPreparedStatement dbStat = session.prepareStatement(
                         "SELECT source, proc_defn " +
-                        "FROM SYS.SYSPROCEDURE s\n" +
-                        "LEFT JOIN " +
-                        DBUtils.getQuotedIdentifier(sourceObject.getCatalog()) + ".dbo.sysobjects so " +
-                        "ON so.id = s.object_id\n" +
-                        "WHERE s.proc_name=?")) {
+                            "FROM SYS.SYSPROCEDURE s\n" +
+                            "LEFT JOIN " +
+                            DBUtils.getQuotedIdentifier(sourceObject.getCatalog()) + ".dbo.sysobjects so " +
+                            "ON so.id = s.object_id\n" +
+                            "WHERE s.proc_name=?")) {
                         dbStat.setString(1, objectName);
                         try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                             if (dbResult.nextRow()) {
@@ -544,17 +541,4 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     private String getSystemSchema() {
         return sqlServer ? SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA : SQLServerConstants.SYBASE_SYSTEM_SCHEMA;
     }
-
-    private boolean hasMetaDataProcedureView(@NotNull JDBCSession session) {
-        boolean result = false;
-        try (Statement dbStat = session.createStatement()) {
-            try (ResultSet resultSet = dbStat.executeQuery("SELECT TOP 1 1 FROM SYS.SYSPROCEDURE WHERE 1 <> 1")) {
-                result = true;
-            }
-        } catch (SQLException e) {
-            result = false;
-        }
-        return result;
-    }
-
 }
