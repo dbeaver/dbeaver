@@ -49,6 +49,7 @@ import java.util.*;
  * The activator class controls the plug-in life cycle
  */
 public class DBeaverActivator extends AbstractUIPlugin {
+
     private static final Log log = Log.getLog(DBeaverActivator.class);
     // The shared instance
     private static DBeaverActivator instance;
@@ -81,6 +82,7 @@ public class DBeaverActivator extends AbstractUIPlugin {
 
         ModelPreferences.setMainBundle(bundle);
         preferences = new BundlePreferenceStore(bundle);
+
         DBRFeatureRegistry.getInstance().registerFeatures(CoreFeatures.class);
 
         try {
@@ -108,7 +110,6 @@ public class DBeaverActivator extends AbstractUIPlugin {
         } catch (Throwable e) {
             getLog().error("Unable to inject SVG file format support", e);
         }
-       
     }
 
     private void injectProxyPeer() throws NoSuchFieldException, IllegalAccessException {
@@ -223,6 +224,7 @@ public class DBeaverActivator extends AbstractUIPlugin {
             }
         }
     }
+
     private void processResetSettings(@NotNull Location instanceLoc, @NotNull Set<String> actions) throws Exception {
         final boolean resetUserPreferences = actions.contains(RESET_USER_PREFERENCES);
         final boolean resetWorkspaceConfiguration = actions.contains(RESET_WORKSPACE_CONFIGURATION);
@@ -282,5 +284,4 @@ public class DBeaverActivator extends AbstractUIPlugin {
             }
         });
     }
-
 }
