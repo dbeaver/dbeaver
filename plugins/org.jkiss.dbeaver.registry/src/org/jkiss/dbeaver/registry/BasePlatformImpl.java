@@ -46,7 +46,6 @@ import org.jkiss.dbeaver.runtime.jobs.DataSourceMonitorJob;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
-import org.osgi.service.component.annotations.Component;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -61,7 +60,6 @@ import java.util.Map;
  *
  * Base implementation of DBeaver platform
  */
-@Component
 public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationConfigurator {
 
     private static final Log log = Log.getLog(BasePlatformImpl.class);

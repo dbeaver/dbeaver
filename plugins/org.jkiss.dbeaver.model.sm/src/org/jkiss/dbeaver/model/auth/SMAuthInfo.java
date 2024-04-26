@@ -56,6 +56,10 @@ public class SMAuthInfo {
     private final SMAuthPermissions authPermissions;
 
     private final boolean mainAuth;
+    private final boolean forceSessionsLogout;
+
+    @Nullable
+    private final String errorCode;
 
     private SMAuthInfo(
         @NotNull SMAuthStatus authStatus,
@@ -68,7 +72,9 @@ public class SMAuthInfo {
         @Nullable String smRefreshToken,
         @Nullable String authRole,
         @Nullable SMAuthPermissions authPermissions,
-        boolean mainAuth
+        boolean mainAuth,
+        boolean forceSessionsLogout,
+        @Nullable String errorCode
     ) {
         this.authStatus = authStatus;
         this.error = error;
@@ -81,6 +87,8 @@ public class SMAuthInfo {
         this.authRole = authRole;
         this.authPermissions = authPermissions;
         this.mainAuth = mainAuth;
+        this.forceSessionsLogout = forceSessionsLogout;
+        this.errorCode = errorCode;
     }
 
     public static SMAuthInfo expired(
@@ -99,13 +107,15 @@ public class SMAuthInfo {
     public static SMAuthInfo error(
         @NotNull String authAttemptId,
         @NotNull String error,
-        boolean mainAuth
+        boolean mainAuth,
+        @Nullable String errorCode
     ) {
         return new Builder()
             .setAuthStatus(SMAuthStatus.ERROR)
             .setAuthAttemptId(authAttemptId)
             .setError(error)
             .setMainAuth(mainAuth)
+            .setErrorCode(errorCode)
             .build();
     }
 
@@ -114,7 +124,8 @@ public class SMAuthInfo {
         @Nullable String signInLink,
         @Nullable String signOutLink,
         @NotNull Map<SMAuthConfigurationReference, Object> authData,
-        boolean mainAuth
+        boolean mainAuth,
+        boolean forceSessionsLogout
     ) {
         return new Builder()
             .setAuthStatus(SMAuthStatus.IN_PROGRESS)
@@ -123,6 +134,7 @@ public class SMAuthInfo {
             .setSignOutLink(signOutLink)
             .setAuthData(authData)
             .setMainAuth(mainAuth)
+            .setForceSessionsLogout(forceSessionsLogout)
             .build();
     }
 
@@ -221,6 +233,15 @@ public class SMAuthInfo {
         return mainAuth;
     }
 
+    public boolean isForceSessionsLogout() {
+        return forceSessionsLogout;
+    }
+
+    @Nullable
+    public String getErrorCode() {
+        return errorCode;
+    }
+
     private static final class Builder {
         private SMAuthStatus authStatus;
         private String error;
@@ -233,6 +254,8 @@ public class SMAuthInfo {
         private String authRole;
         private SMAuthPermissions authPermissions;
         private boolean mainAuth;
+        private boolean forceSessionsLogout;
+        private String errorCode;
 
         private Builder() {
         }
@@ -292,6 +315,16 @@ public class SMAuthInfo {
             return this;
         }
 
+        public Builder setForceSessionsLogout(boolean forceSessionsLogout) {
+            this.forceSessionsLogout = forceSessionsLogout;
+            return this;
+        }
+
+        public Builder setErrorCode(String errorCode) {
+            this.errorCode = errorCode;
+            return this;
+        }
+
         public SMAuthInfo build() {
             return new SMAuthInfo(
                 authStatus,
@@ -304,7 +337,9 @@ public class SMAuthInfo {
                 smRefreshToken,
                 authRole,
                 authPermissions,
-                mainAuth
+                mainAuth,
+                forceSessionsLogout,
+                errorCode
             );
         }
     }
