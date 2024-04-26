@@ -141,6 +141,9 @@ public class SQLServerGenericDataSource extends GenericDataSource {
         }
     }
 
+    /**
+     * Is meta info SYS.SYSPROCEDURE available for the data source
+     */
     public boolean hasMetaDataProcedureView() {
         return hasMetaDataProcedureView;
     }
