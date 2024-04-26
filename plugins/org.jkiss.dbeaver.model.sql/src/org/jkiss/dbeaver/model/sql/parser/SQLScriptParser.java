@@ -242,7 +242,7 @@ public class SQLScriptParser {
                     }
 
                     if (curBlock != null && !token.isEOF()) {
-                        // if we are still inside of the block, so statement definitely hasn't ended yet
+                        // if we are still inside the block, so statement definitely hasn't ended yet
                         // and will not be ended until we leave the block at least
                         continue;
                     }
@@ -324,10 +324,9 @@ public class SQLScriptParser {
                             // Quite dirty workaround needed for Oracle and SQL Server.
                             // TODO: move this transformation into SQLDialect
                             queryText += delimiterText;
-                            queryEndPos += delimiterText.length();
                         }
                     }
-                    if (keepDelimiters && tokenOffset == queryEndPos && tokenType == SQLTokenType.T_DELIMITER) {
+                    if (tokenType == SQLTokenType.T_DELIMITER) {
                         queryEndPos += tokenLength;
                     }
                     if (curBlock != null) {
@@ -1063,7 +1062,7 @@ public class SQLScriptParser {
                 && (statementStartTokenIds.contains(token.getType()) || statementStartKeywords.contains(token.getText().toUpperCase()));
         }
 
-        private int findSmartStatementBoundary(@NotNull SQLQuery element, boolean forward) {
+        private SQLScriptElement findSmartStatementBoundary(@NotNull SQLQuery element, boolean forward) {
             SQLQuery lastElement = element;
             SQLScriptElement nextElement = extractNextQueryImpl(this.context, element, forward);
             boolean delimiterFound = false;
@@ -1073,21 +1072,18 @@ public class SQLScriptParser {
                 nextElement = extractNextQueryImpl(this.context, lastElement, forward);
             }
             SQLScriptElement boundaryElement = forward || delimiterFound || !(nextElement instanceof SQLQuery) ? lastElement : nextElement;
-            if (forward) {
-                return boundaryElement.getOffset() + boundaryElement.getLength();
-            } else {
-                return boundaryElement.getOffset();
-            }
+            return boundaryElement;
         }
 
         @Nullable
         public SQLScriptElement tryPrepareExtendedElement(@NotNull SQLQuery element) {
-            int start = this.elementStartsProperly(element) ? element.getOffset() : this.findSmartStatementBoundary(element, false);
-            int end = this.findSmartStatementBoundary(element, true);
-            int length = end - start;
+            int start = this.elementStartsProperly(element) ? element.getOffset() : this.findSmartStatementBoundary(element, false).getOffset();
+            SQLScriptElement tailElement = this.findSmartStatementBoundary(element, true);
             try {
-                String text = this.context.getDocument().get(start, length);
-                return new SQLQuery(this.context.getDataSource(), text, start, length);
+                int realEnd = tailElement.getOffset() + tailElement.getLength();
+                int extractionEnd = tailElement.getOffset() + tailElement.getOriginalText().length();
+                String text = this.context.getDocument().get(start, extractionEnd - start);
+                return new SQLQuery(this.context.getDataSource(), text, start, realEnd - start);
             } catch (BadLocationException ex) {
                 return element;
             }
