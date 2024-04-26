@@ -327,7 +327,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         this.grants = new ArrayList<>(grantsTmp);
         for (Iterator<MySQLGrant> i = grants.iterator(); i.hasNext();) {
             MySQLGrant grant = i.next();
-            if (!grant.isAllPrivileges() && !grant.hasNonAdminPrivileges()) {
+            if (!grant.isAllPrivileges() && !grant.hasNonAdminPrivileges() && !grant.isGrantOption()) {
                 i.remove();
             }
         }
