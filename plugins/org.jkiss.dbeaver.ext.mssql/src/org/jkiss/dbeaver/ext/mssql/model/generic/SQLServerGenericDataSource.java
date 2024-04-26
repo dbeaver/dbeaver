@@ -134,7 +134,7 @@ public class SQLServerGenericDataSource extends GenericDataSource {
     public void initialize(DBRProgressMonitor monitor) throws DBException {
         super.initialize(monitor);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read server information")) {
-            JDBCUtils.executeStatement(session, "SELECT TOP 1 1 FROM SYS.SYSPROCEDURE_T WHERE 1 <> 1");
+            JDBCUtils.executeStatement(session, "SELECT TOP 1 1 FROM SYS.SYSPROCEDURE WHERE 1 <> 1");
             hasMetaDataProcedureView = true;
         } catch (SQLException e) {
             hasMetaDataProcedureView = false;
