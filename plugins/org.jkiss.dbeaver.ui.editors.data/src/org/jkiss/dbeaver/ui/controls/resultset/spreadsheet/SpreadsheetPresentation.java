@@ -2019,7 +2019,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             final ResultSetRow row = getResultRowFromGrid(colElement, rowElement);
 
             if (attr == null || row == null) {
-                log.debug("Can't get collectoion size, because attribute binding or result set row is null");
+                log.debug("Can't get collection size, because attribute binding or result set row is null");
                 return 0;
             }
             final ResultSetCellLocation cellLocation = new ResultSetCellLocation(attr, row, getRowNestedIndexes(rowElement));
