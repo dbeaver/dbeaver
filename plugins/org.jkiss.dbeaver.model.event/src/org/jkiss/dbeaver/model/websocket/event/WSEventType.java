@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.model.websocket.event.session.WSSessionStateEvent;
 import org.jkiss.dbeaver.model.websocket.event.session.WSSocketConnectedEvent;
 
 public enum WSEventType {
+    CLOSE_USER_SESSIONS("cb_close_user_sessions", WSEventTopic.USER, WSUserCloseSessionsEvent.class),
+
     SERVER_CONFIG_CHANGED(
         "cb_config_changed",
         WSEventTopic.SERVER_CONFIG,

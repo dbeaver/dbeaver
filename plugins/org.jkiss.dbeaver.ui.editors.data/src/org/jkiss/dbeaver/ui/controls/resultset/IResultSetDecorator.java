@@ -35,6 +35,8 @@ public interface IResultSetDecorator {
     long FEATURE_PRESENTATIONS      = 16;
     long FEATURE_LINKS              = 32;
     long FEATURE_COMPACT_FILTERS    = 64;
+    /** Hides the status details label */
+    long FEATURE_COMPACT_STATUS     = 128;
 
     long getDecoratorFeatures();
 

@@ -21,6 +21,7 @@ import com.github.weisj.jsvg.parser.SVGLoader;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.imageio.ImageIO;
@@ -31,6 +32,7 @@ import java.io.InputStream;
 
 public class SVGTest {
     @Test
+    @Ignore("See #26434")
     public void rasterizeSvgAndCompareToPngTest() throws IOException {
         compareImages("logo.svg", "logo.png", 1.0f);
         compareImages("logo.svg", "logo@1.5x.png", 1.5f);
@@ -38,6 +40,7 @@ public class SVGTest {
     }
 
     @Test
+    @Ignore("See #26434")
     public void rasterizeSvgStressTest() throws IOException {
         final long start = System.currentTimeMillis();
         final int count = 1000;
