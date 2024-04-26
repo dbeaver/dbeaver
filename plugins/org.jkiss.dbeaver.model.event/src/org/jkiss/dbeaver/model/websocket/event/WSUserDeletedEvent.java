@@ -22,8 +22,9 @@ public class WSUserDeletedEvent extends WSAbstractEvent {
 
     @NotNull
     private final String userId;
-    public WSUserDeletedEvent(@NotNull WSEventType eventType, @NotNull String userId) {
-        super(eventType);
+
+    public WSUserDeletedEvent(@NotNull String userId) {
+        super(WSEventType.USER_DELETED);
         this.userId = userId;
     }
 
