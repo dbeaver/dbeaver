@@ -23,6 +23,7 @@ import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.model.application.ui.MElementContainer;
 import org.eclipse.e4.ui.model.application.ui.advanced.MPerspective;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
+import org.eclipse.e4.ui.model.application.ui.basic.MPartStack;
 import org.eclipse.e4.ui.workbench.UIEvents;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.renderers.swt.StackRenderer;
@@ -35,10 +36,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
 import org.jkiss.code.NotNull;
@@ -61,16 +59,18 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerRenameFile;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
-import org.osgi.service.event.Event;
-import org.osgi.service.event.EventHandler;
 
 import java.io.File;
-import java.lang.reflect.Field;
+import java.util.List;
 
 
 public class DBeaverStackRenderer extends StackRenderer {
 
     private static final Log log = Log.getLog(DBeaverStackRenderer.class);
+
+    private static final String ONBOARDING_CONTAINER = "EditorStack.OnboardingContainer"; //$NON-NLS-1$
+    private static final String EDITOR_STACK_ID = "EditorStack"; //$NON-NLS-1$
+    private static final String ID = "id"; //$NON-NLS-1$
 
     public DBeaverStackRenderer() {
         try {
@@ -322,29 +322,23 @@ public class DBeaverStackRenderer extends StackRenderer {
     private void subscribePerspectiveSwitched() {
         final IWorkbench workbench = PlatformUI.getWorkbench();
         final IEventBroker broker = workbench.getService(IEventBroker.class);
-        final EventHandler handler = new EventHandler() {
-            @Override
-            public void handleEvent(Event event) {
-                final Object element = event.getProperty(UIEvents.EventTags.ELEMENT);
 
-                if (element instanceof MPerspective) {
-                    try {
-                        final Field field = StackRenderer.class.getDeclaredField("onboardingComposite");
-                        if (!field.canAccess(DBeaverStackRenderer.this)) {
-                            field.setAccessible(true);
+        broker.subscribe(UIEvents.UILifeCycle.PERSPECTIVE_SWITCHED, event -> {
+            final Object element = event.getProperty(UIEvents.EventTags.ELEMENT);
+
+            // See StackRenderer#initializeOnboardingInformationInEditorStack (2024-06)
+            if (element instanceof MPerspective perspective) {
+                for (MPartStack stack : modelService.findElements(perspective, null, MPartStack.class, List.of(EDITOR_STACK_ID))) {
+                    if (stack.getWidget() instanceof CTabFolder parent) {
+                        for (Control child : parent.getChildren()) {
+                            if (child instanceof Composite composite && ONBOARDING_CONTAINER.equals(child.getData(ID))) {
+                                HolidayDecorations.install(composite);
+                                break;
+                            }
                         }
-                        final Composite composite = (Composite) field.get(DBeaverStackRenderer.this);
-                        if (composite != null) {
-                            HolidayDecorations.install(composite.getParent());
-                        }
-                    } catch (Exception e) {
-                        log.debug("Can't access onboarding composite", e);
-                        broker.unsubscribe(this);
                     }
                 }
             }
-        };
-
-        broker.subscribe(UIEvents.UILifeCycle.PERSPECTIVE_SWITCHED, handler);
+        });
     }
 }
