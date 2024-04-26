@@ -55,7 +55,7 @@ public class DashboardRendererBrowser extends DashboardRendererAbstract {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (chartComposite instanceof DashboardBrowserComposite bc) {
-                    DashboardItemConfiguration dashboard = dashboardConfig.getDashboardDescriptor();
+                    DashboardItemConfiguration dashboard = dashboardConfig.getItemConfiguration();
                     if (dashboard != null) {
                         bc.getBrowser().setUrl(dashboard.evaluateURL(dashboard.getDashboardURL(), itemContainer.getProject(), itemContainer.getDataSourceContainer()));
                         itemContainer.refreshInfo();
@@ -66,7 +66,7 @@ public class DashboardRendererBrowser extends DashboardRendererAbstract {
         UIUtils.createToolItem(toolBar, "Open in external browser", UIIcon.LINK, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                DashboardItemConfiguration dashboard = dashboardConfig.getDashboardDescriptor();
+                DashboardItemConfiguration dashboard = dashboardConfig.getItemConfiguration();
                 if (dashboard != null) {
                     String url = dashboard.getDashboardExternalURL();
                     if (CommonUtils.isEmpty(url)) {

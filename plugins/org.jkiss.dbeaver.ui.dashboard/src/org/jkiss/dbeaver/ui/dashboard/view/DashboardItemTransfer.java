@@ -16,26 +16,27 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.view;
 
-import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
 import org.jkiss.dbeaver.ui.dnd.LocalObjectTransfer;
 
-public final class DashboardItemTransfer extends LocalObjectTransfer<DashboardItemConfiguration> {
+import java.util.List;
 
-        public static final DashboardItemTransfer INSTANCE = new DashboardItemTransfer();
-        private static final String TYPE_NAME = "Dashboard.Item Transfer" + System.currentTimeMillis() + ":" + INSTANCE.hashCode();//$NON-NLS-1$
-        private static final int TYPEID = registerType(TYPE_NAME);
+public final class DashboardItemTransfer extends LocalObjectTransfer<List<Object>> {
 
-        private DashboardItemTransfer() {
-        }
+    public static final DashboardItemTransfer INSTANCE = new DashboardItemTransfer();
+    private static final String TYPE_NAME = "DashboardTransfer.Item Transfer" + System.currentTimeMillis() + ":" + INSTANCE.hashCode();//$NON-NLS-1$
+    private static final int TYPEID = registerType(TYPE_NAME);
 
-        @Override
-        protected int[] getTypeIds() {
-            return new int[] { TYPEID };
-        }
-
-        @Override
-        protected String[] getTypeNames() {
-            return new String[] { TYPE_NAME };
-        }
-
+    private DashboardItemTransfer() {
     }
+
+    @Override
+    protected int[] getTypeIds() {
+        return new int[]{TYPEID};
+    }
+
+    @Override
+    protected String[] getTypeNames() {
+        return new String[]{TYPE_NAME};
+    }
+
+}

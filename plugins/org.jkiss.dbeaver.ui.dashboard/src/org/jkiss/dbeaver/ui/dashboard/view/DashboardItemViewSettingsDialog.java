@@ -73,7 +73,7 @@ public class DashboardItemViewSettingsDialog extends BaseDialog {
             Group infoGroup = UIUtils.createControlGroup(composite, UIDashboardMessages.dialog_dashboard_item_config_dashboardinfo, 4, GridData.FILL_HORIZONTAL, 0);
 
             UIUtils.createLabelText(infoGroup, UIDashboardMessages.dialog_dashboard_item_config_dashboardinfo_labels_name,
-                    itemViewSettings.getDashboardDescriptor().getName(), SWT.BORDER | SWT.READ_ONLY)
+                    itemViewSettings.getItemConfiguration().getName(), SWT.BORDER | SWT.READ_ONLY)
                 .setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
 
             UIUtils.createControlLabel(infoGroup, UIDashboardMessages.dialog_dashboard_item_config_dashboardinfo_labels_description).setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
@@ -96,7 +96,7 @@ public class DashboardItemViewSettingsDialog extends BaseDialog {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         StringBuilder sql = new StringBuilder();
-                        for (DashboardItemConfiguration.QueryMapping query : itemViewSettings.getDashboardDescriptor().getQueries()) {
+                        for (DashboardItemConfiguration.QueryMapping query : itemViewSettings.getItemConfiguration().getQueries()) {
                             sql.append(query.getQueryText()).append(";\n");
                         }
                         UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
@@ -146,7 +146,7 @@ public class DashboardItemViewSettingsDialog extends BaseDialog {
         createButton(parent, IDialogConstants.CANCEL_ID, UIDashboardMessages.dialog_dashboard_item_config_buttons_configuration, false).addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                DashboardItemConfigurationDialog editDialog = new DashboardItemConfigurationDialog(getShell(), itemViewSettings.getDashboardDescriptor(), false);
+                DashboardItemConfigurationDialog editDialog = new DashboardItemConfigurationDialog(getShell(), itemViewSettings.getItemConfiguration(), false);
                 editDialog.open();
             }
         });

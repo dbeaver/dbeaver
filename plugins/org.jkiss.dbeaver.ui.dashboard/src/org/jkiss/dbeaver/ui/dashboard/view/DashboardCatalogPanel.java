@@ -236,7 +236,7 @@ public abstract class DashboardCatalogPanel extends Composite {
 
     private static void addDragAndDropSupport(Tree table) {
         final DragSource source = new DragSource(table, DND.DROP_MOVE);
-        source.setTransfer(TextTransfer.getInstance(), DashboardItemTransfer.INSTANCE);
+        source.setTransfer(TextTransfer.getInstance(), DashboardItemConfigurationTransfer.INSTANCE);
         source.addDragListener (new DragSourceListener() {
             private TreeItem dragItem;
             private Image dragImage;
@@ -266,7 +266,7 @@ public abstract class DashboardCatalogPanel extends Composite {
             @Override
             public void dragSetData (DragSourceEvent event) {
                 if (dragItem.getData() instanceof DashboardItemConfiguration dashboardDescriptor &&
-                    DashboardItemTransfer.INSTANCE.isSupportedType(event.dataType)
+                    DashboardItemConfigurationTransfer.INSTANCE.isSupportedType(event.dataType)
                 ) {
                     event.data = dashboardDescriptor;
                 } else {

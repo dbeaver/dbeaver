@@ -58,7 +58,7 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
 
     public static final int DEFAULT_HEIGHT = 200;
     private final DashboardListControl groupContainer;
-    private final DashboardItemViewSettings dashboardConfig;
+    private final DashboardItemViewSettings viewItemConfig;
 
     private Date lastUpdateTime;
     private DashboardRendererType curViewType;
@@ -73,7 +73,10 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
         super(parent, SWT.DOUBLE_BUFFERED);
         this.setLayoutData(new GridData(GridData.FILL_BOTH));
         this.groupContainer = parent;
-        this.dashboardConfig = groupContainer.getView().getViewConfiguration().getItemConfig(item.getId());
+        this.viewItemConfig = groupContainer.getView().getViewConfiguration().getItemConfig(item.getId());
+        if (this.viewItemConfig == null) {
+            throw new IllegalStateException("View item configuration not found for '" + item.getId() + "'");
+        }
 
         GridLayout layout = new GridLayout(1, true);
         layout.marginHeight = 3;
@@ -99,10 +102,10 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
 
             DBPImage icon = DashboardIcons.DASHBOARD;
             DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
-            if (getItemDescriptor().getDashboardProvider().isDatabaseRequired() && dataSourceContainer != null) {
+            if (item.getDashboardProvider().isDatabaseRequired() && dataSourceContainer != null) {
                 icon = dataSourceContainer.getDriver().getIcon();
             } else {
-                icon = getItemDescriptor().getDashboardProvider().getIcon();
+                icon = item.getDashboardProvider().getIcon();
             }
             Label titleIcon = new Label(titleComposite, SWT.NONE);
             titleIcon.setImage(DBeaverIcons.getImage(icon));
@@ -135,7 +138,7 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
     }
 
     private void updateChartLabel(@NotNull DashboardItemConfiguration item) {
-        if (dashboardConfig == null) {
+        if (viewItemConfig == null) {
             titleLabel.setText(item.getId());
         } else {
             titleLabel.setText(evaluateChartLabel(item.getTitle()));
@@ -168,14 +171,14 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
     private void createDashboardRenderer() {
 
         try {
-            curViewType = dashboardConfig.getViewType();
+            curViewType = viewItemConfig.getViewType();
             renderer = curViewType.createRenderer();
             dashboardControl = renderer.createDashboard(chartComposite, this, groupContainer.getView(), computeSize(-1, -1));
-            renderer.fillDashboardToolbar(this, titleToolbar, dashboardControl, dashboardConfig);
+            renderer.fillDashboardToolbar(this, titleToolbar, dashboardControl, viewItemConfig);
         } catch (DBException e) {
             // Something went wrong
             Text errorLabel = new Text(this, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
-            errorLabel.setText(NLS.bind(UIDashboardMessages.dashboard_item_errorlabel_text, dashboardConfig.getItemId(), e.getMessage()));
+            errorLabel.setText(NLS.bind(UIDashboardMessages.dashboard_item_errorlabel_text, viewItemConfig.getItemId(), e.getMessage()));
             errorLabel.setLayoutData(new GridData(GridData.CENTER, GridData.CENTER, true, true));
         }
 
@@ -251,7 +254,7 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
     }
 
     public int getDefaultWidth() {
-        return (int) (dashboardConfig.getWidthRatio() * getDefaultHeight());
+        return (int) (viewItemConfig.getWidthRatio() * getDefaultHeight());
     }
     @Override
     public Point computeSize(int wHint, int hHint, boolean changed) {
@@ -330,28 +333,28 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
 */
     }
 
-    public DashboardItemViewSettings getDashboardConfig() {
-        return dashboardConfig;
+    public DashboardItemViewSettings getViewItemConfig() {
+        return viewItemConfig;
     }
 
     @Override
     public DashboardItemConfiguration getItemDescriptor() {
-        return dashboardConfig.getDashboardDescriptor();
+        return viewItemConfig.getItemConfiguration();
     }
 
     @Override
     public DashboardItemViewSettings getItemConfiguration() {
-        return dashboardConfig;
+        return viewItemConfig;
     }
 
     @Override
     public int getDashboardMaxItems() {
-        return dashboardConfig.getMaxItems();
+        return viewItemConfig.getMaxItems();
     }
 
     @Override
     public long getDashboardMaxAge() {
-        return dashboardConfig.getMaxAge();
+        return viewItemConfig.getMaxAge();
     }
 
     @Override
@@ -371,31 +374,31 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
 
     @Override
     public DBDashboardMapQuery getMapQuery() {
-        DashboardItemConfiguration dashboard = dashboardConfig.getDashboardDescriptor();
+        DashboardItemConfiguration dashboard = viewItemConfig.getItemConfiguration();
         return dashboard == null ? null : dashboard.getMapQuery();
     }
 
     @Override
     public String[] getMapKeys() {
-        DashboardItemConfiguration dashboard = dashboardConfig.getDashboardDescriptor();
+        DashboardItemConfiguration dashboard = viewItemConfig.getItemConfiguration();
         return dashboard == null ? null : dashboard.getMapKeys();
     }
 
     @Override
     public String[] getMapLabels() {
-        DashboardItemConfiguration dashboard = dashboardConfig.getDashboardDescriptor();
+        DashboardItemConfiguration dashboard = viewItemConfig.getItemConfiguration();
         return dashboard == null ? null : dashboard.getMapLabels();
     }
 
     @Override
     public JexlExpression getMapFormula() {
-        DashboardItemConfiguration dashboard = dashboardConfig.getDashboardDescriptor();
+        DashboardItemConfiguration dashboard = viewItemConfig.getItemConfiguration();
         return dashboard == null ? null : dashboard.getMapFormulaExpr();
     }
 
     @Override
     public List<? extends DBDashboardQuery> getQueryList() {
-        DashboardItemConfiguration dashboard = dashboardConfig.getDashboardDescriptor();
+        DashboardItemConfiguration dashboard = viewItemConfig.getItemConfiguration();
         return dashboard == null ? null : dashboard.getQueries();
     }
 
@@ -427,7 +430,7 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
     public void updateDashboardView() {
         UIUtils.asyncExec(() -> {
             boolean forceLayout = false;
-            if (dashboardConfig.getViewType() != curViewType) {
+            if (viewItemConfig.getViewType() != curViewType) {
                 // Change view!
                 if (dashboardControl != null) {
                     dashboardControl.dispose();
@@ -455,7 +458,7 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
 
     @Override
     public long getUpdatePeriod() {
-        return dashboardConfig.getUpdatePeriod();
+        return viewItemConfig.getUpdatePeriod();
     }
 
     @Override
@@ -489,7 +492,7 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
 
                     @Override
                     public void runWithEvent(Event event) {
-                        getDashboardConfig().setViewType(viewType);
+                        getViewItemConfig().setViewType(viewType);
                         getGroup().getView().saveChanges();
                         updateDashboardView();
                     }
@@ -517,7 +520,7 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
 
     @Override
     public String toString() {
-        DashboardItemConfiguration dashboard = dashboardConfig.getDashboardDescriptor();
-        return dashboard == null ? dashboardConfig.getItemId() : dashboard.getName();
+        DashboardItemConfiguration dashboard = viewItemConfig.getItemConfiguration();
+        return dashboard == null ? viewItemConfig.getItemId() : dashboard.getName();
     }
 }
