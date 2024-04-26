@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.websocket.event;
 
 import org.jkiss.code.NotNull;
 
-public class WSTaskFinishedEvent extends WSAbstractEvent {
+public class WSTaskFinishedEvent extends WSAbstractEvent implements WSProjectEvent{
     @NotNull
     private final String taskId;
     @NotNull
