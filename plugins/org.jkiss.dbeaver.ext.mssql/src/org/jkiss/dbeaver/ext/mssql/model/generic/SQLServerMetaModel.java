@@ -26,10 +26,7 @@ import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerView;
 import org.jkiss.dbeaver.ext.mssql.model.ServerType;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPErrorAssistant;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
@@ -46,7 +43,9 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -61,6 +60,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     private final boolean sqlServer;
     private final Map<String, Boolean> sysViewsCache = new HashMap<>();
+    private boolean hasMetaDataProcedureView;
 
     public SQLServerMetaModel() {
         this(true);
@@ -102,10 +102,10 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     @Override
     public void loadProcedures(DBRProgressMonitor monitor, @NotNull GenericObjectContainer container) throws DBException {
         if (!isSqlServer()) {
-            // #4378
             GenericDataSource dataSource = container.getDataSource();
             String dbName = DBUtils.getQuotedIdentifier(container.getParentObject());
             try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Sybase procedure list")) {
+                hasMetaDataProcedureView = hasMetaDataProcedureView(session);
                 // P – Transact-SQL or SQLJ procedure
                 // SF – scalar or user-defined functions - from SAP Adaptive Server version 16
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -171,20 +171,33 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         }
         if (getServerType() == ServerType.SYBASE) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read routine definition")) {
-                try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT proc_defn from SYS.SYSPROCEDURE s\n" +
-                        "LEFT JOIN " + DBUtils.getQuotedIdentifier(sourceObject.getCatalog()) + ".dbo.sysobjects so " +
+                if (hasMetaDataProcedureView) {
+                    try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                        "SELECT source, proc_defn " +
+                        "FROM SYS.SYSPROCEDURE s\n" +
+                        "LEFT JOIN " +
+                        DBUtils.getQuotedIdentifier(sourceObject.getCatalog()) + ".dbo.sysobjects so " +
                         "ON so.id = s.object_id\n" +
-                        "WHERE s.proc_name=?"
-                )) {
-                    dbStat.setString(1, objectName);
-                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                        if (dbResult.nextRow()) {
-                            return dbResult.getString(1);
+                        "WHERE s.proc_name=?")) {
+                        dbStat.setString(1, objectName);
+                        try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                            if (dbResult.nextRow()) {
+                                String source = dbResult.getString(1);
+                                if (!CommonUtils.isEmpty(source)) {
+                                    return source;
+                                }
+                                return dbResult.getString(2);
+                            }
+                            return "-- Routine '" + objectName + "' definition not found";
                         }
-                        return "-- Routine '" + objectName + "' definition not found";
                     }
                 }
+                return extractSource(monitor,
+                    dataSource,
+                    sourceObject,
+                    sourceObject.getCatalog(),
+                    sourceObject.getSchema().getName(),
+                    objectName);
             } catch (SQLException e) {
                 throw new DBException(e, dataSource);
             }
@@ -530,6 +543,18 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     @NotNull
     private String getSystemSchema() {
         return sqlServer ? SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA : SQLServerConstants.SYBASE_SYSTEM_SCHEMA;
+    }
+
+    private boolean hasMetaDataProcedureView(@NotNull JDBCSession session) {
+        boolean result = false;
+        try (Statement dbStat = session.createStatement()) {
+            try (ResultSet resultSet = dbStat.executeQuery("SELECT TOP 1 1 FROM SYS.SYSPROCEDURE WHERE 1 <> 1")) {
+                result = true;
+            }
+        } catch (SQLException e) {
+            result = false;
+        }
+        return result;
     }
 
 }
