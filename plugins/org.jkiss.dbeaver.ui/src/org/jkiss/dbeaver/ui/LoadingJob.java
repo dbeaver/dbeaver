@@ -46,8 +46,8 @@ public class LoadingJob<RESULT>  extends AbstractJob {
         return new LoadingJob<>(loadingService, visualizer);
     }
 
-    private ILoadService<RESULT> loadingService;
-    private ILoadVisualizer<RESULT> visualizer;
+    private final ILoadService<RESULT> loadingService;
+    private final ILoadVisualizer<RESULT> visualizer;
 
     public LoadingJob(ILoadService<RESULT> loadingService, ILoadVisualizer<RESULT> visualizer)
     {
@@ -60,6 +60,11 @@ public class LoadingJob<RESULT>  extends AbstractJob {
     public ILoadService<RESULT> getLoadingService()
     {
         return loadingService;
+    }
+
+    @Override
+    public boolean isForceCancel() {
+        return loadingService.isForceCancel();
     }
 
     public ILoadVisualizer<RESULT> getVisualizer()

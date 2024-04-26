@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.mssql.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerExecutionContext;
@@ -48,8 +49,13 @@ public class SQLServerTableTriggerManager extends SQLTriggerManager<SQLServerTab
     }
 
     @Override
-    protected SQLServerTableTrigger createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container,
-                                                         Object copyFrom, Map<String, Object> options) {
+    protected SQLServerTableTrigger createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        Object container,
+        Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) {
         SQLServerTableBase table = (SQLServerTableBase) container;
         String newTriggerName = "NewTrigger";
         SQLServerTableTrigger newTrigger = new SQLServerTableTrigger(table, newTriggerName);
@@ -64,8 +70,10 @@ public class SQLServerTableTriggerManager extends SQLTriggerManager<SQLServerTab
 
     protected void createOrReplaceTriggerQuery(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, SQLServerTableTrigger trigger, boolean create) {
         DBSObject defaultDatabase = ((SQLServerExecutionContext)executionContext).getDefaultCatalog();
-        if (defaultDatabase != trigger.getTable().getDatabase()) {
-            actions.add(new SQLDatabasePersistAction("Set current database", "USE " + DBUtils.getQuotedIdentifier(trigger.getTable().getDatabase()), false)); //$NON-NLS-2$
+        SQLServerTableBase table = trigger.getTable();
+        if (defaultDatabase != table.getDatabase()) {
+            actions.add(new SQLDatabasePersistAction("Set current database", "USE " + //$NON-NLS-2$
+                DBUtils.getQuotedIdentifier(table.getDatabase()), false));
         }
 
         if (create) {
@@ -75,8 +83,10 @@ public class SQLServerTableTriggerManager extends SQLTriggerManager<SQLServerTab
                 SQLServerUtils.changeCreateToAlterDDL(trigger.getDataSource().getSQLDialect(), trigger.getBody()), true)); //$NON-NLS-2$
         }
 
-        if (defaultDatabase != trigger.getTable().getDatabase()) {
-            actions.add(new SQLDatabasePersistAction("Set current database ", "USE " + DBUtils.getQuotedIdentifier(defaultDatabase), false)); //$NON-NLS-2$
+        if (defaultDatabase != table.getDatabase()) {
+            String defaultCatalogName = getDefaultCatalogName((SQLServerExecutionContext) executionContext, defaultDatabase, table);
+            actions.add(new SQLDatabasePersistAction("Set current database ", //$NON-NLS-1$
+                "USE " + defaultCatalogName, false)); //$NON-NLS-1$
         }
     }
 
@@ -84,14 +94,35 @@ public class SQLServerTableTriggerManager extends SQLTriggerManager<SQLServerTab
     protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
         SQLServerTableTrigger trigger = command.getObject();
         DBSObject defaultDatabase = ((SQLServerExecutionContext)executionContext).getDefaultCatalog();
-        if (defaultDatabase != trigger.getTable().getDatabase()) {
-            actions.add(new SQLDatabasePersistAction("Set current database", "USE " + DBUtils.getQuotedIdentifier(trigger.getTable().getDatabase()), false)); //$NON-NLS-2$
+        SQLServerTableBase table = trigger.getTable();
+        if (defaultDatabase != table.getDatabase()) {
+            actions.add(new SQLDatabasePersistAction("Set current database", "USE " + //$NON-NLS-2$
+                DBUtils.getQuotedIdentifier(table.getDatabase()), false));
         }
 
         super.addObjectDeleteActions(monitor, executionContext, actions, command, options);
 
-        if (defaultDatabase != trigger.getTable().getDatabase()) {
-            actions.add(new SQLDatabasePersistAction("Set current database ", "USE " + DBUtils.getQuotedIdentifier(defaultDatabase), false)); //$NON-NLS-2$
+        if (defaultDatabase != table.getDatabase()) {
+            String defaultCatalogName = getDefaultCatalogName((SQLServerExecutionContext) executionContext, defaultDatabase, table);
+            actions.add(new SQLDatabasePersistAction("Set current database ",
+                "USE " + defaultCatalogName, false)); //$NON-NLS-1$
         }
+    }
+
+    @NotNull
+    private static String getDefaultCatalogName(
+        @NotNull SQLServerExecutionContext executionContext,
+        @Nullable DBSObject defaultDatabase,
+        @NotNull SQLServerTableBase table
+    ) {
+        String defaultCatalogName;
+        if (defaultDatabase != null) {
+            defaultCatalogName = DBUtils.getQuotedIdentifier(defaultDatabase);
+        } else {
+            defaultCatalogName = DBUtils.getQuotedIdentifier(
+                table.getDataSource(),
+                executionContext.getActiveDatabaseName());
+        }
+        return defaultCatalogName;
     }
 }
