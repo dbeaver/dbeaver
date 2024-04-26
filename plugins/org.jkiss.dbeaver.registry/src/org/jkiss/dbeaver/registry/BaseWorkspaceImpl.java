@@ -279,6 +279,11 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse {
     }
 
     public static String readWorkspaceId() {
+        return readWorkspaceProperty() + "-" + getLocalHostId();
+    }
+
+    @NotNull
+    public static String readWorkspaceProperty() {
         // Check workspace ID
         Path metadataFolder = GeneralUtils.getMetadataFolder();
         Properties workspaceInfo = BaseWorkspaceImpl.readWorkspaceInfo(metadataFolder);
@@ -291,7 +296,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse {
             workspaceInfo.setProperty(WORKSPACE_ID, workspaceId);
             BaseWorkspaceImpl.writeWorkspaceInfo(metadataFolder, workspaceInfo);
         }
-        return workspaceId + "-" + getLocalHostId();
+        return workspaceId;
     }
 
     private static String getLocalHostId() {
