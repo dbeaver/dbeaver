@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.registry.DriverCategoryDescriptor;
 import org.jkiss.dbeaver.registry.DriverManagerRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.finder.viewer.AdvancedListViewer;
@@ -334,7 +335,8 @@ public class DriverTabbedViewer extends StructuredViewer {
         private class DriverLabelProvider extends LabelProvider implements IToolTipProvider {
             @Override
             public Image getImage(Object element) {
-                return DBeaverIcons.getImage(((DBPDriver)element).getIconBig());
+                DBPDriver driver = (DBPDriver) element;
+                return DBeaverIcons.getImage(UIStyles.isDarkTheme() ? driver.getIconBigDark() : driver.getIconBig());
             }
 
             @Override

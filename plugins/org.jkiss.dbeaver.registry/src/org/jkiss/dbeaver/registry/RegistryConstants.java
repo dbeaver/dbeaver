@@ -101,6 +101,7 @@ public class RegistryConstants {
 
     public static final String ATTR_ICON = "icon"; //$NON-NLS-1$
     public static final String ATTR_ICON_BIG = "iconBig"; //$NON-NLS-1$
+    public static final String ATTR_ICON_BIG_DARK = "iconBigDark"; //$NON-NLS-1$
     public static final String ATTR_STANDARD = "standard"; //$NON-NLS-1$
     public static final String ATTR_COLOR = "color"; //$NON-NLS-1$
     public static final String ATTR_KEEP_ALIVE = "keepAlive"; //$NON-NLS-1$

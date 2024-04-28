@@ -1746,7 +1746,61 @@
                         categories="nosql,bigdata,keyvalue">
                     <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.cassandra.reason"/>
                 </driver>
-
+                <driver
+                        id="dynamodb-ce"
+                        label="DynamoDB"
+                        description="AWS DynamoDB Driver"
+                        iconBig="icons/dynamodb_pro_icon.png"
+                        supportsDistributedMode="false"
+                        categories="nosql,aws">
+                    <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.dynamodb.reason"/>
+                </driver>
+                <driver
+                        id="salesforce-ce"
+                        label="Salesforce"
+                        description="Salesforce JDBC driver"
+                        iconBig="icons/salesforce_pro_icon.png"
+                        supportsDistributedMode="false"
+                        categories="sql">
+                    <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.salesforce.reason"/>
+                </driver>
+                <driver
+                        id="firestore-ce"
+                        label="Firestore"
+                        description="Google FireStore Driver"
+                        iconBig="icons/firestore_pro_icon@2x.png"
+                        supportsDistributedMode="false"
+                        categories="nosql,bigdata,document,gcp">
+                    <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.firestore.reason"/>
+                </driver>
+                <driver
+                        id="couchbase-ce"
+                        label="Couchbase"
+                        description="Couchbase Driver"
+                        iconBig="icons/couchbase_pro_icon.png"
+                        supportsDistributedMode="false"
+                        categories="nosql">
+                    <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.couchbase.reason"/>
+                </driver>
+                <driver
+                        id="redis-ce"
+                        label="Redis"
+                        description="Redis Driver"
+                        iconBig="icons/redis_pro_icon.png"
+                        supportsDistributedMode="false"
+                        categories="nosql,keyvalue">
+                    <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.redis.reason"/>
+                </driver>
+                <driver
+                        id="timestream-ce"
+                        label="Timestream"
+                        description="AWS Timestream Driver"
+                        iconBig="icons/timestream_pro_icon_light.png"
+                        iconBigDark="icons/timestream_pro_icon.png"
+                        supportsDistributedMode="false"
+                        categories="nosql,timeseries,aws">
+                    <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.timestream.reason"/>
+                </driver>
             </drivers>
 
         </datasource>

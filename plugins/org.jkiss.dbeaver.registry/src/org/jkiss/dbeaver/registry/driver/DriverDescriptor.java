@@ -175,6 +175,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private DBPImage iconNormal;
     private DBPImage iconError;
     private DBPImage iconBig;
+    private DBPImage iconBigDark;
     private DBPImage logoImage;
     private boolean embedded, origEmbedded;
     private boolean supportsDistributedMode;
@@ -269,9 +270,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         if (copyFrom != null) {
             this.iconPlain = copyFrom.iconPlain;
             this.iconBig = copyFrom.iconBig;
+            this.iconBigDark = copyFrom.iconBigDark;
         } else {
             this.iconPlain = providerDescriptor.getIcon();
             this.iconBig = DBIcon.DATABASE_BIG_DEFAULT;
+            this.iconBigDark = DBIcon.DATABASE_BIG_DEFAULT;
         }
         if (this.iconPlain == null) {
             this.iconPlain = DBIcon.DATABASE_DEFAULT;
@@ -408,6 +411,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.iconBig = this.iconPlain;
         if (config.getAttribute(RegistryConstants.ATTR_ICON_BIG) != null) {
             this.iconBig = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON_BIG));
+        }
+        this.iconBigDark = this.iconBig;
+        if (config.getAttribute(RegistryConstants.ATTR_ICON_BIG_DARK) != null) {
+            this.iconBigDark = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON_BIG_DARK));
         }
         String logoImageAttr = config.getAttribute("logoImage");
         if (!CommonUtils.isEmpty(logoImageAttr)) {
@@ -700,6 +707,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     @Override
     public DBPImage getIconBig() {
         return iconBig;
+    }
+
+    @NotNull
+    @Override
+    public DBPImage getIconBigDark() {
+        return iconBigDark;
     }
 
     @Nullable
