@@ -1768,7 +1768,7 @@
                         id="firestore-ce"
                         label="Firestore"
                         description="Google FireStore Driver"
-                        iconBig="icons/firestore_pro_icon@2x.png"
+                        iconBig="icons/firestore_pro_icon.png"
                         supportsDistributedMode="false"
                         categories="nosql,bigdata,document,gcp">
                     <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.firestore.reason"/>
