@@ -98,7 +98,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
-        if (isStandalone && !ApplicationPolicyService.getInstance().isPolicySoftwareInstallUpdateEnabled()) {
+        if (isStandalone && !ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
             Group groupObjects = UIUtils.createControlGroup(
                 composite, CoreMessages.pref_page_ui_general_group_general, 2,
                 GridData.VERTICAL_ALIGN_BEGINNING,
@@ -236,7 +236,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             useEmbeddedBrowserAuth.setEnabled(!SWTBrowserRegistry.getActiveBrowser().equals(SWTBrowserRegistry.BrowserSelection.IE));
         }
         if (isStandalone) { 
-            if (!ApplicationPolicyService.getInstance().isPolicySoftwareInstallUpdateEnabled()) {
+            if (!ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
                 automaticUpdateCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
             }
             if (!RuntimeUtils.isLinux()) {
@@ -258,7 +258,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         if (isStandalone) {
             useEmbeddedBrowserAuth.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH));
-            if (!ApplicationPolicyService.getInstance().isPolicySoftwareInstallUpdateEnabled()) {
+            if (!ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
                 automaticUpdateCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
             }
         }
@@ -288,7 +288,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
         if (isStandalone) {
             store.setValue(DBeaverPreferences.UI_USE_EMBEDDED_AUTH, useEmbeddedBrowserAuth.getSelection());
-            if (!ApplicationPolicyService.getInstance().isPolicySoftwareInstallUpdateEnabled()) {
+            if (!ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
                 store.setValue(DBeaverPreferences.UI_AUTO_UPDATE_CHECK, automaticUpdateCheck.getSelection());
             } else {
                 store.setValue(DBeaverPreferences.UI_AUTO_UPDATE_CHECK, Boolean.FALSE);

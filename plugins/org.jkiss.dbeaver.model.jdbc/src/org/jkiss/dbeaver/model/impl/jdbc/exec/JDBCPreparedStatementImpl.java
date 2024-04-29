@@ -73,7 +73,7 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
         }
     }
 
-    JDBCPreparedStatementImpl(
+    protected JDBCPreparedStatementImpl(
         @NotNull JDBCSession connection,
         @NotNull PreparedStatement original,
         String query,

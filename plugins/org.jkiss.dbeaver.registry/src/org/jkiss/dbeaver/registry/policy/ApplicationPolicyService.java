@@ -70,7 +70,7 @@ public class ApplicationPolicyService {
     /**
      * Return true, if software install/update policy enabled
      */
-    public boolean isPolicySoftwareInstallUpdateEnabled() {
+    public boolean isInstallUpdateDisabled() {
         return BasePolicyDataProvider.getInstance().isPolicyEnabled(POLICY_SOFTWARE_INSTALL)
             || BasePolicyDataProvider.getInstance().isPolicyEnabled(POLICY_SOFTWARE_UPDATE);
     }
