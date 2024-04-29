@@ -27,7 +27,8 @@ public interface SMAuthenticationManager {
         @NotNull String authId,
         @NotNull SMAuthStatus authStatus,
         @NotNull Map<SMAuthConfigurationReference, Object> authInfo,
-        @Nullable String error
+        @Nullable String error,
+        @Nullable String errorCode
     ) throws DBException;
 
     SMAuthInfo finishAuthentication(@NotNull String authId) throws DBException;

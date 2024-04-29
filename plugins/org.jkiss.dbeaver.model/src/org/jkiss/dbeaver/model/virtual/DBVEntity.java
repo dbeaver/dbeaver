@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
@@ -717,7 +718,13 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     }
 
     private static final DBSDictionaryAccessor emptyDictionaryAccessor = new DBSDictionaryAccessor() {
-        
+
+        @NotNull
+        @Override
+        public DBRProgressMonitor getProgressMonitor() {
+            return new VoidProgressMonitor();
+        }
+
         @Override
         public boolean isKeyComparable() {
             return false;
@@ -770,6 +777,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             // do nothing
         }
 
+        @NotNull
         @Override
         public List<DBDLabelValuePair> getValues(long offset, int pageSize) throws DBException {
             return Collections.emptyList();

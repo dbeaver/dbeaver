@@ -617,6 +617,9 @@ public class ResultSetViewer extends Viewer
 
     public void updateFiltersText(boolean resetFilterValue)
     {
+        boolean enableFilters = getExecutionContext() != null && container.isReadyToRun() && !model.isUpdateInProgress();
+        getAutoRefresh().enableControls(enableFilters);
+
         if (filtersPanel == null || this.viewerPanel.isDisposed()) {
             return;
         }
@@ -626,8 +629,6 @@ public class ResultSetViewer extends Viewer
 
         this.viewerPanel.setRedraw(false);
         try {
-            boolean enableFilters = false;
-
             DBCExecutionContext context = getExecutionContext();
             if (context != null) {
                 if (!(activePresentation instanceof StatisticsPresentation)) {
@@ -646,14 +647,9 @@ public class ResultSetViewer extends Viewer
                             filtersPanel.addFiltersHistory(whereCondition);
                         }
                     }
-
-                    if (container.isReadyToRun() && !model.isUpdateInProgress()) {
-                        enableFilters = true;
-                    }
                 }
             }
             filtersPanel.enableFilters(enableFilters);
-            getAutoRefresh().enableControls(enableFilters);
             //presentationSwitchToolbar.setEnabled(enableFilters);
         } finally {
             this.viewerPanel.setRedraw(true);
@@ -983,7 +979,6 @@ public class ResultSetViewer extends Viewer
                     VerticalButton panelButton = new VerticalButton(panelSwitchFolder, SWT.RIGHT | SWT.CHECK);
                     GridData gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
                     gd.verticalIndent = 2;
-                    gd.horizontalIndent = 1;
                     panelButton.setLayoutData(gd);
                     panelButton.setData(panel);
                     panelButton.setImage(DBeaverIcons.getImage(panel.getIcon()));
@@ -1722,7 +1717,7 @@ public class ResultSetViewer extends Viewer
             );
             getAutoRefresh().enableControls(false);
         }
-        {
+        if (CommonUtils.isBitSet(decorator.getDecoratorFeatures(), IResultSetDecorator.FEATURE_EDIT)) {
             ToolBarManager editToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
             menuService.populateContributionManager(editToolBarManager, TOOLBAR_EDIT_CONTRIBUTION_ID);
             ToolBar editorToolBar = editToolBarManager.createControl(statusBar);
@@ -1841,15 +1836,13 @@ public class ResultSetViewer extends Viewer
 
             //UIUtils.createToolBarSeparator(statusBar, SWT.VERTICAL);
 
-            statusLabel = new StatusLabel(statusBar, SWT.NONE, this);
-            RowData rd = new RowData();
-            rd.width = 50 * fontHeight;
-            statusLabel.setLayoutData(rd);
-            CSSUtils.setCSSClass(statusLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
-
-//            statusBar.addListener(SWT.Resize, event -> {
-//                ((RowData)statusLabel.getLayoutData()).width = statusBar.getSize().x - 500;
-//            });
+            if (!CommonUtils.isBitSet(decorator.getDecoratorFeatures(), IResultSetDecorator.FEATURE_COMPACT_STATUS)) {
+                statusLabel = new StatusLabel(statusBar, SWT.NONE, this);
+                RowData rd = new RowData();
+                rd.width = 50 * fontHeight;
+                statusLabel.setLayoutData(rd);
+                CSSUtils.setCSSClass(statusLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            }
         }
         
         statusBarLayoutJob.schedule(10);
@@ -2108,19 +2101,22 @@ public class ResultSetViewer extends Viewer
 
     public void setStatus(String status, DBPMessageType messageType)
     {
-        if (statusLabel == null || statusLabel.isDisposed()) {
-            return;
+        if (statusLabel != null && !statusLabel.isDisposed() &&
+            (statusLabel.getMessageType() != messageType || !CommonUtils.equalObjects(statusLabel.getMessage(), status))
+        ) {
+            statusLabel.setStatus(status, messageType);
+            ((RowData) statusLabel.getLayoutData()).width = statusLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
         }
-        if (statusLabel.getMessageType() == messageType && CommonUtils.equalObjects(statusLabel.getMessage(), status)) {
-            return;
-        }
-        statusLabel.setStatus(status, messageType);
-        ((RowData)statusLabel.getLayoutData()).width = statusLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
-        rowCountLabel.updateActionState();
 
-        DBSDataContainer dataContainer = getDataContainer();
-        if (dataContainer != null && dataContainer.getDataSource() != null) {
-            resultSetSize.setText(String.valueOf(getSegmentMaxRows()));
+        if (rowCountLabel != null) {
+            rowCountLabel.updateActionState();
+        }
+
+        if (resultSetSize != null) {
+            DBSDataContainer dataContainer = getDataContainer();
+            if (dataContainer != null && dataContainer.getDataSource() != null) {
+                resultSetSize.setText(String.valueOf(getSegmentMaxRows()));
+            }
         }
     }
 
