@@ -22,8 +22,11 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.ToolBar;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dashboard.DashboardUIConstants;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemRenderer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemViewSettings;
@@ -35,9 +38,18 @@ import org.jkiss.dbeaver.ui.dashboard.view.DashboardItemViewSettingsDialog;
  */
 public abstract class DashboardRendererAbstract implements DashboardItemRenderer {
 
-    public void fillDashboardToolbar(DashboardItemContainer itemContainer, ToolBar toolBar, Composite chartComposite, DashboardItemViewSettings dashboardConfig) {
+    public void fillDashboardToolbar(
+        @NotNull DashboardItemContainer itemContainer,
+        @NotNull ToolBar toolBar,
+        @NotNull Composite chartComposite,
+        @NotNull DashboardItemViewSettings dashboardConfig
+    ) {
         if (!UIUtils.isInDialog(chartComposite)) {
-            UIUtils.createToolItem(toolBar, "View", UIIcon.OPEN_EXTERNAL, new SelectionAdapter() {
+            if (toolBar.getItems().length > 0) {
+                UIUtils.createToolBarSeparator(toolBar, SWT.VERTICAL);
+            }
+
+            UIUtils.createToolItem(toolBar, "View in popup", UIIcon.FIT_WINDOW, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     HandlerDashboardViewItem.openDashboardViewDialog(itemContainer);
@@ -54,8 +66,16 @@ public abstract class DashboardRendererAbstract implements DashboardItemRenderer
                 }
             });
             UIUtils.createToolBarSeparator(toolBar, SWT.VERTICAL);
+            UIUtils.createToolItem(toolBar, "Close", UIIcon.CLOSE, new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    itemContainer.getGroup().selectItem(itemContainer);
+                    ActionUtils.runCommand(
+                        DashboardUIConstants.CMD_REMOVE_DASHBOARD,
+                        itemContainer.getGroup().getView().getWorkbenchSite());
+                }
+            });
         }
     }
-
 
 }

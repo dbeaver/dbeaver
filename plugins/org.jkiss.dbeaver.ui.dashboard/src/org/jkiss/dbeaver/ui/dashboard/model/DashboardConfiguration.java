@@ -170,7 +170,7 @@ public class DashboardConfiguration implements DBDashboard {
         }
     }
 
-    public boolean readDashboardItemConfiguration(DashboardItemViewSettings item) {
+    public boolean removeItemConfiguration(DashboardItemViewSettings item) {
         return items.remove(item);
     }
 

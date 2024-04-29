@@ -630,7 +630,12 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     List<MySQLPrivilege> privileges = new ArrayList<>();
                     while (dbResult.next()) {
-                        MySQLPrivilege user = new MySQLPrivilege(this, dbResult);
+                        String context = JDBCUtils.safeGetString(dbResult, "context");
+                        if (CommonUtils.isEmpty(context)) {
+                            log.debug("Skip privilege with an empty context.");
+                            continue;
+                        }
+                        MySQLPrivilege user = new MySQLPrivilege(this, context, dbResult);
                         privileges.add(user);
                     }
                     return privileges;
