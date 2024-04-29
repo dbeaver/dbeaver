@@ -41,7 +41,6 @@ public class HandlerDashboardAddItem extends HandlerDashboardAbstract {
                 if (addDialog.open() == IDialogConstants.OK_ID) {
                     DashboardItemConfiguration selectedDashboard = addDialog.getSelectedDashboard();
                     if (selectedDashboard != null) {
-                        view.getConfiguration().readDashboardItemConfiguration(selectedDashboard);
                         listViewer.getDefaultGroup().addItem(selectedDashboard);
                     }
                 }
