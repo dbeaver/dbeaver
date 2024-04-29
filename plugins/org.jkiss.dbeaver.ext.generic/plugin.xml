@@ -1795,8 +1795,7 @@
                         id="timestream-ce"
                         label="Timestream"
                         description="AWS Timestream Driver"
-                        iconBig="icons/timestream_pro_icon_light.png"
-                        iconBigDark="icons/timestream_pro_icon.png"
+                        iconBig="icons/timestream_pro_icon.png"
                         supportsDistributedMode="false"
                         categories="nosql,timeseries,aws">
                     <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.timestream.reason"/>
