@@ -28,6 +28,7 @@ import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.data.time.*;
 import org.jfree.ui.RectangleInsets;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardFetchType;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardInterval;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardValueType;
@@ -184,7 +185,7 @@ public class DashboardRendererTimeseries extends DashboardRendererDatabaseChart 
     }
 
     @Override
-    public void updateDashboardData(DashboardItemContainer container, Date lastUpdateTime, DashboardDataset dataset) {
+    public void updateDashboardData(@NotNull DashboardItemContainer container, @Nullable Date lastUpdateTime, @NotNull DashboardDataset dataset) {
         DashboardChartComposite chartComposite = getChartComposite(container);
         if (chartComposite.isDisposed()) {
             return;
@@ -291,7 +292,7 @@ public class DashboardRendererTimeseries extends DashboardRendererDatabaseChart 
     }
 
     @Override
-    public void resetDashboardData(DashboardItemContainer container, Date lastUpdateTime) {
+    public void resetDashboardData(@NotNull DashboardItemContainer container, Date lastUpdateTime) {
         XYPlot plot = getDashboardPlot(container);
         if (plot != null) {
             TimeSeriesCollection chartDataset = (TimeSeriesCollection) plot.getDataset();
@@ -300,7 +301,7 @@ public class DashboardRendererTimeseries extends DashboardRendererDatabaseChart 
     }
 
     @Override
-    public void updateDashboardView(DashboardViewItem dashboardItem) {
+    public void updateDashboardView(@NotNull DashboardViewItem dashboardItem) {
         XYPlot plot = getDashboardPlot(dashboardItem);
         if (plot != null) {
             DashboardChartComposite chartComposite = getChartComposite(dashboardItem);

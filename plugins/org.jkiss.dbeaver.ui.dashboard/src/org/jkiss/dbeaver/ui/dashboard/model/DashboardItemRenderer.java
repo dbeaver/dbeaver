@@ -20,6 +20,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.ToolBar;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.dashboard.data.DashboardDataset;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardViewItem;
 
@@ -40,16 +41,28 @@ public interface DashboardItemRenderer {
         @NotNull DashboardContainer viewContainer,
         @NotNull Point preferredSize);
 
-    void fillDashboardToolbar(DashboardItemContainer itemContainer, ToolBar toolBar, Composite chartComposite, DashboardItemViewSettings dashboardConfig);
+    void fillDashboardToolbar(
+        @NotNull DashboardItemContainer itemContainer,
+        @NotNull ToolBar toolBar,
+        @NotNull Composite chartComposite,
+        @NotNull DashboardItemViewSettings dashboardConfig);
 
-    void updateDashboardData(DashboardItemContainer container, Date lastUpdateTime, DashboardDataset dataset);
+    void updateDashboardData(
+        @NotNull DashboardItemContainer container,
+        @Nullable Date lastUpdateTime,
+        @NotNull DashboardDataset dataset);
 
-    void resetDashboardData(DashboardItemContainer dashboardItem, Date lastUpdateTime);
+    void resetDashboardData(
+        @NotNull DashboardItemContainer dashboardItem,
+        @Nullable Date lastUpdateTime);
 
-    void moveDashboardView(DashboardViewItem toItem, DashboardViewItem fromItem, boolean clearOriginal);
+    void moveDashboardView(
+        @NotNull DashboardViewItem toItem,
+        @NotNull DashboardViewItem fromItem,
+        boolean clearOriginal);
 
-    void updateDashboardView(DashboardViewItem dashboardItem);
+    void updateDashboardView(@NotNull DashboardViewItem dashboardItem);
 
-    void disposeDashboard(DashboardItemContainer container);
+    void disposeDashboard(@NotNull DashboardItemContainer container);
 
 }

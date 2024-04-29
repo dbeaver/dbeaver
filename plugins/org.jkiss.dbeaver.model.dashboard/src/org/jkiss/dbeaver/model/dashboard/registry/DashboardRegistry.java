@@ -54,6 +54,7 @@ public class DashboardRegistry {
     private static DashboardRegistry instance = null;
 
     private final Object syncRoot = new Object();
+    private final List<DashboardRegistryListener> listeners = new ArrayList<>();
 
     public synchronized static DashboardRegistry getInstance() {
         if (instance == null) {
@@ -293,20 +294,24 @@ public class DashboardRegistry {
         return result;
     }
 
-    public void createDashboardItem(DashboardItemConfiguration dashboard) throws IllegalArgumentException {
+    public void createDashboardItem(DashboardItemConfiguration itemConfiguration) throws IllegalArgumentException {
         synchronized (syncRoot) {
             if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
                 throw new IllegalArgumentException("The user has no permission to create dashboard configuration");
             }
-            if (dashboardItems.containsKey(dashboard.getId())) {
-                throw new IllegalArgumentException("Dashboard " + dashboard.getId() + "' already exists");
+            if (dashboardItems.containsKey(itemConfiguration.getId())) {
+                throw new IllegalArgumentException("Dashboard " + itemConfiguration.getId() + "' already exists");
             }
-            if (!dashboard.isCustom()) {
+            if (!itemConfiguration.isCustom()) {
                 throw new IllegalArgumentException("Only custom dashboards can be added");
             }
-            dashboardItems.put(dashboard.getId(), dashboard);
+            dashboardItems.put(itemConfiguration.getId(), itemConfiguration);
     
             saveConfigFile();
+        }
+
+        for (DashboardRegistryListener listener : listeners) {
+            listener.handleItemCreate(itemConfiguration);
         }
     }
 
@@ -324,6 +329,10 @@ public class DashboardRegistry {
             dashboardItems.remove(dashboard.getId());
     
             saveConfigFile();
+        }
+
+        for (DashboardRegistryListener listener : listeners) {
+            listener.handleItemDelete(dashboard);
         }
     }
 
@@ -345,4 +354,11 @@ public class DashboardRegistry {
         saveConfigFile();
     }
 
+    public synchronized void addListener(@NotNull DashboardRegistryListener listener) {
+        this.listeners.add(listener);
+    }
+
+    public synchronized void removeListener(@NotNull DashboardRegistryListener listener) {
+        this.listeners.remove(listener);
+    }
 }

@@ -149,6 +149,7 @@ public class DataSourceDashboardView extends ViewPart implements DashboardViewer
                     dataSourceContainer = project.getDataSourceRegistry().getDataSource(datasourceId);
                 }
             }
+
             if (dataSourceContainer != null) {
                 dataSourceContainer.getRegistry().addDataSourceListener(this);
 
@@ -164,20 +165,21 @@ public class DataSourceDashboardView extends ViewPart implements DashboardViewer
                     configuration = configurationList.getDashboard(dashboardId);
                 }
 
+                updateStatus();
+
                 dashboardListViewer = new DashboardListViewer(getSite(), this, configurationList, configuration);
                 dashboardListViewer.createControl(parent);
 
                 dashboardListViewer.createDashboardsFromConfiguration();
 
                 getSite().setSelectionProvider(dashboardListViewer);
+            } else {
+                updateStatus();
             }
 
             parent.layout(true, true);
 
             dashboardProgressPainter.close();
-            dashboardProgressPainter = null;
-
-            updateStatus();
         } catch (Throwable e) {
             log.error("Error initializing dashboard view", e);
         }
@@ -187,9 +189,11 @@ public class DataSourceDashboardView extends ViewPart implements DashboardViewer
     public void setFocus() {
         if (dashboardListViewer != null) {
             DashboardGroupContainer group = dashboardListViewer.getDefaultGroup();
-            List<? extends DashboardItemContainer> items = group.getItems();
-            if (!items.isEmpty()) {
-                group.selectItem(items.get(0));
+            if (group != null) {
+                List<? extends DashboardItemContainer> items = group.getItems();
+                if (!items.isEmpty()) {
+                    group.selectItem(items.get(0));
+                }
             }
         }
     }
@@ -249,7 +253,7 @@ public class DataSourceDashboardView extends ViewPart implements DashboardViewer
         if (dataSourceContainer != null) {
             setTitleToolTip("Connection: " + dataSourceContainer.getName() + " (" + dataSourceContainer.getDriver().getFullName() + ")");
         }
-        UIUtils.asyncExec(() -> setPartName(partName));
+        UIUtils.syncExec(() -> setPartName(partName));
     }
 
 

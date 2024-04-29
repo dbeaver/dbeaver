@@ -121,7 +121,7 @@ public class DashboardItemViewSettings {
     }
 
     @Nullable
-    public DashboardItemConfiguration getDashboardDescriptor() {
+    public DashboardItemConfiguration getItemConfiguration() {
         if (dashboardItem == null) {
             try {
                 DBPDataSourceContainer dataSourceContainer = viewConfiguration.getDataSourceContainer();
@@ -131,6 +131,9 @@ public class DashboardItemViewSettings {
                         new DBDashboardContext(dataSourceContainer) :
                         new DBDashboardContext(viewConfiguration.getProject()),
                     itemId);
+                if (dashboardItem == null) {
+                    log.debug("Configuration item '" + itemId + "' not found in registry");
+                }
             } catch (DBException e) {
                 log.debug("Dashboard '" + itemId + "' not found", e);
                 return null;
@@ -142,7 +145,7 @@ public class DashboardItemViewSettings {
     public DashboardRendererType getViewType() {
         String vtId = viewTypeId;
         if (CommonUtils.isEmpty(vtId)) {
-            DashboardItemConfiguration dashboard = getDashboardDescriptor();
+            DashboardItemConfiguration dashboard = getItemConfiguration();
             vtId = dashboard == null ? DashboardConstants.DEF_DASHBOARD_VIEW_TYPE : dashboard.getDashboardRenderer();
         }
         return DashboardUIRegistry.getInstance().getViewType(vtId);
