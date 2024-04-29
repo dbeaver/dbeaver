@@ -72,9 +72,11 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
 
     @Override
     protected void addStructObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
+        // Make options modifiable
+        options = new HashMap<>(options);
         final OBJECT_TYPE table = command.getObject();
 
-        final NestedObjectCommand tableProps = command.getObjectCommands().get(table);
+        final NestedObjectCommand<?,?> tableProps = command.getObjectCommands().get(table);
         if (tableProps == null) {
             log.warn("Object change command not found"); //$NON-NLS-1$
             return;
@@ -87,14 +89,16 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         createQuery.append(beginCreateTableStatement(monitor, table, tableName, options));
         boolean hasNestedDeclarations = false;
         final Collection<NestedObjectCommand> orderedCommands = getNestedOrderedCommands(command);
-        for (NestedObjectCommand nestedCommand : orderedCommands) {
+        for (NestedObjectCommand<?,?> nestedCommand : orderedCommands) {
             if (nestedCommand.getObject() == table) {
                 continue;
             }
             if (excludeFromDDL(nestedCommand, orderedCommands)) {
                 continue;
             }
+            options.put(DBPScriptObject.OPTION_COMPOSITE_OBJECT, table);
             final String nestedDeclaration = nestedCommand.getNestedDeclaration(monitor, table, options);
+            options.remove(DBPScriptObject.OPTION_COMPOSITE_OBJECT);
             if (!CommonUtils.isEmpty(nestedDeclaration)) {
                 // Insert nested declaration
                 if (hasNestedDeclarations) {

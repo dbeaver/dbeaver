@@ -694,7 +694,7 @@ class ResultSetPersister {
                     if (container instanceof ISmartTransactionManager) {
                         if (((ISmartTransactionManager) container).isSmartAutoCommit()) {
                             DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
-                            if (txnManager != null && txnManager.isAutoCommit()) {
+                            if (txnManager != null && txnManager.isSupportsTransactions() && txnManager.isAutoCommit()) {
                                 monitor.subTask("Disable auto-commit mode");
                                 txnManager.setAutoCommit(monitor, false);
                             }

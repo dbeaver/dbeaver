@@ -26,6 +26,7 @@ import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.time.TimeSeriesDataItem;
 import org.jfree.ui.RectangleEdge;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.AWTUtils;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
@@ -59,12 +60,12 @@ public abstract class DashboardRendererDatabaseChart extends DashboardRendererAb
     }
 
     @Override
-    public void fillDashboardToolbar(DashboardItemContainer itemContainer, ToolBar toolBar, Composite chartComposite, DashboardItemViewSettings dashboardConfig) {
+    public void fillDashboardToolbar(@NotNull DashboardItemContainer itemContainer, @NotNull ToolBar toolBar, @NotNull Composite chartComposite, @NotNull DashboardItemViewSettings dashboardConfig) {
         super.fillDashboardToolbar(itemContainer, toolBar, chartComposite, dashboardConfig);
     }
 
     @Override
-    public void moveDashboardView(DashboardViewItem toItem, DashboardViewItem fromItem, boolean clearOriginal) {
+    public void moveDashboardView(@NotNull DashboardViewItem toItem, @NotNull DashboardViewItem fromItem, boolean clearOriginal) {
         DashboardChartComposite toComp = getChartComposite(toItem);
         DashboardChartComposite fromComp = getChartComposite(fromItem);
         toComp.setChart(fromComp.getChart());
@@ -96,7 +97,7 @@ public abstract class DashboardRendererDatabaseChart extends DashboardRendererAb
     }
 
     @Override
-    public void disposeDashboard(DashboardItemContainer container) {
+    public void disposeDashboard(@NotNull DashboardItemContainer container) {
         DashboardChartComposite chartComposite = getChartComposite(container);
         if (chartComposite != null) {
             chartComposite.setChart(null);
