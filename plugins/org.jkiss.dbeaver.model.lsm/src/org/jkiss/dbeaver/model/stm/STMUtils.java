@@ -99,7 +99,11 @@ public class STMUtils {
      * @param comparator - elements comparator
      * @param <T> - type of the element
      * @param <K> - type of the return value of keyGetter
-     * @return index of the found element or -1 if not found
+     * @return index of the element, if it is found or (-(insertion point) - 1).
+     *     The insertion point is defined as the point at which the key would be inserted into the list:
+     *         the index of the first element greater than the key,
+     *         or list.size() if all elements in the list are less than the specified key.
+     *     Note that this guarantees that the return value will be >= 0 if and only if the key is found.
      */
     public static <T, K> int binarySearchByKey(
         @NotNull List<T> list,
