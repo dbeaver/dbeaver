@@ -252,7 +252,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         patchJFaceIcons();
 
         if (!application.isDistributed() &&
-            !ApplicationPolicyService.getInstance().isPolicySoftwareInstallUpdateEnabled()) {
+            !ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
             startVersionChecker();
         }
     }
