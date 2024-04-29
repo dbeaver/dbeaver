@@ -63,6 +63,8 @@ public class SQLQuery implements SQLScriptElement {
     private final DBPDataSource dataSource;
     @NotNull
     private String originalText;
+
+    private Boolean isEndsWithDelimiter = null;
     @NotNull
     private String text;
     private int offset;
@@ -420,6 +422,14 @@ public class SQLQuery implements SQLScriptElement {
 
     public void setData(Object data) {
         this.data = data;
+    }
+
+    public Boolean isEndsWithDelimiter() {
+        return this.isEndsWithDelimiter;
+    }
+
+    public void setEndsWithDelimiter(boolean value) {
+        this.isEndsWithDelimiter = value;
     }
 
     @NotNull

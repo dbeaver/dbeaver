@@ -52,11 +52,13 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAIComple
         DAICompletionEngine<?> object,
         @NotNull Runnable propertyChangeListener
     ) {
-        createConnectionParameters(parent);
+        Composite composite = UIUtils.createComposite(parent, 2);
+        composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        createConnectionParameters(composite);
 
-        createModelParameters(parent);
+        createModelParameters(composite);
 
-        createAdditionalSettings(parent);
+        createAdditionalSettings(composite);
         UIUtils.syncExec(this::applySettings);
     }
 

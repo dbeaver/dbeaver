@@ -59,17 +59,6 @@ public class OffsetKeyedTreeMap<T> {
             this.isLeft = isLeft;
         }
     }
-    
-//    private static class Subtree<T> {
-//        public final Node<T> node;
-//        public final int size;
-//        
-//        public Subtree(Node<T> node, int size) {
-//            super();
-//            this.node = node;
-//            this.size = size;
-//        }
-//    }
 
     public static class ValueAndOffset<T> {
         public final T value;
@@ -144,12 +133,6 @@ public class OffsetKeyedTreeMap<T> {
         this.size = 0;
         this.tombstonesCount = 0;
     }
-
-//    private OffsetKeyedTreeMap(Node<T> root, int size) {
-//        this.root = root;
-//        this.size = size;
-//        this.FixupRoot();
-//    }
 
     public void clear() {
         this.root = sentinel();
@@ -1034,14 +1017,14 @@ public class OffsetKeyedTreeMap<T> {
         }
     }
 
-    private static <T> void stringigyNode(StringBuilder sb, int depth, int offset, Node<T> node, String prefix) {
+    private static <T> void stringifyNode(StringBuilder sb, int depth, int offset, Node<T> node, String prefix) {
         sb.append(String.join("", "  ".repeat(depth))).append(prefix)
             .append("[").append(offset).append(" as ").append(node.offset).append("] ")
             .append(node.content).append("\n");
     }
 
     private void collectImpl(StringBuilder sb, int depth, int offCtx, Node<T> node, String prefix) {
-        stringigyNode(sb, depth, offCtx + node.offset, node, prefix);
+        stringifyNode(sb, depth, offCtx + node.offset, node, prefix);
         if (node.left.isNotSentinel()) {
             collectImpl(sb, depth + 1, offCtx, node.left, "L");
         }

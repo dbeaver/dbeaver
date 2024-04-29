@@ -97,6 +97,11 @@ public class SQLSyntaxManager {
         return statementDelimiterMode;
     }
 
+    public void setStatementDelimiterMode(SQLScriptStatementDelimiterMode statementDelimiterMode) {
+        this.statementDelimiterMode = statementDelimiterMode;
+    }
+
+
     @Nullable
     public String[][] getIdentifierQuoteStrings() {
         return identifierQuoteStrings;
