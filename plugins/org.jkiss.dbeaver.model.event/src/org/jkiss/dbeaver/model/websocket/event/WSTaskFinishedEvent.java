@@ -16,20 +16,28 @@
  */
 package org.jkiss.dbeaver.model.websocket.event;
 
+
 import org.jkiss.code.NotNull;
 
-public class WSUserDeletedEvent extends WSAbstractEvent{
-
+public class WSTaskFinishedEvent extends WSAbstractEvent implements WSProjectEvent{
     @NotNull
-    private final String userId;
-    public WSUserDeletedEvent(@NotNull WSEventType eventType, @NotNull String userId) {
-        super(eventType);
-        this.userId = userId;
+    private final String taskId;
+    @NotNull
+    private final String projectId;
+
+    public WSTaskFinishedEvent(@NotNull String taskId, @NotNull String projectId) {
+        super(WSEventType.TASK_FINISHED);
+        this.taskId = taskId;
+        this.projectId = projectId;
     }
 
     @NotNull
-    @Override
-    public String getUserId() {
-        return userId;
+    public String getTaskId() {
+        return taskId;
+    }
+
+    @NotNull
+    public String getProjectId() {
+        return projectId;
     }
 }
