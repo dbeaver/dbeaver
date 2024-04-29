@@ -69,7 +69,7 @@ public class DatabaseChartViewSettingsEditor implements IObjectPropertyConfigura
             Combo typeCombo = UIUtils.createLabelCombo(viewGroup, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_combos_view, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_combos_view_tooltip, SWT.BORDER | SWT.READ_ONLY);
             typeCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             {
-                List<DashboardRendererType> viewTypes = DashboardUIRegistry.getInstance().getSupportedViewTypes(dashboardConfig.getDashboardDescriptor().getDataType());
+                List<DashboardRendererType> viewTypes = DashboardUIRegistry.getInstance().getSupportedViewTypes(dashboardConfig.getItemConfiguration().getDataType());
                 for (DashboardRendererType viewType : viewTypes) {
                     typeCombo.add(viewType.getTitle());
                 }

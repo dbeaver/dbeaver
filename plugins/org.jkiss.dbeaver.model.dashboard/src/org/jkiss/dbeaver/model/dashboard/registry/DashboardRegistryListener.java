@@ -14,19 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.dashboard.registry;
 
-package org.jkiss.dbeaver.ui;
-
-import org.eclipse.jface.dialogs.IDialogPage;
-import org.jkiss.code.Nullable;
+import org.jkiss.code.NotNull;
 
 /**
- * ICompositeDialogPageContainer
+ * Dashboard config listener
  */
-public interface ICompositeDialogPageContainer extends IDialogPageProvider {
+public interface DashboardRegistryListener {
 
-    void showSubPage(IDialogPage subPage);
+    void handleItemCreate(@NotNull DashboardItemConfiguration item);
 
-    @Nullable
-    IDialogPage getCurrentSubPage();
+    void handleItemDelete(@NotNull DashboardItemConfiguration item);
+
 }

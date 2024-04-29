@@ -173,6 +173,22 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
         setControl(composite);
     }
 
+    @Override
+    protected void updatePageCompletion() {
+        if (isPageComplete()) {
+            setPageComplete(true);
+            setErrorMessage(null);
+        } else {
+            setPageComplete(false);
+            setErrorMessage(configurator.getErrorMessage());
+        }
+    }
+
+    @Override
+    public boolean isPageComplete() {
+        return handlerConfiguration == null || !handlerConfiguration.isEnabled() || configurator.isComplete();
+    }
+
     private void setConnectionConfigProfile(DBWNetworkProfile profile) {
         activeProfile = profile;
         DBPDataSourceContainer dataSource = site.getActiveDataSource();
@@ -251,6 +267,7 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
         }
         if (useHandlerCheck != null) {
             useHandlerCheck.setEnabled(!hasProfileConfig);
+            updatePageCompletion();
         }
     }
 

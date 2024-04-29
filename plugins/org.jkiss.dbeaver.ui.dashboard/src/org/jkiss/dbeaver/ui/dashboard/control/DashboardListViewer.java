@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ui.dashboard.control;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Widget;
@@ -37,6 +39,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.model.*;
+import org.jkiss.dbeaver.ui.dashboard.view.DashboardCatalogPanel;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.IOException;
@@ -72,6 +75,8 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
         dashContainer.layout(true, true);
         dashContainer.setRedraw(true);
     });
+    private SashForm dashDivider;
+    private DashboardCatalogPanel catalogPanel;
 
     public DashboardListViewer(
         @NotNull IWorkbenchSite site,
@@ -115,12 +120,29 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
     }
 
     public void createControl(Composite parent) {
-        dashContainer = new DashboardListControl(site, parent, this);
+        dashDivider = UIUtils.createPartDivider(part, parent, SWT.HORIZONTAL);
+        dashContainer = new DashboardListControl(site, dashDivider, this);
 
-        //dashContainer.setLayoutData(new GridData(GridData.FILL_BOTH));
+        catalogPanel = new DashboardCatalogPanel(
+            dashDivider,
+            viewConfiguration.getProject(),
+            viewConfiguration.getDataSourceContainer(),
+            item -> viewConfiguration.getItemConfig(item.getId()) != null,
+            true) {
+            @Override
+            protected void handleChartSelected() {
+                //enableButton(IDialogConstants.OK_ID, getSelectedDashboard() != null);
+            }
 
-//        statusLabel = new CLabel(composite, SWT.NONE);
-//        statusLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            @Override
+            protected void handleChartSelectedFinal() {
+                dashContainer.addItem(getSelectedDashboard());
+            }
+        };
+
+
+        dashDivider.setWeights(650, 350);
+        dashDivider.setMaximizedControl(dashContainer);
 
         updateStatus();
 
@@ -143,6 +165,9 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
             WorkspaceConfigEventManager.addConfigChangedListener(DashboardRegistry.CONFIG_FILE_NAME, dashboardsConfigChangedListener); 
         } else {
             dashContainer.createDashboardsFromConfiguration();
+        }
+        if (viewConfiguration.getDashboardItemConfigs().isEmpty()) {
+            dashDivider.setMaximizedControl(null);
         }
     }
 
@@ -196,6 +221,16 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
     @Override
     public void updateSelection() {
         fireSelectionChanged(new SelectionChangedEvent(this, getSelection()));
+    }
+
+    @Override
+    public void showChartCatalog() {
+        if (dashDivider.getMaximizedControl() != null) {
+            dashDivider.setMaximizedControl(null);
+        } else if (dashDivider.getWeights()[1] == 0){
+            dashDivider.setWeights(650, 350);
+        }
+        catalogPanel.setFocus();
     }
 
     @Override
