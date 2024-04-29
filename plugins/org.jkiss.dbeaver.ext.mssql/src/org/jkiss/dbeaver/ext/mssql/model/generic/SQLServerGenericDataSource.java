@@ -31,12 +31,17 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,6 +51,7 @@ public class SQLServerGenericDataSource extends GenericDataSource {
     private static final Log log = Log.getLog(SQLServerGenericDataSource.class);
 
     private static final String PROP_ENCRYPT_PASS = "ENCRYPT_PASSWORD";
+    private boolean hasMetaDataProcedureView = false;
 
     public SQLServerGenericDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -122,6 +128,24 @@ public class SQLServerGenericDataSource extends GenericDataSource {
     @Override
     protected boolean isPopulateClientAppName() {
         return false;
+    }
+
+    @Override
+    public void initialize(DBRProgressMonitor monitor) throws DBException {
+        super.initialize(monitor);
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read server information")) {
+            JDBCUtils.executeStatement(session, "SELECT TOP 1 1 FROM SYS.SYSPROCEDURE WHERE 1 <> 1");
+            hasMetaDataProcedureView = true;
+        } catch (SQLException e) {
+            hasMetaDataProcedureView = false;
+        }
+    }
+
+    /**
+     * Is meta info SYS.SYSPROCEDURE available for the data source
+     */
+    public boolean hasMetaDataProcedureView() {
+        return hasMetaDataProcedureView;
     }
 
 }
