@@ -40,6 +40,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWizard;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
@@ -452,20 +453,19 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     private void updatePageCompleteMark(TreeItem parent) {
-        if (!isNavigableWizard()) {
-            return;
-        }
+        final boolean navigableWizard = isNavigableWizard();
+        final IWizardPage currentPage = getCurrentPage();
         for (TreeItem item : parent == null ? pagesTree.getItems() : parent.getItems()) {
             Object page = item.getData();
-            if (page instanceof IWizardPageNavigable && !((IWizardPageNavigable) page).isPageNavigable()) {
+            if (page instanceof IWizardPageNavigable pageNavigable && !pageNavigable.isPageNavigable()) {
                 continue;
             }
-            if (page instanceof IWizardPage && !((IWizardPage) page).isPageComplete()) {
-                //item.setFont(boldFont);
-                item.setImage((Image)null);
+            if (page == currentPage) {
+                item.setImage((Image) null);
+            } else if (page instanceof IWizardPage wizardPage && !wizardPage.isPageComplete()) {
+                item.setImage(navigableWizard ? null : DBeaverIcons.getImage(DBIcon.SMALL_ERROR));
             } else {
-                item.setFont(null);
-                item.setImage(DBeaverIcons.getImage(UIIcon.OK_MARK));
+                item.setImage(navigableWizard ? DBeaverIcons.getImage(UIIcon.OK_MARK) : null);
             }
             updatePageCompleteMark(item);
         }
