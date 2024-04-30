@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.model.security;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.security.user.SMTeam;
-import org.jkiss.dbeaver.model.security.user.SMUser;
-import org.jkiss.dbeaver.model.security.user.SMUserFilter;
-import org.jkiss.dbeaver.model.security.user.SMUserImportList;
+import org.jkiss.dbeaver.model.security.user.*;
 
 import java.util.List;
 import java.util.Map;
@@ -44,7 +41,7 @@ public interface SMAdminController extends SMController {
      * @throws DBException the db exception
      */
     @NotNull
-    SMTeam[] getUserTeams(String userId) throws DBException;
+    SMUserTeam[] getUserTeams(String userId) throws DBException;
 
     /**
      * Create user.
@@ -69,6 +66,9 @@ public interface SMAdminController extends SMController {
     void invalidateAllTokens() throws DBException;
 
     void setUserTeams(String userId, String[] teamIds, String grantorId) throws DBException;
+
+    void setUserTeamRole(@NotNull String userId, @NotNull String teamId, @Nullable String teamRole) throws DBException;
+
 
     /**
      * Gets user by id.
@@ -98,9 +98,6 @@ public interface SMAdminController extends SMController {
     SMTeam[] readAllTeams() throws DBException;
 
     SMTeam findTeam(String teamId) throws DBException;
-
-    @NotNull
-    String[] getTeamMembers(String teamId) throws DBException;
 
     void createTeam(String teamId, String name, String description, String grantor) throws DBException;
 
