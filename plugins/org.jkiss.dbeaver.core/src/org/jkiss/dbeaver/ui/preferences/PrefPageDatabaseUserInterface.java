@@ -48,7 +48,6 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.SWTBrowserRegistry;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageDescriptor;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
-import org.jkiss.dbeaver.registry.policy.ApplicationPolicyService;
 import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -98,17 +97,10 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
-        if (isStandalone && !ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
-            Group groupObjects = UIUtils.createControlGroup(
-                composite, CoreMessages.pref_page_ui_general_group_general, 2,
-                GridData.VERTICAL_ALIGN_BEGINNING,
-                0);
-            automaticUpdateCheck = UIUtils.createCheckbox(
-                groupObjects,
-                CoreMessages.pref_page_ui_general_checkbox_automatic_updates,
-                null,
-                false,
-                2);
+        if (isStandalone) {
+            Group groupObjects = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_general, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            automaticUpdateCheck = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_ui_general_checkbox_automatic_updates, null, false, 2);
+            //automaticUpdateCheck.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 2, 1));
         }
         if (isStandalone) {
             Group regionalSettingsGroup = UIUtils.createControlGroup(composite,
@@ -235,10 +227,8 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             browserCombo.select(SWTBrowserRegistry.getActiveBrowser().ordinal());
             useEmbeddedBrowserAuth.setEnabled(!SWTBrowserRegistry.getActiveBrowser().equals(SWTBrowserRegistry.BrowserSelection.IE));
         }
-        if (isStandalone) { 
-            if (!ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
-                automaticUpdateCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
-            }
+        if (isStandalone) {
+            automaticUpdateCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
             if (!RuntimeUtils.isLinux()) {
                 useEmbeddedBrowserAuth.setSelection(store.getBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH));
             }
@@ -257,10 +247,8 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     protected void performDefaults() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         if (isStandalone) {
+            automaticUpdateCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
             useEmbeddedBrowserAuth.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH));
-            if (!ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
-                automaticUpdateCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
-            }
         }
         if (isWindowsDesktopClient()) {
             SWTBrowserRegistry.getActiveBrowser();
@@ -287,12 +275,8 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         if (isStandalone) {
+            store.setValue(DBeaverPreferences.UI_AUTO_UPDATE_CHECK, automaticUpdateCheck.getSelection());
             store.setValue(DBeaverPreferences.UI_USE_EMBEDDED_AUTH, useEmbeddedBrowserAuth.getSelection());
-            if (!ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
-                store.setValue(DBeaverPreferences.UI_AUTO_UPDATE_CHECK, automaticUpdateCheck.getSelection());
-            } else {
-                store.setValue(DBeaverPreferences.UI_AUTO_UPDATE_CHECK, Boolean.FALSE);
-            }
         }
 
         if (isWindowsDesktopClient()) {
