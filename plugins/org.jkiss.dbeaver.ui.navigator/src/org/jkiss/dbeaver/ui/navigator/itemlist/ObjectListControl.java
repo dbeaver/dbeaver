@@ -375,7 +375,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     }
 
     protected int getDataLoadTimeout() {
-        return 4000;
+        return 10000;
     }
 
     protected void setListData(Collection<OBJECT_TYPE> items, boolean append, boolean forUpdate) {
