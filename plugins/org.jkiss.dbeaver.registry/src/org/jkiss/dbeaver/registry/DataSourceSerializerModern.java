@@ -85,7 +85,6 @@ class DataSourceSerializerModern implements DataSourceSerializer
     private static final Gson CONFIG_GSON = new GsonBuilder()
         .setLenient()
         .serializeNulls()
-        .disableHtmlEscaping()
         .create();
     private static final Gson SECURE_GSON = new GsonBuilder()
         .setLenient()
