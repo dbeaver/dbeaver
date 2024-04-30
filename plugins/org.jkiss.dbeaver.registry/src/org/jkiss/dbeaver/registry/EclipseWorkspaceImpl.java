@@ -53,7 +53,7 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
     public EclipseWorkspaceImpl(DBPPlatform platform, IWorkspace eclipseWorkspace) {
         super(platform, eclipseWorkspace);
 
-        workspaceId = readWorkspaceId();
+        workspaceId = initWorkspaceId();
 
         if (!isReadOnly()) {
             this.projectListener = new ProjectListener();
@@ -235,5 +235,8 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
         }
     }
 
+    protected String initWorkspaceId() {
+        return readWorkspaceId();
+    }
 
 }
