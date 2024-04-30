@@ -1152,7 +1152,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         @Override
         public void run() {
             setDiagramNotation(notation);
-            refreshDiagram(true, false);
+            refreshDiagram(false, true);
         }
     }
 
