@@ -337,7 +337,7 @@ public class ItemListControl extends NodeListControl
                                 ((DBPObjectStatisticsCollector) parentObject).collectObjectStatistics(monitor, false, false);
                             }
                         } catch (Exception e) {
-                            log.error("Error reading statistics of '" + parentObject.getName() + "'", e);
+                            log.debug("Error reading statistics of '" + parentObject.getName() + "'", e);
                         }
                     }
                 }

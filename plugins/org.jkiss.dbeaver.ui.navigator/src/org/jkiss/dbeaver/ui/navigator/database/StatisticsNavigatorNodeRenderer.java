@@ -571,7 +571,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                     }
                 });
             } catch (DBException e) {
-                log.error(e);
+                log.debug(e);
             } finally {
                 monitor.done();
             }
