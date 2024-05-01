@@ -48,11 +48,19 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.EnumSet;
 
 /**
  * MultiPageWizardDialog
  */
 public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardContainer, IWizardContainer2, IPageChangeProvider, IPreferencePageContainer {
+
+    protected enum PageCompletionMark {
+        /** If a page is complete, a green check will be shown next to it */
+        COMPLETE,
+        /** If a page is incomplete, a red cross will be shown next to it */
+        ERROR
+    }
 
     private IWizard wizard;
     private Composite pageArea;
@@ -111,8 +119,9 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         updateButtons();
     }
 
-    protected boolean isNavigableWizard() {
-        return false;
+    @NotNull
+    protected EnumSet<PageCompletionMark> getShownCompletionMarks() {
+        return EnumSet.of(PageCompletionMark.ERROR);
     }
 
     protected Tree getPagesTree() {
@@ -453,7 +462,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     private void updatePageCompleteMark(TreeItem parent) {
-        final boolean navigableWizard = isNavigableWizard();
+        final EnumSet<PageCompletionMark> shownCompletionMarks = getShownCompletionMarks();
         final IWizardPage currentPage = getCurrentPage();
         for (TreeItem item : parent == null ? pagesTree.getItems() : parent.getItems()) {
             Object page = item.getData();
@@ -461,11 +470,12 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                 continue;
             }
             if (page == currentPage) {
+                // Don't show any completion marks for current page
                 item.setImage((Image) null);
             } else if (page instanceof IWizardPage wizardPage && !wizardPage.isPageComplete()) {
-                item.setImage(navigableWizard ? null : DBeaverIcons.getImage(DBIcon.SMALL_ERROR));
+                item.setImage(shownCompletionMarks.contains(PageCompletionMark.ERROR) ? DBeaverIcons.getImage(DBIcon.SMALL_ERROR) : null);
             } else {
-                item.setImage(navigableWizard ? DBeaverIcons.getImage(UIIcon.OK_MARK) : null);
+                item.setImage(shownCompletionMarks.contains(PageCompletionMark.COMPLETE) ? DBeaverIcons.getImage(UIIcon.OK_MARK) : null);
             }
             updatePageCompleteMark(item);
         }
