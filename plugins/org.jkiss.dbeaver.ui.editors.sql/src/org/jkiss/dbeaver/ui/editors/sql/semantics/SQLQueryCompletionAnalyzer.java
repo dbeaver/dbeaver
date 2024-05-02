@@ -16,13 +16,13 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionAnalyzer;
-import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionContext;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItem;
@@ -45,7 +45,7 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
     @NotNull
     private final SQLCompletionRequest request;
     @NotNull
-    private volatile List<SQLCompletionProposalBase> proposals = Collections.emptyList();
+    private volatile List<ICompletionProposal> proposals = Collections.emptyList();
 
     public SQLQueryCompletionAnalyzer(@NotNull SQLEditorBase editor, @NotNull SQLCompletionRequest request) {
         this.editor = editor;
@@ -73,13 +73,28 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
                     default -> throw new IllegalStateException("Unexpected completion item kind " + item.getKind());
                 };
                 // TODO wtf resulting cursor position
-                this.proposals.add(new SQLCompletionProposal(this.request, item.getText(), item.getText(), position, image, DBPKeywordType.OTHER, item.getDescription(), object, Collections.emptyMap()));
+                this.proposals.add(new SQLCompletionProposal(this.request, item.getText(), item.getText(), item.getText().length(), image, DBPKeywordType.OTHER, item.getDescription(), object, Collections.emptyMap()));
+//                Image eimage = DBeaverIcons.getImage(image);
+//                this.proposals.add(new CompletionProposal(
+//                        item.getText(),
+//                        completionSet.getReplacementPosition(),
+//                        completionSet.getReplacementLength(),
+//                        item.getText().length(),
+//                        eimage,
+//                        item.getText(),
+//                        new ContextInformation(
+//                                eimage,
+//                                item.getExtraText() == null ? "" : item.getExtraText(),
+//                                item.getDescription() == null ? "" : item.getDescription()
+//                        ),
+//                        item.getDescription()
+//                ));
             }
         }
     }
 
     @NotNull
-    public List<SQLCompletionProposalBase> getProposals() {
+    public List<ICompletionProposal> getProposals() {
         return this.proposals;
     }
 }
