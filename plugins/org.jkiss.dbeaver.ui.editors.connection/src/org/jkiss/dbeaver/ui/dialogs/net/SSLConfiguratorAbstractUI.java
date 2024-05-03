@@ -37,7 +37,7 @@ public abstract class SSLConfiguratorAbstractUI implements IObjectPropertyConfig
 
     @Override
     public boolean isComplete() {
-        return false;
+        return true;
     }
 
     protected void createSSLConfigHint(Composite composite, boolean optional, int hSpan) {

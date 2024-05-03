@@ -190,7 +190,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
                 try {
                     newIndexCache = indexCache.getObjects(monitor, this, null);
                 } catch (DBException e) {
-                    log.debug("Error reading global indexes. Get indexes from tables", e);
+                    log.debug("Error reading catalog/schema indexes. Get indexes from tables", e);
                     newIndexCache = new ArrayList<>();
                 }
 
