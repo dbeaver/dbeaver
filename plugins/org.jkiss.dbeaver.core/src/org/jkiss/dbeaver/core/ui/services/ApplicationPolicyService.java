@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry.policy;
+package org.jkiss.dbeaver.core.ui.services;
 
 import org.eclipse.core.commands.Command;
 import org.eclipse.ui.commands.ICommandService;
