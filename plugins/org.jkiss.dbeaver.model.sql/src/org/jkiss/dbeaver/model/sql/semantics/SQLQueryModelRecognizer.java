@@ -958,7 +958,7 @@ public class SQLQueryModelRecognizer {
                     SQLQueryRowsCteModel cte = new SQLQueryRowsCteModel(n, isRecursive, resultQuery);
 
                     STMTreeNode cteListNode = withNode.getStmChild(withNode.getChildCount() - 1);
-                    for (int i = 0, j = 0; i < cteListNode.getChildCount(); i += 2, j++) {
+                    for (int i = 0, j = 0; i < cteListNode.getChildCount() && j < subqueries.size(); i += 2, j++) {
                         STMTreeNode cteSubqueryNode = cteListNode.getStmChild(i);
 
                         SQLQuerySymbolEntry subqueryName = r.collectIdentifier(cteSubqueryNode.getStmChild(0));
