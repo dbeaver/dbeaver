@@ -1764,7 +1764,10 @@ public class DBeaverLauncher {
         if (configurationLocation == null) {
             configurationLocation = buildLocation(PROP_CONFIG_AREA_DEFAULT, null, ""); //$NON-NLS-1$
             if (configurationLocation == null) {
+                
+                
                 configurationLocation = buildProductURL();
+                
                 if (configurationLocation == null) {
                     configurationLocation = buildURL(computeDefaultConfigurationLocation(), true);
                 }
@@ -1788,6 +1791,19 @@ public class DBeaverLauncher {
      */
     private URL buildProductURL() {
         String productConfigurationLocation;
+        try {
+            URL url = new URL(getInstallLocation(), CONFIG_DIR);
+            if (debug) {
+                System.out.println("Get Install Location:" + url); //$NON-NLS-1$
+            }
+            boolean checkConfigurationLocation = checkConfigurationLocation(url);
+            if (debug) {
+                System.out.println("Check Configuration Location:" + checkConfigurationLocation); //$NON-NLS-1$
+            }
+        } catch (Exception e) {
+            if (debug)
+                System.out.println("Can not read product properties. " + e.getMessage()); //$NON-NLS-1$
+        }
         String base = getWorkingDirectory(DBEAVER_DATA_FOLDER);
         try {
             String productPath = getProductProperties();
