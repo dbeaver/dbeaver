@@ -674,21 +674,14 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
 
     @Nullable
     private DBPProject getOwnerProject() {
-        DBPProject ownerProject = navigatorModel.getRoot().getOwnerProject();
-        if (ownerProject != null) {
-            return ownerProject;
-        }
-        if (ownerContainerNode != null) {
-            return ownerContainerNode.getOwnerProject();
-        }
-        if (ownerTableNode != null) {
-            return ownerTableNode.getOwnerProject();
-        }
         if (foreignKey != null) {
             DBNDatabaseNode node = getNodeByContainerObject(foreignKey.getParentObject());
             if (node != null) {
-                node.getOwnerProject();
+                return node.getOwnerProject();
             }
+        }
+        if (ownerTableNode != null) {
+            return ownerTableNode.getOwnerProject();
         }
         return null;
     }
