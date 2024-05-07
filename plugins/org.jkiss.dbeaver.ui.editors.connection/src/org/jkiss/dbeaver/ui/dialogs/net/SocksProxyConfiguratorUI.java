@@ -120,8 +120,7 @@ public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<Obj
     }
 
     @Override
-    public boolean isComplete()
-    {
-        return false;
+    public boolean isComplete() {
+        return true;
     }
 }

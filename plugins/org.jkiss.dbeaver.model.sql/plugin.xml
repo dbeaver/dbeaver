@@ -7,6 +7,7 @@
     <extension-point id="org.jkiss.dbeaver.sqlCommand" name="%extension-point.org.jkiss.dbeaver.sqlCommand.name" schema="schema/org.jkiss.dbeaver.sqlCommand.exsd"/>
     <extension-point id="org.jkiss.dbeaver.sqlDialect" name="%extension-point.org.jkiss.dbeaver.sqlDialect.name" schema="schema/org.jkiss.dbeaver.sqlDialect.exsd"/>
     <extension-point id="org.jkiss.dbeaver.sqlInsertMethod" name="%extension-point.org.jkiss.dbeaver.sqlInsertMethod" schema="schema/org.jkiss.dbeaver.sqlInsertMethod.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.sqlBackup" name="Backup" schema="schema/org.jkiss.dbeaver.sqlBackup.exsd"/>
 
     <extension point="org.eclipse.core.runtime.preferences">
         <initializer class="org.jkiss.dbeaver.model.sql.internal.SQLModelPreferencesInitializer"/>
@@ -94,4 +95,15 @@
         </lsmDialect>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.settings">
+        <propertyGroup id="editors" label="Editors">
+            <propertyGroup id="sqlEditor" label="SQL Editor">
+                <property id="sql.proposals.insert.table.alias" label="Insert table aliases (in FROM clause)"
+                          validValues="NONE,PLAIN,EXTENDED" defaultValue="PLAIN" type="string" scopes="global,user"
+                          description="Automatically inserts table aliases"/>
+                <property id="SQLEditor.ContentAssistant.proposals.long.name" label="Use long object names (always use schema/catalog)"
+                          defaultValue="false" type="boolean" scopes="global,user"/>
+            </propertyGroup>
+        </propertyGroup>
+    </extension>
 </plugin>

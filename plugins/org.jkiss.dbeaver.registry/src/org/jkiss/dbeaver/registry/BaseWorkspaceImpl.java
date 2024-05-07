@@ -279,8 +279,14 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse {
     }
 
     public static String readWorkspaceId() {
+        return readWorkspaceIdProperty() + "-" + getLocalHostId();
+    }
+
+    @NotNull
+    public static String readWorkspaceIdProperty() {
         // Check workspace ID
-        Properties workspaceInfo = BaseWorkspaceImpl.readWorkspaceInfo(GeneralUtils.getMetadataFolder());
+        Path metadataFolder = GeneralUtils.getMetadataFolder();
+        Properties workspaceInfo = BaseWorkspaceImpl.readWorkspaceInfo(metadataFolder);
         String workspaceId = workspaceInfo.getProperty(WORKSPACE_ID);
         if (CommonUtils.isEmpty(workspaceId)) {
             // Generate new UUID
@@ -288,8 +294,9 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse {
                 Math.abs(SecurityUtils.generateRandomLong()),
                 36).toUpperCase();
             workspaceInfo.setProperty(WORKSPACE_ID, workspaceId);
+            BaseWorkspaceImpl.writeWorkspaceInfo(metadataFolder, workspaceInfo);
         }
-        return workspaceId + "-" + getLocalHostId();
+        return workspaceId;
     }
 
     private static String getLocalHostId() {

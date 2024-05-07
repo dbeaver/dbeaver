@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.dashboard;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.dashboard.registry.DashboardDescriptor;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardProviderDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -32,7 +32,7 @@ public interface DBDashboardProvider {
     @NotNull
     String getId();
 
-    List<DashboardDescriptor> loadStaticDashboards(@NotNull DashboardProviderDescriptor dp);
+    List<DashboardItemConfiguration> loadStaticDashboards(@NotNull DashboardProviderDescriptor dp);
 
     @NotNull
     List<DBDashboardFolder> loadRootFolders(
@@ -41,4 +41,5 @@ public interface DBDashboardProvider {
         @NotNull DBDashboardContext context);
 
     boolean appliesTo(@NotNull DBPDataSourceContainer dataSource);
+
 }

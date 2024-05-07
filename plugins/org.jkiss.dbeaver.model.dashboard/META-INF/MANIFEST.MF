@@ -3,12 +3,13 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver Dashboards Model
 Bundle-SymbolicName: org.jkiss.dbeaver.model.dashboard;singleton:=true
-Bundle-Version: 1.0.0.qualifier
-Bundle-Release-Date: 20240304
+Bundle-Version: 1.0.3.qualifier
+Bundle-Release-Date: 20240506
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Export-Package: org.jkiss.dbeaver.model.dashboard,
  org.jkiss.dbeaver.model.dashboard.data,
+ org.jkiss.dbeaver.model.dashboard.navigator,
  org.jkiss.dbeaver.model.dashboard.registry
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.core.expressions,

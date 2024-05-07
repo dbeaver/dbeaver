@@ -41,6 +41,8 @@ public class AltibaseConstants {
     public static final String TYPE_NAME_GEOMETRY = "GEOMETRY";
     public static final String TYPE_NAME_TIMESTAMP = "TIMESTAMP";
     public static final String TYPE_NAME_DATE = "DATE";
+
+    public static final String OPERATION_MODIFY = "MODIFY";
     
     public static final String SRID_EQ = "SRID=";
     

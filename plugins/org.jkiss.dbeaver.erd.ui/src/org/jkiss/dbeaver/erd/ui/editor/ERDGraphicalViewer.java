@@ -48,12 +48,14 @@ import org.jkiss.dbeaver.erd.model.*;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.directedit.ValidationMessageHandler;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
+import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
 import org.jkiss.dbeaver.erd.ui.part.EntityPart;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
@@ -188,13 +190,15 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
         try {
             super.setContents(editpart);
             // Reset palette contents
-            if (editpart instanceof DiagramPart) {
+            if (editpart instanceof DiagramPart diagramPart) {
                 List<DBSEntity> tables = new ArrayList<>();
                 for (Object child : editpart.getChildren()) {
-                    if (child instanceof EntityPart) {
-                        tables.add(((EntityPart) child).getEntity().getObject());
+                    if (child instanceof EntityPart childPart) {
+                        tables.add(childPart.getEntity().getObject());
                     }
                 }
+                DBRProgressMonitor monitor = editor.getDiagram().getMonitor();
+                monitor.beginTask(ERDUIMessages.erd_job_rearrange_diagram, tables.size() + 2);
                 tables.sort(DBUtils.nameComparator());
                 Map<PaletteDrawer, List<ToolEntryTable>> toolMap = new LinkedHashMap<>();
                 for (DBSEntity table : tables) {
@@ -208,13 +212,17 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
                         }
                         tools.add(new ToolEntryTable(table));
                     }
+                    monitor.worked(1);
                 }
+                monitor.subTask(ERDUIMessages.erd_job_set_diagram_palette);
                 for (Map.Entry<PaletteDrawer, List<ToolEntryTable>> entry : toolMap.entrySet()) {
                     List<PaletteEntry> paletteEntries = new ArrayList<>(entry.getValue());
                     entry.getKey().setChildren(paletteEntries);
                 }
-                //editor.getPaletteContents().setChildren(tools);
-                ((DiagramPart) editpart).getDiagram().getModelAdapter().handleContentChange(editor);
+                monitor.worked(1);
+                monitor.subTask(ERDUIMessages.erd_job_visuallize_content);
+                diagramPart.getDiagram().getModelAdapter().handleContentChange(editor);
+                monitor.worked(1);
             }
         }
         finally {

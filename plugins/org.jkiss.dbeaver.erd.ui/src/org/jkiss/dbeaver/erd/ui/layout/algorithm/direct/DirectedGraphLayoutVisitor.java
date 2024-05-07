@@ -30,6 +30,7 @@ import org.eclipse.gef.editparts.AbstractConnectionEditPart;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.ERDEntity;
+import org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart;
 import org.jkiss.dbeaver.erd.ui.layout.GraphAnimation;
 import org.jkiss.dbeaver.erd.ui.model.ERDDecorator;
 import org.jkiss.dbeaver.erd.ui.part.AttributePart;
@@ -63,35 +64,35 @@ public class DirectedGraphLayoutVisitor {
     /**
      * Public method for reading graph nodes
      */
-    public void layoutDiagram(AbstractGraphicalEditPart diagram)
-    {
-        partToNodesMap = new IdentityHashMap<>();
-
-        graph = new DirectedGraph();
-        graph.setDirection(PositionConstants.EAST);
-
-        addDiagramNodes(diagram);
-        if (graph.nodes.size() > 0) {
-            addDiagramEdges(diagram);
-            try {
-                if (diagram instanceof DiagramPart) {
-                    DiagramPart diagramPart = (DiagramPart) diagram;
-                    ERDConnectionRouterDescriptor diagramRouter = diagramPart.getEditor().getDiagramRouter();
-                    DirectedGraphLayout layout = null;
-                    if (diagramRouter.supportedAttributeAssociation()) {
-                        layout = new OrthoDirectedGraphLayout(diagram);
-                    } else {
-                        layout = new NodeJoiningDirectedGraphLayout(diagram);
+    public void layoutDiagram(AbstractGraphicalEditPart diagram) {
+        synchronized (this) {
+            partToNodesMap = new IdentityHashMap<>();
+            graph = new DirectedGraph();
+            graph.setDirection(PositionConstants.EAST);
+            addDiagramNodes(diagram);
+            if (!graph.nodes.isEmpty()) {
+                addDiagramEdges(diagram);
+                try {
+                    if (diagram instanceof DiagramPart diagramPart) {
+                        ERDEditorPart editor = diagramPart.getEditor();
+                        if (editor == null) {
+                            return;
+                        }
+                        ERDConnectionRouterDescriptor diagramRouter = editor.getDiagramRouter();
+                        DirectedGraphLayout layout = null;
+                        if (diagramRouter.supportedAttributeAssociation()) {
+                            layout = new OrthoDirectedGraphLayout(diagram);
+                        } else {
+                            layout = new NodeJoiningDirectedGraphLayout(diagram);
+                        }
+                        layout.visit(graph);
                     }
-                    layout.visit(graph);
+                } catch (Exception e) {
+                    log.error("Error during layoting elements:" + e.getMessage(), e);
                 }
-            } catch (Exception e) {
-                log.error("Error during layoting elements:" + e.getMessage(), e);
+                applyDiagramResults(diagram);
             }
-           
-            applyDiagramResults(diagram);
         }
-
     }
 
     //******************* DiagramPart contribution methods **********/

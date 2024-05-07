@@ -19,13 +19,9 @@ package org.jkiss.dbeaver.ui.editors;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.ui.IElementFactory;
 import org.eclipse.ui.IMemento;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNObjectNode;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 public class NodeEditorInputFactory implements IElementFactory {
     private static final Log log = Log.getLog(NodeEditorInputFactory.class);
@@ -46,20 +42,7 @@ public class NodeEditorInputFactory implements IElementFactory {
             log.debug("No node ID found in memento");
             return null;
         }
-        final DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
-
-        try {
-            final DBNNode node = navigatorModel.getNodeByPath(new VoidProgressMonitor(), nodePath);
-            if (node != null) {
-                return new NodeEditorInput(node);
-            } else {
-                log.debug("Node not found by path '" + nodePath + "'");
-            }
-        } catch (DBException e) {
-            log.error("Error opening node '" + nodePath + "'", e);
-            return null;
-        }
-        return null;
+        return new NodeEditorInput(nodePath);
     }
 
     public static void saveState(IMemento memento, NodeEditorInput input) {

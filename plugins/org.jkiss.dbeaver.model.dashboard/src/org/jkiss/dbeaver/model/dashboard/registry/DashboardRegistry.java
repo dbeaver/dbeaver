@@ -54,6 +54,7 @@ public class DashboardRegistry {
     private static DashboardRegistry instance = null;
 
     private final Object syncRoot = new Object();
+    private final List<DashboardRegistryListener> listeners = new ArrayList<>();
 
     public synchronized static DashboardRegistry getInstance() {
         if (instance == null) {
@@ -63,11 +64,11 @@ public class DashboardRegistry {
     }
 
     private final Map<String, DashboardProviderDescriptor> dashboardProviders = new LinkedHashMap<>();
-    private final Map<String, DashboardDescriptor> dashboards = new LinkedHashMap<>();
+    private final Map<String, DashboardItemConfiguration> dashboardItems = new LinkedHashMap<>();
 
     private DashboardRegistry(IExtensionRegistry registry) {
         // Load data dashboardList from external plugins
-        IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DashboardDescriptor.EXTENSION_ID);
+        IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DashboardItemConfiguration.EXTENSION_ID);
         // Load dashboards providers
         for (IConfigurationElement ext : extElements) {
             if ("provider".equals(ext.getName())) {
@@ -79,8 +80,8 @@ public class DashboardRegistry {
         // Load all static dashboards
         DBDashboardContext staticContext = new DBDashboardContext();
         for (DashboardProviderDescriptor dp : dashboardProviders.values()) {
-            for (DashboardDescriptor dashboard : dp.getInstance().loadStaticDashboards(dp)) {
-                dashboards.put(dashboard.getId(), dashboard);
+            for (DashboardItemConfiguration dashboard : dp.getInstance().loadStaticDashboards(dp)) {
+                dashboardItems.put(dashboard.getId(), dashboard);
             }
         }
 
@@ -92,22 +93,28 @@ public class DashboardRegistry {
     private void loadConfigFromFile() {
         try {
             String configContent = DBWorkbench.getPlatform()
-                .getPluginConfigurationController(DashboardConstants.DASHBOARDS_PLUGIN_ID)
+                .getConfigurationController()
                 .loadConfigurationFile(CONFIG_FILE_NAME);
-            if (CommonUtils.isEmpty(configContent)) {
+            if (CommonUtils.isEmpty(configContent) && !DBWorkbench.isDistributed()) {
+                // Backward compatibility
                 configContent = DBWorkbench.getPlatform()
                     .getPluginConfigurationController(DashboardConstants.DASHBOARDS_LEGACY_PLUGIN_ID)
                     .loadConfigurationFile(CONFIG_FILE_NAME);
+                if (CommonUtils.isEmpty(configContent)) {
+                    configContent = DBWorkbench.getPlatform()
+                        .getPluginConfigurationController(DashboardConstants.DASHBOARDS_LEGACY_PLUGIN_ID2)
+                        .loadConfigurationFile(CONFIG_FILE_NAME);
+                }
             }
             
             synchronized (syncRoot) {
                 // Clear all custom dashboards
-                dashboards.values().removeIf(DashboardDescriptor::isCustom);
+                dashboardItems.values().removeIf(DashboardItemConfiguration::isCustom);
                 if (CommonUtils.isNotEmpty(configContent)) {
                     Document dbDocument = XMLUtils.parseDocument(new StringReader(configContent));
                     for (Element dbElement : XMLUtils.getChildElementList(dbDocument.getDocumentElement(), "dashboard")) {
-                        DashboardDescriptor dashboard = new DashboardDescriptor(this, dbElement);
-                        dashboards.put(dashboard.getId(), dashboard);
+                        DashboardItemConfiguration dashboard = new DashboardItemConfiguration(this, dbElement);
+                        dashboardItems.put(dashboard.getId(), dashboard);
                     }
                 }            
             }
@@ -127,7 +134,7 @@ public class DashboardRegistry {
             xml.setButify(true);
             try (var e = xml.startElement("dashboards")) {
                 synchronized (syncRoot) {
-                    for (DashboardDescriptor dashboard : dashboards.values()) {
+                    for (DashboardItemConfiguration dashboard : dashboardItems.values()) {
                         if (dashboard.isCustom()) {
                             try (var e1 = xml.startElement("dashboard")) {
                                 dashboard.serialize(xml);
@@ -140,20 +147,20 @@ public class DashboardRegistry {
             out.flush();
             
             DBWorkbench.getPlatform()
-                .getPluginConfigurationController(DashboardConstants.DASHBOARDS_PLUGIN_ID)
+                .getConfigurationController()
                 .saveConfigurationFile(CONFIG_FILE_NAME, out.getBuffer().toString());
         } catch (Exception e) {
             log.error("Error saving dashboard configuration", e);
         }
     }
 
-    public List<DashboardDescriptor> getAllDashboards() {
+    public List<DashboardItemConfiguration> getAllDashboards() {
         synchronized (syncRoot) {
-            return new ArrayList<>(dashboards.values());
+            return new ArrayList<>(dashboardItems.values());
         }
     }
 
-    public DashboardDescriptor findDashboard(
+    public DashboardItemConfiguration findDashboardItem(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBDashboardContext context,
         @NotNull String id
@@ -190,10 +197,10 @@ public class DashboardRegistry {
                 }
             }
             if (curFolder == null) {
-                log.debug("Folder path '" + path + "' cannot be resolved");
+                log.debug("Dashboard polder path '" + path + "' cannot be resolved");
                 return null;
             }
-            for (DashboardDescriptor dashboard : curFolder.loadDashboards(monitor, context)) {
+            for (DashboardItemConfiguration dashboard : curFolder.loadDashboards(monitor, context)) {
                 if (dashboard.getId().equals(id)) {
                     return dashboard;
                 }
@@ -202,7 +209,7 @@ public class DashboardRegistry {
             return null;
         }
         synchronized (syncRoot) {
-            return dashboards.get(id);
+            return dashboardItems.get(id);
         }
     }
 
@@ -215,9 +222,9 @@ public class DashboardRegistry {
         return null;
     }
 
-    public DashboardDescriptor getDashboard(String id) {
+    public DashboardItemConfiguration getDashboardItem(String id) {
         synchronized (syncRoot) {
-            return dashboards.get(id);
+            return dashboardItems.get(id);
         }
     }
 
@@ -227,9 +234,15 @@ public class DashboardRegistry {
 
     public List<DashboardProviderDescriptor> getDashboardProviders(DBPDataSourceContainer dataSource) {
         if (dataSource != null) {
-            return dashboardProviders.values().stream().filter(dp -> dp.appliesTo(dataSource)).toList();
+            return dashboardProviders.values().stream().filter(dp -> dp.appliesTo(dataSource))
+                .sorted(Comparator.comparing(DashboardProviderDescriptor::getName))
+                .toList();
         }
-        return dashboardProviders.values().stream().filter(DashboardProviderDescriptor::isEnabled).toList();
+        return dashboardProviders.values().stream()
+            .filter(DashboardProviderDescriptor::isEnabled)
+            .filter(d -> !d.isDatabaseRequired())
+            .sorted(Comparator.comparing(DashboardProviderDescriptor::getName))
+            .toList();
     }
 
     public DashboardProviderDescriptor getDashboardProvider(String id) {
@@ -248,34 +261,30 @@ public class DashboardRegistry {
      * Find dashboard matching source.
      * Source can be {@link DBPDataSourceContainer}, {@link DBPDataSourceProviderDescriptor} or {@link DBPDriver}
      */
-    public List<DashboardDescriptor> getDashboards(
+    public List<DashboardItemConfiguration> getDashboardItems(
         @Nullable DashboardProviderDescriptor provider,
-        @NotNull DBPNamedObject source,
+        @Nullable DBPNamedObject source,
         boolean defaultOnly
     ) {
         if (source instanceof DBPDataSourceContainer dsc) {
             source = dsc.getDriver();
         }
-        String providerId, driverId, driverClass;
+        String providerId = null, driverId = null, driverClass = null;
         if (source instanceof DBPDataSourceProviderDescriptor dspd) {
             providerId = dspd.getId();
-            driverId = null;
-            driverClass = null;
         } else if (source instanceof DBPDriver driver) {
             providerId = driver.getProviderId();
             driverId = driver.getId();
             driverClass = driver.getDriverClassName();
-        } else {
-            return new ArrayList<>();
         }
 
-        List<DashboardDescriptor> result = new ArrayList<>();
+        List<DashboardItemConfiguration> result = new ArrayList<>();
         synchronized (syncRoot) {
-            for (DashboardDescriptor dd : dashboards.values()) {
+            for (DashboardItemConfiguration dd : dashboardItems.values()) {
                 if (provider != null && provider != dd.getDashboardProvider()) {
                     continue;
                 }
-                if (dd.matches(providerId, driverId, driverClass)) {
+                if (providerId == null || dd.matches(providerId, driverId, driverClass)) {
                     if (!defaultOnly || dd.isShowByDefault()) {
                         result.add(dd);
                     }
@@ -285,44 +294,52 @@ public class DashboardRegistry {
         return result;
     }
 
-    public void createDashboard(DashboardDescriptor dashboard) throws IllegalArgumentException {
+    public void createDashboardItem(DashboardItemConfiguration itemConfiguration) throws IllegalArgumentException {
         synchronized (syncRoot) {
             if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
                 throw new IllegalArgumentException("The user has no permission to create dashboard configuration");
             }
-            if (dashboards.containsKey(dashboard.getId())) {
-                throw new IllegalArgumentException("Dashboard " + dashboard.getId() + "' already exists");
+            if (dashboardItems.containsKey(itemConfiguration.getId())) {
+                throw new IllegalArgumentException("Dashboard " + itemConfiguration.getId() + "' already exists");
             }
-            if (!dashboard.isCustom()) {
+            if (!itemConfiguration.isCustom()) {
                 throw new IllegalArgumentException("Only custom dashboards can be added");
             }
-            dashboards.put(dashboard.getId(), dashboard);
+            dashboardItems.put(itemConfiguration.getId(), itemConfiguration);
     
             saveConfigFile();
         }
+
+        for (DashboardRegistryListener listener : listeners) {
+            listener.handleItemCreate(itemConfiguration);
+        }
     }
 
-    public void removeDashboard(DashboardDescriptor dashboard) throws IllegalArgumentException {
+    public void removeDashboardItem(DashboardItemConfiguration dashboard) throws IllegalArgumentException {
         synchronized (syncRoot) {
             if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
                 throw new IllegalArgumentException("The user has no permission to remove dashboard configuration");
             }
-            if (!dashboards.containsKey(dashboard.getId())) {
+            if (!dashboardItems.containsKey(dashboard.getId())) {
                 throw new IllegalArgumentException("Dashboard " + dashboard.getId() + "' doesn't exist");
             }
             if (!dashboard.isCustom()) {
                 throw new IllegalArgumentException("Only custom dashboards can be removed");
             }
-            dashboards.remove(dashboard.getId());
+            dashboardItems.remove(dashboard.getId());
     
             saveConfigFile();
+        }
+
+        for (DashboardRegistryListener listener : listeners) {
+            listener.handleItemDelete(dashboard);
         }
     }
 
     public List<DBPNamedObject> getAllSupportedSources(@NotNull DashboardProviderDescriptor dpd) {
         Set<DBPNamedObject> result = new LinkedHashSet<>();
         synchronized (syncRoot) {
-            for (DashboardDescriptor dd : dashboards.values()) {
+            for (DashboardItemConfiguration dd : dashboardItems.values()) {
                 if (dd.getDashboardProvider() == dpd) {
                     result.addAll(dd.getSupportedSources());
                 }
@@ -337,4 +354,11 @@ public class DashboardRegistry {
         saveConfigFile();
     }
 
+    public synchronized void addListener(@NotNull DashboardRegistryListener listener) {
+        this.listeners.add(listener);
+    }
+
+    public synchronized void removeListener(@NotNull DashboardRegistryListener listener) {
+        this.listeners.remove(listener);
+    }
 }

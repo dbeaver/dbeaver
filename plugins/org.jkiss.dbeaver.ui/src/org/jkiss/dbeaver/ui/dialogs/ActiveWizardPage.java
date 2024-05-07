@@ -18,7 +18,10 @@
 package org.jkiss.dbeaver.ui.dialogs;
 
 import org.eclipse.jface.wizard.IWizard;
+import org.eclipse.jface.wizard.IWizardContainer;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
+import org.jkiss.dbeaver.ui.ICompositeDialogPageContainer;
 
 /**
  * ActiveWizardPage
@@ -43,6 +46,17 @@ public abstract class ActiveWizardPage<WIZARD extends IWizard> extends WizardPag
         if (pageComplete) {
             setErrorMessage(null);
         }
+    }
+
+    @Override
+    protected boolean isCurrentPage() {
+        final IWizardContainer container = getContainer();
+        if (container == null) {
+            return false;
+        }
+        final IWizardPage page = container.getCurrentPage();
+        return page == this
+            || page instanceof ICompositeDialogPageContainer cc && cc.getCurrentSubPage() == this;
     }
 
     protected boolean determinePageCompletion() {

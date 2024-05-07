@@ -28,22 +28,23 @@ import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.data.time.*;
 import org.jfree.ui.RectangleInsets;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardFetchType;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardInterval;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardValueType;
 import org.jkiss.dbeaver.model.dashboard.data.DashboardDataset;
 import org.jkiss.dbeaver.model.dashboard.data.DashboardDatasetRow;
-import org.jkiss.dbeaver.model.dashboard.registry.DashboardDescriptor;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
 import org.jkiss.dbeaver.ui.AWTUtils;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.charts.BaseChartDrawingSupplier;
-import org.jkiss.dbeaver.ui.dashboard.control.DBDashboardItem;
+import org.jkiss.dbeaver.ui.dashboard.DashboardUIUtils;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardChartComposite;
-import org.jkiss.dbeaver.ui.dashboard.control.DashboardRendererChart;
-import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemViewConfiguration;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardUtils;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
+import org.jkiss.dbeaver.ui.dashboard.control.DashboardRendererDatabaseChart;
+import org.jkiss.dbeaver.ui.dashboard.control.DashboardViewItem;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemViewSettings;
 
 import java.awt.*;
 import java.text.SimpleDateFormat;
@@ -53,19 +54,19 @@ import java.util.List;
 /**
  * Histogram dashboard renderer
  */
-public class DashboardRendererTimeseries extends DashboardRendererChart {
+public class DashboardRendererTimeseries extends DashboardRendererDatabaseChart {
 
     private static final Font DEFAULT_TICK_LABEL_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 8);
     public static final int MAX_TIMESERIES_RANGE_LABELS = 25;
 
     @Override
-    public DashboardChartComposite createDashboard(@NotNull Composite composite, @NotNull DBDashboardContainer container, @NotNull DashboardViewContainer viewContainer, @NotNull Point preferredSize) {
-        DashboardDescriptor dashboard = container.getDashboard();
+    public DashboardChartComposite createDashboard(@NotNull Composite composite, @NotNull DashboardItemContainer container, @NotNull DashboardContainer viewContainer, @NotNull Point preferredSize) {
+        DashboardItemConfiguration dashboard = container.getItemDescriptor();
 
         TimeSeriesCollection dataset = new TimeSeriesCollection();
         //generateSampleSeries(container, dataset);
 
-        DashboardItemViewConfiguration viewConfig = container.getViewConfig();
+        DashboardItemViewSettings viewConfig = container.getItemConfiguration();
 
         Color gridColor = AWTUtils.makeAWTColor(UIStyles.getDefaultTextForeground());
 
@@ -142,7 +143,7 @@ public class DashboardRendererTimeseries extends DashboardRendererChart {
             rangeAxis.setTickLabelPaint(gridColor);
             rangeAxis.setTickLabelFont(DEFAULT_TICK_LABEL_FONT);
             rangeAxis.setTickLabelInsets(RectangleInsets.ZERO_INSETS);
-            rangeAxis.setStandardTickUnits(DashboardUtils.getTickUnitsSource(dashboard.getValueType()));
+            rangeAxis.setStandardTickUnits(DashboardUIUtils.getTickUnitsSource(dashboard.getValueType()));
             if (dashboard.getValueType() == DBDashboardValueType.percent) {
                 rangeAxis.setLowerBound(0);
                 rangeAxis.setUpperBound(100);
@@ -184,7 +185,7 @@ public class DashboardRendererTimeseries extends DashboardRendererChart {
     }
 
     @Override
-    public void updateDashboardData(DBDashboardContainer container, Date lastUpdateTime, DashboardDataset dataset) {
+    public void updateDashboardData(@NotNull DashboardItemContainer container, @Nullable Date lastUpdateTime, @NotNull DashboardDataset dataset) {
         DashboardChartComposite chartComposite = getChartComposite(container);
         if (chartComposite.isDisposed()) {
             return;
@@ -193,7 +194,7 @@ public class DashboardRendererTimeseries extends DashboardRendererChart {
         XYPlot plot = (XYPlot) chart.getPlot();
         TimeSeriesCollection chartDataset = (TimeSeriesCollection) plot.getDataset();
 
-        DashboardDescriptor dashboard = container.getDashboard();
+        DashboardItemConfiguration dashboard = container.getItemDescriptor();
         if (dashboard.getFetchType() == DBDashboardFetchType.stats) {
             // Clean previous data before stats update
             chartDataset.removeAllSeries();
@@ -277,8 +278,8 @@ public class DashboardRendererTimeseries extends DashboardRendererChart {
         }
     }
 
-    private RegularTimePeriod makeDataItem(DBDashboardContainer container, DashboardDatasetRow row) {
-        return switch (container.getDashboard().getInterval()) {
+    private RegularTimePeriod makeDataItem(DashboardItemContainer container, DashboardDatasetRow row) {
+        return switch (container.getItemDescriptor().getInterval()) {
             case second -> new FixedMillisecond(row.getTimestamp().getTime());
             case minute -> new Minute(row.getTimestamp());
             case hour -> new Hour(row.getTimestamp());
@@ -291,7 +292,7 @@ public class DashboardRendererTimeseries extends DashboardRendererChart {
     }
 
     @Override
-    public void resetDashboardData(DBDashboardContainer container, Date lastUpdateTime) {
+    public void resetDashboardData(@NotNull DashboardItemContainer container, Date lastUpdateTime) {
         XYPlot plot = getDashboardPlot(container);
         if (plot != null) {
             TimeSeriesCollection chartDataset = (TimeSeriesCollection) plot.getDataset();
@@ -300,12 +301,12 @@ public class DashboardRendererTimeseries extends DashboardRendererChart {
     }
 
     @Override
-    public void updateDashboardView(DBDashboardItem dashboardItem) {
+    public void updateDashboardView(@NotNull DashboardViewItem dashboardItem) {
         XYPlot plot = getDashboardPlot(dashboardItem);
         if (plot != null) {
             DashboardChartComposite chartComposite = getChartComposite(dashboardItem);
 
-            DashboardItemViewConfiguration dashboardConfig = dashboardItem.getViewConfig();
+            DashboardItemViewSettings dashboardConfig = dashboardItem.getItemConfiguration();
             if (dashboardConfig != null) {
                 plot.getRangeAxis().setVisible(dashboardConfig.isRangeTicksVisible());
                 plot.getDomainAxis().setVisible(dashboardConfig.isDomainTicksVisible());
@@ -326,7 +327,7 @@ public class DashboardRendererTimeseries extends DashboardRendererChart {
         dashboardItem.getParent().layout(true, true);
     }
 
-    private XYPlot getDashboardPlot(DBDashboardContainer container) {
+    private XYPlot getDashboardPlot(DashboardItemContainer container) {
         DashboardChartComposite chartComposite = getChartComposite(container);
         JFreeChart chart = chartComposite.getChart();
         return chart == null ? null : (XYPlot) chart.getPlot();

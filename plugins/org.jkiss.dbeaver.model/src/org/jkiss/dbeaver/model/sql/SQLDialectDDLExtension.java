@@ -87,6 +87,21 @@ public interface SQLDialectDDLExtension extends SQLDialect {
     @NotNull
     String getBooleanDataType();
 
+    /**
+     * Gets alter column operation.
+     */
+    @NotNull
+    String getAlterColumnOperation();
+
     boolean supportsNoActionIndex();
 
+    /**
+     * Checks if sql dialect supports SET key word for alter column.
+     */
+    boolean supportsAlterColumnSet();
+
+    /**
+     * Checks if sql dialect supports COLUMN key word for alter column.
+     */
+    boolean supportsAlterHasColumn();
 }

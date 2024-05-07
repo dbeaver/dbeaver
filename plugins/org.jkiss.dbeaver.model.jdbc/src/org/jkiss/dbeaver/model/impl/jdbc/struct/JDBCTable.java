@@ -120,9 +120,16 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
     @NotNull
     @Override
-    public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, @Nullable DBDDataFilter dataFilter, long firstRow, long maxRows, long flags, int fetchSize)
-        throws DBCException
-    {
+    public DBCStatistics readData(
+        @Nullable DBCExecutionSource source,
+        @NotNull DBCSession session,
+        @NotNull DBDDataReceiver dataReceiver,
+        @Nullable DBDDataFilter dataFilter,
+        long firstRow,
+        long maxRows,
+        long flags,
+        int fetchSize
+    ) throws DBCException {
         DBCStatistics statistics = new DBCStatistics();
         boolean hasLimits = firstRow >= 0 && maxRows > 0;
 
@@ -673,12 +680,10 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     } else if (keyValue instanceof Double) {
                         double doubleValue = (Double) keyValue;
                         keyValue = allowNegative || doubleValue > gapSize ? doubleValue - gapSize : 0.0;
-                    } else if (keyValue instanceof BigInteger) {
-                        BigInteger biValue = (BigInteger) keyValue;
-                        keyValue = allowNegative || biValue.longValue() > gapSize ? ((BigInteger) keyValue).subtract(BigInteger.valueOf(gapSize)) : new BigInteger("0");
-                    } else if (keyValue instanceof BigDecimal) {
-                        BigDecimal bdValue = (BigDecimal) keyValue;
-                        keyValue = allowNegative || bdValue.longValue() > gapSize ? ((BigDecimal) keyValue).subtract(new BigDecimal(gapSize)) : new BigDecimal(0);
+                    } else if (keyValue instanceof BigInteger biValue) {
+                        keyValue = allowNegative || biValue.longValue() > gapSize ? biValue.subtract(BigInteger.valueOf(gapSize)) : new BigInteger("0");
+                    } else if (keyValue instanceof BigDecimal bdValue) {
+                        keyValue = allowNegative || bdValue.longValue() > gapSize ? bdValue.subtract(new BigDecimal(gapSize)) : new BigDecimal(0);
                     } else {
                         searchInKeys = false;
                     }
@@ -841,12 +846,13 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
     }
     
+    @NotNull
     @Override
     public DBSDictionaryAccessor getDictionaryAccessor(
-        DBRProgressMonitor monitor,
-        List<DBDAttributeValue> preceedingKeys, 
-        DBSEntityAttribute keyColumn, 
-        boolean sortAsc, 
+        @NotNull DBRProgressMonitor monitor,
+        List<DBDAttributeValue> preceedingKeys,
+        @NotNull DBSEntityAttribute keyColumn,
+        boolean sortAsc,
         boolean sortByDesc
     ) throws DBException {
         return new DictionaryAccessor(monitor, preceedingKeys, keyColumn, sortAsc, sortByDesc);
@@ -976,7 +982,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         private final boolean isKeyComparable;
 
         private final DBDDataFilter filter;
-        private JDBCSession session;
+        private final JDBCSession session;
 
         public DictionaryAccessor(
             @NotNull DBRProgressMonitor monitor,
@@ -1018,7 +1024,13 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             this.descAttributesInfo = descAttributes == null ? Collections.emptyList() : descAttributes.stream()
                 .map(a -> new AttrInfo<>(a, DBUtils.findValueHandler(session, a))).collect(Collectors.toList());
         }
-        
+
+        @NotNull
+        @Override
+        public DBRProgressMonitor getProgressMonitor() {
+            return session.getProgressMonitor();
+        }
+
         @Override
         public boolean isKeyComparable() {
             return isKeyComparable;
@@ -1142,7 +1154,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             }
             query.append(" FROM ").append(DBUtils.getObjectFullName(JDBCTable.this, DBPEvaluationContext.DML));
 
-            if (filter.getConstraints().size() > 0) {
+            if (!filter.getConstraints().isEmpty()) {
                 query.append(" WHERE ");
             }
             
@@ -1169,7 +1181,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             boolean caseInsensitive,
             boolean byDesc
         ) {
-            if (existingFilter.getConstraints().size() > 0) {
+            if (!existingFilter.getConstraints().isEmpty()) {
                 query.append(" AND ");
             } else {
                 query.append(" WHERE ");

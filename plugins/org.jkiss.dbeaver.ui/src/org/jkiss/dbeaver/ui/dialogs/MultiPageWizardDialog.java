@@ -40,6 +40,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWizard;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
@@ -47,11 +48,19 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.EnumSet;
 
 /**
  * MultiPageWizardDialog
  */
 public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardContainer, IWizardContainer2, IPageChangeProvider, IPreferencePageContainer {
+
+    protected enum PageCompletionMark {
+        /** If a page is complete, a green check will be shown next to it */
+        COMPLETE,
+        /** If a page is incomplete, a red cross will be shown next to it */
+        ERROR
+    }
 
     private IWizard wizard;
     private Composite pageArea;
@@ -110,8 +119,9 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         updateButtons();
     }
 
-    protected boolean isNavigableWizard() {
-        return false;
+    @NotNull
+    protected EnumSet<PageCompletionMark> getShownCompletionMarks() {
+        return EnumSet.of(PageCompletionMark.ERROR);
     }
 
     protected Tree getPagesTree() {
@@ -452,20 +462,20 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     private void updatePageCompleteMark(TreeItem parent) {
-        if (!isNavigableWizard()) {
-            return;
-        }
+        final EnumSet<PageCompletionMark> shownCompletionMarks = getShownCompletionMarks();
+        final IWizardPage currentPage = getCurrentPage();
         for (TreeItem item : parent == null ? pagesTree.getItems() : parent.getItems()) {
             Object page = item.getData();
-            if (page instanceof IWizardPageNavigable && !((IWizardPageNavigable) page).isPageNavigable()) {
+            if (page instanceof IWizardPageNavigable pageNavigable && !pageNavigable.isPageNavigable()) {
                 continue;
             }
-            if (page instanceof IWizardPage && !((IWizardPage) page).isPageComplete()) {
-                //item.setFont(boldFont);
-                item.setImage((Image)null);
+            if (page == currentPage) {
+                // Don't show any completion marks for current page
+                item.setImage((Image) null);
+            } else if (page instanceof IWizardPage wizardPage && !wizardPage.isPageComplete()) {
+                item.setImage(shownCompletionMarks.contains(PageCompletionMark.ERROR) ? DBeaverIcons.getImage(DBIcon.SMALL_ERROR) : null);
             } else {
-                item.setFont(null);
-                item.setImage(DBeaverIcons.getImage(UIIcon.OK_MARK));
+                item.setImage(shownCompletionMarks.contains(PageCompletionMark.COMPLETE) ? DBeaverIcons.getImage(UIIcon.OK_MARK) : null);
             }
             updatePageCompleteMark(item);
         }
@@ -535,12 +545,15 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         if (currentPage == null) {
             return;
         }
-        String errorMessage = currentPage.getErrorMessage();
-        if (!CommonUtils.isEmpty(errorMessage)) {
-            setMessage(errorMessage, IMessageProvider.ERROR);
+        final String message = currentPage.getMessage();
+        if (message == null) {
+            setMessage(currentPage.getDescription());
+        } else if (currentPage instanceof IMessageProvider provider) {
+            setMessage(message, provider.getMessageType());
         } else {
-            setMessage(CommonUtils.notEmpty(currentPage.getDescription()), IMessageProvider.NONE);
+            setMessage(message);
         }
+        setErrorMessage(currentPage.getErrorMessage());
     }
 
     @Override

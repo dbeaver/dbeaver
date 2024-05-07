@@ -42,11 +42,16 @@ public class SQLStandardAnalyzer extends LSMAnalyzerImpl<SQLStandardLexer, SQLSt
     @NotNull
     @Override
     protected Pair<SQLStandardLexer, SQLStandardParser> createParser(@NotNull STMSource source, @NotNull SQLDialect dialect) {
+        SQLStandardLexer lexer = createLexer(source, dialect);
+        SQLStandardParser parser =  new SQLStandardParser(new CommonTokenStream(lexer));
+        return new Pair<>(lexer, parser);
+    }
+    
+    public static SQLStandardLexer createLexer(@NotNull STMSource source, @NotNull SQLDialect dialect) {
         Map<String, String> identifierQuotPairs = Stream.of(Objects.requireNonNull(dialect.getIdentifierQuoteStrings()))
             .collect(Collectors.toUnmodifiableMap(q -> q[0], q -> q[1]));
         SQLStandardLexer lexer = new SQLStandardLexer(source.getStream(), identifierQuotPairs);
-        SQLStandardParser parser =  new SQLStandardParser(new CommonTokenStream(lexer));
-        return new Pair<>(lexer, parser);
+        return lexer;
     }
 
     @NotNull

@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model.struct.rdb;
 
+import org.jkiss.dbeaver.model.dpi.DPIElement;
+import org.jkiss.dbeaver.model.dpi.DPIObject;
 import org.jkiss.dbeaver.model.struct.DBSStructContainer;
 
 /**
@@ -24,6 +26,8 @@ import org.jkiss.dbeaver.model.struct.DBSStructContainer;
  * Do not provides any additional attributes but may be used in some JDBC specific issues
  * to determine difference in catalog/schema containment.
  */
+@DPIObject
+@DPIElement
 public interface DBSCatalog extends DBSStructContainer
 {
 

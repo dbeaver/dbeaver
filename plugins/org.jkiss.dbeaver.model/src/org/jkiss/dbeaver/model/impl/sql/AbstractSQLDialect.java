@@ -627,6 +627,11 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     }
 
     @Override
+    public String getClobComparingPart(@NotNull String columnName) {
+        return "%s=?".formatted(columnName);
+    }
+
+    @Override
     public boolean supportsAliasInHaving() {
         return true;
     }

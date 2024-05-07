@@ -2,7 +2,7 @@
 <?pde version="3.5"?>
 
 <product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.ui.app.standalone.product"
-    application="org.jkiss.dbeaver.ui.app.standalone.standalone" version="24.0.1.qualifier" useFeatures="true"
+    application="org.jkiss.dbeaver.ui.app.standalone.standalone" version="24.0.4.qualifier" useFeatures="true"
     includeLaunchers="true">
 
     <configIni use="default">
@@ -10,7 +10,7 @@
 
     <launcherArgs>
         <programArgs></programArgs>
-        <programArgsMac>-vm ../Eclipse/jre/Contents/Home/bin/java</programArgsMac>
+        <programArgsMac>-vm ../Eclipse/jre/Contents/Home/lib/libjli.dylib</programArgsMac>
 
         <vmArgs>
             -XX:+IgnoreUnrecognizedVMOptions
@@ -43,7 +43,7 @@
             --add-opens=java.sql/java.sql=ALL-UNNAMED
             -Xms64m
             -Xmx1024m</vmArgs>
-        <vmArgsMac>-XstartOnFirstThread</vmArgsMac>
+        <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.cocoa.useNativeItemHeight=false</vmArgsMac>
     </launcherArgs>
 
     <splash location="org.jkiss.dbeaver.ui.app.standalone"/>

@@ -45,7 +45,8 @@
                      logoImage="icons/altibase_logo_wide.png"
                      id="Altibase"
                      label="Altibase"
-                     sampleURL="jdbc:Altibase://{host}:{port}/{database}">
+                     sampleURL="jdbc:Altibase://{host}:{port}/{database}"
+                     supportedConfigurationTypes="MANUAL,URL">
                      
                     <file type="jar" path="maven:/com.altibase:altibase-jdbc:RELEASE[7.1.0.9.0]" bundle="!drivers.altibase"/>
                     <file type="jar" path="drivers/altibase" bundle="drivers.altibase"/>
@@ -114,7 +115,7 @@
                         </folder> <!-- Table -->
                         
                         <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseQueue" label="%tree.queues.node.name" icon="#folder_table" description="%tree.tables.node.tip">
-                           <items label="%tree.queue.node.name" path="table" property="queueTables" icon="#table">
+                            <items label="%tree.queue.node.name" path="queueTable" property="queueTables" icon="#table">
                                 <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseTableColumn" label="%tree.columns.node.name" icon="#columns" description="%tree.columns.node.tip">
                                     <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                     </items>
@@ -144,7 +145,8 @@
                         </folder>
                         
                         <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseMaterializedView" label="%tree.materialized_views.node.name" icon="#folder_view" description="Materialized Views">
-                            <items label="%tree.materialized_view.node.name" path="view" property="materializedViews" icon="#view">
+                            <items label="%tree.materialized_view.node.name" path="materializedView" property="materializedViews"
+                                   icon="#view">
                                 <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseTableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
                                     <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributes" icon="#column">
                                     </items>

@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver Dashboard UI
 Bundle-SymbolicName: org.jkiss.dbeaver.ui.dashboard;singleton:=true
-Bundle-Version: 1.0.124.qualifier
-Bundle-Release-Date: 20240325
+Bundle-Version: 1.0.127.qualifier
+Bundle-Release-Date: 20240506
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator
@@ -26,7 +26,9 @@ Require-Bundle: org.eclipse.equinox.preferences,
  org.jkiss.dbeaver.ui.editors.base,
  org.jkiss.dbeaver.ui.navigator,
  org.jkiss.dbeaver.model.dashboard;visibility:=reexport
-Export-Package: org.jkiss.dbeaver.ui.dashboard.control,
+Export-Package: org.jkiss.dbeaver.ui.dashboard,
+ org.jkiss.dbeaver.ui.dashboard.browser,
+ org.jkiss.dbeaver.ui.dashboard.control,
  org.jkiss.dbeaver.ui.dashboard.internal,
  org.jkiss.dbeaver.ui.dashboard.model,
  org.jkiss.dbeaver.ui.dashboard.view

@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.model.websocket.event.session.WSSessionStateEvent;
 import org.jkiss.dbeaver.model.websocket.event.session.WSSocketConnectedEvent;
 
 public enum WSEventType {
+    CLOSE_USER_SESSIONS("cb_close_user_sessions", WSEventTopic.USER, WSUserCloseSessionsEvent.class),
+
     SERVER_CONFIG_CHANGED(
         "cb_config_changed",
         WSEventTopic.SERVER_CONFIG,
@@ -88,7 +90,7 @@ public enum WSEventType {
     RM_PROJECT_REMOVED("cb_rm_project_removed", WSEventTopic.PROJECTS, WSProjectUpdateEvent.class),
 
     WORKSPACE_CONFIG_CHANGED("cb_workspace_config_changed", WSEventTopic.WORKSPACE_CONFIG, WSWorkspaceConfigurationChangedEvent.class),
-
+    TASK_FINISHED("cb_task_finished", WSEventTopic.TASK, WSTaskFinishedEvent.class),
     TEMP_FOLDER_DELETED("cb_temp_folder_deleted", WSEventTopic.TEMP_FOLDER, WSDataSourceEvent.class),
 
     DB_LOG_UPDATED("cb_database_output_log_updated", WSEventTopic.DB_OUTPUT_LOG, WSOutputDBLogEvent.class),

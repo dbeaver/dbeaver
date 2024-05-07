@@ -17,33 +17,25 @@
 package org.jkiss.dbeaver.model.dashboard;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.dashboard.registry.DashboardProviderDescriptor;
+import org.jkiss.dbeaver.model.app.DBPProject;
+
+import java.util.List;
 
 /**
  * Dashboard
  */
-public interface DBDashboard extends DBPNamedObject {
-
-    @Nullable
-    String getPath();
+public interface DBDashboard {
 
     @NotNull
-    String getId();
+    DBPProject getProject();
 
     @NotNull
-    String getName();
-
-    @Nullable
-    String getDescription();
-
-    boolean isCustom();
+    String getDashboardId();
 
     @NotNull
-    DashboardProviderDescriptor getDashboardProvider();
+    String getDashboardName();
 
     @NotNull
-    String getDashboardRenderer();
+    List<DBDashboardItem> getDashboardItems();
 
 }
