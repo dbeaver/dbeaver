@@ -27,6 +27,7 @@ import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.commands.CommandStack;
 import org.eclipse.gef.tools.CellEditorLocator;
 import org.eclipse.gef.tools.DirectEditManager;
+import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ICellEditorValidator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.VerifyEvent;
@@ -55,7 +56,7 @@ public class ExtendedDirectEditManager extends DirectEditManager {
      * @param editorType type of editor
      * @param locator    the CellEditorLocator
      */
-    public ExtendedDirectEditManager(GraphicalEditPart source, Class<?> editorType, CellEditorLocator locator,
+    public ExtendedDirectEditManager(GraphicalEditPart source, Class<? extends CellEditor> editorType, CellEditorLocator locator,
                                      IFigure figure, ICellEditorValidator validator) {
         super(source, editorType, locator);
         this.figure = figure;
