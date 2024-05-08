@@ -327,8 +327,7 @@ public class DBNModel implements IResourceChangeListener {
             log.debug("Project node not found");
             return null;
         }
-        NodePath nodePath = getNodePath(path);
-        nodePath = DBNUtils.deNormalizeNodePath(nodePath);
+        NodePath nodePath = DBNUtils.deNormalizeNodePath(getNodePath(path));
         if (nodePath.legacyFormat) {
             return DBNLegacyUtils.legacyGetNodeByPath(monitor, projectNode, nodePath);
         }
