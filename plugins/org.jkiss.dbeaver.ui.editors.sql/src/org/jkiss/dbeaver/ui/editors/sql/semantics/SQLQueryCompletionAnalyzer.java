@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
+import org.eclipse.jface.preference.JFacePreferences;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.viewers.StyledString;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
@@ -26,7 +28,11 @@ import org.jkiss.dbeaver.model.sql.completion.SQLCompletionAnalyzer;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionContext;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItem;
+import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItemKind;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionSet;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDummyDataSourceContext;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCompletionProposal;
@@ -40,6 +46,9 @@ import java.util.List;
 public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonitor> {
 
     private static final Log log = Log.getLog(SQLCompletionAnalyzer.class);
+
+    private final StyledString.Styler extraTextStyler = StyledString.createColorRegistryStyler(JFacePreferences.DECORATIONS_COLOR, null);
+
     @NotNull
     private final SQLEditorBase editor;
     @NotNull
@@ -61,7 +70,7 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
             
             this.proposals = new ArrayList<>(completionSet.getItems().size()); 
             for (SQLQueryCompletionItem item : completionSet.getItems()) {
-                DBPNamedObject object = null;
+                DBPNamedObject object = SQLQueryDummyDataSourceContext.isDummyObject(item.getObject()) ? null : item.getObject();
                 DBPImage image = switch (item.getKind()) {
                     case UNKNOWN ->  DBValueFormatting.getObjectImage(item.getObject());
                     case RESERVED -> UIIcon.SQL_TEXT;
@@ -72,8 +81,32 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
                     case TABLE_COLUMN_NAME -> DBIcon.TREE_COLUMN;
                     default -> throw new IllegalStateException("Unexpected completion item kind " + item.getKind());
                 };
+                DBPKeywordType kwType = item.getKind() == SQLQueryCompletionItemKind.RESERVED ? DBPKeywordType.KEYWORD : DBPKeywordType.OTHER;
                 // TODO wtf resulting cursor position
-                this.proposals.add(new SQLCompletionProposal(this.request, item.getText(), item.getText(), item.getText().length(), image, DBPKeywordType.OTHER, item.getDescription(), object, Collections.emptyMap()));
+                this.proposals.add(new SQLCompletionProposal(this.request, item.getText(), item.getText(), item.getText().length(), image, kwType, item.getDescription(), object, Collections.emptyMap()) {
+                    @Override
+                    public Object getAdditionalInfo(DBRProgressMonitor monitor) {
+                        if (object instanceof DBSObject o) {
+                            // preload object info, like at SQLCompletionAnalyzer.makeProposalsFromObject(..)
+                            // but maybe instead put it to SuggestionInformationControl.createTreeControl(..),
+                            //                where the DBNDatabaseNode is required but missing if not cached
+                            DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(monitor, o, true);
+                        }
+                        return super.getAdditionalInfo(monitor);
+                    }
+
+                    @Override
+                    public StyledString getStyledDisplayString() {
+                        StyledString result = super.getStyledDisplayString();
+                        String extra = item.getExtraText();
+                        if (extra != null) {
+                            int oldLength = result.length();
+                            result.append(" " + extra);
+                            result.setStyle(oldLength, result.length() - oldLength, extraTextStyler);
+                        }
+                        return result;
+                    }
+                });
 //                Image eimage = DBeaverIcons.getImage(image);
 //                this.proposals.add(new CompletionProposal(
 //                        item.getText(),

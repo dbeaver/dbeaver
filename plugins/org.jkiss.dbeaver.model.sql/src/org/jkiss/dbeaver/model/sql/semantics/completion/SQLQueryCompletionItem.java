@@ -109,13 +109,13 @@ public abstract class SQLQueryCompletionItem {
         @NotNull
         @Override
         public String getExtraText() {
-            return "Subquery alias"; 
+            return " - Subquery alias";
         }
         
         @NotNull
         @Override
         public String getDescription() {
-            return "TODO"; // TODO add subquery text here
+            return "Subquery alias"; // TODO add subquery text here
         }
     }
     
@@ -153,7 +153,7 @@ public abstract class SQLQueryCompletionItem {
         public String getExtraText() {
             @NotNull SQLQueryExprType type = this.columnInfo.type;
             @Nullable String typeName = type == null || type == SQLQueryExprType.UNKNOWN ? null : type.getDisplayName();
-            return typeName == null ? null : (" : " + typeName);
+            return typeName == null ? " - Column" : (" : " + typeName);
         }
         
         @Override
@@ -169,7 +169,7 @@ public abstract class SQLQueryCompletionItem {
                 } else if (this.columnInfo.realSource != null) {
                     return "Column of the " +  DBUtils.getObjectFullName(this.columnInfo.realSource, DBPEvaluationContext.DML);
                 } else {
-                    return "Subquery column";
+                    return "Query-specific column";
                 }
             }
         }
@@ -208,7 +208,7 @@ public abstract class SQLQueryCompletionItem {
         @NotNull
         @Override
         public String getExtraText() {
-            return (DBUtils.isView(this.table) ? "View " : "Table ") + DBUtils.getObjectFullName(this.table, DBPEvaluationContext.DML);
+            return (DBUtils.isView(this.table) ? " - View " : " - Table "); // + DBUtils.getObjectFullName(this.table, DBPEvaluationContext.DML);
         }
 
         @Override

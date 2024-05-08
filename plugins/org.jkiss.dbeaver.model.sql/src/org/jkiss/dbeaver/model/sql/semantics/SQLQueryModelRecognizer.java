@@ -99,6 +99,11 @@ public class SQLQueryModelRecognizer {
 
                     model.propagateContext(this.queryDataContext, new RecognitionContext(monitor));
 
+                    SQLQueryLexicalScope tailScope = new SQLQueryLexicalScope();
+                    tailScope.setInterval(Interval.of(model.getInterval().b, Integer.MAX_VALUE));
+                    tailScope.setContext(model.getResultDataContext());
+                    model.registerLexicalScope(tailScope);
+
                     // var tt = new DebugGraphBuilder();
                     // tt.traverseObjs(model);
                     // tt.graph.saveToFile("c:/temp/outx.dgml");

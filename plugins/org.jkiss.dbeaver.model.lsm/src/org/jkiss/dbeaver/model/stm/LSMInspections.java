@@ -30,6 +30,7 @@ import org.jkiss.utils.Pair;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class LSMInspections {
 
@@ -40,8 +41,12 @@ public class LSMInspections {
     private static final Set<Integer> reachabilityTestRules = Set.of(
         SQLStandardParser.RULE_tableName,
         SQLStandardParser.RULE_columnReference,
-        SQLStandardParser.RULE_identifier,
+        //SQLStandardParser.RULE_identifier,
         SQLStandardParser.RULE_columnName
+    );
+
+    private static final Map<Integer, List<Integer>> subtreeTests = Map.ofEntries(
+        Map.entry(SQLStandardParser.RULE_columnName, List.of(SQLStandardParser.RULE_anyUnexpected, SQLStandardParser.RULE_searchCondition))
     );
 
     @NotNull
@@ -250,8 +255,8 @@ public class LSMInspections {
             predictedWords,
             reachabilityTests,
             reachabilityTests.get(SQLStandardParser.RULE_tableName),
-            reachabilityTests.get(SQLStandardParser.RULE_columnReference),
-            reachabilityTests.get(SQLStandardParser.RULE_identifier)
+            reachabilityTests.get(SQLStandardParser.RULE_columnReference) || reachabilityTests.get(SQLStandardParser.RULE_columnName),
+            false // reachabilityTests.get(SQLStandardParser.RULE_identifier)
         );
     }
 
@@ -292,7 +297,7 @@ public class LSMInspections {
 
     @NotNull
     private static Collection<Transition> collectFollowingTerms(
-        @NotNull  ListNode<Integer> stateStack,
+        @NotNull ListNode<Integer> stateStack,
         @NotNull ATNState initialState, Set<Integer> exceptRules,
         @NotNull Map<Integer, Boolean> reachabilityTest
     ) {
@@ -330,6 +335,29 @@ public class LSMInspections {
                             }
                             case ATNState.RULE_START -> {
                                 reachabilityTest.computeIfPresent(state.ruleIndex, (k, v) -> true);
+                                if (reachabilityTest.containsKey(state.ruleIndex)) {
+                                    String s = StreamSupport.stream(stateStack.spliterator(), false)
+                                                            .map(ss -> ss == null ? "<NULL>" : SQLStandardParser.ruleNames[ss])
+                                                            .collect(Collectors.joining(", "));
+                                    System.out.println(s);
+                                }
+                                {
+                                    subtreeTests:
+                                    for (Map.Entry<Integer, List<Integer>> subtreeTest: subtreeTests.entrySet()) {
+                                        ListNode<Integer> stackItem = stateStack;
+                                        Iterator<Integer> subtreeTestPath = subtreeTest.getValue().iterator();
+                                        if (subtreeTestPath.hasNext() && subtreeTestPath.next().equals(state.ruleIndex)) {
+                                            while (subtreeTestPath.hasNext()) {
+                                                if (subtreeTestPath.next().equals(stackItem.data)) {
+                                                    stackItem = stackItem.next;
+                                                } else {
+                                                    continue subtreeTests;
+                                                }
+                                            }
+                                        }
+                                        reachabilityTest.computeIfPresent(subtreeTest.getKey(), (k, v) -> true);
+                                    }
+                                }
                                 if (exceptRules.contains(state.ruleIndex)) {
                                     continue;
                                 } else {

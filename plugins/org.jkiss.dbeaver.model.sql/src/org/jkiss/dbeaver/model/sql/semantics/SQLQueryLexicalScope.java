@@ -60,6 +60,10 @@ public class SQLQueryLexicalScope {
         return this.interval;
     }
 
+    public void setInterval(Interval interval) {
+        this.interval = interval;
+    }
+
     /**
      * Returns lexical scope context. If it is not set, then use context of the model node, from which the scope was obtained.
      */
