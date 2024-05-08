@@ -1781,7 +1781,7 @@ public class DBeaverLauncher {
     }
 
     /**
-     * Specific method for Dbeaver products group to resolve product configuration location in
+     *  Specific method for Dbeaver products group to resolve product configuration location in
      *  case of portable distribution (tar/zip) location used current location:
      *  <li>./configuration</><br>
      *  case of installation in system place:
