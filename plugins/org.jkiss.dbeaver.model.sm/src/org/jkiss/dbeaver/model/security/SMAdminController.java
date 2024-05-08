@@ -209,4 +209,8 @@ public interface SMAdminController extends SMController {
         @NotNull Set<String> subjectIds,
         @NotNull Set<String> permissions
     ) throws DBException;
+
+    @NotNull
+    List<SMTeamMemberInfo> getTeamMembersInfo(@NotNull String teamId) throws DBException;
+
 }
