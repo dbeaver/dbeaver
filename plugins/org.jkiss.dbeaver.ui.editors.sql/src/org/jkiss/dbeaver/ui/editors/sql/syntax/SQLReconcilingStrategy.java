@@ -436,9 +436,10 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         ) {
             this.annotationModel = annotationModel;
             if (this.annotationModel instanceof ISynchronizable) {
-                lockObject = ((ISynchronizable) this.annotationModel).getLockObject();
+                Object amLock = ((ISynchronizable) this.annotationModel).getLockObject();
+                lockObject = Objects.requireNonNullElse(amLock, this.annotationModel);
             } else {
-                lockObject = this.annotationModel;
+                lockObject = Objects.requireNonNullElse(this.annotationModel, this);
             }
             this.regionOffset = regionOffset;
             this.regionLength = regionLength;
