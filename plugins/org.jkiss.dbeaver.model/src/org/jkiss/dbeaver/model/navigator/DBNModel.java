@@ -327,7 +327,8 @@ public class DBNModel implements IResourceChangeListener {
             log.debug("Project node not found");
             return null;
         }
-        final NodePath nodePath = getNodePath(path);
+        NodePath nodePath = getNodePath(path);
+        nodePath = normalizeNodePath(nodePath) ;
         if (nodePath.legacyFormat) {
             return DBNLegacyUtils.legacyGetNodeByPath(monitor, projectNode, nodePath);
         }
@@ -337,6 +338,15 @@ public class DBNModel implements IResourceChangeListener {
         }
         int nodeLevel = getNodePath(projectNodePath).pathItems.size();
         return findNodeByPath(monitor, projectNode, nodePath, nodeLevel);
+    }
+
+    private NodePath normalizeNodePath(@NotNull NodePath nodePath) {
+        List<String> normalizesPathItems = new ArrayList<>();
+        for (String item : nodePath.pathItems) {
+            normalizesPathItems.add(item.replace(DBNModel.SLASH_ESCAPE_TOKEN, "/"));
+        }
+        nodePath.pathItems = normalizesPathItems;
+        return nodePath;
     }
 
     private DBNNode findNodeByPath(
@@ -357,9 +367,6 @@ public class DBNModel implements IResourceChangeListener {
         if (currentLevel == 1 && DBNResource.FAKE_RESOURCE_ROOT_NODE.equals(expectedNodePathName)) {
             currentLevel++;
             expectedNodePathName = nodePath.pathItems.get(currentLevel);
-        }
-        if (expectedNodePathName.contains(DBNModel.SLASH_ESCAPE_TOKEN)) {
-            expectedNodePathName = expectedNodePathName.replace(DBNModel.SLASH_ESCAPE_TOKEN, "/");
         }
         DBNNode[] children = currentNode.getChildren(monitor);
         if (children == null) {
