@@ -86,6 +86,18 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
 
     protected abstract int getMaxTokens();
 
+    /**
+     * Provides instructions for the AI so it can generate more accurate completions
+     */
+    @NotNull
+    protected String getInstructions() {
+        return """
+            Perform SQL completion.
+            Query MUST start with "SELECT" and MUST be ENCLOSED with Markdown code block.
+            You MAY add comments but placed OUTSIDE Markdown code block.
+            """;
+    }
+
     @Nullable
     abstract protected String requestCompletion(
         @NotNull DBRProgressMonitor monitor,
