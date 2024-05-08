@@ -40,6 +40,7 @@ public class VerticaSQLDialect extends GenericSQLDialect implements TPRuleProvid
     private static final String[][] VERTICA_BEGIN_END_BLOCK = new String[][]{
             {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END},
             {SQLConstants.KEYWORD_CASE, SQLConstants.BLOCK_END},
+            {"LOOP", SQLConstants.BLOCK_END + " LOOP"}
     };
 
     private static String[] EXEC_KEYWORDS = {"CALL"};
