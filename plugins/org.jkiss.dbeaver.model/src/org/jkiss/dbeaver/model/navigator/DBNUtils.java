@@ -292,7 +292,7 @@ public class DBNUtils {
      * @param path - path
      * @return - string path segment
      */
-    public static String normailizePath(@NotNull String path) {
+    public static String normailizeNodePath(@NotNull String path) {
         return path.replace("/", DBNModel.SLASH_ESCAPE_TOKEN);
     }
 
