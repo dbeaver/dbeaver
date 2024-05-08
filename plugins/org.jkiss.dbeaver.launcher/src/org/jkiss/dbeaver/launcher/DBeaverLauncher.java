@@ -49,7 +49,7 @@ public class DBeaverLauncher {
     /**
      * Indicates whether this instance is running in debug mode.
      */
-    protected boolean debug = false;
+    protected boolean debug = true;
 
     /**
      * The location of the launcher to run.
@@ -1781,24 +1781,28 @@ public class DBeaverLauncher {
     }
 
     /**
-     * Specific method for dbeaver products group designed to resolve product configuration location in
-     * common system place:
-     * ~/user/APP_DATA - WinOS
-     * ~/Library - MacOS
-     * ~/.local/share - Unix
+     * Specific method for Dbeaver products group to resolve product configuration location in
+     *  case of portable distribution (tar/zip) location used current location:
+     *  <li>./configuration</><br>
+     *  case of installation in system place:
+     *   <li>~/user/APP_DATA - WinOS</>
+     *   <li>~/Library - MacOS</>
+     *   <li>~/.local/share - Unix</>
      *
      * @return url of location
      */
     private URL buildProductURL() {
-        String productConfigurationLocation;
         try {
-            URL url = new URL(getInstallLocation(), CONFIG_DIR);
+            URL instalationUrl = new URL(getInstallLocation(), CONFIG_DIR);
             if (debug) {
-                System.out.println("Get Install Location:" + url); //$NON-NLS-1$
+                System.out.println("Get Install Location:" + instalationUrl); //$NON-NLS-1$
             }
-            boolean checkConfigurationLocation = checkConfigurationLocation(url);
+            boolean checkReadWriteInstallLocation = checkConfigurationLocation(instalationUrl);
             if (debug) {
-                System.out.println("Check Configuration Location:" + checkConfigurationLocation); //$NON-NLS-1$
+                System.out.println("Check Configuration Location:" + checkReadWriteInstallLocation); //$NON-NLS-1$
+            }
+            if (checkReadWriteInstallLocation) {
+                return instalationUrl;
             }
         } catch (Exception e) {
             if (debug)
@@ -1808,7 +1812,7 @@ public class DBeaverLauncher {
         try {
             String productPath = getProductProperties();
             Path basePath = Paths.get(base, DBEAVER_INSTALL_FOLDER, productPath);
-            productConfigurationLocation = basePath.toFile().getAbsolutePath();
+            String productConfigurationLocation = basePath.toFile().getAbsolutePath();
             return buildURL(productConfigurationLocation, true);
         } catch (IOException e) {
             if (debug)
