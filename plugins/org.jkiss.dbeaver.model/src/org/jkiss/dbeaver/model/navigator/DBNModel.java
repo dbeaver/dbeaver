@@ -341,11 +341,11 @@ public class DBNModel implements IResourceChangeListener {
     }
 
     private NodePath normalizeNodePath(@NotNull NodePath nodePath) {
-        List<String> normalizesPathItems = new ArrayList<>();
+        List<String> normalizedPathItems = new ArrayList<>();
         for (String item : nodePath.pathItems) {
-            normalizesPathItems.add(item.replace(DBNModel.SLASH_ESCAPE_TOKEN, "/"));
+            normalizedPathItems.add(item.replace(DBNModel.SLASH_ESCAPE_TOKEN, "/"));
         }
-        nodePath.pathItems = normalizesPathItems;
+        nodePath.pathItems = normalizedPathItems;
         return nodePath;
     }
 
