@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
+import org.jkiss.dbeaver.model.navigator.DBNModel.NodePath;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -268,5 +269,32 @@ public class DBNUtils {
             }
         };
     }
+
+
+    /**
+     * The method replace '%2F' to '/' symbol
+     *
+     * @param nodePath - path
+     * @return - node path object
+     */
+    public static NodePath deNormalizeNodePath(@NotNull NodePath nodePath) {
+        List<String> normalizedPathItems = new ArrayList<>();
+        for (String item : nodePath.pathItems) {
+            normalizedPathItems.add(item.replace(DBNModel.SLASH_ESCAPE_TOKEN, "/"));
+        }
+        nodePath.pathItems = normalizedPathItems;
+        return nodePath;
+    }
+
+    /**
+     * The method replace '/' to '%2F' symbol
+     *
+     * @param path - path
+     * @return - string path segment
+     */
+    public static String normailizePath(@NotNull String path) {
+        return path.replace("/", DBNModel.SLASH_ESCAPE_TOKEN);
+    }
+
 
 }

@@ -328,7 +328,7 @@ public class DBNModel implements IResourceChangeListener {
             return null;
         }
         NodePath nodePath = getNodePath(path);
-        nodePath = normalizeNodePath(nodePath) ;
+        nodePath = DBNUtils.deNormalizeNodePath(nodePath);
         if (nodePath.legacyFormat) {
             return DBNLegacyUtils.legacyGetNodeByPath(monitor, projectNode, nodePath);
         }
@@ -338,15 +338,6 @@ public class DBNModel implements IResourceChangeListener {
         }
         int nodeLevel = getNodePath(projectNodePath).pathItems.size();
         return findNodeByPath(monitor, projectNode, nodePath, nodeLevel);
-    }
-
-    private NodePath normalizeNodePath(@NotNull NodePath nodePath) {
-        List<String> normalizedPathItems = new ArrayList<>();
-        for (String item : nodePath.pathItems) {
-            normalizedPathItems.add(item.replace(DBNModel.SLASH_ESCAPE_TOKEN, "/"));
-        }
-        nodePath.pathItems = normalizedPathItems;
-        return nodePath;
     }
 
     private DBNNode findNodeByPath(
