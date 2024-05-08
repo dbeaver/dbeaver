@@ -198,13 +198,13 @@ public class AITranslateHandler extends AbstractHandler {
         }
         for (MessageChunk messageChunk : messageChunks) {
             if (messageChunk instanceof MessageChunk.Code code) {
-                completion.append(code.text());
+                completion.append(code.text()).append(System.lineSeparator());
             } else if (messageChunk instanceof MessageChunk.Text text) {
                 completion.append(SQLUtils.generateCommentLine(executionContext.getDataSource(), text.text()));
             }
         }
 
-        final String finalCompletion = completion.toString();
+        final String finalCompletion = completion.toString().trim();
 
         // Save to history
         new AbstractJob("Save smart completion history") {
