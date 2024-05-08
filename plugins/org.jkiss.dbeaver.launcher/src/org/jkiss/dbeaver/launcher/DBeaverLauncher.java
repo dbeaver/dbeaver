@@ -1764,10 +1764,7 @@ public class DBeaverLauncher {
         if (configurationLocation == null) {
             configurationLocation = buildLocation(PROP_CONFIG_AREA_DEFAULT, null, ""); //$NON-NLS-1$
             if (configurationLocation == null) {
-                
-                
                 configurationLocation = buildProductURL();
-                
                 if (configurationLocation == null) {
                     configurationLocation = buildURL(computeDefaultConfigurationLocation(), true);
                 }
@@ -1781,13 +1778,14 @@ public class DBeaverLauncher {
     }
 
     /**
-     *  Specific method for Dbeaver products group to resolve product configuration location in
-     *  case of portable distribution (tar/zip) location used current location:
-     *  <li>./configuration</><br>
+     * Specific method for Dbeaver products group to resolve product configuration
+     * location in<br> 
+     * case of portable distribution (tar/zip) location used current location:
+     * <li>./configuration</><br>
      *  case of installation in system place:
-     *   <li>~/user/APP_DATA - WinOS</>
-     *   <li>~/Library - MacOS</>
-     *   <li>~/.local/share - Unix</>
+     * <li>~/user/APP_DATA - WinOS
+     * <li>~/Library - MacOS
+     * <li>~/.local/share - Unix
      *
      * @return url of location
      */
@@ -1805,8 +1803,9 @@ public class DBeaverLauncher {
                 return instalationUrl;
             }
         } catch (Exception e) {
-            if (debug)
+            if (debug) {
                 System.out.println("Can not read product properties. " + e.getMessage()); //$NON-NLS-1$
+            }
         }
         String base = getWorkingDirectory(DBEAVER_DATA_FOLDER);
         try {
