@@ -358,6 +358,9 @@ public class DBNModel implements IResourceChangeListener {
             currentLevel++;
             expectedNodePathName = nodePath.pathItems.get(currentLevel);
         }
+        if (expectedNodePathName.contains(DBNModel.SLASH_ESCAPE_TOKEN)) {
+            expectedNodePathName = expectedNodePathName.replace(DBNModel.SLASH_ESCAPE_TOKEN, "/");
+        }
         DBNNode[] children = currentNode.getChildren(monitor);
         if (children == null) {
             return null;
@@ -365,11 +368,7 @@ public class DBNModel implements IResourceChangeListener {
 
         DBNNode detectedNode = null;
         for (DBNNode child : children) {
-            String nodeId = child.getNodeId();
-            if (expectedNodePathName.contains(DBNModel.SLASH_ESCAPE_TOKEN)) {
-                expectedNodePathName = expectedNodePathName.replace(DBNModel.SLASH_ESCAPE_TOKEN, "/");
-            }
-            if (nodeId.equals(expectedNodePathName)) {
+            if (child.getNodeId().equals(expectedNodePathName)) {
                 detectedNode = child;
                 break;
             }
