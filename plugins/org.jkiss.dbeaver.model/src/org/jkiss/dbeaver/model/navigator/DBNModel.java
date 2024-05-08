@@ -365,7 +365,11 @@ public class DBNModel implements IResourceChangeListener {
 
         DBNNode detectedNode = null;
         for (DBNNode child : children) {
-            if (child.getNodeId().equals(expectedNodePathName)) {
+            String nodeId = child.getNodeId();
+            if (expectedNodePathName.contains(DBNModel.SLASH_ESCAPE_TOKEN)) {
+                expectedNodePathName = expectedNodePathName.replace(DBNModel.SLASH_ESCAPE_TOKEN, "/");
+            }
+            if (nodeId.equals(expectedNodePathName)) {
                 detectedNode = child;
                 break;
             }
