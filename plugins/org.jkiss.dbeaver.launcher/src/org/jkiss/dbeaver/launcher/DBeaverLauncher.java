@@ -49,7 +49,7 @@ public class DBeaverLauncher {
     /**
      * Indicates whether this instance is running in debug mode.
      */
-    protected boolean debug = true;
+    protected boolean debug = false;
 
     /**
      * The location of the launcher to run.
@@ -1791,16 +1791,9 @@ public class DBeaverLauncher {
      */
     private URL buildProductURL() {
         try {
-            URL instalationUrl = new URL(getInstallLocation(), CONFIG_DIR);
-            if (debug) {
-                System.out.println("Get Install Location:" + instalationUrl); //$NON-NLS-1$
-            }
-            boolean checkReadWriteInstallLocation = checkConfigurationLocation(instalationUrl);
-            if (debug) {
-                System.out.println("Check Configuration Location:" + checkReadWriteInstallLocation); //$NON-NLS-1$
-            }
-            if (checkReadWriteInstallLocation) {
-                return instalationUrl;
+            URL installationUrl = new URL(getInstallLocation(), CONFIG_DIR);
+            if (checkConfigurationLocation(installationUrl)) {
+                return installationUrl;
             }
         } catch (Exception e) {
             if (debug) {
