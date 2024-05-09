@@ -1032,6 +1032,12 @@ public class SQLScriptParser {
                 statementStartKeywords.addAll(
                     Arrays.stream(this.context.getDialect().getBlockHeaderStrings()).map(String::toUpperCase).toList());
             }
+            String[][] blockBoundStrings = this.context.getDialect().getBlockBoundStrings();
+            if (blockBoundStrings != null) {
+                for (String[] block : blockBoundStrings) {
+                    statementStartKeywords.add(block[0]);
+                }
+            }
             if (this.context.getDialect().getTransactionCommitKeywords() != null) {
                 statementStartKeywords.addAll(
                     Arrays.stream(this.context.getDialect().getTransactionCommitKeywords()).map(String::toUpperCase).toList());

@@ -26,7 +26,7 @@ public class HelpUtils {
 
     private static final Log log = Log.getLog(HelpUtils.class);
 
-    public static final String GLOBAL_HELP_PREFIX = "https://dbeaver.com/docs/wiki/";
+    public static final String GLOBAL_HELP_PREFIX = "https://dbeaver.com/docs/dbeaver/";
 
     public static final String getHelpExternalReference(String topicId) {
         return GLOBAL_HELP_PREFIX + topicId;
