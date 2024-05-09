@@ -40,6 +40,8 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -272,15 +274,18 @@ public class DBNUtils {
 
 
     /**
-     * The method replace '%2F' to '/' symbol
+     * The method decode ASCII to string
      *
      * @param nodePath - path
      * @return - node path object
      */
-    public static NodePath deNormalizeNodePath(@NotNull NodePath nodePath) {
+    public static NodePath decodeNodePath(@NotNull NodePath nodePath) {
+        if (!nodePath.toString().contains(DBNModel.PATTERN_ESCAPE_TOKEN)) {
+            return nodePath;
+        }
         List<String> normalizedPathItems = new ArrayList<>();
         for (String item : nodePath.pathItems) {
-            normalizedPathItems.add(item.replace(DBNModel.SLASH_ESCAPE_TOKEN, "/"));
+            normalizedPathItems.add(URLDecoder.decode(item, StandardCharsets.UTF_8));
         }
         nodePath.pathItems = normalizedPathItems;
         return nodePath;
@@ -292,7 +297,7 @@ public class DBNUtils {
      * @param path - path
      * @return - string path segment
      */
-    public static String normailizeNodePath(@NotNull String path) {
+    public static String encodeNodePath(@NotNull String path) {
         return path.replace("/", DBNModel.SLASH_ESCAPE_TOKEN);
     }
 
