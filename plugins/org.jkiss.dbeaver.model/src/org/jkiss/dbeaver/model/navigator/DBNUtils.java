@@ -289,16 +289,13 @@ public class DBNUtils {
     }
 
     /**
-     * The method encode symbols('/', ect)
+     * The method encode symbols('/','%')
      *
      * @param path - path
      * @return - string path segment
      */
     public static String encodeNodePath(@NotNull String path) {
-        if (path.contains("/")) {
-            return URLEncoder.encode(path, StandardCharsets.UTF_8);
-        }
-        return path;
+        return path.replace("%", "%25").replace("/", "%2F");
     }
 
 }
