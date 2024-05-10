@@ -277,7 +277,7 @@ public final class ModelPreferences
         // SQL execution
         PrefUtils.setDefaultPreferenceValue(store, SCRIPT_STATEMENT_DELIMITER, SQLConstants.DEFAULT_STATEMENT_DELIMITER);
         PrefUtils.setDefaultPreferenceValue(store, SCRIPT_IGNORE_NATIVE_DELIMITER, false);
-        PrefUtils.setDefaultPreferenceValue(store, SCRIPT_STATEMENT_DELIMITER_BLANK, SQLScriptStatementDelimiterMode.SMART);
+        PrefUtils.setDefaultPreferenceValue(store, SCRIPT_STATEMENT_DELIMITER_BLANK, SQLScriptStatementDelimiterMode.BLANK_LINE_AND_SEPARATOR);
         PrefUtils.setDefaultPreferenceValue(store, QUERY_REMOVE_TRAILING_DELIMITER, true);
 
         PrefUtils.setDefaultPreferenceValue(store, MEMORY_CONTENT_MAX_SIZE, 10000);
