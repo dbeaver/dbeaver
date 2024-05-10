@@ -280,14 +280,11 @@ public class DBNUtils {
      * @return - node path object
      */
     public static NodePath decodeNodePath(@NotNull NodePath nodePath) {
-        if (!nodePath.toString().contains(DBNModel.PATTERN_ESCAPE_TOKEN)) {
-            return nodePath;
-        }
-        List<String> normalizedPathItems = new ArrayList<>();
+        List<String> decodedPathItems = new ArrayList<>();
         for (String item : nodePath.pathItems) {
-            normalizedPathItems.add(URLDecoder.decode(item, StandardCharsets.UTF_8));
+            decodedPathItems.add(URLDecoder.decode(item, StandardCharsets.UTF_8));
         }
-        nodePath.pathItems = normalizedPathItems;
+        nodePath.pathItems = decodedPathItems;
         return nodePath;
     }
 
