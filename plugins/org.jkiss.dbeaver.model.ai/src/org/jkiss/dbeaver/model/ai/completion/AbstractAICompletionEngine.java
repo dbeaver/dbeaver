@@ -92,9 +92,9 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
     @NotNull
     protected String getInstructions() {
         return """
-            Perform SQL completion.
-            Query MUST start with "SELECT" and MUST be ENCLOSED with Markdown code block.
-            You MAY add comments but placed OUTSIDE Markdown code block.
+            You MUST perform SQL completion.
+            Your query must start with "SELECT" and MUST be enclosed with Markdown code block.
+            Talk naturally, as if you were talking to a human.
             """;
     }
 
