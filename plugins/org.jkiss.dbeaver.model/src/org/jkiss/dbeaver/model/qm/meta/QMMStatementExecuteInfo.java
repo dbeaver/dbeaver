@@ -75,18 +75,19 @@ public class QMMStatementExecuteInfo extends QMMObject {
         }
     }
 
-    public QMMStatementExecuteInfo(long openTime,
-                                   long closeTime,
-                                   QMMStatementInfo stmt,
-                                   String queryString,
-                                   long rowCount,
-                                   int errorCode,
-                                   String errorMessage,
-                                   long fetchBeginTime,
-                                   long fetchEndTime,
-                                   boolean transactional,
-                                   @Nullable String schema,
-                                   @Nullable String catalog
+    public QMMStatementExecuteInfo(
+        long openTime,
+        long closeTime,
+        QMMStatementInfo stmt,
+        String queryString,
+        long rowCount,
+        int errorCode,
+        String errorMessage,
+        long fetchBeginTime,
+        long fetchEndTime,
+        boolean transactional,
+        @Nullable String schema,
+        @Nullable String catalog
     ) {
         super(QMMetaObjectType.STATEMENT_EXECUTE_INFO, openTime, closeTime);
         this.statement = stmt;
