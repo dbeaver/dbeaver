@@ -271,10 +271,9 @@ public class DBNModel implements IResourceChangeListener {
                 break;
             }
         }
-        if (path.contains(DBNModel.PATTERN_ESCAPE_TOKEN)) {
-            path = DBNUtils.decodeNodePath(path);
-        }
-        return new NodePath(nodeType, CommonUtils.splitString(path, '/'));
+        final List<String> items = CommonUtils.splitString(path, '/');
+        items.replaceAll(DBNUtils::decodeNodePath);
+        return new NodePath(nodeType, items);
     }
 
     @Nullable
