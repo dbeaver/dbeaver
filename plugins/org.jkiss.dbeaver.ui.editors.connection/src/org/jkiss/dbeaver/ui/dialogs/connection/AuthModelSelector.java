@@ -247,7 +247,7 @@ public class AuthModelSelector extends Composite {
 
     private void refreshCredentials() {
         if (activeDataSource instanceof DataSourceDescriptor dsd) {
-            dsd.forgetSecrets();
+            dsd.resetAllSecrets();
         }
         authModelConfigurator.loadSettings(activeDataSource);
     }
