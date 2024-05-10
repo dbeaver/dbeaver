@@ -41,6 +41,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -272,36 +273,32 @@ public class DBNUtils {
         };
     }
 
-
     /**
      * The method decode ASCII to string
      *
      * @param nodePath - path
      * @return - node path object
      */
-    public static NodePath decodeNodePath(@NotNull NodePath nodePath) {
-        List<String> decodedPathItems = new ArrayList<>();
-        for (String item : nodePath.pathItems) {
-            try {
-                item = URLDecoder.decode(item, StandardCharsets.UTF_8);
-            } catch (Exception e) {
-                // decoding unsuccessful, skip and use original
-            }
-            decodedPathItems.add(item);
+    public static String decodeNodePath(@NotNull String nodePath) {
+        try {
+            nodePath = URLDecoder.decode(nodePath, StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            // decoding unsuccessful, skip and use original
         }
-        nodePath.pathItems = decodedPathItems;
         return nodePath;
     }
 
     /**
-     * The method replace '/' to '%2F' symbol
+     * The method encode symbols('/', ect)
      *
      * @param path - path
      * @return - string path segment
      */
     public static String encodeNodePath(@NotNull String path) {
-        return path.replace("/", DBNModel.SLASH_ESCAPE_TOKEN);
+        if (path.contains("/")) {
+            return URLEncoder.encode(path, StandardCharsets.UTF_8);
+        }
+        return path;
     }
-
 
 }

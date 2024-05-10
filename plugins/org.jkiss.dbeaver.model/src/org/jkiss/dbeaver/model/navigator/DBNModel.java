@@ -57,7 +57,6 @@ import java.util.stream.Collectors;
  * (e.g. TreeViewer sometimes update only first TreeItem corresponding to model certain model object).
  */
 public class DBNModel implements IResourceChangeListener {
-    public static final String SLASH_ESCAPE_TOKEN = "%2F"; //$NON-NLS-1$
     public static final String PATTERN_ESCAPE_TOKEN = "%"; //$NON-NLS-1$
 
     private static final Log log = Log.getLog(DBNModel.class);
@@ -272,6 +271,9 @@ public class DBNModel implements IResourceChangeListener {
                 break;
             }
         }
+        if (path.contains(DBNModel.PATTERN_ESCAPE_TOKEN)) {
+            path = DBNUtils.decodeNodePath(path);
+        }
         return new NodePath(nodeType, CommonUtils.splitString(path, '/'));
     }
 
@@ -329,9 +331,7 @@ public class DBNModel implements IResourceChangeListener {
             return null;
         }
         NodePath nodePath = getNodePath(path);
-        if (path.contains(DBNModel.PATTERN_ESCAPE_TOKEN)) {
-            nodePath = DBNUtils.decodeNodePath(nodePath);
-        }
+       
         if (nodePath.legacyFormat) {
             return DBNLegacyUtils.legacyGetNodeByPath(monitor, projectNode, nodePath);
         }
