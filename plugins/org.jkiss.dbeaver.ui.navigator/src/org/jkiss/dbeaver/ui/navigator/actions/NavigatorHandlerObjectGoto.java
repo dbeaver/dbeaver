@@ -61,14 +61,7 @@ public class NavigatorHandlerObjectGoto extends NavigatorHandlerObjectBase {
                         while (container instanceof DBSFolder) {
                             container = container.getParentObject();
                         }
-                        /*if (container instanceof DBPDataSourceContainer ds && !ds.isConnected()) {
-                            UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
-                            if (serviceConnections != null) {
-                                serviceConnections.connectDataSource(ds, status -> {
-
-                                });
-                            }
-                        }*/
+                        
                         context = DBUtils.getDefaultContext(object, true);
                     }
                 }
