@@ -282,7 +282,12 @@ public class DBNUtils {
     public static NodePath decodeNodePath(@NotNull NodePath nodePath) {
         List<String> decodedPathItems = new ArrayList<>();
         for (String item : nodePath.pathItems) {
-            decodedPathItems.add(URLDecoder.decode(item, StandardCharsets.UTF_8));
+            try {
+                item = URLDecoder.decode(item, StandardCharsets.UTF_8);
+            } catch (Exception e) {
+                // decoding unsuccessful, skip and use original
+            }
+            decodedPathItems.add(item);
         }
         nodePath.pathItems = decodedPathItems;
         return nodePath;
