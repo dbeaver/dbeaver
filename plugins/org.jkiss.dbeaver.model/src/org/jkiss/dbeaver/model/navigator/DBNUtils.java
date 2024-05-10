@@ -274,18 +274,13 @@ public class DBNUtils {
     }
 
     /**
-     * The method decode ASCII to string
+     * The method decode symbols('%2F','%25')
      *
      * @param nodePath - path
      * @return - node path object
      */
     public static String decodeNodePath(@NotNull String nodePath) {
-        try {
-            nodePath = URLDecoder.decode(nodePath, StandardCharsets.UTF_8);
-        } catch (Exception e) {
-            // decoding unsuccessful, skip and use original
-        }
-        return nodePath;
+        return nodePath.replace("%2F", "/").replace("%25", "%");
     }
 
     /**
