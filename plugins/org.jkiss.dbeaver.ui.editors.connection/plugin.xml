@@ -96,14 +96,14 @@
                 title="%confirm.disconnect_txn.title"
                 description="%confirm.disconnect_txn.tip"
                 message="%confirm.disconnect_txn.message"
-                toggleMessage="%confirm.general.toggleMessage"
+                toggleMessage="default"
                 group="Connections"/>
         <confirmation
                 id="reconnect_txn"
                 title="%confirm.reconnect_txn.title"
                 description="%confirm.reconnect_txn.tip"
                 message="%confirm.reconnect_txn.message"
-                toggleMessage="%confirm.general.toggleMessage"
+                toggleMessage="default"
                 group="Connections"/>
     </extension>
 

@@ -21,8 +21,6 @@ package org.jkiss.dbeaver.ui;
  */
 public interface ConnectionPreferences {
 
-    // TODO: 1. move i18n properties for confirmations from core to org.jkiss.dbeaver.ui.editors.connection
-    // TODO: 2. refactor confirm.general.toggleMessage - use default toggle message and remove duplicates
     String CONFIRM_TXN_DISCONNECT = "disconnect_txn"; //$NON-NLS-1$
     String CONFIRM_TXN_RECONNECT = "reconnect_txn"; //$NON-NLS-1$
 
