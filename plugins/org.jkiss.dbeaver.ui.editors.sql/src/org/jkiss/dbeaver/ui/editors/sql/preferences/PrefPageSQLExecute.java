@@ -265,7 +265,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
                 public void widgetSelected(SelectionEvent e) {
                     switch (e.text) {
                         case "params":
-                            ShellUtils.launchProgram(HelpUtils.getHelpExternalReference("SQL-Execution#dynamic-parameter-bindings"));
+                            ShellUtils.launchProgram(HelpUtils.getHelpExternalReference("SQL-Execution#dynamic-parameters-binding"));
                             break;
                         case "commands":
                             ShellUtils.launchProgram(HelpUtils.getHelpExternalReference("Client-Side-Scripting"));

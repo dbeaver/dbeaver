@@ -19,9 +19,18 @@ package org.jkiss.dbeaver.ui.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.dbeaver.ui.internal.UIActivator;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
+
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 public class ConfirmationDescriptor extends AbstractDescriptor {
+
+    private static final Log log = Log.getLog(ConfirmationDescriptor.class);
+
     public static final String ELEMENT_ID = "confirmation";
 
     private final String id;
@@ -38,7 +47,19 @@ public class ConfirmationDescriptor extends AbstractDescriptor {
         this.title = config.getAttribute("title");
         this.description = config.getAttribute("description");
         this.message = config.getAttribute("message");
-        this.toggleMessage = config.getAttribute("toggleMessage");
+        String toggleMessageStr = config.getAttribute("toggleMessage");
+        if ("default".equals(toggleMessageStr)) {
+            ResourceBundle resourceBundle = RuntimeUtils.getBundleLocalization(
+                UIActivator.getDefault().getBundle(), Locale.getDefault().getLanguage());
+            try {
+                toggleMessageStr = resourceBundle.getString("confirm.general.toggleMessage");
+            } catch (Exception e) {
+                log.debug(e);
+            }
+            this.toggleMessage = toggleMessageStr;
+        } else {
+            this.toggleMessage = toggleMessageStr;
+        }
         this.group = config.getAttribute("group");
     }
 

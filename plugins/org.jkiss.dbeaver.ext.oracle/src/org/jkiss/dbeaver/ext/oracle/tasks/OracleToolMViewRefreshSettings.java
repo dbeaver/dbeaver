@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.ext.oracle.tasks;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteSettings;
 
 import java.util.Map;
 
-public class OracleToolMViewRefreshSettings extends SQLToolExecuteSettings<OracleMaterializedView> {
+public class OracleToolMViewRefreshSettings extends SQLToolExecuteSettings<OracleTableBase> {
     private boolean isFast;
     private boolean isForce;
     private boolean isComplete;
