@@ -57,6 +57,8 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
     private final DBPProject selectedProject;
     private Text taskLabelText;
     private Text taskDescriptionText;
+    private Text terminateTaskPeriod;
+    private Button terminateTaskAfterPeriod;
     private Tree taskCategoryTree;
     private Combo taskFoldersCombo;
 
@@ -192,6 +194,8 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
 
                 if (task != null && !CommonUtils.isEmpty(task.getId())) {
                     UIUtils.createLabelText(infoPanel, TaskUIMessages.task_config_wizard_page_task_text_label_task_id, task.getId(), SWT.BORDER | SWT.READ_ONLY);
+                    //UIUtils.createLabelText(infoPanel, "Close after","1000", SWT.BORDER | SWT.READ_ONLY);
+                    //UIUtils.createLabelText(infoPanel, "Close after","1000", SWT.BORDER | SWT.READ_ONLY);
                 }
 
                 UIUtils.asyncExec(() -> {
@@ -211,6 +215,39 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                     Composite typePanel = UIUtils.createComposite(infoPanel, 2);
                     UIUtils.createLabel(typePanel, task.getType().getIcon());
                     UIUtils.createLabel(typePanel, task.getType().getName());
+                }
+            }
+
+            Composite advancedPanel = UIUtils.createControlGroup(composite, "Advanced", 2, GridData.FILL_BOTH, 0); // TaskUIMessages.task_config_wizard_page_task_label_task_type);
+            terminateTaskAfterPeriod = UIUtils.createCheckbox(
+                advancedPanel,
+                "Terminate task after period (seconds):",
+                "Terminate task after period (seconds)",
+                true,
+                1);
+
+            terminateTaskPeriod = new Text(advancedPanel, SWT.BORDER);
+            terminateTaskAfterPeriod.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(
+                    SelectionEvent e) {
+                    terminateTaskPeriod.setEnabled(terminateTaskAfterPeriod.getSelection());
+                }
+            });
+            terminateTaskPeriod.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
+            terminateTaskPeriod.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+
+            if (task != null && task.getProperties() != null) {
+                LinkedHashMap<String, Object> object = (LinkedHashMap<String, Object>) task.getProperties().get("configuration");
+                String timeOut = (String) object.get("timeOutSetting");
+                if (CommonUtils.isNotEmpty(timeOut)) {
+                    terminateTaskAfterPeriod.setSelection(true);
+                    terminateTaskPeriod.setEnabled(true);
+                    terminateTaskPeriod.setText(timeOut);
+                } else {
+                    terminateTaskAfterPeriod.setSelection(false);
+                    terminateTaskPeriod.setEnabled(false);
+                    terminateTaskPeriod.setText("");
                 }
             }
 
@@ -429,6 +466,14 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                     currentTaskFolder.removeTaskFromFolder(task);
                 }
                 TaskRegistry.getInstance().notifyTaskFoldersListeners(new DBTTaskFolderEvent(folder, DBTTaskFolderEvent.Action.TASK_FOLDER_REMOVE));
+            }
+            Map<String, Object> properties = task.getProperties();
+            if (properties == null) {
+                properties = new HashMap<>();
+            }
+            if (terminateTaskAfterPeriod.getSelection()) {
+                LinkedHashMap<String, Object> object = (LinkedHashMap<String, Object>) task.getProperties().get("configuration");
+                object.put("timeOutSetting", terminateTaskPeriod.getText());
             }
         }
     }

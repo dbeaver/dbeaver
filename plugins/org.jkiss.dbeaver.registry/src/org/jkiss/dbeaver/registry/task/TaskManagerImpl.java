@@ -330,11 +330,18 @@ public class TaskManagerImpl implements DBTTaskManager {
     @NotNull
     @Override
     public TaskRunJob scheduleTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener) {
-        final TaskRunJob runJob = createJob((TaskImpl) task, listener);
+        String timeout = null;
         Map<String, Object> properties = task.getProperties();
-        final Job serviceJob = createServiceJob(runJob, 3000);
+        if(properties!=null) {
+            LinkedHashMap<String, Object> object = (LinkedHashMap<String, Object>) properties.get("configuration");
+            timeout = (String)object.get("timeOutSetting");
+        }
+        final TaskRunJob runJob = createJob((TaskImpl) task, listener);
         runJob.schedule();
-        serviceJob.schedule();
+        if (timeout != null) {
+            final Job serviceJob = createServiceJob(runJob, Integer.valueOf(timeout));
+            serviceJob.schedule();
+        }
         return runJob;
     }
 
