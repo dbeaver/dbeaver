@@ -33,6 +33,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEStructEditor;
@@ -618,7 +619,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     private void createContainerSelector(Composite tableGroup) throws DBException {
         ObjectContainerSelectorPanel containerPanel = new ObjectContainerSelectorPanel(
             tableGroup,
-            navigatorModel.getRoot().getOwnerProject(),
+            this.getOwnerProject(),
             CONTAINER_LOGICAL_FK,
             EditorsMessages.edit_foreign_key_page_create_container_reference_table_container,
             EditorsMessages.edit_foreign_key_page_create_container_select_reference_table_container) {
@@ -642,17 +643,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                 } else {
                     containerObject = foreignKey.getParentObject();
                 }
-                if (containerObject != null && containerObject.getParentObject() instanceof DBSObjectContainer) {
-                    containerObject = containerObject.getParentObject();
-                }
-                if (containerObject instanceof DBVContainer) {
-                    try {
-                        containerObject = ((DBVContainer) containerObject).getRealContainer(new VoidProgressMonitor());
-                    } catch (DBException e) {
-                        log.error("Error getting real object container", e);
-                    }
-                }
-                return ownerContainerNode = navigatorModel.getNodeByObject(containerObject);
+                return ownerContainerNode = getNodeByContainerObject(containerObject);
             }
 
             @Override
@@ -679,6 +670,35 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                 containerPanel.setContainerInfo((DBNDatabaseNode) containerNode);
             }
         }
+    }
+
+    @Nullable
+    private DBPProject getOwnerProject() {
+        if (foreignKey != null) {
+            DBNDatabaseNode node = getNodeByContainerObject(foreignKey.getParentObject());
+            if (node != null) {
+                return node.getOwnerProject();
+            }
+        }
+        if (ownerTableNode != null) {
+            return ownerTableNode.getOwnerProject();
+        }
+        return null;
+    }
+
+    @Nullable
+    private DBNDatabaseNode getNodeByContainerObject(@Nullable DBSObject containerObject) {
+        if (containerObject != null && containerObject.getParentObject() instanceof DBSObjectContainer) {
+            containerObject = containerObject.getParentObject();
+        }
+        if (containerObject instanceof DBVContainer) {
+            try {
+                containerObject = ((DBVContainer) containerObject).getRealContainer(new VoidProgressMonitor());
+            } catch (DBException e) {
+                log.error("Error getting real object container", e);
+            }
+        }
+        return navigatorModel.getNodeByObject(containerObject);
     }
 
     private void loadTableList(DBNDatabaseNode newContainerNode) {

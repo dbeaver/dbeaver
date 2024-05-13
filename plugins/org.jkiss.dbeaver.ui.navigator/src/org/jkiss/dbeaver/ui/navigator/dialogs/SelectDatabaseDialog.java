@@ -140,7 +140,7 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
         instanceList.createProgressPanel();
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 300;
-        gd.minimumWidth = 300;
+        gd.minimumWidth = 500;
         instanceList.setLayoutData(gd);
         instanceList.getSelectionProvider().addSelectionChangedListener(event -> {
             IStructuredSelection selection = (IStructuredSelection) event.getSelection();
@@ -154,7 +154,7 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
         });
 
         instanceList.loadData();
-        closeOnFocusLost(instanceList);
+        closeOnFocusLost(instanceList.getItemsViewer().getControl());
     }
 
     protected List<DBNDatabaseNode> getObjects(DBRProgressMonitor monitor) throws DBException {
