@@ -375,6 +375,23 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
             // Open New Connection wizard
                 initWorkbenchWindows();
         }
+
+        UIUtils.asyncExec(() -> {
+            // FIXME: dirty hack of standard commands handle (e.g. CTRL+C)
+            // Re-activate active part to trigger keybindings refresh for it
+            IWorkbenchPage activePage = getWindowConfigurer().getWindow().getActivePage();
+            IWorkbenchPart activePart = activePage.getActivePart();
+            if (activePart != null) {
+                for (IViewReference viewReference : activePage.getViewReferences()) {
+                    IViewPart view = viewReference.getView(false);
+                    if (view != null && view != activePart) {
+                        activePage.activate(view);
+                        activePage.activate(activePart);
+                        break;
+                    }
+                }
+            }
+        });
     }
 
     protected boolean isRunWorkbenchInitializers() {

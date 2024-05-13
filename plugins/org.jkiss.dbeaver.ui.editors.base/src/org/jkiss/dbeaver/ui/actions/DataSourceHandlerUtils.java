@@ -27,10 +27,10 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.model.secret.DBSSecretValue;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
@@ -40,7 +40,7 @@ import java.util.List;
 
 public class DataSourceHandlerUtils {
 
-    public static boolean resolveSharedCredentials(DataSourceDescriptor dataSource, @Nullable DBRProgressListener onFinish) {
+    public static boolean resolveSharedCredentials(DBPDataSourceContainer dataSource, @Nullable DBRProgressListener onFinish) {
         if (dataSource.isSharedCredentials() && !dataSource.isSharedCredentialsSelected()) {
             try {
                 List<DBSSecretValue> sharedCredentials = dataSource.listSharedCredentials();
@@ -59,7 +59,7 @@ public class DataSourceHandlerUtils {
                     }
                 }
             } catch (DBException e) {
-                dataSource.forgetSecrets();
+                dataSource.resetAllSecrets();
                 if (onFinish != null) {
                     onFinish.onTaskFinished(GeneralUtils.makeExceptionStatus(e));
                 }
@@ -70,7 +70,7 @@ public class DataSourceHandlerUtils {
         return true;
     }
 
-    private static DBSSecretValue selectSharedCredentials(DataSourceDescriptor dataSource, List<DBSSecretValue> credentials) {
+    private static DBSSecretValue selectSharedCredentials(DBPDataSourceContainer dataSource, List<DBSSecretValue> credentials) {
         return UIUtils.syncExec(new RunnableWithResult<>() {
             @Override
             public DBSSecretValue runWithResult() {
@@ -85,10 +85,10 @@ public class DataSourceHandlerUtils {
 
     static class CredentialsSelectorDialog extends BaseDialog {
 
-        private final DataSourceDescriptor dataSource;
+        private final DBPDataSourceContainer dataSource;
         private final List<DBSSecretValue> credentials;
         private DBSSecretValue selected;
-        public CredentialsSelectorDialog(DataSourceDescriptor dataSource, List<DBSSecretValue> credentials) {
+        public CredentialsSelectorDialog(DBPDataSourceContainer dataSource, List<DBSSecretValue> credentials) {
             super(UIUtils.getActiveShell(),
                 "'" + dataSource.getName() + "' credentials",
                 dataSource.getDriver().getIcon());

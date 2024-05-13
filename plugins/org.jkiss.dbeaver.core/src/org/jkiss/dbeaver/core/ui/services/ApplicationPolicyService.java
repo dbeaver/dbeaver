@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.app.standalone.services;
+package org.jkiss.dbeaver.core.ui.services;
 
 import org.eclipse.core.commands.Command;
 import org.eclipse.ui.commands.ICommandService;
@@ -28,8 +28,8 @@ public class ApplicationPolicyService {
     private static final String INSTALL_NEW_SOFTWARE_COMMAND = "org.eclipse.equinox.p2.ui.sdk.install"; //$NON-NLS-1$
     private static final String SHOW_MARKETPLACE_COMMAND = "org.eclipse.epp.mpc.ui.command.showMarketplaceWizard"; //$NON-NLS-1$
     private static final String UPDATE_SOFTWARE_COMMAND = "org.eclipse.equinox.p2.ui.sdk.update"; //$NON-NLS-1$
-    private static final String POLICY_SOFTWARE_INSTALL = "policy.software.install.disabled"; //$NON-NLS-1$
-    private static final String POLICY_SOFTWARE_UPDATE = "policy.software.update.disabled"; //$NON-NLS-1$
+    private static final String POLICY_SOFTWARE_INSTALL_DISABLED = "policy.software.install.disabled"; //$NON-NLS-1$
+    private static final String POLICY_SOFTWARE_UPDATE_DISABLED = "policy.software.update.disabled"; //$NON-NLS-1$
 
     private ApplicationPolicyService() {
         // no implementation
@@ -50,11 +50,11 @@ public class ApplicationPolicyService {
      * @param commandService - service
      */
     public void disableStandardProductModification(@NotNull ICommandService commandService) {
-        if (BasePolicyDataProvider.getInstance().isPolicyEnabled(POLICY_SOFTWARE_INSTALL)) {
+        if (BasePolicyDataProvider.getInstance().isPolicyEnabled(POLICY_SOFTWARE_INSTALL_DISABLED)) {
             disableCommand(commandService, INSTALL_NEW_SOFTWARE_COMMAND);
             disableCommand(commandService, SHOW_MARKETPLACE_COMMAND); 
         }
-        if (BasePolicyDataProvider.getInstance().isPolicyEnabled(POLICY_SOFTWARE_UPDATE)) {
+        if (BasePolicyDataProvider.getInstance().isPolicyEnabled(POLICY_SOFTWARE_UPDATE_DISABLED)) {
             disableCommand(commandService, UPDATE_SOFTWARE_COMMAND);
         }
     }
@@ -67,4 +67,11 @@ public class ApplicationPolicyService {
         }
     }
 
+    /**
+     * Return true, if software install/update policy enabled
+     */
+    public boolean isInstallUpdateDisabled() {
+        return BasePolicyDataProvider.getInstance().isPolicyEnabled(POLICY_SOFTWARE_INSTALL_DISABLED)
+            || BasePolicyDataProvider.getInstance().isPolicyEnabled(POLICY_SOFTWARE_UPDATE_DISABLED);
+    }
 }
