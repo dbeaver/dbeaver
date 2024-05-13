@@ -118,6 +118,8 @@ public interface DBPDataSourceContainer extends
      */
     List<DBSSecretValue> listSharedCredentials() throws DBException;
     void setSharedCredentials(boolean sharedCredentials);
+    boolean isSharedCredentialsSelected();
+    void setSelectedSharedCredentials(@NotNull DBSSecretValue secretValue);
 
     boolean isConnectionReadOnly();
 
@@ -250,6 +252,11 @@ public interface DBPDataSourceContainer extends
      * reset all secured properties
      */
     void resetPassword();
+
+    /**
+     * Marks all secrets (credentials) as unresolved
+     */
+    void resetAllSecrets();
 
     /**
      * Make variable resolver for datasource properties.
