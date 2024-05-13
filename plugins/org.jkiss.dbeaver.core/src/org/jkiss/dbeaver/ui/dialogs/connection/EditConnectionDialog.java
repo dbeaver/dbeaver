@@ -26,10 +26,10 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.CoreFeatures;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.ui.ConnectionFeatures;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.MultiPageWizardDialog;
 import org.jkiss.utils.CommonUtils;
@@ -188,7 +188,7 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
             return true;
         }
 
-        CoreFeatures.CONNECTION_EDIT.use(Map.of("driver", dataSource.getDriver().getPreconfiguredId()));
+        ConnectionFeatures.CONNECTION_EDIT.use(Map.of("driver", dataSource.getDriver().getPreconfiguredId()));
 
         EditConnectionWizard wizard = new EditConnectionWizard((DataSourceDescriptor) dataSource);
 
