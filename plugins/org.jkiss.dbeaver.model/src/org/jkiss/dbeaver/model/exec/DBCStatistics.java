@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.exec;
 
+import org.eclipse.core.runtime.IStatus;
 import org.jkiss.code.Nullable;
 import org.jkiss.utils.CommonUtils;
 
@@ -37,6 +38,7 @@ public class DBCStatistics implements DBCExecutionResult {
     private List<String> messages;
     private Throwable error;
     private List<Throwable> warnings;
+    private IStatus result;
 
     public DBCStatistics() {
         this.startTime = System.currentTimeMillis();
@@ -218,4 +220,13 @@ public class DBCStatistics implements DBCExecutionResult {
         }
         warnings.add(warning);
     }
+
+    public void addResult(IStatus result) {
+        this.result = result;
+    }
+
+    public IStatus getResult() {
+        return result;
+    }
+
 }

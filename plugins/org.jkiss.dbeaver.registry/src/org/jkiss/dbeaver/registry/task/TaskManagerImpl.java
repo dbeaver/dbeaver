@@ -19,7 +19,10 @@ package org.jkiss.dbeaver.registry.task;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonWriter;
+
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -31,6 +34,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.rm.RMConstants;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.BaseProjectImpl;
@@ -308,6 +312,9 @@ public class TaskManagerImpl implements DBTTaskManager {
     @Override
     public DBTTaskRunStatus runTask(@NotNull DBRProgressMonitor monitor, @NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener) throws DBException {
         final TaskRunJob job = createJob((TaskImpl) task, listener);
+  
+        
+        
         final IStatus result = job.runDirectly(monitor);
         final Throwable error = result.getException();
         if (error != null) {
@@ -324,8 +331,41 @@ public class TaskManagerImpl implements DBTTaskManager {
     @Override
     public TaskRunJob scheduleTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener) {
         final TaskRunJob runJob = createJob((TaskImpl) task, listener);
+        Map<String, Object> properties = task.getProperties();
+        final Job serviceJob = createServiceJob(runJob, 3000);
         runJob.schedule();
+        serviceJob.schedule();
         return runJob;
+    }
+
+    private Job createServiceJob(
+        @NotNull AbstractJob task,
+        int timeoutMaxValue) {
+        return new Job("Service canceling job") {
+            @Override
+            protected IStatus run(
+                IProgressMonitor monitor) {
+                int timeout = 0;
+                while (timeout < timeoutMaxValue) {
+                    try {
+                        Thread.sleep(1000);
+                        if (task != null && !task.isFinished() && !task.isCanceled()) {
+                            timeout += 1000;
+                        } else {
+                            // jobs completed early than timeout
+                            return Status.OK_STATUS;
+                        }
+                    } catch (InterruptedException e) {
+                        // expected no interruption of service job
+                        log.debug(e.getMessage());
+                    }
+                }
+                if (!task.isFinished() && !task.isCanceled()) {
+                    task.cancel();
+                }
+                return Status.OK_STATUS;
+            }
+        };
     }
 
     @NotNull

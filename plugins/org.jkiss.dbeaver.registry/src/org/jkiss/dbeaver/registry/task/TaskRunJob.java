@@ -121,6 +121,10 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
                     taskError.printStackTrace(new PrintWriter(buf, true));
                     taskRun.setErrorStackTrace(buf.toString());
                 }
+                IStatus result = taskRunStatus.getResult();
+                if (result != null && result.getSeverity() == IStatus.CANCEL) {
+                    taskRun.setErrorMessage(result.getMessage());
+                }
                 task.updateRun(taskRun);
             }
         } catch (IOException e) {

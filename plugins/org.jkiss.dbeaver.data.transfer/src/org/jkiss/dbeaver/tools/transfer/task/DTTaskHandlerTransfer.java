@@ -16,8 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.task;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.JobGroup;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -207,6 +206,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
                             error[0].addSuppressed(result.getException());
                         }
                     }
+                    totalStatistics.addResult(result);
                     totalStatistics.accumulate(job.getTotalStatistics());
                 }
                 monitor.done();
