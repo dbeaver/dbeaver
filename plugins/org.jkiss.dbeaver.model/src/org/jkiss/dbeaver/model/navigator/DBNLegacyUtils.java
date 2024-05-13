@@ -139,7 +139,6 @@ public class DBNLegacyUtils {
 
         final List<String> pathItems = nodePath.pathItems;
         for (int i = firstItem, itemsSize = pathItems.size(); i < itemsSize; i++) {
-            //String item = pathItems.get(i).replace(DBNModel.SLASH_ESCAPE_TOKEN, "/");
             String item = pathItems.get(i);
             if (nodePath.type == DBNNode.NodePathType.ext && curNode instanceof DBNProject pn) {
                 // Trigger project to load extra nodes
