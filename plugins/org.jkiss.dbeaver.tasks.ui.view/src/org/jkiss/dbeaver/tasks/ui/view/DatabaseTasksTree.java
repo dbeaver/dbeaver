@@ -320,7 +320,6 @@ public class DatabaseTasksTree {
     void refresh() {
         refreshTasks();
         regroupTasks(ExpansionOptions.RETAIN);
-        //taskViewer.refresh(true);
         refreshScheduledTasks();
     }
 

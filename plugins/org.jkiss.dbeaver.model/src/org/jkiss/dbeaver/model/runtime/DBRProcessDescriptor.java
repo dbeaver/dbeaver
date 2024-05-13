@@ -50,12 +50,18 @@ public class DBRProcessDescriptor {
     public DBRProcessDescriptor(final DBRShellCommand command, final IVariableResolver variablesResolver)
     {
         this.command = command;
-        String commandLine = variablesResolver == null ?
-            command.getCommand() :
-            GeneralUtils.replaceVariables(command.getCommand(), variablesResolver);
-        commandLine = CommonUtils.notEmpty(commandLine);
+        List<String> commandParams;
+        if (command.getCommandParams() != null) {
+            commandParams = command.getCommandParams();
+        } else {
+            String commandLine = variablesResolver == null ?
+                command.getCommand() :
+                GeneralUtils.replaceVariables(command.getCommand(), variablesResolver);
+            commandLine = CommonUtils.notEmpty(commandLine);
+            commandParams = RuntimeUtils.splitCommandLine(commandLine, !RuntimeUtils.isWindows());
+        }
 
-        processBuilder = new ProcessBuilder(RuntimeUtils.splitCommandLine(commandLine, !RuntimeUtils.isWindows()));
+        processBuilder = new ProcessBuilder(commandParams);
         // Set working directory
         if (!CommonUtils.isEmpty(command.getWorkingDirectory())) {
             processBuilder.directory(new File(command.getWorkingDirectory()));
