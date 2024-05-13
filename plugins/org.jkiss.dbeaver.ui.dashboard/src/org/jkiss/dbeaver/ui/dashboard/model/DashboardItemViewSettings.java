@@ -70,6 +70,26 @@ public class DashboardItemViewSettings {
         this.description = dashboardDescriptor.getDescription();
     }
 
+
+    public DashboardItemViewSettings(DashboardConfiguration viewConfiguration, String id, Element element) {
+        this.viewConfiguration = viewConfiguration;
+        this.itemId = id;
+
+        this.viewTypeId = element.getAttribute("viewType");
+        this.index = CommonUtils.toInt(element.getAttribute("index"));
+        this.widthRatio = (float) CommonUtils.toDouble(element.getAttribute("widthRatio"));
+        this.updatePeriod = CommonUtils.toLong(element.getAttribute("updatePeriod"));
+        this.maxItems = CommonUtils.toInt(element.getAttribute("maxItems"));
+        this.maxAge = CommonUtils.toLong(element.getAttribute("maxAge"));
+
+        this.legendVisible = CommonUtils.getBoolean(element.getAttribute("legendVisible"), true);
+        this.gridVisible = CommonUtils.getBoolean(element.getAttribute("gridVisible"), true);
+        this.domainTicksVisible = CommonUtils.getBoolean(element.getAttribute("domainTicksVisible"), true);
+        this.rangeTicksVisible = CommonUtils.getBoolean(element.getAttribute("rangeTicksVisible"), true);
+
+        this.description = element.getAttribute("description");
+    }
+
     public DashboardItemViewSettings(DashboardItemViewSettings source) {
         this.viewConfiguration = source.viewConfiguration;
         copyFrom(source);
@@ -77,6 +97,10 @@ public class DashboardItemViewSettings {
 
     public DashboardConfiguration getViewConfiguration() {
         return viewConfiguration;
+    }
+
+    public DashboardItemConfiguration getDashboardItem() {
+        return dashboardItem;
     }
 
     public String getItemId() {
@@ -97,7 +121,7 @@ public class DashboardItemViewSettings {
     }
 
     @Nullable
-    public DashboardItemConfiguration getDashboardDescriptor() {
+    public DashboardItemConfiguration getItemConfiguration() {
         if (dashboardItem == null) {
             try {
                 DBPDataSourceContainer dataSourceContainer = viewConfiguration.getDataSourceContainer();
@@ -107,6 +131,9 @@ public class DashboardItemViewSettings {
                         new DBDashboardContext(dataSourceContainer) :
                         new DBDashboardContext(viewConfiguration.getProject()),
                     itemId);
+                if (dashboardItem == null) {
+                    log.debug("Configuration item '" + itemId + "' not found in registry");
+                }
             } catch (DBException e) {
                 log.debug("Dashboard '" + itemId + "' not found", e);
                 return null;
@@ -118,7 +145,7 @@ public class DashboardItemViewSettings {
     public DashboardRendererType getViewType() {
         String vtId = viewTypeId;
         if (CommonUtils.isEmpty(vtId)) {
-            DashboardItemConfiguration dashboard = getDashboardDescriptor();
+            DashboardItemConfiguration dashboard = getItemConfiguration();
             vtId = dashboard == null ? DashboardConstants.DEF_DASHBOARD_VIEW_TYPE : dashboard.getDashboardRenderer();
         }
         return DashboardUIRegistry.getInstance().getViewType(vtId);
@@ -249,25 +276,6 @@ public class DashboardItemViewSettings {
         if (!CommonUtils.isEmpty(description)) {
             xml.addAttribute("description", description);
         }
-    }
-
-    public DashboardItemViewSettings(DashboardConfiguration viewConfiguration, String id, Element element) {
-        this.viewConfiguration = viewConfiguration;
-        this.itemId = id;
-
-        this.viewTypeId = element.getAttribute("viewType");
-        this.index = CommonUtils.toInt(element.getAttribute("index"));
-        this.widthRatio = (float) CommonUtils.toDouble(element.getAttribute("widthRatio"));
-        this.updatePeriod = CommonUtils.toLong(element.getAttribute("updatePeriod"));
-        this.maxItems = CommonUtils.toInt(element.getAttribute("maxItems"));
-        this.maxAge = CommonUtils.toLong(element.getAttribute("maxAge"));
-
-        this.legendVisible = CommonUtils.getBoolean(element.getAttribute("legendVisible"), true);
-        this.gridVisible = CommonUtils.getBoolean(element.getAttribute("gridVisible"), true);
-        this.domainTicksVisible = CommonUtils.getBoolean(element.getAttribute("domainTicksVisible"), true);
-        this.rangeTicksVisible = CommonUtils.getBoolean(element.getAttribute("rangeTicksVisible"), true);
-
-        this.description = element.getAttribute("description");
     }
 
     @Override

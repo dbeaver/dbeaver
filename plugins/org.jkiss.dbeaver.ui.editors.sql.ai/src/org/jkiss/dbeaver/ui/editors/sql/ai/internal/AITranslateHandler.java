@@ -63,7 +63,7 @@ public class AITranslateHandler extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         AIFeatures.SQL_AI_POPUP.use();
 
-        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AICompletionConstants.AI_DISABLED)) {
+        if (AISettingsRegistry.getInstance().getSettings().isAiDisabled()) {
             return null;
         }
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
@@ -76,7 +76,7 @@ public class AITranslateHandler extends AbstractHandler {
 
         DAICompletionEngine engine;
         try {
-            engine = AIEngineRegistry.getInstance().getCompletionEngine(AISettings.getSettings().getActiveEngine());
+            engine = AIEngineRegistry.getInstance().getCompletionEngine(AISettingsRegistry.getInstance().getSettings().getActiveEngine());
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError("AI error", "Cannot determine AI engine", e);
             return null;
@@ -123,7 +123,7 @@ public class AITranslateHandler extends AbstractHandler {
         );
         if (aiCompletionPopup.open() == IDialogConstants.OK_ID) {
             try {
-                engine = AIEngineRegistry.getInstance().getCompletionEngine(AISettings.getSettings().getActiveEngine());
+                engine = AIEngineRegistry.getInstance().getCompletionEngine(AISettingsRegistry.getInstance().getSettings().getActiveEngine());
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError("AI error", "Cannot determine AI engine", e);
                 return null;
@@ -151,7 +151,7 @@ public class AITranslateHandler extends AbstractHandler {
             popup.getInputText()
         );
 
-        if (CommonUtils.isEmptyTrimmed(message.content())) {
+        if (CommonUtils.isEmptyTrimmed(message.getContent())) {
             return;
         }
 
@@ -194,7 +194,7 @@ public class AITranslateHandler extends AbstractHandler {
         }
         StringBuilder completion = new StringBuilder();
         if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AICompletionConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT)) {
-            completion.append(SQLUtils.generateCommentLine(executionContext.getDataSource(), message.content()));
+            completion.append(SQLUtils.generateCommentLine(executionContext.getDataSource(), message.getContent()));
         }
         for (MessageChunk messageChunk : messageChunks) {
             if (messageChunk instanceof MessageChunk.Code code) {
@@ -215,7 +215,7 @@ public class AITranslateHandler extends AbstractHandler {
                         monitor,
                         lDataSource,
                         executionContext,
-                        message.content(),
+                        message.getContent(),
                         finalCompletion);
                 } catch (DBException e) {
                     return GeneralUtils.makeExceptionStatus(e);
@@ -234,6 +234,12 @@ public class AITranslateHandler extends AbstractHandler {
                 if (query != null) {
                     offset = query.getOffset();
                     length = query.getLength();
+                    // Trim trailing semicolon if needed
+                    if (length > 0 && !query.getText().endsWith(";") && !completion.isEmpty()) {
+                        if (completion.charAt(completion.length() - 1) == ';') {
+                            completion.setLength(completion.length() - 1);
+                        }
+                    }
                 }
                 document.replace(
                     offset,

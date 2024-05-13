@@ -694,7 +694,7 @@ class ResultSetPersister {
                     if (container instanceof ISmartTransactionManager) {
                         if (((ISmartTransactionManager) container).isSmartAutoCommit()) {
                             DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
-                            if (txnManager != null && txnManager.isAutoCommit()) {
+                            if (txnManager != null && txnManager.isSupportsTransactions() && txnManager.isAutoCommit()) {
                                 monitor.subTask("Disable auto-commit mode");
                                 txnManager.setAutoCommit(monitor, false);
                             }
@@ -888,7 +888,7 @@ class ResultSetPersister {
         public void fetchRow(@NotNull DBCSession session, @NotNull DBCResultSet resultSet)
             throws DBCException {
             DBCResultSetMetaData rsMeta = resultSet.getMeta();
-            List<DBCAttributeMetaData> keyAttributes = rsMeta.getAttributes();
+            List<? extends DBCAttributeMetaData> keyAttributes = rsMeta.getAttributes();
             for (int i = 0; i < keyAttributes.size(); i++) {
                 DBCAttributeMetaData keyAttribute = keyAttributes.get(i);
                 DBDValueHandler valueHandler = DBUtils.findValueHandler(session, keyAttribute);

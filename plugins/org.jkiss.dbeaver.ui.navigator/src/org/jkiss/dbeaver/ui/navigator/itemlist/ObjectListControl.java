@@ -41,7 +41,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -375,7 +374,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     }
 
     protected int getDataLoadTimeout() {
-        return 4000;
+        return 10000;
     }
 
     protected void setListData(Collection<OBJECT_TYPE> items, boolean append, boolean forUpdate) {
@@ -1428,11 +1427,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
         @Override
         public boolean select(Viewer viewer, Object parentElement, Object element) {
-            if (!(element instanceof DBNNode)) {
-                return false;
-            }
-            DBNNode node = (DBNNode) element;
-            return matches(node.getName()) || matches(node.getNodeDescription());
+            return (element instanceof DBPNamedObject namedObject && matches(namedObject.getName())) ||
+                (element instanceof DBPObjectWithDescription owd && matches(owd.getDescription()));
         }
 
         private boolean matches(@Nullable CharSequence charSequence) {

@@ -16,32 +16,22 @@
  */
 package org.jkiss.dbeaver.model.lsm.sql.impl;
 
-import org.jkiss.dbeaver.model.lsm.mapping.*;
-
 import java.util.List;
 
-@SyntaxNode(name = "orderByClause")
-public class OrderingSpec extends AbstractSyntaxNode {
-    
-    @SyntaxNode(name = "sortSpecification")
-    public static class SortSpec extends AbstractSyntaxNode {
-        @SyntaxSubnode(xpath = "./sortKey/columnReference")
+public class OrderingSpec {
+
+    public static class SortSpec {
         public ColumnReference columnName;
-        @SyntaxTerm(xpath = "./sortKey/UnsignedInteger")
         public int columnNumber;
-        @SyntaxTerm(xpath = "./orderingSpecification")
         public OrderKind ordering;
-        @SyntaxTerm(xpath = "./collateClause/collationName/qualifiedName/qualifiedIdentifier/identifier/actualIdentifier")
         public String collation;
     }
-    
-    @SyntaxLiteral(name = "orderingSpecification")
+
     public enum OrderKind {
         ASC,
         DESC
     }
-    
-    @SyntaxSubnode(type = OrderingSpec.SortSpec.class, xpath = "./sortSpecificationList/sortSpecification")
+
     public List<SortSpec> sorting;
     
     

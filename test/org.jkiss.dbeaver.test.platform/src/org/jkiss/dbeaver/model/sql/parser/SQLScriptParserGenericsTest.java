@@ -166,6 +166,67 @@ public class SQLScriptParserGenericsTest {
         assertParse("snowflake", query);
     }
 
+    public void checkSmartBlankLineIsAStatementDelimiterMode() throws DBException {
+        String[] query = new String[]{
+            "DECLARE EXIT HANDLER FOR SQLEXCEPTION\n" +
+                    "BEGIN\n" +
+                    "GET DIAGNOSTICS CONDITION 1\n" +
+                    "v_error_message = MESSAGE_TEXT, v_sqlstate = RETURNED_SQLSTATE, v_error_schema = SCHEMA_NAME, v_error_TABLE = TABLE_NAME, v_err_nbr = MYSQL_ERRNO;\n" +
+                    "SELECT v_error_message, v_sqlstate, v_error_schema, v_error_table, v_err_nbr;\n" +
+                    "SET v_updt_row_count = 1;\n" +
+                    "END;\n",
+            null,
+            "use Elizabeth;\n",
+            null,
+            "SELECT Column1\n" +
+            "FROM Elizabeth.Elis;\n",
+            null,
+            "use DBeaver;\n",
+            null,
+            "SELECT Column1, name\n" +
+            "FROM DBeaver.NewTable;\n",
+            null,
+            "use Yan;\n",
+            null,
+            "SELECT AlbumId, Title, ArtistId, Column1\n" +
+            "FROM Yan.Album;\n",
+            null,
+            "CREATE TABLE T_PARK_REQUIREMENT_APPLICATION(\n" +
+                    "ID VARCHAR2(32) DEFAULT SYS_GUID() NOT NULL,\n" +
+                    "COMPANY_NAME VARCHAR2(500),\n" +
+                    "APPLICANT_NAME VARCHAR2(200),\n" +
+                    "CONTACT_PHONE VARCHAR2(100),\n" +
+                    "DATE_RAISED DATE,\n" +
+                    "DEMAND_TYPE VARCHAR2(50),\n" +
+                    "REPORT_TYPE VARCHAR2(50),\n" +
+                    "REPORT_CONTENT VARCHAR2(4000),\n" +
+                    "STATUS INT,\n" +
+                    "CREATE_BY VARCHAR2(32),\n" +
+                    "CREATE_TIME DATE,\n" +
+                    "UPDATE_BY VARCHAR2(32),\n" +
+                    "UPDATE_TIME DATE,\n" +
+                    "PRIMARY KEY (ID)\n" +
+                    ");\n",
+            null,
+            "COMMENT ON TABLE T_PARK_REQUIREMENT_APPLICATION IS '园区需求申请';\n",
+            null,
+            "COMMENT ON COLUMN T_PARK_REQUIREMENT_APPLICATION.ID IS '主键';\n",
+            null,
+            "COMMENT ON COLUMN T_PARK_REQUIREMENT_APPLICATION.COMPANY_NAME IS '公司名称';\n",
+            null,
+            "COMMENT ON COLUMN T_PARK_REQUIREMENT_APPLICATION.APPLICANT_NAME IS '申请人';\n",
+            null,
+            "select 1;\n",
+            null,
+            "select 2;\n",
+            "select 10 ; -- Comments\n",
+            null,
+            "select 10 ; /* Comments */",
+            null
+        };
+        assertParse("snowflake", query);
+    }
+
     @Test
     public void parseSnowflakeIfExistsStatements() throws DBException {
         String[] query = new String[]{
@@ -176,13 +237,36 @@ public class SQLScriptParserGenericsTest {
             "DROP TABLE\n"
                 + "IF EXISTS dim_test;",
             null,
-            "IF (i=1) THEN\n"
-                + "i:=2;\n"
-                + "END IF;",
+            "CREATE or replace PROCEDURE example_if(flag INTEGER)\n" +
+                "RETURNS VARCHAR\n" +
+                "LANGUAGE SQL\n" +
+                "AS\n" +
+                "BEGIN\n" +
+                "    IF (FLAG = 1) THEN\n" +
+                "        RETURN 'one';\n" +
+                "    ELSEIF (FLAG = 2) THEN\n" +
+                "        RETURN 'two';\n" +
+                "    ELSE\n" +
+                "        RETURN 'Unexpected input.';\n" +
+                "    END IF;\n" +
+                "END;",
             null,
-            "IF (i=2) THEN\n"
-                + "i:=1;\n"
-                + "END IF;",
+            "create or replace procedure test (customer_number integer)\n" +
+                "    returns integer not null\n" +
+                "    language sql\n" +
+                "    as \n" +
+                "$$\n" +
+                "declare \n" +
+                "seq integer;\n" +
+                "\n" +
+                "begin seq := 0;\n" +
+                "if (customer_number = 1) then seq := 1;\n" +
+                "    else if (customer_number = 0) then seq := seq + 10;\n" +
+                "    end if;\n" +
+                "end if;\n" +
+                "    return seq;\n" +
+                "end;\n" +
+                "$$;",
             null,
             "CREATE TABLE IF NOT EXISTS MART_FLSEDW_CI.DEPLOYMENT_SCRIPTS\n"
                 + "(\r\n"
@@ -266,18 +350,18 @@ public class SQLScriptParserGenericsTest {
     public void parseParameterFromSetCommand() throws DBException {
         List<String> varNames = List.of("aBc", "\"aBc\"", "\"a@c=\"");
         ArrayList<String> expectedCommandsText = new ArrayList<>();
-        String script = "";
+        StringBuilder script = new StringBuilder();
         for (int i = 0; i < varNames.size(); i++) {
             expectedCommandsText.add("@set " + varNames.get(i) + " = 1");
-            script += expectedCommandsText.get(i) + "\n";
+            script.append(expectedCommandsText.get(i)).append("\n");
         }
-        SQLParserContext context = createParserContext(setDialect("snowflake"), script);
-        List<SQLScriptElement> elements = SQLScriptParser.parseScript(context.getDataSource(), script);
+        SQLParserContext context = createParserContext(setDialect("snowflake"), script.toString());
+        assert context.getDataSource() != null;
+        List<SQLScriptElement> elements = SQLScriptParser.parseScript(context.getDataSource(), script.toString());
         List<SQLControlCommand> commands = new ArrayList<>();
         List<String> actualCommandsText = new ArrayList<>();
         for (SQLScriptElement sqlScriptElement : elements) {
-            if (sqlScriptElement instanceof SQLControlCommand) {
-                SQLControlCommand cmd = (SQLControlCommand) sqlScriptElement;
+            if (sqlScriptElement instanceof SQLControlCommand cmd) {
                 commands.add(cmd);
                 actualCommandsText.add(cmd.getText());
             }
@@ -311,10 +395,10 @@ public class SQLScriptParserGenericsTest {
         SQLParserContext context = createParserContext(setDialect(dialectName), query);
         int docLen = context.getDocument().getLength();
         List<SQLScriptElement> elements = SQLScriptParser.extractScriptQueries(context, 0, docLen, false, false, false);
-        Assert.assertEquals(expected.length, elements.size());
         for (int index = 0; index < expected.length; index++) {
             Assert.assertEquals(expected[index], elements.get(index).getText());
         }
+        Assert.assertEquals(expected.length, elements.size());
     }
 
     private SQLParserContext createParserContext(SQLDialect dialect, String query) {

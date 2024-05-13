@@ -141,7 +141,16 @@ public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQual
 
     @NotNull
     @Override
-    public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags, int fetchSize) throws DBCException {
+    public DBCStatistics readData(
+        @Nullable DBCExecutionSource source,
+        @NotNull DBCSession session,
+        @NotNull DBDDataReceiver dataReceiver,
+        DBDDataFilter dataFilter,
+        long firstRow,
+        long maxRows,
+        long flags,
+        int fetchSize
+    ) throws DBCException {
         throw new DBCException("Not implemented");
     }
 
@@ -177,7 +186,11 @@ public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQual
 
     void setStreamColumns(List<StreamDataImporterColumnInfo> streamColumns) {
         this.streamColumns.clear();
-        this.streamColumns.addAll(streamColumns);
+
+        for (StreamDataImporterColumnInfo column : streamColumns) {
+            ensureNameIsUnique(column);
+            this.streamColumns.add(column);
+        }
     }
 
     public StreamDataImporterColumnInfo getStreamColumn(String name) {
@@ -220,5 +233,22 @@ public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQual
     @Override
     public int hashCode() {
         return Objects.hash(inputFile, entityName);
+    }
+
+    private void ensureNameIsUnique(@NotNull StreamDataImporterColumnInfo column) {
+        for (int i = 0; i < streamColumns.size() + 1; i++) {
+            final String name = i > 0 ? column.getName() + '_' + i : column.getName();
+            boolean collides = false;
+            for (StreamDataImporterColumnInfo other : streamColumns) {
+                if (other.getName().equalsIgnoreCase(name)) {
+                    collides = true;
+                    break;
+                }
+            }
+            if (!collides) {
+                column.setName(name);
+                return;
+            }
+        }
     }
 }

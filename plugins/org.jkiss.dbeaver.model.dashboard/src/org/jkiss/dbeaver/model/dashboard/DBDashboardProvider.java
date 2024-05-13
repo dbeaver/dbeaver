@@ -41,4 +41,5 @@ public interface DBDashboardProvider {
         @NotNull DBDashboardContext context);
 
     boolean appliesTo(@NotNull DBPDataSourceContainer dataSource);
+
 }

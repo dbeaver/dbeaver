@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.erd.ui.ERDUIUtils;
 import org.jkiss.dbeaver.erd.ui.command.AttributeCheckCommand;
 import org.jkiss.dbeaver.erd.ui.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.erd.ui.editor.ERDHighlightingHandle;
+import org.jkiss.dbeaver.erd.ui.editor.ERDHighlightingManager;
 import org.jkiss.dbeaver.erd.ui.figures.AttributeItemFigure;
 import org.jkiss.dbeaver.erd.ui.figures.EditableLabel;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
@@ -37,6 +38,7 @@ import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.policy.AttributeConnectionEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.AttributeDragAndDropEditPolicy;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.ListNode;
 
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
@@ -206,8 +208,12 @@ public class AttributePart extends NodePart {
 
         if (value != EditPart.SELECTED_NONE) {
             if (this.getViewer() instanceof ERDGraphicalViewer && associatedRelationsHighlighing == null) {
-                Color color = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_FK_HIGHLIGHTING);
-                associatedRelationsHighlighing = ((ERDGraphicalViewer) this.getViewer()).getEditor().getHighlightingManager().highlightAttributeAssociations(this, color);
+                Color attributeColor = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_FK_HIGHLIGHTING);
+                Color associationColor = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_FK_HIGHLIGHTING);
+                ERDHighlightingManager highlightingManager = ((ERDGraphicalViewer) this.getViewer()).getEditor().getHighlightingManager();
+                ListNode<ERDHighlightingHandle> nodes = highlightingManager.highlightRelatedAttributes(this, attributeColor);
+                nodes = highlightingManager.highlightAssociation(nodes, this, associationColor);
+                associatedRelationsHighlighing = highlightingManager.makeHighlightingGroupHandle(nodes);
             }
         } else if (associatedRelationsHighlighing != null) {
             associatedRelationsHighlighing.release();
@@ -301,6 +307,12 @@ public class AttributePart extends NodePart {
 
     @Override
     public ConnectionAnchor getTargetConnectionAnchor(ConnectionEditPart connection) {
+        ERDEntityAttribute attribute = getAttribute();
+        if (connection.getModel() instanceof ERDAssociation association) {
+            if (association.getTargetAttributes().contains(attribute)) {
+                return new ChopboxAnchor(getFigure().getParent());
+            }
+        }
         return new ChopboxAnchor(getFigure());
     }
 
@@ -319,7 +331,64 @@ public class AttributePart extends NodePart {
                 }
             };
         }
-
         return this.accPart;
+    }
+
+    /**
+     * Return list of references related by source type of connection
+     *
+     */
+    public List<AssociationPart> getAssociatingBySource() {
+        List<AssociationPart> parts = new ArrayList<>();
+        ERDEntityAttribute attribute = getAttribute();
+        List<ERDAssociation> associations = getEntity().getAssociations();
+        for (ERDAssociation attributeAssociation : associations) {
+            if (attributeAssociation.getSourceAttributes().contains(attribute)) {
+                AssociationPart connectionPart = getConnectionPart(attributeAssociation, true);
+                if (connectionPart == null &&
+                    (getParent() instanceof EntityPart entityPart)) {
+                    for (GraphicalEditPart entityAttribute : entityPart.getChildren()) {
+                        for (Object o : entityAttribute.getSourceConnections()) {
+                            if (o instanceof AssociationPart entityAssociatonPart
+                                && entityAssociatonPart.getAssociation().equals(attributeAssociation)) {
+                                parts.add(entityAssociatonPart);
+                            }
+                        }
+                    }
+                } else {
+                    parts.add(connectionPart);
+                }
+            }
+        }
+        return parts;
+    }
+
+    /**
+     * Return list of references related by target type of connection
+     *
+     */
+    public List<AssociationPart> getAssociatingByTarget() {
+        List<AssociationPart> parts = new ArrayList<>();
+        ERDEntityAttribute attribute = getAttribute();
+        List<ERDAssociation> associations = getEntity().getReferences();
+        for (ERDAssociation attributeAssociation : associations) {
+            if (attributeAssociation.getTargetAttributes().contains(attribute)) {
+                AssociationPart connectionPart = getConnectionPart(attributeAssociation, true);
+                if (connectionPart == null &&
+                    (getParent() instanceof EntityPart entityPart)) {
+                    for (GraphicalEditPart entityAttribute : entityPart.getChildren()) {
+                        for (Object o : entityAttribute.getTargetConnections()) {
+                            if (o instanceof AssociationPart entityAssociatonPart
+                                && entityAssociatonPart.getAssociation().equals(attributeAssociation)) {
+                                parts.add(entityAssociatonPart);
+                            }
+                        }
+                    }
+                } else {
+                    parts.add(connectionPart);
+                }
+            }
+        }
+        return parts;
     }
 }

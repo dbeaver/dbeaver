@@ -116,4 +116,10 @@
         <manager class="org.jkiss.dbeaver.ext.h2.edit.H2ConstraintManager" objectType="org.jkiss.dbeaver.ext.h2.model.H2Constraint"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.sqlBackup">
+        <backup id="backupH2" class="org.jkiss.dbeaver.ext.h2.backup.JDBCDatabaseH2BackupHandler" dialect="h2"
+                label="backup" description="Backup database">
+        </backup>
+    </extension>
+
 </plugin>

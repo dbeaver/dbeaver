@@ -39,6 +39,7 @@ import org.eclipse.ui.internal.registry.IActionSetDescriptor;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.ui.services.ApplicationPolicyService;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
@@ -46,7 +47,6 @@ import org.jkiss.dbeaver.ui.app.standalone.about.AboutBoxAction;
 import org.jkiss.dbeaver.ui.app.standalone.actions.EmergentExitAction;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
-import org.jkiss.dbeaver.ui.app.standalone.services.ApplicationPolicyService;
 import org.jkiss.dbeaver.ui.app.standalone.update.CheckForUpdateAction;
 import org.jkiss.dbeaver.ui.controls.StatusLineContributionItemEx;
 import org.jkiss.dbeaver.ui.navigator.actions.ToggleViewAction;
@@ -363,14 +363,14 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
             DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(event -> {
                 if (event.getProperty().equals(ModelPreferences.CLIENT_TIMEZONE)) {
-                    updateTimezoneItem(tzItem);
+                    UIUtils.syncExec(() -> updateTimezoneItem(tzItem));
                 }
             });
 
             tzItem.setDoubleClickListener(() -> {
                 UIUtils.showMessageBox(null, "Time zone", "You can change time zone by changing 'client timezone' in 'Settings' -> 'User Interface' or by adding parameter:\n" +
                         "-D" + StandardConstants.ENV_USER_TIMEZONE + "=<TimeZone>\n" +
-                        "in the end of file'\n" + DBWorkbench.getPlatform().getApplicationConfiguration().toAbsolutePath().toString() + "'\n" , SWT.ICON_INFORMATION
+                        "in the end of file'\n" + DBWorkbench.getPlatform().getApplicationConfiguration().toAbsolutePath() + "'\n" , SWT.ICON_INFORMATION
                 );
             });
             statusLine.add(tzItem);
@@ -382,7 +382,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             localeItem.setDoubleClickListener(() -> {
                 UIUtils.showMessageBox(null, "Locale", "You can change locale by adding parameters\n" +
                     "-nl\n<language_iso_code>\n" +
-                    "in file '" + DBWorkbench.getPlatform().getApplicationConfiguration().toAbsolutePath().toString() + "'.\n" +
+                    "in file '" + DBWorkbench.getPlatform().getApplicationConfiguration().toAbsolutePath() + "'.\n" +
                     "Or by passing command line parameter -nl <language_iso_code>", SWT.ICON_INFORMATION);
             });
             statusLine.add(localeItem);

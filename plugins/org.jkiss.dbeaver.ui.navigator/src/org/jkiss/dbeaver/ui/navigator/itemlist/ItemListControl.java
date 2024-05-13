@@ -70,9 +70,8 @@ public class ItemListControl extends NodeListControl
 {
     private static final Log log = Log.getLog(ItemListControl.class);
 
-    // FIXME: copied from editors.data constants. Need to move it in general colors configuration
-    private static final String COLOR_NEW = "org.jkiss.dbeaver.sql.resultset.color.cell.new.background";
-    private static final String COLOR_MODIFIED = "org.jkiss.dbeaver.sql.resultset.color.cell.modified.background";
+    private static final String COLOR_NEW = "org.jkiss.dbeaver.ui.navigator.node.new.background";
+    private static final String COLOR_MODIFIED = "org.jkiss.dbeaver.ui.navigator.node.modified.background";
 
     private final IPropertyChangeListener themeChangeListener;
     private final ISearchExecutor searcher;
@@ -337,7 +336,7 @@ public class ItemListControl extends NodeListControl
                                 ((DBPObjectStatisticsCollector) parentObject).collectObjectStatistics(monitor, false, false);
                             }
                         } catch (Exception e) {
-                            log.error("Error reading statistics of '" + parentObject.getName() + "'", e);
+                            log.debug("Error reading statistics of '" + parentObject.getName() + "'", e);
                         }
                     }
                 }

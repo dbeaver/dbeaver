@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.access.DBACredentialsProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.secret.DBPSecretHolder;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 
@@ -178,6 +179,9 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
      */
     @NotNull
     Set<DBPDataSourceFolder> getTemporaryFolders();
+
+    @NotNull
+    DBPPreferenceStore getPreferenceStore();
 
     void dispose();
 

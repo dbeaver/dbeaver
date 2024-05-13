@@ -19,6 +19,7 @@
  */
 package org.jkiss.dbeaver.erd.model;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -27,6 +28,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.runtime.BaseProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -48,6 +50,37 @@ import java.util.stream.Collectors;
  */
 public class ERDDiagram extends ERDObject<DBSObject> implements ERDContainer {
     private static final Log log = Log.getLog(ERDDiagram.class);
+    private  DBRProgressMonitor monitor;
+
+    /**
+     * The method return monitor for diagram context
+     *
+     * @return - DBRProgressMonitor
+     */
+    public DBRProgressMonitor getMonitor() {
+        if (monitor != null && !monitor.isCanceled()) {
+            return monitor;
+        }
+        return new BaseProgressMonitor() {
+            @Override
+            public IProgressMonitor getNestedMonitor() {
+                return super.getNestedMonitor();
+            }
+        };
+    }
+
+    /**
+     * The method allow to pass progress monitor for processing
+     *
+     * @param monitor - active progress monitor 
+     */
+    public void setDiagramMonitor(DBRProgressMonitor monitor) {
+        this.monitor = monitor;
+    }
+
+    public void disableDiagramMonitor() {
+        this.monitor = null;
+    }
 
     private static class DataSourceInfo {
         int index;

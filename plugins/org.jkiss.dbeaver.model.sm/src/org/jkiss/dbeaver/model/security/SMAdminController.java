@@ -66,6 +66,8 @@ public interface SMAdminController extends SMController {
 
     void deleteUser(String userId) throws DBException;
 
+    void invalidateAllTokens() throws DBException;
+
     void setUserTeams(String userId, String[] teamIds, String grantorId) throws DBException;
 
     /**

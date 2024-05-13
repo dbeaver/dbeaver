@@ -120,6 +120,8 @@ public class PostgreConstants {
     public static final String TYPE_BOOLEAN = "boolean";
     public static final String TYPE_BYTEA = "bytea";
 
+    public static final String OPERATION_ALTER = "alter";
+
     public static final String HANDLER_SSL = "postgre_ssl";
 
     /**
@@ -153,6 +155,8 @@ public class PostgreConstants {
     public static final String COLLATION_DEFAULT = "default";
     public static final String DEFAULT_ARRAY_DELIMITER = " ";
     public static final String PG_PASS_HOSTNAME = "overriddenUsername";
+    public static final String LEGACY_UA_TIMEZONE = "Europe/Kiev";
+    public static final String NEW_UA_TIMEZONE = "Europe/Kyiv";
 
     static {
         DATA_TYPE_ALIASES.put("boolean", TYPE_BOOL);

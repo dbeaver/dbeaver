@@ -45,7 +45,7 @@ public class RowDataReceiver implements DBDDataReceiver {
         throws DBCException {
         DBCResultSetMetaData rsMeta = resultSet.getMeta();
         // Compare attributes with existing model attributes
-        List<DBCAttributeMetaData> attributes = rsMeta.getAttributes();
+        List<? extends DBCAttributeMetaData> attributes = rsMeta.getAttributes();
         if (attributes.size() != curAttributes.length) {
             log.debug("Wrong meta attributes count (" + attributes.size() + " <> " + curAttributes.length + ") - can't refresh");
             return;
