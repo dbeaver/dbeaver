@@ -37,7 +37,7 @@ import java.util.List;
 /**
  * DBNNode
  */
-public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized, DBPPersistedObject, DBPAdaptable {
+public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized, DBPObjectWithDescription, DBPPersistedObject, DBPAdaptable {
     static final Log log = Log.getLog(DBNNode.class);
 
     public enum NodePathType {
@@ -138,6 +138,12 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
     public abstract String getNodeDescription();
 
     public abstract DBPImage getNodeIcon();
+
+    @Nullable
+    @Override
+    public String getDescription() {
+        return getNodeDescription();
+    }
 
     @NotNull
     public DBPImage getNodeIconDefault() {

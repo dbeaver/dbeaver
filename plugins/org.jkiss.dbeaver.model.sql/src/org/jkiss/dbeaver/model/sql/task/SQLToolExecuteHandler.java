@@ -206,6 +206,7 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
             }
         } catch (Exception e) {
             lastError = e;
+            log.debug(e);
             outLog.println("Process error\n" + e.getMessage());
         } finally {
             monitor.done();
