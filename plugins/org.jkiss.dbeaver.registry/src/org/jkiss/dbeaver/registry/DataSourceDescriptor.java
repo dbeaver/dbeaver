@@ -527,7 +527,7 @@ public class DataSourceDescriptor
         }
     }
 
-    public void forgetSecrets() {
+    public void resetAllSecrets() {
         this.secretsResolved = false;
         this.secretsContainsDatabaseCreds = false;
         this.availableSharedCredentials = null;
@@ -920,7 +920,7 @@ public class DataSourceDescriptor
                     secretController.setSubjectSecretValue(subjectId, this,
                         new DBSSecretValue(subjectId, getSecretValueId(), "", secret));
                     //the list of available secrets has changed, force update
-                    forgetSecrets();
+                    resetAllSecrets();
                 } catch (DBException e) {
                     throw new DBException("Cannot set team '" + subjectId + "' credentials: " + e.getMessage(), e);
                 }
@@ -937,7 +937,7 @@ public class DataSourceDescriptor
         if (!isSharedCredentials()) {
             return List.of();
         }
-        forgetSecrets();
+        resetAllSecrets();
         resolveSecretsIfNeeded();
         if (availableSharedCredentials == null) {
             this.availableSharedCredentials = List.of();
@@ -960,11 +960,13 @@ public class DataSourceDescriptor
         return selectedSharedCredentials;
     }
 
+    @Override
     public synchronized void setSelectedSharedCredentials(@NotNull DBSSecretValue secretValue) {
         this.selectedSharedCredentials = secretValue;
         loadFromSecret(this.selectedSharedCredentials.getValue());
     }
 
+    @Override
     public synchronized boolean isSharedCredentialsSelected() {
         return selectedSharedCredentials != null;
     }
@@ -1279,7 +1281,7 @@ public class DataSourceDescriptor
                 }
             }
             if (isSharedCredentials()) {
-                this.forgetSecrets();
+                this.resetAllSecrets();
             }
             proxyHandler = null;
             // Failed
@@ -1532,7 +1534,7 @@ public class DataSourceDescriptor
             this.dataSource = null;
             this.resolvedConnectionInfo = null;
             // Reset resolved secrets
-            forgetSecrets();
+            resetAllSecrets();
 
             this.connectTime = null;
 

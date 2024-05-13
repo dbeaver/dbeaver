@@ -33,8 +33,9 @@ import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
@@ -87,8 +88,7 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
     protected Composite createDialogArea(Composite parent)
     {
         Composite group = super.createDialogArea(parent);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        group.setLayoutData(gd);
+        group.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         createUpperControls(group);
 
@@ -103,9 +103,9 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
             }
         });
         objectList.createProgressPanel();
-        gd = new GridData(GridData.FILL_BOTH);
-        gd.heightHint = 300;
-        gd.minimumWidth = 300;
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.minimumHeight = 300;
+        gd.minimumWidth = 500;
         objectList.setLayoutData(gd);
         objectList.getSelectionProvider().addSelectionChangedListener(event -> {
             IStructuredSelection selection = (IStructuredSelection) event.getSelection();
@@ -205,8 +205,10 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
             @Override
             protected DBPImage getObjectImage(T item)
             {
-                if (item instanceof DBNDatabaseNode) {
-                    return ((DBNDatabaseNode) item).getNodeIcon();
+                if (item instanceof DBNNode node) {
+                    return node.getNodeIcon();
+                } else if (item instanceof DBPImageProvider imageProvider) {
+                    return imageProvider.getObjectImage();
                 }
                 return null;
             }
