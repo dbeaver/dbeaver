@@ -34,8 +34,6 @@ public final class DBeaverPreferences
     public static final String TEXT_EDIT_UNDO_LEVEL = "text.edit.undo.level"; //$NON-NLS-1$
 
     public static final String CONFIRM_EXIT = "exit"; //$NON-NLS-1$
-    public static final String CONFIRM_TXN_DISCONNECT = "disconnect_txn"; //$NON-NLS-1$
-    public static final String CONFIRM_TXN_RECONNECT = "reconnect_txn"; //$NON-NLS-1$
     public static final String CONFIRM_DRIVER_DOWNLOAD = "driver_download"; //$NON-NLS-1$
     public static final String CONFIRM_DISABLE_NETWORK_HANDLER = "disable_network_handler"; //$NON-NLS-1$
 
