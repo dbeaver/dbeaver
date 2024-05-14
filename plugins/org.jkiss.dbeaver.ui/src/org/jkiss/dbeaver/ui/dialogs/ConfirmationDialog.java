@@ -33,8 +33,6 @@ import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 import org.jkiss.dbeaver.ui.registry.ConfirmationRegistry;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ResourceBundle;
-
 /**
  * Standard confirmation dialog
  */
@@ -45,7 +43,6 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
     public static final String RES_KEY_TITLE = "title"; //$NON-NLS-1$
     public static final String RES_KEY_MESSAGE = "message"; //$NON-NLS-1$
     public static final String RES_KEY_TOGGLE_MESSAGE = "toggleMessage"; //$NON-NLS-1$
-    public static final String RES_CONFIRM_PREFIX = "confirm_"; //$NON-NLS-1$
 
     private boolean hideToggle;
 
@@ -166,54 +163,9 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
         return ConfirmationRegistry.getInstance().confirmAction(shell, id, type, imageType, args);
     }
 
-    public static boolean confirmAction(ResourceBundle bundle, Shell shell, String id)
-    {
-        return confirmActionWithParams(bundle, shell, id);
-    }
-
-    public static boolean confirmActionWithParams(ResourceBundle bundle, Shell shell, String id, Object ... args)
-    {
-        return showConfirmDialog(bundle, shell, id, CONFIRM, args) == IDialogConstants.OK_ID;
-    }
-
-    public static int showConfirmDialog(ResourceBundle bundle, @Nullable Shell shell, String id, int type, Object ... args)
-    {
-        return showConfirmDialogEx(bundle, shell, id, type, type, args);
-    }
-
     public static String getSavedPreference(String id) {
         DBPPreferenceStore prefStore = DBWorkbench.getPlatform().getPreferenceStore();
         return prefStore.getString(PREF_KEY_PREFIX + id);
-    }
-
-    public static int showConfirmDialogEx(ResourceBundle bundle, Shell shell, String id, int type, int imageType, Object... args)
-    {
-        String titleKey = getResourceKey(id, RES_KEY_TITLE);
-        String messageKey = getResourceKey(id, RES_KEY_MESSAGE);
-        String toggleKey = getResourceKey(id, RES_KEY_TOGGLE_MESSAGE);
-        String prefKey = PREF_KEY_PREFIX + id;
-
-        String toggleMessage;
-        try {
-            toggleMessage = bundle.getString(toggleKey);
-        } catch (Exception e) {
-            toggleMessage = null;
-        }
-
-        return open(
-            type,
-            imageType,
-            shell,
-            UIUtils.formatMessage(bundle.getString(titleKey), args),
-            UIUtils.formatMessage(bundle.getString(messageKey), args),
-            toggleMessage == null ? null : UIUtils.formatMessage(toggleMessage, args),
-            false,
-            prefKey);
-    }
-
-    public static String getResourceKey(String id, String key)
-    {
-        return RES_CONFIRM_PREFIX + id + "_" + key;  //$NON-NLS-1$
     }
 
     @Override

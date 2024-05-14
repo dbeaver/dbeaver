@@ -14,12 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors;
+package org.jkiss.dbeaver.ui;
 
 /**
- * IRevertableEditor
+ * DBeaver connection features
  */
-public interface IRevertableEditor
-{
-    void doRevertToSaved();
+public interface ConnectionPreferences {
+
+    String CONFIRM_TXN_DISCONNECT = "disconnect_txn"; //$NON-NLS-1$
+    String CONFIRM_TXN_RECONNECT = "reconnect_txn"; //$NON-NLS-1$
+
 }

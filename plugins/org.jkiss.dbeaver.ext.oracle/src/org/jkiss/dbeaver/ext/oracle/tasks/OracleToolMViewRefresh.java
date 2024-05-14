@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.tasks;
 
-import org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -26,14 +26,14 @@ import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteHandler;
 
 import java.util.List;
 
-public class OracleToolMViewRefresh extends SQLToolExecuteHandler<OracleMaterializedView, OracleToolMViewRefreshSettings> {
+public class OracleToolMViewRefresh extends SQLToolExecuteHandler<OracleTableBase, OracleToolMViewRefreshSettings> {
     @Override
     public OracleToolMViewRefreshSettings createToolSettings() {
         return new OracleToolMViewRefreshSettings();
     }
 
     @Override
-    public void generateObjectQueries(DBCSession session, OracleToolMViewRefreshSettings settings, List<DBEPersistAction> queries, OracleMaterializedView object) throws DBCException {
+    public void generateObjectQueries(DBCSession session, OracleToolMViewRefreshSettings settings, List<DBEPersistAction> queries, OracleTableBase object) throws DBCException {
         String method = "";
         if (settings.isFast()) method += "f";
         if (settings.isForce()) method += "?";

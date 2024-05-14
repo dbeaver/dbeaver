@@ -79,7 +79,7 @@ public abstract class PostgreNativeToolHandler<SETTINGS extends AbstractNativeTo
 
     protected abstract boolean isExportWizard();
 
-    static String escapeCLIIdentifier(String name) {
+    public static String escapeCLIIdentifier(String name) {
         if (RuntimeUtils.isWindows()) {
             // On Windows it is simple
             return "\"" + name.replace("\"", "\\\"") + "\"";

@@ -10,6 +10,7 @@ Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.core,
+ org.jkiss.dbeaver.core.ui.services,
  org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.tools.project,
  org.jkiss.dbeaver.tools.scripts,
