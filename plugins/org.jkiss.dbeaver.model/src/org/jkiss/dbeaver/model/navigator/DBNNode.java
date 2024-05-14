@@ -37,7 +37,7 @@ import java.util.List;
 /**
  * DBNNode
  */
-public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized, DBPPersistedObject, DBPAdaptable {
+public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized, DBPObjectWithDescription, DBPPersistedObject, DBPAdaptable {
     static final Log log = Log.getLog(DBNNode.class);
 
     public enum NodePathType {
@@ -138,6 +138,12 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
     public abstract String getNodeDescription();
 
     public abstract DBPImage getNodeIcon();
+
+    @Nullable
+    @Override
+    public String getDescription() {
+        return getNodeDescription();
+    }
 
     @NotNull
     public DBPImage getNodeIconDefault() {
@@ -277,7 +283,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
             if (!pathBuilder.isEmpty()) {
                 pathBuilder.insert(0, '/');
             }
-            String nodeId = currentNode.getNodeId().replace("/", DBNModel.SLASH_ESCAPE_TOKEN);
+            String nodeId = DBNUtils.encodeNodePath(currentNode.getNodeId());
             if (currentNode instanceof DBNResource && currentNode.getParentNode() instanceof DBNProject) {
                 //FIXME: remove after migration to the real resource root node
                 nodeId = DBNResource.FAKE_RESOURCE_ROOT_NODE + "/" + nodeId;

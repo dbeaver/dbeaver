@@ -63,6 +63,7 @@ import org.jkiss.dbeaver.registry.DataSourceViewRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
@@ -449,6 +450,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                         page.createControl(panel);
                         Dialog.applyDialogFont(panel);
                         panel.layout(true, true);
+                    } catch (Throwable e) {
+                        DBWorkbench.getPlatformUI().showError("Error creating configuration page", null, e);
                     } finally {
                         panel.setRedraw(true);
                     }

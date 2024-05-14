@@ -61,6 +61,7 @@ public class NavigatorHandlerObjectGoto extends NavigatorHandlerObjectBase {
                         while (container instanceof DBSFolder) {
                             container = container.getParentObject();
                         }
+                        
                         context = DBUtils.getDefaultContext(object, true);
                     }
                 }
@@ -69,7 +70,7 @@ public class NavigatorHandlerObjectGoto extends NavigatorHandlerObjectBase {
         if (context == null) {
             DBWorkbench.getPlatformUI().showError(
                 "Go to object",
-                "No active datasource");
+                "You must select a connected datasource");
             return null;
         }
         IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
