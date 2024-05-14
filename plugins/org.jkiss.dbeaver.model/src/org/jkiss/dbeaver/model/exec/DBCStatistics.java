@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.exec;
 
-import org.eclipse.core.runtime.IStatus;
 import org.jkiss.code.Nullable;
 import org.jkiss.utils.CommonUtils;
 
@@ -219,5 +218,4 @@ public class DBCStatistics implements DBCExecutionResult {
         }
         warnings.add(warning);
     }
-
 }
