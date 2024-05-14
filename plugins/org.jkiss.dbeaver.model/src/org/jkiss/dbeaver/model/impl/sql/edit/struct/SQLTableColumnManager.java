@@ -319,10 +319,13 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
         }
 
         protected boolean isUsesQuotes(@NotNull String defaultValue, @NotNull DBPDataKind dataKind) {
+            if (dataKind == DBPDataKind.STRING) {
+                return true;
+            }
             boolean useQuotes = false;
             if (!defaultValue.startsWith(QUOTE) && !defaultValue.endsWith(QUOTE)) {
                 if (dataKind == DBPDataKind.DATETIME) {
-                    final char firstChar = defaultValue.trim().charAt(0);
+                    final char firstChar = defaultValue.charAt(0);
                     if (!Character.isLetter(firstChar) && firstChar != '(' && firstChar != '[') {
                         useQuotes = true;
                     }
