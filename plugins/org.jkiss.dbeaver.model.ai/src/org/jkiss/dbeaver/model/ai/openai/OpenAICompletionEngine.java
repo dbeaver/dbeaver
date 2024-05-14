@@ -161,7 +161,7 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
             context,
             mainObject,
             formatter,
-            getInstructions(),
+            getInstructions(chatCompletion),
             getMaxTokens() - AIConstants.MAX_RESPONSE_TOKENS
         );
 

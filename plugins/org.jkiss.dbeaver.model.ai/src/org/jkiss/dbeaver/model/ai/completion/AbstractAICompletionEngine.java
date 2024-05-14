@@ -88,13 +88,16 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
 
     /**
      * Provides instructions for the AI so it can generate more accurate completions
+     *
+     * @param chatCompletion if the completion is for the chat mode, or for a single completion request.
      */
     @NotNull
-    protected String getInstructions() {
+    protected String getInstructions(boolean chatCompletion) {
         return """
-            You MUST perform SQL completion.
-            Your query must start with "SELECT" and MUST be enclosed with Markdown code block.
-            Talk naturally, as if you were talking to a human.
+            You are SQL assistant. You must produce SQL code for given prompt.
+            You must produce valid SQL statement enclosed with Markdown code block.
+            All comments MUST be placed before query outside markdown code block.
+            Be polite.
             """;
     }
 
