@@ -67,6 +67,7 @@ public class TaskManagerImpl implements DBTTaskManager {
     final SimpleDateFormat systemDateFormat;
 
     private final Set<TaskRunJob> runningTasks = Collections.synchronizedSet(new HashSet<>());
+    private final Job serviceJob;
     private final BaseProjectImpl projectMetadata;
     private final List<TaskImpl> tasks = new ArrayList<>();
     private final List<TaskFolderImpl> tasksFolders = new ArrayList<>();
@@ -78,6 +79,7 @@ public class TaskManagerImpl implements DBTTaskManager {
         this.systemDateFormat = new SimpleDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, Locale.ENGLISH);
         systemDateFormat.setTimeZone(TimeZone.getTimeZone(TimezoneRegistry.getUserDefaultTimezone()));
         loadConfiguration();
+        this.serviceJob = createServiceJob();
     }
 
     @NotNull
@@ -328,37 +330,31 @@ public class TaskManagerImpl implements DBTTaskManager {
     public TaskRunJob scheduleTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener) {
         final TaskRunJob runJob = createJob((TaskImpl) task, listener);
         runJob.schedule();
-        if (task instanceof TaskImpl dbTask && dbTask.getMaxExecutionTime() > 0) {
-            final Job serviceJob = createServiceJob(runJob, Integer.valueOf(dbTask.getMaxExecutionTime()));
-            serviceJob.schedule();
-        }
+        scheduleServiceJob();
         return runJob;
     }
 
-    private Job createServiceJob(
-        @NotNull AbstractJob task,
-        int timeoutMaxValue) {
+    private void scheduleServiceJob() {
+        if (serviceJob.getState() == Job.NONE) {
+            while (!runningTasks.isEmpty()) {
+                serviceJob.schedule(1000);
+            }
+        }
+    }
+
+    private Job createServiceJob() {
         return new Job("Service canceling job") {
             @Override
             protected IStatus run(
-                IProgressMonitor monitor) {
-                int timeout = 0;
-                while (timeout < timeoutMaxValue) {
-                    try {
-                        Thread.sleep(1000);
-                        if (task != null && !task.isFinished() && !task.isCanceled()) {
-                            timeout += 1;
-                        } else {
-                            // jobs completed early than timeout
-                            return Status.OK_STATUS;
-                        }
-                    } catch (InterruptedException e) {
-                        // expected no interruption of service job
-                        log.debug(e.getMessage());
+                IProgressMonitor monitor
+            ) {
+                for (TaskRunJob taskJob: runningTasks) {
+                    if (taskJob.isFinished() || taskJob.isCanceled()) {
+                        continue;
                     }
-                }
-                if (!task.isFinished() && !task.isCanceled()) {
-                    task.cancel();
+                    if(taskJob.checkCancelation()) {
+                        taskJob.cancel();
+                    }
                 }
                 return Status.OK_STATUS;
             }

@@ -236,7 +236,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                     }
                 }
             });
-            maxExecutionTime.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
+            maxExecutionTime.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
             maxExecutionTime.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
             if (task != null && task.getMaxExecutionTime() != 0) {
                 maxExecutionTimeBtn.setSelection(true);
