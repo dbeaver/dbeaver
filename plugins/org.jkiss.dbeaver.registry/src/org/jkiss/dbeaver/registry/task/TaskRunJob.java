@@ -187,6 +187,10 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
         }
     }
 
+    /**
+     * 
+     * @return - true if reached cancellation time
+     */
     public boolean checkCancelation() {
         if (task.getMaxExecutionTime() > 0) {
             if ((System.currentTimeMillis() - taskStartTime) > (task.getMaxExecutionTime() * 1000)) {
@@ -196,6 +200,9 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
         return false;
     }
 
+    /**
+     * Set flag if was cancelled by max execution time 
+     */
     public void setCancelByExecutionTime() {
         this.canceledByTimeOut = true;
         this.cancel();
