@@ -197,7 +197,8 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
     }
 
     public void setCancelByExecutionTime() {
-        this.canceledByTimeOut = this.cancel();
+        this.canceledByTimeOut = true;
+        this.cancel();
     }
 
 }

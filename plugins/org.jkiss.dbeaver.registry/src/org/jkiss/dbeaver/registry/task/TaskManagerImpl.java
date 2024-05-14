@@ -346,7 +346,7 @@ public class TaskManagerImpl implements DBTTaskManager {
                         continue;
                     }
                     if (taskJob.checkCancelation()) {
-                        taskJob.cancel();
+                        taskJob.setCancelByExecutionTime();
                     }
                 }
                 schedule(1000);
