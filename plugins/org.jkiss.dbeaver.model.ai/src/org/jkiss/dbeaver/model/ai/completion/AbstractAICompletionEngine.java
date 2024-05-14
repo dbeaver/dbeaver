@@ -95,7 +95,7 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
     protected String getInstructions(boolean chatCompletion) {
         return """
             You are SQL assistant. You must produce SQL code for given prompt.
-            You must produce valid SQL statement enclosed with Markdown code block.
+            You must produce valid SQL statement enclosed with Markdown code block and terminated with semicolon.
             All comments MUST be placed before query outside markdown code block.
             Be polite.
             """;
