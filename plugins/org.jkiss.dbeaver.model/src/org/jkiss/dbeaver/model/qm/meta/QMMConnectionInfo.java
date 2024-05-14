@@ -112,6 +112,7 @@ public class QMMConnectionInfo extends QMMObject {
     {
         if (transaction != null) {
             transaction.rollback(null);
+            transaction = null;
         }
         for (QMMStatementInfo stat = statementStack; stat != null; stat = stat.getPrevious()) {
             if (!stat.isClosed()) {
@@ -121,6 +122,7 @@ public class QMMConnectionInfo extends QMMObject {
                 stat.close();
             }
         }
+        statementStack = null;
         super.close();
     }
 
