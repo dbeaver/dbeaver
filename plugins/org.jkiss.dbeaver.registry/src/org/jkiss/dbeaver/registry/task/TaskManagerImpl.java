@@ -330,16 +330,10 @@ public class TaskManagerImpl implements DBTTaskManager {
     @NotNull
     @Override
     public TaskRunJob scheduleTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener) {
-        String timeout = null;
-        Map<String, Object> properties = task.getProperties();
-        if(properties!=null) {
-            LinkedHashMap<String, Object> object = (LinkedHashMap<String, Object>) properties.get("configuration");
-            timeout = (String)object.get("timeOutSetting");
-        }
         final TaskRunJob runJob = createJob((TaskImpl) task, listener);
         runJob.schedule();
-        if (timeout != null) {
-            final Job serviceJob = createServiceJob(runJob, Integer.valueOf(timeout));
+        if (task instanceof TaskImpl dbTask && dbTask.getMaxExecutionTime() > 0) {
+            final Job serviceJob = createServiceJob(runJob, Integer.valueOf(dbTask.getMaxExecutionTime()));
             serviceJob.schedule();
         }
         return runJob;
@@ -441,6 +435,7 @@ public class TaskManagerImpl implements DBTTaskManager {
                     String taskFolderName = JSONUtils.getString(taskJSON, TaskConstants.TAG_TASK_FOLDER);
                     Date createTime = systemDateFormat.parse(JSONUtils.getString(taskJSON, TaskConstants.TAG_CREATE_TIME));
                     Date updateTime = systemDateFormat.parse(JSONUtils.getString(taskJSON, TaskConstants.TAG_UPDATE_TIME));
+                    Integer maxExecutionTime = JSONUtils.getInteger(taskJSON, TaskConstants.TAG_MAX_EXEC_TIME);
                     Map<String, Object> state = JSONUtils.getObject(taskJSON, TaskConstants.TAG_STATE);
 
                     DBTTaskType taskDescriptor = getRegistry().getTaskType(task);
@@ -460,6 +455,7 @@ public class TaskManagerImpl implements DBTTaskManager {
                         taskFolder,
                         state
                     );
+                    taskConfig.setMaxExecutionTime(maxExecutionTime);
                     if (taskFolder != null) {
                         taskFolder.addTaskToFolder(taskConfig);
                         if (!tasksFolders.contains(taskFolder)) {
@@ -592,6 +588,7 @@ public class TaskManagerImpl implements DBTTaskManager {
             JSONUtils.field(jsonWriter, TaskConstants.TAG_CREATE_TIME, systemDateFormat.format(task.getCreateTime()));
             JSONUtils.field(jsonWriter, TaskConstants.TAG_UPDATE_TIME, systemDateFormat.format(task.getUpdateTime()));
             JSONUtils.serializeProperties(jsonWriter, TaskConstants.TAG_STATE, task.getProperties());
+            JSONUtils.field(jsonWriter, TaskConstants.TAG_MAX_EXEC_TIME, task.getMaxExecutionTime());
             jsonWriter.endObject();
         }
         jsonWriter.endObject();

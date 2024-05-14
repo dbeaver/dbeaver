@@ -57,8 +57,8 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
     private final DBPProject selectedProject;
     private Text taskLabelText;
     private Text taskDescriptionText;
-    private Text terminateTaskPeriod;
-    private Button terminateTaskAfterPeriod;
+    private Text maxExecutionTime;
+    private Button maxExecutionTimeBtn;
     private Tree taskCategoryTree;
     private Combo taskFoldersCombo;
 
@@ -217,38 +217,37 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                     UIUtils.createLabel(typePanel, task.getType().getName());
                 }
             }
-
-            Composite advancedPanel = UIUtils.createControlGroup(composite, "Advanced", 2, GridData.FILL_BOTH, 0); // TaskUIMessages.task_config_wizard_page_task_label_task_type);
-            terminateTaskAfterPeriod = UIUtils.createCheckbox(
+         // TaskUIMessages.task_config_wizard_page_task_label_task_type);
+            
+            Composite advancedPanel = UIUtils.createControlGroup(composite, "Advanced", 2, GridData.FILL_HORIZONTAL, 0); 
+            maxExecutionTimeBtn = UIUtils.createCheckbox(
                 advancedPanel,
-                "Terminate task after period (seconds):",
-                "Terminate task after period (seconds)",
+                "Max execution time (seconds):",
+                "The time require to execute certain task, arter it the task will be terminated",
                 true,
                 1);
 
-            terminateTaskPeriod = new Text(advancedPanel, SWT.BORDER);
-            terminateTaskAfterPeriod.addSelectionListener(new SelectionAdapter() {
+            maxExecutionTime = new Text(advancedPanel, SWT.BORDER);
+            maxExecutionTimeBtn.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(
                     SelectionEvent e) {
-                    terminateTaskPeriod.setEnabled(terminateTaskAfterPeriod.getSelection());
+                    maxExecutionTime.setEnabled(maxExecutionTimeBtn.getSelection());
+                    if (!maxExecutionTimeBtn.getSelection()) {
+                        maxExecutionTime.setText("0");
+                    }
                 }
             });
-            terminateTaskPeriod.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
-            terminateTaskPeriod.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-
-            if (task != null && task.getProperties() != null) {
-                LinkedHashMap<String, Object> object = (LinkedHashMap<String, Object>) task.getProperties().get("configuration");
-                String timeOut = (String) object.get("timeOutSetting");
-                if (CommonUtils.isNotEmpty(timeOut)) {
-                    terminateTaskAfterPeriod.setSelection(true);
-                    terminateTaskPeriod.setEnabled(true);
-                    terminateTaskPeriod.setText(timeOut);
-                } else {
-                    terminateTaskAfterPeriod.setSelection(false);
-                    terminateTaskPeriod.setEnabled(false);
-                    terminateTaskPeriod.setText("");
-                }
+            maxExecutionTime.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
+            maxExecutionTime.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+            if (task != null && task.getMaxExecutionTime() != 0) {
+                maxExecutionTimeBtn.setSelection(true);
+                maxExecutionTime.setEnabled(true);
+                maxExecutionTime.setText(String.valueOf(task.getMaxExecutionTime()));
+            } else {
+                maxExecutionTimeBtn.setSelection(false);
+                maxExecutionTime.setEnabled(false);
+                maxExecutionTime.setText("");
             }
 
             if (task == null) {
@@ -299,7 +298,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                     @Override
                     public void controlResized(ControlEvent e) {
                         taskCategoryTree.removeControlListener(this);
-                        UIUtils.packColumns(taskCategoryTree, true, new float[] { 0.3f, 0.7f});
+                        UIUtils.packColumns(taskCategoryTree, true, new float[] { 0.3f, 0.7f });
                     }
                 });
                 taskCategoryTree.addPaintListener(e -> {
@@ -467,13 +466,10 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                 }
                 TaskRegistry.getInstance().notifyTaskFoldersListeners(new DBTTaskFolderEvent(folder, DBTTaskFolderEvent.Action.TASK_FOLDER_REMOVE));
             }
-            Map<String, Object> properties = task.getProperties();
-            if (properties == null) {
-                properties = new HashMap<>();
-            }
-            if (terminateTaskAfterPeriod.getSelection()) {
-                LinkedHashMap<String, Object> object = (LinkedHashMap<String, Object>) task.getProperties().get("configuration");
-                object.put("timeOutSetting", terminateTaskPeriod.getText());
+            if (maxExecutionTimeBtn.getSelection()) {
+                task.setMaxExecutionTime(CommonUtils.toInt(maxExecutionTime.getText()));
+            } else {
+                task.setMaxExecutionTime(CommonUtils.toInt(0));
             }
         }
     }

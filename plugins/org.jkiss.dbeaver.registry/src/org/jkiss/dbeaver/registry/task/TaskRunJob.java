@@ -111,7 +111,14 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
                 log.debug(String.format("Task '%s' (%s) finished in %s ms", task.getName(), task.getId(), elapsedTime));
 
                 taskRun.setRunDuration(elapsedTime);
-                if (taskError != null) {
+                if (activeMonitor.isCanceled() || monitor.isCanceled()) {
+                    taskRun.setErrorMessage("Canceled");
+                    if (task.getMaxExecutionTime() > 0) {
+                        taskRun.setExtraMessage("by timeout reached");
+                    } else {
+                        taskRun.setExtraMessage("by user");
+                    }
+                } else if (taskError != null) {
                     String errorMessage = taskError.getMessage();
                     if (CommonUtils.isEmpty(errorMessage)) {
                         errorMessage = taskError.getClass().getName();
@@ -120,11 +127,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
                     StringWriter buf = new StringWriter();
                     taskError.printStackTrace(new PrintWriter(buf, true));
                     taskRun.setErrorStackTrace(buf.toString());
-                }
-                IStatus result = taskRunStatus.getResult();
-                if (result != null && result.getSeverity() == IStatus.CANCEL) {
-                    taskRun.setErrorMessage(result.getMessage());
-                }
+                } 
                 task.updateRun(taskRun);
             }
         } catch (IOException e) {

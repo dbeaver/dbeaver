@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.model.task;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
@@ -28,7 +26,6 @@ import java.util.StringJoiner;
 public class DBTTaskRunStatus {
 
     private String resultMessage;
-    private IStatus result;
 
     public DBTTaskRunStatus(){
     }
@@ -40,15 +37,6 @@ public class DBTTaskRunStatus {
 
     public void setResultMessage(String message) {
         resultMessage = message;
-    }
-
-    public IStatus getResult() {
-        return result;
-    }
-
-    public void setResultStatus(
-        IStatus result) {
-        this.result = result;
     }
 
     public static DBTTaskRunStatus makeStatisticsStatus(DBCStatistics statistics) {
@@ -70,7 +58,6 @@ public class DBTTaskRunStatus {
             }
             taskResultStatus.setResultMessage(joiner.toString());
         }
-        taskResultStatus.setResultStatus(statistics.getResult());
         return taskResultStatus;
     }
 }
