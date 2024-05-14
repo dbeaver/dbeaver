@@ -565,7 +565,7 @@ public class TaskManagerImpl implements DBTTaskManager {
     }
 
     private class ServiceJob extends Job {
-        private int SERVICE_SLEEP = 1000;
+        private int TASK_SLEEP_TIME = 1000;
 
         public ServiceJob() {
             super("Task canceling job");
@@ -573,19 +573,15 @@ public class TaskManagerImpl implements DBTTaskManager {
         }
 
         @Override
-        protected IStatus run(
-            IProgressMonitor monitor
-        ) {
+        protected IStatus run(IProgressMonitor monitor) {
             CopyOnWriteArraySet<TaskRunJob> copyOfRunningTasks = new CopyOnWriteArraySet<>(runningTasks);
             for (TaskRunJob taskJob : copyOfRunningTasks) {
                 if (taskJob.isFinished() || taskJob.isCanceled()) {
                     continue;
                 }
-                if (taskJob.checkCancelation()) {
-                    taskJob.setCancelByExecutionTime();
-                }
+                taskJob.cancelByTimeReached();
             }
-            schedule(SERVICE_SLEEP);
+            schedule(TASK_SLEEP_TIME);
             return Status.OK_STATUS;
         }
     };
