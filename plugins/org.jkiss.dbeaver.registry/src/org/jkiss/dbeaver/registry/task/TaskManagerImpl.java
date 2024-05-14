@@ -49,6 +49,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * TaskManagerImpl
@@ -329,32 +331,12 @@ public class TaskManagerImpl implements DBTTaskManager {
         final TaskRunJob runJob = createJob((TaskImpl) task, listener);
         runJob.schedule();
         if (serviceJob == null) {
-            serviceJob = createServiceJob();
-            serviceJob.setSystem(true);
+            serviceJob = new ServiceJob();
             serviceJob.schedule();
         }
         return runJob;
     }
-
-    private Job createServiceJob() {
-        return new Job("Service canceling job") {
-            @Override
-            protected IStatus run(
-                IProgressMonitor monitor) {
-                for (TaskRunJob taskJob : runningTasks) {
-                    if (taskJob.isFinished() || taskJob.isCanceled()) {
-                        continue;
-                    }
-                    if (taskJob.checkCancelation()) {
-                        taskJob.setCancelByExecutionTime();
-                    }
-                }
-                schedule(1000);
-                return Status.OK_STATUS;
-            }
-        };
-    }
-
+ 
     @NotNull
     private TaskRunJob createJob(@NotNull TaskImpl task, @NotNull DBTTaskExecutionListener listener) {
         TaskRunJob runJob = new TaskRunJob(task, Locale.getDefault(), listener);
@@ -579,5 +561,31 @@ public class TaskManagerImpl implements DBTTaskManager {
         }
         jsonWriter.endObject();
     }
+
+    private class ServiceJob extends Job {
+        private int SERVICE_SLEEP = 1000;
+
+        public ServiceJob() {
+            super("Service canceling job");
+            setSystem(true);
+        }
+
+        @Override
+        protected IStatus run(
+            IProgressMonitor monitor
+        ) {
+            CopyOnWriteArraySet<TaskRunJob> copyOfRunningTasks = new CopyOnWriteArraySet<>(runningTasks);
+            for (TaskRunJob taskJob : copyOfRunningTasks) {
+                if (taskJob.isFinished() || taskJob.isCanceled()) {
+                    continue;
+                }
+                if (taskJob.checkCancelation()) {
+                    taskJob.setCancelByExecutionTime();
+                }
+            }
+            schedule(SERVICE_SLEEP);
+            return Status.OK_STATUS;
+        }
+    };
 
 }
