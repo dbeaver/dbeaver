@@ -71,7 +71,7 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
     public void done()
     {
         if (states.isEmpty()) {
-          //  log.trace(new DBCException("Progress ended without start"));
+            log.trace(new DBCException("Progress ended without start"));
         } else {
             states.remove(states.size() - 1);
         }
@@ -94,7 +94,7 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
     public void subTask(String name)
     {
         if (states.isEmpty()) {
-          //  log.trace(new DBCException("Progress sub task without start"));
+            log.trace(new DBCException("Progress sub task without start"));
         } else {
             states.get(states.size() - 1).subTask = name;
         }

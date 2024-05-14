@@ -38,7 +38,6 @@ public class DBCStatistics implements DBCExecutionResult {
     private List<String> messages;
     private Throwable error;
     private List<Throwable> warnings;
-    private IStatus result;
 
     public DBCStatistics() {
         this.startTime = System.currentTimeMillis();
@@ -219,14 +218,6 @@ public class DBCStatistics implements DBCExecutionResult {
             warnings = new ArrayList<>();
         }
         warnings.add(warning);
-    }
-
-    public void addResult(IStatus result) {
-        this.result = result;
-    }
-
-    public IStatus getResult() {
-        return result;
     }
 
 }
