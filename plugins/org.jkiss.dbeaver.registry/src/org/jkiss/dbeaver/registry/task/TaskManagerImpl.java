@@ -565,7 +565,7 @@ public class TaskManagerImpl implements DBTTaskManager {
     }
 
     private class ServiceJob extends Job {
-        private int TASK_SLEEP_TIME = 1000;
+        private static final int TASK_SLEEP_TIME = 1000;
 
         public ServiceJob() {
             super("Task canceling job");
@@ -584,6 +584,6 @@ public class TaskManagerImpl implements DBTTaskManager {
             schedule(TASK_SLEEP_TIME);
             return Status.OK_STATUS;
         }
-    };
+    }
 
 }
