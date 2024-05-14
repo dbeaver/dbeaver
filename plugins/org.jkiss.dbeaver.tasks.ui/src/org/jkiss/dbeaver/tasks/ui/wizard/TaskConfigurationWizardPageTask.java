@@ -466,7 +466,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
             if (maxExecutionTimeBtn.getSelection()) {
                 task.setMaxExecutionTime(CommonUtils.toInt(maxExecutionTime.getText()));
             } else {
-                task.setMaxExecutionTime(CommonUtils.toInt(0));
+                task.setMaxExecutionTime(0);
             }
         }
     }

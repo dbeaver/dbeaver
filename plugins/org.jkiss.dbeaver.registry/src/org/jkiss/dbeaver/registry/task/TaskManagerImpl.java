@@ -566,7 +566,7 @@ public class TaskManagerImpl implements DBTTaskManager {
         private int SERVICE_SLEEP = 1000;
 
         public ServiceJob() {
-            super("Service canceling job");
+            super("Task canceling job");
             setSystem(true);
         }
 
