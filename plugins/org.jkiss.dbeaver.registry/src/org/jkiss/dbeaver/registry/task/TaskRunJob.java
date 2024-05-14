@@ -192,12 +192,8 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
      * @return - true if reached cancellation time
      */
     public boolean checkCancelation() {
-        if (task.getMaxExecutionTime() > 0) {
-            if ((System.currentTimeMillis() - taskStartTime) > (task.getMaxExecutionTime() * 1000)) {
-                return true;
-            }
-        }
-        return false;
+        return task.getMaxExecutionTime() > 0
+            && (System.currentTimeMillis() - taskStartTime) > (task.getMaxExecutionTime() * 1000);
     }
 
     /**
