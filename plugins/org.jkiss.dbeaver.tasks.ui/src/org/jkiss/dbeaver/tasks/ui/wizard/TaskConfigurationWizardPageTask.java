@@ -57,7 +57,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
     private final DBPProject selectedProject;
     private Text taskLabelText;
     private Text taskDescriptionText;
-    private Text maxExecutionTime;
+    private Spinner maxExecutionTime;
     private Button maxExecutionTimeBtn;
     private Tree taskCategoryTree;
     private Combo taskFoldersCombo;
@@ -225,27 +225,26 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                 TaskUIMessages.task_config_wizard_page_task_max_exec_time_descr,
                 true,
                 1);
-            maxExecutionTime = new Text(advancedPanel, SWT.BORDER);
+            maxExecutionTime = UIUtils.createSpinner(advancedPanel, null, 1, 1, Integer.MAX_VALUE);
             maxExecutionTimeBtn.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(
                     SelectionEvent e) {
                     maxExecutionTime.setEnabled(maxExecutionTimeBtn.getSelection());
                     if (!maxExecutionTimeBtn.getSelection()) {
-                        maxExecutionTime.setText("0");
+                        maxExecutionTime.setSelection(0);
                     }
                 }
             });
-            maxExecutionTime.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
             maxExecutionTime.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
             if (task != null && task.getMaxExecutionTime() != 0) {
                 maxExecutionTimeBtn.setSelection(true);
                 maxExecutionTime.setEnabled(true);
-                maxExecutionTime.setText(String.valueOf(task.getMaxExecutionTime()));
+                maxExecutionTime.setSelection(task.getMaxExecutionTime());
             } else {
                 maxExecutionTimeBtn.setSelection(false);
                 maxExecutionTime.setEnabled(false);
-                maxExecutionTime.setText("");
+                maxExecutionTime.setSelection(0);
             }
 
             if (task == null) {
