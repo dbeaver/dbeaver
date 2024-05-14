@@ -110,8 +110,6 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
                 monitor.done();
                 taskLog.flush();
                 Log.setLogWriter(null);
-                log.debug(String.format("Task '%s' (%s) finished in %s ms", task.getName(), task.getId(), elapsedTime));
-
                 taskRun.setRunDuration(elapsedTime);
                 if (activeMonitor.isCanceled() || monitor.isCanceled()) {
                     taskRun.setErrorMessage("Canceled");
@@ -120,6 +118,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
                     } else {
                         taskRun.setExtraMessage("by user");
                     }
+                    log.debug(String.format("Task '%s' (%s) cancelled after %s ms", task.getName(), task.getId(), elapsedTime));
                 } else if (taskError != null) {
                     String errorMessage = taskError.getMessage();
                     if (CommonUtils.isEmpty(errorMessage)) {
@@ -129,6 +128,9 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
                     StringWriter buf = new StringWriter();
                     taskError.printStackTrace(new PrintWriter(buf, true));
                     taskRun.setErrorStackTrace(buf.toString());
+                    log.debug(String.format("Task '%s' (%s) finished with errros in %s ms", task.getName(), task.getId(), elapsedTime));
+                } else {
+                    log.debug(String.format("Task '%s' (%s) finished succesfully in %s ms", task.getName(), task.getId(), elapsedTime));
                 }
                 task.updateRun(taskRun);
             }
@@ -191,7 +193,9 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
      * Cancel task by time reached
      */
     public void cancelByTimeReached() {
-        if (task.getMaxExecutionTime() > 0 && (System.currentTimeMillis() - taskStartTime) > (task.getMaxExecutionTime() * 1000)) {
+        if (task.getMaxExecutionTime() > 0
+            && taskStartTime > 0
+            && (System.currentTimeMillis() - taskStartTime) > (task.getMaxExecutionTime() * 1000)) {
             this.canceledByTimeOut = true;
             this.cancel();
         }
