@@ -67,7 +67,7 @@ public class TaskManagerImpl implements DBTTaskManager {
     final SimpleDateFormat systemDateFormat;
 
     private final Set<TaskRunJob> runningTasks = Collections.synchronizedSet(new HashSet<>());
-    private final Job serviceJob;
+    private Job serviceJob;
     private final BaseProjectImpl projectMetadata;
     private final List<TaskImpl> tasks = new ArrayList<>();
     private final List<TaskFolderImpl> tasksFolders = new ArrayList<>();
@@ -79,7 +79,6 @@ public class TaskManagerImpl implements DBTTaskManager {
         this.systemDateFormat = new SimpleDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, Locale.ENGLISH);
         systemDateFormat.setTimeZone(TimeZone.getTimeZone(TimezoneRegistry.getUserDefaultTimezone()));
         loadConfiguration();
-        this.serviceJob = createServiceJob();
     }
 
     @NotNull
@@ -330,32 +329,27 @@ public class TaskManagerImpl implements DBTTaskManager {
     public TaskRunJob scheduleTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener) {
         final TaskRunJob runJob = createJob((TaskImpl) task, listener);
         runJob.schedule();
-        scheduleServiceJob();
-        return runJob;
-    }
-
-    private void scheduleServiceJob() {
-        if (serviceJob.getState() == Job.NONE) {
-            while (!runningTasks.isEmpty()) {
-                serviceJob.schedule(1000);
-            }
+        if (serviceJob == null) {
+            serviceJob = createServiceJob();
+            serviceJob.schedule();
         }
+        return runJob;
     }
 
     private Job createServiceJob() {
         return new Job("Service canceling job") {
             @Override
             protected IStatus run(
-                IProgressMonitor monitor
-            ) {
-                for (TaskRunJob taskJob: runningTasks) {
+                IProgressMonitor monitor) {
+                for (TaskRunJob taskJob : runningTasks) {
                     if (taskJob.isFinished() || taskJob.isCanceled()) {
                         continue;
                     }
-                    if(taskJob.checkCancelation()) {
+                    if (taskJob.checkCancelation()) {
                         taskJob.cancel();
                     }
                 }
+                schedule(1000);
                 return Status.OK_STATUS;
             }
         };

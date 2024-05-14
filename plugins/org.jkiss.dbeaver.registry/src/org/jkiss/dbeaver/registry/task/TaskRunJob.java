@@ -67,6 +67,8 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
     private long elapsedTime;
     private Throwable taskError;
 
+    private boolean canceledByTimeOut = false;
+
     public TaskRunJob(TaskImpl task, Locale locale, DBTTaskExecutionListener executionListener) {
         super("Task [" + task.getType().getName() + "] runner - " + task.getName());
         setUser(true);
@@ -113,7 +115,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
                 taskRun.setRunDuration(elapsedTime);
                 if (activeMonitor.isCanceled() || monitor.isCanceled()) {
                     taskRun.setErrorMessage("Canceled");
-                    if (task.getMaxExecutionTime() > 0) {
+                    if (this.canceledByTimeOut) {
                         taskRun.setExtraMessage("by timeout reached");
                     } else {
                         taskRun.setExtraMessage("by user");
@@ -193,4 +195,9 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
         }
         return false;
     }
+
+    public void setCancelByExecutionTime() {
+        this.canceledByTimeOut = this.cancel();
+    }
+
 }
