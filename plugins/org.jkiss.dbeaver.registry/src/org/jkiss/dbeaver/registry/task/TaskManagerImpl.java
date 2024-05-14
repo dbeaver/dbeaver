@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.rm.RMConstants;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.BaseProjectImpl;
@@ -331,6 +330,7 @@ public class TaskManagerImpl implements DBTTaskManager {
         runJob.schedule();
         if (serviceJob == null) {
             serviceJob = createServiceJob();
+            serviceJob.setSystem(true);
             serviceJob.schedule();
         }
         return runJob;
