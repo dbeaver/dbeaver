@@ -59,5 +59,6 @@ public class DBTTaskRunStatus {
             taskResultStatus.setResultMessage(joiner.toString());
         }
         return taskResultStatus;
+
     }
 }
