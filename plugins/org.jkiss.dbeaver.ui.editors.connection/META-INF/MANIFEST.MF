@@ -20,6 +20,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.ui,
+ org.jkiss.dbeaver.ui.editors.base,
  org.jkiss.dbeaver.ui.navigator
 Bundle-ClassPath: .
 Export-Package: org.jkiss.dbeaver.registry,
