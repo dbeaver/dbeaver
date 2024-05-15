@@ -153,7 +153,7 @@ public class CubridMetaModel extends GenericMetaModel
                 + (table.getDataSource().getSupportMultiSchema() ? "and t1.owner_name = ?" : "");
         final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         dbStat.setString(1, table.getName());
-        if(table.getDataSource().getSupportMultiSchema()) {
+        if (table.getDataSource().getSupportMultiSchema()) {
             dbStat.setString(2, table.getSchema().getName());
         }
         return dbStat;
@@ -179,7 +179,7 @@ public class CubridMetaModel extends GenericMetaModel
     @Override
     public DBSEntityConstraintType getUniqueConstraintType(@NotNull JDBCResultSet dbResult) throws DBException {
         String isPrimary = JDBCUtils.safeGetString(dbResult, "is_primary_key");
-        if(isPrimary.equals("YES")) {
+        if (isPrimary.equals("YES")) {
             return DBSEntityConstraintType.PRIMARY_KEY;
         } else {
             return DBSEntityConstraintType.UNIQUE_KEY;
