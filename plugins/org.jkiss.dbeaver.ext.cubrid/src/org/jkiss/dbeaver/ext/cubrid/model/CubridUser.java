@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.cubrid.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
@@ -97,7 +98,7 @@ public class CubridUser extends GenericSchema
 
     @NotNull
     public boolean supportsTrigger() {
-        return "dba".equals(getDataSource().getContainer().getConnectionConfiguration().getUserName());
+        return CubridConstants.DBA.equals(getDataSource().getContainer().getConnectionConfiguration().getUserName());
     }
 
     @NotNull

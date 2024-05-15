@@ -28,4 +28,5 @@ public class CubridConstants
     public static final String REUSE_OID = "is_reuse_oid_class";
     public static final String NAME = "name";
     public static final String COMMENT = "comment";
+    public static final String DBA = "dba";
 }
