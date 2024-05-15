@@ -15,4 +15,17 @@
                  objectType="org.jkiss.dbeaver.ext.duckdb.model.DuckDBSequence"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <provider
+                class="org.jkiss.dbeaver.ext.duckdb.model.data.DuckDbValueHandlerProvider"
+                description="DuckDB data types provider"
+                id="org.jkiss.dbeaver.ext.duckdb.model.data.DuckDbValueHandlerProvider"
+                label="DuckDB data types provider">
+
+            <datasource class="org.jkiss.dbeaver.ext.duckdb.model.DuckDbDataSource"/>
+            <type name="GEOMETRY"/>
+        </provider>
+    </extension>
+
+
 </plugin>
