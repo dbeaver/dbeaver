@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndexColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericView;
 import org.jkiss.dbeaver.ext.generic.model.TableCache;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -186,8 +187,8 @@ public class CubridUser extends GenericSchema
             String columnName = JDBCUtils.safeGetString(dbResult, "attr_name");
             String dataType = JDBCUtils.safeGetString(dbResult, "data_type");
             boolean autoIncrement = false;
-            String sql = "show columns from " + ((CubridDataSource) getDataSource()).getMetaModel().getTableOrViewName(table)
-                    + " where Field = ?";
+            String tableName = table.isSystem() ? table.getName() : ((CubridDataSource) getDataSource()).getMetaModel().getTableOrViewName(table);
+            String sql = "show columns from " + DBUtils.getQuotedIdentifier(getDataSource(), tableName) + " where Field = ?";
             try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
                 dbStat.setString(1, columnName);
                 try (JDBCResultSet result = dbStat.executeQuery()) {
