@@ -439,7 +439,7 @@ public final class RuntimeUtils {
                 ni = niEnum.nextElement();
             }
         }
-        return ni == null ? NULL_MAC_ADDRESS : ni.getHardwareAddress();
+        return ni == null || ni.getHardwareAddress() == null ? NULL_MAC_ADDRESS : ni.getHardwareAddress();
     }
 
     @NotNull
