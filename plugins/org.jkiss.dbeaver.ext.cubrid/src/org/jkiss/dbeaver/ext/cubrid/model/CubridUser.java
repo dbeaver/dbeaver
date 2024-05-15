@@ -162,20 +162,11 @@ public class CubridUser extends GenericSchema
     @Nullable
     @Override
     public List<GenericTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
-        cacheIndexes(monitor);
-        return cubridIndexCache.getAllObjects(monitor, this);
-    }
-
-    private void cacheIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
-        synchronized (cubridIndexCache) {
-            if(!cubridIndexCache.isFullyCached()) {
-                List<GenericTableIndex> newIndexCache = new ArrayList<>();
-                for(CubridTable table : getPhysicalTables(monitor)) {
-                    newIndexCache.addAll(table.getIndexes(monitor));
-                }
-                cubridIndexCache.setCache(newIndexCache);
-            }
+        List<GenericTableIndex> indexes = new ArrayList<>();
+        for (CubridTable table : getPhysicalTables(monitor)) {
+            indexes.addAll(table.getIndexes(monitor));
         }
+        return indexes;
     }
 
     public class CubridTableCache extends TableCache
