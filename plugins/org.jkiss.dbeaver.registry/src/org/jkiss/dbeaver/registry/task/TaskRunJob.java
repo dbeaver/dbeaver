@@ -96,8 +96,8 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
         task.addNewRun(taskRun);
 
         try (PrintStream logStream = new PrintStream(Files.newOutputStream(logFile), true, StandardCharsets.UTF_8.name())) {
-            log.debug(String.format("Task '%s' (%s) started", task.getName(), task.getId()));
             taskLog = Log.getLog(TaskRunJob.class);
+            taskLog.info(String.format("Task '%s' (%s) started", task.getName(), task.getId()));
             Log.setLogWriter(logStream);
             monitor.beginTask("Run task '" + task.getName() + " (" + task.getType().getName() + ")", 1);
             try {
@@ -108,8 +108,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
                 taskLog.error("Task fatal error", e);
             } finally {
                 monitor.done();
-                taskLog.flush();
-                Log.setLogWriter(null);
+             
                 taskRun.setRunDuration(elapsedTime);
                 if (activeMonitor.isCanceled() || monitor.isCanceled()) {
                     taskRun.setErrorMessage("Canceled");
@@ -118,7 +117,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
                     } else {
                         taskRun.setExtraMessage("by user");
                     }
-                    log.debug(String.format("Task '%s' (%s) cancelled after %s ms", task.getName(), task.getId(), elapsedTime));
+                    taskLog.info(String.format("Task '%s' (%s) cancelled after %s ms", task.getName(), task.getId(), elapsedTime));
                 } else if (taskError != null) {
                     String errorMessage = taskError.getMessage();
                     if (CommonUtils.isEmpty(errorMessage)) {
@@ -128,11 +127,13 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
                     StringWriter buf = new StringWriter();
                     taskError.printStackTrace(new PrintWriter(buf, true));
                     taskRun.setErrorStackTrace(buf.toString());
-                    log.debug(String.format("Task '%s' (%s) finished with errros in %s ms", task.getName(), task.getId(), elapsedTime));
+                    taskLog.info(String.format("Task '%s' (%s) finished with errros in %s ms", task.getName(), task.getId(), elapsedTime));
                 } else {
-                    log.debug(String.format("Task '%s' (%s) finished succesfully in %s ms", task.getName(), task.getId(), elapsedTime));
+                    taskLog.info(String.format("Task '%s' (%s) finished succesfully in %s ms", task.getName(), task.getId(), elapsedTime));
                 }
                 task.updateRun(taskRun);
+                taskLog.flush();
+                Log.setLogWriter(null);
             }
         } catch (IOException e) {
             log.error("Error opning task run log file", e);
