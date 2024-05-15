@@ -14,31 +14,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.ai.model;
+package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.ai.completion.DAICompletionMessage;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.ArrayList;
 import java.util.List;
 
-sealed public interface MessageChunk {
-    @NotNull
-    String toRawString();
-
-    record Text(@NotNull String text) implements MessageChunk {
-        @NotNull
-        @Override
-        public String toRawString() {
-            return text;
-        }
+// All these ideally should be a part of a given AI engine
+public class AITextUtils {
+    private AITextUtils() {
+        // prevents instantiation
     }
 
-    record Code(@NotNull String text, @NotNull String language) implements MessageChunk {
-        @NotNull
-        @Override
-        public String toRawString() {
-            return "```" + language + "\n" + text + "\n```";
+    @NotNull
+    public static String convertToSQL(
+        @NotNull DAICompletionMessage prompt,
+        @NotNull MessageChunk[] response,
+        @Nullable DBPDataSource dataSource
+    ) {
+        final StringBuilder builder = new StringBuilder();
+
+        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AICompletionConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT)) {
+            builder.append(SQLUtils.generateCommentLine(dataSource, prompt.getContent()));
         }
+
+        for (MessageChunk chunk : response) {
+            if (chunk instanceof MessageChunk.Code code) {
+                builder.append(code.text()).append(System.lineSeparator());
+            } else if (chunk instanceof MessageChunk.Text text) {
+                builder.append(SQLUtils.generateCommentLine(dataSource, text.text()));
+            }
+        }
+
+        return builder.toString().trim();
     }
 
     @NotNull
@@ -92,5 +106,4 @@ sealed public interface MessageChunk {
 
         return chunks.toArray(MessageChunk[]::new);
     }
-
 }

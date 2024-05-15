@@ -40,12 +40,10 @@ import org.jkiss.dbeaver.model.qm.QMTranslationHistoryManager;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.ai.AIUIUtils;
-import org.jkiss.dbeaver.ui.editors.sql.ai.model.MessageChunk;
 import org.jkiss.dbeaver.ui.editors.sql.ai.popup.AISuggestionPopup;
 import org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencePage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -187,24 +185,13 @@ public class AITranslateHandler extends AbstractHandler {
         }
 
         DAICompletionResponse response = completionResult.get(0);
-        MessageChunk[] messageChunks = MessageChunk.splitIntoChunks(CommonUtils.notEmpty(response.getResultCompletion()));
+        MessageChunk[] messageChunks = AITextUtils.splitIntoChunks(CommonUtils.notEmpty(response.getResultCompletion()));
 
         if (messageChunks.length == 0) {
             return;
         }
-        StringBuilder completion = new StringBuilder();
-        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AICompletionConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT)) {
-            completion.append(SQLUtils.generateCommentLine(executionContext.getDataSource(), message.getContent()));
-        }
-        for (MessageChunk messageChunk : messageChunks) {
-            if (messageChunk instanceof MessageChunk.Code code) {
-                completion.append(code.text());
-            } else if (messageChunk instanceof MessageChunk.Text text) {
-                completion.append(SQLUtils.generateCommentLine(executionContext.getDataSource(), text.text()));
-            }
-        }
 
-        final String finalCompletion = completion.toString();
+        final String completion = AITextUtils.convertToSQL(message, messageChunks, executionContext.getDataSource());
 
         // Save to history
         new AbstractJob("Save smart completion history") {
@@ -216,7 +203,7 @@ public class AITranslateHandler extends AbstractHandler {
                         lDataSource,
                         executionContext,
                         message.getContent(),
-                        finalCompletion);
+                        completion);
                 } catch (DBException e) {
                     return GeneralUtils.makeExceptionStatus(e);
                 }
@@ -231,21 +218,19 @@ public class AITranslateHandler extends AbstractHandler {
                 int offset = ((TextSelection) selection).getOffset();
                 int length = ((TextSelection) selection).getLength();
                 SQLScriptElement query = editor.extractQueryAtPos(offset);
+                String text = completion;
                 if (query != null) {
                     offset = query.getOffset();
                     length = query.getLength();
                     // Trim trailing semicolon if needed
-                    if (length > 0 && !query.getText().endsWith(";") && !completion.isEmpty()) {
-                        if (completion.charAt(completion.length() - 1) == ';') {
-                            completion.setLength(completion.length() - 1);
+                    if (length > 0 && !query.getText().endsWith(";") && !text.isEmpty()) {
+                        if (text.charAt(text.length() - 1) == ';') {
+                            text = text.substring(0, text.length() - 1);
                         }
                     }
                 }
-                document.replace(
-                    offset,
-                    length,
-                    completion.toString());
-                editor.getSelectionProvider().setSelection(new TextSelection(offset + completion.length(), 0));
+                document.replace(offset, length, text);
+                editor.getSelectionProvider().setSelection(new TextSelection(offset + text.length(), 0));
             } catch (BadLocationException e) {
                 DBWorkbench.getPlatformUI().showError("Insert SQL", "Error inserting SQL completion in text editor", e);
             }
