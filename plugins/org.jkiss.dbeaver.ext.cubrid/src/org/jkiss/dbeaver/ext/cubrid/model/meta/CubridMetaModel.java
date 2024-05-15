@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.ext.cubrid.model.CubridDataSource;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridProcedure;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridSequence;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridSynonym;
-import org.jkiss.dbeaver.ext.cubrid.model.CubridDataSource;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTable;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTrigger;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridUser;
