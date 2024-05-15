@@ -22,7 +22,7 @@
                 id="org.jkiss.dbeaver.ext.duckdb.model.data.DuckDbValueHandlerProvider"
                 label="DuckDB data types provider">
 
-            <datasource id="generic" driver="duckdb_jdbc"/>
+            <datasource class="org.jkiss.dbeaver.ext.duckdb.model.DuckDbDataSource"/>
             <type name="*"/>
         </provider>
     </extension>
