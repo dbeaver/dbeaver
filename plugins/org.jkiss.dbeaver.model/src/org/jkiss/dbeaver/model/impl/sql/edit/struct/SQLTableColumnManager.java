@@ -309,7 +309,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
             @NotNull StringBuilder sql,
             @NotNull DBECommandAbstract<OBJECT_TYPE> command
         ) {
-            String defaultValue = CommonUtils.toString(column.getDefaultValue());
+            String defaultValue = CommonUtils.toString(column.getDefaultValue()).trim();
             if (!CommonUtils.isEmpty(defaultValue)) {
                 DBPDataKind dataKind = column.getDataKind();
                 boolean useQuotes = isUsesQuotes(defaultValue, dataKind);
@@ -319,9 +319,6 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
         }
 
         protected boolean isUsesQuotes(@NotNull String defaultValue, @NotNull DBPDataKind dataKind) {
-            if (dataKind == DBPDataKind.STRING) {
-                return true;
-            }
             boolean useQuotes = false;
             if (!defaultValue.startsWith(QUOTE) && !defaultValue.endsWith(QUOTE)) {
                 if (dataKind == DBPDataKind.DATETIME) {
