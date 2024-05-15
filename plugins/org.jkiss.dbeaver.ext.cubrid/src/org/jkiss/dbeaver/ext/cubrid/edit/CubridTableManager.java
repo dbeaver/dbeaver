@@ -73,7 +73,7 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
         if (command.getProperties().size() > 1 || command.getProperty("schema") == null) {
             CubridTable table = (CubridTable) command.getObject();
             StringBuilder query = new StringBuilder("ALTER TABLE ");
-            query.append(table.getOldSchema() + "." + table.getName());
+            query.append(table.getContainer() + "." + table.getName());
             appendTableModifiers(monitor, table, command, query, true);
             actionList.add(new SQLDatabasePersistAction(query.toString()));
         }
@@ -112,11 +112,11 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
             @NotNull NestedObjectCommand<GenericTableBase, PropertyHandler> command,
             @NotNull Map<String, Object> options) {
         CubridTable table = (CubridTable) command.getObject();
-        if (command.hasProperty("schema") && table.getOldSchema() != table.getSchema()) {
+        if (table.isPersisted() && table.getContainer() != table.getSchema()) {
             actions.add(
                     new SQLDatabasePersistAction(
                             "Change Owner",
-                            "ALTER TABLE " + table.getOldSchema() + "." + table.getName() + " OWNER TO " + table.getSchema()));
+                            "ALTER TABLE " + table.getContainer() + "." + table.getName() + " OWNER TO " + table.getSchema()));
         }
     }
 
@@ -131,7 +131,7 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
         actions.add(
                 new SQLDatabasePersistAction(
                         "Rename table",
-                        "RENAME TABLE " + table.getOldSchema() + "." + command.getOldName() + " TO " + command.getNewName()));
+                        "RENAME TABLE " + table.getContainer() + "." + command.getOldName() + " TO " + command.getNewName()));
     }
 
     @Override
