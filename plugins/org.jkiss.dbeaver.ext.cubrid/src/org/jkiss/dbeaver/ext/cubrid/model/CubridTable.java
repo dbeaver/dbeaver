@@ -109,7 +109,7 @@ public class CubridTable extends GenericTable
 
     @NotNull
     public boolean supportsTrigger() {
-        return ((CubridUser) this.getContainer()).supportsTrigger();
+        return getParent().supportsTrigger();
     }
 
     @Nullable
