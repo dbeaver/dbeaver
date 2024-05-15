@@ -309,7 +309,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
             @NotNull StringBuilder sql,
             @NotNull DBECommandAbstract<OBJECT_TYPE> command
         ) {
-            String defaultValue = CommonUtils.toString(column.getDefaultValue()).trim();
+            String defaultValue = CommonUtils.toString(column.getDefaultValue());
             if (!CommonUtils.isEmpty(defaultValue)) {
                 DBPDataKind dataKind = column.getDataKind();
                 boolean useQuotes = isUsesQuotes(defaultValue, dataKind);
@@ -319,16 +319,17 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
         }
 
         protected boolean isUsesQuotes(@NotNull String defaultValue, @NotNull DBPDataKind dataKind) {
-            boolean useQuotes = false;
             if (!defaultValue.startsWith(QUOTE) && !defaultValue.endsWith(QUOTE)) {
-                if (dataKind == DBPDataKind.DATETIME) {
-                    final char firstChar = defaultValue.charAt(0);
-                    if (!Character.isLetter(firstChar) && firstChar != '(' && firstChar != '[') {
-                        useQuotes = true;
+                if (dataKind == DBPDataKind.STRING || dataKind == DBPDataKind.DATETIME) {
+                    final String trimmed = defaultValue.trim();
+                    if (trimmed.isEmpty()) {
+                        return true;
                     }
+                    final char firstChar = trimmed.charAt(0);
+                    return !Character.isLetter(firstChar) && firstChar != '(' && firstChar != '[';
                 }
             }
-            return useQuotes;
+            return false;
         }
 
         protected void appendDefaultValue(@NotNull StringBuilder sql, @NotNull String defaultValue, boolean useQuotes) {
