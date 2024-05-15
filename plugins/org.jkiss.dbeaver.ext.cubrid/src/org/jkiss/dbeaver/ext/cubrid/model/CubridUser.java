@@ -185,7 +185,7 @@ public class CubridUser extends GenericSchema
                 throws SQLException, DBException {
             String columnName = JDBCUtils.safeGetString(dbResult, "attr_name");
             String dataType = JDBCUtils.safeGetString(dbResult, "data_type");
-            Boolean autoIncrement = false;
+            boolean autoIncrement = false;
             String sql = "show columns from " + ((CubridDataSource) getDataSource()).getMetaModel().getTableOrViewName(table)
                     + " where Field = ?";
             try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {

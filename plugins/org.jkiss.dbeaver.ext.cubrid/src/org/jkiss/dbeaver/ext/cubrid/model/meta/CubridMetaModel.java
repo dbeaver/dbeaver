@@ -114,7 +114,7 @@ public class CubridMetaModel extends GenericMetaModel
             @NotNull GenericStructContainer owner,
             @Nullable GenericTableBase forTable)
             throws SQLException {
-        Boolean multiSchema = forTable != null ? ((CubridDataSource) forTable.getDataSource()).getSupportMultiSchema() : false;
+        boolean multiSchema = forTable != null ? ((CubridDataSource) forTable.getDataSource()).getSupportMultiSchema() : false;
         StringBuilder sql = new StringBuilder();
         sql.append("select *, def_order + 1 as ref_order from db_attribute ");
         if (forTable != null) {
