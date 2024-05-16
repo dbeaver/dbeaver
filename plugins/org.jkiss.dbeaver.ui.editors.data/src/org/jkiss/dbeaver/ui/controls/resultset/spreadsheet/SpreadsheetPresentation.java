@@ -2351,7 +2351,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     return buffer.toString();
                 } else {
                     // TODO: Remove showCollectionsInline
-                    return COLLECTION_SIZE_FORMAT.format(collection.size());
+                    return COLLECTION_SIZE_FORMAT.format(new Object[]{collection.size()});
                 }
             } else if (attr.getDataKind() == DBPDataKind.STRUCT && value instanceof DBDComposite && !DBUtils.isNullValue(value)) {
                 return "[" + ((DBDComposite) value).getDataType().getName() + "]";
