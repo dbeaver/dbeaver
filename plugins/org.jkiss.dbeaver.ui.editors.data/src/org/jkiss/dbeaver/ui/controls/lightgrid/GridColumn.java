@@ -53,7 +53,7 @@ public class GridColumn implements IGridColumn {
     private final GridColumn parent;
     private List<GridColumn> children;
 
-    private int level;
+    private final int depth;
     private int width = DEFAULT_WIDTH;
     private int height = -1;
     private int pinIndex = -1;
@@ -62,7 +62,7 @@ public class GridColumn implements IGridColumn {
         this.grid = grid;
         this.element = element;
         this.parent = null;
-        this.level = 0;
+        this.depth = 0;
         grid.newColumn(this, -1);
     }
 
@@ -70,7 +70,7 @@ public class GridColumn implements IGridColumn {
         this.grid = parent.grid;
         this.element = element;
         this.parent = parent;
-        this.level = parent.level + 1;
+        this.depth = parent.depth + 1;
         parent.addChild(this);
         grid.newColumn(this, -1);
     }
@@ -83,6 +83,11 @@ public class GridColumn implements IGridColumn {
     @Override
     public int getIndex() {
         return grid.indexOf(this);
+    }
+
+    @Override
+    public int getDepth() {
+        return depth;
     }
 
     /**
@@ -368,10 +373,6 @@ public class GridColumn implements IGridColumn {
 
     private void removeChild(GridColumn column) {
         children.remove(column);
-    }
-
-    public int getLevel() {
-        return level;
     }
 
     public boolean isParent(GridColumn col) {

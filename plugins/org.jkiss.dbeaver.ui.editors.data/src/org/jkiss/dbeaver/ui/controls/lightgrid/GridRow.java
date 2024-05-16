@@ -58,6 +58,6 @@ class GridRow implements IGridRow {
 
     @Override
     public String toString() {
-        return String.valueOf(position) + " - " + element;
+        return String.valueOf(originalPosition + 1);
     }
 }

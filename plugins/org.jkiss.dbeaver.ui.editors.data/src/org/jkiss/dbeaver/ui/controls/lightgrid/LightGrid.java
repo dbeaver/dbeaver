@@ -263,6 +263,7 @@ public abstract class LightGrid extends Canvas {
     private boolean hoveringOnColumnFilter = false;
     private boolean hoveringOnLink = false;
     private boolean hoveringOnRowHeader = false;
+    private boolean hoveringOnRowExpander = false;
     private boolean isColumnContextMenuShouldBeShown = false;
 
     private GridColumn columnBeingSorted;
@@ -506,7 +507,7 @@ public abstract class LightGrid extends Canvas {
 
             int maxColLength = getNestedRowsCount(row);
             if (maxColLength > 0) {
-                index = collectNestedRows(result, row, index, maxColLength);
+                index = collectNestedRows(result, row, index, 1, maxColLength);
             }
         }
     }
@@ -519,17 +520,17 @@ public abstract class LightGrid extends Canvas {
         return rowState != null && rowState.isAnyColumnExpanded() ? rowState.getMaxLength() : 0;
     }
 
-    private int collectNestedRows(List<IGridRow> result, IGridRow parentRow, int index, int colLength) {
+    private int collectNestedRows(List<IGridRow> result, IGridRow parentRow, int position, int depth, int colLength) {
         for (int i = 0; i < colLength; i++) {
-            IGridRow nestedRow = new GridRowNested(parentRow, index++);
+            IGridRow nestedRow = new GridRowNested(parentRow, position++, i, depth);
             result.add(nestedRow);
 
             int maxNestedColLength = getNestedRowsCount(nestedRow);
             if (maxNestedColLength > 0) {
-                index = collectNestedRows(result, nestedRow, index, maxNestedColLength);
+                position = collectNestedRows(result, nestedRow, position, depth + 1, maxNestedColLength);
             }
         }
-        return index;
+        return position;
     }
 
     /**
@@ -739,7 +740,7 @@ public abstract class LightGrid extends Canvas {
                 createChildColumns(column);
             }
         }
-        this.maxColumnDepth = Math.max(this.maxColumnDepth, parent.getLevel());
+        this.maxColumnDepth = Math.max(this.maxColumnDepth, parent.getDepth());
     }
 
     @Nullable
@@ -2246,15 +2247,23 @@ public abstract class LightGrid extends Canvas {
         hoveringRow = null;
         draggingRow = null;
 
+        boolean overExpander = false;
         if ((!rowHeaderVisible || y > headerHeight) && x <= rowHeaderWidth) {
             hoveringOnRowHeader = true;
             int row = getRow(new Point(x, y));
             if (row != -1) {
                 hoveringRow = row;
+                overExpander = GridRowRenderer.isOverExpander(x, getRow(row).getRowDepth());
             }
         } else {
             hoveringOnRowHeader = false;
         }
+        if (overExpander && !hoveringOnRowExpander) {
+            setCursor(sortCursor);
+        } else if (!overExpander && hoveringOnRowExpander) {
+            setCursor(null);
+        }
+        hoveringOnRowExpander = overExpander;
     }
 
     /**
@@ -3223,12 +3232,8 @@ public abstract class LightGrid extends Canvas {
         GridColumn col = null;
         if (row >= 0) {
             col = getColumn(point);
-            if (getContentProvider().isVoidCell(col, gridRows[row])) {
-                return;
-            }
-
             boolean isSelectedCell = false;
-            if (col != null) {
+            if (col != null && !getContentProvider().isVoidCell(col, gridRows[row])) {
                 isSelectedCell = selectedCells.contains(new GridPos(col.getIndex(), row));
             }
 
@@ -3369,11 +3374,6 @@ public abstract class LightGrid extends Canvas {
 
     @NotNull
     private IGridContentProvider.ElementState getRowState(@NotNull IGridRow row) {
-        if (row.getParent() != null) {
-            // FIXME: implemented deep nested collections support
-            return IGridContentProvider.ElementState.NONE;
-        }
-
         if (isRowExpanded(row)) {
             return IGridContentProvider.ElementState.EXPANDED;
         }

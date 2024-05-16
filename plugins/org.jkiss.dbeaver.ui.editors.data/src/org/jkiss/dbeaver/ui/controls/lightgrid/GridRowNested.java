@@ -23,10 +23,14 @@ class GridRowNested implements IGridRow {
 
     private final IGridRow parent;
     private final int position;
+    private final int index;
+    private final int depth;
 
-    public GridRowNested(IGridRow parent, int position) {
+    public GridRowNested(IGridRow parent, int position, int index, int depth) {
         this.parent = parent;
         this.position = position;
+        this.index = index;
+        this.depth = depth;
     }
 
     @Override
@@ -46,16 +50,20 @@ class GridRowNested implements IGridRow {
 
     @Override
     public int getRelativeIndex() {
-        return position - parent.getVisualPosition() - 1;
+        return index;
     }
 
     @Override
     public int getRowDepth() {
-        return parent.getRowDepth() + 1;
+        return depth;
     }
 
     @Override
     public String toString() {
-        return position + ":" + getRelativeIndex();
+        final String[] parts = new String[getRowDepth() + 1];
+        for (IGridRow r = this; r != null; r = r.getParent()) {
+            parts[r.getRowDepth()] = String.valueOf(r.getRelativeIndex() + 1);
+        }
+        return String.join(".", parts);
     }
 }
