@@ -149,7 +149,7 @@ public abstract class LightGrid extends Canvas {
             if (row.getParent() == null) {
                 this.location = new int[] { row.getRelativeIndex() };
             } else {
-                this.location = new int[row.getRowDepth() + 1];
+                this.location = new int[row.getLevel() + 1];
                 int index = this.location.length - 1;
                 for (IGridRow r = row; r != null; r = r.getParent()) {
                     this.location[index--] = r.getRelativeIndex();
@@ -520,14 +520,14 @@ public abstract class LightGrid extends Canvas {
         return rowState != null && rowState.isAnyColumnExpanded() ? rowState.getMaxLength() : 0;
     }
 
-    private int collectNestedRows(List<IGridRow> result, IGridRow parentRow, int position, int depth, int colLength) {
+    private int collectNestedRows(List<IGridRow> result, IGridRow parentRow, int position, int level, int colLength) {
         for (int i = 0; i < colLength; i++) {
-            IGridRow nestedRow = new GridRowNested(parentRow, position++, i, depth);
+            IGridRow nestedRow = new GridRowNested(parentRow, position++, i, level);
             result.add(nestedRow);
 
             int maxNestedColLength = getNestedRowsCount(nestedRow);
             if (maxNestedColLength > 0) {
-                position = collectNestedRows(result, nestedRow, position, depth + 1, maxNestedColLength);
+                position = collectNestedRows(result, nestedRow, position, level + 1, maxNestedColLength);
             }
         }
         return position;
@@ -740,7 +740,7 @@ public abstract class LightGrid extends Canvas {
                 createChildColumns(column);
             }
         }
-        this.maxColumnDepth = Math.max(this.maxColumnDepth, parent.getDepth());
+        this.maxColumnDepth = Math.max(this.maxColumnDepth, parent.getLevel());
     }
 
     @Nullable
@@ -2005,7 +2005,7 @@ public abstract class LightGrid extends Canvas {
         int newRowHeaderWidth = DEFAULT_ROW_HEADER_WIDTH;
         for (int i = 0; i < gridRows.length; i++) {
             IGridRow row = gridRows[i];
-            int width = rowHeaderRenderer.computeHeaderWidth(row, row.getRowDepth());
+            int width = rowHeaderRenderer.computeHeaderWidth(row, row.getLevel());
             newRowHeaderWidth = Math.max(newRowHeaderWidth, width);
         }
         if (newRowHeaderWidth < MIN_ROW_HEADER_WIDTH) {
@@ -2260,7 +2260,7 @@ public abstract class LightGrid extends Canvas {
             int row = getRow(new Point(x, y));
             if (row != -1) {
                 hoveringRow = row;
-                overExpander = GridRowRenderer.isOverExpander(x, getRow(row).getRowDepth());
+                overExpander = GridRowRenderer.isOverExpander(x, getRow(row).getLevel());
             }
         } else {
             hoveringOnRowHeader = false;
@@ -2441,7 +2441,7 @@ public abstract class LightGrid extends Canvas {
                                 gc,
                                 cellBounds,
                                 cellInRowSelected,
-                                gridRow.getRowDepth(),
+                                gridRow.getLevel(),
                                 getRowState(gridRow),
                                 gridRow);
                         } finally {
@@ -3255,7 +3255,7 @@ public abstract class LightGrid extends Canvas {
                 if (e.button == 1 && !shift && !ctrl) {
                     IGridRow gridRow = gridRows[row];
                     if (getRowState(gridRow) != IGridContentProvider.ElementState.NONE) {
-                        if (GridRowRenderer.isOverExpander(e.x, gridRow.getRowDepth()))
+                        if (GridRowRenderer.isOverExpander(e.x, gridRow.getLevel()))
                         {
                             toggleRowExpand(getRow(row), null);
                             return;
@@ -3499,7 +3499,7 @@ public abstract class LightGrid extends Canvas {
                 } else {
                     IGridRow gridRow = gridRows[row];
                     if (getRowState(gridRow) != IGridContentProvider.ElementState.NONE) {
-                        if (!GridRowRenderer.isOverExpander(e.x, gridRow.getRowDepth()))
+                        if (!GridRowRenderer.isOverExpander(e.x, gridRow.getLevel()))
                         {
                             toggleRowExpand(gridRow, null);
                         }

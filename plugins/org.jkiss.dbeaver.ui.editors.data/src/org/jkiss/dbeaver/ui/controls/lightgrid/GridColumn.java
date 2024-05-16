@@ -53,7 +53,7 @@ public class GridColumn implements IGridColumn {
     private final GridColumn parent;
     private List<GridColumn> children;
 
-    private final int depth;
+    private final int level;
     private int width = DEFAULT_WIDTH;
     private int height = -1;
     private int pinIndex = -1;
@@ -62,7 +62,7 @@ public class GridColumn implements IGridColumn {
         this.grid = grid;
         this.element = element;
         this.parent = null;
-        this.depth = 0;
+        this.level = 0;
         grid.newColumn(this, -1);
     }
 
@@ -70,7 +70,7 @@ public class GridColumn implements IGridColumn {
         this.grid = parent.grid;
         this.element = element;
         this.parent = parent;
-        this.depth = parent.depth + 1;
+        this.level = parent.level + 1;
         parent.addChild(this);
         grid.newColumn(this, -1);
     }
@@ -86,8 +86,8 @@ public class GridColumn implements IGridColumn {
     }
 
     @Override
-    public int getDepth() {
-        return depth;
+    public int getLevel() {
+        return level;
     }
 
     /**

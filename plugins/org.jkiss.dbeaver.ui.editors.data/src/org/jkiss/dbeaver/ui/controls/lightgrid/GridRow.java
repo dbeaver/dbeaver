@@ -52,7 +52,7 @@ class GridRow implements IGridRow {
     }
 
     @Override
-    public int getRowDepth() {
+    public int getLevel() {
         return 0;
     }
 

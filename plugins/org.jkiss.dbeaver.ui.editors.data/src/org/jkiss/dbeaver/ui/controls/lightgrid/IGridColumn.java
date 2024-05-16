@@ -30,7 +30,7 @@ public interface IGridColumn extends IGridItem {
      */
     int getIndex();
 
-    int getDepth();
+    int getLevel();
 
     GridColumn getParent();
 

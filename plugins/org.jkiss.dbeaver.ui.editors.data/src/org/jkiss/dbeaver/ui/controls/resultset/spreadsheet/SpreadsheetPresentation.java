@@ -2621,9 +2621,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
     static int[] getRowNestedIndexes(IGridRow gridRow) {
         int[] nestedIndexes = null;
         if (gridRow != null && gridRow.getParent() != null) {
-            nestedIndexes = new int[gridRow.getRowDepth()];
+            nestedIndexes = new int[gridRow.getLevel()];
             for (IGridRow gr = gridRow; gr.getParent() != null; gr = gr.getParent()) {
-                nestedIndexes[gr.getRowDepth() - 1] = gr.getRelativeIndex();
+                nestedIndexes[gr.getLevel() - 1] = gr.getRelativeIndex();
             }
         }
         return nestedIndexes;
