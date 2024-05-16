@@ -202,7 +202,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
             this.canceledByTimeOut = true;
             this.cancel();
             if (this.isRunDirectly()) {
-                this.runBlockCanceler();
+                this.canceling();
                 taskRunStatus
                     .setResultMessage(String.format("Task '%s' (%s) cancelled after %s ms", task.getName(), task.getId(), runningTime));
             }
