@@ -145,7 +145,12 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
         activeMonitor = monitor;
         DBTaskUtils.confirmTaskOrThrow(task, taskLog, logWriter);
         DBTTaskHandler taskHandler = task.getType().createHandler();
-        return taskHandler.executeTask(this, task, locale, taskLog, logWriter, executionListener);
+        DBTTaskRunStatus originalStatus = taskHandler.executeTask(this, task, locale, taskLog, logWriter, executionListener);
+        if(monitor.isCanceled()) {
+            originalStatus
+            .setResultMessage(String.format("Task '%s' (%s) cancelled after %s ms", task.getName(), task.getId(), System.currentTimeMillis() - taskStartTime));
+        }
+        return originalStatus;
     }
 
     @Override
@@ -195,16 +200,16 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
      * Cancel task by time reached
      */
     public void cancelByTimeReached() {
-        long runningTime = System.currentTimeMillis() - taskStartTime;
         if (task.getMaxExecutionTime() > 0
             && taskStartTime > 0
-            && runningTime > (task.getMaxExecutionTime() * 1000)) {
+            && (System.currentTimeMillis() - taskStartTime) > (task.getMaxExecutionTime() * 1000)) {
             this.canceledByTimeOut = true;
-            this.cancel();
+            cancel();
             if (this.isRunDirectly()) {
-                this.canceling();
-                taskRunStatus
-                    .setResultMessage(String.format("Task '%s' (%s) cancelled after %s ms", task.getName(), task.getId(), runningTime));
+                canceling();
+                if (activeMonitor instanceof TaskLoggingProgressMonitor tlpm) {
+                    tlpm.setCanceled(true);
+                }
             }
         }
     }

@@ -175,7 +175,7 @@ public abstract class AbstractJob extends Job
         return true;
     }
 
-    protected void runBlockCanceler() {
+    private void runBlockCanceler() {
         final List<DBRBlockingObject> activeBlocks = new ArrayList<>(
             CommonUtils.safeList(progressMonitor.getActiveBlocks()));
         if (activeBlocks.isEmpty()) {

@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.model.task.DBTTask;
 
 public class TaskLoggingProgressMonitor extends ProxyProgressMonitor {
-
+    private volatile boolean fIsCanceled;
     private static final Log log = Log.getLog(TaskLoggingProgressMonitor.class);
 
     DBTTask task;
@@ -47,4 +47,15 @@ public class TaskLoggingProgressMonitor extends ProxyProgressMonitor {
     public DBTTask getTask() {
         return task;
     }
+
+    @Override
+    public void setCanceled(boolean value) {
+        fIsCanceled = value;
+    }
+
+    @Override
+    public boolean isCanceled() {
+        return fIsCanceled;
+    }
+
 }
