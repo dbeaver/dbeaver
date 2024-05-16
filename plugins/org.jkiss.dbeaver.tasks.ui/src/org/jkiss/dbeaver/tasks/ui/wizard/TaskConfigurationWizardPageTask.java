@@ -228,7 +228,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
             maxExecutionTime = UIUtils.createSpinner(advancedPanel, null, 1, 1, Integer.MAX_VALUE);
             maxExecutionTimeBtn.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected( SelectionEvent e) {
+                public void widgetSelected(SelectionEvent e) {
                     maxExecutionTime.setEnabled(maxExecutionTimeBtn.getSelection());
                     if (!maxExecutionTimeBtn.getSelection()) {
                         maxExecutionTime.setSelection(0);
