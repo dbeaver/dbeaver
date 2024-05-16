@@ -53,6 +53,7 @@
         <module>org.jkiss.dbeaver.ext.hive</module>
         <module>org.jkiss.dbeaver.ext.hsqldb</module>
         <module>org.jkiss.dbeaver.ext.informix</module>
+        <module>org.jkiss.dbeaver.ext.intersystems</module>
         <module>org.jkiss.dbeaver.ext.mssql</module>
         <module>org.jkiss.dbeaver.ext.mysql</module>
         <module>org.jkiss.dbeaver.ext.netezza</module>
