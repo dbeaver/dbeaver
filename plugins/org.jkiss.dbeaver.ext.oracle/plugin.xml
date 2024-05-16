@@ -380,6 +380,7 @@
                     <property name="useFetchSizeWithLongColumn" value="true"/>
                     <!-- Disable FAN events: #9002 -->
                     <property name="oracle.jdbc.fanEnabled" value="false"/>
+                    <property name="oracle.jdbc.jsonDefaultGetObjectType" value="java.lang.String"/>
 
                     <file type="jar" path="maven:/com.oracle.database.jdbc:ojdbc11:RELEASE[23.2.0.0]" bundle="!drivers.oracle"/>
                     <file type="jar" path="maven:/com.oracle.database.nls:orai18n:RELEASE[23.2.0.0]" bundle="!drivers.oracle"/>
@@ -448,6 +449,7 @@
             <datasource id="oracle"/>
 
             <type name="XMLTYPE"/>
+            <type name="JSON"/>
             <type name="SYS.XMLTYPE"/>
             <type name="REFCURSOR"/>
             <type name="REF CURSOR"/>
