@@ -109,8 +109,6 @@ public class SpreadsheetPresentation extends AbstractPresentation
     implements IResultSetEditor, IResultSetDisplayFormatProvider, ISelectionProvider, IStatefulControl, DBPAdaptable, IGridController {
     public static final String PRESENTATION_ID = "spreadsheet";
 
-    private static final int MAX_INLINE_COLLECTION_ELEMENTS = 3;
-
     private static final Log log = Log.getLog(SpreadsheetPresentation.class);
 
     private Spreadsheet spreadsheet;
@@ -152,7 +150,6 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
     private boolean rightJustifyNumbers = true;
     private boolean rightJustifyDateTime = true;
-    private boolean showCollectionsInline;
     private boolean showBooleanAsCheckbox;
     private boolean showWhitespaceCharacters;
     private BooleanStyleSet booleanStyles;
@@ -916,7 +913,6 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_FILTERS);
         autoFetchSegments = controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT);
         calcColumnWidthByValue = getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES);
-        showCollectionsInline = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_COLLECTIONS_INLINE);
         showBooleanAsCheckbox = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX);
         showWhitespaceCharacters = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_WHITESPACE_CHARACTERS);
         booleanStyles = BooleanStyleSet.getDefaultStyles(preferenceStore);
@@ -2335,24 +2331,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             }
 
             if (isShowAsExpander(null, attr, value)) {
-                final DBDCollection collection = (DBDCollection) value;
-                final StringJoiner buffer = new StringJoiner(",", "{", "}");
-                for (int i = 0; i < Math.min(collection.size(), MAX_INLINE_COLLECTION_ELEMENTS); i++) {
-                    buffer.add(collection.getComponentValueHandler().getValueDisplayString(
-                        collection.getComponentType(),
-                        collection.get(i),
-                        DBDDisplayFormat.UI
-                    ));
-                }
-                if (collection.size() > MAX_INLINE_COLLECTION_ELEMENTS) {
-                    buffer.add(" ... [" + collection.getItemCount() + "]");
-                }
-                if (false) {
-                    return buffer.toString();
-                } else {
-                    // TODO: Remove showCollectionsInline
-                    return COLLECTION_SIZE_FORMAT.format(new Object[]{collection.size()});
-                }
+                return COLLECTION_SIZE_FORMAT.format(new Object[]{((DBDCollection) value).size()});
             } else if (attr.getDataKind() == DBPDataKind.STRUCT && value instanceof DBDComposite && !DBUtils.isNullValue(value)) {
                 return "[" + ((DBDComposite) value).getDataType().getName() + "]";
             }
