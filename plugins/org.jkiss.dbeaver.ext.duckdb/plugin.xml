@@ -23,7 +23,7 @@
                 label="DuckDB data types provider">
 
             <datasource class="org.jkiss.dbeaver.ext.duckdb.model.DuckDbDataSource"/>
-            <type name="*"/>
+            <type name="GEOMETRY"/>
         </provider>
     </extension>
 
