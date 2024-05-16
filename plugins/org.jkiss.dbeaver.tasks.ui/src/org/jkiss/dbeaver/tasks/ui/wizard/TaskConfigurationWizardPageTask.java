@@ -461,11 +461,11 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                     currentTaskFolder.removeTaskFromFolder(task);
                 }
                 TaskRegistry.getInstance().notifyTaskFoldersListeners(new DBTTaskFolderEvent(folder, DBTTaskFolderEvent.Action.TASK_FOLDER_REMOVE));
-                if (maxExecutionTimeBtn.getSelection()) {
-                    task.setMaxExecutionTime(maxExecutionTime.getSelection());
-                } else {
-                    task.setMaxExecutionTime(0);
-                }
+            }
+            if (maxExecutionTimeBtn.getSelection()) {
+                task.setMaxExecutionTime(maxExecutionTime.getSelection());
+            } else {
+                task.setMaxExecutionTime(0);
             }
         }
     }

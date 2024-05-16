@@ -312,17 +312,12 @@ public class TaskManagerImpl implements DBTTaskManager {
     @Override
     public DBTTaskRunStatus runTask(@NotNull DBRProgressMonitor monitor, @NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener) throws DBException {
         final TaskRunJob job = createJob((TaskImpl) task, listener);
-       // job.schedule();
         if (serviceJob == null) {
             serviceJob = new ServiceJob();
             serviceJob.schedule();
         }
+        runningTasks.add(job);
         final IStatus result = job.runDirectly(monitor);
-//        try {
-//            job.join();
-//        } catch (InterruptedException e) {
-//            throw new DBException("Error executing task", e);
-//        }
         final Throwable error = result.getException();
         if (error != null) {
             if (error instanceof DBException e) {
@@ -331,6 +326,7 @@ public class TaskManagerImpl implements DBTTaskManager {
                 throw new DBException("Error executing task", error);
             }
         }
+        runningTasks.remove(job);
         return job.getTaskRunStatus();
     }
 
@@ -583,8 +579,7 @@ public class TaskManagerImpl implements DBTTaskManager {
         }
 
         @Override
-        protected IStatus run(
-            IProgressMonitor monitor) {
+        protected IStatus run(IProgressMonitor monitor) {
             CopyOnWriteArraySet<TaskRunJob> copyOfRunningTasks = new CopyOnWriteArraySet<>(runningTasks);
             for (TaskRunJob taskJob : copyOfRunningTasks) {
                 if (taskJob.isFinished() || taskJob.isCanceled()) {

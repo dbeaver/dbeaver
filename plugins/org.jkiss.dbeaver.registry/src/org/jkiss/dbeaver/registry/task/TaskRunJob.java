@@ -195,11 +195,16 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
      * Cancel task by time reached
      */
     public void cancelByTimeReached() {
+        long runningTime = System.currentTimeMillis() - taskStartTime;
         if (task.getMaxExecutionTime() > 0
             && taskStartTime > 0
-            && (System.currentTimeMillis() - taskStartTime) > (task.getMaxExecutionTime() * 1000)) {
+            && runningTime > (task.getMaxExecutionTime() * 1000)) {
             this.canceledByTimeOut = true;
             this.cancel();
+            if (this.isRunDirectly()) {
+                this.canceling();
+                taskRunStatus.setResultMessage(String.format("Task '%s' (%s) cancelled after %s ms", task.getName(), task.getId(), runningTime));
+            }
         }
     }
 
