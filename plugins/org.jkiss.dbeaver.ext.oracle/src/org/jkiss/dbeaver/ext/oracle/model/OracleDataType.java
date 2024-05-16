@@ -50,7 +50,7 @@ import java.util.Map;
  * Oracle data type
  */
 public class OracleDataType extends OracleObject<DBSObject>
-    implements DBSDataType, DBSEntity, DBPQualifiedObject, OracleSourceObject, DBPScriptObjectExt {
+    implements DBSDataType, DBSEntity, DBPQualifiedObject, OracleSourceObject, DBPScriptObjectExt, DBPImageProvider {
 
     private static final Log log = Log.getLog(OracleDataType.class);
 
@@ -616,6 +616,15 @@ public class OracleDataType extends OracleObject<DBSObject>
     {
 
     }
+
+    @Override
+    public DBPImage getObjectImage() {
+        if (OracleConstants.TYPE_NAME_JSON.equals(getName())) {
+            return DBIcon.TYPE_JSON;
+        }
+        return null;
+    }
+
 
     private class AttributeCache extends JDBCObjectCache<OracleDataType, OracleDataTypeAttribute> {
         @NotNull
