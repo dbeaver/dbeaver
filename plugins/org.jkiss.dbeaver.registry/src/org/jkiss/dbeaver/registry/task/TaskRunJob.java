@@ -129,7 +129,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
                     taskRun.setErrorStackTrace(buf.toString());
                     taskLog.info(String.format("Task '%s' (%s) finished with errros in %s ms", task.getName(), task.getId(), elapsedTime));
                 } else {
-                    taskLog.info(String.format("Task '%s' (%s) finished succesfully in %s ms", task.getName(), task.getId(), elapsedTime));
+                    taskLog.info(String.format("Task '%s' (%s) finished successfully in %s ms", task.getName(), task.getId(), elapsedTime));
                 }
                 task.updateRun(taskRun);
                 taskLog.flush();
