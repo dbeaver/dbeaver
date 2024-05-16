@@ -312,17 +312,18 @@ public class TaskManagerImpl implements DBTTaskManager {
     @Override
     public DBTTaskRunStatus runTask(@NotNull DBRProgressMonitor monitor, @NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener) throws DBException {
         final TaskRunJob job = createJob((TaskImpl) task, listener);
-        job.schedule();
+       // job.schedule();
         if (serviceJob == null) {
             serviceJob = new ServiceJob();
             serviceJob.schedule();
         }
-        try {
-            job.join();
-        } catch (InterruptedException e) {
-            throw new DBException("Error executing task", e);
-        }
-        final Throwable error = job.getResult().getException();
+        final IStatus result = job.runDirectly(monitor);
+//        try {
+//            job.join();
+//        } catch (InterruptedException e) {
+//            throw new DBException("Error executing task", e);
+//        }
+        final Throwable error = result.getException();
         if (error != null) {
             if (error instanceof DBException e) {
                 throw e;
