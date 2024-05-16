@@ -1501,6 +1501,10 @@ public abstract class LightGrid extends Canvas {
     public boolean isHoveringOnRowHeader() {
         return hoveringOnRowHeader;
     }
+
+    public boolean isHoveringOnLink() {
+        return hoveringOnLink;
+    }
     
     public boolean isColumnContextMenuShouldBeShown() {
         return isColumnContextMenuShouldBeShown;

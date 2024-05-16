@@ -1378,7 +1378,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             // Switch boolean value
             Object cellValue = controller.getModel().getCellValue(cellLocation);
             toggleBooleanValue(cellLocation, cellValue);
-        } if (isAttributeExpandable(null, attr) && rowElement.getParent() == null) {
+        } if (isAttributeExpandable(rowElement, attr)) {
             spreadsheet.toggleRowExpand(rowElement, columnElement);
         }
     }
@@ -2204,7 +2204,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     //ResultSetRow row = (ResultSetRow) (recordMode ? colElement.getElement() : rowElement.getElement());
                     if (isShowAsCheckbox(attr)) {
                         info.state |= booleanStyles.getMode() == BooleanMode.TEXT ? STATE_TOGGLE : STATE_LINK;
-                    } else if (!CommonUtils.isEmpty(attr.getReferrers()) || isShowAsExpander(rowElement, attr)) {
+                    } else if (!CommonUtils.isEmpty(attr.getReferrers()) || isShowAsExpander(rowElement, attr, cellValue)) {
                         if (!DBUtils.isNullValue(cellValue)) {
                             info.state |= STATE_LINK;
                         }
@@ -2232,7 +2232,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
             info.align = getCellAlign(attr, row, cellValue);
 
-            {
+            if (attr != null && cellValue != DBDVoid.INSTANCE) {
                 // Image
                 if (booleanStyles.getMode() != BooleanMode.TEXT) {
                     if (isShowAsCheckbox(attr)) {
@@ -2245,7 +2245,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     }
                 }
                 // Collections
-                if (info.image == null && isShowAsExpander(rowElement, attr) && !DBUtils.isNullValue(cellValue)) {
+                if (info.image == null && isShowAsExpander(rowElement, attr, cellValue)) {
                     final GridCell cell = new GridCell(colElement, rowElement);
                     info.image = spreadsheet.isCellExpanded(cell) ? UIIcon.TREE_COLLAPSE : UIIcon.TREE_EXPAND;
                 }
@@ -2334,7 +2334,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 return value;
             }
 
-            if (isAttributeExpandable(null, attr) && value instanceof DBDCollection && !DBUtils.isNullValue(value)) {
+            if (isShowAsExpander(null, attr, value)) {
                 final DBDCollection collection = (DBDCollection) value;
                 final StringJoiner buffer = new StringJoiner(",", "{", "}");
                 for (int i = 0; i < Math.min(collection.size(), MAX_INLINE_COLLECTION_ELEMENTS); i++) {
@@ -2369,6 +2369,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
         public int getCellAlign(@Nullable DBDAttributeBinding attr, ResultSetRow row, Object cellValue) {
             if (!controller.isRecordMode()) {
                 if (attr != null) {
+                    if (isShowAsExpander(null, attr, cellValue)) {
+                        return ALIGN_LEFT;
+                    }
                     if (isShowAsCheckbox(attr)) {
                         if (row.getState() == ResultSetRow.STATE_ADDED) {
                             return ALIGN_CENTER;
@@ -2381,14 +2384,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
                             cellValue = ((Number) cellValue).byteValue() != 0;
                         }
                         if (DBUtils.isNullValue(cellValue) || cellValue instanceof Boolean) {
-                            switch (booleanStyles.getStyle((Boolean) cellValue).getAlignment()) {
-                                case LEFT:
-                                    return ALIGN_LEFT;
-                                case CENTER:
-                                    return ALIGN_CENTER;
-                                case RIGHT:
-                                    return ALIGN_RIGHT;
-                            }
+                            return switch (booleanStyles.getStyle((Boolean) cellValue).getAlignment()) {
+                                case LEFT -> ALIGN_LEFT;
+                                case CENTER -> ALIGN_CENTER;
+                                case RIGHT -> ALIGN_RIGHT;
+                            };
                         }
                     }
                     DBPDataKind dataKind = attr.getDataKind();
@@ -2672,8 +2672,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
         return showBooleanAsCheckbox && attr.getPresentationAttribute().getDataKind() == DBPDataKind.BOOLEAN;
     }
 
-    private boolean isShowAsExpander(@NotNull IGridRow rowElement, @NotNull DBDAttributeBinding attr) {
-        return rowElement.getParent() == null && spreadsheet.getColumnCount() > 1 && isAttributeExpandable(rowElement, attr);
+    private boolean isShowAsExpander(@Nullable IGridRow rowElement, @NotNull DBDAttributeBinding attr, @Nullable Object value) {
+        return spreadsheet.getColumnCount() > 1
+            && isAttributeExpandable(rowElement, attr)
+            && value instanceof DBDCollection collection && !collection.isNull();
     }
 
     private class GridLabelProvider implements IGridLabelProvider {
