@@ -65,6 +65,8 @@ public class OracleValueHandlerProvider implements DBDValueHandlerProvider {
                 return OracleBFILEValueHandler.INSTANCE;
             case OracleConstants.TYPE_NAME_REFCURSOR:
                 return OracleRefCursorValueHandler.INSTANCE;
+            case OracleConstants.TYPE_NAME_JSON:
+                return OracleJsonValueHandler.INSTANCE;
         }
 
         if (typeName.contains(OracleConstants.TYPE_NAME_TIMESTAMP) || typedObject.getDataKind() == DBPDataKind.DATETIME) {
