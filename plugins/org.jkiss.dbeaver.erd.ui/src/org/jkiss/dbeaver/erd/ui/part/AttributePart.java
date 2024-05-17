@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.erd.ui.part;
 import org.eclipse.draw2d.ChopboxAnchor;
 import org.eclipse.draw2d.ConnectionAnchor;
 import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.geometry.Point;
-import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.*;
 import org.eclipse.gef.tools.DragEditPartsTracker;
 import org.eclipse.osgi.util.NLS;
@@ -299,12 +297,12 @@ public class AttributePart extends NodePart {
 
     @Override
     public ConnectionAnchor getSourceConnectionAnchor(ConnectionEditPart connection) {
-        return new BoxChopboxAnchor(getFigure());
+        return new ChopboxAnchor(getFigure());
     }
 
     @Override
     public ConnectionAnchor getSourceConnectionAnchor(Request request) {
-        return new BoxChopboxAnchor(getFigure());
+        return new ChopboxAnchor(getFigure());
     }
 
     @Override
@@ -312,10 +310,10 @@ public class AttributePart extends NodePart {
         ERDEntityAttribute attribute = getAttribute();
         if (connection.getModel() instanceof ERDAssociation association) {
             if (association.getTargetAttributes().contains(attribute)) {
-                return new BoxChopboxAnchor(getFigure().getParent());
+                return new ChopboxAnchor(getFigure().getParent());
             }
         }
-        return new BoxChopboxAnchor(getFigure());
+        return new ChopboxAnchor(getFigure());
     }
 
     @Override
@@ -392,57 +390,5 @@ public class AttributePart extends NodePart {
             }
         }
         return parts;
-    }
-    
-    public class BoxChopboxAnchor extends ChopboxAnchor {
-        public BoxChopboxAnchor(AttributeItemFigure figure) {
-            super(figure);
-        }
-
-        public BoxChopboxAnchor(IFigure parent) {
-            super(figure);
-        }
-
-        @Override
-        public Point getLocation(Point reference) {
-           
-            
-            Rectangle r = Rectangle.SINGLETON;
-            Rectangle box = getBox();
-            
-            r.setBounds(box);
-            r.translate(-1, -1);
-            r.resize(1, 1);
-
-            getOwner().translateToAbsolute(r);
-            float centerX = r.x + 0.5f * r.width;
-            float centerY = r.y + 0.5f * r.height;
-
-//            if (r.isEmpty() || (reference.x == (int) centerX && reference.y == (int) centerY))
-//             {
-//             return new Point((int) centerX, (int) centerY); // This avoids
-//                         // divide-by-zero
-//            }
-
-            float dx = reference.x - centerX;
-            float dy = reference.y - centerY;
-            if(dx < dy) {
-                return new Point(r.getLeft());
-            } else {
-                return new Point(r.getRight());
-            }
-
-//            // r.width, r.height, dx, and dy are guaranteed to be non-zero.
-//            
-//            float scale = 0.5f / Math.max(Math.abs(dx)/r.width , Math.abs(dy)/r.height );
-//
-//            dx *= scale;
-//            dy *= scale;
-//            centerX += dx;
-//            centerY += dy;
-//
-//            //return new Point(Math.round(reference.x), Math.round(reference.y));
-//            return new Point(Math.round(centerX), Math.round(centerY));
-        }
     }
 }
