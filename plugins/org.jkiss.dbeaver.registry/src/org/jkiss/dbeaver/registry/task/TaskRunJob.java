@@ -208,11 +208,9 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
             && (System.currentTimeMillis() - taskStartTime) > (task.getMaxExecutionTime() * 1000)) {
             canceledByTimeOut = true;
             cancel();
+            activeMonitor.getNestedMonitor().setCanceled(true);
             if (isRunDirectly()) {
                 canceling();
-                if (activeMonitor instanceof TaskLoggingProgressMonitor tlpm) {
-                    tlpm.setCanceled(true);
-                }
             }
         }
     }

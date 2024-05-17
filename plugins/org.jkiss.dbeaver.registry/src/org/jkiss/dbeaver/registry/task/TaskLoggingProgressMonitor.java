@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 public class TaskLoggingProgressMonitor extends ProxyProgressMonitor {
 
     private static final Log log = Log.getLog(TaskLoggingProgressMonitor.class);
-    private volatile boolean isCanceled;
     DBTTask task;
 
     public TaskLoggingProgressMonitor(DBRProgressMonitor monitor, DBTTask task) {
@@ -48,13 +47,4 @@ public class TaskLoggingProgressMonitor extends ProxyProgressMonitor {
         return task;
     }
 
-    @Override
-    public void setCanceled(boolean value) {
-        isCanceled = value;
-    }
-
-    @Override
-    public boolean isCanceled() {
-        return isCanceled;
-    }
 }

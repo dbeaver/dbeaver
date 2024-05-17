@@ -312,7 +312,6 @@ public class TaskManagerImpl implements DBTTaskManager {
     @Override
     public DBTTaskRunStatus runTask(@NotNull DBRProgressMonitor monitor, @NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener) throws DBException {
         final TaskRunJob job = createJob((TaskImpl) task, listener);
-        job.schedule();
         if (serviceJob == null) {
             serviceJob = new ServiceJob();
             serviceJob.schedule();
