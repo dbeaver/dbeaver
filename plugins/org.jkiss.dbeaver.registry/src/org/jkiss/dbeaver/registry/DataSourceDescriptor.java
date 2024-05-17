@@ -1259,7 +1259,7 @@ public class DataSourceDescriptor
 
             return true;
         } catch (Throwable e) {
-            terminateChildProcess();
+            terminateChildProcesses();
             lastConnectionError = e.getMessage();
             //log.debug("Connection failed (" + getId() + ")", e);
             if (dataSource != null) {
@@ -1297,7 +1297,7 @@ public class DataSourceDescriptor
         }
     }
 
-    private void terminateChildProcess() {
+    private void terminateChildProcesses() {
         synchronized (childProcesses) {
             for (Iterator<DBRProcessDescriptor> iter = childProcesses.iterator(); iter.hasNext(); ) {
                 DBRProcessDescriptor process = iter.next();
@@ -1534,7 +1534,7 @@ public class DataSourceDescriptor
             return false;
         } finally {
             // Terminate child processes
-            terminateChildProcess();
+            terminateChildProcesses();
 
             this.dataSource = null;
             this.resolvedConnectionInfo = null;
