@@ -3368,9 +3368,13 @@ public abstract class LightGrid extends Canvas {
     }
 
     public boolean isCellExpanded(@NotNull IGridCell cell) {
-        final RowLocation gridPos = new RowLocation(cell.getRow());
+        return isCellExpanded(cell.getRow(), cell.getColumn());
+    }
+
+    public boolean isCellExpanded(@NotNull IGridRow row, @NotNull IGridColumn column) {
+        final RowLocation gridPos = new RowLocation(row);
         final RowExpandState rowState = expandedRows.get(gridPos);
-        return rowState != null && rowState.isColumnExpanded(cell.getColumn());
+        return rowState != null && rowState.isColumnExpanded(column);
     }
 
     private boolean isRowExpanded(IGridRow gridRow) {

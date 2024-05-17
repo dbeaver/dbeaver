@@ -1949,7 +1949,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
     }
 
     private class ContentProvider implements IGridContentProvider {
-        private static final MessageFormat COLLECTION_SIZE_FORMAT = new MessageFormat("'{' {0} {0,choice,1#item|1<items} '}'");
+        private static final MessageFormat COLLECTION_SIZE_FORMAT = new MessageFormat(ResultSetMessages.controls_resultset_viewer_collection_size_text);
 
         @NotNull
         @Override
@@ -2190,7 +2190,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             Object cellValue = row == null || attr == null ? null : getCellValue(colElement, rowElement, false);
 
             info.value = cellValue;
-            info.text = formatValue(attr, row, info.value);
+            info.text = formatValue(colElement, rowElement, info.value);
             info.state = STATE_NONE;
 
             if (attr != null && cellValue != DBDVoid.INSTANCE) {
@@ -2281,27 +2281,34 @@ public class SpreadsheetPresentation extends AbstractPresentation
         @Nullable
         @Override
         public Object getCellValue(IGridColumn gridColumn, IGridRow gridRow, boolean formatString) {
-            DBDAttributeBinding attr = getAttributeFromGrid(gridColumn, gridRow);
-            ResultSetRow row = getResultRowFromGrid(gridColumn, gridRow);
-            if (attr == null || row == null) {
-                return null;
-            }
-            int[] rowNestedIndexes = getRowNestedIndexes(gridRow);
-            return getCellValue(attr, row, rowNestedIndexes, formatString);
-        }
-
-        public Object getCellValue(DBDAttributeBinding attr, ResultSetRow row, int[] rowIndexes, boolean formatString) {
-            Object value = controller.getModel().getCellValue(attr, row, rowIndexes);
-
+            final Object value = getCellValue(gridColumn, gridRow, getRowNestedIndexes(gridRow));
             if (formatString) {
-                return formatValue(attr, row, value);
+                return formatValue(gridColumn, gridRow, value);
             } else {
                 return value;
             }
         }
 
         @Nullable
-        private Object formatValue(DBDAttributeBinding attr, ResultSetRow row, Object value) {
+        public Object getCellValue(@NotNull IGridColumn gridColumn, @NotNull IGridRow gridRow, @Nullable int[] rowIndexes) {
+            if (gridRow.getParent() != null && !spreadsheet.isCellExpanded(gridRow.getParent(), gridColumn)) {
+                return DBDVoid.INSTANCE;
+            }
+            final DBDAttributeBinding attr = getAttributeFromGrid(gridColumn, gridRow);
+            final ResultSetRow row = getResultRowFromGrid(gridColumn, gridRow);
+            if (attr == null || row == null) {
+                return null;
+            }
+            return controller.getModel().getCellValue(attr, row, rowIndexes);
+        }
+
+        @Nullable
+        private Object formatValue(@NotNull IGridColumn gridColumn, @NotNull IGridRow gridRow, @Nullable Object value) {
+            final DBDAttributeBinding attr = getAttributeFromGrid(gridColumn, gridRow);
+            final ResultSetRow row = getResultRowFromGrid(gridColumn, gridRow);
+            if (attr == null || row == null) {
+                return null;
+            }
             if (DBUtils.isNullValue(value) && row.getState() == ResultSetRow.STATE_ADDED) {
                 // New row and no value. Let's try to show default value
                 DBSEntityAttribute entityAttribute = attr.getEntityAttribute();
@@ -2331,7 +2338,16 @@ public class SpreadsheetPresentation extends AbstractPresentation
             }
 
             if (isShowAsExpander(null, attr, value)) {
-                return COLLECTION_SIZE_FORMAT.format(new Object[]{((DBDCollection) value).size()});
+                if (spreadsheet.isCellExpanded(gridRow, gridColumn) && value instanceof DBDCollection collection) {
+                    return COLLECTION_SIZE_FORMAT.format(new Object[]{collection.size()});
+                }
+                int count = 0;
+                for (DBDAttributeBinding cur = attr; cur != null; cur = cur.getParentObject()) {
+                    if (cur.getDataKind() == DBPDataKind.ARRAY) {
+                        count++;
+                    }
+                }
+                return formatValue(gridColumn, gridRow, getCellValue(gridColumn, gridRow, new int[count]));
             } else if (attr.getDataKind() == DBPDataKind.STRUCT && value instanceof DBDComposite && !DBUtils.isNullValue(value)) {
                 return "[" + ((DBDComposite) value).getDataType().getName() + "]";
             }
