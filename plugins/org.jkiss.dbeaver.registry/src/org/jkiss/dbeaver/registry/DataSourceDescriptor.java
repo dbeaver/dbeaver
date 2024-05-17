@@ -1259,6 +1259,7 @@ public class DataSourceDescriptor
 
             return true;
         } catch (Throwable e) {
+            terminateChildProcess();
             lastConnectionError = e.getMessage();
             //log.debug("Connection failed (" + getId() + ")", e);
             if (dataSource != null) {
@@ -1293,6 +1294,18 @@ public class DataSourceDescriptor
             }
         } finally {
             monitor.done();
+        }
+    }
+
+    private void terminateChildProcess() {
+        synchronized (childProcesses) {
+            for (Iterator<DBRProcessDescriptor> iter = childProcesses.iterator(); iter.hasNext(); ) {
+                DBRProcessDescriptor process = iter.next();
+                if (process.isRunning() && process.getCommand().isTerminateAtDisconnect()) {
+                    process.terminate();
+                }
+                iter.remove();
+            }
         }
     }
 
@@ -1521,15 +1534,7 @@ public class DataSourceDescriptor
             return false;
         } finally {
             // Terminate child processes
-            synchronized (childProcesses) {
-                for (Iterator<DBRProcessDescriptor> iter = childProcesses.iterator(); iter.hasNext(); ) {
-                    DBRProcessDescriptor process = iter.next();
-                    if (process.isRunning() && process.getCommand().isTerminateAtDisconnect()) {
-                        process.terminate();
-                    }
-                    iter.remove();
-                }
-            }
+            terminateChildProcess();
 
             this.dataSource = null;
             this.resolvedConnectionInfo = null;
