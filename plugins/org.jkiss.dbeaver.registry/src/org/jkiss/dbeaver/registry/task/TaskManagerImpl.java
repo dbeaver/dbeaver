@@ -317,12 +317,9 @@ public class TaskManagerImpl implements DBTTaskManager {
             serviceJob = new ServiceJob();
             serviceJob.schedule();
         }
-        try {
-            job.join();
-        } catch (InterruptedException e) {
-            throw new DBException("Error executing task", e);
-        }
-        final Throwable error = job.getResult().getException();
+        runningTasks.add(job);
+        final IStatus result = job.runDirectly(monitor);
+        final Throwable error = result.getException();
         if (error != null) {
             if (error instanceof DBException e) {
                 throw e;
@@ -330,6 +327,7 @@ public class TaskManagerImpl implements DBTTaskManager {
                 throw new DBException("Error executing task", error);
             }
         }
+        runningTasks.remove(job);
         return job.getTaskRunStatus();
     }
 
