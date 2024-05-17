@@ -320,6 +320,7 @@ public class TaskManagerImpl implements DBTTaskManager {
         final IStatus result = job.runDirectly(monitor);
         final Throwable error = result.getException();
         if (error != null) {
+            runningTasks.remove(job);
             if (error instanceof DBException e) {
                 throw e;
             } else {
