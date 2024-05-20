@@ -84,7 +84,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
 
     private IResource resource;
     private DBPResourceHandler handler;
-    private DBNNode[] children;
+    private volatile DBNNode[] children;
     private DBPImage resourceImage;
 
     public DBNResource(DBNNode parentNode, IResource resource, DBPResourceHandler handler) {
@@ -216,7 +216,11 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
     @Override
     public DBNNode[] getChildren(DBRProgressMonitor monitor) throws DBException {
         if (children == null) {
-            this.children = readChildNodes(monitor);
+            synchronized (this) {
+                if (children == null) {
+                    this.children = readChildNodes(monitor);
+                }
+            }
         }
         return children;
     }
