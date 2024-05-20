@@ -1329,7 +1329,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     new ResultSetCellLocation(attr, row, getRowNestedIndexes(cell.row)),
                     value);
             }
-        } else if (isAttributeExpandable(null, attr)) {
+        } else if (isAttributeExpandable(cell.row, attr)) {
             spreadsheet.toggleCellValue(cell.col, cell.row);
         } else if (DBUtils.isNullValue(value)) {
             UIUtils.showMessageBox(getSpreadsheet().getShell(), "Wrong link", "Can't navigate to NULL value", SWT.ICON_ERROR);
@@ -1794,7 +1794,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         for (DBDAttributeBinding cur = attr; cur != null; cur = cur.getParentObject()) {
             final DBPDataKind kind = cur.getDataKind();
             if (kind == DBPDataKind.ARRAY) {
-                attributes.add(0, cur);
+                attributes.add(cur);
             }
         }
 
@@ -1802,14 +1802,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
             return null;
         }
 
-        int index = 0;
-        if (row != null) {
-            for (IGridRow cur = row.getParent(); cur != null; cur = cur.getParent()) {
-                index++;
-            }
-        }
-
-        return attributes.get(Math.min(index, attributes.size() - 1));
+        final int index = row != null ? row.getLevel() : 0;
+        final int upper = attributes.size() - 1;
+        return attributes.get(upper - Math.min(index, upper));
     }
 
     class SpreadsheetSelectionImpl implements IResultSetSelection, IResultSetSelectionExt {

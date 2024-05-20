@@ -3425,6 +3425,7 @@ public abstract class LightGrid extends Canvas {
                 gridColumn,
                 col -> new CellExpandState(provider.getCollectionSize(col, gridRow))
             );
+            // TODO: We also need to collapse this column in all nested rows
             state.expanded = !state.expanded;
         }
 
