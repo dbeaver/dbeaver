@@ -351,10 +351,10 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                 }
                 case TASK_REMOVE -> refresh();
                 case TASK_UPDATE -> {
+                    tasksTree.getViewer().refresh(task);
                     if (task == tasksTree.getSelectedTask()) {
                         loadTaskRuns(true);
                     }
-                    tasksTree.refresh();
                 }
                 case TASK_EXECUTE -> refresh();
             }

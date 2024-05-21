@@ -1681,7 +1681,7 @@
                         description="Jennifer JDBC driver"
                         webURL="https://www.jennifersoft.com"
                         categories="sql">
-                    <file type="jar" path="https://github.com/jennifersoft/jennifer5-jdbc-driver/raw/main/dist/jennifer-jdbc-5.5.3.2.jar"/>
+                    <file type="jar" path="https://github.com/jennifersoft/jennifer5-jdbc-driver/blob/main/dist/5.6.0.5/jennifer-jdbc-5.6.0.5.zip"/>
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-indexes" value="false"/>
                     <parameter name="omit-catalog" value="true"/>
@@ -1689,18 +1689,20 @@
                 </driver>
 
                 <!-- Salesforce CDP-->
+                <driver id="salesforce_jdbc"/>
                 <driver
-                        id="salesforce_jdbc"
-                        label="Salesforce CDP"
+                        id="salesforce_datacloud_jdbc"
+                        label="Salesforce Data Cloud"
                         class="com.salesforce.cdp.queryservice.QueryServiceDriver"
                         icon="icons/salesforce_icon.png"
                         iconBig="icons/salesforce_icon_big.png"
                         sampleURL="jdbc:queryService-jdbc:{database}"
                         defaultDatabase="https://login.salesforce.com"
-                        description="Salesforce CDP JDBC driver"
+                        description="Salesforce Data Cloud JDBC driver"
                         webURL="https://github.com/forcedotcom/Salesforce-CDP-jdbc"
                         categories="sql">
-                    <file type="jar" path="https://github.com/forcedotcom/Salesforce-CDP-jdbc/releases/download/release_2023.01a/Salesforce-CDP-jdbc-1.16.0.jar" bundle="!drivers.salesforce"/>
+                    <replace provider="generic" driver="salesforce_jdbc"/>
+                    <file type="jar" path="https://github.com/forcedotcom/Salesforce-CDP-jdbc/releases/download/release_2024.4B/Salesforce-cdp-1.19.4.jar" bundle="!drivers.salesforce"/>
                     <file type="jar" path="drivers/salesforce" bundle="drivers.salesforce"/>
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.salesforce"/>
                     <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.salesforce"/>
