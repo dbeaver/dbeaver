@@ -112,11 +112,6 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
                 taskRun.setRunDuration(elapsedTime);
                 if (activeMonitor.isCanceled() || monitor.isCanceled()) {
                     taskRun.setErrorMessage("Canceled");
-                    if (this.canceledByTimeOut) {
-                        taskRun.setExtraMessage("by timeout reached");
-                    } else {
-                        taskRun.setExtraMessage("by user");
-                    }
                     taskLog.info(String.format("Task '%s' (%s) cancelled after %s ms", task.getName(), task.getId(), elapsedTime));
                 } else if (taskError != null) {
                     String errorMessage = taskError.getMessage();
@@ -147,12 +142,12 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
         DBTTaskHandler taskHandler = task.getType().createHandler();
         DBTTaskRunStatus taskStatus = taskHandler.executeTask(this, task, locale, taskLog, logWriter, executionListener);
         if (monitor.isCanceled()) {
-            taskStatus
-                .setResultMessage(
-                    String.format("Task '%s' (%s) cancelled after %s ms",
-                        task.getName(),
-                        task.getId(),
-                        System.currentTimeMillis() - taskStartTime));
+            if (canceledByTimeOut) {
+                taskStatus.setResultMessage("by timeout reached");
+            }
+            if (taskStatus.getResultMessage() == null) {
+                taskStatus.setResultMessage("by user");
+            }
         }
         return taskStatus;
     }
