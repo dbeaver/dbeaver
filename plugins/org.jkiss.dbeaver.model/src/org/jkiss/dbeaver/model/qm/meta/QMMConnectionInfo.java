@@ -237,12 +237,26 @@ public class QMMConnectionInfo extends QMMObject {
                 isTransactional() && getTransaction() != null ?
                     getTransaction().getCurrentSavepoint() : null;
             var sqlDialect = statement.getSession().getDataSource().getSQLDialect();
+            String schema = null;
+            String catalog = null;
+            DBCExecutionContextDefaults contextDefaults = statement.getSession().getExecutionContext().getContextDefaults();
+            if (contextDefaults != null) {
+                if (contextDefaults.getDefaultSchema() != null) {
+                    schema = contextDefaults.getDefaultSchema().getName();
+                }
+                if (contextDefaults.getDefaultCatalog() != null) {
+                    catalog = contextDefaults.getDefaultCatalog().getName();
+                }
+            }
             return this.executionStack = new QMMStatementExecuteInfo(
                 stat,
                 savepoint,
                 queryString,
                 this.executionStack,
-                sqlDialect);
+                sqlDialect,
+                schema,
+                catalog
+            );
         } else {
             return null;
         }
