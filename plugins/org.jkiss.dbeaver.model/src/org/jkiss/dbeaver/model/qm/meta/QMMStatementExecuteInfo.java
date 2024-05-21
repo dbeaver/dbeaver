@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.model.qm.meta;
 
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 
@@ -42,10 +41,6 @@ public class QMMStatementExecuteInfo extends QMMObject {
     private long fetchEndTime;
 
     private boolean transactional;
-    @Nullable
-    private final String schema;
-    @Nullable
-    private final String catalog;
 
     private transient QMMStatementExecuteInfo previous;
 
@@ -54,17 +49,13 @@ public class QMMStatementExecuteInfo extends QMMObject {
         QMMTransactionSavepointInfo savepoint,
         String queryString,
         QMMStatementExecuteInfo previous,
-        SQLDialect sqlDialect,
-        @Nullable String schema,
-        @Nullable String catalog)
+        SQLDialect sqlDialect)
     {
         super(QMMetaObjectType.STATEMENT_EXECUTE_INFO);
         this.statement = statement;
         this.previous = previous;
         this.savepoint = savepoint;
         this.queryString = queryString;
-        this.schema = schema;
-        this.catalog = catalog;
         if (savepoint != null) {
             savepoint.setLastExecute(this);
         }
@@ -75,20 +66,7 @@ public class QMMStatementExecuteInfo extends QMMObject {
         }
     }
 
-    public QMMStatementExecuteInfo(
-        long openTime,
-        long closeTime,
-        QMMStatementInfo stmt,
-        String queryString,
-        long rowCount,
-        int errorCode,
-        String errorMessage,
-        long fetchBeginTime,
-        long fetchEndTime,
-        boolean transactional,
-        @Nullable String schema,
-        @Nullable String catalog
-    ) {
+    public QMMStatementExecuteInfo(long openTime, long closeTime, QMMStatementInfo stmt, String queryString, long rowCount, int errorCode, String errorMessage, long fetchBeginTime, long fetchEndTime, boolean transactional) {
         super(QMMetaObjectType.STATEMENT_EXECUTE_INFO, openTime, closeTime);
         this.statement = stmt;
         this.queryString = queryString;
@@ -98,8 +76,6 @@ public class QMMStatementExecuteInfo extends QMMObject {
         this.fetchBeginTime = fetchBeginTime;
         this.fetchEndTime = fetchEndTime;
         this.transactional = transactional;
-        this.schema = schema;
-        this.catalog = catalog;
     }
 
     void close(long rowCount, Throwable error)
@@ -177,16 +153,6 @@ public class QMMStatementExecuteInfo extends QMMObject {
     public long getFetchEndTime()
     {
         return fetchEndTime;
-    }
-
-    @Nullable
-    public String getSchema() {
-        return schema;
-    }
-
-    @Nullable
-    public String getCatalog() {
-        return catalog;
     }
 
     public boolean isFetching()
