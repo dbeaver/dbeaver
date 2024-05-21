@@ -40,13 +40,16 @@ import org.jkiss.utils.AlphanumericComparator;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * DBNResource
@@ -242,12 +245,28 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
             return EMPTY_NODES;
         } else {
             filterChildren(result);
+            filterHiddenChildren(result);
             final DBNNode[] childNodes = result.toArray(new DBNNode[0]);
             sortChildren(childNodes);
             return childNodes;
         }
     }
 
+    protected void filterHiddenChildren(List<DBNNode> nodes) {
+        IPath projectPath = this.getContentLocationResource().getProject().getLocation();
+        File hidden = projectPath.append(".hidden").toFile();
+        if (hidden.isFile()) {
+            try {
+                BufferedReader reader = new BufferedReader(new FileReader(hidden));
+                final List<String> hiddenElements = reader.lines().collect(Collectors.toList());
+                reader.close();
+                nodes.removeIf(node -> hiddenElements.contains(node.getNodeDisplayName()));
+            } catch (IOException e) {
+                log.error("Can't read .hidden file");
+            }
+        }
+    }
+    
     protected IResource[] addImplicitMembers(IResource[] members) {
         return members;
     }
