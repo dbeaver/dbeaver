@@ -10,6 +10,7 @@ Bundle-ActivationPolicy: lazy
 Export-Package: org.jkiss.dbeaver.model.security,
  org.jkiss.dbeaver.model.security.user,
  org.jkiss.dbeaver.model.security.exception,
+ org.jkiss.dbeaver.model.security.task,
  org.jkiss.dbeaver.model.auth,
  org.jkiss.dbeaver.model.secret
 Bundle-ClassPath: .
