@@ -26,10 +26,7 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.custom.CTabFolder2Adapter;
-import org.eclipse.swt.custom.CTabFolderEvent;
-import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.custom.*;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -425,9 +422,13 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         item.setToolTipText(page.getDescription());
 
         if (page.getControl() == null) {
-            final Composite placeholder = new Composite(tabFolder, SWT.NONE);
+            final ScrolledComposite sc = new ScrolledComposite(tabFolder, SWT.BORDER | SWT.H_SCROLL);
+            sc.setExpandHorizontal(true);
+            sc.setExpandVertical(true);
+            final Composite placeholder = new Composite(sc, SWT.NONE);
             placeholder.setLayout(new FillLayout());
-            item.setControl(placeholder);
+            sc.setContent(placeholder);
+            item.setControl(sc);
         } else {
             final Control control = page.getControl();
             control.setParent(tabFolder);
@@ -447,9 +448,18 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                     Composite panel = (Composite) selection.getControl();
                     panel.setRedraw(false);
                     try {
-                        page.createControl(panel);
-                        Dialog.applyDialogFont(panel);
-                        panel.layout(true, true);
+                        if (panel instanceof ScrolledComposite scrolledComposite) {
+                            Composite placeholder = (Composite) scrolledComposite.getChildren()[0];
+                            page.createControl(placeholder);
+                            Dialog.applyDialogFont(scrolledComposite);
+                            placeholder.setSize(placeholder.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+                            scrolledComposite.setMinSize(page.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT));
+                            scrolledComposite.layout();
+                        } else {
+                            page.createControl(panel);
+                            Dialog.applyDialogFont(panel);
+                            panel.layout(true, true);
+                        }
                     } catch (Throwable e) {
                         DBWorkbench.getPlatformUI().showError("Error creating configuration page", null, e);
                     } finally {
