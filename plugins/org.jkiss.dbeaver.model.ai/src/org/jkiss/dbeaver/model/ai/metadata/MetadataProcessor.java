@@ -111,37 +111,15 @@ public class MetadataProcessor {
         @NotNull DAICompletionContext context,
         @Nullable DBSObjectContainer mainObject,
         @NotNull IAIFormatter formatter,
-        boolean isChatAPI,
-        int maxRequestTokens,
-        boolean chatCompletion
+        @NotNull String instructions,
+        int maxRequestTokens
     ) throws DBException {
         if (mainObject == null || mainObject.getDataSource() == null) {
             throw new DBException("Invalid completion request");
         }
 
         final DBCExecutionContext executionContext = context.getExecutionContext();
-
-        final StringBuilder sb = new StringBuilder();
-
-        if (chatCompletion && isChatAPI) {
-            sb.append(
-                """
-                You MUST perform SQL completion.
-                Your query must start with "SELECT" and MUST be enclosed with Markdown code block.
-                Talk naturally, as if you were talking to a human.
-                """);
-        } else if (isChatAPI) {
-            sb.append(
-                """
-                Perform SQL completion.
-                Your query must start with "SELECT" and MUST be enclosed with Markdown code block.
-                Any comments MUST be placed in SQL multiline comment block at start of the query.
-                AVOID single line comments.
-                """);
-        } else {
-            sb.append("Perform SQL completion. Your query must start with \"SELECT\" and MUST be enclosed with Markdown code block.\n");
-        }
-
+        final StringBuilder sb = new StringBuilder(instructions);
         final String extraInstructions = formatter.getExtraInstructions(monitor, mainObject, executionContext);
         if (CommonUtils.isNotEmpty(extraInstructions)) {
             sb.append(", ").append(extraInstructions);
