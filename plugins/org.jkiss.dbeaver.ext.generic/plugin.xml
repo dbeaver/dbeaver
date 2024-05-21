@@ -1681,7 +1681,7 @@
                         description="Jennifer JDBC driver"
                         webURL="https://www.jennifersoft.com"
                         categories="sql">
-                    <file type="jar" path="https://github.com/jennifersoft/jennifer5-jdbc-driver/raw/main/dist/jennifer-jdbc-5.5.3.2.jar"/>
+                    <file type="jar" path="https://github.com/jennifersoft/jennifer5-jdbc-driver/blob/main/dist/5.6.0.5/jennifer-jdbc-5.6.0.5.zip"/>
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-indexes" value="false"/>
                     <parameter name="omit-catalog" value="true"/>
