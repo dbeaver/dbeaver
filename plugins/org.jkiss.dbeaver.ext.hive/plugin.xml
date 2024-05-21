@@ -35,6 +35,7 @@
                         defaultPort="10000"
                         description="Apache Hive JDBC"
                         webURL="https://cwiki.apache.org/confluence/display/Hive/Home"
+                        databaseDocumentationSuffixURL="Apache-Hive"
                         category="Hadoop"
                         categories="hadoop">
                     <replace provider="generic" driver="apache_hive2"/>
