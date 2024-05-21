@@ -468,7 +468,11 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                 gc.fillRectangle(xWidth - PERCENT_FILL_WIDTH, event.y + 3, width, event.height - 6);
 
                 // Text
-                gc.setForeground(tree.getForeground());
+                if (UIStyles.isDarkHighContrastTheme() && PERCENT_FILL_WIDTH - width < PERCENT_FILL_WIDTH / 2) {
+                    gc.setForeground(tree.getBackground());
+                } else {
+                    gc.setForeground(tree.getForeground());
+                }
                 gc.setFont(tree.getFont());
                 gc.drawText(sizeText, xWidth - textSize.x, event.y + (event.height - textSize.y) / 2, true);
 
