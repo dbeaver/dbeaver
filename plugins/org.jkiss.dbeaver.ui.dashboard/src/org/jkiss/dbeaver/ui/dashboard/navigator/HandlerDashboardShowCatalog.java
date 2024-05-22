@@ -18,31 +18,25 @@ package org.jkiss.dbeaver.ui.dashboard.navigator;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardListViewer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewer;
-import org.jkiss.dbeaver.ui.dashboard.view.DashboardAddItemDialog;
 
-public class HandlerDashboardAddItem extends HandlerDashboardAbstract {
+public class HandlerDashboardShowCatalog extends HandlerDashboardAbstract {
+    private static final String PARAM_TOGGLE = "toggleCatalogPanel"; //$NON-NLS-1$
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         DashboardViewer view = getActiveDashboardView(event);
         if (view != null) {
             DashboardListViewer listViewer = view.getDashboardListViewer();
-            if (listViewer != null) {
-                DashboardAddItemDialog addDialog = new DashboardAddItemDialog(HandlerUtil.getActiveShell(event), view.getConfiguration());
-                if (addDialog.open() == IDialogConstants.OK_ID) {
-                    DashboardItemConfiguration selectedDashboard = addDialog.getSelectedDashboard();
-                    if (selectedDashboard != null) {
-                        listViewer.getDefaultGroup().addItem(selectedDashboard);
-                    }
+            if (event.getParameter(PARAM_TOGGLE) != null) {
+                if (listViewer.isVisible()) {
+                    listViewer.hideChartCatalog();
+                } else {
+                    listViewer.showChartCatalog();
                 }
             }
         }
         return null;
     }
-
 }
