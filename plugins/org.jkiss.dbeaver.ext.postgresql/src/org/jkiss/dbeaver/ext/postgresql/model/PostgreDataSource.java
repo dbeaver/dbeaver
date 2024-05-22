@@ -557,8 +557,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             final Throwable cause = GeneralUtils.getRootCause(e);
             final StackTraceElement element = cause.getStackTrace()[0];
 
-            if ("sun.security.util.DerValue".equals(element.getClassName())) { //$NON-NLS-1$
-                final DBWHandlerConfiguration handler = Objects.requireNonNull(conConfig.getHandler(PostgreConstants.HANDLER_SSL));
+            final DBWHandlerConfiguration handler = conConfig.getHandler(PostgreConstants.HANDLER_SSL);
+            if ("sun.security.util.DerValue".equals(element.getClassName()) && handler != null) { //$NON-NLS-1$
                 final Path dst;
 
                 try {

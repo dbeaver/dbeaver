@@ -203,6 +203,9 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
         final @NotNull Path tempDerFile
     ) throws IOException {
         final byte[] key = SSLHandlerTrustStoreImpl.readCertificate(handler, SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY);
+        if (key == null) {
+            return;
+        }
         final Reader reader = new StringReader(new String(key, StandardCharsets.UTF_8));
         Files.write(tempDerFile, DefaultCertificateStorage.loadDerFromPem(reader));
         String derCertPath = tempDerFile.toAbsolutePath().toString();
