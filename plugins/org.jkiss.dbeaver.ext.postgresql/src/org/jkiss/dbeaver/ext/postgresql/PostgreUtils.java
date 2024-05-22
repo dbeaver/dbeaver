@@ -616,8 +616,12 @@ public class PostgreUtils {
         }
     }
 
-    public static String getViewDDL(DBRProgressMonitor monitor, PostgreViewBase view, String definition,
-                                    Map<String, Object> options) throws DBException {
+    public static String getViewDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PostgreViewBase view,
+        @NotNull String definition,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         // In some cases view definition already has view header (e.g. Redshift + with no schema binding)
         if (definition.toLowerCase(Locale.ENGLISH).startsWith("create ")) {
             return definition;
