@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.sql.semantics;
 
+import org.jkiss.code.Nullable;
+
 import java.util.Iterator;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -410,6 +412,7 @@ public class OffsetKeyedTreeMap<T> {
         NodeAndParentAtOffset<T> initialLocation = this.findImpl(position);
         return switch (this.size) {
             case 0 -> new NodesIterator<T>() {
+                @Nullable
                 @Override
                 public T getCurrValue() {
                     return null;
@@ -433,7 +436,9 @@ public class OffsetKeyedTreeMap<T> {
             case 1 -> new NodesIterator<T>() {
                 boolean beforeFirst = position < OffsetKeyedTreeMap.this.root.offset;
                 boolean afterLast = position > OffsetKeyedTreeMap.this.root.offset;
-                Node<T> theOnlyNode = OffsetKeyedTreeMap.this.root;
+                final Node<T> theOnlyNode = OffsetKeyedTreeMap.this.root;
+
+                @Nullable
                 @Override
                 public T getCurrValue() {
                     return !this.beforeFirst && !this.afterLast ? this.theOnlyNode.content : null;
@@ -479,6 +484,7 @@ public class OffsetKeyedTreeMap<T> {
                     initialLocation.node.isSentinel() ? position : position - initialLocation.node.offset
                 );
 
+                @Nullable
                 @Override
                 public T getCurrValue() {
                     return this.currentLocation.node == null ? null : this.currentLocation.node.content;

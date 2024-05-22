@@ -25,11 +25,11 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import java.sql.SQLException;
 
 
-public class DuckDbGeometryValueHandler extends GISGeometryValueHandler {
+public class DuckDBGeometryValueHandler extends GISGeometryValueHandler {
 
     public static final String[] GEOMETRY_TYPES = new String[]{"GEOMETRY"};
 
-    public static final DuckDbGeometryValueHandler INSTANCE = new DuckDbGeometryValueHandler();
+    public static final DuckDBGeometryValueHandler INSTANCE = new DuckDBGeometryValueHandler();
 
     @Override
     protected Object fetchColumnValue(
