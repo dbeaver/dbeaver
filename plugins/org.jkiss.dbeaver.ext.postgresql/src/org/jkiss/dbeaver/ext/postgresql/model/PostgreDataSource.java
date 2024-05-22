@@ -579,7 +579,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                 // The chain is built asynchronously by the driver, and we don't know at which moment in time it will happen.
                 // It will still be deleted during shutdown.
 
-                return openConnection(monitor, context, purpose);
+                return super.openConnection(monitor, context, purpose);
             }
 
             throw e;
