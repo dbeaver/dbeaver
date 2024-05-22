@@ -32,7 +32,6 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
-import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -319,7 +318,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                         getShell(),
                         "Restart " + GeneralUtils.getProductName(),
                         "You need to restart " + GeneralUtils.getProductName() + " to perform actual language change.\nDo you want to restart?")) {
-                        UIUtils.asyncExec(() -> PlatformUI.getWorkbench().restart());
+                        restartWorkbenchOnPrefChange();
                     }
                 }
             } catch (DBException e) {
