@@ -158,7 +158,9 @@ public class PrefPageMetaData extends TargetPrefPage
     protected void performDefaults() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         readExpensiveCheck.setSelection(store.getDefaultBoolean(ModelPreferences.READ_EXPENSIVE_PROPERTIES));
-        UIUtils.setComboSelection(separateMetaConnectionCombo, store.getDefaultString(ModelPreferences.META_SEPARATE_CONNECTION));
+        separateMetaConnectionCombo.select(metaUseSeparateConnectionValues.indexOf(
+            SeparateConnectionBehavior.parse(store.getDefaultString(ModelPreferences.META_SEPARATE_CONNECTION))
+        ));
         caseSensitiveNamesCheck.setSelection(store.getDefaultBoolean(ModelPreferences.META_CASE_SENSITIVE));
         addExtraDDLInfo.setSelection(store.getDefaultBoolean(ModelPreferences.META_EXTRA_DDL_INFO));
         serverSideFiltersCheck.setSelection(store.getDefaultBoolean(ModelPreferences.META_USE_SERVER_SIDE_FILTERS));

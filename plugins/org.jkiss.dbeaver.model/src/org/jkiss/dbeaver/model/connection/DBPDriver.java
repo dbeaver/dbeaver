@@ -105,6 +105,9 @@ public interface DBPDriver extends DBPNamedObject
     @Nullable
     String getPropertiesWebURL();
 
+    @Nullable
+    String getDatabaseDocumentationSuffixURL();
+
     @NotNull
     SQLDialectMetadata getScriptDialect();
 
