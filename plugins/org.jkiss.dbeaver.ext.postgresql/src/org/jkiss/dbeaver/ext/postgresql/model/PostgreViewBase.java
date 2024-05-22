@@ -102,7 +102,7 @@ public abstract class PostgreViewBase extends PostgreTableReal implements DBSVie
                         if (definition == null) {
                             throw new DBException("View '" + getName() + "' doesn't exist");
                         }
-                        this.source = PostgreUtils.getViewDDL(monitor, this, definition);
+                        this.source = PostgreUtils.getViewDDL(monitor, this, definition, options);
                         String extDefinition = readExtraDefinition(session, options);
                         if (extDefinition != null) {
                             this.source += "\n" + extDefinition;

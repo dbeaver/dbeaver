@@ -616,13 +616,14 @@ public class PostgreUtils {
         }
     }
 
-    public static String getViewDDL(DBRProgressMonitor monitor, PostgreViewBase view, String definition) throws DBException {
+    public static String getViewDDL(DBRProgressMonitor monitor, PostgreViewBase view, String definition,
+                                    Map<String, Object> options) throws DBException {
         // In some cases view definition already has view header (e.g. Redshift + with no schema binding)
         if (definition.toLowerCase(Locale.ENGLISH).startsWith("create ")) {
             return definition;
         }
         StringBuilder sql = new StringBuilder(view instanceof PostgreView ? "CREATE OR REPLACE " : "CREATE ");
-        sql.append(view.getTableTypeName()).append(" ").append(view.getFullyQualifiedName(DBPEvaluationContext.DDL));
+        sql.append(view.getTableTypeName()).append(" ").append(DBUtils.getEntityScriptName(view, options));
 
         final DBERegistry editorsRegistry = DBWorkbench.getPlatform().getEditorsRegistry();
         final PostgreViewManager entityEditor = editorsRegistry.getObjectManager(view.getClass(), PostgreViewManager.class);
