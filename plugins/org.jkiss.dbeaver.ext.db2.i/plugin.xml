@@ -31,6 +31,7 @@
                         supportedConfigurationTypes="MANUAL,URL"
                         defaultPort="446"
                         description="IBM Db2 driver for IBM i (replacement for iSeries and AS/400)"
+                        databaseDocumentationSuffixURL="Database-driver-IBM-Db2"
                         categories="sql">
                     <replace provider="generic" driver="db2_iseries"/>
 

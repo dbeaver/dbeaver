@@ -28,6 +28,7 @@
                         defaultPort=""
                         webURL="https://github.com/xerial/sqlite-jdbc"
                         propertiesURL="https://www.sqlite.org/pragma.html"
+                        databaseDocumentationSuffixURL="Database-driver-SQLite"
                         embedded="true"
                         anonymous="true"
                         description="SQLite JDBC driver"
