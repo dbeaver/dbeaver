@@ -425,9 +425,6 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             final ScrolledComposite sc = new ScrolledComposite(tabFolder, SWT.BORDER | SWT.H_SCROLL);
             sc.setExpandHorizontal(true);
             sc.setExpandVertical(true);
-            final Composite placeholder = new Composite(sc, SWT.NONE);
-            placeholder.setLayout(new FillLayout());
-            sc.setContent(placeholder);
             item.setControl(sc);
         } else {
             final Control control = page.getControl();
@@ -448,13 +445,12 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                     Composite panel = (Composite) selection.getControl();
                     panel.setRedraw(false);
                     try {
-                        if (panel instanceof ScrolledComposite scrolledComposite) {
-                            Composite placeholder = (Composite) scrolledComposite.getChildren()[0];
-                            page.createControl(placeholder);
-                            Dialog.applyDialogFont(scrolledComposite);
-                            placeholder.setSize(placeholder.computeSize(SWT.DEFAULT, SWT.DEFAULT));
-                            scrolledComposite.setMinSize(page.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT));
-                            scrolledComposite.layout();
+                        if (panel instanceof ScrolledComposite sc) {
+                            page.createControl(sc);
+                            Dialog.applyDialogFont(sc);
+                            sc.setContent(page.getControl());
+                            sc.setMinSize(page.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT));
+                            sc.layout();
                         } else {
                             page.createControl(panel);
                             Dialog.applyDialogFont(panel);
