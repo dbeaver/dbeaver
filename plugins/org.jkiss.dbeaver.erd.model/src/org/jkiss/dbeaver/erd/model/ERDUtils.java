@@ -174,7 +174,7 @@ public class ERDUtils
                     }
                 });
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Cache database model", "Error caching database model", e);
+                log.warn("Entity cache model can't be read", e);
             }
             Collection<? extends DBSObject> entities = objectContainer.getChildren(monitor);
             if (entities != null) {
