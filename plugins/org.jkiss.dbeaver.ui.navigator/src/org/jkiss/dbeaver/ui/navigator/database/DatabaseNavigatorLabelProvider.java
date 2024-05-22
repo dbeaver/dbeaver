@@ -169,7 +169,7 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
                 return lockedForeground;
             }
             if (dbnNode instanceof DBSWrapper dbsWrapper && dbsWrapper.getObject() != null && !dbsWrapper.getObject().isPersisted()) {
-                return PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry().get(COLOR_NODE_TRANSIENT_FOREGROUND);
+                return transientForeground;
             }
         }
         if (element instanceof TreeNodeSpecial) {
