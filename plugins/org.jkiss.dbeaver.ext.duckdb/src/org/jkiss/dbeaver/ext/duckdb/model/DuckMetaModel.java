@@ -152,6 +152,6 @@ public class DuckMetaModel extends GenericMetaModel {
 
     @Override
     public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
-        return new DuckDbDataSource(monitor, container, this);
+        return new DuckDBDataSource(monitor, container, this);
     }
 }

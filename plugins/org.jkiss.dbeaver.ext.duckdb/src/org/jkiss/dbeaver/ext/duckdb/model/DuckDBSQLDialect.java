@@ -14,22 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.websocket.event;
+package org.jkiss.dbeaver.ext.duckdb.model;
 
-import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 
-public class WSUserDeletedEvent extends WSAbstractEvent {
+public class DuckDBSQLDialect extends GenericSQLDialect {
 
-    @NotNull
-    private final String deletedUserId;
+    public static final DuckDBSQLDialect INSTANCE = new DuckDBSQLDialect();
 
-    public WSUserDeletedEvent(@NotNull String userId) {
-        super(WSEventType.USER_DELETED);
-        this.deletedUserId = userId;
+    @Override
+    public boolean supportsAliasInSelect() {
+        return true;
     }
 
-    @NotNull
-    public String getDeletedUserId() {
-        return deletedUserId;
+    @Override
+    public boolean supportsAliasInUpdate() {
+        return true;
     }
+
 }

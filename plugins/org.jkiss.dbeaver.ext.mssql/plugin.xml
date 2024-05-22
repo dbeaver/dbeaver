@@ -175,6 +175,7 @@
                         defaultPort="1433"
                         defaultDatabase="master"
                         webURL="https://github.com/Microsoft/mssql-jdbc"
+                        databaseDocumentationSuffixURL="Database-driver-Microsoft-SQL-Server"
                         description="%driver.sqlserver.description"
                         supportedConfigurationTypes="MANUAL,URL"
                         promoted="1"
