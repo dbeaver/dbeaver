@@ -566,7 +566,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                         // The chain is built asynchronously by the driver, and we don't know at which moment in time it will happen.
                         // It will still be deleted during shutdown.
 
-                        return super.openConnection(monitor, context, purpose);
+                        return this.openConnection(monitor, context, purpose);
                     }
                 } catch (IOException ex) {
                     log.error("Error converting SSL key", ex);
