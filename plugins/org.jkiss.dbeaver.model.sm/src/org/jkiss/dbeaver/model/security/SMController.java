@@ -21,7 +21,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObjectController;
 import org.jkiss.dbeaver.model.auth.SMAuthCredentialsManager;
-import org.jkiss.dbeaver.model.security.task.SMTaskController;
 import org.jkiss.dbeaver.model.security.user.SMAuthPermissions;
 import org.jkiss.dbeaver.model.security.user.SMObjectPermissions;
 import org.jkiss.dbeaver.model.security.user.SMUser;
@@ -35,7 +34,7 @@ import java.util.Set;
  * Admin interface
  */
 public interface SMController extends DBPObjectController,
-    SMAuthCredentialsManager, SMAuthController, SMTaskController {
+    SMAuthCredentialsManager, SMAuthController {
 
 
     ///////////////////////////////////////////
