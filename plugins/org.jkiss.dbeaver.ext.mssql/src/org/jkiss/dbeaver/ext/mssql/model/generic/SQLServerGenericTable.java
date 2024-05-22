@@ -198,7 +198,7 @@ public class SQLServerGenericTable extends GenericTable implements DBPObjectWith
                 }
             }
         } catch (SQLException | DBCException e) {
-            log.error("Error reading table statistics", e);
+            log.debug("Error reading table statistics", e);
         }
     }
 }

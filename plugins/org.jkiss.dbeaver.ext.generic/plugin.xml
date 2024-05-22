@@ -584,6 +584,7 @@
                     sampleURL="jdbc:teradata://{host}/DATABASE={database},DBS_PORT={port}"
                     defaultPort="1025"
                     webURL="https://downloads.teradata.com/download/connectivity/jdbc-driver"
+                    databaseDocumentationSuffixURL="Database-driver-Teradata"
                     description="Teradata JDBC Type 4 driver"
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,analytic">
@@ -720,6 +721,7 @@
                     sampleURL="jdbc:netezza://{host}:{port}/{database}"
                     defaultPort="5480"
                     webURL=""
+                    databaseDocumentationSuffixURL="Database-driver-Netezza"
                     description="Netezza database driver"
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,analytic">
@@ -1022,6 +1024,7 @@
                     description="Yandex ClickHouse"
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/yandex/clickhouse-jdbc"
+                    databaseDocumentationSuffixURL="Clickhouse"
                     categories="sql,analytic,columns">
                     <file type="jar" path="maven:/ru.yandex.clickhouse:clickhouse-jdbc:RELEASE[0.2.6]" bundle="!drivers.clickhouse"/>
                     <file type="jar" path="drivers/clickhouse" bundle="drivers.clickhouse"/>
@@ -1425,6 +1428,7 @@
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                         defaultPort="3306"
                         webURL="https://www.mysql.com/products/connector/"
+                        databaseDocumentationSuffixURL="Database-driver-MySQL"
                         supportedConfigurationTypes="MANUAL,URL"
                         description="Driver for MySQL (4.x and earlier)">
                     <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[5.1.49]"/>
@@ -1528,6 +1532,7 @@
                         supportedConfigurationTypes="MANUAL,URL"
                         defaultPort="50000"
                         webURL="https://www.ibm.com/software/data/db2/express/download.html"
+                        databaseDocumentationSuffixURL="Database-driver-IBM-Db2"
                         description="DB2 LUW driver for older DB2 versions (8.x)">
                     <replace provider="generic" driver="db2"/>
 
@@ -1681,7 +1686,7 @@
                         description="Jennifer JDBC driver"
                         webURL="https://www.jennifersoft.com"
                         categories="sql">
-                    <file type="jar" path="https://github.com/jennifersoft/jennifer5-jdbc-driver/raw/main/dist/jennifer-jdbc-5.5.3.2.jar"/>
+                    <file type="jar" path="https://github.com/jennifersoft/jennifer5-jdbc-driver/blob/main/dist/5.6.0.5/jennifer-jdbc-5.6.0.5.zip"/>
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-indexes" value="false"/>
                     <parameter name="omit-catalog" value="true"/>
@@ -1689,18 +1694,21 @@
                 </driver>
 
                 <!-- Salesforce CDP-->
+                <driver id="salesforce_jdbc"/>
                 <driver
-                        id="salesforce_jdbc"
-                        label="Salesforce CDP"
+                        id="salesforce_datacloud_jdbc"
+                        label="Salesforce Data Cloud"
                         class="com.salesforce.cdp.queryservice.QueryServiceDriver"
                         icon="icons/salesforce_icon.png"
                         iconBig="icons/salesforce_icon_big.png"
                         sampleURL="jdbc:queryService-jdbc:{database}"
                         defaultDatabase="https://login.salesforce.com"
-                        description="Salesforce CDP JDBC driver"
+                        description="Salesforce Data Cloud JDBC driver"
                         webURL="https://github.com/forcedotcom/Salesforce-CDP-jdbc"
+                        databaseDocumentationSuffixURL="Database-driver-Salesforce"
                         categories="sql">
-                    <file type="jar" path="https://github.com/forcedotcom/Salesforce-CDP-jdbc/releases/download/release_2023.01a/Salesforce-CDP-jdbc-1.16.0.jar" bundle="!drivers.salesforce"/>
+                    <replace provider="generic" driver="salesforce_jdbc"/>
+                    <file type="jar" path="https://github.com/forcedotcom/Salesforce-CDP-jdbc/releases/download/release_2024.4B/Salesforce-cdp-1.19.4.jar" bundle="!drivers.salesforce"/>
                     <file type="jar" path="drivers/salesforce" bundle="drivers.salesforce"/>
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.salesforce"/>
                     <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.salesforce"/>
@@ -1716,6 +1724,7 @@
                         defaultPort="5439"
                         description="%driver.redshift.description"
                         webURL="http://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
+                        databaseDocumentationSuffixURL="Database-driver-Amazon-Redshift"
                         categories="sql,analytic,cloud"/>
                 <driver
                         id="aws_redshift_42"
@@ -1746,7 +1755,60 @@
                         categories="nosql,bigdata,keyvalue">
                     <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.cassandra.reason"/>
                 </driver>
-
+                <driver
+                        id="dynamodb-ce"
+                        label="DynamoDB"
+                        description="AWS DynamoDB Driver"
+                        iconBig="icons/dynamodb_pro_icon.png"
+                        supportsDistributedMode="false"
+                        categories="nosql,aws">
+                    <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.dynamodb.reason"/>
+                </driver>
+                <driver
+                        id="salesforce-ce"
+                        label="Salesforce"
+                        description="Salesforce JDBC driver"
+                        iconBig="icons/salesforce_pro_icon.png"
+                        supportsDistributedMode="false"
+                        categories="sql">
+                    <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.salesforce.reason"/>
+                </driver>
+                <driver
+                        id="firestore-ce"
+                        label="Firestore"
+                        description="Google FireStore Driver"
+                        iconBig="icons/firestore_pro_icon.png"
+                        supportsDistributedMode="false"
+                        categories="nosql,bigdata,document,gcp">
+                    <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.firestore.reason"/>
+                </driver>
+                <driver
+                        id="couchbase-ce"
+                        label="Couchbase"
+                        description="Couchbase Driver"
+                        iconBig="icons/couchbase_pro_icon.png"
+                        supportsDistributedMode="false"
+                        categories="nosql">
+                    <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.couchbase.reason"/>
+                </driver>
+                <driver
+                        id="redis-ce"
+                        label="Redis"
+                        description="Redis Driver"
+                        iconBig="icons/redis_pro_icon.png"
+                        supportsDistributedMode="false"
+                        categories="nosql,keyvalue">
+                    <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.redis.reason"/>
+                </driver>
+                <driver
+                        id="timestream-ce"
+                        label="Timestream"
+                        description="AWS Timestream Driver"
+                        iconBig="icons/timestream_pro_icon.png"
+                        supportsDistributedMode="false"
+                        categories="nosql,timeseries,aws">
+                    <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.timestream.reason"/>
+                </driver>
             </drivers>
 
         </datasource>

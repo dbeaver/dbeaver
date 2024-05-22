@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ui;
 
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.jkiss.code.Nullable;
 
 /**
  * ICompositeDialogPageContainer
@@ -26,4 +27,6 @@ public interface ICompositeDialogPageContainer extends IDialogPageProvider {
 
     void showSubPage(IDialogPage subPage);
 
+    @Nullable
+    IDialogPage getCurrentSubPage();
 }

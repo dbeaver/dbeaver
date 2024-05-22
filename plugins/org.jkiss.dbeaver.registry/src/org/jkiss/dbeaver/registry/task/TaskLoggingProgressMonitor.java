@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 public class TaskLoggingProgressMonitor extends ProxyProgressMonitor {
 
     private static final Log log = Log.getLog(TaskLoggingProgressMonitor.class);
-
     DBTTask task;
 
     public TaskLoggingProgressMonitor(DBRProgressMonitor monitor, DBTTask task) {
@@ -47,4 +46,5 @@ public class TaskLoggingProgressMonitor extends ProxyProgressMonitor {
     public DBTTask getTask() {
         return task;
     }
+
 }

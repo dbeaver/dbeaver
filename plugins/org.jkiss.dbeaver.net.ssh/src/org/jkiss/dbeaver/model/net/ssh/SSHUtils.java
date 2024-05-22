@@ -278,7 +278,7 @@ public class SSHUtils {
                     if (validate && privKeyValue == null) {
                         throw new DBException(kind.formatErrorMessage("private key is not specified"));
                     }
-                    yield new SSHAuthConfiguration.KeyData(CommonUtils.notEmpty(privKeyValue), password, savePassword);
+                    yield new SSHAuthConfiguration.KeyData(trimLinesInKeyData(CommonUtils.notEmpty(privKeyValue)), password, savePassword);
                 } else {
                     if (validate) {
                         validatePathAndEnsureExists(kind, path);
@@ -291,6 +291,21 @@ public class SSHUtils {
         };
 
         return new SSHHostConfiguration(username, hostname, port, auth);
+    }
+
+    /**
+     * Trims each lines in provided key data.
+     * BouncyCastle doesn't trim the last line of key data from version 1.78,
+     * which means that keys that contain leading whitespaces
+     * in the last line are invalid.
+     */
+    @NotNull
+    public static String trimLinesInKeyData(@NotNull String keyValue) {
+        String[] lines = keyValue.split("\\n");
+        for (int i = 0; i < lines.length; i++) {
+            lines[i] = lines[i].trim();
+        }
+        return String.join("\n", lines);
     }
 
     public static void saveHostConfigurations(

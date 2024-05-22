@@ -19,11 +19,15 @@ package org.jkiss.dbeaver.ui.app.standalone;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.preferences.DefaultScope;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.jface.preference.PreferenceManager;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.ImageRegistry;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.*;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
@@ -44,6 +48,7 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreFeatures;
+import org.jkiss.dbeaver.core.ui.services.ApplicationPolicyService;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -244,8 +249,10 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
         filterPreferencePages();
         filterWizards();
+        patchJFaceIcons();
 
-        if (!application.isDistributed()) {
+        if (!application.isDistributed() &&
+            !ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
             startVersionChecker();
         }
     }
@@ -314,6 +321,20 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             Collections.addAll(results, getAllWizards(wizardCategory.getCategories()));
         }
         return results.toArray(new IWizardDescriptor[0]);
+    }
+
+    private void patchJFaceIcons() {
+        final Map<String, ImageDescriptor> icons = Map.of(
+            Dialog.DLG_IMG_MESSAGE_INFO, DBeaverIcons.getImageDescriptor(DBIcon.SMALL_INFO),
+            Dialog.DLG_IMG_MESSAGE_WARNING, DBeaverIcons.getImageDescriptor(DBIcon.SMALL_WARNING),
+            Dialog.DLG_IMG_MESSAGE_ERROR, DBeaverIcons.getImageDescriptor(DBIcon.SMALL_ERROR)
+        );
+
+        final ImageRegistry registry = JFaceResources.getImageRegistry();
+        for (Map.Entry<String, ImageDescriptor> entry : icons.entrySet()) {
+            registry.remove(entry.getKey());
+            registry.put(entry.getKey(), entry.getValue());
+        }
     }
 
     private void startVersionChecker() {

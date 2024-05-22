@@ -211,7 +211,7 @@ public class SQLQueryTranslator implements SQLTranslator {
                     if (columnDataTypeList == null) {
                         continue;
                     }
-                    if (extendedDialect != null) {
+                    if (extendedDialect != null && expr.getOperation().equals(AlterOperation.ALTER)) {
                         expr.setOperation(AlterOperation.valueOf(extendedDialect.getAlterColumnOperation().toUpperCase()));
                         expr.hasColumn(extendedDialect.supportsAlterHasColumn());
                         defChanged = true;

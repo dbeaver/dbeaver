@@ -352,6 +352,11 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
+    public void resetAllSecrets() {
+
+    }
+
+    @Override
     public IVariableResolver getVariablesResolver(boolean actualConfig) {
         return null;
     }
@@ -446,6 +451,16 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
 
     @Override
     public void setSharedCredentials(boolean sharedCredentials) {
+
+    }
+
+    @Override
+    public boolean isSharedCredentialsSelected() {
+        return false;
+    }
+
+    @Override
+    public void setSelectedSharedCredentials(@NotNull DBSSecretValue secretValue) {
 
     }
 

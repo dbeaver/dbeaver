@@ -35,6 +35,7 @@ public class HandlerDashboardViewItem extends HandlerDashboardAbstract {
                 view.getDashboardListViewer(),
                 view.getConfigurationList(),
                 viewItem);
+            viewDialog.setModeless(true);
             viewDialog.open();
         }
     }

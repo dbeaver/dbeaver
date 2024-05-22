@@ -156,15 +156,13 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
         final DBCExecutionContext executionContext = context.getExecutionContext();
         DBSObjectContainer mainObject = getScopeObject(context, executionContext);
 
-        final GPTModel model = getModel();
         final DAICompletionMessage metadataMessage = MetadataProcessor.INSTANCE.createMetadataMessage(
             monitor,
             context,
             mainObject,
             formatter,
-            model.isChatAPI(),
-            getMaxTokens() - AIConstants.MAX_RESPONSE_TOKENS,
-            chatCompletion
+            getInstructions(chatCompletion),
+            getMaxTokens() - AIConstants.MAX_RESPONSE_TOKENS
         );
 
         final List<DAICompletionMessage> mergedMessages = new ArrayList<>();
@@ -186,7 +184,7 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
             mainObject,
             completionText,
             formatter,
-            model.isChatAPI()
+            getModel().isChatAPI()
         );
     }
 
