@@ -180,6 +180,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.clientHomeId = clientHomeId;
     }
 
+    @Nullable
     public String getHostName() {
         return hostName;
     }
