@@ -50,6 +50,7 @@ public abstract class AbstractJob extends Job
     private volatile long cancelTimestamp = -1;
     private AbstractJob attachedJob = null;
     private boolean skipErrorOnCanceling;
+    private volatile boolean runDirectly = false;
 
     // Attached job may be used to "overwrite" current job.
     // It happens if some other AbstractJob runs in sync mode
@@ -86,6 +87,7 @@ public abstract class AbstractJob extends Job
     {
         progressMonitor = monitor;
         blockCanceled = false;
+        runDirectly = true;
         try {
             finished = false;
             IStatus result;
@@ -263,5 +265,9 @@ public abstract class AbstractJob extends Job
             }
             return Status.OK_STATUS;
         }
+    }
+
+    public boolean isRunDirectly() {
+        return runDirectly;
     }
 }

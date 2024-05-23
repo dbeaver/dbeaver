@@ -148,6 +148,9 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         if (monitor.isCanceled()) {
             return;
         }
+        if (getViewer() == null) {
+            return;
+        }
         ERDAssociation association = getAssociation();
         // Set router and initial bends
         ConnectionLayer cLayer = (ConnectionLayer) getLayer(LayerConstants.CONNECTION_LAYER);
