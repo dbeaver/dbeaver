@@ -81,6 +81,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
 
     private ImageDescriptor curImageDescriptor;
     private Button licenseButton;
+    @Nullable
     private Control databaseDocumentationInfoLabel;
 
     public IDataSourceConnectionEditorSite getSite() {
@@ -131,7 +132,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
             }
         }
 
-        if (driver != null) {
+        if (driver != null && databaseDocumentationInfoLabel != null) {
             databaseDocumentationInfoLabel.setVisible(
                 CommonUtils.isNotEmpty(driver.getDatabaseDocumentationSuffixURL()));
         }
