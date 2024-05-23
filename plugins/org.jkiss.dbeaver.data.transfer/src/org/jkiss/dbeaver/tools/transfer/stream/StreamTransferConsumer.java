@@ -1045,7 +1045,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                         case BASE64: {
                             String encodedString = Base64.encode(stream.readAllBytes());
                             if (DBConstants.TYPE_NAME_JSON.equalsIgnoreCase(typeOfOutput)) {
-                                encodedString = CommonUtils.getQuotedString(encodedString);
+                                encodedString = getQuotedString(encodedString);
                             }
                             writer.write(encodedString);
                             break;
@@ -1076,7 +1076,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                                 final byte[] bytes = buffer.toByteArray();
                                 String binaryString = dataSource.getSQLDialect().getNativeBinaryFormatter().toString(bytes, 0, bytes.length);
                                 if (DBConstants.TYPE_NAME_JSON.equalsIgnoreCase(typeOfOutput)) {
-                                    binaryString = CommonUtils.getQuotedString(binaryString);
+                                    binaryString = getQuotedString(binaryString);
                                 }
                                 writer.write(binaryString);
                                 break;
@@ -1087,7 +1087,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                             try (Reader reader = new InputStreamReader(stream, cs.getCharset())) {
                                 String string = IOUtils.readToString(reader);
                                 if (DBConstants.TYPE_NAME_JSON.equalsIgnoreCase(typeOfOutput)) {
-                                    string = CommonUtils.getQuotedString(string);
+                                    string = getQuotedString(string);
                                 }
                                 IOUtils.copyText(reader, writer);
                                 writer.write(string);
@@ -1109,6 +1109,11 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         @Override
         public String getOutputEncoding() {
             return settings == null ? StandardCharsets.UTF_8.displayName() : settings.getOutputEncoding();
+        }
+
+        @NotNull
+        private String getQuotedString(@NotNull String string) {
+            return String.format("\"%s\"", string);
         }
     }
 
