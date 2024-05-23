@@ -34,4 +34,5 @@ public class TaskConstants {
     static final String TAG_STATE = "state";
 
     static final String TAG_PARENT = "parent";
+    static final String TAG_MAX_EXEC_TIME = "maxExecutionTime";
 }

@@ -24,9 +24,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public abstract class SMSubject implements DBPNamedObject {
-
+    @NotNull
     protected final String subjectId;
     private final boolean secretStorage;
+    @NotNull
     private final Map<String, String> metaParameters = new LinkedHashMap<>();
 
     public SMSubject(
@@ -41,6 +42,7 @@ public abstract class SMSubject implements DBPNamedObject {
         }
     }
 
+    @NotNull
     public String getSubjectId() {
         return subjectId;
     }
@@ -54,8 +56,8 @@ public abstract class SMSubject implements DBPNamedObject {
         metaParameters.put(name, value);
     }
 
-    @NotNull
-    public void setMetaParameters(Map<String, String>  parameters) {
+
+    public void setMetaParameters(@NotNull Map<String, String> parameters) {
         metaParameters.clear();
         metaParameters.putAll(parameters);
     }
