@@ -1041,19 +1041,13 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 try (final InputStream stream = cs.getContentStream()) {
                     exportSite.flush();
                     final DBPDataSource dataSource = dataContainer.getDataSource();
+                    printQuoteIfIsJson(typeOfOutput);
                     switch (settings.getLobEncoding()) {
                         case BASE64: {
-                            String encodedString = Base64.encode(stream.readAllBytes());
-                            if (DBConstants.TYPE_NAME_JSON.equalsIgnoreCase(typeOfOutput)) {
-                                encodedString = getQuotedString(encodedString);
-                            }
-                            writer.write(encodedString);
+                            Base64.encode(stream, cs.getContentLength(), writer);
                             break;
                         }
                         case HEX: {
-                            if (DBConstants.TYPE_NAME_JSON.equalsIgnoreCase(typeOfOutput)) {
-                                writer.write("\"");
-                            }
                             writer.write("0x"); //$NON-NLS-1$
                             byte[] buffer = new byte[5000];
                             for (; ; ) {
@@ -1063,9 +1057,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                                 }
                                 GeneralUtils.writeBytesAsHex(writer, buffer, 0, count);
                             }
-                            if (DBConstants.TYPE_NAME_JSON.equalsIgnoreCase(typeOfOutput)) {
-                                writer.write("\"");
-                            }
                             break;
                         }
                         case NATIVE: {
@@ -1074,10 +1065,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                                 IOUtils.copyStream(stream, buffer);
 
                                 final byte[] bytes = buffer.toByteArray();
-                                String binaryString = dataSource.getSQLDialect().getNativeBinaryFormatter().toString(bytes, 0, bytes.length);
-                                if (DBConstants.TYPE_NAME_JSON.equalsIgnoreCase(typeOfOutput)) {
-                                    binaryString = getQuotedString(binaryString);
-                                }
+                                final String binaryString = dataSource.getSQLDialect().getNativeBinaryFormatter().toString(bytes, 0, bytes.length);
                                 writer.write(binaryString);
                                 break;
                             }
@@ -1085,16 +1073,12 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                         default: {
                             // Binary stream
                             try (Reader reader = new InputStreamReader(stream, cs.getCharset())) {
-                                String string = IOUtils.readToString(reader);
-                                if (DBConstants.TYPE_NAME_JSON.equalsIgnoreCase(typeOfOutput)) {
-                                    string = getQuotedString(string);
-                                }
                                 IOUtils.copyText(reader, writer);
-                                writer.write(string);
                             }
                             break;
                         }
                     }
+                    printQuoteIfIsJson(typeOfOutput);
                     writer.flush();
                 }
             }
@@ -1111,9 +1095,10 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             return settings == null ? StandardCharsets.UTF_8.displayName() : settings.getOutputEncoding();
         }
 
-        @NotNull
-        private String getQuotedString(@NotNull String string) {
-            return String.format("\"%s\"", string);
+        private void printQuoteIfIsJson(@Nullable String typeOfOutput) {
+            if (DBConstants.TYPE_NAME_JSON.equalsIgnoreCase(typeOfOutput)) {
+                writer.write("\"");
+            }
         }
     }
 

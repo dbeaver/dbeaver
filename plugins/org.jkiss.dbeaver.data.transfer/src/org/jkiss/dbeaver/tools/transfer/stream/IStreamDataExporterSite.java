@@ -53,7 +53,7 @@ public interface IStreamDataExporterSite {
 
     void writeBinaryData(@NotNull DBDContentStorage cs) throws IOException;
 
-    void writeBinaryData(@NotNull DBDContentStorage cs, String typeOfOutput) throws IOException;
+    void writeBinaryData(@NotNull DBDContentStorage cs, @Nullable String typeOfOutput) throws IOException;
 
     @NotNull
     String getOutputEncoding();
