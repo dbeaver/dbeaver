@@ -57,7 +57,8 @@ public abstract class PostgreViewBase extends PostgreTableReal implements DBSVie
 
     public PostgreViewBase(
         PostgreSchema catalog,
-        ResultSet dbResult) {
+        ResultSet dbResult
+    ) {
         super(catalog, dbResult);
     }
 
