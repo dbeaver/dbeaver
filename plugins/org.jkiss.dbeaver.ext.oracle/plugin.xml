@@ -368,6 +368,7 @@
                     icon="icons/oracle_icon.png"
                     iconBig="icons/oracle_icon_big.png"
                     propertiesURL="https://docs.oracle.com/cd/B19306_01/java.102/b14355/urls.htm#i1070726"
+                    databaseDocumentationSuffixURL="Oracle"
                     description="%driver.oracle.description"
                     supportedConfigurationTypes="MANUAL,URL"
                     promoted="1"

@@ -91,6 +91,7 @@ public class SQLQueryJob extends DataSourceJob
     private static final Log log = Log.getLog(SQLQueryJob.class);
 
     public static final Object STATS_RESULTS = new Object();
+    private static final int MAX_QUERY_PREVIEW_LENGTH = 8192;
 
     private final DBSDataContainer dataContainer;
     private final List<SQLScriptElement> queries;
@@ -1038,7 +1039,13 @@ public class SQLQueryJob extends DataSourceJob
                             ((GridData) dialogArea.getLayoutData()).grabExcessVerticalSpace = false;
                         }
                         Text messageText = new Text(parent, SWT.BORDER | SWT.MULTI | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
-                        messageText.setText(query.getText());
+                        String text = query.getText();
+                        if (text.length() > MAX_QUERY_PREVIEW_LENGTH) {
+                            // Truncate string. Too big strings may freeze UI
+                            text = CommonUtils.truncateString(text, MAX_QUERY_PREVIEW_LENGTH) +
+                                "... (truncated " + (text.length() - MAX_QUERY_PREVIEW_LENGTH) + " characters)";
+                        }
+                        messageText.setText(text);
                         GridData gd = new GridData(GridData.FILL_BOTH);
                         gd.heightHint = UIUtils.getFontHeight(messageText) * 4 + 10;
                         gd.horizontalSpan = 2;

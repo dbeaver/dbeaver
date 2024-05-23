@@ -272,7 +272,9 @@ class GridCellRenderer extends AbstractRenderer {
             Rectangle imageBounds;
             if (isToggle) {
                 String cellText = grid.getCellText(cellInfo.text);
-                Point textSize = grid.sizingGC.textExtent(cellText);
+                GC sizingGC = new GC(grid);
+                Point textSize = sizingGC.textExtent(cellText);
+                sizingGC.dispose();
                 imageBounds = new Rectangle(0, 0, textSize.x, textSize.y);
             } else {
                 DBPImage cellImage = cellInfo.image;
