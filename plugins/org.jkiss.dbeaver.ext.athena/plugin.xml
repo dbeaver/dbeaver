@@ -31,6 +31,7 @@
                         category="AWS"
                         webURL="https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html"
                         propertiesURL="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC-2.0.25.1001/doc/Simba+Athena+JDBC+Connector+Install+and+Configuration+Guide.pdf"
+                        databaseDocumentationSuffixURL="Database-driver-Amazon-Athena"
                         categories="bigdata,aws"
                         singleConnection="true">
                     <replace provider="generic" driver="aws_athena_42"/>

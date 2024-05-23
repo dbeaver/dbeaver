@@ -207,7 +207,7 @@ public class SQLDocumentSyntaxContext {
                     keyOffsetsToRemove = ListNode.push(keyOffsetsToRemove, currOffset);
                     this.forEachListener(l -> l.onScriptItemInvalidated(currItem));
                     lastAffectedOffset = currOffset + currItem.length();
-                } else if (it.prev()) {
+                } else if (it.prev() && it.getCurrValue() != null) {
                     currOffset = it.getCurrOffset();
                     SQLDocumentScriptItemSyntaxContext currItem2 = it.getCurrValue();
                     if (currOffset <= offset && currOffset + currItem2.length() > offset) {
@@ -218,7 +218,7 @@ public class SQLDocumentSyntaxContext {
                 } else {
                     lastAffectedOffset = offset + oldLength;
                 }
-                while (it.next() && (delta < 0 || lastAffectedOffset <= (offset + oldLength))) {
+                while (it.next() && it.getCurrValue() != null && (delta < 0 || lastAffectedOffset <= (offset + oldLength))) {
                     currOffset = it.getCurrOffset();
                     SQLDocumentScriptItemSyntaxContext currItem3 = it.getCurrValue();
                     keyOffsetsToRemove = ListNode.push(keyOffsetsToRemove, currOffset);
@@ -249,7 +249,7 @@ public class SQLDocumentSyntaxContext {
                 affectedRegion = new Region(scriptItem.offset, scriptItem.item.length());
             } else {
                 NodesIterator<SQLDocumentScriptItemSyntaxContext> it = this.scriptItems.nodesIteratorAt(offset);
-                int start = it.prev() ? it.getCurrOffset() + it.getCurrValue().length() : 0;
+                int start = it.prev() && it.getCurrValue() != null ? it.getCurrOffset() + it.getCurrValue().length() : 0;
                 int length = it.next() ? (it.getCurrOffset() - start) : Integer.MAX_VALUE;
                 affectedRegion = new Region(start, length);
             }
@@ -289,7 +289,7 @@ public class SQLDocumentSyntaxContext {
             keyOffsetsToRemove = ListNode.push(keyOffsetsToRemove, off1);
             this.forEachListener(l -> l.onScriptItemInvalidated(it1.getCurrValue()));
         }
-        while (it1.next() && (off1 = it1.getCurrOffset()) + it1.getCurrValue().length() < rangeStart) {
+        while (it1.next() && it1.getCurrValue() != null && (off1 = it1.getCurrOffset()) + it1.getCurrValue().length() < rangeStart) {
             keyOffsetsToRemove = ListNode.push(keyOffsetsToRemove, off1);
             this.forEachListener(l -> l.onScriptItemInvalidated(it1.getCurrValue()));
         }
@@ -301,7 +301,7 @@ public class SQLDocumentSyntaxContext {
             keyOffsetsToRemove = ListNode.push(keyOffsetsToRemove, off2);
             this.forEachListener(l -> l.onScriptItemInvalidated(it2.getCurrValue()));
         }
-        while (it2.prev() && (off2 = it2.getCurrOffset()) > rangeEnd) {
+        while (it2.prev() && it2.getCurrValue() != null && (off2 = it2.getCurrOffset()) > rangeEnd) {
             keyOffsetsToRemove = ListNode.push(keyOffsetsToRemove, off2);
             this.forEachListener(l -> l.onScriptItemInvalidated(it2.getCurrValue()));
         }

@@ -584,6 +584,7 @@
                     sampleURL="jdbc:teradata://{host}/DATABASE={database},DBS_PORT={port}"
                     defaultPort="1025"
                     webURL="https://downloads.teradata.com/download/connectivity/jdbc-driver"
+                    databaseDocumentationSuffixURL="Database-driver-Teradata"
                     description="Teradata JDBC Type 4 driver"
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,analytic">
@@ -720,6 +721,7 @@
                     sampleURL="jdbc:netezza://{host}:{port}/{database}"
                     defaultPort="5480"
                     webURL=""
+                    databaseDocumentationSuffixURL="Database-driver-Netezza"
                     description="Netezza database driver"
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,analytic">
@@ -1022,6 +1024,7 @@
                     description="Yandex ClickHouse"
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/yandex/clickhouse-jdbc"
+                    databaseDocumentationSuffixURL="Clickhouse"
                     categories="sql,analytic,columns">
                     <file type="jar" path="maven:/ru.yandex.clickhouse:clickhouse-jdbc:RELEASE[0.2.6]" bundle="!drivers.clickhouse"/>
                     <file type="jar" path="drivers/clickhouse" bundle="drivers.clickhouse"/>
@@ -1425,6 +1428,7 @@
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                         defaultPort="3306"
                         webURL="https://www.mysql.com/products/connector/"
+                        databaseDocumentationSuffixURL="Database-driver-MySQL"
                         supportedConfigurationTypes="MANUAL,URL"
                         description="Driver for MySQL (4.x and earlier)">
                     <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[5.1.49]"/>
@@ -1528,6 +1532,7 @@
                         supportedConfigurationTypes="MANUAL,URL"
                         defaultPort="50000"
                         webURL="https://www.ibm.com/software/data/db2/express/download.html"
+                        databaseDocumentationSuffixURL="Database-driver-IBM-Db2"
                         description="DB2 LUW driver for older DB2 versions (8.x)">
                     <replace provider="generic" driver="db2"/>
 
@@ -1681,7 +1686,7 @@
                         description="Jennifer JDBC driver"
                         webURL="https://www.jennifersoft.com"
                         categories="sql">
-                    <file type="jar" path="https://github.com/jennifersoft/jennifer5-jdbc-driver/raw/main/dist/jennifer-jdbc-5.5.3.2.jar"/>
+                    <file type="jar" path="https://github.com/jennifersoft/jennifer5-jdbc-driver/blob/main/dist/5.6.0.5/jennifer-jdbc-5.6.0.5.zip"/>
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-indexes" value="false"/>
                     <parameter name="omit-catalog" value="true"/>
@@ -1700,6 +1705,7 @@
                         defaultDatabase="https://login.salesforce.com"
                         description="Salesforce Data Cloud JDBC driver"
                         webURL="https://github.com/forcedotcom/Salesforce-CDP-jdbc"
+                        databaseDocumentationSuffixURL="Database-driver-Salesforce"
                         categories="sql">
                     <replace provider="generic" driver="salesforce_jdbc"/>
                     <file type="jar" path="https://github.com/forcedotcom/Salesforce-CDP-jdbc/releases/download/release_2024.4B/Salesforce-cdp-1.19.4.jar" bundle="!drivers.salesforce"/>
@@ -1718,6 +1724,7 @@
                         defaultPort="5439"
                         description="%driver.redshift.description"
                         webURL="http://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
+                        databaseDocumentationSuffixURL="Database-driver-Amazon-Redshift"
                         categories="sql,analytic,cloud"/>
                 <driver
                         id="aws_redshift_42"

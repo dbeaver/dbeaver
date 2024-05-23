@@ -557,29 +557,21 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             final Throwable cause = GeneralUtils.getRootCause(e);
             final StackTraceElement element = cause.getStackTrace()[0];
 
-            if ("sun.security.util.DerValue".equals(element.getClassName())) { //$NON-NLS-1$
-                final DBWHandlerConfiguration handler = Objects.requireNonNull(conConfig.getHandler(PostgreConstants.HANDLER_SSL));
-                final Path dst;
-
+            final DBWHandlerConfiguration handler = conConfig.getHandler(PostgreConstants.HANDLER_SSL);
+            if ("sun.security.util.DerValue".equals(element.getClassName()) && handler != null) { //$NON-NLS-1$
                 try {
-                    dst = DBWorkbench.getPlatform().getTempFolder(monitor, "ssl").resolve(container.getId() + ".pk8");
-                } catch (IOException ex) {
-                    log.error("Error creating temporary SSL key", ex);
-                    throw e;
-                }
+                    final Path dst = DBWorkbench.getPlatform().getTempFolder(monitor, "ssl").resolve(container.getId() + ".pk8");
+                    if (SSLHandlerTrustStoreImpl.loadDerFromPem(handler, dst)) {
+                        // Unfortunately, we can't delete the temp file here.
+                        // The chain is built asynchronously by the driver, and we don't know at which moment in time it will happen.
+                        // It will still be deleted during shutdown.
 
-                try {
-                    SSLHandlerTrustStoreImpl.loadDerFromPem(handler, dst);
+                        return this.openConnection(monitor, context, purpose);
+                    }
                 } catch (IOException ex) {
                     log.error("Error converting SSL key", ex);
                     throw e;
                 }
-
-                // Unfortunately, we can't delete the temp file here.
-                // The chain is built asynchronously by the driver, and we don't know at which moment in time it will happen.
-                // It will still be deleted during shutdown.
-
-                return openConnection(monitor, context, purpose);
             }
 
             throw e;

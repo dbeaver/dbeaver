@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.lsm.test;
 
 import org.antlr.v4.runtime.misc.Interval;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.OffsetKeyedTreeMap;
 import org.jkiss.dbeaver.model.stm.STMUtils;
 import org.junit.Assert;
@@ -267,6 +268,7 @@ public class OffsetKeyedTreeMapTest {
                     }
                 }
 
+                @Nullable
                 @Override
                 public T getCurrValue() {
                     return this.index >= 0 && this.index < list.size() ? list.get(this.index).data : null;

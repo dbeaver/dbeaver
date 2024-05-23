@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.registry.task;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonWriter;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -47,6 +49,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * TaskManagerImpl
@@ -64,6 +67,7 @@ public class TaskManagerImpl implements DBTTaskManager {
     final SimpleDateFormat systemDateFormat;
 
     private final Set<TaskRunJob> runningTasks = Collections.synchronizedSet(new HashSet<>());
+    private Job serviceJob;
     private final BaseProjectImpl projectMetadata;
     private final List<TaskImpl> tasks = new ArrayList<>();
     private final List<TaskFolderImpl> tasksFolders = new ArrayList<>();
@@ -308,15 +312,22 @@ public class TaskManagerImpl implements DBTTaskManager {
     @Override
     public DBTTaskRunStatus runTask(@NotNull DBRProgressMonitor monitor, @NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener) throws DBException {
         final TaskRunJob job = createJob((TaskImpl) task, listener);
+        if (serviceJob == null) {
+            serviceJob = new ServiceJob();
+            serviceJob.schedule();
+        }
+        runningTasks.add(job);
         final IStatus result = job.runDirectly(monitor);
         final Throwable error = result.getException();
         if (error != null) {
+            runningTasks.remove(job);
             if (error instanceof DBException e) {
                 throw e;
             } else {
                 throw new DBException("Error executing task", error);
             }
         }
+        runningTasks.remove(job);
         return job.getTaskRunStatus();
     }
 
@@ -325,9 +336,13 @@ public class TaskManagerImpl implements DBTTaskManager {
     public TaskRunJob scheduleTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener) {
         final TaskRunJob runJob = createJob((TaskImpl) task, listener);
         runJob.schedule();
+        if (serviceJob == null) {
+            serviceJob = new ServiceJob();
+            serviceJob.schedule();
+        }
         return runJob;
     }
-
+ 
     @NotNull
     private TaskRunJob createJob(@NotNull TaskImpl task, @NotNull DBTTaskExecutionListener listener) {
         TaskRunJob runJob = new TaskRunJob(task, Locale.getDefault(), listener);
@@ -394,6 +409,7 @@ public class TaskManagerImpl implements DBTTaskManager {
                     String taskFolderName = JSONUtils.getString(taskJSON, TaskConstants.TAG_TASK_FOLDER);
                     Date createTime = systemDateFormat.parse(JSONUtils.getString(taskJSON, TaskConstants.TAG_CREATE_TIME));
                     Date updateTime = systemDateFormat.parse(JSONUtils.getString(taskJSON, TaskConstants.TAG_UPDATE_TIME));
+                    int maxExecutionTime = JSONUtils.getInteger(taskJSON, TaskConstants.TAG_MAX_EXEC_TIME);
                     Map<String, Object> state = JSONUtils.getObject(taskJSON, TaskConstants.TAG_STATE);
 
                     DBTTaskType taskDescriptor = getRegistry().getTaskType(task);
@@ -413,6 +429,7 @@ public class TaskManagerImpl implements DBTTaskManager {
                         taskFolder,
                         state
                     );
+                    taskConfig.setMaxExecutionTime(maxExecutionTime);
                     if (taskFolder != null) {
                         taskFolder.addTaskToFolder(taskConfig);
                         if (!tasksFolders.contains(taskFolder)) {
@@ -545,9 +562,34 @@ public class TaskManagerImpl implements DBTTaskManager {
             JSONUtils.field(jsonWriter, TaskConstants.TAG_CREATE_TIME, systemDateFormat.format(task.getCreateTime()));
             JSONUtils.field(jsonWriter, TaskConstants.TAG_UPDATE_TIME, systemDateFormat.format(task.getUpdateTime()));
             JSONUtils.serializeProperties(jsonWriter, TaskConstants.TAG_STATE, task.getProperties());
+            if (task.getMaxExecutionTime() > 0) {
+                JSONUtils.field(jsonWriter, TaskConstants.TAG_MAX_EXEC_TIME, task.getMaxExecutionTime());
+            }
             jsonWriter.endObject();
         }
         jsonWriter.endObject();
+    }
+
+    private class ServiceJob extends Job {
+        private static final int TASK_SLEEP_TIME = 1000;
+
+        public ServiceJob() {
+            super("Task canceling job");
+            setSystem(true);
+        }
+
+        @Override
+        protected IStatus run(IProgressMonitor monitor) {
+            CopyOnWriteArraySet<TaskRunJob> copyOfRunningTasks = new CopyOnWriteArraySet<>(runningTasks);
+            for (TaskRunJob taskJob : copyOfRunningTasks) {
+                if (taskJob.isFinished() || taskJob.isCanceled()) {
+                    continue;
+                }
+                taskJob.cancelByTimeReached();
+            }
+            schedule(TASK_SLEEP_TIME);
+            return Status.OK_STATUS;
+        }
     }
 
 }

@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
 import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
 import org.jkiss.dbeaver.ui.dialogs.IConnectionWizard;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
+import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -80,6 +81,8 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
 
     private ImageDescriptor curImageDescriptor;
     private Button licenseButton;
+    @Nullable
+    private Control databaseDocumentationInfoLabel;
 
     public IDataSourceConnectionEditorSite getSite() {
         return site;
@@ -127,6 +130,11 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
             } else {
                 variablesHintLabel.setResolver(null);
             }
+        }
+
+        if (driver != null && databaseDocumentationInfoLabel != null) {
+            databaseDocumentationInfoLabel.setVisible(
+                CommonUtils.isNotEmpty(driver.getDatabaseDocumentationSuffixURL()));
         }
 
         if (driverSubstitutionCombo != null) {
@@ -189,19 +197,25 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
                 UIConnectionMessages.dialog_connection_edit_connection_settings_variables_hint_label,
                 DBPConnectionConfiguration.INTERNAL_CONNECT_VARIABLES,
                 false);
-            ((GridData)variablesHintLabel.getInfoLabel().getLayoutData()).horizontalSpan = site.isNew() ? 4 : 5;
+            ((GridData) variablesHintLabel.getInfoLabel().getLayoutData()).horizontalSpan = 2;
         } else {
-            UIUtils.createEmptyLabel(panel, 5, 1);
+            UIUtils.createFormPlaceholder(panel, 2, 1);
         }
 
+        formDatabaseDocumentationInfoLabel(panel);
+
         if (site.isNew()) {
-            Button advSettingsButton = UIUtils.createDialogButton(panel, UIConnectionMessages.dialog_connection_edit_wizard_conn_conf_general_link, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    site.openSettingsPage("ConnectionPageGeneral");
-                }
-            });
+            Button advSettingsButton = UIUtils.createDialogButton(panel,
+                UIConnectionMessages.dialog_connection_edit_wizard_conn_conf_general_link,
+                new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        site.openSettingsPage("ConnectionPageGeneral");
+                    }
+                });
             advSettingsButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        } else {
+            UIUtils.createEmptyLabel(panel, 1, 1);
         }
 
         Label divLabel = new Label(panel, SWT.SEPARATOR | SWT.HORIZONTAL);
@@ -256,6 +270,21 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
                 licenseButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             }
         }
+    }
+
+    private void formDatabaseDocumentationInfoLabel(Composite panel) {
+        databaseDocumentationInfoLabel = UIUtils.createInfoLabel(
+            panel,
+            UIConnectionMessages.dialog_connection_database_documentation,
+            () -> {
+                String databaseDocumentationSuffixURL = site.getDriver().getDatabaseDocumentationSuffixURL();
+                ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(databaseDocumentationSuffixURL));
+            });
+        databaseDocumentationInfoLabel.setToolTipText(
+            UIConnectionMessages.dialog_connection_database_documentation);
+        databaseDocumentationInfoLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        databaseDocumentationInfoLabel.setVisible(CommonUtils.isNotEmpty(
+            site.getDriver().getDatabaseDocumentationSuffixURL()));
     }
 
     protected void updateDriverInfo(DBPDriver driver) {
