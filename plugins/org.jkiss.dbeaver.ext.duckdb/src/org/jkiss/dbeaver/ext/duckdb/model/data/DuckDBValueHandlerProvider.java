@@ -25,14 +25,14 @@ import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.ArrayUtils;
 
-public class DuckDbValueHandlerProvider implements DBDValueHandlerProvider {
+public class DuckDBValueHandlerProvider implements DBDValueHandlerProvider {
 
     @Nullable
     @Override
     public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences, DBSTypedObject typedObject) {
 
-        if (ArrayUtils.contains(DuckDbGeometryValueHandler.GEOMETRY_TYPES, typedObject.getTypeName())) {
-            return DuckDbGeometryValueHandler.INSTANCE;
+        if (ArrayUtils.contains(DuckDBGeometryValueHandler.GEOMETRY_TYPES, typedObject.getTypeName())) {
+            return DuckDBGeometryValueHandler.INSTANCE;
         }
         return null;
     }

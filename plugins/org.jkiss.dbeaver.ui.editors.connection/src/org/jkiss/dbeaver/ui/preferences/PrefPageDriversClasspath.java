@@ -25,7 +25,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -180,7 +179,7 @@ public class PrefPageDriversClasspath extends AbstractPrefPage implements IWorkb
             );
 
             if (restart) {
-                UIUtils.asyncExec(() -> PlatformUI.getWorkbench().restart());
+                restartWorkbenchOnPrefChange();
             }
         }
 
