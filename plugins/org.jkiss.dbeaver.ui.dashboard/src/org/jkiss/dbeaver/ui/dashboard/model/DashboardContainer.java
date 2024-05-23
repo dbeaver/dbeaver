@@ -48,5 +48,9 @@ public interface DashboardContainer extends DBPDataSourceContainerProvider {
 
     void updateSelection();
 
+    void showChartCatalog();
+
     void saveChanges();
+
+    void hideChartCatalog();
 }

@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
@@ -62,6 +63,7 @@ public class SearchDataPage extends AbstractSearchPage {
     private static final String PROP_HISTORY = "search.data.history"; //$NON-NLS-1$
 
     private static final String PROP_SOURCES = "search.data.object-source"; //$NON-NLS-1$
+    private static final String PROP_SHOW_CONNECTED = "search.data.show-connected-only"; //$NON-NLS-1$
 
     private Combo searchText;
 
@@ -71,6 +73,7 @@ public class SearchDataPage extends AbstractSearchPage {
     private DatabaseNavigatorTree navigatorTree;
 
     private DBPProject currentProject;
+    private boolean showConnected;
 
     public SearchDataPage() {
         super("Database objects search");
@@ -80,6 +83,9 @@ public class SearchDataPage extends AbstractSearchPage {
     @Override
     public void createControl(Composite parent) {
         super.createControl(parent);
+
+        showConnected = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PROP_SHOW_CONNECTED);
+
         initializeDialogUnits(parent);
 
         Composite searchGroup = UIUtils.createComposite(parent, 1);
@@ -128,6 +134,12 @@ public class SearchDataPage extends AbstractSearchPage {
                     if (element instanceof TreeNodeSpecial) {
                         return true;
                     }
+                    if (showConnected) {
+                        if (element instanceof DBNDataSource ds && ds.getDataSource() == null ||
+                            element instanceof DBNLocalFolder lf && !lf.hasConnected()) {
+                            return false;
+                        }
+                    }
                     if (element instanceof DBNNode) {
                         if (element instanceof DBNDatabaseFolder) {
                             DBNDatabaseFolder folder = (DBNDatabaseFolder) element;
@@ -167,6 +179,17 @@ public class SearchDataPage extends AbstractSearchPage {
                 }
             });
 
+            final Button showConnectedCheck = new Button(databasesGroup, SWT.CHECK);
+            showConnectedCheck.setText(UINavigatorMessages.label_show_connected);
+            showConnectedCheck.setSelection(showConnected);
+            showConnectedCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    showConnected = showConnectedCheck.getSelection();
+                    treeViewer.refresh();
+                    DBWorkbench.getPlatform().getPreferenceStore().setValue(PROP_SHOW_CONNECTED, showConnected);
+                }
+            });
         }
 
         {

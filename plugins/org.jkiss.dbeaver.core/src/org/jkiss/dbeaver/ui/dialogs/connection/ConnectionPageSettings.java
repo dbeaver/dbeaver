@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -62,6 +63,7 @@ import org.jkiss.dbeaver.registry.DataSourceViewRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
@@ -448,11 +450,14 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                         page.createControl(panel);
                         Dialog.applyDialogFont(panel);
                         panel.layout(true, true);
+                    } catch (Throwable e) {
+                        DBWorkbench.getPlatformUI().showError("Error creating configuration page", null, e);
                     } finally {
                         panel.setRedraw(true);
                     }
                 }
                 page.setVisible(true);
+                updatePageCompletion();
             }
         }
     }
@@ -463,9 +468,57 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     }
 
     @Override
+    protected void updatePageCompletion() {
+        for (CTabItem item : tabFolder.getItems()) {
+            final IDialogPage page = (IDialogPage) item.getData();
+            final boolean complete;
+
+            if (item.getData() instanceof IWizardPage p) {
+                complete = p.isPageComplete();
+            } else if (item.getData() instanceof IDataSourceConnectionEditor p) {
+                complete = p.isComplete();
+            } else {
+                continue;
+            }
+
+            if (complete || tabFolder.getSelection() == item) {
+                item.setImage(null);
+                item.setToolTipText(page.getDescription());
+            } else {
+                item.setImage(DBeaverIcons.getImage(DBIcon.SMALL_ERROR));
+                item.setToolTipText(Objects.requireNonNullElse(page.getErrorMessage(), "Page is incomplete"));
+            }
+        }
+
+        super.updatePageCompletion();
+    }
+
+    @Override
     public boolean isPageComplete() {
+        if (subPages != null) {
+            for (IDialogPage page : subPages) {
+                if (page instanceof IWizardPage wizardPage && !wizardPage.isPageComplete()) {
+                    return false;
+                }
+                if (page instanceof IDataSourceConnectionEditor editor && !editor.isComplete()) {
+                    return false;
+                }
+            }
+        }
         return wizard.getPageSettings() != this ||
             this.connectionEditor != null && this.connectionEditor.isComplete();
+    }
+
+    @Override
+    public String getErrorMessage() {
+        final IDialogPage subPage = getCurrentSubPage();
+        if (subPage != null && subPage.getErrorMessage() != null) {
+            return subPage.getErrorMessage();
+        }
+        if (connectionEditor != null && connectionEditor.getErrorMessage() != null) {
+            return connectionEditor.getErrorMessage();
+        }
+        return super.getErrorMessage();
     }
 
     @Override
@@ -499,7 +552,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
     @Override
     public void updateButtons() {
-        getWizard().getContainer().updateButtons();
+        updatePageCompletion();
+        // getWizard().getContainer().updateButtons();
     }
 
     @Override
@@ -605,8 +659,11 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
             if (!ArrayUtils.isEmpty(subPages)) {
                 for (IDialogPage page : subPages) {
-                    if (page instanceof IDataSourceConnectionEditor) {
-                        ((IDataSourceConnectionEditor) page).setSite(this);
+                    if (page instanceof IDataSourceConnectionEditor p) {
+                        p.setSite(this);
+                    }
+                    if (page instanceof IWizardPage p) {
+                        p.setWizard(getWizard());
                     }
                 }
             }
@@ -656,6 +713,13 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 break;
             }
         }
+    }
+
+    @Override
+    @Nullable
+    public IDialogPage getCurrentSubPage() {
+        final CTabItem selection = tabFolder.getSelection();
+        return selection != null ? (IDialogPage) selection.getData() : null;
     }
 
     private class AddNetworkHandlerAction extends Action {

@@ -252,9 +252,6 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
             project = dataSourceContainer.getRegistry().getProject();
         }
         final DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
-        navigatorModel.ensureProjectLoaded(project);
-        //dataSourceContainer, project, nodePath, nodeName, activePageId, activeFolderId
-
         long connectionTimeout = dataSourceContainer.getPreferenceStore().getInt(ModelPreferences.CONNECTION_VALIDATION_TIMEOUT);
         long connectionStart = System.currentTimeMillis();
         while (!dataSourceContainer.isConnected()) {

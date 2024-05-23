@@ -207,7 +207,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
 //            query.append(", ").append(descColumns);
 //        }
         query.append("\nFROM ").append(DBUtils.getObjectFullName(getTable(), DBPEvaluationContext.DML));
-        if (valuePattern instanceof String) {
+        if (valuePattern instanceof String str && !str.isBlank()) {
             query.append("\nWHERE ");
             if (getDataKind() == DBPDataKind.STRING) {
                 final SQLExpressionFormatter caseInsensitiveFormatter = caseInsensitiveSearch
@@ -230,7 +230,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
         }
 
         try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, false)) {
-            if (valuePattern instanceof String) {
+            if (valuePattern instanceof String str && !str.isBlank()) {
                 if (getDataKind() == DBPDataKind.STRING) {
                     valueHandler.bindValueObject(session, dbStat, this, 0, "%" + valuePattern + "%");
                 } else {

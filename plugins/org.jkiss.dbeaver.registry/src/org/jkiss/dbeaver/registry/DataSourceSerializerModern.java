@@ -85,7 +85,6 @@ class DataSourceSerializerModern implements DataSourceSerializer
     private static final Gson CONFIG_GSON = new GsonBuilder()
         .setLenient()
         .serializeNulls()
-        .disableHtmlEscaping()
         .create();
     private static final Gson SECURE_GSON = new GsonBuilder()
         .setLenient()
@@ -668,7 +667,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                             dataSource.setSavePassword(true);
                         }
                         dataSource.getConnectionConfiguration().setAuthProperties(creds.getProperties());
-                        dataSource.forgetSecrets();
+                        dataSource.resetAllSecrets();
                     }
                     {
                         // Still try to read credentials directly from configuration (#6564)

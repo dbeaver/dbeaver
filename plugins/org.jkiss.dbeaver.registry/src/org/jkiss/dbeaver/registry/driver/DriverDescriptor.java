@@ -171,6 +171,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     private String webURL;
     private String propertiesWebURL;
+    private String databaseDocumentationSuffixURL;
     private DBPImage iconPlain;
     private DBPImage iconNormal;
     private DBPImage iconError;
@@ -295,6 +296,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
             this.webURL = copyFrom.webURL;
             this.propertiesWebURL = copyFrom.webURL;
+            this.databaseDocumentationSuffixURL = copyFrom.databaseDocumentationSuffixURL;
             this.embedded = copyFrom.embedded;
             this.propagateDriverProperties = copyFrom.propagateDriverProperties;
             this.singleConnection = copyFrom.singleConnection;
@@ -357,6 +359,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.origSampleURL = this.sampleURL = config.getAttribute(RegistryConstants.ATTR_SAMPLE_URL);
         this.origDialectId = this.dialectId = config.getAttribute(RegistryConstants.ATTR_DIALECT);
         this.webURL = config.getAttribute(RegistryConstants.ATTR_WEB_URL);
+        this.databaseDocumentationSuffixURL = config.getAttribute(RegistryConstants.ATTR_DATABASE_DOCUMENTATION_SUFFIX_URL);
         this.propertiesWebURL = config.getAttribute(RegistryConstants.ATTR_PROPERTIES_WEB_URL);
         this.clientRequired = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_CLIENT_REQUIRED), false);
         this.customDriverLoader = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER), false);
@@ -856,6 +859,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     @Override
     public String getPropertiesWebURL() {
         return propertiesWebURL;
+    }
+
+    @Nullable
+    @Override
+    public String getDatabaseDocumentationSuffixURL() {
+        return databaseDocumentationSuffixURL;
     }
 
     @NotNull

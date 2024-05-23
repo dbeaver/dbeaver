@@ -63,59 +63,59 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
     };
 
     public static final String[][] MYSQL_QUOTE_STRINGS = {
-            {"`", "`"},
-            {"\"", "\""},
+        {"`", "`"},
+        {"\"", "\""},
     };
 
     private static final String[] MYSQL_EXTRA_FUNCTIONS = {
-            "ADDDATE",
-            "ADDTIME",
-            "ANY_VALUE",
-            "CAST",
-            "COALESCE",
-            "COLLATION",
-            "COMPRESS",
-            "DATE_ADD",
-            "DATE_SUB",
-            "DATEDIFF",
-            "EXTRACT",
-            "FIRST_VALUE",
-            "FORMAT",
-            "FOUND_ROWS",
-            "FROM_BASE64",
-            "GET_FORMAT",
-            "GROUP_CONCAT",
-            "HOUR",
-            "DAY",
-            "IFNULL",
-            "ISNULL",
-            "LAG",
-            "LAST_VALUE",
-            "LEAD",
-            "LEAST",
-            "LENGTH",
-            "MAKEDATE",
-            "MAKETIME",
-            "MINUTE",
-            "MONTH",
-            "NULLIF",
-            "RANDOM_BYTES",
-            "REPLACE",
-            "REGEXP_LIKE",
-            "REGEXP_INSTR",
-            "REGEXP_REPLACE",
-            "REGEXP_SUBSTR",
-            "SESSION_USER",
-            "SPACE",
-            "SUBSTR",
-            "SUBTIME",
-            "TIMEDIFF",
-            "TO_BASE64",
-            "TO_SECONDS",
-            "UUID",
-            "UUID_TO_BIN",
-            "WEEKOFYEAR",
-            "YEAR"
+        "ADDDATE",
+        "ADDTIME",
+        "ANY_VALUE",
+        "CAST",
+        "COALESCE",
+        "COLLATION",
+        "COMPRESS",
+        "DATE_ADD",
+        "DATE_SUB",
+        "DATEDIFF",
+        "EXTRACT",
+        "FIRST_VALUE",
+        "FORMAT",
+        "FOUND_ROWS",
+        "FROM_BASE64",
+        "GET_FORMAT",
+        "GROUP_CONCAT",
+        "HOUR",
+        "DAY",
+        "IFNULL",
+        "ISNULL",
+        "LAG",
+        "LAST_VALUE",
+        "LEAD",
+        "LEAST",
+        "LENGTH",
+        "MAKEDATE",
+        "MAKETIME",
+        "MINUTE",
+        "MONTH",
+        "NULLIF",
+        "RANDOM_BYTES",
+        "REPLACE",
+        "REGEXP_LIKE",
+        "REGEXP_INSTR",
+        "REGEXP_REPLACE",
+        "REGEXP_SUBSTR",
+        "SESSION_USER",
+        "SPACE",
+        "SUBSTR",
+        "SUBTIME",
+        "TIMEDIFF",
+        "TO_BASE64",
+        "TO_SECONDS",
+        "UUID",
+        "UUID_TO_BIN",
+        "WEEKOFYEAR",
+        "YEAR"
     };
 
     private static final String[] MYSQL_GEOMETRY_FUNCTIONS = {
@@ -159,7 +159,7 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
         "JSON_VALID",
         "JSON_VALUE"
     };
-    
+
     private static final Pattern ONE_OR_MORE_DIGITS_PATTERN = Pattern.compile("[0-9]+");
 
     private static final String[] EXEC_KEYWORDS =  { "CALL" };
@@ -168,7 +168,7 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
     public MySQLDialect() {
         super("MySQL", "mysql");
     }
-    
+
     public MySQLDialect(String name, String id) {
         super(name, id);
     }
@@ -189,7 +189,7 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
         addFunctions(Arrays.asList(MYSQL_EXTRA_FUNCTIONS));
         addFunctions(Arrays.asList(JSON_FUNCTIONS));
     }
-    
+
     @Override
     public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         initBaseDriverSettings(session, dataSource, metaData);
@@ -203,7 +203,7 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
         this.lowerCaseTableNames = ((MySQLDataSource) dataSource).getLowerCaseTableNames();
         this.setSupportsUnquotedMixedCase(lowerCaseTableNames != 2);
     }
-    
+
     @Nullable
     @Override
     public String[][] getIdentifierQuoteStrings() {
@@ -251,7 +251,7 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
         }
         return super.mustBeQuoted(str, forceCaseSensitive);
     }
-    
+
     @NotNull
     @Override
     protected String quoteIdentifier(@NotNull String str, @NotNull String[][] quoteStrings) {

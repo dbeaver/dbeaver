@@ -31,13 +31,11 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionScope;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionSettings;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.model.struct.DBSStructContainer;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -192,42 +190,33 @@ public class ScopeSelectorControl extends Composite {
         @NotNull DBPDataSource dataSource,
         @NotNull Set<String> ids
     ) {
-        List<DBSEntity> entities = new ArrayList<>();
+        monitor.beginTask("Load custom entities", ids.size());
         try {
-            if (dataSource instanceof DBSObjectContainer) {
-                monitor.beginTask("Load custom entities", 1);
-                try {
-                    loadCheckedEntitiesById(monitor, (DBSObjectContainer) dataSource, ids, entities);
-                } finally {
-                    monitor.done();
-                }
-            }
+            return loadCheckedEntitiesById(monitor, dataSource.getContainer().getProject(), ids);
         } catch (Exception e) {
             log.error(e);
+            return List.of();
+        } finally {
+            monitor.done();
         }
-        return entities;
     }
 
-
-    private static void loadCheckedEntitiesById(
+    @NotNull
+    private static List<DBSEntity> loadCheckedEntitiesById(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBSObjectContainer container,
-        @NotNull Set<String> ids,
-        @NotNull List<DBSEntity> output
+        @NotNull DBPProject project,
+        @NotNull Set<String> ids
     ) throws DBException {
-        Collection<? extends DBSObject> children = container.getChildren(monitor);
+        final List<DBSEntity> output = new ArrayList<>();
 
-        if (children != null) {
-            for (DBSObject child : children) {
-                if (child instanceof DBSEntity) {
-                    if (ids.contains(DBUtils.getObjectFullId(child))) {
-                        output.add((DBSEntity) child);
-                    }
-                } else if (child instanceof DBSStructContainer) {
-                    loadCheckedEntitiesById(monitor, (DBSObjectContainer) child, ids, output);
-                }
+        for (String id : ids) {
+            if (DBUtils.findObjectById(monitor, project, id) instanceof DBSEntity entity) {
+                output.add(entity);
             }
+            monitor.worked(1);
         }
+
+        return output;
     }
 
     public void changeScope(@NotNull DAICompletionScope scope) {

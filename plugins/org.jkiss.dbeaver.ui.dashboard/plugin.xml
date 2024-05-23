@@ -39,13 +39,18 @@
             <commandParameter id="datasource" name="Create dashboard for active datasource" optional="true"/>
         </command>
         <command id="org.jkiss.dbeaver.ui.dashboard.delete" name="%command.org.jkiss.dbeaver.ui.dashboard.delete.name" description="%command.org.jkiss.dbeaver.ui.dashboard.delete.description" categoryId="org.jkiss.dbeaver.core.database"/>
-        <command id="org.jkiss.dbeaver.ui.dashboard.add" name="%command.org.jkiss.dbeaver.ui.dashboard.add.name" description="%command.org.jkiss.dbeaver.ui.dashboard.add.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.ui.dashboard.add" name="%command.org.jkiss.dbeaver.ui.dashboard.add.name" description="%command.org.jkiss.dbeaver.ui.dashboard.add.description" categoryId="org.jkiss.dbeaver.core.database">
+        </command>
+         <command id="org.jkiss.dbeaver.ui.dashboard.catalog.show" name="%command.org.jkiss.dbeaver.ui.dashboard.catalog.show.name" description="%command.org.jkiss.dbeaver.ui.dashboard.catalog.show.description" categoryId="org.jkiss.dbeaver.core.database">
+            <commandParameter id="toggleCatalogPanel" name="%command.org.jkiss.dbeaver.ui.dashboard.catalog.show.name" optional="true"/>
+        </command>
         <command id="org.jkiss.dbeaver.ui.dashboard.remove" name="%command.org.jkiss.dbeaver.ui.dashboard.remove.name" description="%command.org.jkiss.dbeaver.ui.dashboard.remove.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.ui.dashboard.view" name="%command.org.jkiss.dbeaver.ui.dashboard.view.name" description="%command.org.jkiss.dbeaver.ui.dashboard.view.description" categoryId="org.jkiss.dbeaver.core.database"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
         <image commandId="org.jkiss.dbeaver.ui.dashboard.open" icon="platform:/plugin/org.jkiss.dbeaver.model.dashboard/icons/dashboard.png"/>
+        <image commandId="org.jkiss.dbeaver.ui.dashboard.catalog.show" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/config_table.png"/>
         <image commandId="org.jkiss.dbeaver.ui.dashboard.delete" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/delete.png"/>
         <image commandId="org.jkiss.dbeaver.ui.dashboard.configure" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/configuration.png"/>
     </extension>
@@ -77,6 +82,11 @@
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.dashboard.add" class="org.jkiss.dbeaver.ui.dashboard.navigator.HandlerDashboardAddItem">
+            <enabledWhen>
+                <test property="org.jkiss.dbeaver.core.global.hasPermission" value="configuration-manager"/>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ui.dashboard.catalog.show" class="org.jkiss.dbeaver.ui.dashboard.navigator.HandlerDashboardShowCatalog">
             <enabledWhen>
                 <test property="org.jkiss.dbeaver.core.global.hasPermission" value="configuration-manager"/>
             </enabledWhen>
@@ -118,6 +128,10 @@
             </command>
             <separator name="actions" visible="true"/>
             <command commandId="org.jkiss.dbeaver.ui.dashboard.add" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/add.png">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.ui.dashboard.catalog.show" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/config_table.png">
+                <parameter name="toggleCatalogPanel" value="true"/>
                 <visibleWhen checkEnabled="true"/>
             </command>
             <command commandId="org.jkiss.dbeaver.ui.dashboard.remove" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/close.png">

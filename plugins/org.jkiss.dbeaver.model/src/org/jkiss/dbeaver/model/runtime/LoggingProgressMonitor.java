@@ -38,6 +38,7 @@ public class LoggingProgressMonitor extends DefaultProgressMonitor {
 
         private final Log log;
         private PrintStream out = System.out;
+        private volatile boolean isCanceled;
 
         public LoggingMonitorProxy(Log log) {
             this.log = log;
@@ -64,12 +65,12 @@ public class LoggingProgressMonitor extends DefaultProgressMonitor {
 
         @Override
         public boolean isCanceled() {
-            return false;
+            return isCanceled;
         }
 
         @Override
         public void setCanceled(boolean value) {
-
+            isCanceled = value;
         }
 
         @Override

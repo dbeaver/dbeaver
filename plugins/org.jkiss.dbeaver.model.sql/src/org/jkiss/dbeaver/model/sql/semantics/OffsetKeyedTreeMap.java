@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.sql.semantics;
 
+import org.jkiss.code.Nullable;
+
 import java.util.Iterator;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -59,17 +61,6 @@ public class OffsetKeyedTreeMap<T> {
             this.isLeft = isLeft;
         }
     }
-    
-//    private static class Subtree<T> {
-//        public final Node<T> node;
-//        public final int size;
-//        
-//        public Subtree(Node<T> node, int size) {
-//            super();
-//            this.node = node;
-//            this.size = size;
-//        }
-//    }
 
     public static class ValueAndOffset<T> {
         public final T value;
@@ -144,12 +135,6 @@ public class OffsetKeyedTreeMap<T> {
         this.size = 0;
         this.tombstonesCount = 0;
     }
-
-//    private OffsetKeyedTreeMap(Node<T> root, int size) {
-//        this.root = root;
-//        this.size = size;
-//        this.FixupRoot();
-//    }
 
     public void clear() {
         this.root = sentinel();
@@ -427,6 +412,7 @@ public class OffsetKeyedTreeMap<T> {
         NodeAndParentAtOffset<T> initialLocation = this.findImpl(position);
         return switch (this.size) {
             case 0 -> new NodesIterator<T>() {
+                @Nullable
                 @Override
                 public T getCurrValue() {
                     return null;
@@ -450,7 +436,9 @@ public class OffsetKeyedTreeMap<T> {
             case 1 -> new NodesIterator<T>() {
                 boolean beforeFirst = position < OffsetKeyedTreeMap.this.root.offset;
                 boolean afterLast = position > OffsetKeyedTreeMap.this.root.offset;
-                Node<T> theOnlyNode = OffsetKeyedTreeMap.this.root;
+                final Node<T> theOnlyNode = OffsetKeyedTreeMap.this.root;
+
+                @Nullable
                 @Override
                 public T getCurrValue() {
                     return !this.beforeFirst && !this.afterLast ? this.theOnlyNode.content : null;
@@ -496,6 +484,7 @@ public class OffsetKeyedTreeMap<T> {
                     initialLocation.node.isSentinel() ? position : position - initialLocation.node.offset
                 );
 
+                @Nullable
                 @Override
                 public T getCurrValue() {
                     return this.currentLocation.node == null ? null : this.currentLocation.node.content;
@@ -1034,14 +1023,14 @@ public class OffsetKeyedTreeMap<T> {
         }
     }
 
-    private static <T> void stringigyNode(StringBuilder sb, int depth, int offset, Node<T> node, String prefix) {
+    private static <T> void stringifyNode(StringBuilder sb, int depth, int offset, Node<T> node, String prefix) {
         sb.append(String.join("", "  ".repeat(depth))).append(prefix)
             .append("[").append(offset).append(" as ").append(node.offset).append("] ")
             .append(node.content).append("\n");
     }
 
     private void collectImpl(StringBuilder sb, int depth, int offCtx, Node<T> node, String prefix) {
-        stringigyNode(sb, depth, offCtx + node.offset, node, prefix);
+        stringifyNode(sb, depth, offCtx + node.offset, node, prefix);
         if (node.left.isNotSentinel()) {
             collectImpl(sb, depth + 1, offCtx, node.left, "L");
         }

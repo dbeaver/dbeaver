@@ -334,12 +334,12 @@ public class DriverTabbedViewer extends StructuredViewer {
         private class DriverLabelProvider extends LabelProvider implements IToolTipProvider {
             @Override
             public Image getImage(Object element) {
-                return DBeaverIcons.getImage(((DBPDriver)element).getIconBig());
+                return DBeaverIcons.getImage(((DBPDriver) element).getIconBig());
             }
 
             @Override
             public String getText(Object element) {
-                return ((DBPDriver)element).getName();
+                return ((DBPDriver) element).getName();
             }
 
             @Override

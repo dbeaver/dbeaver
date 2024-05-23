@@ -191,6 +191,7 @@ public class DBeaverLauncher {
     private static final String PRODUCT_SITE_MARKER = ".eclipseproduct"; //$NON-NLS-1$
     private static final String PRODUCT_SITE_ID = "id"; //$NON-NLS-1$
     private static final String PRODUCT_SITE_VERSION = "version"; //$NON-NLS-1$
+    private static final String PRODUCT_SNAPSHOT_VERSION = "snapshot"; //$NON-NLS-1$
 
     // constants: System property keys and/or configuration file elements
     private static final String PROP_USER_HOME = "user.home"; //$NON-NLS-1$
@@ -1777,21 +1778,33 @@ public class DBeaverLauncher {
     }
 
     /**
-     * Specific method for dbeaver products group designed to resolve product configuration location in
-     * common system place:
-     * ~/user/APP_DATA - WinOS
-     * ~/Library - MacOS
-     * ~/.local/share - Unix
+     * Specific method for Dbeaver products group to resolve product configuration
+     * location in<br> 
+     * case of portable distribution (tar/zip) location used current location:
+     * <li>./configuration</><br>
+     *  case of installation in system place:
+     * <li>~/user/APP_DATA - WinOS
+     * <li>~/Library - MacOS
+     * <li>~/.local/share - Unix
      *
      * @return url of location
      */
     private URL buildProductURL() {
-        String productConfigurationLocation;
+        try {
+            URL installationUrl = new URL(getInstallLocation(), CONFIG_DIR);
+            if (checkConfigurationLocation(installationUrl)) {
+                return installationUrl;
+            }
+        } catch (Exception e) {
+            if (debug) {
+                System.out.println("Can not read product properties. " + e.getMessage()); //$NON-NLS-1$
+            }
+        }
         String base = getWorkingDirectory(DBEAVER_DATA_FOLDER);
         try {
             String productPath = getProductProperties();
             Path basePath = Paths.get(base, DBEAVER_INSTALL_FOLDER, productPath);
-            productConfigurationLocation = basePath.toFile().getAbsolutePath();
+            String productConfigurationLocation = basePath.toFile().getAbsolutePath();
             return buildURL(productConfigurationLocation, true);
         } catch (IOException e) {
             if (debug)
@@ -1859,7 +1872,10 @@ public class DBeaverLauncher {
                 if (appId == null || appId.trim().isEmpty()) {
                     appId = ECLIPSE;
                 }
-                String appVersion = props.getProperty(PRODUCT_SITE_VERSION);
+                String appVersion = props.getProperty(PRODUCT_SNAPSHOT_VERSION);
+                if (appVersion == null || appVersion.isBlank()) {
+                    appVersion = props.getProperty(PRODUCT_SITE_VERSION);
+                }
                 if (appVersion == null || appVersion.trim().isEmpty()) {
                     appVersion = ""; //$NON-NLS-1$
                 }
