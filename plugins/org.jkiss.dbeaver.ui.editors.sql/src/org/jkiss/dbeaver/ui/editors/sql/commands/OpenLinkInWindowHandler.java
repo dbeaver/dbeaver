@@ -29,8 +29,11 @@ import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.awt.*;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 public class OpenLinkInWindowHandler extends AbstractHandler implements IElementUpdater {
@@ -47,15 +50,15 @@ public class OpenLinkInWindowHandler extends AbstractHandler implements IElement
         }
 
         ISelection selection = editor.getSelectionProvider().getSelection();
-        if (isSelectedTextNullOrEmpty(selection)) {
+        if (!(selection instanceof TextSelection textSelection) || isSelectedTextNullOrEmpty(selection)) {
             DBWorkbench.getPlatformUI().showError(TITLE, "No text was selected");
             return null;
         }
 
-        TextSelection textSelection = (TextSelection) selection;
-        String googleLink = SEARCH_WEB_ADDRESS_PREFIX + textSelection.getText().replaceAll(" ", "%20").trim();
+        String googleLink = textSelection.getText().trim();
+        googleLink = URLEncoder.encode(googleLink, StandardCharsets.UTF_8);
         if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-            ShellUtils.launchProgram(googleLink);
+            ShellUtils.launchProgram(SEARCH_WEB_ADDRESS_PREFIX + googleLink);
         } else {
             DBWorkbench.getPlatformUI().showError(TITLE, "Desktop is not supported.");
         }
@@ -63,17 +66,11 @@ public class OpenLinkInWindowHandler extends AbstractHandler implements IElement
     }
     
     private boolean isSelectedTextNullOrEmpty(ISelection selection) {
-        if (selection == null) {
+        if (selection == null || selection.isEmpty() || !(selection instanceof TextSelection textSelection)) {
             return true;
         }
         
-        if (selection.isEmpty() ||  !(selection instanceof TextSelection)) {
-            return true;
-        }
-        
-        TextSelection textSelection = (TextSelection)selection;
-        String selectedText = textSelection.getText();
-        return selectedText == "" || selectedText.isEmpty();
+        return CommonUtils.isEmpty(textSelection.getText());
     }
     
     @Override
