@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
+import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCContentValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.Types;
@@ -65,6 +66,8 @@ public class OracleValueHandlerProvider implements DBDValueHandlerProvider {
                 return OracleBFILEValueHandler.INSTANCE;
             case OracleConstants.TYPE_NAME_REFCURSOR:
                 return OracleRefCursorValueHandler.INSTANCE;
+            case OracleConstants.TYPE_NAME_JSON:
+                return JDBCContentValueHandler.INSTANCE;
         }
 
         if (typeName.contains(OracleConstants.TYPE_NAME_TIMESTAMP) || typedObject.getDataKind() == DBPDataKind.DATETIME) {
