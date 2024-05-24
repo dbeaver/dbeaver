@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.ext.postgresql.model.data.type.PostgreTypeHandler;
 import org.jkiss.dbeaver.ext.postgresql.model.data.type.PostgreTypeHandlerProvider;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerCrateDB;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBECommandWithOptions;
@@ -49,6 +50,8 @@ import java.util.Map;
  */
 public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTableColumn, PostgreTableBase>
         implements DBEObjectRenamer<PostgreTableColumn>, DBPScriptObjectExt2 {
+
+    private static final String POSTGRE_SERVER_TYPE_CRATE_DB = "CrateDB"; //$NON-NLS-1$
 
     String OPTION_NON_STRUCT_CREATE_ACTION = "non.struct.create.action";
 
@@ -146,6 +149,12 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
 
     protected ColumnModifier[] getSupportedModifiers(PostgreTableColumn column, Map<String, Object> options)
     {
+        PostgreServerExtension serverType = column.getDataSource().getServerType();
+        if (serverType.getServerTypeName().equals(POSTGRE_SERVER_TYPE_CRATE_DB)) {
+            return new ColumnModifier[] {
+                DataTypeModifier, DefaultModifier
+            };
+        }
         ColumnModifier[] modifiers = {
             PostgreDataTypeModifier,
             PostgreDefaultModifier,
@@ -153,7 +162,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
             PostgreCollateModifier,
             PostgreGeneratedModifier
         };
-        if (column.getDataSource().getServerType().supportsColumnsRequiring()) {
+        if (serverType.supportsColumnsRequiring()) {
             modifiers = ArrayUtils.add(ColumnModifier.class, modifiers, NullNotNullModifier);
         }
         if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
