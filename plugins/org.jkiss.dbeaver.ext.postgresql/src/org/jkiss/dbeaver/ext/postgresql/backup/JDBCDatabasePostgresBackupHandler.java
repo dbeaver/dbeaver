@@ -86,18 +86,22 @@ public class JDBCDatabasePostgresBackupHandler implements JDBCDatabaseBackupHand
     }
 
     private static ProcessBuilder getBuilder(@NotNull InternalDatabaseConfig databaseConfig, URI uri, Path backupFile) {
-        String schemaArg = databaseConfig.getSchema() != null ? "--schema " + databaseConfig.getSchema() : "";
-
+        String databaseName = null;
+        if (uri.getAuthority() != null) {
+            databaseName = uri.getAuthority().split(":")[0];
+        }
         ProcessBuilder processBuilder = new ProcessBuilder(
             "pg_dump",
+            databaseName,
             "--host", uri.getHost(),
             "--port", String.valueOf(uri.getPort()),
             "--username", databaseConfig.getUser(),
-            schemaArg,
+            "--schema", databaseConfig.getSchema(),
             "--blobs",
             "--verbose",
             "--file", backupFile.toAbsolutePath().toString()
         );
+
 
         if (CommonUtils.isNotEmpty(databaseConfig.getPassword())) {
             processBuilder.environment().put("PGPASSWORD", databaseConfig.getPassword());
