@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.tools.transfer.stream.exporter;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -127,15 +126,15 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
                     try {
                         DBDContentStorage cs = content.getContents(session.getProgressMonitor());
                         if (cs != null) {
+                            out.write("\"");
                             if (ContentUtils.isTextContent(content)) {
                                 try (Reader in = cs.getContentReader()) {
-                                    out.write("\"");
                                     writeCellValue(in);
-                                    out.write("\"");
                                 }
                             } else {
-                                getSite().writeBinaryData(cs, DBConstants.TYPE_NAME_JSON);
+                                getSite().writeBinaryData(cs);
                             }
+                            out.write("\"");
                         }
                     } finally {
                         DTUtils.closeContents(resultSet, content);

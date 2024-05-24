@@ -1029,10 +1029,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
 
         @Override
-        public void writeBinaryData(
-            @NotNull DBDContentStorage cs,
-            @Nullable String typeOfOutput
-        ) throws IOException {
+        public void writeBinaryData(@NotNull DBDContentStorage cs) throws IOException {
             if (parameters.isBinary) {
                 try (final InputStream stream = cs.getContentStream()) {
                     IOUtils.copyStream(stream, exportSite.getOutputStream());
@@ -1041,7 +1038,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 try (final InputStream stream = cs.getContentStream()) {
                     exportSite.flush();
                     final DBPDataSource dataSource = dataContainer.getDataSource();
-                    printQuoteIfIsJson(typeOfOutput);
                     switch (settings.getLobEncoding()) {
                         case BASE64: {
                             Base64.encode(stream, cs.getContentLength(), writer);
@@ -1078,27 +1074,14 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                             break;
                         }
                     }
-                    printQuoteIfIsJson(typeOfOutput);
-                    writer.flush();
                 }
             }
-        }
-
-        @Override
-        public void writeBinaryData(@NotNull DBDContentStorage cs) throws IOException {
-            writeBinaryData(cs, null);
         }
 
         @NotNull
         @Override
         public String getOutputEncoding() {
             return settings == null ? StandardCharsets.UTF_8.displayName() : settings.getOutputEncoding();
-        }
-
-        private void printQuoteIfIsJson(@Nullable String typeOfOutput) {
-            if (DBConstants.TYPE_NAME_JSON.equalsIgnoreCase(typeOfOutput)) {
-                writer.write("\"");
-            }
         }
     }
 
