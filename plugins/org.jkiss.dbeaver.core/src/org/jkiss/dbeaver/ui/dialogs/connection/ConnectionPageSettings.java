@@ -34,7 +34,6 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
@@ -422,14 +421,12 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         item.setToolTipText(page.getDescription());
 
         if (page.getControl() == null) {
-            final ScrolledComposite sc = new ScrolledComposite(tabFolder, SWT.BORDER | SWT.H_SCROLL);
+           final ScrolledComposite sc = new ScrolledComposite(tabFolder, SWT.BORDER | SWT.H_SCROLL);
             sc.setExpandHorizontal(true);
             sc.setExpandVertical(true);
             item.setControl(sc);
         } else {
-            final Control control = page.getControl();
-            control.setParent(tabFolder);
-            item.setControl(control);
+            item.setControl(page.getControl().getParent());
         }
 
         return item;
@@ -442,7 +439,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 IDialogPage page = (IDialogPage) selection.getData();
                 if (page.getControl() == null) {
                     // Create page
-                    Composite panel = (Composite) selection.getControl();
+                    ScrolledComposite panel = (ScrolledComposite) selection.getControl();
                     panel.setRedraw(false);
                     try {
                         if (panel instanceof ScrolledComposite sc) {
@@ -456,6 +453,10 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                             Dialog.applyDialogFont(panel);
                             panel.layout(true, true);
                         }
+                        page.createControl(panel);
+                        Dialog.applyDialogFont(panel);
+                        UIUtils.configureScrolledComposite(panel, page.getControl());
+                        panel.layout(true, true);
                     } catch (Throwable e) {
                         DBWorkbench.getPlatformUI().showError("Error creating configuration page", null, e);
                     } finally {

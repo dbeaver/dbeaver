@@ -337,7 +337,11 @@ public class ERDDiagram extends ERDObject<DBSObject> implements ERDContainer {
                 break;
             }
             monitor.subTask("Load " + erdEntity.getName());
-            erdEntity.addModelRelations(monitor, this, true, false);
+            try {
+                erdEntity.addModelRelations(monitor, this, true, false);
+            } catch (Exception e) {
+                log.warn("Entity relationship can't be loaded", e);
+            }
             monitor.worked(1);
         }
         monitor.done();
