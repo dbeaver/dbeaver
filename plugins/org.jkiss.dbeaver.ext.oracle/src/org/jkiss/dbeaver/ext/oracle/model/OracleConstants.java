@@ -100,6 +100,7 @@ public class OracleConstants {
     public static final String YES = "YES";
 
     public static final String TYPE_NAME_XML = "XMLTYPE";
+    public static final String TYPE_NAME_JSON = "JSON";
     public static final String TYPE_FQ_XML = "SYS.XMLTYPE";
     public static final String TYPE_NAME_GEOMETRY = "PUBLIC.SDO_GEOMETRY";
     public static final String TYPE_FQ_GEOMETRY = "MDSYS.SDO_GEOMETRY";
