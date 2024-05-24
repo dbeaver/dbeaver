@@ -87,6 +87,7 @@ public class JDBCDatabasePostgresBackupHandler implements JDBCDatabaseBackupHand
 
     private static ProcessBuilder getBuilder(@NotNull InternalDatabaseConfig databaseConfig, URI uri, Path backupFile) {
         String databaseName = uri.getPath();
+        String schemaArg = databaseConfig.getSchema() != null ? "--schema " + databaseConfig.getSchema() : "";
         if (databaseName != null) {
             if (databaseName.startsWith("/")) {
                 databaseName = databaseName.substring(1);
@@ -103,7 +104,7 @@ public class JDBCDatabasePostgresBackupHandler implements JDBCDatabaseBackupHand
             "--host", uri.getHost(),
             "--port", String.valueOf(uri.getPort()),
             "--username", databaseConfig.getUser(),
-            "--schema", databaseConfig.getSchema(),
+            "--schema", schemaArg,
             "--blobs",
             "--verbose",
             "--file", backupFile.toAbsolutePath().toString()
