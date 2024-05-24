@@ -159,7 +159,7 @@ public class DB2ExecutionContext extends JDBCExecutionContext implements DBCExec
 
     @NotNull
     @Override
-    public DBCCachedContextDefaults getCachedDefault(){
-        return new DBCCachedContextDefaults(activeSchemaName, null);
+    public DBCCachedContextDefaults getCachedDefault() {
+        return new DBCCachedContextDefaults(null, activeSchemaName);
     }
 }

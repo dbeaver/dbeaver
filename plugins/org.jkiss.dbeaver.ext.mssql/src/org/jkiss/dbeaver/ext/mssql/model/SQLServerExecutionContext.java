@@ -238,7 +238,7 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
 
     @NotNull
     @Override
-    public DBCCachedContextDefaults getCachedDefault(){
-        return new DBCCachedContextDefaults(activeSchemaName, activeDatabaseName);
+    public DBCCachedContextDefaults getCachedDefault() {
+        return new DBCCachedContextDefaults(activeDatabaseName, activeSchemaName);
     }
 }

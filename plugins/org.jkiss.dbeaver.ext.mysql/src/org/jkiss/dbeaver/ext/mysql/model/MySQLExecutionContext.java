@@ -175,7 +175,7 @@ public class MySQLExecutionContext extends JDBCExecutionContext implements DBCEx
 
     @NotNull
     @Override
-    public DBCCachedContextDefaults getCachedDefault(){
-        return new DBCCachedContextDefaults(null, activeDatabaseName);
+    public DBCCachedContextDefaults getCachedDefault() {
+        return new DBCCachedContextDefaults(activeDatabaseName, null);
     }
 }

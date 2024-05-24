@@ -76,8 +76,8 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         return (PostgreDatabase) getOwnerInstance();
     }
 
-    @Override
     //Get value from cached, used in getCachedDefault()
+    @Override
     public PostgreSchema getDefaultSchema() {
         return getDefaultCatalog().getSchema(activeSchemaId);
     }
@@ -336,9 +336,9 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
 
     @NotNull
     @Override
-    public DBCCachedContextDefaults getCachedDefault(){
+    public DBCCachedContextDefaults getCachedDefault() {
         //Method get cashed value
-        String catalogName = (getDefaultSchema() != null) ? getDefaultSchema().getName() : null;
-        return new DBCCachedContextDefaults(catalogName, getDefaultCatalog().getName());
+        String schemaName = (getDefaultSchema() != null) ? getDefaultSchema().getName() : null;
+        return new DBCCachedContextDefaults(getOwnerInstance().getName(), schemaName);
     }
 }

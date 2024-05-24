@@ -18,5 +18,5 @@ package org.jkiss.dbeaver.model.exec;
 
 import org.jkiss.code.Nullable;
 
-public record DBCCachedContextDefaults(@Nullable String schemaName, @Nullable String catalogName) {
+public record DBCCachedContextDefaults(@Nullable String catalogName, @Nullable String schemaName) {
 }

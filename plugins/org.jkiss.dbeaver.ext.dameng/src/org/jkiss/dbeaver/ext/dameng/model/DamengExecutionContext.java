@@ -121,7 +121,7 @@ public class DamengExecutionContext extends JDBCExecutionContext implements DBCE
 
     @NotNull
     @Override
-    public DBCCachedContextDefaults getCachedDefault(){
-        return new DBCCachedContextDefaults(activeSchemaName, null);
+    public DBCCachedContextDefaults getCachedDefault() {
+        return new DBCCachedContextDefaults(null, activeSchemaName);
     }
 }
