@@ -27,16 +27,12 @@ import org.jkiss.dbeaver.ui.dashboard.view.DashboardAddItemDialog;
 
 public class HandlerDashboardAddItem extends HandlerDashboardAbstract {
 
-    private static final String PARAM_TOGGLE = "toggleCatalogPanel";
-
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         DashboardViewer view = getActiveDashboardView(event);
         if (view != null) {
             DashboardListViewer listViewer = view.getDashboardListViewer();
-            if (event.getParameter(PARAM_TOGGLE) != null) {
-                listViewer.showChartCatalog();
-            } else {
+            if (listViewer != null) {
                 DashboardAddItemDialog addDialog = new DashboardAddItemDialog(HandlerUtil.getActiveShell(event), view.getConfiguration());
                 if (addDialog.open() == IDialogConstants.OK_ID) {
                     DashboardItemConfiguration selectedDashboard = addDialog.getSelectedDashboard();

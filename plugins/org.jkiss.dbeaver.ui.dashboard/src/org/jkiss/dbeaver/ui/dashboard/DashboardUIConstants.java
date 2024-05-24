@@ -24,6 +24,7 @@ public class DashboardUIConstants {
 
     public static final String CMD_CREATE_DASHBOARD = "org.jkiss.dbeaver.ui.dashboard.create";
     public static final String CMD_ADD_DASHBOARD = "org.jkiss.dbeaver.ui.dashboard.add";
+    public static final String CMD_CATALOG_SHOW_DASHBOARD = "org.jkiss.dbeaver.ui.dashboard.catalog.show";
     public static final String CMD_REMOVE_DASHBOARD = "org.jkiss.dbeaver.ui.dashboard.remove";
     public static final String CMD_RESET_DASHBOARD = "org.jkiss.dbeaver.ui.dashboard.reset";
     public static final String CMD_VIEW_DASHBOARD = "org.jkiss.dbeaver.ui.dashboard.view";
