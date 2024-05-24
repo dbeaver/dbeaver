@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.navigator.actions;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -43,6 +44,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.Reply;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.dialogs.NavigatorNodesDeletionConfirmations;
 import org.jkiss.utils.CommonUtils;
 
@@ -209,21 +211,21 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
 
     @Override
     public void updateElement(UIElement element, Map parameters) {
-//        if (!updateUI) {
-//            return;
-//        }
-//        final ISelectionProvider selectionProvider = UIUtils.getSelectionProvider(element.getServiceLocator());
-//        if (selectionProvider != null) {
-//            ISelection selection = selectionProvider.getSelection();
-//
-//            if (selection instanceof IStructuredSelection && ((IStructuredSelection) selection).size() > 1) {
-//                element.setText(UINavigatorMessages.actions_navigator_delete_objects);
-//            } else {
-//                DBNNode node = NavigatorUtils.getSelectedNode(selection);
-//                if (node != null) {
-//                    element.setText(UINavigatorMessages.actions_navigator_delete_ + " " + node.getNodeTypeLabel()  + " '" + node.getNodeName() + "'");
-//                }
-//            }
-//        }
+        if (!updateUI) {
+            return;
+        }
+        final ISelectionProvider selectionProvider = UIUtils.getSelectionProvider(element.getServiceLocator());
+        if (selectionProvider != null) {
+            ISelection selection = selectionProvider.getSelection();
+            if (selection instanceof IStructuredSelection) {
+                List<DBNNode> nodes = NavigatorUtils.getSelectedNodes(selection);
+                for (DBNNode node : nodes) {
+                    if (!(node instanceof DBNDataSource)) {
+                        return;
+                    }
+                }
+                element.setText(UINavigatorMessages.actions_navigator_delete_ + " " + nodes.get(0).getNodeTypeLabel());
+            }
+        }
     }
 }
