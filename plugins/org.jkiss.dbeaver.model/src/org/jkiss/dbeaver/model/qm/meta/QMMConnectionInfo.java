@@ -242,10 +242,10 @@ public class QMMConnectionInfo extends QMMObject {
             DBCExecutionContextDefaults contextDefaults = statement.getSession().getExecutionContext().getContextDefaults();
             if (contextDefaults != null) {
                 if (contextDefaults.getDefaultSchema() != null) {
-                    schema = contextDefaults.getDefaultSchema().getName();
+                    schema = contextDefaults.getCachedDefault().schemaName();
                 }
                 if (contextDefaults.getDefaultCatalog() != null) {
-                    catalog = contextDefaults.getDefaultCatalog().getName();
+                    catalog = contextDefaults.getCachedDefault().catalogName();
                 }
             }
             return this.executionStack = new QMMStatementExecuteInfo(
