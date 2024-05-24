@@ -421,7 +421,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         item.setToolTipText(page.getDescription());
 
         if (page.getControl() == null) {
-            final ScrolledComposite sc = new ScrolledComposite(tabFolder, SWT.BORDER | SWT.H_SCROLL);
+            final ScrolledComposite sc = new ScrolledComposite(tabFolder, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
             sc.setExpandHorizontal(true);
             sc.setExpandVertical(true);
             item.setControl(sc);
