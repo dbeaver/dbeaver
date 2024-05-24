@@ -198,20 +198,6 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
         return getDataSource().getDefaultCatalog();
     }
 
-    @Nullable
-    public GenericCatalog getDefaultCachedCatalog() {
-        if (!CommonUtils.isEmpty(selectedEntityName)) {
-            GenericDataSource dataSource = getDataSource();
-            if (dataSource.hasCatalogs()) {
-                if (dataSource.getSelectedEntityType() == null || dataSource.getSelectedEntityType().equals(GenericConstants.ENTITY_TYPE_CATALOG) || !dataSource.hasSchemas()) {
-                    return getDataSource().getCatalogCashed(selectedEntityName);
-                }
-            }
-        }
-        return getDataSource().getDefaultCatalog();
-    }
-
-    //Get value from cached, used in getCachedDefault()
     @Override
     public GenericSchema getDefaultSchema() {
         if (!CommonUtils.isEmpty(selectedEntityName)) {
@@ -401,9 +387,6 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
     @NotNull
     @Override
     public DBCCachedContextDefaults getCachedDefault() {
-        //Method get cashed value
-        String catalogName = (getDefaultCachedCatalog() != null) ? getDefaultCachedCatalog().getName() : null;
-        String schemaName = (getDefaultSchema() != null) ? getDefaultSchema().getName() : null;
-        return new DBCCachedContextDefaults(catalogName, schemaName);
+        return new DBCCachedContextDefaults(selectedEntityName, selectedEntityName);
     }
 }
