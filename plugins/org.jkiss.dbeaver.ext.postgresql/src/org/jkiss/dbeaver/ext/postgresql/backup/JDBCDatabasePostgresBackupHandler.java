@@ -86,10 +86,17 @@ public class JDBCDatabasePostgresBackupHandler implements JDBCDatabaseBackupHand
     }
 
     private static ProcessBuilder getBuilder(@NotNull InternalDatabaseConfig databaseConfig, URI uri, Path backupFile) {
-        String databaseName = null;
-        if (uri.getAuthority() != null) {
-            databaseName = uri.getAuthority().split(":")[0];
+        String databaseName = uri.getPath();
+        if (databaseName != null) {
+            if (databaseName.startsWith("/")) {
+                databaseName = databaseName.substring(1);
+            }
+            int questionMarkIndex = databaseName.indexOf("?");
+            if (questionMarkIndex != -1) {
+                databaseName = databaseName.substring(0, questionMarkIndex);
+            }
         }
+
         ProcessBuilder processBuilder = new ProcessBuilder(
             "pg_dump",
             databaseName,
