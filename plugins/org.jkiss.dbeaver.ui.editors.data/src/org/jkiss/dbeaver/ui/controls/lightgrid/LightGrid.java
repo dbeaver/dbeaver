@@ -315,7 +315,6 @@ public abstract class LightGrid extends Canvas {
      */
     private Listener disposeListener;
 
-    final GC sizingGC;
     FontMetrics fontMetrics;
     Font normalFont;
     Font boldFont;
@@ -431,8 +430,10 @@ public abstract class LightGrid extends Canvas {
     {
         super(parent, checkStyle(style));
 
-        sizingGC = new GC(this);
+        GC sizingGC = new GC(this);
         fontMetrics = sizingGC.getFontMetrics();
+        sizingGC.dispose();
+
         normalFont = getFont();
         boldFont = UIUtils.makeBoldFont(normalFont);
         italicFont = UIUtils.modifyFont(normalFont, SWT.ITALIC);
@@ -580,6 +581,7 @@ public abstract class LightGrid extends Canvas {
         this.displayedToolTipText = null;
 
         if (refreshColumns) {
+            GC sizingGC = new GC(this);
             // Invalidate columns structure
             boolean hasChildColumns = false, hasPinnedColumns = false;
             for (Iterator<GridColumn> iter = columns.iterator(); iter.hasNext(); ) {
@@ -621,7 +623,7 @@ public abstract class LightGrid extends Canvas {
                 // Sometimes (when new grid created and filled with data very fast our client area size is zero
                 // So let's add a workaround for it and use column's width in this case
                 GridColumn column = getColumn(0);
-                int columnWidth = column.computeHeaderWidth();
+                int columnWidth = column.computeHeaderWidth(sizingGC);
                 int gridWidth = getCurrentOrLastClientArea().width - getRowHeaderWidth() - getHScrollSelectionInPixels() - getVerticalBar().getSize().x;
                 if (gridWidth > columnWidth) {
                     columnWidth = gridWidth;
@@ -630,7 +632,7 @@ public abstract class LightGrid extends Canvas {
             } else {
                 int totalWidth = 0;
                 for (GridColumn curColumn : topColumns) {
-                    curColumn.pack(false);
+                    curColumn.pack(sizingGC, false);
                     totalWidth += curColumn.getWidth();
                 }
                 if (!fitValue) {
@@ -672,6 +674,7 @@ public abstract class LightGrid extends Canvas {
                     }
                 }
             }
+            sizingGC.dispose();
         }
         // Recalculate indexes, sizes and update scrollbars
         topIndex = -1;
@@ -1977,7 +1980,7 @@ public abstract class LightGrid extends Canvas {
      * the preferred size of all the column headers and use the max.
      * @param decreaseSize
      */
-    private void computeHeaderSizes(boolean decreaseSize)
+    private void computeHeaderSizes(GC gc, boolean decreaseSize)
     {
         int oldRowHeaderWidth = rowHeaderWidth;
         // Item height
@@ -1997,7 +2000,7 @@ public abstract class LightGrid extends Canvas {
         int newRowHeaderWidth = DEFAULT_ROW_HEADER_WIDTH;
         for (int i = 0; i < gridRows.length; i++) {
             IGridRow row = gridRows[i];
-            int width = rowHeaderRenderer.computeHeaderWidth(row, row.getRowDepth());
+            int width = rowHeaderRenderer.computeHeaderWidth(gc, row, row.getRowDepth());
             newRowHeaderWidth = Math.max(newRowHeaderWidth, width);
         }
         if (newRowHeaderWidth < MIN_ROW_HEADER_WIDTH) {
@@ -3112,7 +3115,6 @@ public abstract class LightGrid extends Canvas {
 
         UIUtils.dispose(boldFont);
         UIUtils.dispose(italicFont);
-        UIUtils.dispose(sizingGC);
     }
 
     /**
@@ -3470,7 +3472,9 @@ public abstract class LightGrid extends Canvas {
         if (e.button == 1) {
 
             if (hoveringOnColumnResizer) {
-                columnBeingResized.pack(true);
+                GC gc = new GC(this);
+                columnBeingResized.pack(gc, true);
+                gc.dispose();
                 resizingColumn = false;
                 scrollValuesObsolete = true;
                 handleHoverOnColumnHeader(e.x, e.y);
@@ -4254,7 +4258,9 @@ public abstract class LightGrid extends Canvas {
 
     public void recalculateSizes(boolean decreaseSize) {
         int oldHeaderHeight = headerHeight;
-        computeHeaderSizes(decreaseSize);
+        GC gc = new GC(this);
+        computeHeaderSizes(gc, decreaseSize);
+        gc.dispose();
         if (oldHeaderHeight != headerHeight) {
             scrollValuesObsolete = true;
         }
@@ -4681,8 +4687,12 @@ public abstract class LightGrid extends Canvas {
     public void setFont(Font font)
     {
         super.setFont(font);
+
+        GC sizingGC = new GC(this);
         sizingGC.setFont(font);
         fontMetrics = sizingGC.getFontMetrics();
+        sizingGC.dispose();
+
         normalFont = font;
         UIUtils.dispose(boldFont);
         UIUtils.dispose(italicFont);
@@ -4731,7 +4741,10 @@ public abstract class LightGrid extends Canvas {
             return null;
         }
         // Show tooltip only if it's larger than column width
+        GC sizingGC = new GC(this);
         Point ttSize = sizingGC.textExtent(toolTip);
+        sizingGC.dispose();
+
         if (ttSize.x > col.getWidth() || ttSize.y > getItemHeight()) {
             int gridHeight = getBounds().height;
             if (ttSize.y > gridHeight) {
