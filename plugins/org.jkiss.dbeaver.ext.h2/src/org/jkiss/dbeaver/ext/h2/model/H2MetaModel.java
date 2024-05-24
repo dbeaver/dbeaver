@@ -119,7 +119,7 @@ public class H2MetaModel extends GenericMetaModel
             dbStat = session.prepareStatement("SELECT tc.*, tc.CONSTRAINT_NAME AS PK_NAME, ccu.COLUMN_NAME, cc.CHECK_CLAUSE AS CHECK_EXPRESSION FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc LEFT JOIN\n" +
                 "INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE ccu ON tc.CONSTRAINT_SCHEMA = ccu.CONSTRAINT_SCHEMA AND tc.CONSTRAINT_NAME = ccu.CONSTRAINT_NAME\n" +
                 "LEFT JOIN INFORMATION_SCHEMA.CHECK_CONSTRAINTS cc ON tc.CONSTRAINT_SCHEMA = cc.CONSTRAINT_SCHEMA AND tc.CONSTRAINT_NAME = cc.CONSTRAINT_NAME\n" +
-                "WHERE tc.CONSTRAINT_TYPE <> 'REFERENTIAL' AND tc.CONSTRAINT_SCHEMA = ?"
+                "WHERE tc.CONSTRAINT_TYPE NOT IN ('REFERENTIAL', 'FOREIGN KEY') AND tc.CONSTRAINT_SCHEMA = ?"
                 + (forParent != null ? "AND tc.TABLE_NAME = ?" : ""));
             dbStat.setString(1, owner.getName());
             if (forParent != null) {
