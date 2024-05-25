@@ -228,7 +228,7 @@ public class SSHTunnelImpl implements DBWTunnel {
 
         String sshRemoteHost = CommonUtils.toString(configuration.getProperty(SSHConstants.PROP_REMOTE_HOST));
         if (CommonUtils.isEmpty(sshRemoteHost)) {
-            sshRemoteHost = connectionInfo.getHostName();
+            sshRemoteHost = CommonUtils.notEmpty(connectionInfo.getHostName());
         }
 
         int sshRemotePort = configuration.getIntProperty(SSHConstants.PROP_REMOTE_PORT);
