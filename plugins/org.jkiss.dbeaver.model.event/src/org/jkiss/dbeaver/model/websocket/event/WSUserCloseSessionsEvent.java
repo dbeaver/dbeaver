@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.websocket.event;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 import java.util.List;
 
@@ -25,7 +26,11 @@ public class WSUserCloseSessionsEvent extends WSAbstractEvent {
     private final List<String> sessionIds;
 
     public WSUserCloseSessionsEvent(@NotNull List<String> sessionIds) {
-        super(WSEventType.CLOSE_USER_SESSIONS);
+        this(sessionIds, null, null);
+    }
+
+    public WSUserCloseSessionsEvent(@NotNull List<String> sessionIds, @Nullable String initiatorSessionId, @Nullable String userId) {
+        super(WSEventType.CLOSE_USER_SESSIONS, initiatorSessionId, userId);
         this.sessionIds = sessionIds;
     }
 
