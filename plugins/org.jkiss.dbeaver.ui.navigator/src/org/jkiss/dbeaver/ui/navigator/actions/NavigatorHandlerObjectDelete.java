@@ -221,7 +221,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             if (selection instanceof IStructuredSelection structuredSelection && structuredSelection.size() == 1) {
                 DBNNode node = NavigatorUtils.getSelectedNode(structuredSelection);
                 if (node != null) {
-                    element.setText(NLS.bind(UINavigatorMessages.actions_navigator_delete_, node.getNodeTypeLabel()));
+                    element.setText(NLS.bind(UINavigatorMessages.actions_navigator_delete, node.getNodeTypeLabel()));
                 }
             }
         }
