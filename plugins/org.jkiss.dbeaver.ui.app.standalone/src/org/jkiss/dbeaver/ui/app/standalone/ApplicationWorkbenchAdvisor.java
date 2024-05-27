@@ -60,6 +60,7 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIFonts;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
@@ -360,6 +361,38 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         super.postShutdown();
     }
 
+    public static void forceShutdown() {
+        cancelRunningTasks(false);
+        closeActiveTransactions(true);
+        IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
+        IWorkbenchPage workbenchPage = window.getActivePage();
+        IEditorReference[] editors = workbenchPage.getEditorReferences();
+        // Close open editors
+        for (IEditorReference editor : editors) {
+            IEditorPart editorPart = editor.getEditor(false);
+            if (editorPart != null && editorPart.getEditorInput() instanceof ContentEditorInput) {
+                workbenchPage.closeEditor(editorPart, false);
+            }
+        }
+        // Revert all open editors
+        List<IEditorPart> editorsToRevert = new ArrayList<>();
+        for (IEditorReference editor : editors) {
+            IEditorPart editorPart = editor.getEditor(false);
+            if (editorPart instanceof ISaveablePart2) {
+                editorsToRevert.add(editorPart);
+            }
+        }
+        for (IEditorPart editorPart : editorsToRevert) {
+            try {
+                EditorUtils.revertEditorChanges(editorPart);
+            } catch (Exception e) {
+                log.debug(e);
+            }
+        }
+
+        System.exit(1);
+    }
+
     private boolean saveAndCleanup() {
         if (getWorkbenchConfigurer().emergencyClosing()) {
             return true;
@@ -411,23 +444,23 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
                 }
             }
 
-            return cancelRunningTasks() && closeActiveTransactions();
+            return ApplicationWorkbenchAdvisor.cancelRunningTasks(true) && ApplicationWorkbenchAdvisor.closeActiveTransactions(false);
         } catch (Throwable e) {
             e.printStackTrace();
             return true;
         }
     }
 
-    private boolean closeActiveTransactions() {
+    private static boolean closeActiveTransactions(boolean forceRollback) {
         for (DBPDataSourceContainer dataSourceDescriptor : DataSourceRegistry.getAllDataSources()) {
-            if (!DataSourceHandler.checkAndCloseActiveTransaction(dataSourceDescriptor, false)) {
+            if (!DataSourceHandler.checkAndCloseActiveTransaction(dataSourceDescriptor, false, forceRollback)) {
                 return false;
             }
         }
         return true;
     }
 
-    private boolean cancelRunningTasks() {
+    private static boolean cancelRunningTasks(boolean confirmCancel) {
         DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
         if (activeProject == null) {
             // Probably some TE user without permissions and projects
@@ -436,7 +469,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         final DBTTaskManager manager = activeProject.getTaskManager();
 
         if (manager.hasRunningTasks()) {
-            final boolean cancel = DBWorkbench.getPlatformUI().confirmAction(
+            final boolean cancel = !confirmCancel || DBWorkbench.getPlatformUI().confirmAction(
                 CoreApplicationMessages.confirmation_cancel_database_tasks_title,
                 CoreApplicationMessages.confirmation_cancel_database_tasks_message
             );
