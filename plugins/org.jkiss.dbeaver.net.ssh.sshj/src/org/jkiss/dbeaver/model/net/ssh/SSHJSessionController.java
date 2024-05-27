@@ -76,7 +76,7 @@ public class SSHJSessionController extends AbstractSessionController<SSHJSession
         try {
             client.connect(host.hostname(), host.port());
 
-            if (auth instanceof SSHAuthConfiguration.Password password) {
+            if (auth instanceof SSHAuthConfiguration.Password password && password.password() != null) {
                 client.authPassword(host.username(), password.password());
             } else if (auth instanceof SSHAuthConfiguration.KeyFile key) {
                 if (CommonUtils.isEmpty(key.password())) {

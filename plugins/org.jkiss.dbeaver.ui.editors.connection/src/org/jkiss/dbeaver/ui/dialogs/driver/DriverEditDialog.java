@@ -419,9 +419,12 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
                 @Override
                 public String getToolTipText(Object element) {
-                    if (element instanceof DBPDriverLibrary) {
-                        Path localFile = ((DBPDriverLibrary) element).getLocalFile();
+                    if (element instanceof DBPDriverLibrary dl) {
+                        Path localFile = dl.getLocalFile();
                         return localFile == null ? "N/A" : localFile.toAbsolutePath().toString();
+                    } else if (element instanceof DriverDescriptor.DriverFileInfo dfi) {
+                        Path localFile = dfi.getFile();
+                        return localFile == null ? "N/A" : localFile.toString();
                     }
                     return super.getToolTipText(element);
                 }
@@ -573,13 +576,24 @@ public class DriverEditDialog extends HelpEnabledDialog {
         if (selectedLibrary instanceof DriverLibraryMavenArtifact) {
             editMavenArtifact();
         } else if (selectedLibrary instanceof DriverLibraryLocal) {
-            Path localFile = selectedLibrary.getLocalFile();
-            if (localFile != null) {
-                if (Files.isDirectory(localFile)) {
-                    ShellUtils.launchProgram(localFile.toAbsolutePath().toString());
-                } else {
-                    ShellUtils.showInSystemExplorer(localFile.toAbsolutePath().toString());
+            showFileInExplorer(selectedLibrary.getLocalFile());
+        } else {
+            IStructuredSelection selection = (IStructuredSelection) libTable.getSelection();
+            if (!selection.isEmpty()) {
+                Object element = selection.getFirstElement();
+                if (element instanceof DriverDescriptor.DriverFileInfo dfi) {
+                    showFileInExplorer(dfi.getFile());
                 }
+            }
+        }
+    }
+
+    private static void showFileInExplorer(Path localFile) {
+        if (localFile != null) {
+            if (Files.isDirectory(localFile)) {
+                ShellUtils.launchProgram(localFile.toAbsolutePath().toString());
+            } else {
+                ShellUtils.showInSystemExplorer(localFile.toAbsolutePath().toString());
             }
         }
     }
