@@ -51,8 +51,6 @@ import java.util.Map;
 public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTableColumn, PostgreTableBase>
         implements DBEObjectRenamer<PostgreTableColumn>, DBPScriptObjectExt2 {
 
-    private static final String POSTGRE_SERVER_TYPE_CRATE_DB = "CrateDB"; //$NON-NLS-1$
-
     String OPTION_NON_STRUCT_CREATE_ACTION = "non.struct.create.action";
 
     protected final ColumnModifier<PostgreTableColumn> PostgreDataTypeModifier = (monitor, column, sql, command) -> {
