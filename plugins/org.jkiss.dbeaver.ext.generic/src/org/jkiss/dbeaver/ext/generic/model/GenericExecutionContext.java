@@ -384,9 +384,37 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
         return null;
     }
 
+    public String getDefaultCatalogCached() {
+        if (!CommonUtils.isEmpty(selectedEntityName)) {
+            GenericDataSource dataSource = getDataSource();
+            if (dataSource.hasCatalogs()) {
+                if (dataSource.getSelectedEntityType() == null ||
+                    dataSource.getSelectedEntityType().equals(GenericConstants.ENTITY_TYPE_CATALOG) ||
+                    !dataSource.hasSchemas()) {
+                    return selectedEntityName;
+                }
+            }
+        }
+        return null;
+    }
+
+    public String getDefaultSchemaCached() {
+        if (!CommonUtils.isEmpty(selectedEntityName)) {
+            GenericDataSource dataSource = getDataSource();
+            if (!dataSource.hasCatalogs() && dataSource.hasSchemas()) {
+                if (dataSource.getSelectedEntityType() == null ||
+                    dataSource.getSelectedEntityType().equals(GenericConstants.ENTITY_TYPE_SCHEMA) ||
+                    !dataSource.hasCatalogs()) {
+                    return selectedEntityName;
+                }
+            }
+        }
+        return null;
+    }
+
     @NotNull
     @Override
     public DBCCachedContextDefaults getCachedDefault() {
-        return new DBCCachedContextDefaults(selectedEntityName, selectedEntityName);
+        return new DBCCachedContextDefaults(getDefaultCatalogCached(), getDefaultSchemaCached());
     }
 }
