@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.ext.postgresql.model.data.type.PostgreTypeHandler;
 import org.jkiss.dbeaver.ext.postgresql.model.data.type.PostgreTypeHandlerProvider;
-import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerCrateDB;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBECommandWithOptions;
