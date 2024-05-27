@@ -153,7 +153,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
             PostgreCollateModifier,
             PostgreGeneratedModifier
         };
-        if ( column.getDataSource().getServerType().supportsColumnsRequiring()) {
+        if (column.getDataSource().getServerType().supportsColumnsRequiring()) {
             modifiers = ArrayUtils.add(ColumnModifier.class, modifiers, NullNotNullModifier);
         }
         if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
