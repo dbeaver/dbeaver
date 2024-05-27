@@ -361,38 +361,6 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         super.postShutdown();
     }
 
-    public static void forceShutdown() {
-        cancelRunningTasks(false);
-        closeActiveTransactions(true);
-        IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
-        IWorkbenchPage workbenchPage = window.getActivePage();
-        IEditorReference[] editors = workbenchPage.getEditorReferences();
-        // Close open editors
-        for (IEditorReference editor : editors) {
-            IEditorPart editorPart = editor.getEditor(false);
-            if (editorPart != null && editorPart.getEditorInput() instanceof ContentEditorInput) {
-                workbenchPage.closeEditor(editorPart, false);
-            }
-        }
-        // Revert all open editors
-        List<IEditorPart> editorsToRevert = new ArrayList<>();
-        for (IEditorReference editor : editors) {
-            IEditorPart editorPart = editor.getEditor(false);
-            if (editorPart instanceof ISaveablePart2) {
-                editorsToRevert.add(editorPart);
-            }
-        }
-        for (IEditorPart editorPart : editorsToRevert) {
-            try {
-                EditorUtils.revertEditorChanges(editorPart);
-            } catch (Exception e) {
-                log.debug(e);
-            }
-        }
-
-        System.exit(1);
-    }
-
     private boolean saveAndCleanup() {
         if (getWorkbenchConfigurer().emergencyClosing()) {
             return true;
@@ -451,7 +419,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         }
     }
 
-    private static boolean closeActiveTransactions(boolean forceRollback) {
+    public static boolean closeActiveTransactions(boolean forceRollback) {
         for (DBPDataSourceContainer dataSourceDescriptor : DataSourceRegistry.getAllDataSources()) {
             if (!DataSourceHandler.checkAndCloseActiveTransaction(dataSourceDescriptor, false, forceRollback)) {
                 return false;
@@ -460,7 +428,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         return true;
     }
 
-    private static boolean cancelRunningTasks(boolean confirmCancel) {
+    public static boolean cancelRunningTasks(boolean confirmCancel) {
         DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
         if (activeProject == null) {
             // Probably some TE user without permissions and projects
