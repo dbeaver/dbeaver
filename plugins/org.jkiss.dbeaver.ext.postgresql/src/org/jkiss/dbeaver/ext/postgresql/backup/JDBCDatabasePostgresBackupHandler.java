@@ -87,7 +87,7 @@ public class JDBCDatabasePostgresBackupHandler implements JDBCDatabaseBackupHand
 
     private static ProcessBuilder getBuilder(@NotNull InternalDatabaseConfig databaseConfig, URI uri, Path backupFile) {
         String databaseName = uri.getPath();
-        String schemaArg = CommonUtils.isEmpty(databaseConfig.getSchema()) ? "" : "-n " + databaseConfig.getSchema();
+        String schemaArg = CommonUtils.isEmpty(databaseConfig.getSchema()) ? "" : "--schema " + databaseConfig.getSchema();
         if (databaseName != null) {
             if (databaseName.startsWith("/")) {
                 databaseName = databaseName.substring(1);
@@ -103,6 +103,7 @@ public class JDBCDatabasePostgresBackupHandler implements JDBCDatabaseBackupHand
             databaseName,
             "--host", uri.getHost(),
             "--port", String.valueOf(uri.getPort()),
+            "--username", databaseConfig.getUser(),
             schemaArg,
             "--blobs",
             "--verbose",
@@ -112,9 +113,6 @@ public class JDBCDatabasePostgresBackupHandler implements JDBCDatabaseBackupHand
         String backupCommand = String.join(" ", processBuilder.command());
 
         log.info("Command started: " + backupCommand);
-        if (CommonUtils.isNotEmpty(databaseConfig.getUser())) {
-            processBuilder.environment().put("PGUSER", databaseConfig.getUser());
-        }
         if (CommonUtils.isNotEmpty(databaseConfig.getPassword())) {
             processBuilder.environment().put("PGPASSWORD", databaseConfig.getPassword());
         }
