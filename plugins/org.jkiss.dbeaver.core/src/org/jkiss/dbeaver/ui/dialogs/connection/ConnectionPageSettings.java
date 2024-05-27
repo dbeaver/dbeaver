@@ -421,10 +421,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         item.setToolTipText(page.getDescription());
 
         if (page.getControl() == null) {
-            final ScrolledComposite sc = new ScrolledComposite(tabFolder, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
-            sc.setExpandHorizontal(true);
-            sc.setExpandVertical(true);
-            item.setControl(sc);
+            // TODO: We should respect pages that might not want to be scrollable (e.g. if they have their own scrollable controls)
+            item.setControl(UIUtils.createScrolledComposite(tabFolder));
         } else {
             item.setControl(page.getControl().getParent());
         }
@@ -442,17 +440,6 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                     ScrolledComposite panel = (ScrolledComposite) selection.getControl();
                     panel.setRedraw(false);
                     try {
-                        if (panel instanceof ScrolledComposite sc) {
-                            page.createControl(sc);
-                            Dialog.applyDialogFont(sc);
-                            sc.setContent(page.getControl());
-                            sc.setMinSize(page.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT));
-                            sc.layout();
-                        } else {
-                            page.createControl(panel);
-                            Dialog.applyDialogFont(panel);
-                            panel.layout(true, true);
-                        }
                         page.createControl(panel);
                         Dialog.applyDialogFont(panel);
                         UIUtils.configureScrolledComposite(panel, page.getControl());
