@@ -149,12 +149,6 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
 
     protected ColumnModifier[] getSupportedModifiers(PostgreTableColumn column, Map<String, Object> options)
     {
-        PostgreServerExtension serverType = column.getDataSource().getServerType();
-        if (serverType.getServerTypeName().equals(POSTGRE_SERVER_TYPE_CRATE_DB)) {
-            return new ColumnModifier[] {
-                DataTypeModifier, DefaultModifier
-            };
-        }
         ColumnModifier[] modifiers = {
             PostgreDataTypeModifier,
             PostgreDefaultModifier,
@@ -162,7 +156,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
             PostgreCollateModifier,
             PostgreGeneratedModifier
         };
-        if (serverType.supportsColumnsRequiring()) {
+        if ( column.getDataSource().getServerType().supportsColumnsRequiring()) {
             modifiers = ArrayUtils.add(ColumnModifier.class, modifiers, NullNotNullModifier);
         }
         if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
