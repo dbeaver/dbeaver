@@ -33,6 +33,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
+import java.util.stream.Collectors;
 
 public class JDBCDatabasePostgresBackupHandler implements JDBCDatabaseBackupHandler {
 
@@ -110,6 +111,9 @@ public class JDBCDatabasePostgresBackupHandler implements JDBCDatabaseBackupHand
             "--file", backupFile.toAbsolutePath().toString()
         );
 
+        String backupCommand = String.join(" ", processBuilder.command());
+
+        log.info("Command started: " + backupCommand);
 
         if (CommonUtils.isNotEmpty(databaseConfig.getPassword())) {
             processBuilder.environment().put("PGPASSWORD", databaseConfig.getPassword());
