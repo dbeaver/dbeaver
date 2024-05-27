@@ -218,11 +218,10 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
         if (selectionProvider != null) {
             ISelection selection = selectionProvider.getSelection();
 
-            if (selection instanceof IStructuredSelection && ((IStructuredSelection) selection).size() == 1) {
-                DBNNode node = NavigatorUtils.getSelectedNode(selection);
+            if (selection instanceof IStructuredSelection structuredSelection && structuredSelection.size() == 1) {
+                DBNNode node = NavigatorUtils.getSelectedNode(structuredSelection);
                 if (node != null) {
-                    element.setText(String.format(
-                        "%s %s", UINavigatorMessages.actions_navigator_delete_, node.getNodeTypeLabel()));
+                    element.setText(NLS.bind(UINavigatorMessages.actions_navigator_delete_, node.getNodeTypeLabel()));
                 }
             }
         }
