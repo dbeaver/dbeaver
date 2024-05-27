@@ -114,7 +114,7 @@ public class JDBCDatabasePostgresBackupHandler implements JDBCDatabaseBackupHand
         String backupCommand = String.join(" ", processBuilder.command());
 
         log.info("Command started: " + backupCommand);
-
+        System.out.println(backupCommand);
         if (CommonUtils.isNotEmpty(databaseConfig.getPassword())) {
             processBuilder.environment().put("PGPASSWORD", databaseConfig.getPassword());
         }
