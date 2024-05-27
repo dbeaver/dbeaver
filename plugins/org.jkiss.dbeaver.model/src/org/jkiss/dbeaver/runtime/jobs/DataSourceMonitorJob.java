@@ -96,10 +96,12 @@ public class DataSourceMonitorJob extends AbstractJob {
     }
 
     protected void checkDataSourceAliveInWorkspace(DBPWorkspace workspace, long lastUserActivityTime) {
-        for (DBPProject project : workspace.getProjects()) {
+        List<DBPProject> projects = new ArrayList<>(workspace.getProjects());
+        for (DBPProject project : projects) {
             if (project.isOpen() && project.isRegistryLoaded()) {
                 DBPDataSourceRegistry dataSourceRegistry = project.getDataSourceRegistry();
-                for (DBPDataSourceContainer ds : dataSourceRegistry.getDataSources()) {
+                List<DBPDataSourceContainer> dataSources = new ArrayList<>(dataSourceRegistry.getDataSources());
+                for (DBPDataSourceContainer ds : dataSources) {
                     checkDataSourceAlive(ds, lastUserActivityTime);
                 }
             }
