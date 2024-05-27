@@ -24,10 +24,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.dpi.DPIContainer;
 import org.jkiss.dbeaver.model.dpi.DPIElement;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBExecUtils;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -74,10 +71,12 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
 
     @NotNull
     @Override
+    //Get value from cached, used in getCachedDefault()
     public PostgreDatabase getDefaultCatalog() {
         return (PostgreDatabase) getOwnerInstance();
     }
 
+    //Get value from cached, used in getCachedDefault()
     @Override
     public PostgreSchema getDefaultSchema() {
         return getDefaultCatalog().getSchema(activeSchemaId);
@@ -333,5 +332,13 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
 
     public void setIsolatedContext(boolean isolatedContext) {
         this.isolatedContext = isolatedContext;
+    }
+
+    @NotNull
+    @Override
+    public DBCCachedContextDefaults getCachedDefault() {
+        //Method get cashed value
+        String schemaName = (getDefaultSchema() != null) ? getDefaultSchema().getName() : null;
+        return new DBCCachedContextDefaults(getOwnerInstance().getName(), schemaName);
     }
 }
