@@ -103,7 +103,6 @@ public class JDBCDatabasePostgresBackupHandler implements JDBCDatabaseBackupHand
             databaseName,
             "--host", uri.getHost(),
             "--port", String.valueOf(uri.getPort()),
-            "--username", databaseConfig.getUser(),
             schemaArg,
             "--blobs",
             "--verbose",
@@ -111,8 +110,10 @@ public class JDBCDatabasePostgresBackupHandler implements JDBCDatabaseBackupHand
         );
 
         String backupCommand = String.join(" ", processBuilder.command());
-
         log.info("Command started: " + backupCommand);
+
+        processBuilder.command("--username", databaseConfig.getUser());
+
         if (CommonUtils.isNotEmpty(databaseConfig.getPassword())) {
             processBuilder.environment().put("PGPASSWORD", databaseConfig.getPassword());
         }
