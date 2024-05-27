@@ -20,8 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.InternalDatabaseConfig;
-import org.jkiss.dbeaver.model.sql.backup.SQLBackupConstants;
 import org.jkiss.dbeaver.model.sql.backup.JDBCDatabaseBackupHandler;
+import org.jkiss.dbeaver.model.sql.backup.SQLBackupConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
@@ -87,7 +87,6 @@ public class JDBCDatabasePostgresBackupHandler implements JDBCDatabaseBackupHand
 
     private static ProcessBuilder getBuilder(@NotNull InternalDatabaseConfig databaseConfig, URI uri, Path backupFile) {
         String databaseName = uri.getPath();
-        String schemaArg = CommonUtils.isEmpty(databaseConfig.getSchema()) ? "" : "--schema " + databaseConfig.getSchema();
         if (databaseName != null) {
             if (databaseName.startsWith("/")) {
                 databaseName = databaseName.substring(1);
@@ -103,11 +102,15 @@ public class JDBCDatabasePostgresBackupHandler implements JDBCDatabaseBackupHand
             databaseName,
             "--host", uri.getHost(),
             "--port", String.valueOf(uri.getPort()),
-            schemaArg,
             "--blobs",
             "--verbose",
             "--file", backupFile.toAbsolutePath().toString()
         );
+
+        if (CommonUtils.isNotEmpty(databaseConfig.getSchema())) {
+            processBuilder.command().add("--schema");
+            processBuilder.command().add(databaseConfig.getSchema());
+        }
 
         String backupCommand = String.join(" ", processBuilder.command());
         log.info("Command started: " + backupCommand);
