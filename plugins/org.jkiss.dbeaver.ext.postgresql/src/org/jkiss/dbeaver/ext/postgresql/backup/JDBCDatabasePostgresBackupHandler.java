@@ -33,7 +33,6 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
-import java.util.stream.Collectors;
 
 public class JDBCDatabasePostgresBackupHandler implements JDBCDatabaseBackupHandler {
 
@@ -104,8 +103,7 @@ public class JDBCDatabasePostgresBackupHandler implements JDBCDatabaseBackupHand
             databaseName,
             "--host", uri.getHost(),
             "--port", String.valueOf(uri.getPort()),
-            "--username", databaseConfig.getUser(),
-            "--schema", schemaArg,
+            schemaArg,
             "--blobs",
             "--verbose",
             "--file", backupFile.toAbsolutePath().toString()
@@ -114,6 +112,9 @@ public class JDBCDatabasePostgresBackupHandler implements JDBCDatabaseBackupHand
         String backupCommand = String.join(" ", processBuilder.command());
 
         log.info("Command started: " + backupCommand);
+        if (CommonUtils.isNotEmpty(databaseConfig.getUser())) {
+            processBuilder.environment().put("PGUSER", databaseConfig.getUser());
+        }
         if (CommonUtils.isNotEmpty(databaseConfig.getPassword())) {
             processBuilder.environment().put("PGPASSWORD", databaseConfig.getPassword());
         }
