@@ -57,8 +57,8 @@ public class JDBCDatabasePostgresBackupHandler implements JDBCDatabaseBackupHand
                 Process process = processBuilder.start();
 
                 try (InputStream inputStream = process.getInputStream();
-                     InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-                     BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
+                    InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+                    BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
 
                     StringBuilder processOutput = new StringBuilder();
                     String line;
@@ -112,7 +112,8 @@ public class JDBCDatabasePostgresBackupHandler implements JDBCDatabaseBackupHand
         String backupCommand = String.join(" ", processBuilder.command());
         log.info("Command started: " + backupCommand);
 
-        processBuilder.command("--username", databaseConfig.getUser());
+        processBuilder.command().add("--username");
+        processBuilder.command().add(databaseConfig.getUser());
 
         if (CommonUtils.isNotEmpty(databaseConfig.getPassword())) {
             processBuilder.environment().put("PGPASSWORD", databaseConfig.getPassword());
