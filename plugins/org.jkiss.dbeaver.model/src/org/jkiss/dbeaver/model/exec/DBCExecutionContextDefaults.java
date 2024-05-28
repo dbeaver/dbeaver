@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.exec;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.dpi.DPIElement;
@@ -38,6 +39,11 @@ public interface DBCExecutionContextDefaults<CATALOG extends DBSCatalog, SCHEMA 
 
     @Nullable
     SCHEMA getDefaultSchema();
+
+    @NotNull
+    default DBCCachedContextDefaults getCachedDefault() {
+        return new DBCCachedContextDefaults(null, null);
+    }
 
     boolean supportsCatalogChange();
 

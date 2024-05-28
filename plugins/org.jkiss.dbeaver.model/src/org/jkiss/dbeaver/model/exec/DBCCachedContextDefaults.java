@@ -14,28 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.websocket.event;
+package org.jkiss.dbeaver.model.exec;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-import java.util.List;
-
-public class WSUserCloseSessionsEvent extends WSAbstractEvent {
-    @NotNull
-    private final List<String> sessionIds;
-
-    public WSUserCloseSessionsEvent(@NotNull List<String> sessionIds) {
-        this(sessionIds, null, null);
-    }
-
-    public WSUserCloseSessionsEvent(@NotNull List<String> sessionIds, @Nullable String initiatorSessionId, @Nullable String userId) {
-        super(WSEventType.CLOSE_USER_SESSIONS, initiatorSessionId, userId);
-        this.sessionIds = sessionIds;
-    }
-
-    @NotNull
-    public List<String> getSessionIds() {
-        return sessionIds;
-    }
+public record DBCCachedContextDefaults(@Nullable String catalogName, @Nullable String schemaName) {
 }
