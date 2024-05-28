@@ -26,6 +26,7 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_connection_edit_wizard_conn_conf_general_link;
     public static String dialog_connection_edit_wizard_conn_conf_network_link;
     public static String dialog_connection_edit_connection_settings_variables_hint_label;
+    public static String dialog_connection_database_documentation;
     public static String dialog_connection_advanced_settings;
     public static String dialog_connection_env_variables_hint;
 

@@ -368,6 +368,7 @@
                     icon="icons/oracle_icon.png"
                     iconBig="icons/oracle_icon_big.png"
                     propertiesURL="https://docs.oracle.com/cd/B19306_01/java.102/b14355/urls.htm#i1070726"
+                    databaseDocumentationSuffixURL="Oracle"
                     description="%driver.oracle.description"
                     supportedConfigurationTypes="MANUAL,URL"
                     promoted="1"
@@ -380,6 +381,7 @@
                     <property name="useFetchSizeWithLongColumn" value="true"/>
                     <!-- Disable FAN events: #9002 -->
                     <property name="oracle.jdbc.fanEnabled" value="false"/>
+                    <property name="oracle.jdbc.jsonDefaultGetObjectType" value="java.lang.String"/>
 
                     <file type="jar" path="maven:/com.oracle.database.jdbc:ojdbc11:RELEASE[23.2.0.0]" bundle="!drivers.oracle"/>
                     <file type="jar" path="maven:/com.oracle.database.nls:orai18n:RELEASE[23.2.0.0]" bundle="!drivers.oracle"/>
@@ -448,6 +450,7 @@
             <datasource id="oracle"/>
 
             <type name="XMLTYPE"/>
+            <type name="JSON"/>
             <type name="SYS.XMLTYPE"/>
             <type name="REFCURSOR"/>
             <type name="REF CURSOR"/>
