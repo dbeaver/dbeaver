@@ -56,7 +56,9 @@ import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 public class AltibaseDataSource extends GenericDataSource implements DBPObjectStatisticsCollector {
     
@@ -552,6 +554,30 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
             throw new DBException("Can't read tablespace statistics", e, getDataSource());
         } finally {
             hasStatistics = true;
+        }
+    }
+    
+    ///////////////////////////////////////////////
+    // Altibase Properties
+    public List<AltibaseProperty> getAltibaseProperties(DBRProgressMonitor monitor)
+            throws DBException {
+        return loadPropertyList(monitor);
+    }
+
+    private List<AltibaseProperty> loadPropertyList(DBRProgressMonitor monitor) throws DBException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load properties")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM V$PROPERTY ORDER BY NAME ASC" )) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    List<AltibaseProperty> propertyList = new ArrayList<>();
+                    while (dbResult.next()) {
+                        AltibaseProperty parameter = new AltibaseProperty(this, dbResult);
+                        propertyList.add(parameter);
+                    }
+                    return propertyList;
+                }
+            }
+        } catch (SQLException ex) {
+            throw new DBException(ex, this);
         }
     }
     
