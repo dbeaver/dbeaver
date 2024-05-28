@@ -269,4 +269,24 @@ public class DBNUtils {
         };
     }
 
+    /**
+     * The method decode symbols('%2F','%25')
+     *
+     * @param nodePath - path
+     * @return - node path object
+     */
+    public static String decodeNodePath(@NotNull String nodePath) {
+        return nodePath.replace("%2F", "/").replace("%25", "%");
+    }
+
+    /**
+     * The method encode symbols('/','%')
+     *
+     * @param path - path
+     * @return - string path segment
+     */
+    public static String encodeNodePath(@NotNull String path) {
+        return path.replace("%", "%25").replace("/", "%2F");
+    }
+
 }

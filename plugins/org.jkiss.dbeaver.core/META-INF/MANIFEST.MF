@@ -3,13 +3,14 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver Desktop Application Core
 Bundle-SymbolicName: org.jkiss.dbeaver.core;singleton:=true
-Bundle-Version: 24.0.4.qualifier
-Bundle-Release-Date: 20240506
+Bundle-Version: 24.1.0.qualifier
+Bundle-Release-Date: 20240603
 Bundle-Activator: org.jkiss.dbeaver.core.DBeaverActivator
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.core,
+ org.jkiss.dbeaver.core.ui.services,
  org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.tools.project,
  org.jkiss.dbeaver.tools.scripts,

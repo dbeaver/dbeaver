@@ -21,16 +21,15 @@ import org.jkiss.code.NotNull;
 public class WSUserDeletedEvent extends WSAbstractEvent {
 
     @NotNull
-    private final String userId;
+    private final String deletedUserId;
 
     public WSUserDeletedEvent(@NotNull String userId) {
         super(WSEventType.USER_DELETED);
-        this.userId = userId;
+        this.deletedUserId = userId;
     }
 
     @NotNull
-    @Override
-    public String getUserId() {
-        return userId;
+    public String getDeletedUserId() {
+        return deletedUserId;
     }
 }

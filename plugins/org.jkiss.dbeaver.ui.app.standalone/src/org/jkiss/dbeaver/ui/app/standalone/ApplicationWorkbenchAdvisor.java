@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreFeatures;
+import org.jkiss.dbeaver.core.ui.services.ApplicationPolicyService;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -250,7 +251,8 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         filterWizards();
         patchJFaceIcons();
 
-        if (!application.isDistributed()) {
+        if (!application.isDistributed() &&
+            !ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
             startVersionChecker();
         }
     }

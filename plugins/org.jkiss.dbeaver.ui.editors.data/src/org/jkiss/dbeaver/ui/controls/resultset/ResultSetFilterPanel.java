@@ -714,7 +714,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         static final int MIN_INFO_PANEL_WIDTH = 300;
         static final int MIN_INFO_PANEL_HEIGHT = 100;
         static final int MAX_INFO_PANEL_HEIGHT = 400;
-        private final GC sizingGC;
         private Shell popup;
 
         ActiveObjectPanel(Composite addressBar) {
@@ -722,8 +721,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             setToolTipText(ResultSetMessages.sql_editor_resultset_filter_panel_btn_open_console);
             //setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            this.sizingGC = new GC(this);
-            this.addDisposeListener(e -> sizingGC.dispose());
             this.addMouseListener(new DoubleClickMouseAdapter() {
                 @Override
                 public void onMouseDoubleClick(@NotNull MouseEvent e) {
@@ -739,7 +736,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
         @Override
         public void dispose() {
-            sizingGC.dispose();
             super.dispose();
         }
 
@@ -795,7 +791,9 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             for (Control control = viewer.getControl().getParent(); maxWidth == 0 && control != null; control = control.getParent()) {
                 maxWidth = control.getSize().x / 4;
             }
+            GC sizingGC = new GC(this);
             Point textSize = sizingGC.textExtent(activeDisplayName);
+            sizingGC.dispose();
             DBPImage activeObjectImage = getActiveObjectImage();
             if (activeObjectImage != null) {
                 Image image = DBeaverIcons.getImage(activeObjectImage);
