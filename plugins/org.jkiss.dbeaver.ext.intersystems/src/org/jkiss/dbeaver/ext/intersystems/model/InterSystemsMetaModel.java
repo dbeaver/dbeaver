@@ -50,7 +50,6 @@ public class InterSystemsMetaModel extends GenericMetaModel
             try (JDBCPreparedStatement dbStat = session.prepareStatement(sqlStatement)) {
                 dbStat.setString(1, view.getName());
                 dbStat.setString(2, view.getContainer().getSchema().getName());
-                log.debug("Searching for view '%s' in schema '%s' ".formatted(view.getName(), view.getContainer().getSchema().getName()));
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.nextRow()) {
                          String viewplain = dbResult.getString(1);
