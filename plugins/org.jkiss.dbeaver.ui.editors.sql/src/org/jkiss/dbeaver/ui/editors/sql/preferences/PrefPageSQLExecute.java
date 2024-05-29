@@ -427,8 +427,8 @@ public class PrefPageSQLExecute extends TargetPrefPage
         soundOnQueryEnd.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.BEEP_ON_QUERY_END));
         updateDefaultAfterExecute.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE));
         clearOutputBeforeExecute.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE));
-        UIUtils.setComboSelection(commitTypeCombo, store.getDefaultString(SQLPreferenceConstants.SCRIPT_COMMIT_TYPE));
-        UIUtils.setComboSelection(errorHandlingCombo, store.getDefaultString(SQLPreferenceConstants.SCRIPT_ERROR_HANDLING));
+        commitTypeCombo.select(SQLScriptCommitType.valueOf(store.getDefaultString(SQLPreferenceConstants.SCRIPT_COMMIT_TYPE)).ordinal());
+        errorHandlingCombo.select(SQLScriptErrorHandling.valueOf(store.getDefaultString(SQLPreferenceConstants.SCRIPT_ERROR_HANDLING)).ordinal());
         commitLinesText.setSelection(store.getDefaultInt(SQLPreferenceConstants.SCRIPT_COMMIT_LINES));
         fetchResultSetsCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS));
         resetCursorCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE));
