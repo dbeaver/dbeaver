@@ -28,6 +28,7 @@ import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.preferences.format.BaseFormatterConfigurationPage;
@@ -152,4 +153,24 @@ public class SQLTokenizedFormatterConfigurationPage extends BaseFormatterConfigu
         preferenceStore.setToDefault(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES);
     }
 
+
+    @Override
+    public void performDefaults() {
+        super.performDefaults();
+        DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
+        final String caseName = preferenceStore.getDefaultString(ModelPreferences.SQL_FORMAT_KEYWORD_CASE);
+
+        DBPIdentifierCase keywordCase = CommonUtils.isEmpty(caseName) ? null : DBPIdentifierCase.valueOf(caseName);
+        if (keywordCase == null) {
+            keywordCaseCombo.select(0);
+        } else {
+            UIUtils.setComboSelection(keywordCaseCombo, DBPIdentifierCase.capitalizeCaseName(keywordCase.name()));
+        }
+        lineFeedBeforeCommaCheck.setSelection(preferenceStore.getDefaultBoolean(ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA));
+        breakLineBeforeCloseBracket.setSelection(preferenceStore.getDefaultBoolean(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET));
+        insertDelimiterInEmptyLines.setSelection(preferenceStore.getDefaultBoolean(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES));
+        IPreferenceStore textEditorPrefs = getTextEditorsPreferenceStore();
+        this.indentSizeSpinner.setSelection(textEditorPrefs.getDefaultInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH));
+        useSpacesCheck.setSelection(textEditorPrefs.getDefaultBoolean(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS));
+    }
 }

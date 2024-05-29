@@ -281,6 +281,27 @@ public class PrefPageSQLFormat extends TargetPrefPage
     }
 
     @Override
+    protected void performDefaults() {
+        DBPPreferenceStore store = getTargetPreferenceStore();
+        styleBoldKeywords.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS));
+        formatCurrentQueryCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SQL_FORMAT_ACTIVE_QUERY));
+
+        String formatterId = store.getDefaultString(SQLModelPreferences.SQL_FORMAT_FORMATTER);
+        for (int i = 0; i < formatters.size(); i++) {
+            if (formatters.get(i).getId().equalsIgnoreCase(formatterId)) {
+                formatterSelector.select(i);
+                break;
+            }
+        }
+        if (formatterSelector.getSelectionIndex() < 0) formatterSelector.select(0);
+
+        curConfigurator.performDefaults();
+        formatSQL();
+        showFormatterSettings();
+        super.performDefaults();
+    }
+
+    @Override
     protected void performApply() {
         super.performApply();
         formatSQL();

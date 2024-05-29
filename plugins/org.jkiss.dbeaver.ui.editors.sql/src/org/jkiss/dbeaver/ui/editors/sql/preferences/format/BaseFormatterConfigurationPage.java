@@ -80,4 +80,9 @@ public abstract class BaseFormatterConfigurationPage extends DialogPage implemen
 
     }
 
+    @Override
+    public void performDefaults() {
+
+    }
+
 }

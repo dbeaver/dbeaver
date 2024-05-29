@@ -34,4 +34,7 @@ public interface SQLFormatterConfigurator {
     void saveSettings(DBPPreferenceStore preferenceStore);
 
     void resetSettings(DBPPreferenceStore preferenceStore);
+
+    void performDefaults();
+
 }
