@@ -239,8 +239,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
     }
 
     @Override
-    protected void clearPreferences(DBPPreferenceStore store)
-    {
+    protected void clearPreferences(DBPPreferenceStore store) {
         store.setToDefault(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION);
         store.setToDefault(SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE);
         store.setToDefault(SQLPreferenceConstants.EDITOR_CONNECT_ON_EXECUTE);
@@ -252,14 +251,17 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
         store.setToDefault(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR);
         store.setToDefault(SQLPreferenceConstants.RESULT_SET_REPLACE_CURRENT_TAB);
-        DBWorkbench.getPlatform().getPreferenceStore().setToDefault(SQLPreferenceConstants.RESULT_SET_ORIENTATION);
+        store.setToDefault(SQLPreferenceConstants.RESULT_SET_ORIENTATION);
         store.setToDefault(SQLPreferenceConstants.OUTPUT_PANEL_AUTO_SHOW);
     }
 
     @Override
     protected void performDefaults() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        UIUtils.setComboSelection(editorSeparateConnectionCombo, store.getDefaultString(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION));
+        UIUtils.setComboSelection(
+            editorSeparateConnectionCombo,
+            SeparateConnectionBehavior.parse(store.getDefaultString(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION)).getTitle()
+        );
         connectOnActivationCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE));
         connectOnExecuteCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.EDITOR_CONNECT_ON_EXECUTE));
         autoSaveOnChange.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_CHANGE));
@@ -267,7 +269,10 @@ public class PrefPageSQLEditor extends TargetPrefPage
         autoSaveOnClose.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE));
         autoSaveActiveSchema.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.AUTO_SAVE_ACTIVE_SCHEMA));
         closeTabOnErrorCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR));
-        UIUtils.setComboSelection(resultsOrientationCombo, SQLPreferenceConstants.RESULT_SET_ORIENTATION);
+        UIUtils.setComboSelection(
+            resultsOrientationCombo,
+            SQLEditor.ResultSetOrientation.valueOf(store.getDefaultString(SQLPreferenceConstants.RESULT_SET_ORIENTATION)).getLabel()
+        );
         autoOpenOutputView.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.OUTPUT_PANEL_AUTO_SHOW));
         replaceCurrentTab.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.RESULT_SET_REPLACE_CURRENT_TAB));
         sizeWarningThresholdSpinner.setSelection(store.getDefaultInt(SQLPreferenceConstants.RESULT_SET_MAX_TABS_PER_QUERY));
@@ -275,8 +280,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
     }
 
     @Override
-    protected String getPropertyPageID()
-    {
+    protected String getPropertyPageID() {
         return PAGE_ID;
     }
 
