@@ -277,8 +277,16 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         showResourceFolderPlaceholdersCheck.setSelection(store.getDefaultBoolean(ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS));
         groupByDriverCheck.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_GROUP_BY_DRIVER));
         longListFetchSizeText.setText(String.valueOf(store.getDefaultInt(NavigatorPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE)));
-        UIUtils.setComboSelection(objDoubleClickBehavior, store.getDefaultString(NavigatorPreferences.NAVIGATOR_OBJECT_DOUBLE_CLICK));
-        UIUtils.setComboSelection(dsDoubleClickBehavior, store.getDefaultString(NavigatorPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK));
+        objDoubleClickBehavior.select(
+            NavigatorPreferences.DoubleClickBehavior.valueOf(
+                store.getDefaultString(NavigatorPreferences.NAVIGATOR_OBJECT_DOUBLE_CLICK)
+            ).ordinal()
+        );
+        dsDoubleClickBehavior.select(
+            NavigatorPreferences.DoubleClickBehavior.valueOf(
+                store.getDefaultString(NavigatorPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK)
+            ).ordinal()
+        );
         defaultEditorPageCombo.select(store.getDefaultInt(NavigatorPreferences.NAVIGATOR_DEFAULT_EDITOR_PAGE));
     }
 
