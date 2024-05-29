@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
-public class AltibaseProperty  implements DBSObject {
+public class AltibaseProperty implements DBSObject {
 
     private static final Log log = Log.getLog(AltibaseProperty.class);
 
