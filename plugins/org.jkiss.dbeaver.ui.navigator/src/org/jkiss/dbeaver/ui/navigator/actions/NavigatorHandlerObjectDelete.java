@@ -57,6 +57,9 @@ import java.util.stream.Collectors;
 public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase implements IElementUpdater {
     private static final Log log = Log.getLog(NavigatorHandlerObjectDelete.class);
 
+    public NavigatorHandlerObjectDelete() {
+    }
+
     @Override
     public Object execute(final ExecutionEvent event) throws ExecutionException {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
@@ -210,10 +213,21 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
     }
 
     @Override
+    public boolean isEnabled() {
+        return super.isEnabled();
+    }
+
+    @Override
     public void updateElement(UIElement element, Map parameters) {
         if (!updateUI) {
             return;
         }
+        if (!UPDATE_GLOBAL_ACTION_LABELS) {
+            // We cannot update labels/icons for context-dependent global actions
+            // Because main menu is not updated on every menu show. And only the first text is saved
+            return;
+        }
+
         final ISelectionProvider selectionProvider = UIUtils.getSelectionProvider(element.getServiceLocator());
         if (selectionProvider != null) {
             ISelection selection = selectionProvider.getSelection();
