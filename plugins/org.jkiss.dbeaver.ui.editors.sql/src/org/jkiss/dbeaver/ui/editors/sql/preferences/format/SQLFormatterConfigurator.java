@@ -29,12 +29,9 @@ public interface SQLFormatterConfigurator {
      */
     void configure(SQLFormatterDescriptor formatterDescriptor, Runnable changeListener);
 
-    void loadSettings(DBPPreferenceStore preferenceStore);
+    void loadSettings(DBPPreferenceStore preferenceStore, boolean useDefaults);
 
     void saveSettings(DBPPreferenceStore preferenceStore);
 
     void resetSettings(DBPPreferenceStore preferenceStore);
-
-    void performDefaults();
-
 }
