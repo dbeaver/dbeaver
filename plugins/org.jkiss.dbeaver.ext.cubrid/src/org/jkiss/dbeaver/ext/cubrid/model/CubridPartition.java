@@ -41,7 +41,6 @@ public class CubridPartition extends CubridTable implements DBSTablePartition{
         expression = JDBCUtils.safeGetString(dbResult, "partition_expr");
         expression_values = (Integer[]) JDBCUtils.safeGetObject(dbResult, "partition_values");
         comment = JDBCUtils.safeGetString(dbResult, "comment");
-        this.setDescription(comment);
     }
 
     @Override 
