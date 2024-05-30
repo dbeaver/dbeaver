@@ -26,17 +26,23 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
+import java.sql.SQLException;
 import java.util.Collection;
 
 public class CubridTable extends GenericTable
 {
+    private final PartitionCache partitionCache = new PartitionCache();
     public CubridTable(
             GenericStructContainer container,
             @Nullable String tableName,
@@ -63,6 +69,12 @@ public class CubridTable extends GenericTable
             throws DBException
     {
         return this.getDataSource().getObjectContainer().getCubridIndexCache().getObjects(monitor, getContainer(), this);
+    }
+    
+    public Collection<CubridPartition> getPartitions(DBRProgressMonitor monitor)
+            throws DBException
+    {
+        return partitionCache.getAllObjects(monitor, this);
     }
 
     @Nullable
@@ -115,4 +127,28 @@ public class CubridTable extends GenericTable
             return object.getDataSource().getSchemas().toArray();
         }
     }
+    
+    class PartitionCache extends JDBCObjectCache<CubridTable, CubridPartition>{
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, CubridTable table)
+            throws SQLException {
+            String sql = "select * from db_partition where class_name = ? and owner_name = ?";
+            final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+            dbStat.setString(1, table.getName());
+            dbStat.setString(2, table.getSchema().getName());
+            return dbStat;
+        }
+    
+        @Override
+        protected CubridPartition fetchObject(
+            JDBCSession session, CubridTable table, JDBCResultSet dbResult)
+            throws SQLException, DBException {
+            String partition_class_name = JDBCUtils.safeGetString(dbResult, "partition_class_name");
+            String type = JDBCUtils.safeGetString(dbResult, "partition_type");
+            
+            return new CubridPartition(table, partition_class_name, type, dbResult);
+        }
+            
+        }
 }

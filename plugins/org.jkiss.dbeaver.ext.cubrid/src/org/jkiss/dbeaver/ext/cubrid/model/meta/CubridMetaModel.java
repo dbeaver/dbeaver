@@ -90,7 +90,8 @@ public class CubridMetaModel extends GenericMetaModel
                 + "when class_type = 'VCLASS' then 'VIEW' end as TABLE_TYPE, \r\n"
                 + "b.current_val from db_class a LEFT JOIN db_serial b on \r\n"
                 + "a.class_name = b.class_name "
-                + "where a.owner_name = ?";
+                + "left join db_partition p on a.class_name = p.partition_class_name "
+                + "where a.owner_name = ? and p.partition_class_name is null";
 
         final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         dbStat.setString(1, owner.getName());
