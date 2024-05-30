@@ -15,19 +15,18 @@ public class CubridPartition extends CubridTable implements DBSTablePartition{
     private Integer[] expression_values;
     private String comment;
     public CubridPartition(
-            CubridTable table,
-            String name,
-            String type,
-            JDBCResultSet dbResult) {
-    super(table.getContainer(), name, type,dbResult);
-    this.parentTable = table;
-    
-   
-    expression = JDBCUtils.safeGetString(dbResult, "partition_expr");
-    expression_values = (Integer[]) JDBCUtils.safeGetObject(dbResult, "partition_values");
-    comment = JDBCUtils.safeGetString(dbResult, "comment");
-    this.setDescription(comment);
-  }
+        @NotNull CubridTable table,
+        @NotNull String name,
+        @NotNull String type,
+        @NotNull JDBCResultSet dbResult
+    ) {
+        super(table.getContainer(), name, type,dbResult);
+        this.parentTable = table;
+        expression = JDBCUtils.safeGetString(dbResult, "partition_expr");
+        expression_values = (Integer[]) JDBCUtils.safeGetObject(dbResult, "partition_values");
+        comment = JDBCUtils.safeGetString(dbResult, "comment");
+        this.setDescription(comment);
+    }
 
     @Override 
     public DBSTable getParentTable() {
