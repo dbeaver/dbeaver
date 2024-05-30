@@ -33,6 +33,9 @@ public interface DBPDataSourceProvider extends DBPDataSourceURLProvider, DBPObje
     long FEATURE_NONE        = 0;
     long FEATURE_CATALOGS    = 1;
     long FEATURE_SCHEMAS     = 2;
+    long FEATURE_TABLES      = 4;
+    long FEATURE_COLUMNS     = 8;
+
 
     /**
      * Initializes data source provider

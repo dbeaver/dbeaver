@@ -211,6 +211,10 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                 enableFilter(filterInfo, (features & DBPDataSourceProvider.FEATURE_CATALOGS) != 0);
             } else if (DBSSchema.class.isAssignableFrom(filterInfo.type)) {
                 enableFilter(filterInfo, (features & DBPDataSourceProvider.FEATURE_SCHEMAS) != 0);
+            } else if (DBSTable.class.isAssignableFrom(filterInfo.type)){
+                enableFilter(filterInfo, (features & DBPDataSourceProvider.FEATURE_TABLES) != 0);
+            } else if(DBSEntityAttribute.class.isAssignableFrom(filterInfo.type)){
+                enableFilter(filterInfo, (features & DBPDataSourceProvider.FEATURE_TABLES) != 0);
             } else {
                 enableFilter(filterInfo, true);
             }

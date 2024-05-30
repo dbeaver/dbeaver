@@ -66,7 +66,7 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
 
     @Override
     public long getFeatures() {
-        return FEATURE_CATALOGS | FEATURE_SCHEMAS;
+        return FEATURE_CATALOGS | FEATURE_SCHEMAS | FEATURE_COLUMNS | FEATURE_TABLES;
     }
 
     @Override

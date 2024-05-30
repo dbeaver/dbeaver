@@ -26,7 +26,7 @@ public class FireBirdDataSourceProvider extends GenericDataSourceProvider {
 
     @Override
     public long getFeatures() {
-        return FEATURE_NONE;
+        return FEATURE_TABLES | FEATURE_COLUMNS;
     }
 
 }

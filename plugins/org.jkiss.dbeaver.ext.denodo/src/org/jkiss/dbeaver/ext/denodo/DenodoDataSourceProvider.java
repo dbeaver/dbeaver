@@ -36,7 +36,7 @@ public class DenodoDataSourceProvider extends JDBCDataSourceProvider {
     @Override
     public long getFeatures()
     {
-        return FEATURE_SCHEMAS;
+        return FEATURE_SCHEMAS | FEATURE_COLUMNS | FEATURE_TABLES;
     }
 
     @Override

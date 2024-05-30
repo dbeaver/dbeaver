@@ -54,7 +54,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements
     @Override
     public long getFeatures()
     {
-        return FEATURE_SCHEMAS;
+        return FEATURE_SCHEMAS | FEATURE_COLUMNS | FEATURE_TABLES;
     }
 
     @Override

@@ -45,7 +45,7 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
     @Override
     public long getFeatures()
     {
-        return FEATURE_SCHEMAS;
+        return FEATURE_SCHEMAS | FEATURE_COLUMNS | FEATURE_TABLES;
     }
 
     @Override
