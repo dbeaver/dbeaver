@@ -131,8 +131,7 @@ public class CubridTable extends GenericTable
     class PartitionCache extends JDBCObjectCache<CubridTable, CubridPartition>{
 
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, CubridTable table)
-            throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull CubridTable table) throws SQLException {
             String sql = "select * from db_partition where class_name = ? and owner_name = ?";
             final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
             dbStat.setString(1, table.getName());
@@ -142,13 +141,16 @@ public class CubridTable extends GenericTable
     
         @Override
         protected CubridPartition fetchObject(
-            JDBCSession session, CubridTable table, JDBCResultSet dbResult)
-            throws SQLException, DBException {
+            @NotNull JDBCSession session,
+            @NotNull CubridTable table,
+            @NotNull JDBCResultSet dbResult
+        ) throws SQLException, DBException {
             String partition_class_name = JDBCUtils.safeGetString(dbResult, "partition_class_name");
             String type = JDBCUtils.safeGetString(dbResult, "partition_type");
             
             return new CubridPartition(table, partition_class_name, type, dbResult);
         }
             
-        }
+    }
+
 }
