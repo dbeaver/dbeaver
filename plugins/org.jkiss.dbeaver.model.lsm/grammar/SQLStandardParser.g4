@@ -132,7 +132,7 @@ compOp: (EqualsOperator|NotEqualsOperator|LessThanOperator|GreaterThanOperator|L
 quantifier: (ALL|SOME|ANY);
 truthValue: (TRUE|FALSE|UNKNOWN);
 existsPredicate: EXISTS tableSubquery;
-likePredicate: matchValue (NOT)? LIKE pattern (ESCAPE escapeCharacter)?;
+likePredicate: matchValue (NOT)? (LIKE|ILIKE) pattern (ESCAPE escapeCharacter)?;
 matchValue: characterValueExpression;
 pattern: characterValueExpression;
 escapeCharacter: characterValueExpression;
@@ -211,7 +211,7 @@ joinColumnList: columnNameList;
 whereClause: WHERE searchCondition;
 groupByClause: GROUP BY groupingColumnReferenceList;
 groupingColumnReferenceList: groupingColumnReference (Comma groupingColumnReference)*;
-groupingColumnReference: valueReference | anyWordsWithProperty;
+groupingColumnReference: UnsignedInteger | valueReference | anyWordsWithProperty;
 havingClause: HAVING searchCondition;
 tableValueConstructor: VALUES (rowValueConstructor (Comma rowValueConstructor)*);
 explicitTable: TABLE tableName;
