@@ -22,11 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPIdentifierCase;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -47,7 +43,6 @@ import org.jkiss.utils.Pair;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.*;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -242,7 +237,8 @@ public final class SQLUtils {
                     String.format("%c%c", charAtI, sqlLikePattern.charAt(i + 1))));
                 i++;
             }
-            result.append(sqlLikePatternToGlobSymbolsMap.computeIfAbsent(String.valueOf(charAtI), Function.identity()));
+            String stringAtI = String.valueOf(charAtI);
+            result.append(sqlLikePatternToGlobSymbolsMap.getOrDefault(stringAtI, stringAtI));
         }
 
         return result.toString();
