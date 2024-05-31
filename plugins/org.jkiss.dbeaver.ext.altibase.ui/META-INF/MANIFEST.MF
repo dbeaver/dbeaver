@@ -23,7 +23,9 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.ui.editors.data,
  org.jkiss.dbeaver.ui.navigator,
  org.jkiss.dbeaver.ext.altibase,
- org.jkiss.dbeaver.ui.editors.session
+ org.jkiss.dbeaver.ui.editors.session,
+  org.jkiss.dbeaver.tasks.native.ui,
+ org.jkiss.dbeaver.tasks.ui
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Vendor: %Bundle-Vendor

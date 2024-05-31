@@ -35,11 +35,19 @@ import java.util.Map;
 public class AltibaseProcedurePackaged extends AltibaseProcedureBase {
 
     private String pkgSchema;
-
-    public AltibaseProcedurePackaged(GenericStructContainer container, String procedureName, String specificName,
-            String description, DBSProcedureType procedureType, GenericFunctionResultType functionResultType, String pkgSchema) {
-        super(container, procedureName, specificName, description, procedureType, functionResultType);
+    private String pkgName;
+    
+    public AltibaseProcedurePackaged(
+            GenericStructContainer container,
+            String pkgSchema,
+            String pkgName,
+            String procedureName, 
+            boolean valid,
+            DBSProcedureType procedureType, 
+            GenericFunctionResultType functionResultType) {
+        super(container, procedureName, true, procedureType, functionResultType);
         this.pkgSchema = pkgSchema;
+        this.pkgName = pkgName;
     }
 
     @Override
@@ -53,7 +61,7 @@ public class AltibaseProcedurePackaged extends AltibaseProcedureBase {
     public void loadProcedureColumns(DBRProgressMonitor monitor) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load procedure columns")) {
             JDBCPreparedStatement dbStat = ((AltibaseMetaModel) getDataSource().getMetaModel())
-                    .prepareProcedurePackagedColumnLoadStatement(session, pkgSchema, container.getName(), this.getName());
+                    .prepareProcedurePackagedColumnLoadStatement(session, pkgSchema, pkgName, this.getName());
             dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
             dbStat.executeStatement();
             JDBCResultSet dbResult = dbStat.getResultSet();

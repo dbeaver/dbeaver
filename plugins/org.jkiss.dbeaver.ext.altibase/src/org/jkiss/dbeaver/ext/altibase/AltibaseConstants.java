@@ -118,4 +118,11 @@ public class AltibaseConstants {
     public static final String RESULT_YES_VALUE = "YES";
     public static final String RESULT_Y_VALUE = "Y";
     public static final String RESULT_1_VALUE = "1";
+    
+    /*
+     * PSM Type: SYS_PROCEDURES_ (OBJECT_TYPE)
+     */
+    public static final int PSM_TYPE_PROCEDURE  = 0;
+    public static final int PSM_TYPE_FUNCTION   = 1;
+    public static final int PSM_TYPE_TYPESET    = 3;
 }

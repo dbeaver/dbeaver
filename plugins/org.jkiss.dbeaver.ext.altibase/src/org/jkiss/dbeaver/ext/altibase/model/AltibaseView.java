@@ -16,18 +16,18 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model;
 
-import org.jkiss.dbeaver.ext.altibase.AltibaseUtils;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
-import org.jkiss.dbeaver.ext.generic.model.GenericView;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 
-public class AltibaseView extends GenericView {
+public class AltibaseView extends AltibaseViewAbs {
 
     public AltibaseView(GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
     }
     
-    public String getDDL() {
-        return AltibaseUtils.getEffectiveSql(super.getDDL());
+    protected String getQry4RefreshState() {
+        return "SELECT v.status FROM system_.sys_users_ u, system_.sys_tables_ t, system_.sys_views_ v"
+                + " WHERE u.user_id = t.user_id AND u.user_id = v.user_id"
+                + " AND v.view_id = t.table_id AND u.user_name = ? AND t.table_name = ?";
     }
 }
