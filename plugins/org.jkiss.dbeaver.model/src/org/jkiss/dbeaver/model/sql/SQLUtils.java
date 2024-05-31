@@ -231,14 +231,12 @@ public final class SQLUtils {
         StringBuilder result = new StringBuilder();
         for (int i = 0; i < sqlLikePattern.length(); i++) {
             char charAtI = sqlLikePattern.charAt(i);
-            if (i + 1 < sqlLikePattern.length() && charAtI == '\\'
-                && (sqlLikePattern.charAt(i + 1) == '_' || sqlLikePattern.charAt(i + 1) == '%')) {
-                result.append(sqlLikePatternToGlobSymbolsMap.get(
-                    String.format("%c%c", charAtI, sqlLikePattern.charAt(i + 1))));
-                i++;
+            switch (charAtI) {
+                case '_' -> result.append('?');
+                case '%' -> result.append('*');
+                case '?' -> result.append("\\?");
+                default -> result.append(charAtI);
             }
-            String stringAtI = String.valueOf(charAtI);
-            result.append(sqlLikePatternToGlobSymbolsMap.getOrDefault(stringAtI, stringAtI));
         }
 
         return result.toString();

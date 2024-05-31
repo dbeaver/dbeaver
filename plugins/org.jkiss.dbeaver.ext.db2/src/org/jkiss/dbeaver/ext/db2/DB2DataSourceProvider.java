@@ -62,7 +62,7 @@ public class DB2DataSourceProvider extends JDBCDataSourceProvider {
     @Override
     public long getFeatures()
     {
-        return FEATURE_SCHEMAS | FEATURE_COLUMNS | FEATURE_TABLES;
+        return FEATURE_SCHEMAS;
     }
 
     @Override

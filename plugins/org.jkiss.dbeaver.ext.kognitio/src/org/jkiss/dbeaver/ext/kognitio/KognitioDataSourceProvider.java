@@ -24,6 +24,6 @@ public class KognitioDataSourceProvider extends GenericDataSourceProvider {
 
     @Override
     public long getFeatures() {
-        return FEATURE_TABLES | FEATURE_COLUMNS;
+        return FEATURE_NONE;
     }
 }
