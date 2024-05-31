@@ -27,7 +27,7 @@ Require-Bundle: org.eclipse.core.runtime,
   org.jkiss.dbeaver.tasks.native.ui,
  org.jkiss.dbeaver.tasks.ui
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: %Bundle-Vendor
 Bundle-ClassPath: .
 Bundle-Localization: OSGI-INF/l10n/bundle
