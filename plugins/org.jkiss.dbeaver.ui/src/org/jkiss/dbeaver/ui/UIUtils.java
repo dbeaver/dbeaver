@@ -1025,7 +1025,14 @@ public class UIUtils {
         scrolledComposite.addControlListener(new ControlAdapter() {
             @Override
             public void controlResized(ControlEvent e) {
-                scrolledComposite.setMinSize(content.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+                Rectangle area = scrolledComposite.getClientArea();
+                Point size = content.computeSize(
+                    (scrolledComposite.getStyle() & SWT.HORIZONTAL) != 0 ? SWT.DEFAULT : area.width,
+                    (scrolledComposite.getStyle() & SWT.VERTICAL) != 0 ? SWT.DEFAULT : area.height
+                );
+
+                content.setSize(size);
+                scrolledComposite.setMinSize(size);
             }
         });
     }
