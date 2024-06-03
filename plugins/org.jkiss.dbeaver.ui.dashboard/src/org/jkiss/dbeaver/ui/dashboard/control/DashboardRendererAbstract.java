@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.dashboard.control;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -57,9 +56,7 @@ public abstract class DashboardRendererAbstract implements DashboardItemRenderer
                 public void run() {
                     DashboardItemViewSettingsDialog dialog = new DashboardItemViewSettingsDialog(
                         UIUtils.getActiveShell(), itemContainer, itemContainer.getItemConfiguration().getViewConfiguration());
-                    if (dialog.open() == IDialogConstants.OK_ID) {
-                        itemContainer.getGroup().getView().saveChanges();
-                    }
+                    dialog.open();
                 }
             });
             manager.add(new Separator());
