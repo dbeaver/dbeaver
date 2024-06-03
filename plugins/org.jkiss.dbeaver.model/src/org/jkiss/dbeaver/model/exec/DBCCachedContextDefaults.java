@@ -14,19 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.bigquery.model;
+package org.jkiss.dbeaver.model.exec;
 
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
+import org.jkiss.code.Nullable;
 
-public class BigQueryExecutionContext extends JDBCExecutionContext {
-
-    public BigQueryExecutionContext(JDBCRemoteInstance instance, String purpose) {
-        super(instance, purpose);
-    }
-
-    @Override
-    public BigQueryDataSource getDataSource() {
-        return (BigQueryDataSource) super.getDataSource();
-    }
+public record DBCCachedContextDefaults(@Nullable String catalogName, @Nullable String schemaName) {
 }
