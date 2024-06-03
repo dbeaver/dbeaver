@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -1066,13 +1067,20 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                                 break;
                             }
                         }
+                        case BINARY:
                         default: {
-                            // Binary stream
-                            try (Reader reader = new InputStreamReader(stream, cs.getCharset())) {
-                                IOUtils.copyText(reader, writer);
+                            byte[] readBuffer = new byte[1000];
+                            for (; ; ) {
+                                int count = stream.read(readBuffer);
+                                if (count <= 0) {
+                                    break;
+                                }
+                                String content = new String(readBuffer, 0, count, settings.getOutputEncoding());
+                                String contentAfterEscaping = JSONUtils.escapeJsonString(content);
+                                writer.write(contentAfterEscaping);
                             }
-                            break;
                         }
+                        break;
                     }
                 }
             }
