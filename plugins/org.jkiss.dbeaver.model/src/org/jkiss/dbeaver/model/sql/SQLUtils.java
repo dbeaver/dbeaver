@@ -221,12 +221,13 @@ public final class SQLUtils {
         return like.replace("*", "%").replace("?", "_");
     }
 
-    public static String makeGlobFromSqlLikePattern(String sqlLikePattern) {
+    public static String makeGlobFromSqlLikePattern(@NotNull String sqlLikePattern) {
 
         StringBuilder result = new StringBuilder();
         for (int i = 0; i < sqlLikePattern.length(); i++) {
             char charAtI = sqlLikePattern.charAt(i);
             switch (charAtI) {
+                //fixme currently we allow users to use "*" in a wildcards.
                 case '_' -> result.append('?');
                 case '%' -> result.append('*');
                 case '?' -> result.append("\\?");
