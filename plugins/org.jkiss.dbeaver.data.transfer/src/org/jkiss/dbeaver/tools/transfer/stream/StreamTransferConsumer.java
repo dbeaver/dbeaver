@@ -1066,6 +1066,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                                 writer.write(binaryString);
                                 break;
                             }
+                            break;
                         }
                         case BINARY:
                         default: {
