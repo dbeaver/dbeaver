@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 
-public class CubridPartition extends CubridTable implements DBSTablePartition{
+public class CubridPartition extends CubridTable implements DBSTablePartition {
 
     private CubridTable parentTable;
     private String expression;
