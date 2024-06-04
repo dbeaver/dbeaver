@@ -128,7 +128,8 @@ public class CubridTable extends GenericTable
         }
     }
     
-    class PartitionCache extends JDBCObjectCache<CubridTable, CubridPartition>{
+    static class PartitionCache extends JDBCObjectCache<CubridTable, CubridPartition> {
+
 
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull CubridTable table) throws SQLException {
