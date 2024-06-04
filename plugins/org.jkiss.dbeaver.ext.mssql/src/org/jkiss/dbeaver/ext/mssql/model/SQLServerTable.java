@@ -96,7 +96,7 @@ public class SQLServerTable extends SQLServerTableBase
     @Nullable
     @Override
     @Association
-    public Collection<SQLServerTableUniqueKey> getConstraints(@NotNull DBRProgressMonitor monitor)
+    public Collection<SQLServerTableUniqueKey> getConstraints(@Nullable DBRProgressMonitor monitor)
         throws DBException
     {
         return getContainer().getUniqueConstraintCache().getObjects(monitor, getSchema(), this);
@@ -116,10 +116,10 @@ public class SQLServerTable extends SQLServerTableBase
 
     @Override
     @Association
-    public List<SQLServerTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor)
+    public List<SQLServerTableForeignKey> getReferences(@Nullable DBRProgressMonitor monitor)
         throws DBException
     {
-        if (references != null) {
+        if (references != null || monitor == null) {
             return references;
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this,  "Read table references")) {
@@ -160,7 +160,7 @@ public class SQLServerTable extends SQLServerTableBase
     }
 
     @Override
-    public Collection<SQLServerTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor)
+    public Collection<SQLServerTableForeignKey> getAssociations(@Nullable DBRProgressMonitor monitor)
         throws DBException
     {
         return getSchema().getForeignKeyCache().getObjects(monitor, getSchema(), this);

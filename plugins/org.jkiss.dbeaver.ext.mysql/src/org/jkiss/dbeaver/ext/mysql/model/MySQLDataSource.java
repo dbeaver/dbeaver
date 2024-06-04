@@ -454,7 +454,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     }
 
     @Override
-    public Collection<? extends MySQLCatalog> getChildren(@NotNull DBRProgressMonitor monitor) {
+    public Collection<? extends MySQLCatalog> getChildren(@Nullable DBRProgressMonitor monitor) {
         return getCatalogs();
     }
 

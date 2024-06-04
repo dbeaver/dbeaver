@@ -374,13 +374,13 @@ public class MySQLCatalog implements
     public Collection<MySQLPackage> getPackages(DBRProgressMonitor monitor)
         throws DBException
     {
-        return packageCache.getAllObjects(monitor, this);
+        return monitor == null ? packageCache.getCachedObjects() : packageCache.getAllObjects(monitor, this);
     }
 
     @Association
     public Collection<MySQLTrigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
         return getDataSource().supportsInformationSchema() ?
-                triggerCache.getAllObjects(monitor, this) :
+            (monitor == null ? triggerCache.getCachedObjects() : triggerCache.getAllObjects(monitor, this)) :
                 Collections.emptyList();
     }
 
@@ -393,22 +393,22 @@ public class MySQLCatalog implements
     @Association
     public Collection<MySQLEvent> getEvents(DBRProgressMonitor monitor) throws DBException {
         return getDataSource().supportsInformationSchema() ?
-                eventCache.getAllObjects(monitor, this) :
+            (monitor == null ? eventCache.getCachedObjects() : eventCache.getAllObjects(monitor, this)) :
                 Collections.emptyList();
     }
 
     @Association
     public Collection<MySQLSequence> getSequences(DBRProgressMonitor monitor) throws DBException {
         return getDataSource().supportsInformationSchema() ?
-                sequenceCache.getAllObjects(monitor, this) :
+            (monitor == null ? sequenceCache.getCachedObjects() : sequenceCache.getAllObjects(monitor, this)) :
                 Collections.emptyList();
     }
 
     @Override
-    public Collection<MySQLTableBase> getChildren(@NotNull DBRProgressMonitor monitor)
+    public Collection<MySQLTableBase> getChildren(@Nullable DBRProgressMonitor monitor)
         throws DBException
     {
-        return getTableCache().getAllObjects(monitor, this);
+        return monitor == null ? tableCache.getCachedObjects() : tableCache.getAllObjects(monitor, this);
     }
 
     @Override

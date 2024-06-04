@@ -34,7 +34,7 @@ public interface DBSStructCache<OWNER extends DBSObject, OBJECT extends DBSObjec
     DBSObjectCache<OBJECT, CHILD> getChildrenCache(@NotNull OBJECT forObject);
 
     @Nullable
-    Collection<CHILD> getChildren(@NotNull DBRProgressMonitor monitor, @NotNull OWNER owner, OBJECT forObject)
+    Collection<CHILD> getChildren(@Nullable DBRProgressMonitor monitor, @NotNull OWNER owner, OBJECT forObject)
         throws DBException;
 
     @Nullable

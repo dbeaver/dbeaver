@@ -230,7 +230,7 @@ public class WMINamespace extends WMIContainer implements DBSObjectContainer, DB
     }
 
     @Override
-    public Collection<? extends WMIContainer> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException
+    public Collection<? extends WMIContainer> getChildren(@Nullable DBRProgressMonitor monitor) throws DBException
     {
         List<WMIContainer> children = new ArrayList<>();
         children.addAll(getNamespaces(monitor));

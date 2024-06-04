@@ -223,7 +223,7 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
     }
 
     @Override
-    public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSObject> getChildren(@Nullable DBRProgressMonitor monitor) throws DBException {
         return !containers.isEmpty() ? containers.values() : entities.values();
     }
 

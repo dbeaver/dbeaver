@@ -202,7 +202,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
     @Nullable
     @Override
-    public List<? extends GenericTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
+    public List<? extends GenericTableColumn> getAttributes(@Nullable DBRProgressMonitor monitor)
         throws DBException {
         return this.getContainer().getTableCache().getChildren(monitor, getContainer(), this);
     }
@@ -232,7 +232,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     }
 
     @Override
-    public Collection<? extends GenericTableIndex> getIndexes(DBRProgressMonitor monitor)
+    public Collection<? extends GenericTableIndex> getIndexes(@Nullable DBRProgressMonitor monitor)
         throws DBException {
         if (getDataSource().getInfo().supportsIndexes()) {
             // Read indexes using cache
@@ -243,7 +243,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
     @Nullable
     @Override
-    public List<GenericUniqueKey> getConstraints(@NotNull DBRProgressMonitor monitor)
+    public List<GenericUniqueKey> getConstraints(@Nullable DBRProgressMonitor monitor)
         throws DBException {
         if (getDataSource().getInfo().supportsReferentialIntegrity() || getDataSource().getInfo().supportsIndexes()) {
             // ensure all columns are already cached
@@ -267,7 +267,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     }
 
     @Override
-    public Collection<GenericTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor)
+    public Collection<GenericTableForeignKey> getReferences(@Nullable DBRProgressMonitor monitor)
         throws DBException {
         if (getDataSource().getInfo().supportsReferentialIntegrity()) {
             return loadReferences(monitor);
@@ -276,7 +276,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     }
 
     @Override
-    public Collection<? extends GenericTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor)
+    public Collection<? extends GenericTableForeignKey> getAssociations(@Nullable DBRProgressMonitor monitor)
         throws DBException {
         if (getDataSource().getInfo().supportsReferentialIntegrity()) {
             return getContainer().getForeignKeysCache().getObjects(monitor, getContainer(), this);
@@ -399,7 +399,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
     private List<GenericTableForeignKey> loadReferences(DBRProgressMonitor monitor)
         throws DBException {
-        if (!isPersisted() || !getDataSource().getInfo().supportsReferentialIntegrity()) {
+        if (!isPersisted() || !getDataSource().getInfo().supportsReferentialIntegrity() || monitor == null) {
             return new ArrayList<>();
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table relations")) {
@@ -539,7 +539,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
     @Nullable
     @Association
-    public List<? extends GenericTrigger> getTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public List<? extends GenericTrigger> getTriggers(@Nullable DBRProgressMonitor monitor) throws DBException {
         GenericStructContainer parentObject = getParentObject();
         if (parentObject != null) {
             TableTriggerCache tableTriggerCache = parentObject.getTableTriggerCache();

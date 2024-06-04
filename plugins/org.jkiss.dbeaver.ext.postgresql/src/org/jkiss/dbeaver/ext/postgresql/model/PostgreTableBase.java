@@ -199,7 +199,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
      * @param monitor progress monitor
      */
     @Override
-    public List<? extends PostgreTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
+    public List<? extends PostgreTableColumn> getAttributes(@Nullable DBRProgressMonitor monitor)
         throws DBException
     {
         return getContainer().getSchema().getTableCache().getChildren(monitor, getContainer(), this);
@@ -232,7 +232,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     }
 
     @Override
-    public Collection<PostgreTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Collection<PostgreTableConstraint> getConstraints(@Nullable DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
@@ -244,7 +244,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
 
     @Override
     @Association
-    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor)
+    public Collection<? extends DBSEntityAssociation> getReferences(@Nullable DBRProgressMonitor monitor)
         throws DBException
     {
         return null;
@@ -252,7 +252,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
 
     @Association
     @Override
-    public synchronized Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor)
+    public synchronized Collection<? extends DBSEntityAssociation> getAssociations(@Nullable DBRProgressMonitor monitor)
         throws DBException
     {
         return null;

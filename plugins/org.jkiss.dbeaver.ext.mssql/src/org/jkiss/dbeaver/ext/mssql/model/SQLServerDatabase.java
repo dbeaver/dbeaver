@@ -333,8 +333,8 @@ public class SQLServerDatabase
     }
 
     @Override
-    public Collection<SQLServerSchema> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return schemaCache.getAllObjects(monitor, this);
+    public Collection<SQLServerSchema> getChildren(@Nullable DBRProgressMonitor monitor) throws DBException {
+        return monitor == null ? schemaCache.getCachedObjects() : schemaCache.getAllObjects(monitor, this);
     }
 
     @Override

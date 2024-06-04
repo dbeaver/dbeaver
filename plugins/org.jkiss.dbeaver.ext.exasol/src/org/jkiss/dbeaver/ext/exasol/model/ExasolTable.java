@@ -327,7 +327,7 @@ public class ExasolTable extends ExasolTableBase implements DBPScriptObject, DBP
     @Nullable
     @Override
     @Association
-    public Collection<ExasolTableUniqueKey> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Collection<ExasolTableUniqueKey> getConstraints(@Nullable DBRProgressMonitor monitor) throws DBException {
         return getContainer().getConstraintCache().getObjects(monitor, getContainer(), this);
     }
 
@@ -337,7 +337,7 @@ public class ExasolTable extends ExasolTableBase implements DBPScriptObject, DBP
 
     @Override
     @Association
-    public Collection<ExasolTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Collection<ExasolTableForeignKey> getAssociations(@Nullable DBRProgressMonitor monitor) throws DBException {
     	return getSchema().getAssociationCache().getObjects(monitor, getSchema(), this);
     }
     
@@ -376,6 +376,16 @@ public class ExasolTable extends ExasolTableBase implements DBPScriptObject, DBP
         getContainer().getAssociationCache().clearObjectCache(this);
 
         return this;
+    }
+
+    @Override
+    public ExasolTableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException {
+        return getContainer().getTableCache().getChild(monitor, getContainer(), this, attributeName);
+    }
+
+    @Override
+    public List<ExasolTableColumn> getAttributes(@Nullable DBRProgressMonitor monitor) throws DBException {
+        return getContainer().getTableCache().getChildren(monitor, getContainer(), this);
     }
 
     @Override
@@ -432,7 +442,7 @@ public class ExasolTable extends ExasolTableBase implements DBPScriptObject, DBP
         setHasPartitionKey(hasPartitionKey);
     }
     
-    public List<ExasolTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+    public List<ExasolTableIndex> getIndexes(@Nullable DBRProgressMonitor monitor) throws DBException {
         return getIndexCache().getObjects(monitor, getSchema(), getObject());
     }
     
@@ -442,7 +452,7 @@ public class ExasolTable extends ExasolTableBase implements DBPScriptObject, DBP
     }
     
     @Override
-    public Collection<ExasolTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Collection<ExasolTableForeignKey> getReferences(@Nullable DBRProgressMonitor monitor) throws DBException {
         ExasolTableForeignKeyCache associationCache = getSchema().getAssociationCache();
         Collection<ExasolTableForeignKey> refForeignKeys = new ArrayList<ExasolTableForeignKey>();
         for (ExasolTableForeignKey exasolTableForeignKey : associationCache.getObjects(monitor, getSchema(), null)) {

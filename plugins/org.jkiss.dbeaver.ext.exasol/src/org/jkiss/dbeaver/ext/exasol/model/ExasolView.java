@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.exasol.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.editors.ExasolSourceObject;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
@@ -42,6 +43,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class ExasolView extends ExasolTableBase implements ExasolSourceObject, DBSView {
@@ -155,19 +157,29 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject, D
         return this;
     }
 
+    @Override
+    public ExasolTableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException {
+        return getContainer().getViewCache().getChild(monitor, getSchema(), (ExasolView) this, attributeName);
+    }
+
+    @Override
+    public List<ExasolTableColumn> getAttributes(@Nullable DBRProgressMonitor monitor) throws DBException {
+        return getContainer().getViewCache().getChildren(monitor, getContainer(), (ExasolView) this);
+    }
+
 
     // -----------------
     // Associations (Imposed from DBSTable). In Exasol, Most of objects "derived"
     // from Tables don't have those..
     // -----------------
     @Override
-    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityAssociation> getReferences(@Nullable DBRProgressMonitor monitor) throws DBException {
         return Collections.emptyList();
     }
 
 
     @Override
-    public Collection<ExasolTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Collection<ExasolTableForeignKey> getAssociations(@Nullable DBRProgressMonitor monitor) throws DBException {
         return Collections.emptyList();
     }
 

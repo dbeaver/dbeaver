@@ -249,9 +249,9 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
     @Nullable
     public SQLServerTableType getTableType(DBRProgressMonitor monitor, long tableId) throws DBException {
-        for (SQLServerTableBase table : tableCache.getAllObjects(monitor, this)) {
-            if (table.getObjectId() == tableId && table instanceof SQLServerTableType) {
-                return (SQLServerTableType) table;
+        for (SQLServerTableBase table : getTables(monitor)) {
+            if (table.getObjectId() == tableId && table instanceof SQLServerTableType tt) {
+                return tt;
             }
         }
         log.debug("Table type '" + tableId + "' not found in schema " + getName());
@@ -261,10 +261,10 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
 
     @Override
-    public List<SQLServerObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public List<SQLServerObject> getChildren(@Nullable DBRProgressMonitor monitor) throws DBException {
         List<SQLServerObject> result = new ArrayList<>();
-        result.addAll(tableCache.getAllObjects(monitor, this));
-        result.addAll(synonymCache.getAllObjects(monitor, this));
+        result.addAll(monitor == null ? tableCache.getCachedObjects() : tableCache.getAllObjects(monitor, this));
+        result.addAll(monitor == null ? synonymCache.getCachedObjects() : synonymCache.getAllObjects(monitor, this));
         return result;
     }
 

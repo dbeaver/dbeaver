@@ -648,9 +648,11 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     @Association
     public Collection<PostgreSchema> getSchemas(DBRProgressMonitor monitor) throws DBException {
-        checkInstanceConnection(monitor);
+        if (monitor != null) {
+            checkInstanceConnection(monitor);
+        }
         // Get all schemas
-        return schemaCache.getAllObjects(monitor, this);
+        return monitor == null ? schemaCache.getCachedObjects() : schemaCache.getAllObjects(monitor, this);
     }
 
     @Nullable
@@ -814,7 +816,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     }
 
     @Override
-    public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSObject> getChildren(@Nullable DBRProgressMonitor monitor) throws DBException {
         return getSchemas(monitor);
     }
 

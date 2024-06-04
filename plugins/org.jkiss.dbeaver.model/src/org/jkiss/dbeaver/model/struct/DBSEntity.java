@@ -45,7 +45,7 @@ public interface DBSEntity extends DBSObject {
      * @throws org.jkiss.dbeaver.DBException on any DB error
      */
     @Nullable
-    List<? extends DBSEntityAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException;
+    List<? extends DBSEntityAttribute> getAttributes(@Nullable DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Retrieve attribute by it's name (case insensitive)
@@ -65,7 +65,7 @@ public interface DBSEntity extends DBSObject {
      * @throws org.jkiss.dbeaver.DBException on any DB error
      */
     @Nullable
-    Collection<? extends DBSEntityConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends DBSEntityConstraint> getConstraints(@Nullable DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Gets this entity associations
@@ -75,7 +75,7 @@ public interface DBSEntity extends DBSObject {
      * @throws org.jkiss.dbeaver.DBException on any DB error
      */
     @Nullable
-    Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends DBSEntityAssociation> getAssociations(@Nullable DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Gets associations which refers this entity
@@ -85,6 +85,6 @@ public interface DBSEntity extends DBSObject {
      * @throws DBException on any DB error
      */
     @Nullable
-    Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends DBSEntityAssociation> getReferences(@Nullable DBRProgressMonitor monitor) throws DBException;
 
 }

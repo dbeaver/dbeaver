@@ -114,14 +114,16 @@ public abstract class JDBCCompositeCache<
         return getObjects(monitor, owner, null);
     }
 
-    public List<OBJECT> getObjects(@NotNull DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
+    public List<OBJECT> getObjects(@Nullable DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
         throws DBException
     {
-        loadObjects(monitor, owner, forParent);
+        if (monitor == null) {
+            loadObjects(monitor, owner, forParent);
+        }
         return getCachedObjects(forParent);
     }
 
-    public <TYPE extends OBJECT> List<TYPE > getTypedObjects(@NotNull DBRProgressMonitor monitor, OWNER owner, PARENT forParent, Class<TYPE> type)
+    public <TYPE extends OBJECT> List<TYPE > getTypedObjects(@Nullable DBRProgressMonitor monitor, OWNER owner, PARENT forParent, Class<TYPE> type)
         throws DBException
     {
         List<TYPE> result = new ArrayList<>();

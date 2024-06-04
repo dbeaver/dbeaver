@@ -176,7 +176,7 @@ public class RedshiftExternalTable extends PostgreTable implements DBPRefreshabl
      * @param monitor progress monitor
      */
     @Override
-    public List<RedshiftExternalTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
+    public List<RedshiftExternalTableColumn> getAttributes(@Nullable DBRProgressMonitor monitor)
         throws DBException
     {
         return getContainer().getExternalTableCache().getChildren(monitor, getContainer(), this);
@@ -204,12 +204,12 @@ public class RedshiftExternalTable extends PostgreTable implements DBPRefreshabl
     }
 
     @Override
-    public Collection<PostgreIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+    public Collection<PostgreIndex> getIndexes(@Nullable DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
     @Override
-    public Collection<PostgreTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Collection<PostgreTableConstraint> getConstraints(@Nullable DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
@@ -221,7 +221,7 @@ public class RedshiftExternalTable extends PostgreTable implements DBPRefreshabl
 
     @Override
     @Association
-    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor)
+    public Collection<? extends DBSEntityAssociation> getReferences(@Nullable DBRProgressMonitor monitor)
         throws DBException
     {
         return null;
@@ -229,7 +229,7 @@ public class RedshiftExternalTable extends PostgreTable implements DBPRefreshabl
 
     @Association
     @Override
-    public synchronized Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor)
+    public synchronized Collection<? extends DBSEntityAssociation> getAssociations(@Nullable DBRProgressMonitor monitor)
         throws DBException
     {
         return null;

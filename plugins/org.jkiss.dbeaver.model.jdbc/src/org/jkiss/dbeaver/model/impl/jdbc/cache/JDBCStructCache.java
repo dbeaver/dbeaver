@@ -205,11 +205,12 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
     }
 
     @Nullable
-    public List<CHILD> getChildren(@NotNull DBRProgressMonitor monitor, @NotNull OWNER owner, final OBJECT forObject) throws DBException {
+    public List<CHILD> getChildren(@Nullable DBRProgressMonitor monitor, @NotNull OWNER owner, final OBJECT forObject) throws DBException {
         loadChildren(monitor, owner, forObject);
         synchronized (childrenCache) {
             SimpleObjectCache<OBJECT, CHILD> nestedCache = childrenCache.get(forObject);
-            return nestedCache == null ? null : nestedCache.getAllObjects(monitor, null);
+            return nestedCache == null ? null :
+                (monitor == null ? nestedCache.getCachedObjects() : nestedCache.getAllObjects(monitor, null));
         }
     }
 

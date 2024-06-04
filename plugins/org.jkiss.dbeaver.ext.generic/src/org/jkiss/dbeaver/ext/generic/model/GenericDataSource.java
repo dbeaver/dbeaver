@@ -670,7 +670,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     }
 
     @Override
-    public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor)
+    public Collection<? extends DBSObject> getChildren(@Nullable DBRProgressMonitor monitor)
         throws DBException
     {
         if (!CommonUtils.isEmpty(getCatalogs())) {

@@ -53,12 +53,12 @@ public class HiveTable extends GenericTable implements DBPImageProvider, DBPName
 
     @Nullable
     @Override
-    public synchronized List<HiveTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public synchronized List<HiveTableColumn> getAttributes(@Nullable DBRProgressMonitor monitor) throws DBException {
         return (List<HiveTableColumn>) super.getAttributes(monitor);
     }
 
     @Override
-    public Collection<HiveIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+    public Collection<HiveIndex> getIndexes(@Nullable DBRProgressMonitor monitor) throws DBException {
         return indexCache.getObjects(monitor, getContainer(), this);
     }
 

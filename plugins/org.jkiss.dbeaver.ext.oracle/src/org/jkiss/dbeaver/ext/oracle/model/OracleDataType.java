@@ -457,15 +457,16 @@ public class OracleDataType extends OracleObject<DBSObject>
 
     @Override
     @Association
-    public List<OracleDataTypeAttribute> getAttributes(@NotNull DBRProgressMonitor monitor)
+    public List<OracleDataTypeAttribute> getAttributes(@Nullable DBRProgressMonitor monitor)
         throws DBException
     {
-        return attributeCache != null ? attributeCache.getAllObjects(monitor, this) : null;
+        return attributeCache == null ? null :
+            (monitor == null ? attributeCache.getCachedObjects() : attributeCache.getAllObjects(monitor, this));
     }
 
     @Nullable
     @Override
-    public Collection<? extends DBSEntityConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException
+    public Collection<? extends DBSEntityConstraint> getConstraints(@Nullable DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
@@ -485,13 +486,13 @@ public class OracleDataType extends OracleObject<DBSObject>
     }
 
     @Override
-    public Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException
+    public Collection<? extends DBSEntityAssociation> getAssociations(@Nullable DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
 
     @Override
-    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException
+    public Collection<? extends DBSEntityAssociation> getReferences(@Nullable DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }

@@ -151,9 +151,9 @@ public class MySQLPackage
     }
 
     @Override
-    public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException
+    public Collection<? extends DBSObject> getChildren(@Nullable DBRProgressMonitor monitor) throws DBException
     {
-        return proceduresCache.getAllObjects(monitor, this);
+        return monitor == null ? proceduresCache.getCachedObjects() : proceduresCache.getAllObjects(monitor, this);
     }
 
     @Override

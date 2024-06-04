@@ -373,15 +373,15 @@ public class OracleSchema extends OracleGlobalObject implements
     }
 
     @Override
-    public Collection<DBSObject> getChildren(@NotNull DBRProgressMonitor monitor)
+    public Collection<DBSObject> getChildren(@Nullable DBRProgressMonitor monitor)
         throws DBException
     {
         List<DBSObject> children = new ArrayList<>(
-            tableCache.getAllObjects(monitor, this));
+            monitor == null ? tableCache.getCachedObjects() : tableCache.getAllObjects(monitor, this));
         if (SYNONYMS_AS_CHILDREN) {
-            children.addAll(synonymCache.getAllObjects(monitor, this));
+            children.addAll(monitor == null ? synonymCache.getCachedObjects() : synonymCache.getAllObjects(monitor, this));
         }
-        children.addAll(packageCache.getAllObjects(monitor, this));
+        children.addAll(monitor == null ? packageCache.getCachedObjects() : packageCache.getAllObjects(monitor, this));
         return children;
     }
 

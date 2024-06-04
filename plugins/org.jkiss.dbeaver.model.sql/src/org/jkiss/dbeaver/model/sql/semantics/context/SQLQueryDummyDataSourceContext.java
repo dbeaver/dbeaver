@@ -209,7 +209,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         }
 
         @Override
-        public List<? extends DBSEntityAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        public List<? extends DBSEntityAttribute> getAttributes(@Nullable DBRProgressMonitor monitor) throws DBException {
             return this.getChildrenListImpl();
         }
 
@@ -219,12 +219,12 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         }
 
         @Override
-        public Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
+        public Collection<? extends DBSEntityAssociation> getAssociations(@Nullable DBRProgressMonitor monitor) throws DBException {
             return Collections.emptyList();
         }
 
         @Override
-        public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
+        public Collection<? extends DBSEntityAssociation> getReferences(@Nullable DBRProgressMonitor monitor) throws DBException {
             return null;
         }
 
@@ -239,7 +239,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         }
 
         @Override
-        public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
+        public Collection<? extends DBSObject> getChildren(@Nullable DBRProgressMonitor monitor) throws DBException {
             return this.getChildrenListImpl();
         }
 
@@ -323,17 +323,17 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         }
 
         @Override
-        public Collection<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+        public Collection<? extends DBSTableIndex> getIndexes(@Nullable DBRProgressMonitor monitor) throws DBException {
             return Collections.emptyList();
         }
 
         @Override
-        public Collection<? extends DBSTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
+        public Collection<? extends DBSTableConstraint> getConstraints(@Nullable DBRProgressMonitor monitor) throws DBException {
             return Collections.emptyList();
         }
 
         @Override
-        public List<? extends DBSTrigger> getTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
+        public List<? extends DBSTrigger> getTriggers(@Nullable DBRProgressMonitor monitor) throws DBException {
             return Collections.emptyList();
         }
     }
