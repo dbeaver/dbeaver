@@ -71,9 +71,9 @@ public class CubridTable extends GenericTable
         return this.getDataSource().getObjectContainer().getCubridIndexCache().getObjects(monitor, getContainer(), this);
     }
     
-    public Collection<CubridPartition> getPartitions(DBRProgressMonitor monitor)
-            throws DBException
-    {
+    @NotNull
+    public Collection<CubridPartition> getPartitions(@NotNull DBRProgressMonitor monitor) throws DBException {
+
         return partitionCache.getAllObjects(monitor, this);
     }
 
