@@ -422,7 +422,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
         if (page.getControl() == null) {
             // TODO: We should respect pages that might not want to be scrollable (e.g. if they have their own scrollable controls)
-            item.setControl(UIUtils.createScrolledComposite(tabFolder));
+            item.setControl(UIUtils.createScrolledComposite(tabFolder, SWT.H_SCROLL | SWT.V_SCROLL));
         } else {
             item.setControl(page.getControl().getParent());
         }

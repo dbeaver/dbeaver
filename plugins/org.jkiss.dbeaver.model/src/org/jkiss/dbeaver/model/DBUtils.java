@@ -842,13 +842,12 @@ public final class DBUtils {
             if (curValue == null) {
                 break;
             }
-
             final DBDAttributeBinding parent = Objects.requireNonNull(attribute.getParent(depth - i - 1));
 
             try {
-                if (nestedIndexes == null || !isIndexedValue(parent, curValue)) {
+                if (!isIndexedValue(parent, curValue)) {
                     curValue = parent.extractNestedValue(curValue, 0);
-                } else if (curNestedIndex < nestedIndexes.length && isValidIndex(curValue, nestedIndexes[curNestedIndex])) {
+                } else if (isValidIndex(curValue, nestedIndexes[curNestedIndex])) {
                     curValue = parent.extractNestedValue(curValue, nestedIndexes[curNestedIndex]);
                     curNestedIndex++;
                 } else {
@@ -857,12 +856,14 @@ public final class DBUtils {
             } catch (Throwable e) {
                 return new DBDValueError(e);
             }
+
+            if (nestedIndexes == null || curNestedIndex >= nestedIndexes.length) {
+                break;
+            }
         }
 
         while (nestedIndexes != null && curNestedIndex < nestedIndexes.length) {
-            if (curValue == null || !isIndexedValue(attribute, curValue)) {
-                break;
-            } else if (isValidIndex(curValue, nestedIndexes[curNestedIndex])) {
+            if (curValue != null && isIndexedValue(attribute, curValue) && isValidIndex(curValue, nestedIndexes[curNestedIndex])) {
                 curValue = getValueElement(curValue, nestedIndexes[curNestedIndex]);
                 curNestedIndex++;
             } else {
