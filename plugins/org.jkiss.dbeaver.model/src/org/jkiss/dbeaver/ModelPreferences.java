@@ -156,6 +156,7 @@ public final class ModelPreferences
     public static final String CONTENT_CACHE_BLOB = "content.cache.blob"; //$NON-NLS-1$
     public static final String CONTENT_CACHE_MAX_SIZE = "content.cache.maxsize"; //$NON-NLS-1$
     public static final String META_SEPARATE_CONNECTION = "database.meta.separate.connection"; //$NON-NLS-1$
+    public static final String META_DISABLE_EXTRA_READ = "database.meta.disableAdditionalRead"; //$NON-NLS-1$
     public static final String META_CASE_SENSITIVE = "database.meta.casesensitive"; //$NON-NLS-1$
     public static final String META_USE_SERVER_SIDE_FILTERS = "database.meta.server.side.filters"; //$NON-NLS-1$
     public static final String META_EXTRA_DDL_INFO = "database.meta.extra.ddl.info"; //$NON-NLS-1$
@@ -283,6 +284,7 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, MEMORY_CONTENT_MAX_SIZE, 10000);
         PrefUtils.setDefaultPreferenceValue(store, META_SEPARATE_CONNECTION, SeparateConnectionBehavior.DEFAULT.name());
         PrefUtils.setDefaultPreferenceValue(store, META_CASE_SENSITIVE, false);
+        PrefUtils.setDefaultPreferenceValue(store, META_DISABLE_EXTRA_READ, false);
         PrefUtils.setDefaultPreferenceValue(store, META_EXTRA_DDL_INFO, true);
         PrefUtils.setDefaultPreferenceValue(store, META_USE_SERVER_SIDE_FILTERS, true);
 

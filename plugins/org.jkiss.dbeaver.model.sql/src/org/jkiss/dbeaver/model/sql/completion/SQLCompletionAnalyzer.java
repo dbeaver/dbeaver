@@ -1036,7 +1036,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         DBPDataSource dataSource = request.getContext().getDataSource();
         Collection<? extends DBSObject> children = null;
         if (parent instanceof DBSObjectContainer) {
-            children = ((DBSObjectContainer)parent).getChildren(monitor);
+              children = ((DBSObjectContainer)parent).getChildren(monitor);
         } else if (parent instanceof DBSEntity) {
             children = ((DBSEntity)parent).getAttributes(monitor);
         }
@@ -1087,7 +1087,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     }
                 }
             }
-            if (combinedMatch.length() > 0) {
+            if (!combinedMatch.isEmpty()) {
                 String replaceString = combinedMatch.toString();
 
                 proposals.add(createCompletionProposal(
@@ -1197,7 +1197,12 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
     }
 
     private SQLCompletionProposalBase makeProposalsFromObject(DBSObject object, boolean useShortName, Map<String, Object> params) {
-        DBNNode node = DBNUtils.getNodeByObject(monitor, object, false);
+        DBNNode node;
+        if (request.getContext().getDataSource().getContainer().isExtraMetadataReadEnabled()) {
+            node = DBNUtils.getNodeByObject(monitor, object, false);
+        } else {
+            node = DBNUtils.getNodeByObject(object);
+        }
         if (checkNavigatorNodes && node == null && (object instanceof DBSEntity || object instanceof DBSObjectContainer)) {
             return null;
         }
