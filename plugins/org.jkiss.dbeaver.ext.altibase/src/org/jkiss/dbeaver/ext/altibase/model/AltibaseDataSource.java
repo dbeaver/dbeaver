@@ -564,7 +564,8 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         return loadPropertyList(monitor);
     }
 
-    private List<AltibaseProperty> loadPropertyList(DBRProgressMonitor monitor) throws DBException {
+    @NotNull
+    private List<AltibaseProperty> loadPropertyList(@NotNull DBRProgressMonitor monitor) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load properties")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM V$PROPERTY ORDER BY NAME ASC" )) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
