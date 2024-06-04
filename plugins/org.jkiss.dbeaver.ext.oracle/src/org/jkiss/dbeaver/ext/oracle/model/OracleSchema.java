@@ -376,8 +376,8 @@ public class OracleSchema extends OracleGlobalObject implements
     public Collection<DBSObject> getChildren(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        List<DBSObject> children = new ArrayList<>();
-        children.addAll(tableCache.getAllObjects(monitor, this));
+        List<DBSObject> children = new ArrayList<>(
+            tableCache.getAllObjects(monitor, this));
         if (SYNONYMS_AS_CHILDREN) {
             children.addAll(synonymCache.getAllObjects(monitor, this));
         }
@@ -1391,7 +1391,7 @@ public class OracleSchema extends OracleGlobalObject implements
     static class SynonymCache extends JDBCObjectLookupCache<OracleSchema, OracleSynonym> {
         @NotNull
         @Override
-        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner, OracleSynonym object, String objectName) throws SQLException
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner, @Nullable OracleSynonym object, @Nullable String objectName) throws SQLException
         {
             String synonymTypeFilter = (session.getDataSource().getContainer().getPreferenceStore().getBoolean(OracleConstants.PREF_DBMS_READ_ALL_SYNONYMS) ?
                 "" :

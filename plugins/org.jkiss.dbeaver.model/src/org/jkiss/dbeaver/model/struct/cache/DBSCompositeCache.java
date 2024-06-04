@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model.struct.cache;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.List;
@@ -26,8 +28,8 @@ import java.util.List;
  */
 public interface DBSCompositeCache<PARENT extends DBSObject, OBJECT extends DBSObject> {
 
-    List<OBJECT> getCachedObjects(PARENT forParent);
+    List<OBJECT> getCachedObjects(@Nullable PARENT forParent);
 
-    void clearObjectCache(PARENT forParent);
+    void clearObjectCache(@NotNull PARENT forParent);
 
 }

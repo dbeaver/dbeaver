@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.exasol.model.cache;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTable;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableColumn;
@@ -40,8 +41,9 @@ public class ExasolTablePartitionColumnCache extends AbstractObjectCache<ExasolT
     	tablePartitionColumns = new ArrayList<ExasolTablePartitionColumn>();
 	}
     
-	@Override
-	public Collection<ExasolTablePartitionColumn> getAllObjects(DBRProgressMonitor monitor, ExasolTable owner)
+	@NotNull
+    @Override
+	public Collection<ExasolTablePartitionColumn> getAllObjects(@NotNull DBRProgressMonitor monitor, ExasolTable owner)
 			throws DBException {
 		if (tablePartitionColumns.isEmpty() && ! super.fullCache)
 		{
@@ -65,7 +67,7 @@ public class ExasolTablePartitionColumnCache extends AbstractObjectCache<ExasolT
 	}
 
 	@Override
-	public ExasolTablePartitionColumn getObject(DBRProgressMonitor monitor, ExasolTable owner, String name)
+	public ExasolTablePartitionColumn getObject(@NotNull DBRProgressMonitor monitor, @NotNull ExasolTable owner, @NotNull String name)
 			throws DBException {
 		if (!super.isFullyCached())
 		{

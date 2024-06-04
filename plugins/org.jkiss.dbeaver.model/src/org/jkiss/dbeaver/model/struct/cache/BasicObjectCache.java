@@ -29,7 +29,7 @@ public abstract class BasicObjectCache<OWNER extends DBSObject, OBJECT extends D
 
     @Nullable
     @Override
-    public OBJECT getObject(@NotNull DBRProgressMonitor monitor, @Nullable OWNER owner, @NotNull String name) throws DBException {
+    public OBJECT getObject(@NotNull DBRProgressMonitor monitor, @NotNull OWNER owner, @NotNull String name) throws DBException {
         if (!isFullyCached()) {
             getAllObjects(monitor, owner);
         }

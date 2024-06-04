@@ -283,7 +283,7 @@ public class SQLServerDatabase
         }
 
         @Override
-        public void setCache(List<SQLServerDataType> cache) {
+        public void setCache(@NotNull List<SQLServerDataType> cache) {
             super.setCache(cache);
             for (SQLServerDataType dt : cache) {
                 dataTypeMap.put(dt.getObjectId(), dt);
@@ -424,7 +424,7 @@ public class SQLServerDatabase
 
         @NotNull
         @Override
-        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull SQLServerDatabase database, SQLServerDatabaseTrigger object, String objectName) throws SQLException {
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull SQLServerDatabase database, @Nullable SQLServerDatabaseTrigger object, @Nullable String objectName) throws SQLException {
             StringBuilder sql = new StringBuilder(500);
             sql.append(
                 "SELECT t.* FROM \n")

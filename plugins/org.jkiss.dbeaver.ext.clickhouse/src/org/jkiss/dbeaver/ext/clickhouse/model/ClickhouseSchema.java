@@ -19,12 +19,7 @@ package org.jkiss.dbeaver.ext.clickhouse.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
-import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
-import org.jkiss.dbeaver.ext.generic.model.TableCache;
+import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.DBPObjectStatisticsCollector;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -58,6 +53,7 @@ public class ClickhouseSchema extends GenericSchema implements DBPObjectStatisti
             protected void detectCaseSensitivity(DBSObject object) {
                 this.setCaseSensitive(true);
             }
+            @NotNull
             @Override
             protected SimpleObjectCache<GenericTableBase, GenericTableColumn> createNestedCache() {
                 return new SimpleObjectCache<>() {
