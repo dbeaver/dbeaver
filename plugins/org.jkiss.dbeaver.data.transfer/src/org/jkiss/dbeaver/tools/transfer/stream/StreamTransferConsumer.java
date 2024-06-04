@@ -1075,7 +1075,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                                 if (count <= 0) {
                                     break;
                                 }
-                                String content = new String(readBuffer, 0, count, settings.getOutputEncoding());
+                                String content = new String(readBuffer, 0, count, cs.getCharset());
                                 String contentAfterEscaping = JSONUtils.escapeJsonString(content);
                                 writer.write(contentAfterEscaping);
                             }
