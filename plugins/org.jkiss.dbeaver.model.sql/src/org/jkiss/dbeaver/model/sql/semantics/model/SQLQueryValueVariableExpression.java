@@ -53,7 +53,7 @@ public class SQLQueryValueVariableExpression extends SQLQueryValueExpression {
         }
     }
 
-    @NotNull
+    @Nullable
     private final SQLQuerySymbolEntry name;
     @NotNull
     private final VariableExpressionKind kind;
@@ -62,7 +62,7 @@ public class SQLQueryValueVariableExpression extends SQLQueryValueExpression {
     
     public SQLQueryValueVariableExpression(
         @NotNull STMTreeNode syntaxNode,
-        @NotNull SQLQuerySymbolEntry name,
+        @Nullable SQLQuerySymbolEntry name,
         @NotNull VariableExpressionKind kind,
         @NotNull String rawName
     ) {
