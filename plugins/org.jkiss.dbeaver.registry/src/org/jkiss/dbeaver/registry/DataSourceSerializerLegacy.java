@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -37,7 +36,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
-import org.jkiss.dbeaver.runtime.encode.PasswordEncrypter;
 import org.jkiss.dbeaver.runtime.encode.SimpleStringEncrypter;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
@@ -57,8 +55,6 @@ import java.util.List;
 class DataSourceSerializerLegacy implements DataSourceSerializer
 {
     private static final Log log = Log.getLog(DataSourceSerializerLegacy.class);
-
-    private static PasswordEncrypter ENCRYPTOR = new SimpleStringEncrypter();
 
     private final DataSourceRegistry registry;
 
@@ -88,19 +84,6 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
             throw new DBException("Datasource config parse error", ex);
         }
         return false;
-    }
-
-    @Nullable
-    private static String decryptPassword(String encPassword) {
-        if (!CommonUtils.isEmpty(encPassword)) {
-            try {
-                encPassword = ENCRYPTOR.decrypt(encPassword);
-            } catch (Throwable e) {
-                // could not decrypt - use as is
-                encPassword = null;
-            }
-        }
-        return encPassword;
     }
 
     private class DataSourcesParser implements SAXListener {
@@ -476,7 +459,17 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
             }
             if (CommonUtils.isEmpty(creds[1])) {
                 final String encPassword = xmlAttrs.getValue(RegistryConstants.ATTR_PASSWORD);
-                creds[1] = CommonUtils.isEmpty(encPassword) ? null : decryptPassword(encPassword);
+                if (CommonUtils.isNotEmpty(encPassword)) {
+                    try {
+                        // Backward compatibility
+                        creds[1] = SimpleStringEncrypter.INSTANCE.decrypt(creds[1]);
+                    } catch (Throwable e) {
+                        // could not decrypt - use as is
+                        creds[1] = null;
+                    }
+                } else {
+                    creds[1] = null;
+                }
             }
             return creds;
         }
