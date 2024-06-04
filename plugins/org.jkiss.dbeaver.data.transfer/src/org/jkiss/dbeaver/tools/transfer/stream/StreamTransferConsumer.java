@@ -1064,7 +1064,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                                 final byte[] bytes = buffer.toByteArray();
                                 final String binaryString = dataSource.getSQLDialect().getNativeBinaryFormatter().toString(bytes, 0, bytes.length);
                                 writer.write(binaryString);
-                                break;
                             }
                             break;
                         }
