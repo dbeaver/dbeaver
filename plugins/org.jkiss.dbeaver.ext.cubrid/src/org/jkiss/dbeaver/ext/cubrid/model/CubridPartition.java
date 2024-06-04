@@ -26,10 +26,10 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 
 public class CubridPartition extends CubridTable implements DBSTablePartition {
 
-    private CubridTable parentTable;
-    private String expression;
-    private Integer[] expression_values;
-    private String comment;
+    private final CubridTable parentTable;
+    private final String expression;
+    private final Integer[] expressionValues;
+    private final String comment;
     public CubridPartition(
         @NotNull CubridTable table,
         @NotNull String name,
@@ -39,7 +39,7 @@ public class CubridPartition extends CubridTable implements DBSTablePartition {
         super(table.getContainer(), name, type,dbResult);
         this.parentTable = table;
         expression = JDBCUtils.safeGetString(dbResult, "partition_expr");
-        expression_values = (Integer[]) JDBCUtils.safeGetObject(dbResult, "partition_values");
+        expressionValues = (Integer[]) JDBCUtils.safeGetObject(dbResult, "partition_values");
         comment = JDBCUtils.safeGetString(dbResult, "comment");
     }
 
@@ -74,7 +74,7 @@ public class CubridPartition extends CubridTable implements DBSTablePartition {
     @NotNull
     @Property(viewable = true, order = 6)
     public Integer[] getExpressionValues() {
-        return expression_values;
+        return expressionValues;
     }
     
     
