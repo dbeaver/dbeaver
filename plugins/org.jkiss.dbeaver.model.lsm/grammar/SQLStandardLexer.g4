@@ -189,7 +189,7 @@ lexer grammar SQLStandardLexer;
                     lastNamedParameterPrefixEnd = -1;
                     return false;
                 } else {
-                    captured += c;
+                    captured += (char)c;
                 }
             }
             if (e.getValue().contains(captured)) {
@@ -273,7 +273,7 @@ CORRESPONDING: C O R R E S P O N D I N G ;
 COUNT: C O U N T ;
 CREATE: C R E A T E ;
 CROSS: C R O S S ;
-CURRENT_USER: C U R R E N T '_'U S E R ;
+CURRENT_USER: C U R R E N T '_' U S E R ;
 DATE: D A T E ;
 DAY: D A Y ;
 DEFAULT: D E F A U L T ;
