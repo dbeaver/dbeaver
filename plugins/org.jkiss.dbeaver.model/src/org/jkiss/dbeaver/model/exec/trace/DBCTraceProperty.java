@@ -16,8 +16,10 @@
  */
 package org.jkiss.dbeaver.model.exec.trace;
 
+import org.jkiss.dbeaver.model.DBPObject;
+
 /**
- * DBC Trace property
+ * DBC Trace property object
  */
-public interface DBCTraceProperty {
+public interface DBCTraceProperty extends DBPObject {
 }
