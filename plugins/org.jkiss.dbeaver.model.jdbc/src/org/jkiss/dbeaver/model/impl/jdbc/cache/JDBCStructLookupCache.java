@@ -48,11 +48,11 @@ public abstract class JDBCStructLookupCache<OWNER extends DBSObject, OBJECT exte
     }
 
     @Override
-    public OBJECT getObject(@NotNull DBRProgressMonitor monitor, @NotNull OWNER owner, @NotNull String name)
+    public OBJECT getObject(@Nullable DBRProgressMonitor monitor, @NotNull OWNER owner, @NotNull String name)
         throws DBException
     {
         OBJECT cachedObject = getCachedObject(name);
-        if (cachedObject != null) {
+        if (cachedObject != null || monitor == null) {
             return cachedObject;
         }
         if (isFullyCached() || owner.getDataSource() == null || !owner.getDataSource().getContainer().isConnected() || missingNames.contains(name)) {

@@ -412,7 +412,7 @@ public class MySQLCatalog implements
     }
 
     @Override
-    public MySQLTableBase getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
+    public MySQLTableBase getChild(@Nullable DBRProgressMonitor monitor, @NotNull String childName)
         throws DBException
     {
         return getTableCache().getObject(monitor, this, childName);

@@ -413,7 +413,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     }
 
     @Override
-    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
+    public DBSObject getChild(@Nullable DBRProgressMonitor monitor, @NotNull String childName)
         throws DBException {
         return getTable(monitor, childName);
     }

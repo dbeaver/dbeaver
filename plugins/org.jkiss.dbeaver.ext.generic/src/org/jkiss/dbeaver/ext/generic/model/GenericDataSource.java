@@ -685,7 +685,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     }
 
     @Override
-    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
+    public DBSObject getChild(@Nullable DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
         if (!CommonUtils.isEmpty(getCatalogs())) {
             return getCatalog(childName);
         } else if (!CommonUtils.isEmpty(getSchemas())) {

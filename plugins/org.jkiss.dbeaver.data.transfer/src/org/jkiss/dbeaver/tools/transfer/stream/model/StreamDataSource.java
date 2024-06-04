@@ -88,7 +88,7 @@ public class StreamDataSource extends AbstractSimpleDataSource<StreamExecutionCo
 
     @Nullable
     @Override
-    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
+    public DBSObject getChild(@Nullable DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
         return null;
     }
 

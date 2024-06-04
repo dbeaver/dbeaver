@@ -69,7 +69,7 @@ public interface DBSObjectContainer extends DBSObject
      */
     @DPIElement
     @Nullable
-    DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException;
+    DBSObject getChild(@Nullable DBRProgressMonitor monitor, @NotNull String childName) throws DBException;
 
     /**
      * Gets type of primary child elements.

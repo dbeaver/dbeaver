@@ -96,13 +96,14 @@ public class SQLSearchUtils
         if (dataSource == null) {
             return null;
         }
+        DBRProgressMonitor mdMonitor = dataSource.getContainer().isExtraMetadataReadEnabled() ? monitor : null;
         {
             List<String> unquotedNames = new ArrayList<>(nameList.size());
             for (String name : nameList) {
                 unquotedNames.add(DBUtils.getUnQuotedIdentifier(dataSource, name));
             }
 
-            DBSObject result = findObjectByPath(monitor, executionContext, objectContainer, unquotedNames, identifierDetector, useAssistant, isGlobalSearch);
+            DBSObject result = findObjectByPath(mdMonitor, executionContext, objectContainer, unquotedNames, identifierDetector, useAssistant, isGlobalSearch);
             if (result != null) {
                 return result;
             }
@@ -119,7 +120,7 @@ public class SQLSearchUtils
                 }
                 nameList.set(i, name);
             }
-            return findObjectByPath(monitor, executionContext, objectContainer, nameList, identifierDetector, useAssistant, isGlobalSearch);
+            return findObjectByPath(mdMonitor, executionContext, objectContainer, nameList, identifierDetector, useAssistant, isGlobalSearch);
         }
     }
 
@@ -137,7 +138,7 @@ public class SQLSearchUtils
 
     @Nullable
     public static DBSObject findObjectByPath(
-        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext executionContext,
         @NotNull DBSObjectContainer sc,
         @NotNull List<String> nameList,

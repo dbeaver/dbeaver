@@ -368,7 +368,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
     }
 
     @Override
-    public DB2Schema getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException
+    public DB2Schema getChild(@Nullable DBRProgressMonitor monitor, @NotNull String childName) throws DBException
     {
         return getSchema(monitor, childName);
     }

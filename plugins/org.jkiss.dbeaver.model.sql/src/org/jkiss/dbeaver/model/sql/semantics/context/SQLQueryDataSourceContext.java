@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.sql.semantics.context;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -62,7 +63,8 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
     @Nullable
     @Override
     public DBSEntity findRealTable(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
-        if (this.executionContext.getDataSource() instanceof DBSObjectContainer container) {
+        DBPDataSource dataSource = this.executionContext.getDataSource();
+        if (dataSource instanceof DBSObjectContainer container && dataSource.getContainer().isExtraMetadataReadEnabled()) {
             List<String> tableName2 = new ArrayList<>(tableName);
             DBSObject obj = SQLSearchUtils.findObjectByFQN(
                 monitor,

@@ -173,7 +173,7 @@ public class OraclePackage extends OracleSchemaObject
     }
 
     @Override
-    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException
+    public DBSObject getChild(@Nullable DBRProgressMonitor monitor, @NotNull String childName) throws DBException
     {
         return proceduresCache.getObject(monitor, this, childName);
     }

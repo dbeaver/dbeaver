@@ -150,7 +150,7 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
     }
 
     @Override
-    public ExasolTableBase getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
+    public ExasolTableBase getChild(@Nullable DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
 
         ExasolTableBase child = tableCache.getObject(monitor, this, childName);
         if (child == null) {

@@ -117,7 +117,7 @@ public class TiDBMySQLDataSource extends MySQLDataSource {
     }
 
     @Override
-    public MySQLCatalog getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) {
+    public MySQLCatalog getChild(@Nullable DBRProgressMonitor monitor, @NotNull String childName) {
         return getCatalog(childName);
     }
 

@@ -499,7 +499,7 @@ public class DBExecUtils {
         }
     }
 
-    public static DBSEntityConstraint getBestIdentifier(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table, DBDAttributeBinding[] bindings, boolean readMetaData)
+    public static DBSEntityConstraint getBestIdentifier(@Nullable DBRProgressMonitor monitor, @NotNull DBSEntity table, DBDAttributeBinding[] bindings, boolean readMetaData)
         throws DBException
     {
         if (table instanceof DBSDocumentContainer) {
@@ -678,12 +678,14 @@ public class DBExecUtils {
     {
         DBRProgressMonitor monitor = session.getProgressMonitor();
         DBPDataSource dataSource = session.getDataSource();
-        boolean readMetaData = dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_READ_METADATA);
+        DBPDataSourceContainer container = dataSource.getContainer();
+        boolean readMetaData = container.getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_READ_METADATA);
         if (!readMetaData && sourceEntity == null) {
             // Do not read metadata if source entity is not known
             return;
         }
-        boolean readReferences = dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_READ_REFERENCES);
+        boolean readReferences = container.getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_READ_REFERENCES);
+        DBRProgressMonitor mdMonitor = container.isExtraMetadataReadEnabled() ? monitor : null;
 
         final Map<DBCEntityMetaData, DBSEntity> entityBindingMap = new IdentityHashMap<>();
 
@@ -713,7 +715,7 @@ public class DBExecUtils {
                             entityMeta = sqlQuery.getEntityMetadata(false);
                         }
                         if (entityMeta != null) {
-                            entity = DBUtils.getEntityFromMetaData(monitor, session.getExecutionContext(), entityMeta);
+                            entity = DBUtils.getEntityFromMetaData(mdMonitor, session.getExecutionContext(), entityMeta);
                             if (entity != null) {
                                 queryEntityMetaScore = entityMeta.getCompleteScore();
                                 entityBindingMap.put(entityMeta, entity);
@@ -759,7 +761,7 @@ public class DBExecUtils {
                                 // MySQL returns source table name instead of view name. That's crazy.
                                 attrEntity = entity;
                             } else {
-                                attrEntity = DBUtils.getEntityFromMetaData(monitor, session.getExecutionContext(), attrEntityMeta);
+                                attrEntity = DBUtils.getEntityFromMetaData(mdMonitor, session.getExecutionContext(), attrEntityMeta);
 
                                 if (attrEntity == null) {
                                     log.debug("Table '" + DBUtils.getSimpleQualifiedName(attrEntityMeta.getCatalogName(), attrEntityMeta.getSchemaName(), attrEntityMeta.getEntityName()) + "' not found in metadata catalog");
@@ -774,9 +776,7 @@ public class DBExecUtils {
                 if (attrEntity == null) {
                     attrEntity = entity;
                 }
-                if (attrEntity != null && binding instanceof DBDAttributeBindingMeta) {
-                    DBDAttributeBindingMeta bindingMeta = (DBDAttributeBindingMeta) binding;
-
+                if (attrEntity != null && binding instanceof DBDAttributeBindingMeta bindingMeta) {
                     // Table column can be found from results metadata or from SQL query parser
                     // If datasource supports table names in result metadata then table name must present in results metadata.
                     // Otherwise it is an expression.
@@ -825,11 +825,11 @@ public class DBExecUtils {
                         tableColumn = bindingMeta.getPseudoAttribute().createFakeAttribute(attrEntity, attrMeta);
                     } else if (columnName != null) {
                         if (sqlQuery == null) {
-                            tableColumn = attrEntity.getAttribute(monitor, columnName);
+                            tableColumn = attrEntity.getAttribute(mdMonitor, columnName);
                         } else {
                             boolean isAllColumns = sqlQuery.getSelectItemAsteriskIndex() != -1;
                             if (isAllColumns || (selectItem != null && (selectItem.isPlainColumn() || selectItem.getName().equals("*")))) {
-                                tableColumn = attrEntity.getAttribute(monitor, columnName);
+                                tableColumn = attrEntity.getAttribute(mdMonitor, columnName);
                             }
                         }
                     }
@@ -869,10 +869,9 @@ public class DBExecUtils {
                 // Init row identifiers
                 monitor.subTask("Detect unique identifiers");
                 for (DBDAttributeBinding binding : bindings) {
-                    if (!(binding instanceof DBDAttributeBindingMeta)) {
+                    if (!(binding instanceof DBDAttributeBindingMeta bindingMeta)) {
                         continue;
                     }
-                    DBDAttributeBindingMeta bindingMeta = (DBDAttributeBindingMeta) binding;
                     //monitor.subTask("Find attribute '" + binding.getName() + "' identifier");
                     DBSEntityAttribute attr = binding.getEntityAttribute();
                     if (attr == null) {
@@ -883,7 +882,7 @@ public class DBExecUtils {
                     if (attrEntity != null) {
                         DBDRowIdentifier rowIdentifier = locatorMap.get(attrEntity);
                         if (rowIdentifier == null) {
-                            DBSEntityConstraint entityIdentifier = getBestIdentifier(monitor, attrEntity, bindings, readMetaData);
+                            DBSEntityConstraint entityIdentifier = getBestIdentifier(mdMonitor, attrEntity, bindings, readMetaData);
                             if (entityIdentifier != null) {
                                 rowIdentifier = new DBDRowIdentifier(
                                     attrEntity,
@@ -899,7 +898,7 @@ public class DBExecUtils {
                 monitor.worked(1);
             }
 
-            if (readMetaData && readReferences && rows != null) {
+            if (readMetaData && readReferences && rows != null && mdMonitor != null) {
                 monitor.subTask("Read results metadata");
                 // Read nested bindings
                 for (DBDAttributeBinding binding : bindings) {
@@ -915,10 +914,12 @@ public class DBExecUtils {
             }
 */
 
-            monitor.subTask("Complete metadata load");
-            // Reload attributes in row identifiers
-            for (DBDRowIdentifier rowIdentifier : locatorMap.values()) {
-                rowIdentifier.reloadAttributes(monitor, bindings);
+            if (mdMonitor != null) {
+                monitor.subTask("Complete metadata load");
+                // Reload attributes in row identifiers
+                for (DBDRowIdentifier rowIdentifier : locatorMap.values()) {
+                    rowIdentifier.reloadAttributes(mdMonitor, bindings);
+                }
             }
         }
         finally {

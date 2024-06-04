@@ -386,7 +386,7 @@ public class OracleSchema extends OracleGlobalObject implements
     }
 
     @Override
-    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
+    public DBSObject getChild(@Nullable DBRProgressMonitor monitor, @NotNull String childName)
         throws DBException
     {
         final OracleTableBase table = tableCache.getObject(monitor, this, childName);

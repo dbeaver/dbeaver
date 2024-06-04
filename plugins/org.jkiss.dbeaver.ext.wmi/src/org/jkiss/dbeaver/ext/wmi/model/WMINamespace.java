@@ -240,7 +240,7 @@ public class WMINamespace extends WMIContainer implements DBSObjectContainer, DB
     }
 
     @Override
-    public WMIContainer getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException
+    public WMIContainer getChild(@Nullable DBRProgressMonitor monitor, @NotNull String childName) throws DBException
     {
         return DBUtils.findObject(getChildren(monitor), childName);
     }

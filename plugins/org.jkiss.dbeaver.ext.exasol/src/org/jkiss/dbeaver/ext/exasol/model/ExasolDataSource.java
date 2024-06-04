@@ -505,8 +505,8 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 	}
 
 	@Override
-	public ExasolSchema getChild(@NotNull DBRProgressMonitor monitor,
-			@NotNull String childName) throws DBException
+	public ExasolSchema getChild(@Nullable DBRProgressMonitor monitor,
+                                 @NotNull String childName) throws DBException
 	{
 		if (exasolCurrentUserPrivileges.getAtLeastV6())
 			return getSchema(monitor, childName) != null ? getSchema(monitor,childName) : getVirtualSchema(monitor, childName);
