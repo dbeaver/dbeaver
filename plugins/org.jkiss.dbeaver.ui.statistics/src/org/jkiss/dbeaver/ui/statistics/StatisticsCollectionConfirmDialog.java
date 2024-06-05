@@ -25,16 +25,19 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.internal.statistics.StatisticCollectionMessages;
+import org.jkiss.dbeaver.utils.HelpUtils;
 
 /**
  * StatisticsCollectionConfirmDialog
  */
 public class StatisticsCollectionConfirmDialog extends BaseDialog {
 
-    private Button shareData;
+    private Button doNotShareDataButton;
 
     public StatisticsCollectionConfirmDialog(Shell parentShell) {
         super(parentShell, StatisticCollectionMessages.statistic_collection_dialog_title, DBIcon.STATUS_INFO);
@@ -52,19 +55,31 @@ public class StatisticsCollectionConfirmDialog extends BaseDialog {
 
         PrefPageUsageStatistics.createDataShareComposite(composite);
 
+        if (!DBWorkbench.getPlatform().getApplication().isEarlyAccessProgram()) {
+            UIUtils.createEmptyLabel(composite, 1, 1);
+            UIUtils.createLink(
+                composite,
+                StatisticCollectionMessages.statistic_collection_pref_link,
+                SelectionListener.widgetSelectedAdapter(selectionEvent -> {
+                    Shell parentShell = getParentShell();
+                    close();
+                    UIUtils.showPreferencesFor(parentShell, null, PrefPageUsageStatistics.PAGE_ID);
+                })
+            );
+        }
+
         UIUtils.createEmptyLabel(composite, 1, 1);
-        UIUtils.createLink(composite,
-            StatisticCollectionMessages.statistic_collection_pref_link,
-            SelectionListener.widgetSelectedAdapter(selectionEvent -> {
-                Shell parentShell = getParentShell();
-                close();
-                UIUtils.showPreferencesFor(
-                    parentShell,
-                        null,
-                        PrefPageUsageStatistics.PAGE_ID);
-                }));
-        UIUtils.createEmptyLabel(composite, 1, 1);
-        shareData = UIUtils.createCheckbox(composite, StatisticCollectionMessages.statistic_collection_dont_share_lbl, false);
+        doNotShareDataButton = UIUtils.createCheckbox(composite, StatisticCollectionMessages.statistic_collection_dont_share_lbl, false);
+
+        if (DBWorkbench.getPlatform().getApplication().isEarlyAccessProgram()) {
+            doNotShareDataButton.setEnabled(false);
+            UIUtils.createInfoLink(
+                composite,
+                "You cannot opt-out from data sharing when participating in <a>early access program</a>.",
+                () -> ShellUtils.launchProgram(HelpUtils.getHelpExternalReference("Early-access-program"))
+            );
+        }
+
         return composite;
     }
 
@@ -75,7 +90,7 @@ public class StatisticsCollectionConfirmDialog extends BaseDialog {
 
     @Override
     protected void buttonPressed(int buttonId) {
-        if (shareData.getSelection()) {
+        if (doNotShareDataButton.getSelection()) {
             // DO NOT SEND
             UIStatisticsActivator.setTrackingEnabled(buttonId == IDialogConstants.NO_ID);
         } else {

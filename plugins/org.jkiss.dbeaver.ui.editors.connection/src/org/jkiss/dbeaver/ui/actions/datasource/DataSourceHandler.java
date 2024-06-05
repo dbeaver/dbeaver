@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
@@ -87,6 +88,19 @@ public class DataSourceHandler {
                     }
                 }
                 return;
+            }
+
+            if (DBWorkbench.getPlatform().getApplication().isEarlyAccessProgram()) {
+                final long liveConnectionCount = DataSourceRegistry.getAllDataSources().stream()
+                    .filter(DBPDataSourceContainer::isConnected)
+                    .count();
+                if (liveConnectionCount >= 5) {
+                    DBWorkbench.getPlatformUI().showWarningMessageBox(
+                        "Too many connections",
+                        "You can't have more than 5 simultaneous connections when participating in early access program."
+                    );
+                    return;
+                }
             }
 
             // Ask for additional credentials if needed

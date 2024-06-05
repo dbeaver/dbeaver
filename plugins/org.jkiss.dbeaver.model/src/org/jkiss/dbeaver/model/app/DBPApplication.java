@@ -136,4 +136,8 @@ public interface DBPApplication {
         return false;
     }
 
+    /**
+     * Whether this product is part of the Early Access Program
+     */
+    boolean isEarlyAccessProgram();
 }

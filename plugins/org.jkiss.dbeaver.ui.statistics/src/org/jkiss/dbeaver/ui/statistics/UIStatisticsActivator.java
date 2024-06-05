@@ -33,18 +33,17 @@ public class UIStatisticsActivator extends AbstractUIPlugin {
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.ui.statistics";
 
     public static final String PREF_FEATURE_TRACKING_ENABLED = "feature.tracking.enabled";
-    public static final String PREF_STATISTICS_PREVIEW_ENABLED = "feature.statistics.preview.enabled";
     public static final String PREF_SKIP_DATA_SHARE_CONFIRMATION = "feature.tracking.skipConfirmation";
 
     // The shared instance
     private static UIStatisticsActivator plugin;
     private DBPPreferenceStore preferences;
-    private static FeatureStatisticsCollector tracker;
 
     public UIStatisticsActivator() {
     }
 
     public static boolean isTrackingEnabled() {
+        // TODO: Need to somehow enforce this to be true if we're in the EAP
         return getDefault().getPreferences().getBoolean(PREF_FEATURE_TRACKING_ENABLED);
     }
 
@@ -53,21 +52,6 @@ public class UIStatisticsActivator extends AbstractUIPlugin {
             return;
         }
         setPreferenceValue(PREF_FEATURE_TRACKING_ENABLED, enabled);
-        if (tracker != null) {
-            if (enabled) {
-                tracker.startMonitor();
-            } else {
-                tracker.stopMonitor();
-            }
-        }
-    }
-
-    public static boolean isDetailsPreviewEnabled() {
-        return getDefault().getPreferences().getBoolean(PREF_STATISTICS_PREVIEW_ENABLED);
-    }
-
-    public static void setDetailsPreviewEnabled(boolean enabled) {
-        setPreferenceValue(PREF_STATISTICS_PREVIEW_ENABLED, enabled);
     }
 
     public static boolean isSkipDataShareConfirmation() {
