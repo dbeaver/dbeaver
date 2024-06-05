@@ -129,22 +129,23 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
             IEditorInput editorInput = getEditorInput();
             final IFile file = EditorUtils.getFileFromInput(editorInput);
             if (file != null) {
+                // file is in workspace
                 file.setContents(
                     new ByteArrayInputStream(diagramState.getBytes(StandardCharsets.UTF_8)),
                     true,
                     true,
                     monitor);
-                getCommandStack().markSaveLocation();
-            } else {
-                // file is out of workspace
-                if (editorInput instanceof IURIEditorInput uriInput) {
-                    IPath path = URIUtil.toPath(uriInput.getURI());
-                    Files.write(path.toPath(), diagramState.getBytes(StandardCharsets.UTF_8));
-                    getCommandStack().markSaveLocation();
-                } else {
+            } else if (editorInput instanceof IURIEditorInput uriInput) {
+                // file is outside of workspace
+                IPath path = URIUtil.toPath(uriInput.getURI());
+                if (path == null) {
                     throw new DBException("Can't determine diagram file");
                 }
+                Files.write(path.toPath(), diagramState.getBytes(StandardCharsets.UTF_8));
+            } else {
+                throw new DBException("Can't determine diagram file");
             }
+            getCommandStack().markSaveLocation();
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError("Save diagram", null, e);
         }
