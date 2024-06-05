@@ -122,7 +122,6 @@ public class AltibaseConstants {
     /*
      * V$PROPERTY attributes
      */
-    public static final long IDP_ATTR_RD_MASK = 0x00000002;
     public static final long IDP_ATTR_RD_WRITABLE = 0x00000000;
     public static final long IDP_ATTR_RD_READONLY = 0x00000002;
 }

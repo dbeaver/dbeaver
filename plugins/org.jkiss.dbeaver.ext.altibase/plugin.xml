@@ -265,8 +265,8 @@
                     <treeContribution category="connectionEditor"/>
                 </folder>
                 <folder label="%tree.system_info.node.name" icon="#folder_info" id="folderInfo" description="%tree.system_info.node.tip">
-                    <folder label="%tree.altibaseProperties.node.name" icon="#info" description="%tree.altibaseProperties.node.name">
-                        <items label="%tree.properties.node.name" path="altibaseProperties" property="altibaseProperties" icon="#info" navigable="false" virtual="true"/>
+                    <folder label="%tree.properties.node.name" icon="#info" description="%tree.properties.node.description">
+                        <items label="%tree.property.node.name" path="altibaseProperties" property="altibaseProperties" icon="#info" navigable="false" virtual="true"/>
                     </folder>
                 </folder>
              </tree>

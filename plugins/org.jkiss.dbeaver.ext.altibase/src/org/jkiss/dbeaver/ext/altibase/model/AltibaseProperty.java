@@ -50,7 +50,7 @@ public class AltibaseProperty implements DBSObject {
         max  = JDBCUtils.safeGetString(dbResult, "MAX");
 
         // configurable without restarting the server
-        dynamic = (attr & AltibaseConstants.IDP_ATTR_RD_MASK) == AltibaseConstants.IDP_ATTR_RD_WRITABLE;
+        dynamic = (attr & AltibaseConstants.IDP_ATTR_RD_READONLY) == AltibaseConstants.IDP_ATTR_RD_WRITABLE;
 
         // number: current value [min, max]
         if (CommonUtils.isNotEmpty(min) || CommonUtils.isNotEmpty(max)) {
