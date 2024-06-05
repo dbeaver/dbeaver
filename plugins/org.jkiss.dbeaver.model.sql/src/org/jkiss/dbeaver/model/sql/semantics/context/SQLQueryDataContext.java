@@ -36,10 +36,6 @@ import java.util.Map;
  */
 public abstract class SQLQueryDataContext {
 
-    public boolean isMetadataReadEnabled() {
-        return false;
-    }
-
     /**
      * Get columns of the query result tuple
      */

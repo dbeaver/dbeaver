@@ -90,7 +90,7 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
                     if (leftColumnDef != null && rightColumnDef != null) {
                         symbol.setSymbolClass(SQLQuerySymbolClass.COLUMN);
                         symbol.setDefinition(column); // TODO multiple definitions per symbol
-                    } else if (context.isMetadataReadEnabled()) {
+                    } else {
                         if (leftColumnDef != null) {
                             statistics.appendError(column, "Column not found to the left of join");
                         } else {

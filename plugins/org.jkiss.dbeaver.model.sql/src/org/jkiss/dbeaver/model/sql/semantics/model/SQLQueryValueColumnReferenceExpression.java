@@ -73,11 +73,11 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
     /**
      * Propagate semantics context and establish relations through the query model for column definition
      */
-    public static void propagateColumnDefinition(SQLQueryDataContext context, @NotNull SQLQuerySymbolEntry columnName, @Nullable SQLQueryResultColumn resultColumn, @NotNull SQLQueryRecognitionContext statistics) {
+    public static void propagateColumnDefinition(@NotNull SQLQuerySymbolEntry columnName, @Nullable SQLQueryResultColumn resultColumn, @NotNull SQLQueryRecognitionContext statistics) {
         // TODO consider ambiguity
         if (resultColumn != null) {
             columnName.setDefinition(resultColumn.symbol.getDefinition());
-        } else if (context.isMetadataReadEnabled()) {
+        } else {
             columnName.getSymbol().setSymbolClass(SQLQuerySymbolClass.ERROR);
             statistics.appendError(columnName, "Column not found in dataset");
         }
@@ -92,14 +92,12 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
             if (rr != null) {
                 this.tableName.setDefinition(rr);
                 SQLQueryResultColumn resultColumn = rr.source.getResultDataContext().resolveColumn(statistics.getMonitor(), this.columnName.getName());
-                propagateColumnDefinition(context, this.columnName, resultColumn, statistics);
+                propagateColumnDefinition(this.columnName, resultColumn, statistics);
                 this.column = resultColumn;
                 type = resultColumn != null ? resultColumn.type : SQLQueryExprType.UNKNOWN;
-            } else if (context.isMetadataReadEnabled()) {
+            } else {
                 this.tableName.setSymbolClass(SQLQuerySymbolClass.ERROR);
                 statistics.appendError(this.tableName.entityName, "Table or subquery not found");
-                type = SQLQueryExprType.UNKNOWN;
-            } else {
                 type = SQLQueryExprType.UNKNOWN;
             }
         } else if (this.tableName == null && this.columnName.isNotClassified()) {
@@ -121,7 +119,7 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
                 this.columnName.getSymbol().setSymbolClass(forcedClass);
                 type = forcedClass == SQLQuerySymbolClass.STRING ? SQLQueryExprType.STRING : SQLQueryExprType.UNKNOWN;
             } else {
-                propagateColumnDefinition(context, this.columnName, resultColumn, statistics);
+                propagateColumnDefinition(this.columnName, resultColumn, statistics);
                 type = resultColumn != null ? resultColumn.type : SQLQueryExprType.UNKNOWN;
             }
         } else {

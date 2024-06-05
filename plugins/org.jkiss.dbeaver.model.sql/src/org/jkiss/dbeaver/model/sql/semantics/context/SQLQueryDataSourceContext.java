@@ -54,11 +54,6 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
         this.identifierDetector = new SQLIdentifierDetector(dialect);
     }
 
-    @Override
-    public boolean isMetadataReadEnabled() {
-        return executionContext.getDataSource().getContainer().isExtraMetadataReadEnabled();
-    }
-
     @NotNull
     @Override
     public List<SQLQueryResultColumn> getColumnsList() {
@@ -69,7 +64,7 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
     @Override
     public DBSEntity findRealTable(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
         DBPDataSource dataSource = this.executionContext.getDataSource();
-        if (dataSource instanceof DBSObjectContainer container && dataSource.getContainer().isExtraMetadataReadEnabled()) {
+        if (dataSource instanceof DBSObjectContainer container) {
             List<String> tableName2 = new ArrayList<>(tableName);
             DBSObject obj = SQLSearchUtils.findObjectByFQN(
                 monitor,

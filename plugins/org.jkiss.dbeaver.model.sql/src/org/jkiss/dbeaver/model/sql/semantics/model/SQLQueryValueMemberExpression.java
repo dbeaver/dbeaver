@@ -79,7 +79,7 @@ public class SQLQueryValueMemberExpression extends SQLQueryValueExpression {
 
                 if (type != null) {
                     this.identifier.setDefinition(type.getDeclaratorDefinition());
-                } else if (context.isMetadataReadEnabled()) {
+                } else {
                     this.identifier.getSymbol().setSymbolClass(SQLQuerySymbolClass.ERROR);
                 }
             } catch (DBException e) {
