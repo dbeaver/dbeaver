@@ -8,7 +8,7 @@
         <groupId>com.dbeaver.common</groupId>
         <artifactId>com.dbeaver.common.main</artifactId>
         <version>2.2.0-SNAPSHOT</version>
-        <relativePath>../dbeaver-common/pom.xml</relativePath>
+        <relativePath>../dbeaver-common/pom.xml</relativePath> <!-- Ensure this path is correct -->
     </parent>
 
     <groupId>org.jkiss.dbeaver</groupId>
@@ -19,10 +19,9 @@
     <properties>
         <dbeaver-version>24.1.0</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
-
+        <tycho-version>2.5.0</tycho-version> <!-- Add Tycho version -->
         <local-p2-repo.version>${dbeaver-version}</local-p2-repo.version>
         <local-p2-repo.url>https://p2.dev.dbeaver.com/eclipse-repo/${local-p2-repo.version}</local-p2-repo.url>
-
         <key.storage.path>/etc/</key.storage.path>
         <tsa/>
     </properties>
