@@ -63,8 +63,7 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
     @Nullable
     @Override
     public DBSEntity findRealTable(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
-        DBPDataSource dataSource = this.executionContext.getDataSource();
-        if (dataSource instanceof DBSObjectContainer container) {
+        if (this.executionContext.getDataSource() instanceof DBSObjectContainer container) {
             List<String> tableName2 = new ArrayList<>(tableName);
             DBSObject obj = SQLSearchUtils.findObjectByFQN(
                 monitor,
@@ -76,7 +75,10 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
             );
             return obj instanceof DBSTable table ? table : (obj instanceof DBSView view ? view : null);
         } else {
-            return null;
+            // Semantic analyser should never be used for databases, which doesn't support table lookup
+            // It's managed by LSMDialectRegistry (see org.jkiss.dbeaver.lsm.dialectSyntax extension point)
+            // so that analyzers could be created only for supported dialects.
+            throw new UnsupportedOperationException("Should never happen");
         }
     }
 
