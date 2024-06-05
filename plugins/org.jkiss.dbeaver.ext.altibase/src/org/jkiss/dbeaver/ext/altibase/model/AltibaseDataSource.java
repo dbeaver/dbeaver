@@ -559,7 +559,8 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     
     ///////////////////////////////////////////////
     // Altibase Properties
-    public List<AltibaseProperty> getAltibaseProperties(DBRProgressMonitor monitor)
+    @NotNull
+    public List<AltibaseProperty> getProperties(DBRProgressMonitor monitor)
             throws DBException {
         return loadPropertyList(monitor);
     }
