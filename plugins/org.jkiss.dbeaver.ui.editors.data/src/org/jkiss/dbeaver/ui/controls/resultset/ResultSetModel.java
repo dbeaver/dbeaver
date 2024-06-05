@@ -518,8 +518,7 @@ public class ResultSetModel {
             }
             // Check composite type
             if (ownerValue != null) {
-                if (ownerValue instanceof DBDCollection) {
-                    DBDCollection collection = (DBDCollection) ownerValue;
+                if (ownerValue instanceof DBDCollection collection) {
                     if (collection.getItemCount() > 0) {
                         ownerValue = collection.getItem(0);
                     }
@@ -553,7 +552,7 @@ public class ResultSetModel {
                 try {
                     ((DBDComposite) ownerValue).setAttributeValue(attr.getAttribute(), value);
                 } catch (DBCException e) {
-                    e.printStackTrace();
+                    log.debug("Error setting attribute value", e);
                 }
             } else {
                 row.values[rootIndex] = value;
