@@ -82,9 +82,11 @@ public abstract class JDBCObjectWithParentCache<OWNER extends DBSObject, PARENT 
         return getObjects(monitor, owner, null);
     }
 
-    public List<OBJECT> getObjects(@NotNull DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
+    public List<OBJECT> getObjects(@Nullable DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
         throws DBException {
-        loadObjects(monitor, owner, forParent);
+        if (monitor != null) {
+            loadObjects(monitor, owner, forParent);
+        }
         return getCachedObjects(forParent);
     }
 

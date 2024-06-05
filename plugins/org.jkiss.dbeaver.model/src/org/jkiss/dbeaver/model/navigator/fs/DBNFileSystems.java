@@ -133,8 +133,8 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
     }
 
     @Override
-    public DBNFileSystem[] getChildren(DBRProgressMonitor monitor) throws DBException {
-        if (children == null) {
+    public DBNFileSystem[] getChildren(@Nullable DBRProgressMonitor monitor) throws DBException {
+        if (children == null && monitor != null) {
             try {
                 this.children = readChildNodes(monitor, children);
             } catch (DBException e) {

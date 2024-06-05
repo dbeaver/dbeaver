@@ -117,7 +117,7 @@ public abstract class JDBCCompositeCache<
     public List<OBJECT> getObjects(@Nullable DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
         throws DBException
     {
-        if (monitor == null) {
+        if (monitor != null) {
             loadObjects(monitor, owner, forParent);
         }
         return getCachedObjects(forParent);

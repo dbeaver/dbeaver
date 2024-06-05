@@ -97,7 +97,7 @@ public class SQLSearchUtils
             return null;
         }
         DBRProgressMonitor mdMonitor = dataSource.getContainer().isExtraMetadataReadEnabled() ? monitor : null;
-        {
+        if (mdMonitor != null) {
             List<String> unquotedNames = new ArrayList<>(nameList.size());
             for (String name : nameList) {
                 unquotedNames.add(DBUtils.getUnQuotedIdentifier(dataSource, name));
@@ -159,7 +159,7 @@ public class SQLSearchUtils
                 }
             }
             if (childObject == null && nameList.size() <= 1) {
-                if (useAssistant) {
+                if (useAssistant && monitor != null) {
                     // No such object found - may be it's start of table name
                     DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, sc);
                     if (structureAssistant != null) {
