@@ -499,7 +499,7 @@ public class DBExecUtils {
         }
     }
 
-    public static DBSEntityConstraint getBestIdentifier(@Nullable DBRProgressMonitor monitor, @NotNull DBSEntity table, DBDAttributeBinding[] bindings, boolean readMetaData)
+    public static DBSEntityConstraint getBestIdentifier(@Nullable DBRProgressMonitor monitor, @NotNull DBSEntity table, DBDAttributeBinding[] bindings)
         throws DBException
     {
         if (table instanceof DBSDocumentContainer) {
@@ -508,7 +508,7 @@ public class DBExecUtils {
         List<DBSEntityConstraint> identifiers = new ArrayList<>(2);
         //List<DBSEntityConstraint> nonIdentifyingConstraints = null;
 
-        if (readMetaData) {
+        {
             if (table instanceof DBSTable && ((DBSTable) table).isView()) {
                 // Skip physical identifiers for views. There are nothing anyway
 
@@ -679,12 +679,6 @@ public class DBExecUtils {
         DBRProgressMonitor monitor = session.getProgressMonitor();
         DBPDataSource dataSource = session.getDataSource();
         DBPDataSourceContainer container = dataSource.getContainer();
-        boolean readMetaData = container.getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_READ_METADATA);
-        if (!readMetaData && sourceEntity == null) {
-            // Do not read metadata if source entity is not known
-            return;
-        }
-        boolean readReferences = container.getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_READ_REFERENCES);
         DBRProgressMonitor mdMonitor = container.isExtraMetadataReadEnabled() ? monitor : null;
 
         final Map<DBCEntityMetaData, DBSEntity> entityBindingMap = new IdentityHashMap<>();
@@ -763,7 +757,7 @@ public class DBExecUtils {
                             } else {
                                 attrEntity = DBUtils.getEntityFromMetaData(mdMonitor, session.getExecutionContext(), attrEntityMeta);
 
-                                if (attrEntity == null) {
+                                if (attrEntity == null && mdMonitor != null) {
                                     log.debug("Table '" + DBUtils.getSimpleQualifiedName(attrEntityMeta.getCatalogName(), attrEntityMeta.getSchemaName(), attrEntityMeta.getEntityName()) + "' not found in metadata catalog");
                                 }
                             }
@@ -882,7 +876,7 @@ public class DBExecUtils {
                     if (attrEntity != null) {
                         DBDRowIdentifier rowIdentifier = locatorMap.get(attrEntity);
                         if (rowIdentifier == null) {
-                            DBSEntityConstraint entityIdentifier = getBestIdentifier(mdMonitor, attrEntity, bindings, readMetaData);
+                            DBSEntityConstraint entityIdentifier = getBestIdentifier(mdMonitor, attrEntity, bindings);
                             if (entityIdentifier != null) {
                                 rowIdentifier = new DBDRowIdentifier(
                                     attrEntity,
@@ -898,7 +892,7 @@ public class DBExecUtils {
                 monitor.worked(1);
             }
 
-            if (readMetaData && readReferences && rows != null && mdMonitor != null) {
+            if (rows != null && mdMonitor != null) {
                 monitor.subTask("Read results metadata");
                 // Read nested bindings
                 for (DBDAttributeBinding binding : bindings) {

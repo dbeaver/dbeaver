@@ -60,7 +60,7 @@ public class SQLQueryValueTupleReferenceExpression extends SQLQueryValueExpressi
             if (rr != null) {
                 this.tupleSource = rr.source;
                 this.tableName.setDefinition(rr);
-            } else {
+            } else if (context.isMetadataReadEnabled()) {
                 this.tableName.setSymbolClass(SQLQuerySymbolClass.ERROR);
                 statistics.appendError(this.tableName.entityName, "Table or subquery not found");
             }

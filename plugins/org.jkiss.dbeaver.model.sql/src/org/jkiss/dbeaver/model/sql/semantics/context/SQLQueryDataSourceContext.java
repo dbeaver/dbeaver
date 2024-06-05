@@ -54,6 +54,11 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
         this.identifierDetector = new SQLIdentifierDetector(dialect);
     }
 
+    @Override
+    public boolean isMetadataReadEnabled() {
+        return executionContext.getDataSource().getContainer().isExtraMetadataReadEnabled();
+    }
+
     @NotNull
     @Override
     public List<SQLQueryResultColumn> getColumnsList() {
@@ -76,7 +81,7 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
             );
             return obj instanceof DBSTable table ? table : (obj instanceof DBSView view ? view : null);
         } else {
-            throw new UnsupportedOperationException();
+            return null;
         }
     }
 

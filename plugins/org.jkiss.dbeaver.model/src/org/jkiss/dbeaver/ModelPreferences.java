@@ -187,8 +187,6 @@ public final class ModelPreferences
     public static final String RESULT_SET_IGNORE_COLUMN_LABEL = "resultset.column.label.ignore"; //$NON-NLS-1$
 
     public static final String RESULT_SET_REREAD_ON_SCROLLING = "resultset.reread.on.scroll"; //$NON-NLS-1$
-    public static final String RESULT_SET_READ_METADATA = "resultset.read.metadata"; //$NON-NLS-1$
-    public static final String RESULT_SET_READ_REFERENCES = "resultset.read.references"; //$NON-NLS-1$
     public static final String RESULT_SET_MAX_ROWS = "resultset.maxrows"; //$NON-NLS-1$
 
 
@@ -302,8 +300,6 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, RESULT_REFERENCE_DESCRIPTION_COLUMN_PATTERNS, String.join("|", DBVEntity.DEFAULT_DESCRIPTION_COLUMN_PATTERNS));
 
         PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_REREAD_ON_SCROLLING, true);
-        PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_READ_METADATA, true);
-        PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_READ_REFERENCES, true);
         PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_MAX_ROWS, 200);
 
         PrefUtils.setDefaultPreferenceValue(store, CONTENT_HEX_ENCODING, GeneralUtils.getDefaultFileEncoding());

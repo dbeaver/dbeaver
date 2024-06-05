@@ -36,6 +36,11 @@ public abstract class SQLQuerySyntaxContext extends SQLQueryDataContext {
         this.parent = parent;
     }
 
+    @Override
+    public boolean isMetadataReadEnabled() {
+        return parent.isMetadataReadEnabled();
+    }
+
     @NotNull
     @Override
     public List<SQLQueryResultColumn> getColumnsList() {
