@@ -249,8 +249,8 @@ public class DBExecUtils {
             }
             if (lastError != null) {
                 recoveryState.recoveryFailed = true;
-                if (lastError instanceof DBException) {
-                    throw (DBException) lastError;
+                if (lastError instanceof DBException dbe) {
+                    throw dbe;
                 } else {
                     throw new DBException(lastError, dataSource);
                 }
