@@ -29,8 +29,18 @@ import java.util.List;
  */
 public interface RMController extends DBPObjectController, DBPPingController {
 
-    ////////////////////////////////////////////
-    // Projects
+    String PROJECTS_ENDPOINT_URL = "projects";
+    String PROJECTS_SHARED_ENDPOINT_URL = "shared";
+    String PROJECTS_CREATE_ENDPOINT_URL = "create";
+    String PROJECTS_PROPERTIES_ENDPOINT_URL = "properties";
+    String PROJECTS_DATASOURCES_ENDPOINT_URL = "datasources";
+    String PROJECTS_RESOURCES_ENDPOINT_URL = "resources";
+    String PROJECTS_PING_ENDPOINT_URL = "ping";
+    String PROJECTS_RESOURCES_LIST_SEGMENT_URL = "list";
+    String PROJECTS_RESOURCES_PATH_SEGMENT_URL = "path";
+    String PROJECTS_RESOURCES_META_SEGMENT_URL = "meta";
+    String PROJECTS_RESOURCES_PROPERTIES_SEGMENT_URL = "properties";
+    String PROJECTS_DATASOURCES_FOLDERS_SEGMENT_URL = "folders";
 
     /**
      * Returns list of all projects accessible to calling user
