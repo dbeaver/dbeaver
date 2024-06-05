@@ -89,7 +89,7 @@ public class LoadingJob<RESULT>  extends AbstractJob {
         updateUIJob.schedule();
         Throwable error = null;
         RESULT result = null;
-        monitor.beginTask("Run service " + getName(), 1);
+        monitor.beginTask(getName(), 1);
         try {
             result = this.loadingService.evaluate(monitor);
         }
