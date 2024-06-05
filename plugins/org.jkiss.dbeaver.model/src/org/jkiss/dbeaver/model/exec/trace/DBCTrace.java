@@ -17,8 +17,11 @@
 
 package org.jkiss.dbeaver.model.exec.trace;
 
-import java.util.Collection;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Execution trace
@@ -28,7 +31,7 @@ public interface DBCTrace {
     /**
      * Default trace property list
      */
-    default Collection<DBCTraceProperty> getTraceProperty() {
+    default List<DBCTraceProperty> getTraceProperties(DBRProgressMonitor monitor) throws DBCException {
         return Collections.emptyList();
     }
 
