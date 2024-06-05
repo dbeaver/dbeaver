@@ -17,10 +17,21 @@
 
 package org.jkiss.dbeaver.model.exec.trace;
 
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.util.List;
+
 /**
  * Execution trace
  */
-public interface DBCTrace {
+public interface DBCTraceDynamic extends DBCTrace {
 
+    boolean hasDynamicProperties();
+
+    /**
+     * Default trace property list
+     */
+    List<DBCTraceProperty> getTraceProperties(DBRProgressMonitor monitor) throws DBCException;
 
 }
