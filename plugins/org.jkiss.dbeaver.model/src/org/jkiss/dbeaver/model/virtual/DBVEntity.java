@@ -299,7 +299,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
 
     @NotNull
     @Override
-    public List<? extends DBSEntityAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public List<? extends DBSEntityAttribute> getAttributes(@Nullable DBRProgressMonitor monitor) throws DBException {
         DBSEntity realEntity = getRealEntity(monitor);
         if (realEntity != null) {
             final List<? extends DBSEntityAttribute> realAttributes = realEntity.getAttributes(monitor);
@@ -382,7 +382,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
 
     @Nullable
     @Override
-    public Collection<? extends DBVEntityConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBVEntityConstraint> getConstraints(@Nullable DBRProgressMonitor monitor) throws DBException {
         return entityConstraints;
     }
 
@@ -433,11 +433,13 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
 
     @Nullable
     @Override
-    public synchronized List<DBVEntityForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public synchronized List<DBVEntityForeignKey> getAssociations(@Nullable DBRProgressMonitor monitor) throws DBException {
         // Bind logical foreign keys
         if (entityForeignKeys != null) {
-            for (DBVEntityForeignKey fk : entityForeignKeys) {
-                fk.getRealReferenceConstraint(monitor);
+            if (monitor != null) {
+                for (DBVEntityForeignKey fk : entityForeignKeys) {
+                    fk.getRealReferenceConstraint(monitor);
+                }
             }
         }
         return entityForeignKeys;
@@ -466,7 +468,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
 
     @Nullable
     @Override
-    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityAssociation> getReferences(@Nullable DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 

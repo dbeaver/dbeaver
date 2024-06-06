@@ -191,7 +191,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             return;
         }
         String wordPart = request.getWordPart();
-        boolean emptyWord = wordPart.length() == 0;
+        boolean emptyWord = wordPart.isEmpty();
         boolean isInLiteral = SQLParserPartitions.CONTENT_TYPE_SQL_STRING.equals(request.getContentType());
         boolean isNumber = !CommonUtils.isEmpty(wordPart) && CommonUtils.isNumber(wordPart);
         boolean isInQuotedIdentifier = SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED.equals(request.getContentType());
@@ -1016,8 +1016,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         if (request.getQueryType() == SQLCompletionRequest.QueryType.EXEC) {
             return;
         }
-        if (parent instanceof DBSAlias) {
-            DBSObject realParent = ((DBSAlias) parent).getTargetObject(monitor);
+        DBRProgressMonitor mdMonitor = request.getContext().getDataSource().getContainer().isExtraMetadataReadEnabled() ? monitor : null;
+
+        if (parent instanceof DBSAlias alias && mdMonitor != null) {
+            DBSObject realParent = alias.getTargetObject(mdMonitor);
             if (realParent == null) {
                 log.debug("Can't get synonym target object");
             } else {
@@ -1036,9 +1038,9 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         DBPDataSource dataSource = request.getContext().getDataSource();
         Collection<? extends DBSObject> children = null;
         if (parent instanceof DBSObjectContainer) {
-            children = ((DBSObjectContainer)parent).getChildren(monitor);
+            children = ((DBSObjectContainer)parent).getChildren(mdMonitor);
         } else if (parent instanceof DBSEntity) {
-            children = ((DBSEntity)parent).getAttributes(monitor);
+            children = ((DBSEntity)parent).getAttributes(mdMonitor);
         }
         if (children != null && !children.isEmpty()) {
             //boolean isJoin = SQLConstants.KEYWORD_JOIN.equals(request.wordDetector.getPrevKeyWord());
@@ -1050,7 +1052,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             if (allObjects) {
                 if (!CommonUtils.isEmpty(wordDetector.getPrevWords())) {
                     String prevWord = wordDetector.getPrevWords().get(0);
-                    if (prevWord.length() > 0 && prevWord.charAt(prevWord.length() - 1) == request.getContext().getSyntaxManager().getStructSeparator()) {
+                    if (!prevWord.isEmpty() && prevWord.charAt(prevWord.length() - 1) == request.getContext().getSyntaxManager().getStructSeparator()) {
                         objPrefix = prevWord;
                     }
                 }
@@ -1066,7 +1068,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     continue;
                 }
                 if (allObjects) {
-                    if (combinedMatch.length() > 0) {
+                    if (!combinedMatch.isEmpty()) {
                         combinedMatch.append(", ");
                         if (objPrefix != null) combinedMatch.append(objPrefix);
                     }
@@ -1087,7 +1089,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     }
                 }
             }
-            if (combinedMatch.length() > 0) {
+            if (!combinedMatch.isEmpty()) {
                 String replaceString = combinedMatch.toString();
 
                 proposals.add(createCompletionProposal(
@@ -1143,7 +1145,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
     }
 
     private void makeProposalsFromAssistant(
-        DBSStructureAssistant assistant,
+        @NotNull DBSStructureAssistant assistant,
         @Nullable DBSObjectContainer rootSC,
         DBSObjectType[] objectTypes,
         String objectName,
@@ -1197,7 +1199,12 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
     }
 
     private SQLCompletionProposalBase makeProposalsFromObject(DBSObject object, boolean useShortName, Map<String, Object> params) {
-        DBNNode node = DBNUtils.getNodeByObject(monitor, object, false);
+        DBNNode node;
+        if (request.getContext().getDataSource().getContainer().isExtraMetadataReadEnabled()) {
+            node = DBNUtils.getNodeByObject(monitor, object, false);
+        } else {
+            node = DBNUtils.getNodeByObject(object);
+        }
         if (checkNavigatorNodes && node == null && (object instanceof DBSEntity || object instanceof DBSObjectContainer)) {
             return null;
         }
@@ -1233,7 +1240,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     String firstKeyword = SQLUtils.getFirstKeyword(dialect, request.getActiveQuery().getText());
                     if (dialect.supportsAliasInUpdate()
                         || !ArrayUtils.contains(dialect.getDMLKeywords(), firstKeyword.toUpperCase(Locale.ENGLISH))) {
-                        String queryText = request.getActiveQuery().getText();
+
                         Set<String> aliases = new LinkedHashSet<>();
                         if (request.getActiveQuery() instanceof SQLQuery) {
                             Statement sqlStatement = ((SQLQuery) request.getActiveQuery()).getStatement();
@@ -1275,18 +1282,16 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         }
         if (SQLConstants.KEYWORD_WHERE.equals(prevWord) ||
             SQLConstants.KEYWORD_AND.equals(prevWord)) {
-            String tableName = "";
+            String tableName;
             DBSEntity parentObject = null;
             if (object instanceof DBSTableColumn tableColumn) {
                 aliasMode = SQLTableAliasInsertMode
                     .fromPreferences(tableColumn.getDataSource().getContainer().getPreferenceStore());
                 parentObject = tableColumn.getParentObject();
-                tableName = parentObject.getName();
             } else if (object instanceof DBSEntityAttribute tableColumn) {
                 aliasMode = SQLTableAliasInsertMode
                     .fromPreferences(tableColumn.getDataSource().getContainer().getPreferenceStore());
                 parentObject = tableColumn.getParentObject();
-                tableName = parentObject != null ? parentObject.getName() : tableColumn.getName();
             }
             SQLDialect sqlDialect = SQLUtils.getDialectFromObject(object);
             if (parentObject != null) {
@@ -1295,17 +1300,16 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 tableName = object.getName();
             }
             if (aliasMode != SQLTableAliasInsertMode.NONE) {
-                String query = request.getActiveQuery().getText();
                 Map<String, String> table2Alices = tableRefsAnalyzer.getTableAliasesFromQuery();
                 alias = table2Alices.get(tableName);
                 String wordPart = request.getWordDetector().getWordPart();
                 objectName = DBUtils.getQuotedIdentifier(object);
                 if (wordPart.isEmpty()) {
-                    if (alias != null) {
-                        objectName = String.format(TABLE_TO_ATTRIBUTE_PATTERN, alias, sqlDialect.getStructSeparator(), objectName);
-                    } else {
-                        objectName = String.format(TABLE_TO_ATTRIBUTE_PATTERN, tableName, sqlDialect.getStructSeparator(), objectName);
-                    }
+                    objectName = String.format(
+                        TABLE_TO_ATTRIBUTE_PATTERN,
+                        Objects.requireNonNullElse(alias, tableName),
+                        sqlDialect.getStructSeparator(),
+                        objectName);
                 }
                 replaceString = objectName;
             }
@@ -1339,8 +1343,8 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 }
             }
             if (replaceString == null) {
-                if (request.getContext().isUseFQNames() && object instanceof DBPQualifiedObject) {
-                    replaceString = ((DBPQualifiedObject) object).getFullyQualifiedName(DBPEvaluationContext.DML);
+                if (request.getContext().isUseFQNames() && object instanceof DBPQualifiedObject qo) {
+                    replaceString = qo.getFullyQualifiedName(DBPEvaluationContext.DML);
                 } else {
                     replaceString = DBUtils.getQuotedIdentifier(dataSource, object.getName());
                 }

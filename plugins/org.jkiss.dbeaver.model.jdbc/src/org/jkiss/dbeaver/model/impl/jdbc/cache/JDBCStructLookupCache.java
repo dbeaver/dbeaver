@@ -48,11 +48,11 @@ public abstract class JDBCStructLookupCache<OWNER extends DBSObject, OBJECT exte
     }
 
     @Override
-    public OBJECT getObject(@NotNull DBRProgressMonitor monitor, @NotNull OWNER owner, @NotNull String name)
+    public OBJECT getObject(@Nullable DBRProgressMonitor monitor, @NotNull OWNER owner, @NotNull String name)
         throws DBException
     {
         OBJECT cachedObject = getCachedObject(name);
-        if (cachedObject != null) {
+        if (cachedObject != null || monitor == null) {
             return cachedObject;
         }
         if (isFullyCached() || owner.getDataSource() == null || !owner.getDataSource().getContainer().isConnected() || missingNames.contains(name)) {
@@ -73,11 +73,11 @@ public abstract class JDBCStructLookupCache<OWNER extends DBSObject, OBJECT exte
         throws DBException
     {
         String objectName = oldObject.getName();
-        if (oldObject instanceof DBPNamedObject2 && DBUtils.isQuotedIdentifier(oldObject.getDataSource(), objectName)) {
+        if (oldObject instanceof DBPNamedObject2 no && DBUtils.isQuotedIdentifier(oldObject.getDataSource(), objectName)) {
             // Remove quotes in object name. Quotes are allowed only for a new (not-yet-persisted) objects
             // https://github.com/dbeaver/dbeaver/issues/20383
             objectName = DBUtils.getUnQuotedIdentifier(oldObject.getDataSource(), objectName);
-            ((DBPNamedObject2) oldObject).setName(objectName);
+            no.setName(objectName);
         }
         if (!isFullyCached()) {
             this.loadObjects(monitor, owner);
@@ -152,7 +152,7 @@ public abstract class JDBCStructLookupCache<OWNER extends DBSObject, OBJECT exte
     }
 
     @Override
-    public void setCache(List<OBJECT> objects) {
+    public void setCache(@NotNull List<OBJECT> objects) {
         super.setCache(objects);
         this.missingNames.clear();
     }

@@ -435,12 +435,12 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
     }
 
     @Override
-    public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return databaseCache.getAllObjects(monitor, this);
+    public Collection<? extends DBSObject> getChildren(@Nullable DBRProgressMonitor monitor) throws DBException {
+        return monitor == null ? databaseCache.getCachedObjects() : databaseCache.getAllObjects(monitor, this);
     }
 
     @Override
-    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
+    public DBSObject getChild(@Nullable DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
         return databaseCache.getObject(monitor, this, childName);
     }
 

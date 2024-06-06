@@ -118,7 +118,7 @@ public abstract class AbstractTable<
 
     @Nullable
     @Override
-    public List<? extends DBSTrigger> getTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public List<? extends DBSTrigger> getTriggers(@Nullable DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 }

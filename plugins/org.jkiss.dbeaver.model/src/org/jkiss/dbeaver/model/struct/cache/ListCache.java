@@ -54,7 +54,7 @@ public class ListCache<OWNER extends DBSObject, OBJECT extends DBSObject>
     }
 
     @Override
-    public OBJECT getObject(@NotNull DBRProgressMonitor monitor, @NotNull OWNER owner, @NotNull String name) throws DBException {
+    public OBJECT getObject(@Nullable DBRProgressMonitor monitor, @NotNull OWNER owner, @NotNull String name) throws DBException {
         return DBUtils.findObject(objectList, name);
     }
 
@@ -93,7 +93,7 @@ public class ListCache<OWNER extends DBSObject, OBJECT extends DBSObject>
         this.objectList.clear();
     }
 
-    public void setCache(List<OBJECT> objects)
+    public void setCache(@NotNull List<OBJECT> objects)
     {
         this.objectList.clear();
         this.objectList.addAll(objects);

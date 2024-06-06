@@ -113,13 +113,13 @@ public class GenericPackage extends GenericObjectContainer implements DBPQualifi
     }
 
     @Override
-    public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException
+    public Collection<? extends DBSObject> getChildren(@Nullable DBRProgressMonitor monitor) throws DBException
     {
         return procedures;
     }
 
     @Override
-    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException
+    public DBSObject getChild(@Nullable DBRProgressMonitor monitor, @NotNull String childName) throws DBException
     {
         return DBUtils.findObject(procedures, childName);
     }

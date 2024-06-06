@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -105,7 +106,7 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
     }
 
     @Override
-    public List<MySQLTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
+    public List<MySQLTableColumn> getAttributes(@Nullable DBRProgressMonitor monitor)
         throws DBException
     {
         List<MySQLTableColumn> childColumns = getContainer().getTableCache().getChildren(monitor, getContainer(), this);

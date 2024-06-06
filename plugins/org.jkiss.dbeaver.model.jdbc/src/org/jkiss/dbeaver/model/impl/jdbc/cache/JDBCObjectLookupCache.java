@@ -45,14 +45,14 @@ public abstract class JDBCObjectLookupCache<OWNER extends DBSObject, OBJECT exte
     }
 
     @Override
-    public OBJECT getObject(@NotNull DBRProgressMonitor monitor, @NotNull OWNER owner, @NotNull String name)
+    public OBJECT getObject(@Nullable DBRProgressMonitor monitor, @NotNull OWNER owner, @NotNull String name)
         throws DBException
     {
         OBJECT cachedObject = getCachedObject(name);
         if (cachedObject != null) {
             return cachedObject;
         }
-        if (isFullyCached() || missingNames.contains(name)) {
+        if (isFullyCached() || missingNames.contains(name) || monitor == null) {
             return null;
         }
         // Now cache just one object
@@ -126,7 +126,7 @@ public abstract class JDBCObjectLookupCache<OWNER extends DBSObject, OBJECT exte
     }
 
     @Override
-    public void setCache(List<OBJECT> objects) {
+    public void setCache(@NotNull List<OBJECT> objects) {
         super.setCache(objects);
         this.missingNames.clear();
     }

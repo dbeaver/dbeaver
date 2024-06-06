@@ -145,7 +145,7 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
     }
 
     @Override
-    public List<SQLServerTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
+    public List<SQLServerTableColumn> getAttributes(@Nullable DBRProgressMonitor monitor)
         throws DBException
     {
         List<SQLServerTableColumn> childColumns = getContainer().getTableCache().getChildren(monitor, getContainer(), this);
@@ -178,7 +178,7 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
 
     @Override
     @Association
-    public Collection<SQLServerTableIndex> getIndexes(DBRProgressMonitor monitor)
+    public Collection<SQLServerTableIndex> getIndexes(@Nullable DBRProgressMonitor monitor)
         throws DBException
     {
         return this.getContainer().getIndexCache().getObjects(monitor, getSchema(), this);
@@ -317,7 +317,7 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
 
     @NotNull
     @Association
-    public List<SQLServerTableTrigger> getTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public List<SQLServerTableTrigger> getTriggers(@Nullable DBRProgressMonitor monitor) throws DBException {
         if (!supportsTriggers()) {
             return Collections.emptyList();
         }

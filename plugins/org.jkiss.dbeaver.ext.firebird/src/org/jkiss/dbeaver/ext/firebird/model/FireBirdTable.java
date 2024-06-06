@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.firebird.model;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.firebird.FireBirdUtils;
@@ -70,7 +69,7 @@ public class FireBirdTable extends GenericTable implements FireBirdTableBase, DB
     }
 
     @Override
-    public synchronized List<FireBirdTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public synchronized List<FireBirdTableColumn> getAttributes(@Nullable DBRProgressMonitor monitor) throws DBException {
         Collection<? extends GenericTableColumn> childColumns = super.getAttributes(monitor);
         if (childColumns == null) {
             return Collections.emptyList();

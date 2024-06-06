@@ -237,7 +237,7 @@ public class SuggestionInformationControl extends AbstractInformationControl imp
 
     @NotNull
     private Collection<DBNNode> getColumnNodes(
-        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBRProgressMonitor monitor,
         @Nullable DBNNode node
     ) throws DBException {
         if (node == null) {

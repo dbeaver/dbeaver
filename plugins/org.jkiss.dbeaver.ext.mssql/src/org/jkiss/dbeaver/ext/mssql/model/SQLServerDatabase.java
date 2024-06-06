@@ -283,7 +283,7 @@ public class SQLServerDatabase
         }
 
         @Override
-        public void setCache(List<SQLServerDataType> cache) {
+        public void setCache(@NotNull List<SQLServerDataType> cache) {
             super.setCache(cache);
             for (SQLServerDataType dt : cache) {
                 dataTypeMap.put(dt.getObjectId(), dt);
@@ -333,12 +333,12 @@ public class SQLServerDatabase
     }
 
     @Override
-    public Collection<SQLServerSchema> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return schemaCache.getAllObjects(monitor, this);
+    public Collection<SQLServerSchema> getChildren(@Nullable DBRProgressMonitor monitor) throws DBException {
+        return monitor == null ? schemaCache.getCachedObjects() : schemaCache.getAllObjects(monitor, this);
     }
 
     @Override
-    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
+    public DBSObject getChild(@Nullable DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
         return schemaCache.getObject(monitor, this, childName);
     }
 
@@ -424,7 +424,7 @@ public class SQLServerDatabase
 
         @NotNull
         @Override
-        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull SQLServerDatabase database, SQLServerDatabaseTrigger object, String objectName) throws SQLException {
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull SQLServerDatabase database, @Nullable SQLServerDatabaseTrigger object, @Nullable String objectName) throws SQLException {
             StringBuilder sql = new StringBuilder(500);
             sql.append(
                 "SELECT t.* FROM \n")

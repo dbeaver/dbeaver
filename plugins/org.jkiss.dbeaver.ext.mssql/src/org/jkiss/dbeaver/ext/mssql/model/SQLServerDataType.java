@@ -491,7 +491,7 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
 
     @Nullable
     @Override
-    public List<SQLServerTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public List<SQLServerTableColumn> getAttributes(@Nullable DBRProgressMonitor monitor) throws DBException {
         SQLServerTableType type = getTableTypeByIDFromSysSchema(monitor);
         if (type != null) {
             return type.getAttributes(monitor);
@@ -511,7 +511,7 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
 
     @Nullable
     @Override
-    public Collection<SQLServerTableUniqueKey> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Collection<SQLServerTableUniqueKey> getConstraints(@Nullable DBRProgressMonitor monitor) throws DBException {
         SQLServerTableType type = getTableTypeByIDFromSysSchema(monitor);
         if (type != null) {
             return type.getConstraints(monitor);
@@ -519,7 +519,7 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         return null;
     }
 
-    private SQLServerTableType getTableTypeByIDFromSysSchema(@NotNull DBRProgressMonitor monitor) throws DBException {
+    private SQLServerTableType getTableTypeByIDFromSysSchema(@Nullable DBRProgressMonitor monitor) throws DBException {
         if (tableTypeId > 0) {
             SQLServerSchema sysSchema = getSysSchema(monitor);
             if (sysSchema != null) {
@@ -530,12 +530,12 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
     }
 
     @Override
-    public Collection<SQLServerTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Collection<SQLServerTableForeignKey> getAssociations(@Nullable DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
     @Override
-    public Collection<SQLServerTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Collection<SQLServerTableForeignKey> getReferences(@Nullable DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 

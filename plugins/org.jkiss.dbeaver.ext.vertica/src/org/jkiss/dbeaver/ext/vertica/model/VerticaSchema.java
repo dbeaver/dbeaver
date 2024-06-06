@@ -86,7 +86,7 @@ public class VerticaSchema extends GenericSchema implements DBPSystemObject, DBP
     }
 
     @Override
-    public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSObject> getChildren(@Nullable DBRProgressMonitor monitor) throws DBException {
         List<DBSObject> children = new ArrayList<>(getTables(monitor));
         //children.addAll(getProjections(monitor));
         return children;

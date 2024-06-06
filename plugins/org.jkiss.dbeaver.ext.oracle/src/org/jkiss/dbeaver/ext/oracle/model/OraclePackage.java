@@ -167,13 +167,13 @@ public class OraclePackage extends OracleSchemaObject
     }
 
     @Override
-    public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException
+    public Collection<? extends DBSObject> getChildren(@Nullable DBRProgressMonitor monitor) throws DBException
     {
-        return proceduresCache.getAllObjects(monitor, this);
+        return monitor == null ? proceduresCache.getCachedObjects() : proceduresCache.getAllObjects(monitor, this);
     }
 
     @Override
-    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException
+    public DBSObject getChild(@Nullable DBRProgressMonitor monitor, @NotNull String childName) throws DBException
     {
         return proceduresCache.getObject(monitor, this, childName);
     }

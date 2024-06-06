@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.dameng.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
@@ -65,7 +66,7 @@ public class DamengTable extends GenericTable implements DBPObjectStatistics {
     }
 
     @Override
-    public List<? extends GenericTrigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
+    public List<? extends GenericTrigger> getTriggers(@Nullable DBRProgressMonitor monitor) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this.getSchema(), "Read table triggers")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT TABTRIG_OBJ_INNER.NAME " +
                     "FROM " +

@@ -43,8 +43,7 @@ import java.util.*;
  */
 public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DBSObject, CHILD extends DBSObject>
     extends JDBCObjectCache<OWNER, OBJECT>
-    implements DBSStructCache<OWNER, OBJECT, CHILD>
-{
+    implements DBSStructCache<OWNER, OBJECT, CHILD> {
     private static final Log log = Log.getLog(JDBCStructCache.class);
 
     private final Object objectNameColumn;
@@ -57,14 +56,13 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
     abstract protected CHILD fetchChild(@NotNull JDBCSession session, @NotNull OWNER owner, @NotNull OBJECT parent, @NotNull JDBCResultSet dbResult)
         throws SQLException, DBException;
 
-    protected JDBCStructCache(Object objectNameColumn)
-    {
+    protected JDBCStructCache(Object objectNameColumn) {
         this.objectNameColumn = objectNameColumn;
     }
 
     /**
      * Reads children objects from database
-     * 
+     *
      * @param monitor
      *            monitor
      * @param forObject
@@ -72,8 +70,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
      * @throws org.jkiss.dbeaver.DBException
      *             on error
      */
-    public synchronized void loadChildren(DBRProgressMonitor monitor, OWNER owner, @Nullable final OBJECT forObject) throws DBException
-    {
+    public synchronized void loadChildren(DBRProgressMonitor monitor, OWNER owner, @Nullable final OBJECT forObject) throws DBException {
         if ((forObject == null && this.childrenCached)
             || (forObject != null && (!forObject.isPersisted() || isChildrenCached(forObject))) || monitor.isCanceled()) {
             return;
@@ -132,11 +129,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
                             }
 
                             // Add to map
-                            List<CHILD> children = objectMap.get(object);
-                            if (children == null) {
-                                children = new ArrayList<>();
-                                objectMap.put(object, children);
-                            }
+                            List<CHILD> children = objectMap.computeIfAbsent(object, k -> new ArrayList<>());
                             children.add(child);
                         }
 
@@ -179,28 +172,24 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
     }
 
     @Override
-    public void removeObject(@NotNull OBJECT object, boolean resetFullCache)
-    {
+    public void removeObject(@NotNull OBJECT object, boolean resetFullCache) {
         super.removeObject(object, resetFullCache);
         clearChildrenCache(object);
     }
 
     @Override
-    public void clearCache()
-    {
+    public void clearCache() {
         this.clearChildrenCache(null);
         super.clearCache();
     }
 
     /**
      * Returns cache for child objects. Creates cache i it doesn't exists
-     * 
-     * @param forObject
-     *            parent object
+     *
+     * @param forObject parent object
      * @return cache
      */
-    public DBSObjectCache<OBJECT, CHILD> getChildrenCache(final OBJECT forObject)
-    {
+    public DBSObjectCache<OBJECT, CHILD> getChildrenCache(@NotNull final OBJECT forObject) {
         synchronized (childrenCache) {
             SimpleObjectCache<OBJECT, CHILD> nestedCache = childrenCache.get(forObject);
             if (nestedCache == null) {
@@ -216,27 +205,29 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
     }
 
     @Nullable
-    public List<CHILD> getChildren(DBRProgressMonitor monitor, OWNER owner, final OBJECT forObject) throws DBException
-    {
-        loadChildren(monitor, owner, forObject);
+    public List<CHILD> getChildren(@Nullable DBRProgressMonitor monitor, @NotNull OWNER owner, final OBJECT forObject) throws DBException {
+        if (monitor != null) {
+            loadChildren(monitor, owner, forObject);
+        }
         synchronized (childrenCache) {
             SimpleObjectCache<OBJECT, CHILD> nestedCache = childrenCache.get(forObject);
-            return nestedCache == null ? null : nestedCache.getAllObjects(monitor, null);
+            return nestedCache == null ? null :
+                (monitor == null ? nestedCache.getCachedObjects() : nestedCache.getAllObjects(monitor, null));
         }
     }
 
     @Nullable
-    public CHILD getChild(DBRProgressMonitor monitor, OWNER owner, final OBJECT forObject, String objectName) throws DBException
-    {
-        loadChildren(monitor, owner, forObject);
+    public CHILD getChild(@Nullable DBRProgressMonitor monitor, @NotNull OWNER owner, final OBJECT forObject, @NotNull String objectName) throws DBException {
+        if (monitor != null) {
+            loadChildren(monitor, owner, forObject);
+        }
         synchronized (childrenCache) {
             SimpleObjectCache<OBJECT, CHILD> nestedCache = childrenCache.get(forObject);
             return nestedCache == null ? null : nestedCache.getObject(monitor, forObject, objectName);
         }
     }
 
-    public void clearChildrenCache(OBJECT forParent)
-    {
+    public void clearChildrenCache(OBJECT forParent) {
         synchronized (childrenCache) {
             if (forParent != null) {
                 this.childrenCache.remove(forParent);
@@ -247,8 +238,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
         }
     }
 
-    protected boolean isChildrenCached(OBJECT parent)
-    {
+    protected boolean isChildrenCached(OBJECT parent) {
         synchronized (childrenCache) {
             return childrenCache.containsKey(parent);
 //            SimpleObjectCache<OBJECT, CHILD> chCache = childrenCache.get(parent);
@@ -256,8 +246,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
         }
     }
 
-    protected void cacheChildren(OBJECT parent, List<CHILD> children)
-    {
+    protected void cacheChildren(OBJECT parent, List<CHILD> children) {
         synchronized (childrenCache) {
             SimpleObjectCache<OBJECT, CHILD> nestedCache = childrenCache.get(parent);
             if (nestedCache == null) {
@@ -267,7 +256,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
             nestedCache.setCache(children);
         }
     }
-    
+
     @NotNull
     protected SimpleObjectCache<OBJECT, CHILD> createNestedCache() {
         SimpleObjectCache<OBJECT, CHILD> nestedCache = new SimpleObjectCache<>();

@@ -373,20 +373,20 @@ public class OracleSchema extends OracleGlobalObject implements
     }
 
     @Override
-    public Collection<DBSObject> getChildren(@NotNull DBRProgressMonitor monitor)
+    public Collection<DBSObject> getChildren(@Nullable DBRProgressMonitor monitor)
         throws DBException
     {
-        List<DBSObject> children = new ArrayList<>();
-        children.addAll(tableCache.getAllObjects(monitor, this));
+        List<DBSObject> children = new ArrayList<>(
+            monitor == null ? tableCache.getCachedObjects() : tableCache.getAllObjects(monitor, this));
         if (SYNONYMS_AS_CHILDREN) {
-            children.addAll(synonymCache.getAllObjects(monitor, this));
+            children.addAll(monitor == null ? synonymCache.getCachedObjects() : synonymCache.getAllObjects(monitor, this));
         }
-        children.addAll(packageCache.getAllObjects(monitor, this));
+        children.addAll(monitor == null ? packageCache.getCachedObjects() : packageCache.getAllObjects(monitor, this));
         return children;
     }
 
     @Override
-    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
+    public DBSObject getChild(@Nullable DBRProgressMonitor monitor, @NotNull String childName)
         throws DBException
     {
         final OracleTableBase table = tableCache.getObject(monitor, this, childName);
@@ -1391,7 +1391,7 @@ public class OracleSchema extends OracleGlobalObject implements
     static class SynonymCache extends JDBCObjectLookupCache<OracleSchema, OracleSynonym> {
         @NotNull
         @Override
-        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner, OracleSynonym object, String objectName) throws SQLException
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner, @Nullable OracleSynonym object, @Nullable String objectName) throws SQLException
         {
             String synonymTypeFilter = (session.getDataSource().getContainer().getPreferenceStore().getBoolean(OracleConstants.PREF_DBMS_READ_ALL_SYNONYMS) ?
                 "" :

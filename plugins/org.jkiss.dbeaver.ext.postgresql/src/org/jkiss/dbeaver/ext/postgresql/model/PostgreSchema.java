@@ -380,14 +380,14 @@ public class PostgreSchema implements
     }
 
     @Override
-    public List<? extends JDBCTable> getChildren(@NotNull DBRProgressMonitor monitor)
+    public List<? extends JDBCTable> getChildren(@Nullable DBRProgressMonitor monitor)
         throws DBException {
-        return getTableCache().getTypedObjects(monitor, this, PostgreTableReal.class);
+        return monitor == null ? tableCache.getCachedObjects() :
+            tableCache.getTypedObjects(monitor, this, PostgreTableReal.class);
     }
 
     @Override
-    public JDBCTable getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
-        throws DBException {
+    public JDBCTable getChild(@Nullable DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
         return getTableCache().getObject(monitor, this, childName);
     }
 

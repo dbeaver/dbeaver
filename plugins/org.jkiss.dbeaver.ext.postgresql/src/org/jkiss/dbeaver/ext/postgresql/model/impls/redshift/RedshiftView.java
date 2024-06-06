@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model.impls.redshift;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
@@ -56,13 +57,13 @@ public class RedshiftView extends PostgreView
     }
 
     @Override
-    public List<? extends PostgreTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public List<? extends PostgreTableColumn> getAttributes(@Nullable DBRProgressMonitor monitor) throws DBException {
         if (lateBindingColumns != null) {
             return lateBindingColumns;
         }
 
         List<? extends PostgreTableColumn> attrs = super.getAttributes(monitor);
-        if (isPersisted() && CommonUtils.isEmpty(attrs) && isViewVwithNoSchemaBinding(monitor)) {
+        if (isPersisted() && CommonUtils.isEmpty(attrs) && monitor != null && isViewVwithNoSchemaBinding(monitor)) {
             lateBindingColumns = readLateBindingColumns(monitor);
             if (!CommonUtils.isEmpty(lateBindingColumns)) {
                 return lateBindingColumns;

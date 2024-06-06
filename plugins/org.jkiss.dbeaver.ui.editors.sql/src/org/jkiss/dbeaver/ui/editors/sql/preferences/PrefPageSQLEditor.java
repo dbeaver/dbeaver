@@ -104,7 +104,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
         Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
 
         {
-            Group connectionsGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_connections, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
+            Group connectionsGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_connections, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
             ((GridData) connectionsGroup.getLayoutData()).horizontalSpan = 2;
             editorSeparateConnectionCombo = UIUtils.createLabelCombo(
                 UIUtils.createComposite(connectionsGroup, 3),
@@ -122,7 +122,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
         }
 
         {
-            Group autoSaveGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_auto_save, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
+            Group autoSaveGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_auto_save, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
             autoSaveOnChange = UIUtils.createCheckbox(autoSaveGroup, SQLEditorMessages.pref_page_sql_editor_label_auto_save_on_change, SQLEditorMessages.pref_page_sql_editor_label_auto_save_on_change_tip, false, 1);
             autoSaveOnClose = UIUtils.createCheckbox(autoSaveGroup, SQLEditorMessages.pref_page_sql_editor_label_auto_save_on_close, false);
             saveOnQueryExecution = UIUtils.createCheckbox(autoSaveGroup, SQLEditorMessages.pref_page_sql_editor_label_save_on_query_execute, SQLEditorMessages.pref_page_sql_editor_label_save_on_query_execute, false, 1);
@@ -130,7 +130,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
         }
 
         {
-            Composite layoutGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_result_view, 1, GridData.FILL_HORIZONTAL, 0);
+            Composite layoutGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_result_view, 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
             ((GridData)layoutGroup.getLayoutData()).horizontalSpan = 2;
 
             closeTabOnErrorCheck = UIUtils.createCheckbox(
@@ -160,7 +160,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
         }
 
         {
-            Composite linksGroup = UIUtils.createControlGroup(composite, "", 1, GridData.FILL_HORIZONTAL, 0);
+            Composite linksGroup = UIUtils.createControlGroup(composite, "", 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
             UIUtils.createPreferenceLink(
                 linksGroup,

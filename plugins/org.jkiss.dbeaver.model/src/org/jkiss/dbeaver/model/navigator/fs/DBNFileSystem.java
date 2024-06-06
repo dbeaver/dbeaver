@@ -130,8 +130,8 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
     }
 
     @Override
-    public DBNFileSystemRoot[] getChildren(DBRProgressMonitor monitor) throws DBException {
-        if (children == null) {
+    public DBNFileSystemRoot[] getChildren(@Nullable DBRProgressMonitor monitor) throws DBException {
+        if (children == null && monitor != null) {
             this.children = readChildNodes(monitor, null);
         }
         return children;

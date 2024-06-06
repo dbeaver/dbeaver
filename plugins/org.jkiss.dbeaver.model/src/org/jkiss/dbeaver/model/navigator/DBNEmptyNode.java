@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -60,7 +61,7 @@ public class DBNEmptyNode extends DBNNode
     }
 
     @Override
-    public DBNNode[] getChildren(DBRProgressMonitor monitor)
+    public DBNNode[] getChildren(@Nullable DBRProgressMonitor monitor)
     {
         return null;
     }
