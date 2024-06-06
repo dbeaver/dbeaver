@@ -90,7 +90,7 @@ public class DataSourceHandler {
                 return;
             }
 
-            if (DBWorkbench.getPlatform().getApplication().isEarlyAccessProgram()) {
+            if (DBWorkbench.getPlatform().getApplication().isEarlyAccessProgramActive()) {
                 final long liveConnectionCount = DataSourceRegistry.getAllDataSources().stream()
                     .filter(DBPDataSourceContainer::isConnected)
                     .count();

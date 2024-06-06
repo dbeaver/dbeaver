@@ -137,12 +137,6 @@ public abstract class AbstractApplication implements IApplication, DBPApplicatio
         };
     }
 
-    @Override
-    public boolean isEarlyAccessProgram() {
-        // TODO: Should be configurable!
-        return true;
-    }
-
     /////////////////////////////////////////
     // IApplication
 

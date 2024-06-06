@@ -55,7 +55,7 @@ public class StatisticsCollectionConfirmDialog extends BaseDialog {
 
         PrefPageUsageStatistics.createDataShareComposite(composite);
 
-        if (!DBWorkbench.getPlatform().getApplication().isEarlyAccessProgram()) {
+        if (!DBWorkbench.getPlatform().getApplication().isEarlyAccessProgramActive()) {
             UIUtils.createEmptyLabel(composite, 1, 1);
             UIUtils.createLink(
                 composite,
@@ -71,7 +71,7 @@ public class StatisticsCollectionConfirmDialog extends BaseDialog {
         UIUtils.createEmptyLabel(composite, 1, 1);
         doNotShareDataButton = UIUtils.createCheckbox(composite, StatisticCollectionMessages.statistic_collection_dont_share_lbl, false);
 
-        if (DBWorkbench.getPlatform().getApplication().isEarlyAccessProgram()) {
+        if (DBWorkbench.getPlatform().getApplication().isEarlyAccessProgramActive()) {
             doNotShareDataButton.setEnabled(false);
             UIUtils.createInfoLink(
                 composite,

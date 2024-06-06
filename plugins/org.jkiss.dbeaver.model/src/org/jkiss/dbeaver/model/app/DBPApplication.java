@@ -137,7 +137,16 @@ public interface DBPApplication {
     }
 
     /**
+     * Whether this product can participate in the Early Access Program but no license is present
+     */
+    default boolean isEarlyAccessProgramCandidate() {
+        return false;
+    }
+
+    /**
      * Whether this product is part of the Early Access Program
      */
-    boolean isEarlyAccessProgram();
+    default boolean isEarlyAccessProgramActive() {
+        return false;
+    }
 }

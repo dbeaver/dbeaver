@@ -78,7 +78,7 @@ public class PrefPageUsageStatistics extends AbstractPrefPage implements IWorkbe
             NLS.bind(StatisticCollectionMessages.statistic_collection_pref_content_opensource_link, LINK_GIHUB_REPO),
             SelectionListener.widgetSelectedAdapter(selectionEvent -> ShellUtils.launchProgram(LINK_GIHUB_REPO)));
 
-        if (DBWorkbench.getPlatform().getApplication().isEarlyAccessProgram()) {
+        if (DBWorkbench.getPlatform().getApplication().isEarlyAccessProgramActive()) {
             checkSendUsageStatistics.setEnabled(false);
             UIUtils.createInfoLink(
                 composite,
