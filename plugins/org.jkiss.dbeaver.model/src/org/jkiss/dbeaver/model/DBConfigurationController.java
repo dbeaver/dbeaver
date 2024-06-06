@@ -23,8 +23,6 @@ import org.jkiss.dbeaver.DBException;
  * Config files controller.
  */
 public interface DBConfigurationController extends DBPObjectController {
-    String CONFIG_FILES_ENDPOINT_URL = "config-files";
-    String SECURE_CONFIG_FILES_ENDPOINT_URL = "secure-config-files";
 
     /**
      * Loads config file contents.

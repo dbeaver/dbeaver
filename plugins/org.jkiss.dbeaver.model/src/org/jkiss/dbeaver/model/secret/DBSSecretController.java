@@ -38,20 +38,6 @@ public interface DBSSecretController {
     long FEATURE_SHARED_SECRETS_VIEW = 1 << 2;
     long FEATURE_SHARED_SECRETS_EDIT = 1 << 3;
 
-    String SECRETS_ENDPOINT_URL = "secrets";
-    String SHARED_ENDPOINT_URL = "shared";
-
-    String VALUE_ENDPOINT_URL = "value";
-    String VALUES_ENDPOINT_URL = "values";
-    String FLUSH_ENDPOINT_URL = "flush";
-    String LIST_ENDPOINT_URL = "list";
-    String BROWSE_ENDPOINT_URL = "browse";
-    String ALL_SEGMENT_URL = "all";
-    String PROJECTS_SEGMENT_URL = "projects";
-    String DISCOVER_SEGMENT_URL = "discover";
-    String SUBJECTS_SEGMENT_URL = "subjects";
-    String DELETE_SEGMENT_URL = "delete";
-
     default long getSupportedFeatures() throws DBException {
         return FEATURE_PRIVATE_SECRETS_VIEW | FEATURE_PRIVATE_SECRETS_EDIT | FEATURE_SHARED_SECRETS_VIEW | FEATURE_SHARED_SECRETS_EDIT;
     }
