@@ -45,6 +45,7 @@ import java.sql.ResultSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * PostgreTableBase
@@ -297,8 +298,8 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     }
 
     @Override
-    public String generateChangeOwnerQuery(String owner) {
-        return "ALTER TABLE " + DBUtils.getObjectFullName(this, DBPEvaluationContext.DDL) + " OWNER TO " + owner;
+    public String generateChangeOwnerQuery(String owner, @NotNull Map<String, Object> options) {
+        return "ALTER TABLE " + DBUtils.getEntityScriptName(this, options) + " OWNER TO " + owner;
     }
 
     @Override

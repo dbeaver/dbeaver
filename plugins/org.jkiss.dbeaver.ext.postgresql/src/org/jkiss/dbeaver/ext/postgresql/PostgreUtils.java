@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerPostgreSQL;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerType;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerTypeRegistry;
 import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -616,13 +615,18 @@ public class PostgreUtils {
         }
     }
 
-    public static String getViewDDL(DBRProgressMonitor monitor, PostgreViewBase view, String definition) throws DBException {
+    public static String getViewDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PostgreViewBase view,
+        @NotNull String definition,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         // In some cases view definition already has view header (e.g. Redshift + with no schema binding)
         if (definition.toLowerCase(Locale.ENGLISH).startsWith("create ")) {
             return definition;
         }
         StringBuilder sql = new StringBuilder(view instanceof PostgreView ? "CREATE OR REPLACE " : "CREATE ");
-        sql.append(view.getTableTypeName()).append(" ").append(view.getFullyQualifiedName(DBPEvaluationContext.DDL));
+        sql.append(view.getTableTypeName()).append(" ").append(DBUtils.getEntityScriptName(view, options));
 
         final DBERegistry editorsRegistry = DBWorkbench.getPlatform().getEditorsRegistry();
         final PostgreViewManager entityEditor = editorsRegistry.getObjectManager(view.getClass(), PostgreViewManager.class);
@@ -815,11 +819,11 @@ public class PostgreUtils {
         }
     }
 
-    public static String getObjectUniqueName(PostgrePrivilegeOwner object) {
+    public static String getObjectUniqueName(PostgrePrivilegeOwner object, Map<String, Object> options) {
         if (object instanceof PostgreProcedure) {
             return ((PostgreProcedure) object).getFullQualifiedSignature();
         } else {
-            return DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL);
+            return DBUtils.getEntityScriptName(object, options);
         }
     }
 
@@ -833,7 +837,7 @@ public class PostgreUtils {
             // Owner
             PostgreRole owner = object.getOwner(monitor);
             if (owner != null) {
-                String alterScript = object.generateChangeOwnerQuery(DBUtils.getQuotedIdentifier(owner));
+                String alterScript = object.generateChangeOwnerQuery(DBUtils.getQuotedIdentifier(owner), options);
                 if (!CommonUtils.isEmpty(alterScript)) {
                     actions.add(new SQLDatabasePersistAction("Owner change", alterScript));
                 }

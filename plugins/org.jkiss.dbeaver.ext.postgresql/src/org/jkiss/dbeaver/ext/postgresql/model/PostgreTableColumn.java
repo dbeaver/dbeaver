@@ -70,7 +70,7 @@ public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase>
     }
 
     @Override
-    public String generateChangeOwnerQuery(String owner) {
+    public String generateChangeOwnerQuery(String owner, @NotNull Map<String, Object> options) {
         return null;
     }
 
