@@ -29,6 +29,9 @@ import java.util.List;
  */
 public interface RMController extends DBPObjectController, DBPPingController {
 
+    ////////////////////////////////////////////
+    // Projects
+
     /**
      * Returns list of all projects accessible to calling user
      */

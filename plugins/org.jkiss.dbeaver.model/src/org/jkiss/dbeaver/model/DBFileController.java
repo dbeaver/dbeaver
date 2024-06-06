@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.DBException;
  * - 'database-driver' is for driver jar files
  */
 public interface DBFileController extends DBPObjectController {
+
     String TYPE_DATABASE_DRIVER = "libraries";
     String DATA_FOLDER = "data";
 
