@@ -156,7 +156,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                 activeDatabaseName = url.substring(divPos + 1, lastPos);
             }
         }
-        if (CommonUtils.isEmpty(activeDatabaseName)) {
+        if (CommonUtils.isEmpty(activeDatabaseName) && CommonUtils.isEmpty(configuration.getUserName())) {
             activeDatabaseName = PostgreConstants.DEFAULT_DATABASE;
         }
 
