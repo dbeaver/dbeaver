@@ -80,8 +80,7 @@ public abstract class PostgreViewBase extends PostgreTableReal implements DBSVie
     }
 
     @Override
-    public Collection<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException
-    {
+    public Collection<? extends DBSTableIndex> getIndexes(@Nullable DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
