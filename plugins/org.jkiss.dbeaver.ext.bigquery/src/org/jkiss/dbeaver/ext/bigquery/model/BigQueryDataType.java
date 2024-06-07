@@ -38,8 +38,6 @@ public class BigQueryDataType extends GenericDataType {
                 return DBPDataKind.ARRAY;
             } else if (getName().equals(BigQueryConstants.DATA_TYPE_GEOGRAPHY)) {
                 return DBPDataKind.OBJECT;
-            } else if (getName().equals(BigQueryConstants.DATA_TYPE_GEOGRAPHY)) {
-                return DBPDataKind.OBJECT;
             }
         }
         return super.getDataKind();
