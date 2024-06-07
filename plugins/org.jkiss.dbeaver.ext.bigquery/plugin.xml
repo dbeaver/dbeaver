@@ -44,6 +44,8 @@
                     <parameter name="supports-catalog-selection" value="false"/>
                     <parameter name="supports-ddl-transactions" value="false"/>
                     <parameter name="supports-schema-selection" value="false"/>
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-indexes" value="false"/>
                 </driver>
                 <provider-properties drivers="*">
                     <propertyGroup label="Settings">
