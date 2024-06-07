@@ -1,5 +1,5 @@
 initno:-
 
-filename:软件包清单,Windows系统安装,Linux系统安装,Mac系统安装
+filename:软件包清单,DBeaver安装（Windows）,DBeaver安装（Linux）,DBeaver安装（macOS）
 
-enName:Software package list,Windows system installation,Linux system installation,Mac system installation
+enName:Software Package List,DBeaver Installation (Windows),DBeaver Installation (Linux),DBeaver Installation (macOS)
