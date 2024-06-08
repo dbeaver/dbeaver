@@ -14,19 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.bigquery.model;
 
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
+package org.jkiss.dbeaver.model.exec.trace;
 
-public class BigQueryExecutionContext extends JDBCExecutionContext {
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-    public BigQueryExecutionContext(JDBCRemoteInstance instance, String purpose) {
-        super(instance, purpose);
-    }
+import java.util.List;
 
-    @Override
-    public BigQueryDataSource getDataSource() {
-        return (BigQueryDataSource) super.getDataSource();
-    }
+/**
+ * Execution trace
+ */
+public interface DBCTraceDynamic extends DBCTrace {
+
+    boolean hasDynamicProperties();
+
+    /**
+     * Default trace property list
+     */
+    List<DBCTraceProperty> getTraceProperties(DBRProgressMonitor monitor) throws DBCException;
+
 }

@@ -54,7 +54,7 @@ public class GridColumn implements IGridColumn {
     private final GridColumn parent;
     private List<GridColumn> children;
 
-    private int level;
+    private final int level;
     private int width = DEFAULT_WIDTH;
     private int height = -1;
     private int pinIndex = -1;
@@ -84,6 +84,11 @@ public class GridColumn implements IGridColumn {
     @Override
     public int getIndex() {
         return grid.indexOf(this);
+    }
+
+    @Override
+    public int getLevel() {
+        return level;
     }
 
     /**
@@ -369,10 +374,6 @@ public class GridColumn implements IGridColumn {
 
     private void removeChild(GridColumn column) {
         children.remove(column);
-    }
-
-    public int getLevel() {
-        return level;
     }
 
     public boolean isParent(GridColumn col) {
