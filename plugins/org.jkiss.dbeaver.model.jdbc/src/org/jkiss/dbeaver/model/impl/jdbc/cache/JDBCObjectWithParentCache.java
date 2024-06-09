@@ -82,9 +82,9 @@ public abstract class JDBCObjectWithParentCache<OWNER extends DBSObject, PARENT 
         return getObjects(monitor, owner, null);
     }
 
-    public List<OBJECT> getObjects(@Nullable DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
+    public List<OBJECT> getObjects(@NotNull DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
         throws DBException {
-        if (monitor != null) {
+        if (!monitor.isCanceled() && !monitor.isForceCacheUsage()) {
             loadObjects(monitor, owner, forParent);
         }
         return getCachedObjects(forParent);
@@ -186,7 +186,8 @@ public abstract class JDBCObjectWithParentCache<OWNER extends DBSObject, PARENT 
     protected void loadObjects(@NotNull DBRProgressMonitor monitor, OWNER owner, @Nullable PARENT forParent)
         throws DBException {
         synchronized (objectCache) {
-            if ((forParent == null && isFullyCached()) ||
+            if (monitor.isForceCacheUsage() ||
+                (forParent == null && isFullyCached()) ||
                 (forParent != null && (!forParent.isPersisted() || objectCache.containsKey(forParent)))) {
                 return;
             }

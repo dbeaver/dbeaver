@@ -106,7 +106,7 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
     }
 
     @Override
-    public List<MySQLTableColumn> getAttributes(@Nullable DBRProgressMonitor monitor)
+    public List<MySQLTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         List<MySQLTableColumn> childColumns = getContainer().getTableCache().getChildren(monitor, getContainer(), this);

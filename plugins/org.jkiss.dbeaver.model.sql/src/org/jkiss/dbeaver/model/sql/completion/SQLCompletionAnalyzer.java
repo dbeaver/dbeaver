@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
+import org.jkiss.dbeaver.model.runtime.LocalCacheProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.analyzer.TableReferencesAnalyzer;
 import org.jkiss.dbeaver.model.sql.analyzer.TableReferencesAnalyzerImpl;
@@ -1016,9 +1017,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         if (request.getQueryType() == SQLCompletionRequest.QueryType.EXEC) {
             return;
         }
-        DBRProgressMonitor mdMonitor = request.getContext().getDataSource().getContainer().isExtraMetadataReadEnabled() ? monitor : null;
+        DBRProgressMonitor mdMonitor = request.getContext().getDataSource().getContainer().isExtraMetadataReadEnabled() ?
+            monitor : new LocalCacheProgressMonitor(monitor);
 
-        if (parent instanceof DBSAlias alias && mdMonitor != null) {
+        if (parent instanceof DBSAlias alias && !mdMonitor.isForceCacheUsage()) {
             DBSObject realParent = alias.getTargetObject(mdMonitor);
             if (realParent == null) {
                 log.debug("Can't get synonym target object");
@@ -1037,10 +1039,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
 
         DBPDataSource dataSource = request.getContext().getDataSource();
         Collection<? extends DBSObject> children = null;
-        if (parent instanceof DBSObjectContainer) {
-            children = ((DBSObjectContainer)parent).getChildren(mdMonitor);
-        } else if (parent instanceof DBSEntity) {
-            children = ((DBSEntity)parent).getAttributes(mdMonitor);
+        if (parent instanceof DBSObjectContainer objectContainer) {
+            children = objectContainer.getChildren(mdMonitor);
+        } else if (parent instanceof DBSEntity entity) {
+            children = entity.getAttributes(mdMonitor);
         }
         if (children != null && !children.isEmpty()) {
             //boolean isJoin = SQLConstants.KEYWORD_JOIN.equals(request.wordDetector.getPrevKeyWord());

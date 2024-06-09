@@ -48,11 +48,11 @@ public abstract class JDBCStructLookupCache<OWNER extends DBSObject, OBJECT exte
     }
 
     @Override
-    public OBJECT getObject(@Nullable DBRProgressMonitor monitor, @NotNull OWNER owner, @NotNull String name)
+    public OBJECT getObject(@NotNull DBRProgressMonitor monitor, @NotNull OWNER owner, @NotNull String name)
         throws DBException
     {
         OBJECT cachedObject = getCachedObject(name);
-        if (cachedObject != null || monitor == null) {
+        if (cachedObject != null || monitor.isForceCacheUsage()) {
             return cachedObject;
         }
         if (isFullyCached() || owner.getDataSource() == null || !owner.getDataSource().getContainer().isConnected() || missingNames.contains(name)) {
@@ -100,6 +100,9 @@ public abstract class JDBCStructLookupCache<OWNER extends DBSObject, OBJECT exte
     protected OBJECT reloadObject(@NotNull DBRProgressMonitor monitor, @NotNull OWNER owner, @Nullable OBJECT object, @Nullable String objectName)
         throws DBException
     {
+        if (monitor.isForceCacheUsage()) {
+            return null;
+        }
         DBPDataSource dataSource = owner.getDataSource();
         if (dataSource == null) {
             throw new DBException(ModelMessages.error_not_connected_to_database);

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.struct.rdb;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
@@ -47,7 +48,7 @@ public interface DBSTableIndex extends DBSEntityConstraint, DBSEntityReferrer, D
 
     DBSIndexType getIndexType();
 
-    List<? extends DBSTableIndexColumn> getAttributeReferences(@Nullable DBRProgressMonitor monitor)
+    List<? extends DBSTableIndexColumn> getAttributeReferences(@NotNull DBRProgressMonitor monitor)
         throws DBException;
 
 }

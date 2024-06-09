@@ -248,7 +248,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
     }
 
     @Nullable
-    public SQLServerTableType getTableType(DBRProgressMonitor monitor, long tableId) throws DBException {
+    public SQLServerTableType getTableType(@NotNull DBRProgressMonitor monitor, long tableId) throws DBException {
         for (SQLServerTableBase table : getTables(monitor)) {
             if (table.getObjectId() == tableId && table instanceof SQLServerTableType tt) {
                 return tt;
@@ -261,21 +261,21 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
 
     @Override
-    public List<SQLServerObject> getChildren(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public List<SQLServerObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<SQLServerObject> result = new ArrayList<>();
-        result.addAll(monitor == null ? tableCache.getCachedObjects() : tableCache.getAllObjects(monitor, this));
-        result.addAll(monitor == null ? synonymCache.getCachedObjects() : synonymCache.getAllObjects(monitor, this));
+        result.addAll(tableCache.getAllObjects(monitor, this));
+        result.addAll(synonymCache.getAllObjects(monitor, this));
         return result;
     }
 
     @Override
-    public SQLServerTableBase getChild(@Nullable DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
+    public SQLServerTableBase getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
         return tableCache.getObject(monitor, this, childName);
     }
 
     @NotNull
     @Override
-    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
         return SQLServerTable.class;
     }
 

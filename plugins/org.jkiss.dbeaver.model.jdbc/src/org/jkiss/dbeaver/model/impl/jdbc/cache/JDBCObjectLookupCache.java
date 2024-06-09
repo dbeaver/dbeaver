@@ -45,7 +45,7 @@ public abstract class JDBCObjectLookupCache<OWNER extends DBSObject, OBJECT exte
     }
 
     @Override
-    public OBJECT getObject(@Nullable DBRProgressMonitor monitor, @NotNull OWNER owner, @NotNull String name)
+    public OBJECT getObject(@NotNull DBRProgressMonitor monitor, @NotNull OWNER owner, @NotNull String name)
         throws DBException
     {
         OBJECT cachedObject = getCachedObject(name);

@@ -110,18 +110,18 @@ public class RedshiftExternalSchema extends PostgreSchema {
     }
 
     @Override
-    public List<RedshiftExternalTable> getChildren(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public List<RedshiftExternalTable> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getExternalTables(monitor);
     }
 
     @Override
-    public RedshiftExternalTable getChild(@Nullable DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
+    public RedshiftExternalTable getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
         return externalTableCache.getObject(monitor, this, childName);
     }
 
     @NotNull
     @Override
-    public Class<? extends DBSEntity> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSEntity> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
         return RedshiftExternalTable.class;
     }
 

@@ -78,7 +78,7 @@ public class DB2View extends DB2ViewBase implements DB2SourceObject {
     }
 
     @Override
-    public List<DB2TableColumn> getAttributes(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public List<DB2TableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getContainer().getViewCache().getChildren(monitor, getContainer(), this);
     }
 

@@ -76,7 +76,7 @@ public class ClickhouseTupleType extends ClickhouseAbstractDataType implements D
 
     @Nullable
     @Override
-    public List<? extends DBSEntityAttribute> getAttributes(@Nullable DBRProgressMonitor monitor) {
+    public List<? extends DBSEntityAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) {
         return attributes;
     }
 
@@ -88,19 +88,19 @@ public class ClickhouseTupleType extends ClickhouseAbstractDataType implements D
 
     @Nullable
     @Override
-    public Collection<? extends DBSEntityConstraint> getConstraints(@Nullable DBRProgressMonitor monitor) {
+    public Collection<? extends DBSEntityConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) {
         return null;
     }
 
     @Nullable
     @Override
-    public Collection<? extends DBSEntityAssociation> getAssociations(@Nullable DBRProgressMonitor monitor) {
+    public Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) {
         return null;
     }
 
     @Nullable
     @Override
-    public Collection<? extends DBSEntityAssociation> getReferences(@Nullable DBRProgressMonitor monitor) {
+    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) {
         return null;
     }
 }

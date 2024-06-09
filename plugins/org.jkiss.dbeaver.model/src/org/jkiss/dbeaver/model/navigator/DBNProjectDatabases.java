@@ -145,9 +145,9 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     }
 
     @Override
-    public DBNNode[] getChildren(@Nullable DBRProgressMonitor monitor)
+    public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor)
     {
-        if (children == null && monitor != null) {
+        if (children == null && !monitor.isForceCacheUsage()) {
             List<DBNNode> childNodes = new ArrayList<>();
             // Add root folders
             for (DBPDataSourceFolder folder : dataSourceRegistry.getAllFolders()) {

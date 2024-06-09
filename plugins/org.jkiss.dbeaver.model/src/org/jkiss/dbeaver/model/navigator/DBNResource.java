@@ -215,8 +215,8 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
     }
 
     @Override
-    public DBNNode[] getChildren(@Nullable DBRProgressMonitor monitor) throws DBException {
-        if (children == null && monitor != null) {
+    public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (children == null && !monitor.isForceCacheUsage()) {
             this.children = readChildNodes(monitor);
         }
         return children;

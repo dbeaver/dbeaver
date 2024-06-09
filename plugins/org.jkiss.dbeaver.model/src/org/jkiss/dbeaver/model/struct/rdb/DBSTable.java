@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.struct.rdb;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
@@ -41,7 +42,7 @@ public interface DBSTable extends DBSEntity, DBPQualifiedObject {
      * @return list of indices
      * @throws DBException on any DB error
      */
-    Collection<? extends DBSTableIndex> getIndexes(@Nullable DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends DBSTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Keys are: primary keys and unique keys.
@@ -53,7 +54,7 @@ public interface DBSTable extends DBSEntity, DBPQualifiedObject {
      */
     @Nullable
     @Override
-    Collection<? extends DBSTableConstraint> getConstraints(@Nullable DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends DBSTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Gets foreign keys which refers this table
@@ -63,6 +64,6 @@ public interface DBSTable extends DBSEntity, DBPQualifiedObject {
      * @throws DBException on any DB error
      */
     @Nullable
-    List<? extends DBSTrigger> getTriggers(@Nullable DBRProgressMonitor monitor) throws DBException;
+    List<? extends DBSTrigger> getTriggers(@NotNull DBRProgressMonitor monitor) throws DBException;
 
 }

@@ -57,7 +57,7 @@ public class RedshiftView extends PostgreView
     }
 
     @Override
-    public List<? extends PostgreTableColumn> getAttributes(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public List<? extends PostgreTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (lateBindingColumns != null) {
             return lateBindingColumns;
         }

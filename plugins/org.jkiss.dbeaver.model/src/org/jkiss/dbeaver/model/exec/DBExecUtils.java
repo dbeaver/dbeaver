@@ -45,10 +45,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.qm.meta.QMMConnectionInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMStatementExecuteInfo;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLSelectItem;
@@ -679,7 +676,8 @@ public class DBExecUtils {
         DBRProgressMonitor monitor = session.getProgressMonitor();
         DBPDataSource dataSource = session.getDataSource();
         DBPDataSourceContainer container = dataSource.getContainer();
-        DBRProgressMonitor mdMonitor = container.isExtraMetadataReadEnabled() ? monitor : null;
+        DBRProgressMonitor mdMonitor = container.isExtraMetadataReadEnabled() ?
+            monitor : new LocalCacheProgressMonitor(monitor);
 
         final Map<DBCEntityMetaData, DBSEntity> entityBindingMap = new IdentityHashMap<>();
 
@@ -757,7 +755,7 @@ public class DBExecUtils {
                             } else {
                                 attrEntity = DBUtils.getEntityFromMetaData(mdMonitor, session.getExecutionContext(), attrEntityMeta);
 
-                                if (attrEntity == null && mdMonitor != null) {
+                                if (attrEntity == null && !mdMonitor.isForceCacheUsage()) {
                                     log.debug("Table '" + DBUtils.getSimpleQualifiedName(attrEntityMeta.getCatalogName(), attrEntityMeta.getSchemaName(), attrEntityMeta.getEntityName()) + "' not found in metadata catalog");
                                 }
                             }
@@ -892,7 +890,7 @@ public class DBExecUtils {
                 monitor.worked(1);
             }
 
-            if (rows != null && mdMonitor != null) {
+            if (rows != null && !mdMonitor.isForceCacheUsage()) {
                 monitor.subTask("Read results metadata");
                 // Read nested bindings
                 for (DBDAttributeBinding binding : bindings) {
@@ -908,7 +906,7 @@ public class DBExecUtils {
             }
 */
 
-            if (mdMonitor != null) {
+            if (!mdMonitor.isForceCacheUsage()) {
                 monitor.subTask("Complete metadata load");
                 // Reload attributes in row identifiers
                 for (DBDRowIdentifier rowIdentifier : locatorMap.values()) {

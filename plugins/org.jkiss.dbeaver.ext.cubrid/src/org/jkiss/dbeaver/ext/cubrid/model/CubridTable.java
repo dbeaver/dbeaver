@@ -59,7 +59,7 @@ public class CubridTable extends GenericTable
         return (CubridDataSource) super.getDataSource();
     }
 
-    public Collection<? extends GenericTableIndex> getIndexes(@Nullable DBRProgressMonitor monitor)
+    public Collection<? extends GenericTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor)
             throws DBException
     {
         return this.getDataSource().getObjectContainer().getCubridIndexCache().getObjects(monitor, getContainer(), this);

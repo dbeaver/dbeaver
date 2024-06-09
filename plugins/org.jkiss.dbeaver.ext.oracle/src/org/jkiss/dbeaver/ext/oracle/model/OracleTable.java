@@ -322,7 +322,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
 
 
     @Override
-    public Collection<OracleTableForeignKey> getReferences(@Nullable DBRProgressMonitor monitor)
+    public Collection<OracleTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         List<OracleTableForeignKey> refs = new ArrayList<>();
@@ -340,7 +340,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
 
     @Override
     @Association
-    public Collection<OracleTableForeignKey> getAssociations(@Nullable DBRProgressMonitor monitor)
+    public Collection<OracleTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return getContainer().foreignKeyCache.getObjects(monitor, getContainer(), this);

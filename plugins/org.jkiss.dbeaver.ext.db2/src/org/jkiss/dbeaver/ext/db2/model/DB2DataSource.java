@@ -356,19 +356,19 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
 
     @NotNull
     @Override
-    public Class<? extends DB2Schema> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException
+    public Class<? extends DB2Schema> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return DB2Schema.class;
     }
 
     @Override
-    public Collection<DB2Schema> getChildren(@Nullable DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2Schema> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return getSchemas(monitor);
     }
 
     @Override
-    public DB2Schema getChild(@Nullable DBRProgressMonitor monitor, @NotNull String childName) throws DBException
+    public DB2Schema getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException
     {
         return getSchema(monitor, childName);
     }
@@ -458,9 +458,9 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
     // --------------
 
     @Association
-    public Collection<DB2Schema> getSchemas(DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2Schema> getSchemas(@NotNull DBRProgressMonitor monitor) throws DBException
     {
-        return monitor == null ? schemaCache.getCachedObjects() : schemaCache.getAllObjects(monitor, this);
+        return schemaCache.getAllObjects(monitor, this);
     }
 
     public DB2Schema getSchema(DBRProgressMonitor monitor, String name) throws DBException

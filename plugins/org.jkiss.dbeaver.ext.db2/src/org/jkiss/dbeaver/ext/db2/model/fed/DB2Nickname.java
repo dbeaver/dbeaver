@@ -137,7 +137,7 @@ public class DB2Nickname extends DB2TableBase implements DBPNamedObject2, DBPRef
     }
 
     @Override
-    public List<DB2TableColumn> getAttributes(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public List<DB2TableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getContainer().getNicknameCache().getChildren(monitor, getContainer(), this);
     }
 

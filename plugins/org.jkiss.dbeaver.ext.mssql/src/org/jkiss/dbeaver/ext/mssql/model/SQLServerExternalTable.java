@@ -102,19 +102,19 @@ public class SQLServerExternalTable extends SQLServerTableBase {
 
     @Nullable
     @Override
-    public Collection<? extends DBSEntityAssociation> getAssociations(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
     @Nullable
     @Override
-    public Collection<? extends DBSEntityAssociation> getReferences(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
     @Nullable
     @Override
-    public Collection<? extends DBSTableConstraint> getConstraints(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 

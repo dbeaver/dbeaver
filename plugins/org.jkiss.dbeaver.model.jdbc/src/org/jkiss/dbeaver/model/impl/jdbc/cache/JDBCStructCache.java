@@ -71,8 +71,9 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
      *             on error
      */
     public synchronized void loadChildren(DBRProgressMonitor monitor, OWNER owner, @Nullable final OBJECT forObject) throws DBException {
-        if ((forObject == null && this.childrenCached)
-            || (forObject != null && (!forObject.isPersisted() || isChildrenCached(forObject))) || monitor.isCanceled()) {
+        if (monitor.isForceCacheUsage() || monitor.isCanceled() ||
+            (forObject == null && this.childrenCached) ||
+            (forObject != null && (!forObject.isPersisted() || isChildrenCached(forObject)))) {
             return;
         }
         if (forObject == null) {
@@ -205,14 +206,13 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
     }
 
     @Nullable
-    public List<CHILD> getChildren(@Nullable DBRProgressMonitor monitor, @NotNull OWNER owner, final OBJECT forObject) throws DBException {
-        if (monitor != null) {
+    public List<CHILD> getChildren(@NotNull DBRProgressMonitor monitor, @NotNull OWNER owner, final OBJECT forObject) throws DBException {
+        if (!monitor.isForceCacheUsage()) {
             loadChildren(monitor, owner, forObject);
         }
         synchronized (childrenCache) {
             SimpleObjectCache<OBJECT, CHILD> nestedCache = childrenCache.get(forObject);
-            return nestedCache == null ? null :
-                (monitor == null ? nestedCache.getCachedObjects() : nestedCache.getAllObjects(monitor, null));
+            return nestedCache == null ? null : nestedCache.getAllObjects(monitor, null);
         }
     }
 

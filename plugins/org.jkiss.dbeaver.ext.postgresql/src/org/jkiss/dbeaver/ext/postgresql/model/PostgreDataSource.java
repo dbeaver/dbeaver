@@ -484,18 +484,18 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     }
 
     @Override
-    public List<? extends DBSObject> getChildren(@Nullable DBRProgressMonitor monitor) {
+    public List<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) {
         return getDatabases();
     }
 
     @Override
-    public DBSObject getChild(@Nullable DBRProgressMonitor monitor, @NotNull String childName) {
+    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) {
         return getDatabase(childName);
     }
 
     @NotNull
     @Override
-    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) {
+    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) {
         return PostgreDatabase.class;
     }
 

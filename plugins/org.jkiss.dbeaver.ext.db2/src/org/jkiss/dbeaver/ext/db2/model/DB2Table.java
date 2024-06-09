@@ -204,7 +204,7 @@ public class DB2Table extends DB2TableBase
     }
 
     @Override
-    public List<DB2TableColumn> getAttributes(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public List<DB2TableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getContainer().getTableCache().getChildren(monitor, getContainer(), this);
     }
 
@@ -232,7 +232,7 @@ public class DB2Table extends DB2TableBase
 
     @Nullable
     @Association
-    public List<DB2Trigger> getTriggers(@Nullable DBRProgressMonitor monitor) throws DBException
+    public List<DB2Trigger> getTriggers(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return tableTriggerCache.getAllObjects(monitor, this);
     }
@@ -262,7 +262,7 @@ public class DB2Table extends DB2TableBase
     @Nullable
     @Override
     @Association
-    public Collection<DB2TableUniqueKey> getConstraints(@Nullable DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2TableUniqueKey> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return getContainer().getConstraintCache().getObjects(monitor, getContainer(), this);
     }
@@ -274,7 +274,7 @@ public class DB2Table extends DB2TableBase
 
     @Override
     @Association
-    public Collection<DB2TableForeignKey> getAssociations(@Nullable DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2TableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return getContainer().getAssociationCache().getObjects(monitor, getContainer(), this);
     }
@@ -286,7 +286,7 @@ public class DB2Table extends DB2TableBase
 
     @Override
     @Association
-    public List<DB2TableForeignKey> getReferences(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public List<DB2TableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (referenceCache != null) {
             return new ArrayList<>(referenceCache);
         }

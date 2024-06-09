@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.LocalCacheProgressMonitor;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -96,8 +97,9 @@ public class SQLSearchUtils
         if (dataSource == null) {
             return null;
         }
-        DBRProgressMonitor mdMonitor = dataSource.getContainer().isExtraMetadataReadEnabled() ? monitor : null;
-        if (mdMonitor != null) {
+        DBRProgressMonitor mdMonitor = dataSource.getContainer().isExtraMetadataReadEnabled() ?
+            monitor : new LocalCacheProgressMonitor(monitor);
+        if (!mdMonitor.isForceCacheUsage()) {
             List<String> unquotedNames = new ArrayList<>(nameList.size());
             for (String name : nameList) {
                 unquotedNames.add(DBUtils.getUnQuotedIdentifier(dataSource, name));

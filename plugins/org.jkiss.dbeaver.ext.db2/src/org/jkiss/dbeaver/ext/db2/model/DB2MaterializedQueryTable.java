@@ -82,7 +82,7 @@ public class DB2MaterializedQueryTable extends DB2ViewBase implements DB2SourceO
     }
 
     @Override
-    public List<DB2TableColumn> getAttributes(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public List<DB2TableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getContainer().getMaterializedQueryTableCache().getChildren(monitor, getContainer(), this);
     }
 

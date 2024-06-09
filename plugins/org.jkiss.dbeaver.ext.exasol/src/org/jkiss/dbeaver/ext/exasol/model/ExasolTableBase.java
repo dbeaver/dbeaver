@@ -133,24 +133,24 @@ public abstract class ExasolTableBase extends JDBCTable<ExasolDataSource, Exasol
     // from Tables don't have those..
     // -----------------
     @Override
-    public Collection<? extends DBSEntityAssociation> getReferences(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
         return Collections.emptyList();
     }
 
     @Nullable
     @Override
-    public Collection<ExasolTableUniqueKey> getConstraints(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Collection<ExasolTableUniqueKey> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
         return Collections.emptyList();
     }
 
     @Override
-    public Collection<ExasolTableForeignKey> getAssociations(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Collection<ExasolTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
         return Collections.emptyList();
     }
 
 
     @Override
-    public Collection<? extends DBSTableIndex> getIndexes(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
         // No Indexes in Exasol
         return Collections.emptyList();
     }

@@ -79,13 +79,13 @@ public class SQLiteTable extends GenericTable implements DBDPseudoAttributeConta
     @SuppressWarnings("unchecked")
     @Nullable
     @Override
-    public List<SQLiteTableColumn> getAttributes(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public List<SQLiteTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return (List<SQLiteTableColumn>) super.getAttributes(monitor);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public Collection<SQLiteTableForeignKey> getAssociations(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Collection<SQLiteTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
         return (Collection<SQLiteTableForeignKey>) super.getAssociations(monitor);
     }
 

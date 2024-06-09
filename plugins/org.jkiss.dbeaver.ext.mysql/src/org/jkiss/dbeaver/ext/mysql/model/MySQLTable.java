@@ -298,7 +298,7 @@ public class MySQLTable extends MySQLTableBase
 
     @Override
     @Association
-    public Collection<MySQLTableIndex> getIndexes(@Nullable DBRProgressMonitor monitor)
+    public Collection<MySQLTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         // Read indexes using cache
@@ -320,7 +320,7 @@ public class MySQLTable extends MySQLTableBase
     @Nullable
     @Override
     @Association
-    public Collection<MySQLTableConstraint> getConstraints(@Nullable DBRProgressMonitor monitor)
+    public Collection<MySQLTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         List<MySQLTableConstraint> constraintObjects = getContainer().uniqueKeyCache.getObjects(monitor, getContainer(), this);
@@ -357,7 +357,7 @@ public class MySQLTable extends MySQLTableBase
 
     @Override
     @Association
-    public Collection<MySQLTableForeignKey> getReferences(@Nullable DBRProgressMonitor monitor)
+    public Collection<MySQLTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         if (referenceCache == null) {
@@ -367,7 +367,7 @@ public class MySQLTable extends MySQLTableBase
     }
 
     @Override
-    public synchronized Collection<MySQLTableForeignKey> getAssociations(@Nullable DBRProgressMonitor monitor)
+    public synchronized Collection<MySQLTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         if (!foreignKeys.isFullyCached() && getDataSource().getInfo().supportsReferentialIntegrity() && monitor != null) {
@@ -390,7 +390,7 @@ public class MySQLTable extends MySQLTableBase
 
     @Nullable
     @Association
-    public List<MySQLTrigger> getTriggers(@Nullable DBRProgressMonitor monitor)
+    public List<MySQLTrigger> getTriggers(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         List<MySQLTrigger> triggers = new ArrayList<>();

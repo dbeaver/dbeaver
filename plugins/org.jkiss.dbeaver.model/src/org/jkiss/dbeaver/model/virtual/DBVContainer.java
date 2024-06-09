@@ -223,18 +223,18 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
     }
 
     @Override
-    public Collection<? extends DBSObject> getChildren(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         return !containers.isEmpty() ? containers.values() : entities.values();
     }
 
     @Override
-    public DBSObject getChild(@Nullable DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
+    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
         return !containers.isEmpty() ? containers.get(childName) : entities.get(childName);
     }
 
     @NotNull
     @Override
-    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
         return !containers.isEmpty() ? DBVContainer.class : DBVEntity.class;
     }
 

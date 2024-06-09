@@ -155,8 +155,8 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     }
 
     @Override
-    public List<? extends GenericTableBase> getTables(@Nullable DBRProgressMonitor monitor) throws DBException {
-        return monitor == null ? tableCache.getCachedObjects() : tableCache.getAllObjects(monitor, this);
+    public List<? extends GenericTableBase> getTables(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return tableCache.getAllObjects(monitor, this);
     }
 
     @Override
@@ -372,8 +372,8 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     }
 
     @Override
-    public Collection<? extends GenericSynonym> getSynonyms(DBRProgressMonitor monitor) throws DBException {
-        return monitor == null ? synonymCache.getCachedObjects() : synonymCache.getAllObjects(monitor, this);
+    public Collection<? extends GenericSynonym> getSynonyms(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return synonymCache.getAllObjects(monitor, this);
     }
 
     public GenericSynonym getSynonym(DBRProgressMonitor monitor, String name) throws DBException {
@@ -381,7 +381,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     }
 
     @Override
-    public Collection<? extends GenericTrigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends GenericTrigger> getTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getDataSource().getMetaModel().supportsDatabaseTriggers(getDataSource()) ? containerTriggerCache.getAllObjects(monitor, this) : Collections.emptyList();
     }
 
@@ -403,7 +403,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     }
 
     @Override
-    public Collection<? extends DBSObject> getChildren(@Nullable DBRProgressMonitor monitor)
+    public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor)
         throws DBException {
         List<DBSObject> childrenList = new ArrayList<>(getTables(monitor));
         if (dataSource.getMetaModel().supportsSynonyms(dataSource)) {
@@ -413,7 +413,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     }
 
     @Override
-    public DBSObject getChild(@Nullable DBRProgressMonitor monitor, @NotNull String childName)
+    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
         throws DBException {
         return getTable(monitor, childName);
     }

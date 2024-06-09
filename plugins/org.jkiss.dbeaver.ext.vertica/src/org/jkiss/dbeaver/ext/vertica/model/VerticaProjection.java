@@ -164,12 +164,12 @@ public class VerticaProjection extends JDBCTable<VerticaDataSource, VerticaSchem
     }
 
     @Override
-    public Collection<? extends DBSTableIndex> getIndexes(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
     @Override
-    public List<? extends DBSEntityAttribute> getAttributes(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public List<? extends DBSEntityAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getContainer().projectionCache.getChildren(monitor, getContainer(), this);
     }
 
@@ -179,17 +179,17 @@ public class VerticaProjection extends JDBCTable<VerticaDataSource, VerticaSchem
     }
 
     @Override
-    public Collection<? extends DBSTableConstraint> getConstraints(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
     @Override
-    public Collection<? extends DBSEntityAssociation> getAssociations(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
     @Override
-    public Collection<? extends DBSEntityAssociation> getReferences(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 

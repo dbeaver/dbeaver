@@ -152,26 +152,26 @@ public class MySQLView extends MySQLTableBase implements DBSView
     }
 
     @Override
-    public List<? extends DBSTableIndex> getIndexes(@Nullable DBRProgressMonitor monitor) throws DBException
+    public List<? extends DBSTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
 
     @Nullable
     @Override
-    public List<? extends DBSTableConstraint> getConstraints(@Nullable DBRProgressMonitor monitor) throws DBException
+    public List<? extends DBSTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
 
     @Override
-    public List<? extends DBSTableForeignKey> getAssociations(@Nullable DBRProgressMonitor monitor) throws DBException
+    public List<? extends DBSTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
 
     @Override
-    public List<? extends DBSTableForeignKey> getReferences(@Nullable DBRProgressMonitor monitor) throws DBException
+    public List<? extends DBSTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }

@@ -163,8 +163,8 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject, D
     }
 
     @Override
-    public List<ExasolTableColumn> getAttributes(@Nullable DBRProgressMonitor monitor) throws DBException {
-        return getContainer().getViewCache().getChildren(monitor, getContainer(), (ExasolView) this);
+    public List<ExasolTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return getContainer().getViewCache().getChildren(monitor, getContainer(), this);
     }
 
 
@@ -173,13 +173,13 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject, D
     // from Tables don't have those..
     // -----------------
     @Override
-    public Collection<? extends DBSEntityAssociation> getReferences(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
         return Collections.emptyList();
     }
 
 
     @Override
-    public Collection<ExasolTableForeignKey> getAssociations(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Collection<ExasolTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
         return Collections.emptyList();
     }
 

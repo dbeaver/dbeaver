@@ -217,12 +217,12 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
     }
 
     @Override
-    public DBNDatabaseNode[] getChildren(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public DBNDatabaseNode[] getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         boolean needsLoad;
         synchronized (this) {
             needsLoad = childNodes == null && hasChildren(false);
         }
-        if (needsLoad && monitor != null) {
+        if (needsLoad && !monitor.isForceCacheUsage()) {
             if (this.initializeNode(monitor, null)) {
                 final List<DBNDatabaseNode> tmpList = new ArrayList<>();
                 loadChildren(monitor, getMeta(), null, tmpList, this, true);

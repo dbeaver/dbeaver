@@ -405,14 +405,14 @@ public class MySQLCatalog implements
     }
 
     @Override
-    public Collection<MySQLTableBase> getChildren(@Nullable DBRProgressMonitor monitor)
+    public Collection<MySQLTableBase> getChildren(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return monitor == null ? tableCache.getCachedObjects() : tableCache.getAllObjects(monitor, this);
+        return tableCache.getAllObjects(monitor, this);
     }
 
     @Override
-    public MySQLTableBase getChild(@Nullable DBRProgressMonitor monitor, @NotNull String childName)
+    public MySQLTableBase getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
         throws DBException
     {
         return getTableCache().getObject(monitor, this, childName);
@@ -420,7 +420,7 @@ public class MySQLCatalog implements
 
     @NotNull
     @Override
-    public Class<? extends DBSEntity> getPrimaryChildType(@Nullable DBRProgressMonitor monitor)
+    public Class<? extends DBSEntity> getPrimaryChildType(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return MySQLTable.class;

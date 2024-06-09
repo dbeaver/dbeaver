@@ -2232,7 +2232,7 @@ public final class DBUtils {
         }
     }
 
-    public static DBSEntity getEntityFromMetaData(DBRProgressMonitor monitor, DBCExecutionContext executionContext, DBCEntityMetaData entityMeta) throws DBException {
+    public static DBSEntity getEntityFromMetaData(@NotNull DBRProgressMonitor monitor, DBCExecutionContext executionContext, DBCEntityMetaData entityMeta) throws DBException {
         final DBSObjectContainer objectContainer = getAdapter(DBSObjectContainer.class, executionContext.getDataSource());
         if (objectContainer != null) {
             DBSEntity entity = getEntityFromMetaData(monitor, executionContext, objectContainer, entityMeta, false);
@@ -2245,7 +2245,7 @@ public final class DBUtils {
         }
     }
 
-    public static DBSEntity getEntityFromMetaData(DBRProgressMonitor monitor, DBCExecutionContext executionContext, DBSObjectContainer objectContainer, DBCEntityMetaData entityMeta, boolean transformName) throws DBException {
+    public static DBSEntity getEntityFromMetaData(@NotNull DBRProgressMonitor monitor, DBCExecutionContext executionContext, DBSObjectContainer objectContainer, DBCEntityMetaData entityMeta, boolean transformName) throws DBException {
         final DBPDataSource dataSource = objectContainer.getDataSource();
         String catalogName = entityMeta.getCatalogName();
         String schemaName = entityMeta.getSchemaName();
@@ -2259,7 +2259,7 @@ public final class DBUtils {
             return null;
         }
         DBSObject entityObject = getObjectByPath(monitor, executionContext, objectContainer, catalogName, schemaName, entityName);
-        if (entityObject instanceof DBSAlias alias && !(entityObject instanceof DBSEntity) && monitor != null) {
+        if (entityObject instanceof DBSAlias alias && !(entityObject instanceof DBSEntity) && !monitor.isForceCacheUsage()) {
             entityObject = alias.getTargetObject(monitor);
         }
         if (entityObject == null) {

@@ -94,7 +94,7 @@ public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQual
     }
 
     @Override
-    public List<StreamDataImporterColumnInfo> getAttributes(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public List<StreamDataImporterColumnInfo> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return streamColumns;
     }
 
@@ -104,17 +104,17 @@ public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQual
     }
 
     @Override
-    public Collection<? extends DBSEntityConstraint> getConstraints(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
     @Override
-    public Collection<? extends DBSEntityAssociation> getAssociations(@Nullable DBRProgressMonitor monitor) {
+    public Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) {
         return null;
     }
 
     @Override
-    public Collection<? extends DBSEntityAssociation> getReferences(@Nullable DBRProgressMonitor monitor) {
+    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) {
         return null;
     }
 

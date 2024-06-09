@@ -58,7 +58,7 @@ public class SQLServerView extends SQLServerTableBase implements DBSView {
     }
 
     @Override
-    public List<SQLServerTableColumn> getAttributes(@Nullable DBRProgressMonitor monitor)
+    public List<SQLServerTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         List<SQLServerTableColumn> childColumns = getContainer().getTableCache().getChildren(monitor, getContainer(), this);
@@ -91,7 +91,7 @@ public class SQLServerView extends SQLServerTableBase implements DBSView {
 
     @Override
     @Association
-    public Collection<SQLServerTableIndex> getIndexes(@Nullable DBRProgressMonitor monitor)
+    public Collection<SQLServerTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return null;
@@ -100,7 +100,7 @@ public class SQLServerView extends SQLServerTableBase implements DBSView {
     @Nullable
     @Override
     @Association
-    public Collection<SQLServerTableUniqueKey> getConstraints(@Nullable DBRProgressMonitor monitor)
+    public Collection<SQLServerTableUniqueKey> getConstraints(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return null;
@@ -108,14 +108,14 @@ public class SQLServerView extends SQLServerTableBase implements DBSView {
 
     @Override
     @Association
-    public Collection<SQLServerTableForeignKey> getReferences(@Nullable DBRProgressMonitor monitor)
+    public Collection<SQLServerTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return null;
     }
 
     @Override
-    public Collection<SQLServerTableForeignKey> getAssociations(@Nullable DBRProgressMonitor monitor)
+    public Collection<SQLServerTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return null;

@@ -80,7 +80,7 @@ public class CubridObjectContainer extends GenericObjectContainer
 
     @NotNull
     @Override
-    public Class<? extends DBSObject> getPrimaryChildType(DBRProgressMonitor monitor)
+    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor)
             throws DBException
     {
         return CubridTable.class;

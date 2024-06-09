@@ -70,17 +70,17 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
     public List<OBJECT> getAllObjects(@NotNull DBRProgressMonitor monitor, @Nullable OWNER owner)
         throws DBException
     {
-        if (!isFullyCached()) {
+        if (!isFullyCached() && !monitor.isForceCacheUsage()) {
             loadObjects(monitor, owner);
         }
         return getCachedObjects();
     }
 
     @Override
-    public OBJECT getObject(@Nullable DBRProgressMonitor monitor, @NotNull OWNER owner, @NotNull String name)
+    public OBJECT getObject(@NotNull DBRProgressMonitor monitor, @NotNull OWNER owner, @NotNull String name)
         throws DBException
     {
-        if (!isFullyCached() && monitor != null) {
+        if (!isFullyCached() && !monitor.isForceCacheUsage()) {
             this.loadObjects(monitor, owner);
         }
         return getCachedObject(name);
@@ -89,7 +89,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
     protected synchronized void loadObjects(DBRProgressMonitor monitor, OWNER owner)
         throws DBException
     {
-        if (isFullyCached() || monitor == null || monitor.isCanceled()) {
+        if (isFullyCached() || monitor.isForceCacheUsage() || monitor.isCanceled()) {
             return;
         }
 

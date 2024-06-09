@@ -56,7 +56,7 @@ public interface DBSObjectContainer extends DBSObject
      *                In this case it can return null as a result (but also may return some cached collection)
      */
     @DPIElement
-    Collection<? extends DBSObject> getChildren(@Nullable DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Gets child object by its name.
@@ -69,7 +69,7 @@ public interface DBSObjectContainer extends DBSObject
      */
     @DPIElement
     @Nullable
-    DBSObject getChild(@Nullable DBRProgressMonitor monitor, @NotNull String childName) throws DBException;
+    DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException;
 
     /**
      * Gets type of primary child elements.
@@ -82,7 +82,7 @@ public interface DBSObjectContainer extends DBSObject
      */
     @DPIElement
     @NotNull
-    Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException;
+    Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Caches all underlying structure contents.

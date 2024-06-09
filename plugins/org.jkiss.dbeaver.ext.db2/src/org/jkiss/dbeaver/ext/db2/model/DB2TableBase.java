@@ -141,7 +141,7 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
     // -----------------
     @Override
     @Association
-    public Collection<DB2Index> getIndexes(@Nullable DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2Index> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return monitor == null ? tableIndexCache.getCachedObjects() : tableIndexCache.getAllObjects(monitor, this);
     }
@@ -153,19 +153,19 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
 
     @Nullable
     @Override
-    public Collection<DB2TableUniqueKey> getConstraints(@Nullable DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2TableUniqueKey> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return Collections.emptyList();
     }
 
     @Override
-    public Collection<DB2TableForeignKey> getAssociations(@Nullable DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2TableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return Collections.emptyList();
     }
 
     @Override
-    public Collection<DB2TableForeignKey> getReferences(@Nullable DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2TableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return Collections.emptyList();
     }

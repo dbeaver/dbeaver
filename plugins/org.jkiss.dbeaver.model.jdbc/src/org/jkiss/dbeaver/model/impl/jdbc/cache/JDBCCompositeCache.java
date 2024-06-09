@@ -114,16 +114,16 @@ public abstract class JDBCCompositeCache<
         return getObjects(monitor, owner, null);
     }
 
-    public List<OBJECT> getObjects(@Nullable DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
+    public List<OBJECT> getObjects(@NotNull DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
         throws DBException
     {
-        if (monitor != null) {
+        if (!monitor.isCanceled() && !monitor.isForceCacheUsage()) {
             loadObjects(monitor, owner, forParent);
         }
         return getCachedObjects(forParent);
     }
 
-    public <TYPE extends OBJECT> List<TYPE > getTypedObjects(@Nullable DBRProgressMonitor monitor, OWNER owner, PARENT forParent, Class<TYPE> type)
+    public <TYPE extends OBJECT> List<TYPE > getTypedObjects(@NotNull DBRProgressMonitor monitor, OWNER owner, PARENT forParent, Class<TYPE> type)
         throws DBException
     {
         List<TYPE> result = new ArrayList<>();
@@ -276,7 +276,8 @@ public abstract class JDBCCompositeCache<
         throws DBException
     {
         synchronized (objectCache) {
-            if ((forParent == null && isFullyCached()) ||
+            if (monitor.isForceCacheUsage() ||
+                (forParent == null && isFullyCached()) ||
                 (forParent != null && (!forParent.isPersisted() || objectCache.containsKey(forParent))))
             {
                 return;

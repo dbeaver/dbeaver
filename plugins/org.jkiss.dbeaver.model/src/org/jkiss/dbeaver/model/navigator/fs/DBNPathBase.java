@@ -20,6 +20,7 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -132,8 +133,8 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
     }
 
     @Override
-    public DBNNode[] getChildren(@Nullable DBRProgressMonitor monitor) throws DBException {
-        if (children == null && allowsChildren() && monitor != null) {
+    public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (children == null && allowsChildren() && !monitor.isForceCacheUsage()) {
             this.children = readChildNodes(monitor);
         }
         return children;

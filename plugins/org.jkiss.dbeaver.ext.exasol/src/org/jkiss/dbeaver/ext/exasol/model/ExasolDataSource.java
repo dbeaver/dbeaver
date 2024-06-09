@@ -493,20 +493,20 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 
 	@NotNull
     @Override
-	public Class<? extends ExasolSchema> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException
+	public Class<? extends ExasolSchema> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException
 	{
 		return ExasolSchema.class;
 	}
 
 	@Override
-	public Collection<ExasolSchema> getChildren(@Nullable DBRProgressMonitor monitor) throws DBException
+	public Collection<ExasolSchema> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException
 	{
 		return getSchemas(monitor);
 	}
 
 	@Override
-	public ExasolSchema getChild(@Nullable DBRProgressMonitor monitor,
-                                 @NotNull String childName) throws DBException
+	public ExasolSchema getChild(@NotNull DBRProgressMonitor monitor,
+								 @NotNull String childName) throws DBException
 	{
 		if (exasolCurrentUserPrivileges.getAtLeastV6())
 			return getSchema(monitor, childName) != null ? getSchema(monitor,childName) : getVirtualSchema(monitor, childName);
@@ -518,10 +518,10 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 	// --------------
 
 	@Association
-	public Collection<ExasolSchema> getSchemas(DBRProgressMonitor monitor)
+	public Collection<ExasolSchema> getSchemas(@NotNull DBRProgressMonitor monitor)
 			throws DBException
 	{
-		return monitor == null ? schemaCache.getCachedObjects() : schemaCache.getAllObjects(monitor, this);
+		return schemaCache.getAllObjects(monitor, this);
 	}
 
 	public ExasolSchema getSchema(DBRProgressMonitor monitor, String name)

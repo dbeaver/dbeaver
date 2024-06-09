@@ -205,7 +205,7 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
     }
 
     @Override
-    public Collection<PostgreTableConstraint> getConstraints(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Collection<PostgreTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getSchema().getConstraintCache().getTypedObjects(monitor, getSchema(), this, PostgreTableConstraint.class);
     }
 
@@ -230,7 +230,7 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
 
     @Nullable
     @Association
-    public List<PostgreTrigger> getTriggers(@Nullable DBRProgressMonitor monitor)
+    public List<PostgreTrigger> getTriggers(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return triggerCache != null ? triggerCache.getAllObjects(monitor, this) : List.of();

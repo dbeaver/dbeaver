@@ -670,7 +670,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     }
 
     @Override
-    public Collection<? extends DBSObject> getChildren(@Nullable DBRProgressMonitor monitor)
+    public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         if (!CommonUtils.isEmpty(getCatalogs())) {
@@ -685,7 +685,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     }
 
     @Override
-    public DBSObject getChild(@Nullable DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
+    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
         if (!CommonUtils.isEmpty(getCatalogs())) {
             return getCatalog(childName);
         } else if (!CommonUtils.isEmpty(getSchemas())) {
@@ -699,7 +699,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
 
     @NotNull
     @Override
-    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (!CommonUtils.isEmpty(catalogs)) {
             return GenericCatalog.class;
         } else if (schemas != null && !schemas.isEmpty()) {

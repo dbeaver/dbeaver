@@ -174,7 +174,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     }
 
     @Override
-    public DBNNode[] getChildren(@Nullable DBRProgressMonitor monitor)
+    public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor)
     {
         if (ArrayUtils.isEmpty(folder.getChildren())) {
             return ArrayUtils.toArray(DBNDataSource.class, getDataSources());

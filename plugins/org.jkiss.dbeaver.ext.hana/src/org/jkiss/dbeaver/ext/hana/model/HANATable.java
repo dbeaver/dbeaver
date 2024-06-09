@@ -49,7 +49,7 @@ public class HANATable extends GenericTable implements DBPObjectStatistics {
     @SuppressWarnings("unchecked")
     @Nullable
     @Override
-    public List<? extends HANATableColumn> getAttributes(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public List<? extends HANATableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return (List<? extends HANATableColumn>) super.getAttributes(monitor);
     }
 

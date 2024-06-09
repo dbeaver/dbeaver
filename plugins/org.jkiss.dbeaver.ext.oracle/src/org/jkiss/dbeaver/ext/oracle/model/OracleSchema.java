@@ -373,20 +373,19 @@ public class OracleSchema extends OracleGlobalObject implements
     }
 
     @Override
-    public Collection<DBSObject> getChildren(@Nullable DBRProgressMonitor monitor)
+    public Collection<DBSObject> getChildren(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        List<DBSObject> children = new ArrayList<>(
-            monitor == null ? tableCache.getCachedObjects() : tableCache.getAllObjects(monitor, this));
+        List<DBSObject> children = new ArrayList<>(tableCache.getAllObjects(monitor, this));
         if (SYNONYMS_AS_CHILDREN) {
-            children.addAll(monitor == null ? synonymCache.getCachedObjects() : synonymCache.getAllObjects(monitor, this));
+            children.addAll(synonymCache.getAllObjects(monitor, this));
         }
-        children.addAll(monitor == null ? packageCache.getCachedObjects() : packageCache.getAllObjects(monitor, this));
+        children.addAll(packageCache.getAllObjects(monitor, this));
         return children;
     }
 
     @Override
-    public DBSObject getChild(@Nullable DBRProgressMonitor monitor, @NotNull String childName)
+    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
         throws DBException
     {
         final OracleTableBase table = tableCache.getObject(monitor, this, childName);
@@ -404,7 +403,7 @@ public class OracleSchema extends OracleGlobalObject implements
 
     @NotNull
     @Override
-    public Class<? extends DBSEntity> getPrimaryChildType(@Nullable DBRProgressMonitor monitor)
+    public Class<? extends DBSEntity> getPrimaryChildType(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return OracleTable.class;

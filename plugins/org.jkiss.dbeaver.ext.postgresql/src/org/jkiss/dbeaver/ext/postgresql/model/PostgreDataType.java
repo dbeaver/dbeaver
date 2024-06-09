@@ -583,9 +583,8 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
     }
 
     @Override
-    public List<PostgreDataTypeAttribute> getAttributes(@Nullable DBRProgressMonitor monitor) throws DBException {
-        return attributeCache == null ? null :
-            (monitor == null ? attributeCache.getCachedObjects() : attributeCache.getAllObjects(monitor, this));
+    public List<PostgreDataTypeAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return attributeCache == null ? null : attributeCache.getAllObjects(monitor, this);
     }
 
     @Override
@@ -594,17 +593,17 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
     }
 
     @Override
-    public Collection<? extends DBSEntityConstraint> getConstraints(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
     @Override
-    public Collection<? extends DBSEntityAssociation> getAssociations(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
     @Override
-    public Collection<? extends DBSEntityAssociation> getReferences(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 

@@ -56,7 +56,7 @@ public abstract class AbstractStructDataType<DS extends DBPDataSource> extends A
      */
     @Nullable
     @Override
-    public Collection<? extends DBSEntityAssociation> getReferences(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
@@ -65,7 +65,7 @@ public abstract class AbstractStructDataType<DS extends DBPDataSource> extends A
      */
     @Nullable
     @Override
-    public Collection<? extends DBSEntityAssociation> getAssociations(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
@@ -74,7 +74,7 @@ public abstract class AbstractStructDataType<DS extends DBPDataSource> extends A
      */
     @Nullable
     @Override
-    public Collection<? extends DBSEntityConstraint> getConstraints(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 

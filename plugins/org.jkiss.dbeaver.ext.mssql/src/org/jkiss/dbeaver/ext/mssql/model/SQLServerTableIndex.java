@@ -157,7 +157,7 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
     }
 
     @Override
-    public List<SQLServerTableIndexColumn> getAttributeReferences(@Nullable DBRProgressMonitor monitor)
+    public List<SQLServerTableIndexColumn> getAttributeReferences(@NotNull DBRProgressMonitor monitor)
     {
         return columns;
     }

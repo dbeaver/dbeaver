@@ -333,18 +333,18 @@ public class SQLServerDatabase
     }
 
     @Override
-    public Collection<SQLServerSchema> getChildren(@Nullable DBRProgressMonitor monitor) throws DBException {
-        return monitor == null ? schemaCache.getCachedObjects() : schemaCache.getAllObjects(monitor, this);
+    public Collection<SQLServerSchema> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return schemaCache.getAllObjects(monitor, this);
     }
 
     @Override
-    public DBSObject getChild(@Nullable DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
+    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
         return schemaCache.getObject(monitor, this, childName);
     }
 
     @NotNull
     @Override
-    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) {
+    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) {
         return SQLServerSchema.class;
     }
 

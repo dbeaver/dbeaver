@@ -209,7 +209,7 @@ public class WMIClass extends WMIContainer
     }
 
     @Override
-    public List<WMIClassAttribute> getAttributes(@Nullable DBRProgressMonitor monitor) throws DBException
+    public List<WMIClassAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         if (attributes == null) {
             readAttributes(monitor);
@@ -219,7 +219,7 @@ public class WMIClass extends WMIContainer
 
     @Nullable
     @Override
-    public Collection<? extends DBSEntityConstraint> getConstraints(@Nullable DBRProgressMonitor monitor) throws DBException
+    public Collection<? extends DBSEntityConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         List<WMIClassConstraint> constraints = null;
         for (WMIClassAttribute attr : getAllAttributes(monitor)) {
@@ -345,7 +345,7 @@ public class WMIClass extends WMIContainer
     }
 
     @Override
-    public List<? extends DBSEntityAssociation> getAssociations(@Nullable DBRProgressMonitor monitor) throws DBException
+    public List<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         // Read attributes and references
         getAttributes(monitor);
@@ -363,7 +363,7 @@ public class WMIClass extends WMIContainer
     }
 
     @Override
-    public List<? extends DBSEntityAssociation> getReferences(@Nullable DBRProgressMonitor monitor) throws DBException
+    public List<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         List<DBSEntityAssociation> references = new ArrayList<>();
         if (subClasses != null) {

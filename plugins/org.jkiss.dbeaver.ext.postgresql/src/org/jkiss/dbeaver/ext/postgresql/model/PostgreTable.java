@@ -214,7 +214,7 @@ public abstract class PostgreTable extends PostgreTableReal
     }
 
     @Override
-    public Collection<PostgreIndex> getIndexes(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Collection<PostgreIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getSchema().getIndexCache().getObjects(monitor, getSchema(), this);
     }
 
@@ -234,7 +234,7 @@ public abstract class PostgreTable extends PostgreTableReal
 
     @Association
     @Override
-    public synchronized Collection<? extends DBSEntityAssociation> getAssociations(@Nullable DBRProgressMonitor monitor)
+    public synchronized Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
 
@@ -252,7 +252,7 @@ public abstract class PostgreTable extends PostgreTableReal
     }
 
     @Override
-    public Collection<? extends DBSEntityAssociation> getReferences(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (monitor == null) {
             return null;
         }
@@ -286,7 +286,7 @@ public abstract class PostgreTable extends PostgreTableReal
     }
 
     @Association
-    public Collection<PostgreTableForeignKey> getForeignKeys(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Collection<PostgreTableForeignKey> getForeignKeys(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getSchema().getConstraintCache().getTypedObjects(monitor, getSchema(), this, PostgreTableForeignKey.class);
     }
 
