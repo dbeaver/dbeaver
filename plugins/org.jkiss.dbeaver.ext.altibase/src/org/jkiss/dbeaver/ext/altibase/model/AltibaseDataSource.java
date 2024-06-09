@@ -231,28 +231,28 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         
         if (refSchema != null)
         {
-        	// No object type from database metadata, so need to find it one by one.
-        	if (refObj == null) {
-        		refObj = refSchema.getTable(monitor, refObjName);
-        	} 
-        	if (refObj == null) {
-        		refObj = refSchema.getSequence(monitor, refObjName);
-        	}
-        	if (refObj == null) {
-        		refObj = refSchema.getSynonym(monitor, refObjName);
-        	}
-        	if (refObj == null) {
-        		refObj = refSchema.getProcedureByName(monitor, refObjName);
-        	}
-        	if (refObj == null) {
-        		refObj = refSchema.getPackage(monitor, refObjName);
-        	}
-        	if (refObj == null) {
-        		refObj = refSchema.getIndex(monitor, refObjName);
-        	}
-        	if (refObj == null) {
-        		refObj = refSchema.getTableTrigger(monitor, refObjName);
-        	}
+            // No object type from database metadata, so need to find it one by one.
+            if (refObj == null) {
+                refObj = refSchema.getTable(monitor, refObjName);
+            } 
+            if (refObj == null) {
+                refObj = refSchema.getSequence(monitor, refObjName);
+            }
+            if (refObj == null) {
+                refObj = refSchema.getSynonym(monitor, refObjName);
+            }
+            if (refObj == null) {
+                refObj = refSchema.getProcedureByName(monitor, refObjName);
+            }
+            if (refObj == null) {
+                refObj = refSchema.getPackage(monitor, refObjName);
+            }
+            if (refObj == null) {
+                refObj = refSchema.getIndex(monitor, refObjName);
+            }
+            if (refObj == null) {
+                refObj = refSchema.getTableTrigger(monitor, refObjName);
+            }
         } else {
             /**
              *  Though Public synonym does not have its own schema, but SYSTEM_.SYS_SYONYMS_.OBJECT_OWNER_NAME returns 
