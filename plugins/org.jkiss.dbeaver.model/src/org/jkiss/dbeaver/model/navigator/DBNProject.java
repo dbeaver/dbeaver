@@ -191,6 +191,10 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
             children.removeIf(node -> node instanceof DBNResource && !((DBNResource) node).isResourceExists());
         }
 
+        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.NAVIGATOR_SHOW_HIDDEN_ASSETS)) {
+        	children.removeIf(node -> node instanceof DBNResource && ((DBNResource) node).getContentLocationResource().getLocation().toFile().isHidden());
+        }
+        
         if (!CommonUtils.isEmpty(extraNodes)) {
             children.addAll(extraNodes);
         }
