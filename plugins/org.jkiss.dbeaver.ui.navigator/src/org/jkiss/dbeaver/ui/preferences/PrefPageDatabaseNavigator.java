@@ -92,7 +92,6 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
-        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         {
             Group navigatorGroup = UIUtils.createControlGroup(composite, UINavigatorMessages.pref_page_database_general_group_navigator, 2, SWT.NONE, 0);
@@ -102,44 +101,51 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
                 navigatorGroup,
                 UINavigatorMessages.pref_page_database_general_label_show_host_name,
                 UINavigatorMessages.pref_page_database_general_label_show_host_name_tip,
-                store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME),
-                2);
+                false,
+                2
+            );
             showObjectsDescriptionCheck = UIUtils.createCheckbox(
                 navigatorGroup,
                 UINavigatorMessages.pref_page_database_general_label_show_objects_description,
                 UINavigatorMessages.pref_page_database_general_label_show_objects_description_tip,
-                store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_OBJECTS_DESCRIPTION),
-                2);
+                false,
+                2
+            );
             showStatisticsCheck = UIUtils.createCheckbox(
                 navigatorGroup,
                 UINavigatorMessages.pref_page_database_general_label_show_statistics,
                 UINavigatorMessages.pref_page_database_general_label_show_statistics_tip,
-                store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO),
-                2);
+                false,
+                2
+            );
             showNodeActionsCheck = UIUtils.createCheckbox(
                 navigatorGroup,
                 UINavigatorMessages.pref_page_database_general_label_show_node_actions,
                 UINavigatorMessages.pref_page_database_general_label_show_node_actions_tip,
-                store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS),
-                2);
+                false,
+                2
+            );
             showResourceFolderPlaceholdersCheck = UIUtils.createCheckbox(
                 navigatorGroup,
                 UINavigatorMessages.pref_page_database_general_label_show_folder_placeholders,
                 UINavigatorMessages.pref_page_database_general_label_show_folder_placeholders_tip,
-                store.getBoolean(ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS),
-                2);
+                false,
+                2
+            );
             sortFoldersFirstCheck = UIUtils.createCheckbox(
                 navigatorGroup,
                 UINavigatorMessages.pref_page_database_general_label_folders_first,
                 UINavigatorMessages.pref_page_database_general_label_folders_first_tip,
-                store.getBoolean(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST),
-                2);
+                false,
+                2
+            );
             groupByDriverCheck = UIUtils.createCheckbox(
                 navigatorGroup,
                 UINavigatorMessages.pref_page_database_general_label_group_database_by_driver,
                 "",
-                store.getBoolean(NavigatorPreferences.NAVIGATOR_GROUP_BY_DRIVER),
-                2);
+                false,
+                2
+            );
             // TODO: remove or enable this setting
             groupByDriverCheck.setEnabled(false);
 
@@ -147,34 +153,39 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
                 navigatorGroup,
                 UINavigatorMessages.pref_page_database_general_label_order_elements_alphabetically,
                 UINavigatorMessages.pref_page_database_general_label_order_elements_alphabetically_tip,
-                store.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY),
-                2);
+                false,
+                2
+            );
 
             colorAllNodesCheck = UIUtils.createCheckbox(
                 navigatorGroup,
                 UINavigatorMessages.pref_page_database_general_label_color_all_nodes,
                 UINavigatorMessages.pref_page_database_general_label_color_all_nodes_tip,
-                store.getBoolean(NavigatorPreferences.NAVIGATOR_COLOR_ALL_NODES),
-                2);
+                false,
+                2
+            );
 
             showObjectTipsCheck = UIUtils.createCheckbox(
                 navigatorGroup,
                 UINavigatorMessages.pref_page_database_general_label_show_tips_in_tree,
                 UINavigatorMessages.pref_page_database_general_label_show_tips_in_tree_tip,
-                store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_OBJECT_TIPS),
-                2);
+                false,
+                2
+            );
             showToolTipsCheck = UIUtils.createCheckbox(
                 navigatorGroup,
                 UINavigatorMessages.pref_page_database_general_label_show_tooltips,
                 UINavigatorMessages.pref_page_database_general_label_show_tooltips_tip,
-                store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_TOOLTIPS),
-                2);
+                false,
+                2
+            );
             showContentsInToolTipsContents = UIUtils.createCheckbox(
                 navigatorGroup,
                 UINavigatorMessages.pref_page_database_general_label_show_contents_in_tooltips,
                 UINavigatorMessages.pref_page_database_general_label_show_contents_in_tooltips_tip,
-                store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONTENTS_IN_TOOLTIP),
-                2);
+                false,
+                2
+            );
         }
 
         {
@@ -201,55 +212,152 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
                 miscGroup,
                 UINavigatorMessages.pref_page_database_general_label_expand_navigator_tree,
                 UINavigatorMessages.pref_page_database_general_label_expand_navigator_tree_tip,
-                store.getBoolean(NavigatorPreferences.NAVIGATOR_EXPAND_ON_CONNECT),
-                2);
+                false,
+                2
+            );
             restoreFilterCheck = UIUtils.createCheckbox(
                 miscGroup,
                 UINavigatorMessages.pref_page_database_general_label_restore_filter,
                 UINavigatorMessages.pref_page_database_general_label_restore_filter_tip,
-                store.getBoolean(NavigatorPreferences.NAVIGATOR_RESTORE_FILTER),
-                2);
+                false,
+                2
+            );
 
             longListFetchSizeText = UIUtils.createLabelText(
                 miscGroup,
                 UINavigatorMessages.pref_page_database_general_label_long_list_fetch_size,
-                store.getString(NavigatorPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE),
-                SWT.BORDER);
+                "",
+                SWT.BORDER
+            );
             longListFetchSizeText.setToolTipText(UINavigatorMessages.pref_page_database_general_label_long_list_fetch_size_tip);
             longListFetchSizeText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
 
             restoreStateDepthText = UIUtils.createLabelText(
                 miscGroup,
                 UINavigatorMessages.pref_page_database_general_label_restore_state_depth,
-                store.getString(NavigatorPreferences.NAVIGATOR_RESTORE_STATE_DEPTH),
-                SWT.BORDER);
+                "",
+                SWT.BORDER
+            );
             restoreStateDepthText.setToolTipText(UINavigatorMessages.pref_page_database_general_label_restore_state_depth_tip);
             restoreStateDepthText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
         }
 
-        setSettings();
+        setSettings(false);
 
         return composite;
     }
 
-    private void setSettings() {
+    private void setSettings(boolean useDefaultValues) {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        showConnectionHostCheck.setSelection(
+            useDefaultValues
+                ? store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME)
+                : store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME)
+        );
+        showObjectsDescriptionCheck.setSelection(
+            useDefaultValues
+                ? store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SHOW_OBJECTS_DESCRIPTION)
+                : store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_OBJECTS_DESCRIPTION)
+        );
+        showStatisticsCheck.setSelection(
+            useDefaultValues
+                ? store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO)
+                : store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO)
+        );
+        showNodeActionsCheck.setSelection(
+            useDefaultValues
+                ? store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS)
+                : store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS)
+        );
+        showResourceFolderPlaceholdersCheck.setSelection(
+            useDefaultValues
+                ? store.getDefaultBoolean(ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS)
+                : store.getBoolean(ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS)
+        );
+        sortFoldersFirstCheck.setSelection(
+            useDefaultValues
+                ? store.getDefaultBoolean(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST)
+                : store.getBoolean(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST)
+        );
+        groupByDriverCheck.setSelection(
+            useDefaultValues
+                ? store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_GROUP_BY_DRIVER)
+                : store.getBoolean(NavigatorPreferences.NAVIGATOR_GROUP_BY_DRIVER)
+        );
+        sortCaseInsensitiveCheck.setSelection(
+            useDefaultValues
+                ? store.getDefaultBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY)
+                : store.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY)
+        );
+        colorAllNodesCheck.setSelection(
+            useDefaultValues
+                ? store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_COLOR_ALL_NODES)
+                : store.getBoolean(NavigatorPreferences.NAVIGATOR_COLOR_ALL_NODES)
+        );
+        showObjectTipsCheck.setSelection(
+            useDefaultValues
+                ? store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SHOW_OBJECT_TIPS)
+                : store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_OBJECT_TIPS)
+        );
+        showToolTipsCheck.setSelection(
+            useDefaultValues
+                ? store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SHOW_TOOLTIPS)
+                : store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_TOOLTIPS)
+        );
+        showContentsInToolTipsContents.setSelection(
+            useDefaultValues
+                ? store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONTENTS_IN_TOOLTIP)
+                : store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONTENTS_IN_TOOLTIP)
+        );
+        expandOnConnectCheck.setSelection(
+            useDefaultValues
+                ? store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_EXPAND_ON_CONNECT)
+                : store.getBoolean(NavigatorPreferences.NAVIGATOR_EXPAND_ON_CONNECT)
+        );
+        restoreFilterCheck.setSelection(
+            useDefaultValues
+                ? store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_RESTORE_FILTER)
+                : store.getBoolean(NavigatorPreferences.NAVIGATOR_RESTORE_FILTER)
+        );
+        showContentsInToolTipsContents.setSelection(
+            useDefaultValues
+                ? store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONTENTS_IN_TOOLTIP)
+                : store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONTENTS_IN_TOOLTIP)
+        );
+        longListFetchSizeText.setText(
+            useDefaultValues
+                ? store.getDefaultString(NavigatorPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE)
+                : store.getString(NavigatorPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE)
+        );
+        restoreStateDepthText.setText(
+            useDefaultValues
+                ? store.getDefaultString(NavigatorPreferences.NAVIGATOR_RESTORE_STATE_DEPTH)
+                : store.getString(NavigatorPreferences.NAVIGATOR_RESTORE_STATE_DEPTH)
+        );
+
         NavigatorPreferences.DoubleClickBehavior objDCB = CommonUtils.valueOf(
             NavigatorPreferences.DoubleClickBehavior.class,
-            store.getString(NavigatorPreferences.NAVIGATOR_OBJECT_DOUBLE_CLICK));
+            useDefaultValues
+                ? store.getDefaultString(NavigatorPreferences.NAVIGATOR_OBJECT_DOUBLE_CLICK)
+                : store.getString(NavigatorPreferences.NAVIGATOR_OBJECT_DOUBLE_CLICK)
+        );
         objDoubleClickBehavior.select(objDCB == NavigatorPreferences.DoubleClickBehavior.EXPAND ? 1 : 0);
         dsDoubleClickBehavior.select(
             CommonUtils.valueOf(
                 NavigatorPreferences.DoubleClickBehavior.class,
-                store.getString(NavigatorPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK),
+                useDefaultValues
+                    ? store.getDefaultString(NavigatorPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK)
+                    : store.getString(NavigatorPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK),
                 NavigatorPreferences.DoubleClickBehavior.EDIT)
                 .ordinal());
 
-        String defEditorPage = store.getString(NavigatorPreferences.NAVIGATOR_DEFAULT_EDITOR_PAGE);
-        List<EntityEditorDescriptor> entityEditors = getAvailableEditorPages();
         defaultEditorPageCombo.removeAll();
         defaultEditorPageCombo.add(UINavigatorMessages.pref_page_navigator_default_editor_page_last);
         defaultEditorPageCombo.select(0);
+        String defEditorPage = useDefaultValues
+            ? store.getDefaultString(NavigatorPreferences.NAVIGATOR_DEFAULT_EDITOR_PAGE)
+            : store.getString(NavigatorPreferences.NAVIGATOR_DEFAULT_EDITOR_PAGE);
+        List<EntityEditorDescriptor> entityEditors = getAvailableEditorPages();
         for (EntityEditorDescriptor eed : entityEditors) {
             defaultEditorPageCombo.add(eed.getName());
             if (eed.getId().equals(defEditorPage)) {
@@ -260,26 +368,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
 
     @Override
     protected void performDefaults() {
-        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        expandOnConnectCheck.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_EXPAND_ON_CONNECT));
-        restoreFilterCheck.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_RESTORE_FILTER));
-        restoreStateDepthText.setText(String.valueOf(store.getDefaultInt(NavigatorPreferences.NAVIGATOR_RESTORE_STATE_DEPTH)));
-        showObjectTipsCheck.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SHOW_OBJECT_TIPS));
-        showToolTipsCheck.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SHOW_TOOLTIPS));
-        showContentsInToolTipsContents.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONTENTS_IN_TOOLTIP));
-        sortCaseInsensitiveCheck.setSelection(store.getDefaultBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY));
-        sortFoldersFirstCheck.setSelection(store.getDefaultBoolean(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST));
-        showConnectionHostCheck.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME));
-        showObjectsDescriptionCheck.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SHOW_OBJECTS_DESCRIPTION));
-        showStatisticsCheck.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO));
-        showNodeActionsCheck.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS));
-        colorAllNodesCheck.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_COLOR_ALL_NODES));
-        showResourceFolderPlaceholdersCheck.setSelection(store.getDefaultBoolean(ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS));
-        groupByDriverCheck.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_GROUP_BY_DRIVER));
-        longListFetchSizeText.setText(String.valueOf(store.getDefaultInt(NavigatorPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE)));
-        UIUtils.setComboSelection(objDoubleClickBehavior, store.getDefaultString(NavigatorPreferences.NAVIGATOR_OBJECT_DOUBLE_CLICK));
-        UIUtils.setComboSelection(dsDoubleClickBehavior, store.getDefaultString(NavigatorPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK));
-        defaultEditorPageCombo.select(store.getDefaultInt(NavigatorPreferences.NAVIGATOR_DEFAULT_EDITOR_PAGE));
+        setSettings(true);
     }
 
     @Override
