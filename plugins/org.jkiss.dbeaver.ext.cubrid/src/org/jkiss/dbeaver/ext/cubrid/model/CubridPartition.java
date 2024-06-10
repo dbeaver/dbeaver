@@ -77,13 +77,40 @@ public class CubridPartition extends CubridTable implements DBSTablePartition {
         return expressionValues;
     }
     
-    
     @Nullable
     @Override
     @Property(viewable = true, order = 100)
     public String getDescription() {
         return comment;
         
+    }
+    
+    @NotNull
+    @Override
+    @Property(hidden = true)
+    public CubridCollation getCollation() {
+        return super.getCollation();
+    }
+    
+    @NotNull
+    @Override
+    @Property(hidden = true)
+    public boolean isReuseOID() {
+        return super.isReuseOID();
+    }
+    
+    @Nullable
+    @Override
+    @Property(hidden = true)
+    public Integer getAutoIncrement() {
+        return super.getAutoIncrement();
+    }
+    
+    @NotNull
+    @Override
+    @Property(hidden = true) 
+    public CubridCharset getCharset() {
+        return super.getCharset();
     }
     
 }
