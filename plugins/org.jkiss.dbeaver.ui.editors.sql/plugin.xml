@@ -274,6 +274,7 @@
         <command id="org.jkiss.dbeaver.ui.editors.text.content.format" name="%command.org.jkiss.dbeaver.ui.editors.text.content.format.name" description="%command.org.jkiss.dbeaver.ui.editors.text.content.format.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.toggleLayout" name="%command.org.jkiss.dbeaver.ui.editors.sql.toggleLayout.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.toggleLayout.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.search.web" name="%command.org.jkiss.dbeaver.ui.editors.sql.web.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.web.description" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.search.bing" name="Search selected text with Bing" description= "Search selected text with Bing" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.disableSQLSyntaxParser" name="%command.org.jkiss.dbeaver.ui.editors.sql.disableSQLSyntaxParser.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.disableSQLSyntaxParser.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.copy.query" name="%command.org.jkiss.dbeaver.ui.editors.sql.copy.query.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.copy.query.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.FoldingsEnabled" name="%command.org.jkiss.dbeaver.ui.editors.sql.FoldingsEnabled.name" categoryId="org.jkiss.dbeaver.core.sql"/>
@@ -505,6 +506,9 @@
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor.base"/></enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.search.web" class="org.jkiss.dbeaver.ui.editors.sql.commands.OpenLinkInWindowHandler">
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor.base"/></enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.search.bing" class="org.jkiss.dbeaver.ui.editors.sql.commands.SearchWithBingCommand">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor.base"/></enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.disableSQLSyntaxParser" class="org.jkiss.dbeaver.ui.editors.sql.commands.DisableSQLSyntaxParserHandler">
@@ -1116,6 +1120,7 @@
             <command commandId="org.jkiss.dbeaver.core.edit.copy.special"/>
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.copy.query"/>
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.search.web"/>
+            <command commandId="org.jkiss.dbeaver.ui.editors.sql.search.bing"/>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=generate">

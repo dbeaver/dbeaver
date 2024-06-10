@@ -77,6 +77,9 @@ public class SQLEditorMessages extends NLS {
     public static String editors_sql_actions_search_selected_text_online;
     public static String editors_sql_actions_search_selected_text_online_tip;
 
+    public static String editors_sql_actions_search_selected_text_online_bing;
+    public static String editors_sql_actions_search_selected_text_online_bing_tip;
+
     public static String action_menu_sqleditor_maximizeResultsPanel;
     public static String action_menu_sqleditor_restoreResultsPanel;
 
