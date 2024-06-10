@@ -847,7 +847,7 @@ public final class DBUtils {
             try {
                 if (!isIndexedValue(parent, curValue)) {
                     curValue = parent.extractNestedValue(curValue, 0);
-                } else if (isValidIndex(curValue, nestedIndexes[curNestedIndex])) {
+                } else if (nestedIndexes != null && isValidIndex(curValue, nestedIndexes[curNestedIndex])) {
                     curValue = parent.extractNestedValue(curValue, nestedIndexes[curNestedIndex]);
                     curNestedIndex++;
                 } else {
