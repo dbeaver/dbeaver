@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.task.*;
+import org.jkiss.dbeaver.registry.task.TaskConstants;
 import org.jkiss.dbeaver.registry.task.TaskImpl;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigurator;
@@ -206,13 +207,14 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                 if (task != null) {
                     UIUtils.createControlLabel(infoPanel, TaskUIMessages.task_config_wizard_page_task_control_label_category);
                     Composite catPanel = UIUtils.createComposite(infoPanel, 2);
-                    UIUtils.createLabel(catPanel, task.getType().getCategory().getIcon());
-                    UIUtils.createLabel(catPanel, task.getType().getCategory().getName());
+                    DBTTaskType taskType = task.getType();
+                    UIUtils.createLabel(catPanel, taskType.getCategory().getIcon());
+                    UIUtils.createLabel(catPanel, taskType.getCategory().getName());
 
                     UIUtils.createControlLabel(infoPanel, TaskUIMessages.task_config_wizard_page_task_control_label_type);
                     Composite typePanel = UIUtils.createComposite(infoPanel, 2);
-                    UIUtils.createLabel(typePanel, task.getType().getIcon());
-                    UIUtils.createLabel(typePanel, task.getType().getName());
+                    UIUtils.createLabel(typePanel, taskType.getIcon());
+                    UIUtils.createLabel(typePanel, taskType.getName());
                 }
             }
             Composite advancedPanel = UIUtils.createControlGroup(
@@ -225,7 +227,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                 TaskUIMessages.task_config_wizard_page_task_max_exec_time_descr,
                 true,
                 1);
-            maxExecutionTime = UIUtils.createSpinner(advancedPanel, null, 1, 1, Integer.MAX_VALUE);
+            maxExecutionTime = UIUtils.createSpinner(advancedPanel, null, TaskConstants.DEFAULT_MAX_EXECUTION_TIME, 1, Integer.MAX_VALUE);
             maxExecutionTimeBtn.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(
@@ -244,7 +246,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
             } else {
                 maxExecutionTimeBtn.setSelection(false);
                 maxExecutionTime.setEnabled(false);
-                maxExecutionTime.setSelection(0);
+                maxExecutionTime.setSelection(TaskConstants.DEFAULT_MAX_EXECUTION_TIME);
             }
 
             if (task == null) {
