@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -64,6 +65,9 @@ public class DataSourceHandler {
 
     public static final int END_TRANSACTION_WAIT_TIME = 3000;
 
+    // The maximum number of simultaneous connections when using an EAP version
+    private static final int EAP_MAX_CONNECTIONS_LIMIT = 5;
+
     /**
      * Connects datasource
      *
@@ -94,10 +98,15 @@ public class DataSourceHandler {
                 final long liveConnectionCount = DataSourceRegistry.getAllDataSources().stream()
                     .filter(DBPDataSourceContainer::isConnected)
                     .count();
-                if (liveConnectionCount >= 5) {
+                if (liveConnectionCount >= EAP_MAX_CONNECTIONS_LIMIT) {
+                    // NOTE: This MIGHT interfere with QMDB or any other tools that have embedded databases
                     DBWorkbench.getPlatformUI().showWarningMessageBox(
                         "Too many connections",
-                        "You can't have more than 5 simultaneous connections when participating in early access program."
+                        NLS.bind(
+                            "You can''t connect to ''{0}'' because you have reached the early access program limit of {1} simultaneous connections.",
+                            dataSourceContainer.getName(),
+                            EAP_MAX_CONNECTIONS_LIMIT
+                        )
                     );
                     return;
                 }

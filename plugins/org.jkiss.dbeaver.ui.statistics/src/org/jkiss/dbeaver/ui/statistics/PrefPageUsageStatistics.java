@@ -80,6 +80,7 @@ public class PrefPageUsageStatistics extends AbstractPrefPage implements IWorkbe
 
         if (DBWorkbench.getPlatform().getApplication().isEarlyAccessProgramActive()) {
             checkSendUsageStatistics.setEnabled(false);
+            UIUtils.createEmptyLabel(composite, 1, 1);
             UIUtils.createInfoLink(
                 composite,
                 "You cannot opt-out from data sharing when participating in <a>early access program</a>.",
