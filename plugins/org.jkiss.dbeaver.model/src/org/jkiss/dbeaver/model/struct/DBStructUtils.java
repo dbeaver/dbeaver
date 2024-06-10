@@ -130,13 +130,7 @@ public final class DBStructUtils {
         return generateTableDDL(monitor, table, options, addComments);
     }
 
-    public static <T extends DBSEntity> void generateTableListDDL(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull StringBuilder sql,
-        @NotNull Collection<T> tablesOrViews,
-        Map<String, Object> options,
-        boolean addComments
-    ) throws DBException {
+    public static <T extends DBSEntity> void generateTableListDDL(@NotNull DBRProgressMonitor monitor, @NotNull StringBuilder sql, @NotNull Collection<T> tablesOrViews, Map<String, Object> options, boolean addComments) throws DBException {
         List<T> goodTableList = new ArrayList<>();
         List<T> cycleTableList = new ArrayList<>();
         List<T> viewList = new ArrayList<>();

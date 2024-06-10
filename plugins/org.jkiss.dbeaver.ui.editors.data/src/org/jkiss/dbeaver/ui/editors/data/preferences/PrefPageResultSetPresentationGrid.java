@@ -56,7 +56,6 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage {
     private Button gridShowAttrFilters;
     private Button gridShowAttrOrder;
     private Button useSmoothScrolling;
-    private Button showCollectionInline;
     private Button showBooleanAsCheckbox;
     private Button showWhitespaceCharacters;
     private ValueFormatSelector textValueFormat;
@@ -81,7 +80,6 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage {
                 store.contains(ResultSetPreferences.RESULT_SET_SHOW_ATTR_FILTERS) ||
                 store.contains(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ORDERING) ||
                 store.contains(ResultSetPreferences.RESULT_SET_USE_SMOOTH_SCROLLING) ||
-                store.contains(ResultSetPreferences.RESULT_SET_SHOW_COLLECTIONS_INLINE) ||
                 store.contains(ResultSetPreferences.RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX) ||
                 store.contains(ResultSetPreferences.RESULT_SET_SHOW_WHITESPACE_CHARACTERS) ||
                 store.contains(ResultSetPreferences.RESULT_SET_CLICK_TOGGLE_BOOLEAN) ||
@@ -121,9 +119,6 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage {
             gridShowAttrOrder = UIUtils.createCheckbox(appearanceGroup,
                 DataEditorsMessages.pref_page_database_resultsets_label_show_attr_ordering,
                 DataEditorsMessages.pref_page_database_resultsets_label_show_attr_ordering_tip, false, 2);
-            showCollectionInline = UIUtils.createCheckbox(appearanceGroup,
-                DataEditorsMessages.pref_page_database_resultsets_label_show_collections_inline,
-                DataEditorsMessages.pref_page_database_resultsets_label_show_collections_inline_tip, false, 2);
             showBooleanAsCheckbox = UIUtils.createCheckbox(appearanceGroup,
                 DataEditorsMessages.pref_page_database_resultsets_label_show_boolean_as_checkbox,
                 DataEditorsMessages.pref_page_database_resultsets_label_show_boolean_as_checkbox_tip, false, 2);
@@ -200,7 +195,6 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage {
             gridShowAttrFilters.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_FILTERS));
             gridShowAttrOrder.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ORDERING));
             useSmoothScrolling.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_USE_SMOOTH_SCROLLING));
-            showCollectionInline.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_COLLECTIONS_INLINE));
             showBooleanAsCheckbox.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX));
             showWhitespaceCharacters.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_WHITESPACE_CHARACTERS));
             textValueFormat.select(CommonUtils.valueOf(DBDDisplayFormat.class, store.getString(ResultSetPreferences.RESULT_GRID_VALUE_FORMAT), DBDDisplayFormat.UI));
@@ -231,7 +225,6 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage {
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_ATTR_FILTERS, gridShowAttrFilters.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ORDERING, gridShowAttrOrder.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_USE_SMOOTH_SCROLLING, useSmoothScrolling.getSelection());
-            store.setValue(ResultSetPreferences.RESULT_SET_SHOW_COLLECTIONS_INLINE, showCollectionInline.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX, showBooleanAsCheckbox.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_WHITESPACE_CHARACTERS, showWhitespaceCharacters.getSelection());
             store.setValue(ResultSetPreferences.RESULT_GRID_VALUE_FORMAT, textValueFormat.getSelection().name());
@@ -258,7 +251,6 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage {
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_ATTR_FILTERS);
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ORDERING);
         store.setToDefault(ResultSetPreferences.RESULT_SET_USE_SMOOTH_SCROLLING);
-        store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_COLLECTIONS_INLINE);
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX);
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_WHITESPACE_CHARACTERS);
         store.setToDefault(ResultSetPreferences.RESULT_GRID_VALUE_FORMAT);
@@ -278,7 +270,6 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage {
         gridShowAttrFilters.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_FILTERS));
         gridShowAttrOrder.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ORDERING));
         useSmoothScrolling.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_USE_SMOOTH_SCROLLING));
-        showCollectionInline.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_SHOW_COLLECTIONS_INLINE));
         showBooleanAsCheckbox.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX));
         showWhitespaceCharacters.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_SHOW_WHITESPACE_CHARACTERS));
         textValueFormat.select(DBDDisplayFormat.UI);

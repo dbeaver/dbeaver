@@ -20,11 +20,15 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.InternalDatabaseConfig;
-import org.jkiss.dbeaver.model.sql.backup.SQLBackupConstants;
 import org.jkiss.dbeaver.model.sql.backup.JDBCDatabaseBackupHandler;
+import org.jkiss.dbeaver.model.sql.backup.SQLBackupConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,37 +40,43 @@ public class JDBCDatabasePostgresBackupHandler implements JDBCDatabaseBackupHand
 
     @Override
     public void doBackup(
-            @NotNull Connection connection,
-            int currentSchemaVersion,
-            @NotNull InternalDatabaseConfig databaseConfig
+        @NotNull Connection connection,
+        int currentSchemaVersion,
+        @NotNull InternalDatabaseConfig databaseConfig
     ) throws DBException {
         try {
             URI uri = new URI(databaseConfig.getUrl().replace("jdbc:", ""));
             Path workspace = DBWorkbench.getPlatform().getWorkspace().getAbsolutePath().resolve(SQLBackupConstants.BACKUP_FOLDER);
             Path backupFile = workspace.resolve(uri.getPath().replace("/", "") + "_"
-                    + SQLBackupConstants.BACKUP_FILE_NAME + databaseConfig.getSchema()
-                    + currentSchemaVersion + SQLBackupConstants.BACKUP_FILE_TYPE);
+                + SQLBackupConstants.BACKUP_FILE_NAME + databaseConfig.getSchema()
+                + currentSchemaVersion + SQLBackupConstants.BACKUP_FILE_TYPE);
             if (Files.notExists(backupFile)) {
                 Files.createDirectories(workspace);
                 ProcessBuilder processBuilder = getBuilder(databaseConfig, uri, backupFile);
                 processBuilder.redirectErrorStream(true);
                 Process process = processBuilder.start();
 
-                while (process.isAlive()) {
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
+                try (InputStream inputStream = process.getInputStream();
+                    InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+                    BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
+
+                    StringBuilder processOutput = new StringBuilder();
+                    String line;
+                    while ((line = bufferedReader.readLine()) != null) {
+                        processOutput.append(line).append("\n");
                     }
-                }
 
-                int exitCode = process.exitValue();
+                    int exitCode = process.waitFor();
 
-                if (exitCode == 0) {
-                    log.info("Postgres backup successful");
-                } else {
-                    log.error("Postgres backup failed");
-                    throw new DBException("Postgres backup failed");
+                    if (exitCode == 0) {
+                        log.info("Postgres backup successful");
+                    } else {
+                        Files.deleteIfExists(backupFile);
+                        log.error("Postgres backup failed with output: " + processOutput.toString());
+                        throw new DBException("Postgres backup failed");
+                    }
+                } catch (IOException e) {
+                    log.error("Error reading process output", e);
                 }
             }
         } catch (Exception e) {
@@ -76,17 +86,37 @@ public class JDBCDatabasePostgresBackupHandler implements JDBCDatabaseBackupHand
     }
 
     private static ProcessBuilder getBuilder(@NotNull InternalDatabaseConfig databaseConfig, URI uri, Path backupFile) {
+        String databaseName = uri.getPath();
+        if (databaseName != null) {
+            if (databaseName.startsWith("/")) {
+                databaseName = databaseName.substring(1);
+            }
+            int questionMarkIndex = databaseName.indexOf("?");
+            if (questionMarkIndex != -1) {
+                databaseName = databaseName.substring(0, questionMarkIndex);
+            }
+        }
+
         ProcessBuilder processBuilder = new ProcessBuilder(
-                "pg_dump",
-                "--host", uri.getHost(),
-                "--port", String.valueOf(uri.getPort()),
-                "--username", databaseConfig.getUser(),
-                "--schema", databaseConfig.getSchema(),
-                "--format", "c",
-                "--blobs",
-                "--verbose",
-                "--file", backupFile.toAbsolutePath().toString()
+            "pg_dump",
+            databaseName,
+            "--host", uri.getHost(),
+            "--port", String.valueOf(uri.getPort()),
+            "--blobs",
+            "--verbose",
+            "--file", backupFile.toAbsolutePath().toString()
         );
+
+        if (CommonUtils.isNotEmpty(databaseConfig.getSchema())) {
+            processBuilder.command().add("--schema");
+            processBuilder.command().add(databaseConfig.getSchema());
+        }
+
+        String backupCommand = String.join(" ", processBuilder.command());
+        log.info("Command started: " + backupCommand);
+
+        processBuilder.command().add("--username");
+        processBuilder.command().add(databaseConfig.getUser());
 
         if (CommonUtils.isNotEmpty(databaseConfig.getPassword())) {
             processBuilder.environment().put("PGPASSWORD", databaseConfig.getPassword());
