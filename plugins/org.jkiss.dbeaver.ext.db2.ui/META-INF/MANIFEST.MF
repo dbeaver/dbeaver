@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver IBM DB2 UI
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.db2.ui;singleton:=true
-Bundle-Version: 1.0.57.qualifier
-Bundle-Release-Date: 20240603
+Bundle-Version: 1.0.58.qualifier
+Bundle-Release-Date: 20240624
 Bundle-Activator: org.jkiss.dbeaver.ext.db2.ui.DB2Activator
 Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.ui.editors.connection,
