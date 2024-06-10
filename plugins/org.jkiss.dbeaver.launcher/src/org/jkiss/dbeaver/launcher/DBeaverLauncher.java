@@ -706,16 +706,10 @@ public class DBeaverLauncher {
         if (!configDir.exists()) {
             configDir.mkdirs();
             if (!configDir.exists()) {
-                System.setProperty(PROP_EXITCODE, "15"); //$NON-NLS-1$
-                System.setProperty(PROP_EXITDATA, "<title>Invalid Configuration Location</title>The configuration area at '" + configDir + //$NON-NLS-1$
-                        "' could not be created.  Please choose a writable location using the '-configuration' command line option."); //$NON-NLS-1$
                 return false;
             }
         }
         if (!canWrite(configDir)) {
-            System.setProperty(PROP_EXITCODE, "15"); //$NON-NLS-1$
-            System.setProperty(PROP_EXITDATA, "<title>Invalid Configuration Location</title>The configuration area at '" + configDir + //$NON-NLS-1$
-                    "' is not writable.  Please choose a writable location using the '-configuration' command line option."); //$NON-NLS-1$
             return false;
         }
         return true;

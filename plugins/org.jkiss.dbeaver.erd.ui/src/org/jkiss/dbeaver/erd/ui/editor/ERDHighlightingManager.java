@@ -68,14 +68,16 @@ public class ERDHighlightingManager {
         private void refresh() {
             try {
                 if (this.highlightings.isEmpty()) {
-                    if (part instanceof ERDConnection) {
+                    if (part instanceof ERDConnection connection) {
+                        connection.setSelected(false);
                         part.setForegroundColor(originalColor);
                     } else {
                         part.setBackgroundColor(originalColor);
                     }
                     part.setOpaque(originalOpaque);
                 } else {
-                    if (part instanceof ERDConnection) {
+                    if (part instanceof ERDConnection connection) {
+                        connection.setSelected(true);
                         part.setForegroundColor(highlightings.getLast().color);
                     } else {
                         part.setBackgroundColor(highlightings.getLast().color);

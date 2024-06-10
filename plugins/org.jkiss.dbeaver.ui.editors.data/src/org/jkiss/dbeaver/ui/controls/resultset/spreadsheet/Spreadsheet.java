@@ -297,7 +297,7 @@ public class Spreadsheet extends LightGrid implements Listener {
                 }
                 break;
             case SWT.MouseDoubleClick:
-                if (event.button != 1) {
+                if (event.button != 1 || isHoveringOnLink()) {
                     return;
                 }
                 GridPos pos = super.getCell(new Point(event.x, event.y));

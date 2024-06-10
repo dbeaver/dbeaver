@@ -64,6 +64,8 @@ public enum SQLState {
     SQL_23000("23000", "Integrity constraint violation"),
     SQL_23505("23505", "Unique value constraint is violated"),
     SQL_25000("25000", "Invalid transaction state"),
+    SQL_25P01("25P01", "No active SQL transaction"),
+    SQL_25P02("25P02", "In failed SQL transaction"),
     SQL_25S02("25S02", "Transaction is still active"),
     SQL_25S03("25S03", "Transaction has been rolled back"),
     SQL_26000("26000", "Invalid SQL statement identifier"),
@@ -94,7 +96,7 @@ public enum SQLState {
     SQL_HY010("HY010", "Function sequence error"),
     SQL_HY011("HY011", "Operation invalid at this time"),
     SQL_HY012("HY012", "Invalid transaction operation code"),
-    SQL_HY015("HY015", "No cursor name avilable"),
+    SQL_HY015("HY015", "No cursor name available"),
     SQL_HY018("HY018", "Server declined cancel request"),
     SQL_HY090("HY090", "Invalid string or buffer length"),
     SQL_HY091("HY091", "Descriptor type out of range"),
@@ -146,7 +148,7 @@ public enum SQLState {
     private final String code;
     private final String description;
 
-    private SQLState(String code, String description) {
+    SQLState(String code, String description) {
         this.code = code;
         this.description = description;
     }
