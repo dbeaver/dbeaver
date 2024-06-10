@@ -1365,6 +1365,40 @@
             <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.disabled.background.description</description>
         </colorDefinition>
 
+        <!-- Colors for Query Plan -->
+        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.sql.plan.view.label" id="org.jkiss.dbeaver.sql.plan.view.colors">
+            <description>%themeElementCategory.org.jkiss.dbeaver.sql.plan.view.description</description>
+        </themeElementCategory>
+
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.plan.view.indexscan.background.label"
+            categoryId="org.jkiss.dbeaver.sql.plan.view.colors"
+            id="org.jkiss.dbeaver.sql.plan.view.color.indexscan.background"
+            value="128,255,128">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.plan.indexscan.background.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.plan.view.indexscan.foreground.label"
+            categoryId="org.jkiss.dbeaver.sql.plan.view.colors"
+            id="org.jkiss.dbeaver.sql.plan.view.color.indexscan.foreground"
+            value="COLOR_BLACK">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.plan.view.indexscan.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.plan.view.tablescan.background.label"
+            categoryId="org.jkiss.dbeaver.sql.plan.view.colors"
+            id="org.jkiss.dbeaver.sql.plan.view.color.tablescan.background"
+            value="255,128,128">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.plan.view.tablescan.background.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.plan.view.tablescan.foreground.label"
+            categoryId="org.jkiss.dbeaver.sql.plan.view.colors"
+            id="org.jkiss.dbeaver.sql.plan.view.color.tablescan.foreground"
+            value="COLOR_BLACK">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.plan.view.tablescan.foreground.description</description>
+        </colorDefinition>
+
     </extension>
 
     <extension point="org.eclipse.ui.propertyPages">

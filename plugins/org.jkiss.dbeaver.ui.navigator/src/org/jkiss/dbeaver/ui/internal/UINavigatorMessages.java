@@ -64,7 +64,7 @@ public class UINavigatorMessages extends NLS {
     public static String actions_navigator_create_folder_folder_name;
     public static String actions_navigator_create_new;
     public static String actions_navigator_delete_objects;
-    public static String actions_navigator_delete_;
+    public static String actions_navigator_delete;
     public static String actions_navigator_delete_script;
     public static String actions_navigator_edit;
     public static String actions_navigator_persist_delete_in_the_editor_title;
