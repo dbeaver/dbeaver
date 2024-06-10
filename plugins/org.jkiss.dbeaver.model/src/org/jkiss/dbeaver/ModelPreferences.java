@@ -88,6 +88,10 @@ public final class ModelPreferences
             this.title = title;
         }
 
+        public String getTitle() {
+            return title;
+        }
+
         public String getName() {
             return this.toString();
         }
