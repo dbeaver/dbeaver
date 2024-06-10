@@ -79,4 +79,15 @@ public class BigQueryDataSource extends GenericDataSource {
         return super.resolveDataKind(typeName, valueType);
     }
 
+    @Override
+    public String getDefaultDataTypeName(DBPDataKind dataKind) {
+        switch (dataKind) {
+            case STRING:
+                return "STRING";
+            default:
+                return super.getDefaultDataTypeName(dataKind);
+        }
+    }
+
+
 }
