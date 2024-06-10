@@ -16,9 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.model;
 
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.ToolBar;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.dashboard.data.DashboardDataset;
@@ -43,7 +43,7 @@ public interface DashboardItemRenderer {
 
     void fillDashboardToolbar(
         @NotNull DashboardItemContainer itemContainer,
-        @NotNull ToolBar toolBar,
+        @NotNull IContributionManager manager,
         @NotNull Composite chartComposite,
         @NotNull DashboardItemViewSettings dashboardConfig);
 
