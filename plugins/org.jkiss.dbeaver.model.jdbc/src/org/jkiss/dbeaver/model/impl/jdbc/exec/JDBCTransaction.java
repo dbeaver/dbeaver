@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -44,7 +45,15 @@ public class JDBCTransaction implements AutoCloseable {
     }
 
     public void rollback() throws SQLException {
-        dbCon.rollback();
+        try {
+            dbCon.rollback();
+        } catch (SQLException e) {
+            if (JDBCUtils.isRollbackWarning(e)) {
+                log.debug("Rollback warning: " + e.getMessage());
+            } else {
+                throw e;
+            }
+        }
     }
 
     @Override

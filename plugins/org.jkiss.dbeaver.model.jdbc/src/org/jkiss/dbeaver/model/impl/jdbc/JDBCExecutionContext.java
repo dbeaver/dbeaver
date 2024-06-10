@@ -440,7 +440,11 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
                 dbCon.rollback();
             }
         } catch (SQLException e) {
-            throw new JDBCException(e, this);
+            if (JDBCUtils.isRollbackWarning(e)) {
+                log.debug("Rollback warning: " + e.getMessage());
+            } else {
+                throw new JDBCException(e, this);
+            }
         } finally {
             if (session.isLoggingEnabled()) {
                 QMUtils.getDefaultHandler().handleTransactionRollback(this, savepoint);
