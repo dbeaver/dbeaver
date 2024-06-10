@@ -93,27 +93,27 @@ public class OcientMetaModel extends GenericMetaModel {
 
     public String getViewDDL(DBRProgressMonitor monitor,
             GenericView sourceObject, Map<String, Object> options) throws DBException {
-    	String schemaName = sourceObject.getContainer().getName();
-        String viewName = sourceObject.getName();
-        String viewDDLSQL = String.format("export view %s.%s", schemaName, viewName);
+        String fullQualifiedName =
+                DBUtils.getFullQualifiedName(sourceObject.getDataSource(), sourceObject.getContainer(), sourceObject);
+        String viewDDLSQL = String.format("export view %s", fullQualifiedName);
         try {
-        	return getObjectDDL(monitor, sourceObject, options, viewDDLSQL,
-                	"Read Ocient view create text");
+            return getObjectDDL(monitor, sourceObject, options, viewDDLSQL,
+                    "Read Ocient view create text");
         } catch (DBException e) {
-        	return super.getViewDDL(monitor, sourceObject, options);
+            return super.getViewDDL(monitor, sourceObject, options);
         }
     }
 
     public String getTableDDL(DBRProgressMonitor monitor,
             GenericTableBase sourceObject, Map<String, Object> options) throws DBException {
-    	String schemaName = sourceObject.getContainer().getName();
-        String tableName = sourceObject.getName();
-        String tableDDLSQL = String.format("export table %s.%s", schemaName, tableName);
+        String fullQualifiedName =
+                DBUtils.getFullQualifiedName(sourceObject.getDataSource(), sourceObject.getContainer(), sourceObject);
+        String tableDDLSQL = String.format("export table %s", fullQualifiedName);
         try {
-        	return getObjectDDL(monitor, sourceObject, options, tableDDLSQL,
-                	"Read Ocient base table create text");
+            return getObjectDDL(monitor, sourceObject, options, tableDDLSQL,
+                    "Read Ocient base table create text");
         } catch (DBException e) {
-        	return super.getTableDDL(monitor, sourceObject, options);
+            return super.getTableDDL(monitor, sourceObject, options);
         }
     }
 

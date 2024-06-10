@@ -27,8 +27,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import java.util.Map;
 
 public class OcientTable extends GenericTable {
-	public OcientTable(
-		GenericStructContainer container,
+    public OcientTable(
+        GenericStructContainer container,
         @Nullable String tableName,
         @Nullable String tableType,
         @Nullable JDBCResultSet dbResult)
@@ -36,8 +36,8 @@ public class OcientTable extends GenericTable {
         super(container, tableName, tableType, dbResult);
     }
 
-	@Override
-    @Property(hidden = true, editable = true, updatable = true, order = -1)
+    @Override
+    @Property(hidden = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         return getDataSource().getMetaModel().getTableDDL(monitor, this, options);
     }
