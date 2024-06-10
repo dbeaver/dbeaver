@@ -125,7 +125,7 @@ public final class SQLSchemaManager {
                                     descriptor.getInstance().doBackup(dbCon, currentSchemaVersion, databaseConfig);
                                     log.info("Starting backup execution");
                                 } catch (DBException e) {
-                                    throw new DBException("Internal database backup has failed");
+                                    throw new DBException("Internal database backup has failed", e);
                                 }
                             }
                         }

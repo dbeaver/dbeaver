@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
@@ -862,4 +863,10 @@ public class JDBCUtils {
     public static String[] getColumnList(@NotNull String columnName) {
         return new String[] {columnName.toLowerCase()};
     }
+
+    public static boolean isRollbackWarning(SQLException sqlError) {
+        return
+            SQLState.SQL_25P01.getCode().equals(sqlError.getSQLState());
+    }
+
 }

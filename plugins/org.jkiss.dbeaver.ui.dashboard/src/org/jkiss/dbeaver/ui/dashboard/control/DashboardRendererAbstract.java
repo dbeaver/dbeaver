@@ -16,14 +16,13 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.control;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.ToolBar;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.DashboardUIConstants;
@@ -40,35 +39,30 @@ public abstract class DashboardRendererAbstract implements DashboardItemRenderer
 
     public void fillDashboardToolbar(
         @NotNull DashboardItemContainer itemContainer,
-        @NotNull ToolBar toolBar,
+        @NotNull IContributionManager manager,
         @NotNull Composite chartComposite,
         @NotNull DashboardItemViewSettings dashboardConfig
     ) {
         if (!UIUtils.isInDialog(chartComposite)) {
-            if (toolBar.getItems().length > 0) {
-                UIUtils.createToolBarSeparator(toolBar, SWT.VERTICAL);
-            }
-
-            UIUtils.createToolItem(toolBar, "View in popup", UIIcon.FIT_WINDOW, new SelectionAdapter() {
+            manager.add(new Separator());
+            manager.add(new Action("View in popup", DBeaverIcons.getImageDescriptor(UIIcon.FIT_WINDOW)) {
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void run() {
                     HandlerDashboardViewItem.openDashboardViewDialog(itemContainer);
                 }
             });
-            UIUtils.createToolItem(toolBar, "Settings", UIIcon.CONFIGURATION, new SelectionAdapter() {
+            manager.add(new Action("Settings", DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION)) {
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void run() {
                     DashboardItemViewSettingsDialog dialog = new DashboardItemViewSettingsDialog(
                         UIUtils.getActiveShell(), itemContainer, itemContainer.getItemConfiguration().getViewConfiguration());
-                    if (dialog.open() == IDialogConstants.OK_ID) {
-                        itemContainer.getGroup().getView().saveChanges();
-                    }
+                    dialog.open();
                 }
             });
-            UIUtils.createToolBarSeparator(toolBar, SWT.VERTICAL);
-            UIUtils.createToolItem(toolBar, "Close", UIIcon.CLOSE, new SelectionAdapter() {
+            manager.add(new Separator());
+            manager.add(new Action("Close", DBeaverIcons.getImageDescriptor(UIIcon.CLOSE)) {
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void run() {
                     itemContainer.getGroup().selectItem(itemContainer);
                     ActionUtils.runCommand(
                         DashboardUIConstants.CMD_REMOVE_DASHBOARD,

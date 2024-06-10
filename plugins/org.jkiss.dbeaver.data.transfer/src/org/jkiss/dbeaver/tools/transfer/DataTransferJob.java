@@ -29,6 +29,8 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.PrintStream;
+
 /**
  * Data transfer job
  */
@@ -42,11 +44,13 @@ public class DataTransferJob extends AbstractJob {
     private boolean hasErrors;
 
     private final Log log;
+    private final PrintStream logStream;
 
     public DataTransferJob(
         @NotNull DataTransferSettings settings,
         @NotNull DBTTask task,
         @NotNull Log log,
+        @Nullable PrintStream logStream,
         @Nullable DBRProgressMonitor parentMonitor,
         int index
     ) {
@@ -54,6 +58,7 @@ public class DataTransferJob extends AbstractJob {
         this.settings = settings;
         this.task = task;
         this.log = log;
+        this.logStream = logStream;
         this.parentMonitor = parentMonitor;
     }
 
@@ -89,7 +94,13 @@ public class DataTransferJob extends AbstractJob {
                 break;
             }
             try {
-                hasErrors |= !transferData(monitor, transferPipe);
+                if (logStream != null) {
+                    Log.setLogWriter(logStream);
+                }
+                boolean transferResult = transferData(monitor, transferPipe);
+                Log.setLogWriter(null);
+
+                hasErrors |= !transferResult;
                 if (parentMonitor != null) {
                     parentMonitor.worked(1);
                 }
