@@ -19,14 +19,17 @@ package org.jkiss.dbeaver.ui.editors.sql.plan.simple;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanNodeKind;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.LoadingJob;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.navigator.itemlist.DatabaseObjectListControl;
@@ -44,6 +47,11 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
 
     private String query;
     private DBPDataSource dataSource;
+
+    private static final String CONFIG_COLOR_INDEXSCAN_BACKGROUND = "org.jkiss.dbeaver.sql.plan.view.color.indexscan.background";
+    private static final String CONFIG_COLOR_INDEXSCAN_FOREGROUND = "org.jkiss.dbeaver.sql.plan.view.color.indexscan.foreground";
+    private static final String CONFIG_COLOR_TABLESCAN_BACKGROUND = "org.jkiss.dbeaver.sql.plan.view.color.tablescan.background";
+    private static final String CONFIG_COLOR_TABLESCAN_FOREGROUND = "org.jkiss.dbeaver.sql.plan.view.color.tablescan.foreground";
 
     public PlanNodesTree(Composite parent, int style, IWorkbenchSite site)
     {
@@ -154,6 +162,26 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
             }
         }
 
+    }
+
+    @Override
+    protected Color getObjectBackground(DBCPlanNode item) {
+        if (item.getNodeKind() == DBCPlanNodeKind.TABLE_SCAN) {
+            return UIUtils.getColorRegistry().get(CONFIG_COLOR_TABLESCAN_BACKGROUND);
+        } else if (item.getNodeKind() == DBCPlanNodeKind.INDEX_SCAN) {
+            return UIUtils.getColorRegistry().get(CONFIG_COLOR_INDEXSCAN_BACKGROUND);
+        }
+        return super.getObjectBackground(item);
+    }
+
+    @Override
+    protected Color getObjectForeground(DBCPlanNode item) {
+        if (item.getNodeKind() == DBCPlanNodeKind.TABLE_SCAN) {
+            return UIUtils.getColorRegistry().get(CONFIG_COLOR_TABLESCAN_FOREGROUND);
+        } else if (item.getNodeKind() == DBCPlanNodeKind.INDEX_SCAN) {
+            return UIUtils.getColorRegistry().get(CONFIG_COLOR_INDEXSCAN_FOREGROUND);
+        }
+        return super.getObjectForeground(item);
     }
 
 }

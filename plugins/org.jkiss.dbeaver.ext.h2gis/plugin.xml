@@ -48,7 +48,7 @@
                     sampleURL="jdbc:h2:tcp://{host}[:{port}]/{database}"
                     defaultPort="9092"
                     webURL="http://www.h2gis.org/"
-                    description="H2GIS Embedded"
+                    description="H2GIS Server"
                     categories="spatial,sql,server">
 
                     <file type="jar" path="maven:/org.orbisgis:h2gis:RELEASE"/>

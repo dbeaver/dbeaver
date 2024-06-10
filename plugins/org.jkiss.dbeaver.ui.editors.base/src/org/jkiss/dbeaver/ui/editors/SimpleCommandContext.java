@@ -32,13 +32,14 @@ public class SimpleCommandContext extends AbstractCommandContext {
         super(executionContext, atomic);
     }
 
-    protected void refreshCommandState()
-    {
-        ICommandService commandService = UIUtils.getActiveWorkbenchWindow().getService(ICommandService.class);
-        if (commandService != null) {
-            commandService.refreshElements(IWorkbenchCommandConstants.EDIT_UNDO, null);
-            commandService.refreshElements(IWorkbenchCommandConstants.EDIT_REDO, null);
-        }
+    protected void refreshCommandState() {
+        UIUtils.syncExec(() -> {
+            ICommandService commandService = UIUtils.getActiveWorkbenchWindow().getService(ICommandService.class);
+            if (commandService != null) {
+                commandService.refreshElements(IWorkbenchCommandConstants.EDIT_UNDO, null);
+                commandService.refreshElements(IWorkbenchCommandConstants.EDIT_REDO, null);
+            }
+        });
     }
 
 }

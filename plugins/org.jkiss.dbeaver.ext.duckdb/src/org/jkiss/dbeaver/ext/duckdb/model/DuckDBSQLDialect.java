@@ -14,19 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.bigquery.model;
+package org.jkiss.dbeaver.ext.duckdb.model;
 
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
+import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 
-public class BigQueryExecutionContext extends JDBCExecutionContext {
+public class DuckDBSQLDialect extends GenericSQLDialect {
 
-    public BigQueryExecutionContext(JDBCRemoteInstance instance, String purpose) {
-        super(instance, purpose);
+    public static final DuckDBSQLDialect INSTANCE = new DuckDBSQLDialect();
+
+    @Override
+    public boolean supportsAliasInSelect() {
+        return true;
     }
 
     @Override
-    public BigQueryDataSource getDataSource() {
-        return (BigQueryDataSource) super.getDataSource();
+    public boolean supportsAliasInUpdate() {
+        return true;
     }
+
 }

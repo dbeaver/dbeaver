@@ -332,6 +332,7 @@
                     defaultUser="postgres"
                     webURL="https://jdbc.postgresql.org/"
                     propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
+                    databaseDocumentationSuffixURL="Database-driver-PostgreSQL"
                     description="%driver.postgresql.description"
                     supportedConfigurationTypes="MANUAL,URL"
                     promoted="1"
@@ -534,6 +535,7 @@
                     description="AWS Redshift JDBC driver"
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
+                    databaseDocumentationSuffixURL="Database-driver-Amazon-Redshift"
                     propertiesURL="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-options.html"
                     categories="sql,analytic,bigdata,aws"
                     dialect="postgresql">
@@ -584,6 +586,7 @@
                         defaultPort="5432"
                         webURL="https://cloud.google.com/sql"
                         propertiesURL="https://github.com/GoogleCloudPlatform/cloud-sql-jdbc-socket-factory#postgresql-1"
+                        databaseDocumentationSuffixURL="Database-driver-PostgreSQL-on-Google-Cloud"
                         description="%driver.gcloudpg.description"
                         supportedConfigurationTypes="MANUAL,URL"
                         categories="sql,cloud">

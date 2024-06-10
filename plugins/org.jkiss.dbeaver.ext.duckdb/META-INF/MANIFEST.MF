@@ -2,10 +2,11 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver DuckDB Model
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.duckdb;singleton:=true
-Bundle-Version: 1.0.22.qualifier
-Bundle-Release-Date: 20240506
+Bundle-Version: 1.0.24.qualifier
+Bundle-Release-Date: 20240603
 Require-Bundle: org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.ext.generic
+ org.jkiss.dbeaver.ext.generic,
+ org.jkiss.dbeaver.data.gis
 Import-Package: org.jkiss.code,
  org.jkiss.dbeaver.model.sql.format
 Bundle-ActivationPolicy: lazy

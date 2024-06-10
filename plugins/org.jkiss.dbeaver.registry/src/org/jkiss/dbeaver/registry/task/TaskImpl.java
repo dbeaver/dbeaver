@@ -58,6 +58,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
     private Map<String, Object> properties;
     private List<DBTTaskRun> runs;
     private DBTTaskFolder taskFolder;
+    private int maxExecutionTime;
 
     protected TaskImpl(
         @NotNull DBPProject project,
@@ -242,6 +243,14 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
     @Override
     public boolean isTemporary() {
         return TaskConstants.TEMPORARY_ID.equals(id);
+    }
+
+    public int getMaxExecutionTime() {
+        return maxExecutionTime;
+    }
+
+    public void setMaxExecutionTime(int maxExecutionTime) {
+        this.maxExecutionTime = maxExecutionTime;
     }
 
     protected Path getTaskStatsFolder(boolean create) {
