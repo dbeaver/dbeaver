@@ -226,6 +226,7 @@ public final class ModelPreferences
     public static final String NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS = "navigator.show.folder.placeholders"; //$NON-NLS-1$
     public static final String NAVIGATOR_SORT_ALPHABETICALLY = "navigator.sort.case.insensitive"; //$NON-NLS-1$
     public static final String NAVIGATOR_SORT_FOLDERS_FIRST = "navigator.sort.forlers.first"; //$NON-NLS-1$
+    public static final String NAVIGATOR_SHOW_HIDDEN_ASSETS = "navigator.show.hidden.assets"; //$NON-NLS-1$
 
     public static final String PLATFORM_LANGUAGE = "platform.language"; //$NON-NLS-1$
 

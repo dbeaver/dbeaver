@@ -168,6 +168,8 @@ public class UINavigatorMessages extends NLS {
     public static String pref_page_projects_settings_label_not_store_resources_in_another_project;
     public static String pref_page_projects_settings_label_restart_require_refresh_global_settings;
     public static String pref_page_projects_settings_description;
+    public static String pref_page_projects_settings_show_hidden_assets;
+    public static String pref_page_projects_settings_show_hidden_assets_tip;
 
     public static String ui_navigator_loading_text_loading;
     public static String ui_properties_category_information;

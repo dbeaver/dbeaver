@@ -68,6 +68,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
     private Button showObjectTipsCheck;
     private Button showToolTipsCheck;
     private Button showContentsInToolTipsContents;
+    private Button showHiddenAssets;
 
     private Button showResourceFolderPlaceholdersCheck;
     private Button groupByDriverCheck;
@@ -175,6 +176,12 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
                 UINavigatorMessages.pref_page_database_general_label_show_contents_in_tooltips_tip,
                 store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONTENTS_IN_TOOLTIP),
                 2);
+            showHiddenAssets = UIUtils.createCheckbox(
+                navigatorGroup,
+                UINavigatorMessages.pref_page_projects_settings_show_hidden_assets,
+                UINavigatorMessages.pref_page_projects_settings_show_hidden_assets_tip,
+                store.getBoolean(ModelPreferences.NAVIGATOR_SHOW_HIDDEN_ASSETS),
+                2);
         }
 
         {
@@ -276,6 +283,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         colorAllNodesCheck.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_COLOR_ALL_NODES));
         showResourceFolderPlaceholdersCheck.setSelection(store.getDefaultBoolean(ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS));
         groupByDriverCheck.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_GROUP_BY_DRIVER));
+        showHiddenAssets.setSelection(store.getDefaultBoolean(ModelPreferences.NAVIGATOR_SHOW_HIDDEN_ASSETS));
         longListFetchSizeText.setText(String.valueOf(store.getDefaultInt(NavigatorPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE)));
         UIUtils.setComboSelection(objDoubleClickBehavior, store.getDefaultString(NavigatorPreferences.NAVIGATOR_OBJECT_DOUBLE_CLICK));
         UIUtils.setComboSelection(dsDoubleClickBehavior, store.getDefaultString(NavigatorPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK));
@@ -302,6 +310,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         store.setValue(NavigatorPreferences.NAVIGATOR_COLOR_ALL_NODES, colorAllNodesCheck.getSelection());
         store.setValue(ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS, showResourceFolderPlaceholdersCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_GROUP_BY_DRIVER, groupByDriverCheck.getSelection());
+        store.setValue(ModelPreferences.NAVIGATOR_SHOW_HIDDEN_ASSETS, showHiddenAssets.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE, longListFetchSizeText.getText());
         NavigatorPreferences.DoubleClickBehavior objDCB = NavigatorPreferences.DoubleClickBehavior.EXPAND;
         if (objDoubleClickBehavior.getSelectionIndex() == 0) {

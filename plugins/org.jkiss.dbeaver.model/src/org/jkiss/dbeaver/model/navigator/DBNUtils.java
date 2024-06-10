@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.apache.commons.jexl3.JexlContext;
+
 import org.eclipse.core.resources.IResource;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -97,29 +98,33 @@ public class DBNUtils {
 
     public static DBNNode[] filterNavigableChildren(DBNNode[] children, boolean forTree)
     {
+        final DBPPreferenceStore prefStore = DBWorkbench.getPlatform().getPreferenceStore();
         if (ArrayUtils.isEmpty(children)) {
             return children;
         }
         DBNNode[] result;
-        if (forTree) {
-            List<DBNNode> filtered = new ArrayList<>();
-            for (int i = 0; i < children.length; i++) {
-                DBNNode node = children[i];
-                if (node instanceof DBPHiddenObject && ((DBPHiddenObject) node).isHidden()) {
+        List<DBNNode> filtered = new ArrayList<>();
+        for (int i = 0; i < children.length; i++) {
+            DBNNode node = children[i];
+            if (forTree && (node instanceof DBPHiddenObject && ((DBPHiddenObject) node).isHidden())) {
+                continue;
+            }
+            if (forTree && node instanceof DBNDatabaseNode) {
+                DBNDatabaseNode dbNode = (DBNDatabaseNode) node;
+                if (dbNode.getMeta() != null && !dbNode.getMeta().isNavigable()) {
                     continue;
                 }
-                if (node instanceof DBNDatabaseNode) {
-                    DBNDatabaseNode dbNode = (DBNDatabaseNode) node;
-                    if (dbNode.getMeta() != null && !dbNode.getMeta().isNavigable()) {
-                        continue;
-                    }
-                }
-                filtered.add(node);
+            
             }
-            result = filtered.toArray(new DBNNode[0]);
-        } else {
-            result = children;
+            if (node instanceof DBNResource && !prefStore.getBoolean(ModelPreferences.NAVIGATOR_SHOW_HIDDEN_ASSETS)) {
+            	DBNResource pNode = (DBNResource) node;
+            	if (pNode.getContentLocationResource().getLocation().toFile().isHidden()) {
+            		continue;
+            	}
+            }
+            filtered.add(node);
         }
+        result = filtered.toArray(new DBNNode[0]);
         sortNodes(result);
         return result;
     }
