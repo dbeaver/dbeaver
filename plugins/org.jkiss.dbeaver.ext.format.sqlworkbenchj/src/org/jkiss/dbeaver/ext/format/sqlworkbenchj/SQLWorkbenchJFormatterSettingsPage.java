@@ -47,9 +47,14 @@ public class SQLWorkbenchJFormatterSettingsPage extends BaseFormatterConfigurati
     }
 
     @Override
-    public void loadSettings(DBPPreferenceStore preferenceStore) {
-        super.loadSettings(preferenceStore);
-        pathEdit.setText(CommonUtils.toString(preferenceStore.getString(SQLWorkbenchJConstants.PROP_WORKBENCH_PATH)));
+    public void loadSettings(DBPPreferenceStore preferenceStore, boolean useDefaults) {
+        super.loadSettings(preferenceStore, useDefaults);
+        pathEdit.setText(CommonUtils.toString(
+            useDefaults
+                ? preferenceStore.getDefaultString(SQLWorkbenchJConstants.PROP_WORKBENCH_PATH)
+                : preferenceStore.getString(SQLWorkbenchJConstants.PROP_WORKBENCH_PATH)
+            )
+        );
     }
 
     @Override
