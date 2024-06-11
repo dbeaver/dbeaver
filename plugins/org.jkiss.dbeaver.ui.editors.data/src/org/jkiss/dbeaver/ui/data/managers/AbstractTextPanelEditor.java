@@ -330,7 +330,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
     private void resetEditorInput() {
         // Load contents in two steps (empty + real in async mode). Workaround for some
         // strange bug in StyledText in E4.13 (#6701)
-        UIUtils.asyncExec(() -> {
+        UIUtils.syncExec(() -> {
             if (editor != null) {
                 messageBar.hideMessage();
                 editor.setInput(new StringEditorInput("Empty", "", true, StandardCharsets.UTF_8.name()));
@@ -344,21 +344,25 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
             encoding = StandardCharsets.UTF_8.name();
         }
         final ContentEditorInput textInput = new ContentEditorInput(valueController, null, null, encoding, monitor);
-        UIUtils.asyncExec(() -> {
+        UIUtils.syncExec(() -> {
             if (editor != null) {
                 final TextViewer textViewer = editor.getTextViewer();
                 if (textViewer != null) {
+                    long contentLength = textInput.getContentLength();
+
                     StyledText textWidget = textViewer.getTextWidget();
                     if (textWidget != null) {
-                        GC gc = new GC(textWidget);
-                        try {
-                            UIUtils.drawMessageOverControl(textWidget, gc,
-                                NLS.bind(ResultSetMessages.panel_editor_text_loading_placeholder_label, textInput.getContentLength()), 0);
-                            editor.setInput(textInput);
-                            messageBar.hideMessage();
-                        } finally {
-                            gc.dispose();
+                        if (contentLength > 100000) {
+                            GC gc = new GC(textWidget);
+                            try {
+                                UIUtils.drawMessageOverControl(textWidget, gc,
+                                    NLS.bind(ResultSetMessages.panel_editor_text_loading_placeholder_label, contentLength), 0);
+                            } finally {
+                                gc.dispose();
+                            }
                         }
+                        editor.setInput(textInput);
+                        messageBar.hideMessage();
                     } else {
                         editor.setInput(textInput);
                     }
@@ -373,7 +377,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
         try (final InputStream stream = contents.getContentStream()) {
             byte[] displayingContentBytes = stream.readNBytes(lengthInBytes);
             final String content = new String(displayingContentBytes);
-            UIUtils.asyncExec(() -> {
+            UIUtils.syncExec(() -> {
                 if (editor != null) {
                     editor.setInput(new StringEditorInput("Limited Content ", content, true, StandardCharsets.UTF_8.name()));
                     messageBar.showMessage(NLS.bind(ResultSetMessages.panel_editor_text_content_limitation_lbl, lengthInBytes / 1000));

@@ -57,7 +57,6 @@
                                         </items>
                                     </items>
                                 </folder>
-
                                 <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridPartition" label="%tree.partitions.node.name" icon="#partitions" description="%tree.partitions.node.tip">
                                     <items label="%tree.partitions.node.name" path="partition" property="partitions" icon="#partition">
                                         <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
@@ -66,7 +65,6 @@
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTrigger" label="%tree.triggers.node.name" icon="#folder_trigger" description="%tree.triggers.node.tip" visibleIf="object.supportsTrigger()">
                                     <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger">
-
                                     </items>
                                 </folder>
                                 <folder label="%tree.references.node.name" icon="#references" description="%tree.references.node.tip" virtual="true">
@@ -147,8 +145,8 @@
                             <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger">
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridProcedure" label="%tree.procedures_functions.node.name" icon="#folder_procedure" description="%tree.procedures_functions.node.tip">
-                            <folder label="%tree.procedures.node.name" icon="#procedures" description="%tree.procedures.node.name">
+                        <folder id="procedures-or-functions" label="%tree.procedures_functions.node.name" icon="#folder_procedure" description="%tree.procedures_functions.node.tip">
+                            <folder label="%tree.procedures.node.name" icon="#procedures" description="%tree.procedures.node.name" type="org.jkiss.dbeaver.ext.cubrid.model.CubridProcedure">
                                 <items label="%tree.procedure.node.name" path="column" property="proceduresOnly">
 	                                <folder label="%tree.parameters.node.name" icon="#columns" description="%tree.parameters.node.name">
                                         <items label="%tree.parameters.node.name" itemLabel="%tree.column.node.name" path="column" property="params">
@@ -156,7 +154,7 @@
                                     </folder>
                                 </items>
                             </folder>
-                            <folder label="%tree.functions.node.name" icon="#procedures" description="%tree.functions.node.name">
+                            <folder label="%tree.functions.node.name" icon="#procedures" description="%tree.functions.node.name" type="org.jkiss.dbeaver.ext.cubrid.model.CubridProcedure">
                                 <items label="%tree.function.node.name" path="function" property="functionsOnly" icon="#function">
                                     <folder label="%tree.parameters.node.name" icon="#columns" description="%tree.parameters.node.name">
                                         <items label="%tree.parameters.node.name" itemLabel="%tree.column.node.name" path="column" property="params">
@@ -193,7 +191,7 @@
                     <file type="jar" path="maven:/cubrid:cubrid-jdbc:RELEASE" bundle="!drivers.cubrid"/>
                     <file type="jar" path="drivers/cubrid" bundle="drivers.cubrid"/>
                     <replace provider="generic" driver="cubrid_jdbc"/>
-
+                    <parameter name="ping-sql" value="SELECT 1"/>
                     <property name="altHosts" value=""/>
                     <property name="rcTime" value="600"/>
                     <property name="loadBalance" value="false"/>
