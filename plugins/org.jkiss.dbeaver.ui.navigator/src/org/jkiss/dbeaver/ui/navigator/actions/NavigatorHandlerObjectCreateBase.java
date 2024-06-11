@@ -204,6 +204,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
         private final CONTAINER_TYPE parentObject;
         private final DBSObject sourceObject;
         private OBJECT_TYPE newObject;
+        private DBNDatabaseNode newNode = null;
 
         public CreateJob(CommandTarget commandTarget, DBEObjectMaker<OBJECT_TYPE, CONTAINER_TYPE> objectMaker, CONTAINER_TYPE parentObject, DBSObject sourceObject, OBJECT_TYPE newObject) {
             super("Create new database object with " + objectMaker.getClass().getSimpleName());
@@ -222,9 +223,6 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                 return Status.CANCEL_STATUS;//GeneralUtils.makeErrorStatus("Null object returned");
             }
             monitor.beginTask("Save " + newObject.getClass().getSimpleName(), 3);
-            var closure = new Object() {
-                DBNDatabaseNode node = null;
-            };
             try {
                 if (parentObject instanceof DBSObject) {
                     if ((objectMaker.getMakerOptions(((DBSObject) parentObject).getDataSource()) & DBEObjectMaker.FEATURE_SAVE_IMMEDIATELY) != 0) {
@@ -252,8 +250,8 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                         if (monitor.isCanceled()) {
                             break;
                         }
-                        closure.node = DBWorkbench.getPlatform().getNavigatorModel().findNode(newObject);
-                        if (closure.node != null) {
+                        newNode = DBWorkbench.getPlatform().getNavigatorModel().findNode(newObject);
+                        if (newNode != null) {
                             break;
                         }
                         RuntimeUtils.pause(100);
@@ -266,7 +264,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                     @Override
                     public void done(IJobChangeEvent event) {
                         UIUtils.syncExec(() -> {
-                            openNewObject(closure.node);
+                            openNewObject(newNode);
                         });
                     }
                 });
