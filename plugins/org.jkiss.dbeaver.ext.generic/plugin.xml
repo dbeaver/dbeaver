@@ -269,7 +269,7 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql">
 
-                    <file type="jar" path="maven:/com.ibm.informix:jdbc:RELEASE[4.50.4.1]" bundle="!drivers.informix"/>
+                    <file type="jar" path="maven:/com.ibm.informix:jdbc:RELEASE[4.50.10.1]" bundle="!drivers.informix"/>
                     <file type="license" path="https://raw.githubusercontent.com/ibmdb/node-ibm_db/master/LICENSE" bundle="!drivers.informix"/>
 
                     <file type="jar" path="drivers/informix" bundle="drivers.informix"/>

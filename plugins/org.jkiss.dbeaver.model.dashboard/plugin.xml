@@ -12,14 +12,16 @@
               icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/database.png"
               supportsCustomization="true"
               databaseRequired="true"
-              defaultRenderer="timeseries"/>
+              defaultRenderer="timeseries"
+              dataType="timeseries"/>
         <provider id="web"
               class="org.jkiss.dbeaver.model.dashboard.registry.WebDashboardProvider"
               label="Web"
               description="Web dashboards"
               icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/browser.png"
               supportsCustomization="true"
-              defaultRenderer="browser"/>
+              defaultRenderer="browser"
+              dataType="provided"/>
     </extension>
 
 

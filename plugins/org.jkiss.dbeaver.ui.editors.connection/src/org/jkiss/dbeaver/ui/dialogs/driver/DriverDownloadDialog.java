@@ -22,6 +22,7 @@ import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -120,6 +121,9 @@ public class DriverDownloadDialog extends WizardDialog
     }
 
     public static boolean downloadDriverFiles(Shell shell, DBPDriver driver, DBPDriverDependencies dependencies, boolean forceDownload) {
+        if (DBWorkbench.getPlatform().isShuttingDown()) {
+            return false;
+        }
         if (shell == null) {
             shell = Display.getCurrent().getActiveShell();
         }
