@@ -359,4 +359,10 @@ public abstract class DBXTreeNode
         }
     }
 
+    public void removeChild(DBXTreeItem baseItem) {
+        if (children != null && children.contains(baseItem)) {
+            children.remove(baseItem);
+        }
+    }
+
 }
