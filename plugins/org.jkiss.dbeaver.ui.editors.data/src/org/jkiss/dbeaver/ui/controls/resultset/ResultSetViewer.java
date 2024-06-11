@@ -1899,7 +1899,8 @@ public class ResultSetViewer extends Viewer
             return false;
         }
         for (DBDAttributeBinding attr : model.getAttributes()) {
-            if (!DBExecUtils.isAttributeReadOnly(attr)) {
+            DBDRowIdentifier rowIdentifier = attr.getRowIdentifier();
+            if (rowIdentifier != null && rowIdentifier.isValidIdentifier()) {
                 return false;
             }
         }
