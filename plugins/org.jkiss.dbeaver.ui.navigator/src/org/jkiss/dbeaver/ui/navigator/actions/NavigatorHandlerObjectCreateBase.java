@@ -222,6 +222,9 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                 return Status.CANCEL_STATUS;//GeneralUtils.makeErrorStatus("Null object returned");
             }
             monitor.beginTask("Save " + newObject.getClass().getSimpleName(), 3);
+            var closure = new Object() {
+                DBNDatabaseNode node = null;
+            };
             try {
                 if (parentObject instanceof DBSObject) {
                     if ((objectMaker.getMakerOptions(((DBSObject) parentObject).getDataSource()) & DBEObjectMaker.FEATURE_SAVE_IMMEDIATELY) != 0) {
@@ -249,7 +252,8 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                         if (monitor.isCanceled()) {
                             break;
                         }
-                        if (DBWorkbench.getPlatform().getNavigatorModel().findNode(newObject) != null) {
+                        closure.node = DBWorkbench.getPlatform().getNavigatorModel().findNode(newObject);
+                        if (closure.node != null) {
                             break;
                         }
                         RuntimeUtils.pause(100);
@@ -262,7 +266,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                     @Override
                     public void done(IJobChangeEvent event) {
                         UIUtils.syncExec(() -> {
-                            openNewObject();
+                            openNewObject(closure.node);
                         });
                     }
                 });
@@ -275,10 +279,9 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             }
         }
 
-        private void openNewObject() {
+        private void openNewObject(@Nullable DBNDatabaseNode newChild) {
             IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
             try {
-                final DBNDatabaseNode newChild = DBWorkbench.getPlatform().getNavigatorModel().findNode(newObject);
                 if (newChild != null) {
                     DatabaseNavigatorView view = UIUtils.findView(workbenchWindow, DatabaseNavigatorView.class);
                     if (view != null) {
