@@ -4,8 +4,8 @@ Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver Windows Store extension
 Bundle-SymbolicName: org.jkiss.dbeaver.ui.app.winstore;singleton:=true
 Bundle-ActivationPolicy: lazy
-Bundle-Version: 1.0.57.qualifier
-Bundle-Release-Date: 20240603
+Bundle-Version: 1.0.58.qualifier
+Bundle-Release-Date: 20240624
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ClassPath: .
 Require-Bundle: org.jkiss.dbeaver.model
