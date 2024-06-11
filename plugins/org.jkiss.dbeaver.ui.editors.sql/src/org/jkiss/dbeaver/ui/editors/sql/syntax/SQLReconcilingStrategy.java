@@ -462,6 +462,10 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
             List<Annotation> toRemove = new ArrayList<>();
 
             synchronized (lockObject) {
+                if (annotationModel == null) {
+                    addedAnnotations = null;
+                    return;
+                }
                 Iterator<Annotation> iter = annotationModel.getAnnotationIterator();
                 while (iter.hasNext()) {
                     Annotation annotation = iter.next();

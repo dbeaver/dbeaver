@@ -250,8 +250,11 @@ class GridCellRenderer extends AbstractRenderer {
     }
 
     boolean isOverLink(GridColumn column, int row, int x, int y) {
-        IGridContentProvider contentProvider = grid.getContentProvider();
         IGridRow rowElement = grid.getRow(row);
+        if (rowElement == null) {
+            return false;
+        }
+        IGridContentProvider contentProvider = grid.getContentProvider();
         IGridContentProvider.CellInformation cellInfo = grid.getContentProvider().getCellInfo(
             column, rowElement, false);
 

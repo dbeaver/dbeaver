@@ -31,30 +31,20 @@ import java.sql.SQLException;
 
 /**
  * Cache for Routine parameters
- * 
+ *
  * @author Denis Forveille
- * 
+ *
  */
 public class DB2RoutineParmsCache extends JDBCObjectCache<DB2Routine, DB2RoutineParm> {
 
-    private static final String SQL;
-
-    static {
-        StringBuilder sb = new StringBuilder(256);
-        sb.append("SELECT *");
-        sb.append("  FROM SYSCAT.ROUTINEPARMS");
-        sb.append(" WHERE ROUTINESCHEMA = ?");
-        sb.append("   AND SPECIFICNAME = ?");
-        sb.append(" ORDER BY ORDINAL");
-        sb.append(" WITH UR");
-        SQL = sb.toString();
-    }
-
     @NotNull
     @Override
-    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Routine db2Routine) throws SQLException
-    {
-        JDBCPreparedStatement dbStat = session.prepareStatement(SQL);
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Routine db2Routine) throws SQLException {
+        JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SELECT * FROM SYSCAT.ROUTINEPARMS" +
+            " WHERE ROUTINESCHEMA = ? AND SPECIFICNAME = ?" +
+            " ORDER BY ORDINAL" +
+            " WITH UR");
         dbStat.setString(1, db2Routine.getSchema().getName());
         dbStat.setString(2, db2Routine.getSpecificName());
         return dbStat;
@@ -62,8 +52,7 @@ public class DB2RoutineParmsCache extends JDBCObjectCache<DB2Routine, DB2Routine
 
     @Override
     protected DB2RoutineParm fetchObject(@NotNull JDBCSession session, @NotNull DB2Routine db2Routine, @NotNull JDBCResultSet resultSet) throws SQLException,
-        DBException
-    {
+        DBException {
         return new DB2RoutineParm(session.getProgressMonitor(), db2Routine, resultSet);
     }
 

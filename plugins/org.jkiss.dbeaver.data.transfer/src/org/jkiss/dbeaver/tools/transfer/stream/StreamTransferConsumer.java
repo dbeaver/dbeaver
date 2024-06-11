@@ -498,8 +498,10 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
         OutputStream stream;
         if (!fileExists) {
+            log.debug("Export to the new file \"" + outputFile + "\"");
             stream = Files.newOutputStream(outputFile, StandardOpenOption.WRITE, StandardOpenOption.CREATE_NEW);
         } else {
+            log.debug("Export to the existing file \"" + outputFile + "\"");
             stream = Files.newOutputStream(
                 outputFile,
                 StandardOpenOption.WRITE,
@@ -509,6 +511,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         this.outputStream = this.statStream = new StatOutputStream(outputStream);
 
         if (settings.isCompressResults()) {
+            log.debug("\tUse ZIP compression");
             this.zipStream = new ZipOutputStream(this.outputStream);
             this.zipStream.putNextEntry(new ZipEntry(getOutputFileName()));
             this.outputStream = zipStream;
@@ -521,6 +524,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
         // Check for BOM and write it to the stream
         if (!parameters.isBinary && settings.isOutputEncodingBOM()) {
+            log.debug("\tInsert BOM into output stream");
             try {
                 final ByteOrderMark bom = ByteOrderMark.fromCharset(settings.getOutputEncoding());
                 outputStream.write(bom.getBytes());
@@ -536,6 +540,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     private void closeOutputStreams() {
+        log.debug("\tClose output stream");
         if (this.writer != null) {
             this.writer.flush();
         }
