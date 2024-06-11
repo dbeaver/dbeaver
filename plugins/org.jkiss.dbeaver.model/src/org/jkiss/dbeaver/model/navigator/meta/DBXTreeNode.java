@@ -364,5 +364,4 @@ public abstract class DBXTreeNode
             children.remove(baseItem);
         }
     }
-
 }
