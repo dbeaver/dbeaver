@@ -24,6 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
@@ -147,5 +148,26 @@ public class InterSystemsMetaModel extends GenericMetaModel
             throw new DBException("Can't read source code of '" + trigger.getFullyQualifiedName(DBPEvaluationContext.DDL) + "'", e);
         }
         return super.getTriggerDDL(monitor, trigger);
+    }
+    
+    @Override
+    public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure procedure) throws DBException {
+        String sqlStatement = "SELECT ROUTINE_DEFINITION "
+                + " FROM INFORMATION_SCHEMA.ROUTINES "
+                + " WHERE ROUTINE_NAME = ? and ROUTINE_SCHEMA = ? ";
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, procedure, "Load source code")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(sqlStatement)) {
+                dbStat.setString(1, procedure.getName());
+                dbStat.setString(2, procedure.getContainer().getSchema().getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.nextRow()) {
+                         return dbResult.getString(1);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new DBException("Can't read source code of '" + procedure.getFullyQualifiedName(DBPEvaluationContext.DDL) + "'", e);
+        }
+        return super.getProcedureDDL(monitor, procedure);
     }
 }
