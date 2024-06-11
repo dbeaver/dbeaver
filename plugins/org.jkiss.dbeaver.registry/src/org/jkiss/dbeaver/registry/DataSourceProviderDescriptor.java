@@ -51,6 +51,11 @@ import java.util.stream.Collectors;
  * DataSourceProviderDescriptor
  */
 public class DataSourceProviderDescriptor extends AbstractDescriptor implements DBPDataSourceProviderDescriptor {
+    private static final String ATTRIBUTE_CHANGE_FOLDER_LABEL = "changeFolderLabel"; //$NON-NLS-1$
+    private static final String ATTRIBUTE_CHANGE_FOLDER_TYPE = "changeFolderType"; //$NON-NLS-1$
+    private static final String ATTRIBUTE_DISPOSE = "dispose"; //$NON-NLS-1$
+    private static final String ATTRIBUTE_REPLACE_CHILDREN = "replaceChildren"; //$NON-NLS-1$
+
     private static final Log log = Log.getLog(DataSourceProviderDescriptor.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataSourceProvider"; //$NON-NLS-1$
@@ -475,22 +480,24 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         }
         DBXTreeNode parentNode = baseItem;
 
-        if (CommonUtils.getBoolean(config.getAttribute("replaceChildren"))) {
+        if (CommonUtils.getBoolean(config.getAttribute(ATTRIBUTE_REPLACE_CHILDREN))) {
             baseItem.clearChildren();
         }
 
-        if (CommonUtils.getBoolean(config.getAttribute("disable"))) {
+        if (CommonUtils.getBoolean(config.getAttribute(ATTRIBUTE_DISPOSE))) {
             baseItem.clearChildren();
             DBXTreeNode folderNode = baseItem.getParent();
-            folderNode.removeChild(baseItem);
+            if (folderNode != null) {
+                folderNode.disposeChild(baseItem);
+            }
         }
 
-        String changeFolderType = config.getAttribute("changeFolderType");
+        String changeFolderType = config.getAttribute(ATTRIBUTE_CHANGE_FOLDER_TYPE);
         if (changeFolderType != null) {
             DBXTreeNode folderNode = baseItem.getParent();
             if (folderNode instanceof DBXTreeFolder folder) {
                 folder.setType(changeFolderType);
-                String changeFolderLabel = config.getAttribute("changeFolderLabel");
+                String changeFolderLabel = config.getAttribute(ATTRIBUTE_CHANGE_FOLDER_LABEL);
                 if (CommonUtils.isNotEmpty(changeFolderLabel)) {
                     folder.setLabel(changeFolderLabel);
                     folder.setDescription(changeFolderLabel);
