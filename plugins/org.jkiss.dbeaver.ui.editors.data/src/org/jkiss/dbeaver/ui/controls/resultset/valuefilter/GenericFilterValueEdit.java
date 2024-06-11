@@ -702,10 +702,7 @@ class GenericFilterValueEdit {
             }
             try {
                 monitor.subTask("Read enumeration");
-                List<DBDLabelValuePair> valueEnumeration = null;
-                if (executionContext.getDataSource().getContainer().isExtraMetadataReadEnabled()) {
-                    valueEnumeration = readEnumeration(monitor);
-                }
+                List<DBDLabelValuePair> valueEnumeration = readEnumeration(monitor);
                 if (valueEnumeration == null) {
                     populateValues(Collections.emptyList());
                     return Status.OK_STATUS;
