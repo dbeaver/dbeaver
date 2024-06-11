@@ -2635,11 +2635,12 @@ public class ResultSetViewer extends Viewer
                 // Column enumeration is expensive
             }
         }
-        if (isExpensiveFilter && ConfirmationDialog.confirmAction(
-            viewerPanel.getShell(),
-            ConfirmationDialog.WARNING, ResultSetPreferences.CONFIRM_FILTER_RESULTSET,
-            ConfirmationDialog.CONFIRM,
-            curAttribute.getName()) != IDialogConstants.OK_ID)
+        if (isExpensiveFilter && getDataSource().getContainer().isExtraMetadataReadEnabled() &&
+            ConfirmationDialog.confirmAction(
+                viewerPanel.getShell(),
+                ConfirmationDialog.WARNING, ResultSetPreferences.CONFIRM_FILTER_RESULTSET,
+                ConfirmationDialog.CONFIRM,
+                curAttribute.getName()) != IDialogConstants.OK_ID)
         {
             return;
         }
