@@ -2342,7 +2342,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         count++;
                     }
                 }
-                return formatValue(gridColumn, gridRow, getCellValue(gridColumn, gridRow, new int[count]));
+                Object child = getCellValue(gridColumn, gridRow, new int[count]);
+                if (child == value) {
+                    return value;
+                }
+                return formatValue(gridColumn, gridRow, child);
             } else if (attr.getDataKind() == DBPDataKind.STRUCT && value instanceof DBDComposite && !DBUtils.isNullValue(value)) {
                 return "[" + ((DBDComposite) value).getDataType().getName() + "]";
             }

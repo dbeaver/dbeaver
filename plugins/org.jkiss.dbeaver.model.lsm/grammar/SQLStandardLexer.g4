@@ -34,21 +34,45 @@ lexer grammar SQLStandardLexer;
      * limitations under the License.
      */
     package org.jkiss.dbeaver.model.lsm.sql.impl.syntax;
+
+    import java.util.*;
+    import org.jkiss.dbeaver.model.sql.*;
+    import org.jkiss.dbeaver.model.lsm.*;
 }
 
 @lexer::members {
-    private java.util.Map<String, String> knownIdentifierQuotes = java.util.Collections.emptyMap();
+    private Map<String, String> knownIdentifierQuotes = Collections.emptyMap();
     private int[] knownIdentifierQuoteHeads = new int[0];
     private int knownIdentifierLongestHead = 0;
     private int lastIdentifierStart = 0;
     private int lastIdentifierEnd = 0;
     private int lastIdentifierLength = 0;
 
-    public SQLStandardLexer(CharStream input, java.util.Map<String, String> knownIdentifierQuotes) {
+    private boolean isAnonymousParametersEnabled;
+    private boolean isNamedParametersEnabled;
+
+    private boolean useCustomAnonymousParamMark;
+    private char customAnonymousParamMark;
+
+    private boolean useCustomNamedParamPrefix;
+    private List<Map.Entry<Integer, Set<String>>> customNamedParamPrefixes;
+
+    public SQLStandardLexer(CharStream input, LSMAnalyzerParameters parameters) {
         this(input);
-        this.knownIdentifierQuotes = knownIdentifierQuotes;
-        this.knownIdentifierLongestHead = knownIdentifierQuotes.size() < 1 ? 0 : knownIdentifierQuotes.keySet().stream().mapToInt(k -> k.length()).max().getAsInt();
-        this.knownIdentifierQuoteHeads = knownIdentifierQuotes.keySet().stream().mapToInt(s -> s.charAt(0)).toArray();
+        this.knownIdentifierQuotes = parameters.knownIdentifierQuotes();
+        this.knownIdentifierLongestHead = this.knownIdentifierQuotes.size() < 1 ? 0 : knownIdentifierQuotes.keySet().stream().mapToInt(k -> k.length()).max().getAsInt();
+        this.knownIdentifierQuoteHeads = this.knownIdentifierQuotes.keySet().stream().mapToInt(s -> s.charAt(0)).toArray();
+
+        this.isAnonymousParametersEnabled = parameters.isAnonymousSqlParametersEnabled();
+        this.isNamedParametersEnabled = parameters.isSqlParametersEnabled();
+
+        this.useCustomAnonymousParamMark = parameters.isAnonymousSqlParametersEnabled() && Character.compare(parameters.anonymousParameterMark(), SQLConstants.DEFAULT_PARAMETER_MARK) != 0;
+        this.customAnonymousParamMark = parameters.anonymousParameterMark();
+
+        this.useCustomNamedParamPrefix = parameters.isSqlParametersEnabled() && parameters.namedParameterPrefixes().stream().map(e -> e.getValue()).anyMatch(
+            ss -> ss.contains(String.valueOf(SQLConstants.DEFAULT_PARAMETER_PREFIX)) ? ss.size() > 1 : ss.size() > 0
+        );
+        this.customNamedParamPrefixes = parameters.namedParameterPrefixes();
     }
 
     private class QuottedIdentifierConsumer {
@@ -147,14 +171,49 @@ lexer grammar SQLStandardLexer;
         return _input.index() < lastIdentifierEnd;
     }
 
-    int cnt;
+    int lastNamedParameterPrefixEnd = -1;
+
+    private boolean tryConsumeNamedParameterPrefix(final CharStream input) {
+        if (input.index() < 1) {
+            lastNamedParameterPrefixEnd = -1;
+            return false;
+        }
+
+        int pos = 0;
+        String captured = "";
+        for (Map.Entry<Integer, Set<String>> e: this.customNamedParamPrefixes) {
+            int prefixLength = e.getKey();
+            while (captured.length() < prefixLength) {
+                int c = input.LA(++pos);
+                if (c == EOF) {
+                    lastNamedParameterPrefixEnd = -1;
+                    return false;
+                } else {
+                    captured += (char)c;
+                }
+            }
+            if (e.getValue().contains(captured)) {
+                lastNamedParameterPrefixEnd = input.index() + captured.length();
+                return true;
+            }
+        }
+
+        lastNamedParameterPrefixEnd = -1;
+        return false;
+    }
+
+    private boolean isNamedParameterPrefixEndReached(final CharStream input) {
+        return _input.index() < lastNamedParameterPrefixEnd;
+    }
+
 }
 
 DelimitedIdentifier: { tryConsumeQuottedIdentifier(_input) }? ({isIdentifierEndReached(_input)}? .)+;
 
+CustomAnonymousParameterMark: { useCustomAnonymousParamMark && _input.index() >=0 && (char)_input.LA(1) == customAnonymousParamMark }? . ;
+CustomNamedParameterPrefix: { useCustomNamedParamPrefix && tryConsumeNamedParameterPrefix(_input) }? ({isNamedParameterPrefixEndReached(_input)}? .)+;
 BatchVariableName: At Identifier;
 ClientVariableName: Dollar LeftBrace Identifier RightBrace;
-ClientParameterName: Colon Identifier;
 
 // letters to support case-insensitivity for keywords
 fragment A:[aA];
@@ -214,7 +273,7 @@ CORRESPONDING: C O R R E S P O N D I N G ;
 COUNT: C O U N T ;
 CREATE: C R E A T E ;
 CROSS: C R O S S ;
-CURRENT_USER: C U R R E N T '_'U S E R ;
+CURRENT_USER: C U R R E N T '_' U S E R ;
 DATE: D A T E ;
 DAY: D A Y ;
 DEFAULT: D E F A U L T ;
@@ -239,6 +298,7 @@ GLOBAL: G L O B A L ;
 GROUP: G R O U P ;
 HAVING: H A V I N G ;
 HOUR: H O U R ;
+ILIKE: I L I K E ;
 IMMEDIATE: I M M E D I A T E ;
 IN: I N ;
 INDICATOR: I N D I C A T O R ;

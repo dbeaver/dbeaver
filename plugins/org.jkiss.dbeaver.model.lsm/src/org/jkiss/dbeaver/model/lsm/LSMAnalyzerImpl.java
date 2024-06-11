@@ -34,21 +34,21 @@ public abstract class LSMAnalyzerImpl<TLexer extends Lexer, TParser extends STMP
 
     private static final Log log = Log.getLog(LSMAnalyzerImpl.class);
     
-    private final SQLDialect dialect;
+    private final LSMAnalyzerParameters parameters;
     
-    public LSMAnalyzerImpl(@NotNull SQLDialect dialect) {
-        this.dialect = dialect;
+    public LSMAnalyzerImpl(@NotNull LSMAnalyzerParameters parameters) {
+        this.parameters = parameters;
     }
 
     @NotNull
-    protected abstract Pair<TLexer, TParser> createParser(@NotNull STMSource source, @NotNull SQLDialect dialect);
+    protected abstract Pair<TLexer, TParser> createParser(@NotNull STMSource source, @NotNull LSMAnalyzerParameters parameters);
 
     @NotNull
     protected abstract STMTreeRuleNode parseSqlQueryImpl(@NotNull TParser parser);
 
     @NotNull
     protected TParser prepareParser(@NotNull STMSource source, @Nullable STMErrorListener errorListener) {
-        Pair<TLexer, TParser> pair = this.createParser(source, this.dialect);
+        Pair<TLexer, TParser> pair = this.createParser(source, this.parameters);
         TLexer lexer = pair.getFirst();
         TParser parser = pair.getSecond();
         
