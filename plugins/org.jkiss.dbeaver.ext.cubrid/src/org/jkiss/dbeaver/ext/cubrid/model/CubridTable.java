@@ -133,10 +133,17 @@ public class CubridTable extends GenericTable
 
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull CubridTable table) throws SQLException {
-            String sql = "select * from db_partition where class_name = ? and owner_name = ?";
-            final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+           
+            StringBuilder sql = new StringBuilder("select * from db_partition where class_name = ?");
+            if(table.getDataSource().getSupportMultiSchema()) {
+                sql.append(" and owner_name = ?");
+            }
+            final JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
             dbStat.setString(1, table.getName());
-            dbStat.setString(2, table.getSchema().getName());
+            if(table.getDataSource().getSupportMultiSchema()) {
+                dbStat.setString(2, table.getSchema().getName());
+            }
+            
             return dbStat;
         }
     
