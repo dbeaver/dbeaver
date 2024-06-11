@@ -54,11 +54,11 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
 
     private static final Log log = Log.getLog(TaskRunJob.class);
 
-    private static AtomicInteger taskNumber = new AtomicInteger(0);
+    private static final AtomicInteger taskNumber = new AtomicInteger(0);
 
     private final TaskImpl task;
     private final Locale locale;
-    private DBTTaskExecutionListener executionListener;
+    private final DBTTaskExecutionListener executionListener;
     private Log taskLog = log;
     private DBRProgressMonitor activeMonitor;
     private DBTTaskRunStatus taskRunStatus = new DBTTaskRunStatus();
@@ -95,7 +95,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
         Path logFile = Objects.requireNonNull(task.getRunLog(taskRun)); // must exist on local machine
         task.addNewRun(taskRun);
 
-        try (PrintStream logStream = new PrintStream(Files.newOutputStream(logFile), true, StandardCharsets.UTF_8.name())) {
+        try (PrintStream logStream = new PrintStream(Files.newOutputStream(logFile), true, StandardCharsets.UTF_8)) {
             taskLog = Log.getLog(TaskRunJob.class);
             Log.setLogWriter(logStream);
             taskLog.info(String.format("Task '%s' (%s) started", task.getName(), task.getId()));
@@ -200,7 +200,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
     public void cancelByTimeReached() {
         if (task.getMaxExecutionTime() > 0
             && taskStartTime > 0
-            && (System.currentTimeMillis() - taskStartTime) > (task.getMaxExecutionTime() * 1000)) {
+            && (System.currentTimeMillis() - taskStartTime) > (task.getMaxExecutionTime() * 1000L)) {
             canceledByTimeOut = true;
             cancel();
             activeMonitor.getNestedMonitor().setCanceled(true);

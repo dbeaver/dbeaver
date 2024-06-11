@@ -35,7 +35,7 @@
                     <items label="%tree.user.node.name" path="cubridUser" property="cubridUsers" icon="#schema">
                         <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTable" label="%tree.tables.node.name" icon="#folder_table" description="%tree.tables.node.tip">
                             <items label="%tree.table.node.name" path="table" property="physicalTables" icon="#table">
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns" description="%tree.columns.node.tip">
+                                <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTableColumn" label="%tree.columns.node.name" icon="#columns" description="%tree.columns.node.tip">
                                     <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                     </items>
                                 </folder>
@@ -57,18 +57,20 @@
                                         </items>
                                     </items>
                                 </folder>
+                                <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTrigger" label="%tree.triggers.node.name" icon="#folder_trigger" description="%tree.triggers.node.tip" visibleIf="object.supportsTrigger()">
+                                    <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger">
+                                    </items>
+                                </folder>
                                 <folder label="%tree.references.node.name" icon="#references" description="%tree.references.node.tip" virtual="true">
                                     <items label="%tree.reference.node.name" path="reference" property="references" icon="#reference" virtual="true">
                                         <items label="%tree.reference_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <items label="%tree.sub_table.node.name" optional="true" path="subtable" property="subTables" icon="#table" recursive=".." visibleIf="!object.view">
-                                </items>
                             </items>
                             <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTable" label="%tree.system_tables.node.name" icon="#folder_table" description="%tree.system_table.node.tip" visibleIf="object.supportsSystemTable() &amp;&amp; object.showSystemTableFolder()">
                                 <items label="%tree.table.node.name" path="table" property="physicalSystemTables" icon="#table">
-                                    <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns" description="%tree.columns.node.tip">
+                                    <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTableColumn" label="%tree.columns.node.name" icon="#columns" description="%tree.columns.node.tip">
                                         <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                         </items>
                                     </folder>
@@ -90,28 +92,66 @@
                                             </items>
                                         </items>
                                     </folder>
+                                    <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTrigger" label="%tree.triggers.node.name" icon="#folder_trigger" description="%tree.triggers.node.tip" visibleIf="object.supportsTrigger()">
+                                        <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger">
+                                        </items>
+                                    </folder>
                                     <folder label="%tree.references.node.name" icon="#references" description="%tree.references.node.tip" virtual="true">
                                         <items label="%tree.reference.node.name" path="reference" property="references" icon="#reference" virtual="true">
                                             <items label="%tree.reference_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true">
                                             </items>
                                         </items>
                                     </folder>
-                                    <items label="%tree.sub_table.node.name" optional="true" path="subtable" property="subTables" icon="#table" recursive=".." visibleIf="!object.view">
-                                    </items>
                                 </items>
                             </folder>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridView" label="%tree.tviews.node.name" icon="#folder_view" description="%tree.tviews.node.tip">
                             <items label="%tree.tview.node.name" path="view" property="views" icon="#view">
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
+                                <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
                                     <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                     </items>
                                 </folder>
                             </items>
                             <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridView" label="%tree.system_views.node.name" icon="#folder_view" description="%tree.system_views.node.tip" visibleIf="object.supportsSystemView() &amp;&amp; object.showSystemTableFolder()">
                                 <items label="%tree.tview.node.name" path="view" property="systemViews" icon="#view">
-                                    <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
+                                    <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
                                         <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                        </items>
+                                    </folder>
+                                </items>
+                            </folder>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="%tree.indexes.node.tip">
+                            <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
+                                <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" icon="#column" navigable="false" inline="true">
+                                </items>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridSequence" label="%tree.sequences.node.name" icon="#folder_sequence" description="%tree.sequences.node.tip">
+                            <items label="%tree.sequence.node.name" path="sequence" property="sequences" icon="#sequence">
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridSynonym" label="%tree.synonyms.node.name" icon="#folder_synonym" description="%tree.synonyms.node.tip" visibleIf="object.supportsSynonym()">
+                            <items label="%tree.synonym.node.name" path="synonym" property="synonyms" icon="#synonym">
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTrigger" label="%tree.triggers.node.name" icon="#folder_trigger" description="%tree.triggers.node.tip" visibleIf="object.supportsTrigger()">
+                            <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger">
+                            </items>
+                        </folder>
+                        <folder id="procedures-or-functions" label="%tree.procedures_functions.node.name" icon="#folder_procedure" description="%tree.procedures_functions.node.tip">
+                            <folder label="%tree.procedures.node.name" icon="#procedures" description="%tree.procedures.node.name" type="org.jkiss.dbeaver.ext.cubrid.model.CubridProcedure">
+                                <items label="%tree.procedure.node.name" path="column" property="proceduresOnly">
+	                                <folder label="%tree.parameters.node.name" icon="#columns" description="%tree.parameters.node.name">
+                                        <items label="%tree.parameters.node.name" itemLabel="%tree.column.node.name" path="column" property="params">
+                                        </items>
+                                    </folder>
+                                </items>
+                            </folder>
+                            <folder label="%tree.functions.node.name" icon="#procedures" description="%tree.functions.node.name" type="org.jkiss.dbeaver.ext.cubrid.model.CubridProcedure">
+                                <items label="%tree.function.node.name" path="function" property="functionsOnly" icon="#function">
+                                    <folder label="%tree.parameters.node.name" icon="#columns" description="%tree.parameters.node.name">
+                                        <items label="%tree.parameters.node.name" itemLabel="%tree.column.node.name" path="column" property="params">
                                         </items>
                                     </folder>
                                 </items>
@@ -145,7 +185,7 @@
                     <file type="jar" path="maven:/cubrid:cubrid-jdbc:RELEASE" bundle="!drivers.cubrid"/>
                     <file type="jar" path="drivers/cubrid" bundle="drivers.cubrid"/>
                     <replace provider="generic" driver="cubrid_jdbc"/>
-
+                    <parameter name="ping-sql" value="SELECT 1"/>
                     <property name="altHosts" value=""/>
                     <property name="rcTime" value="600"/>
                     <property name="loadBalance" value="false"/>
@@ -169,4 +209,8 @@
         </datasource>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridTableManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTable"/>
+        <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridTableColumnManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTableColumn"/>
+    </extension>
 </plugin>

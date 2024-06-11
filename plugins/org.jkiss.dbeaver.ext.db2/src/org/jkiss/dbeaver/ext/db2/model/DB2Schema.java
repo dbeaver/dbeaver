@@ -350,6 +350,10 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     @Association
     public Collection<DB2Index> getIndexes(DBRProgressMonitor monitor) throws DBException
     {
+        if (!indexCache.isFullyCached()) {
+            tableCache.loadChildren(monitor, this, null);
+            indexCache.loadChildren(monitor, this, null);
+        }
         return indexCache.getAllObjects(monitor, this);
     }
 
@@ -669,6 +673,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
         if (hasTableStatistics && !forceRefresh) {
             return;
         }
+        getTables(monitor);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load schema statistics")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT\n" +
                 "    TABNAME,\n" +
