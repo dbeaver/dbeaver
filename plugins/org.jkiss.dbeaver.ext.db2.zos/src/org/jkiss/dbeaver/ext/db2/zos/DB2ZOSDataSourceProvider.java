@@ -20,7 +20,8 @@ import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
 
 public class DB2ZOSDataSourceProvider extends GenericDataSourceProvider {
 
-    public DB2ZOSDataSourceProvider() {
+    public DB2ZOSDataSourceProvider()
+    {
     }
 
 }
