@@ -53,7 +53,7 @@ public class SQLQueryValueVariableExpression extends SQLQueryValueExpression {
         }
     }
 
-    @NotNull
+    @Nullable
     private final SQLQuerySymbolEntry name;
     @NotNull
     private final VariableExpressionKind kind;
@@ -62,7 +62,7 @@ public class SQLQueryValueVariableExpression extends SQLQueryValueExpression {
     
     public SQLQueryValueVariableExpression(
         @NotNull STMTreeNode syntaxNode,
-        @NotNull SQLQuerySymbolEntry name,
+        @Nullable SQLQuerySymbolEntry name,
         @NotNull VariableExpressionKind kind,
         @NotNull String rawName
     ) {
@@ -90,7 +90,7 @@ public class SQLQueryValueVariableExpression extends SQLQueryValueExpression {
     
     @Override
     protected void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
-        if (this.name.isNotClassified()) {
+        if (this.name != null && this.name.isNotClassified()) {
             this.name.getSymbol().setSymbolClass(this.kind.symbolClass);
         }
     }

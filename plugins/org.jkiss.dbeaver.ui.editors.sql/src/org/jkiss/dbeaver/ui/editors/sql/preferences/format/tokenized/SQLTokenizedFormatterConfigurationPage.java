@@ -28,6 +28,7 @@ import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.preferences.format.BaseFormatterConfigurationPage;
@@ -94,12 +95,14 @@ public class SQLTokenizedFormatterConfigurationPage extends BaseFormatterConfigu
     }
 
     @Override
-    public void loadSettings(DBPPreferenceStore preferenceStore) {
-        super.loadSettings(preferenceStore);
+    public void loadSettings(DBPPreferenceStore preferenceStore, boolean useDefaults) {
+        super.loadSettings(preferenceStore, useDefaults);
 
-        final String caseName = preferenceStore.getString(ModelPreferences.SQL_FORMAT_KEYWORD_CASE);
+        final String caseName = useDefaults
+            ? preferenceStore.getDefaultString(ModelPreferences.SQL_FORMAT_KEYWORD_CASE)
+            : preferenceStore.getString(ModelPreferences.SQL_FORMAT_KEYWORD_CASE);
 
-        DBPIdentifierCase keywordCase = CommonUtils.isEmpty(caseName) ? null : DBPIdentifierCase.valueOf(caseName);
+        DBPIdentifierCase keywordCase = CommonUtils.isEmpty(caseName) ? null : CommonUtils.valueOf(DBPIdentifierCase.class, caseName);
         if (keywordCase == null) {
             keywordCaseCombo.select(0);
         } else {
@@ -107,16 +110,36 @@ public class SQLTokenizedFormatterConfigurationPage extends BaseFormatterConfigu
                 keywordCaseCombo,
                 DBPIdentifierCase.capitalizeCaseName(keywordCase.name()));
         }
-        lineFeedBeforeCommaCheck.setSelection(preferenceStore.getBoolean(ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA));
-        breakLineBeforeCloseBracket.setSelection(preferenceStore.getBoolean(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET));
-        insertDelimiterInEmptyLines.setSelection(preferenceStore.getBoolean(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES));
+        lineFeedBeforeCommaCheck.setSelection(
+            useDefaults
+                ? preferenceStore.getDefaultBoolean(ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA)
+                : preferenceStore.getBoolean(ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA)
+        );
+        breakLineBeforeCloseBracket.setSelection(
+            useDefaults
+                ? preferenceStore.getDefaultBoolean(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET)
+                : preferenceStore.getBoolean(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET)
+        );
+        insertDelimiterInEmptyLines.setSelection(
+            useDefaults
+                ? preferenceStore.getDefaultBoolean(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES)
+                : preferenceStore.getBoolean(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES)
+        );
 
 
         {
             // Text editor settings
             IPreferenceStore textEditorPrefs = getTextEditorsPreferenceStore();
-            this.indentSizeSpinner.setSelection(textEditorPrefs.getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH));
-            useSpacesCheck.setSelection(textEditorPrefs.getBoolean(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS));
+            this.indentSizeSpinner.setSelection(
+                useDefaults
+                    ? textEditorPrefs.getDefaultInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH)
+                    : textEditorPrefs.getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH)
+            );
+            useSpacesCheck.setSelection(
+                useDefaults
+                    ? textEditorPrefs.getDefaultBoolean(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS)
+                    : textEditorPrefs.getBoolean(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS)
+            );
         }
     }
 
