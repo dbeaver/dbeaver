@@ -298,7 +298,7 @@ public class OracleMaterializedView extends OracleTableBase implements OracleSou
 
     @Override
     @Association
-    public Collection<OracleTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OracleTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return this.getContainer().indexCache.getObjects(monitor, getContainer(), this);
     }
 

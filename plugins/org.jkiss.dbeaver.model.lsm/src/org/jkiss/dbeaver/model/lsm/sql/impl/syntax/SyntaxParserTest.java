@@ -22,15 +22,18 @@ import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.tree.Tree;
 import org.antlr.v4.runtime.tree.Trees;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.lsm.LSMAnalyzerParameters;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser.SqlQueriesContext;
 import org.jkiss.dbeaver.model.stm.STMErrorListener;
 
+import java.io.IOException;
+import java.util.BitSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.TransformerException;
-import java.io.IOException;
-import java.util.BitSet;
-import java.util.Map;
 
 public class SyntaxParserTest {
 
@@ -88,12 +91,22 @@ public class SyntaxParserTest {
                 + " INNER JOIN Person.Address AS A ON BEA.AddressID = A.AddressID\n"
                 + " INNER JOIN Person.EmailAddress AS EA ON BEA.BusinessEntityID = EA.BusinessEntityID \n"
                 + " GROUP BY City";
+
+        inputText = "SELECT * FROM EMPLOYEES e WHERE e.EMPLOYEE_ID > :xl ";
         var input = CharStreams.fromString(inputText);
-        var ll = new SQLStandardLexer(input, Map.of("'", "'"));
+        var params = new LSMAnalyzerParameters(
+            Map.of("\"", "\""),
+            true,
+            false,
+            '?',
+            List.of(Map.entry(1, Set.of(":"))),
+            true
+        );
+        var ll = new SQLStandardLexer(input, params);
         var tokens = new CommonTokenStream(ll);
         tokens.fill();
         
-        var pp = new SQLStandardParser(tokens);
+        var pp = new SQLStandardParser(tokens, params);
         pp.addErrorListener(new STMErrorListener() {
             @Override
             public void syntaxError(Recognizer<?, ?> recognizer, 

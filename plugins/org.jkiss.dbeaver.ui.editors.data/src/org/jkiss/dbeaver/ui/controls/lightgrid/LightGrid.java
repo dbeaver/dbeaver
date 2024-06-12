@@ -25,9 +25,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIElementFontStyle;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomToolTipHandler;
 import org.jkiss.dbeaver.ui.dnd.LocalObjectTransfer;
@@ -4866,14 +4864,16 @@ public abstract class LightGrid extends Canvas {
 
         paintTopLeftCellCustom(gc, y);
 
-        if (getContentProvider().isGridReadOnly()) {
-            Image roIcon = DBeaverIcons.getImage(UIIcon.BUTTON_READ_ONLY);
-            Rectangle iconBounds = roIcon.getBounds();
-            int xPos = x + width - GridColumnRenderer.ARROW_MARGIN - iconBounds.width;
-            if (sortOrder != SWT.NONE) {
-                xPos -= GridColumnRenderer.SORT_WIDTH + GridColumnRenderer.IMAGE_SPACING;
+        {
+            Image topLeftImage = getLabelProvider().getImage(null);
+            if (topLeftImage != null) {
+                Rectangle iconBounds = topLeftImage.getBounds();
+                int xPos = x + width - GridColumnRenderer.ARROW_MARGIN - iconBounds.width;
+                if (sortOrder != SWT.NONE) {
+                    xPos -= GridColumnRenderer.SORT_WIDTH + GridColumnRenderer.IMAGE_SPACING;
+                }
+                gc.drawImage(topLeftImage, xPos, y + (height - iconBounds.height) / 2);
             }
-            gc.drawImage(roIcon, xPos, y + (height - iconBounds.height) / 2);
         }
 
         if (sortOrder != SWT.NONE) {

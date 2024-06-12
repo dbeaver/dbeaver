@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -173,7 +174,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     }
 
     @Override
-    public DBNNode[] getChildren(DBRProgressMonitor monitor)
+    public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor)
     {
         if (ArrayUtils.isEmpty(folder.getChildren())) {
             return ArrayUtils.toArray(DBNDataSource.class, getDataSources());

@@ -236,7 +236,7 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 				
 				
 				@Override
-				public void setCache(List<ExasolPriorityGroup> objects) {
+				public void setCache(@NotNull List<ExasolPriorityGroup> objects) {
 				}
 				
 				@Override
@@ -257,13 +257,14 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 					return getCachedObject(name);
 				}
 				
+				@NotNull
 				@Override
 				public List<ExasolPriorityGroup> getCachedObjects() {
 					return groups;
 				}
 				
 				@Override
-				public ExasolPriorityGroup getCachedObject(String name) {
+				public ExasolPriorityGroup getCachedObject(@NotNull String name) {
 					for(ExasolPriorityGroup p: groups)
 					{
 						if (p.getName().equals(name))
@@ -272,8 +273,9 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 					return null;
 				}
 				
-				@Override
-				public Collection<ExasolPriorityGroup> getAllObjects(DBRProgressMonitor monitor, ExasolDataSource owner)
+				@NotNull
+                @Override
+				public Collection<ExasolPriorityGroup> getAllObjects(@NotNull DBRProgressMonitor monitor, ExasolDataSource owner)
 						throws DBException {
 					groups = new ArrayList<>();
 					groups.add(new ExasolPriorityGroup(owner, "HIGH", "Default High Group", 900));
@@ -491,7 +493,7 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 
 	@NotNull
     @Override
-	public Class<? extends ExasolSchema> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException
+	public Class<? extends ExasolSchema> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException
 	{
 		return ExasolSchema.class;
 	}
@@ -504,7 +506,7 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 
 	@Override
 	public ExasolSchema getChild(@NotNull DBRProgressMonitor monitor,
-			@NotNull String childName) throws DBException
+								 @NotNull String childName) throws DBException
 	{
 		if (exasolCurrentUserPrivileges.getAtLeastV6())
 			return getSchema(monitor, childName) != null ? getSchema(monitor,childName) : getVirtualSchema(monitor, childName);
@@ -516,7 +518,7 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 	// --------------
 
 	@Association
-	public Collection<ExasolSchema> getSchemas(DBRProgressMonitor monitor)
+	public Collection<ExasolSchema> getSchemas(@NotNull DBRProgressMonitor monitor)
 			throws DBException
 	{
 		return schemaCache.getAllObjects(monitor, this);
