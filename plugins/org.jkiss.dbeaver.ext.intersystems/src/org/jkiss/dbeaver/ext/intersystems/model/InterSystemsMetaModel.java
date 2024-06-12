@@ -76,13 +76,13 @@ public class InterSystemsMetaModel extends GenericMetaModel
     
     public boolean isSystemSchema(GenericSchema schema) {
         if (schema.getName().startsWith("%") && !schema.getName().toUpperCase().startsWith("%Z")) {
-        	return true;
+            return true;
         }
         if (schema.getName().startsWith("%ZEN_")) {
-        	return true;
+            return true;
         }
         if (schema.getName().equals("INFORMATION_SCHEMA")) {
-        	return true;
+            return true;
         }
         return false;
     }
@@ -92,11 +92,11 @@ public class InterSystemsMetaModel extends GenericMetaModel
     @Override
     public JDBCStatement prepareTableTriggersLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws SQLException {
         String query = "SELECT trigger_name, table_name as OWNER, "
-        		+ " event_manipulation, action_order, action_orientation, action_timing"
-        		+ " FROM INFORMATION_SCHEMA.TRIGGERS WHERE table_schema=?";
+                + " event_manipulation, action_order, action_orientation, action_timing"
+                + " FROM INFORMATION_SCHEMA.TRIGGERS WHERE table_schema=?";
         
         if (table != null) {
-        	query += " AND table_name = ?";
+            query += " AND table_name = ?";
         } 
         
         JDBCPreparedStatement dbStat = session.prepareStatement(query);
@@ -110,27 +110,27 @@ public class InterSystemsMetaModel extends GenericMetaModel
     
     @Override
     public GenericTableTrigger createTableTriggerImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer genericStructContainer, @NotNull GenericTableBase genericTableBase, String triggerName, @NotNull JDBCResultSet resultSet) throws DBException {
-    	StringBuilder triggerDefinition = new StringBuilder();
-    	triggerDefinition.append(JDBCUtils.safeGetString(resultSet, "action_timing"));
-    	triggerDefinition.append(" ");
-    	triggerDefinition.append(JDBCUtils.safeGetString(resultSet, "event_manipulation").replace('/', ','));
-    	String action_order = JDBCUtils.safeGetString(resultSet, "action_order"); 
-    	if (action_order != null) {
-    		triggerDefinition.append(" ORDER ").append(action_order);
-    	}
-    	triggerDefinition.append(" FOR EACH ").append(JDBCUtils.safeGetString(resultSet, "action_orientation"));
-    	return new GenericTableTrigger(genericTableBase, triggerName, triggerDefinition.toString());
+        StringBuilder triggerDefinition = new StringBuilder();
+        triggerDefinition.append(JDBCUtils.safeGetString(resultSet, "action_timing"));
+        triggerDefinition.append(" ");
+        triggerDefinition.append(JDBCUtils.safeGetString(resultSet, "event_manipulation").replace('/', ','));
+        String action_order = JDBCUtils.safeGetString(resultSet, "action_order"); 
+        if (action_order != null) {
+            triggerDefinition.append(" ORDER ").append(action_order);
+        }
+        triggerDefinition.append(" FOR EACH ").append(JDBCUtils.safeGetString(resultSet, "action_orientation"));
+        return new GenericTableTrigger(genericTableBase, triggerName, triggerDefinition.toString());
     }
     
     @Override
     public String getTriggerDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTrigger trigger) throws DBException {
         if (!(trigger instanceof GenericTableTrigger)) {
-        	return super.getTriggerDDL(monitor, trigger);
+            return super.getTriggerDDL(monitor, trigger);
         }
         
         trigger = (GenericTableTrigger) trigger;
         
-    	String sqlStatement = "SELECT ACTION_STATEMENT "
+        String sqlStatement = "SELECT ACTION_STATEMENT "
                 + " FROM INFORMATION_SCHEMA.TRIGGERS "
                 + "where TABLE_NAME=? and TABLE_SCHEMA=? and Trigger_Name = ?";
         try (JDBCSession session = DBUtils.openMetaSession(monitor, trigger, "Load source code")) {
