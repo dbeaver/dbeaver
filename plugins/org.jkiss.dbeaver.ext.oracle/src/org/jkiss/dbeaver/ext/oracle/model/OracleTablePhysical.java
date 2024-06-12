@@ -146,7 +146,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
 
     @Override
     @Association
-    public Collection<OracleTableIndex> getIndexes(DBRProgressMonitor monitor)
+    public Collection<OracleTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         // Read indexes using cache

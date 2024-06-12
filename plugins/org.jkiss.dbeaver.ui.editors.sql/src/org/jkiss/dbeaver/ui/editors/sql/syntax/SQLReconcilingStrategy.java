@@ -260,7 +260,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         }
         Collection<SQLScriptElementImpl> deletedPositions = cachedQueries.stream()
             .filter(element -> !parsedElements.contains(element))
-            .collect(Collectors.toList());
+            .toList();
         Annotation[] deletions = deletedPositions.stream()
             .map(SQLScriptElementImpl::getAnnotation)
             .toArray(Annotation[]::new);
@@ -370,12 +370,10 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
         @Override
         public boolean equals(Object o) {
-            if (o instanceof Position) {
-                Position p = (Position) o;
+            if (o instanceof Position p) {
                 return equals(p.getOffset(), p.getLength());
             }
-            if (o instanceof SQLScriptElement) {
-                SQLScriptElement e = (SQLScriptElement) o;
+            if (o instanceof SQLScriptElement e) {
                 return equals(e.getOffset(), e.getLength());
             }
             return false;
@@ -423,6 +421,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
      */
     private static class SpellingProblemCollector implements ISpellingProblemCollector {
 
+        @Nullable
         private final IAnnotationModel annotationModel;
         private Map<Annotation, Position> addedAnnotations;
         private final int regionOffset;
@@ -430,7 +429,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         private final Object lockObject;
 
         public SpellingProblemCollector(
-            IAnnotationModel annotationModel,
+            @Nullable IAnnotationModel annotationModel,
             int regionOffset,
             int regionLength
         ) {
@@ -459,6 +458,9 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
         @Override
         public void endCollecting() {
+            if (annotationModel == null) {
+                return;
+            }
             List<Annotation> toRemove = new ArrayList<>();
 
             synchronized (lockObject) {

@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.db2.model.fed;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
@@ -44,6 +45,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -127,6 +129,16 @@ public class DB2Nickname extends DB2TableBase implements DBPNamedObject2, DBPRef
         super.refreshObject(monitor);
 
         return getContainer().getNicknameCache().refreshObject(monitor, getContainer(), this);
+    }
+
+    @Override
+    public DB2TableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException {
+        return getContainer().getNicknameCache().getChild(monitor, getContainer(), this, attributeName);
+    }
+
+    @Override
+    public List<DB2TableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return getContainer().getNicknameCache().getChildren(monitor, getContainer(), this);
     }
 
     @NotNull

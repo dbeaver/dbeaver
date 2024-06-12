@@ -61,7 +61,7 @@ public interface DBSObjectCache<OWNER extends DBSObject, OBJECT extends DBSObjec
      * Set fullyCache flag to true.
      * @param objects new cache contents
      */
-    void setCache(List<OBJECT> objects);
+    void setCache(@NotNull List<OBJECT> objects);
 
     /**
      * Removes specified object from cache

@@ -2636,13 +2636,19 @@ public class ResultSetViewer extends Viewer
                 // Column enumeration is expensive
             }
         }
-        if (isExpensiveFilter && ConfirmationDialog.confirmAction(
-            viewerPanel.getShell(),
-            ConfirmationDialog.WARNING, ResultSetPreferences.CONFIRM_FILTER_RESULTSET,
-            ConfirmationDialog.CONFIRM,
-            curAttribute.getName()) != IDialogConstants.OK_ID)
-        {
-            return;
+        if (isExpensiveFilter) {
+            if (curAttribute.getEntityAttribute() == null) {
+                // No entity reference - we cannot fetch any filter values for this attribute anyway
+            } else {
+                if (ConfirmationDialog.confirmAction(
+                    viewerPanel.getShell(),
+                    ConfirmationDialog.WARNING, ResultSetPreferences.CONFIRM_FILTER_RESULTSET,
+                    ConfirmationDialog.CONFIRM,
+                    curAttribute.getName()) != IDialogConstants.OK_ID)
+                {
+                    return;
+                }
+            }
         }
 
         Collection<ResultSetRow> selectedRows = getSelection().getSelectedRows();
