@@ -53,7 +53,7 @@ import java.util.stream.Collectors;
 public class DataSourceProviderDescriptor extends AbstractDescriptor implements DBPDataSourceProviderDescriptor {
     private static final String ATTRIBUTE_CHANGE_FOLDER_LABEL = "changeFolderLabel"; //$NON-NLS-1$
     private static final String ATTRIBUTE_CHANGE_FOLDER_TYPE = "changeFolderType"; //$NON-NLS-1$
-    private static final String ATTRIBUTE_DISPOSE = "dispose"; //$NON-NLS-1$
+    private static final String ATTRIBUTE_REMOVE = "remove"; //$NON-NLS-1$
     private static final String ATTRIBUTE_REPLACE_CHILDREN = "replaceChildren"; //$NON-NLS-1$
 
     private static final Log log = Log.getLog(DataSourceProviderDescriptor.class);
@@ -484,11 +484,11 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
             baseItem.clearChildren();
         }
 
-        if (CommonUtils.getBoolean(config.getAttribute(ATTRIBUTE_DISPOSE))) {
+        if (CommonUtils.getBoolean(config.getAttribute(ATTRIBUTE_REMOVE))) {
             baseItem.clearChildren();
             DBXTreeNode folderNode = baseItem.getParent();
             if (folderNode != null) {
-                folderNode.disposeChild(baseItem);
+                folderNode.removeChild(baseItem);
             }
         }
 

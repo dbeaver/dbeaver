@@ -364,7 +364,7 @@ public abstract class DBXTreeNode
      *
      * @param item - node for remove
      */
-    public void disposeChild(DBXTreeItem item) {
+    public void removeChild(DBXTreeItem item) {
         if (children != null && children.contains(item)) {
             children.remove(item);
         }
