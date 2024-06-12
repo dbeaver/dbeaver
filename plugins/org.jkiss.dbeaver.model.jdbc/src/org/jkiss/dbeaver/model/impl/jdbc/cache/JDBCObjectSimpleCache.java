@@ -40,8 +40,7 @@ public final class JDBCObjectSimpleCache<OWNER extends DBSObject, OBJECT extends
     private final Object[] queryParameters;
     private Constructor<OBJECT> objectConstructor;
 
-    public JDBCObjectSimpleCache(Class<OBJECT> objectType, String query, Object ... args)
-    {
+    public JDBCObjectSimpleCache(Class<OBJECT> objectType, String query, Object ... args) {
         this.query = query;
         this.objectType = objectType;
         this.queryParameters = args;
@@ -94,7 +93,7 @@ public final class JDBCObjectSimpleCache<OWNER extends DBSObject, OBJECT extends
         } catch (Exception e) {
             throw new DBException(
                 "Error creating cache object",
-                e instanceof InvocationTargetException ? ((InvocationTargetException)e).getTargetException() : e);
+                e instanceof InvocationTargetException ite ? ite.getTargetException() : e);
         }
     }
 

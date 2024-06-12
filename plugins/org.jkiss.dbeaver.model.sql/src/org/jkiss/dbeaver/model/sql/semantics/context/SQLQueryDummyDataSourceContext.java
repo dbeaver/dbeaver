@@ -250,7 +250,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
 
         @NotNull
         @Override
-        public Class<? extends DBSObject> getPrimaryChildType(DBRProgressMonitor monitor) throws DBException {
+        public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
             return DummyDbObject.class;
         }
 
@@ -323,7 +323,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         }
 
         @Override
-        public Collection<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+        public Collection<? extends DBSTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
             return Collections.emptyList();
         }
 
@@ -458,6 +458,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         return null;
     }
     
+    @NotNull
     @Override
     public SQLDialect getDialect() {
         return this.dialect;
