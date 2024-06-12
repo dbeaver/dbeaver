@@ -1,4 +1,3 @@
-
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2024 DBeaver Corp and others
@@ -32,18 +31,40 @@ import org.jkiss.dbeaver.model.meta.Property;
 
 public class CubridView extends GenericView
 {
+    private CubridUser owner;
+    private CubridUser oldOwner;
     public CubridView(
             @NotNull GenericStructContainer container,
             @Nullable String tableName,
             @Nullable String tableType,
             @Nullable JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
+        String ownerName;
         if (dbResult != null) {
             String type = JDBCUtils.safeGetString(dbResult, CubridConstants.IS_SYSTEM_CLASS);
+            ownerName = JDBCUtils.safeGetString(dbResult, CubridConstants.OWNER_NAME);
             if (type != null) {
                 this.setSystem(type.equals("YES"));
             }
+        } else {
+            ownerName = getDataSource().getContainer().getConnectionConfiguration().getUserName();
+            ownerName = ownerName != null ? ownerName.toUpperCase() : "";
         }
+        for(GenericSchema cubridOwner : this.getDataSource().getSchemaList()){
+            if(cubridOwner.getName().equals(ownerName)) {
+                this.owner = (CubridUser) cubridOwner;
+                this.oldOwner = (CubridUser) cubridOwner;
+            }
+        }
+    }
+
+    @NotNull
+    public CubridUser getOldSchema() {
+        return this.oldOwner;
+    }
+
+    public void setSchema(@NotNull CubridUser owner) {
+        this.owner = owner;
     }
 
     @NotNull
@@ -65,7 +86,7 @@ public class CubridView extends GenericView
     @Override
     @Property(viewable = true, editable = true, updatable = true, listProvider = OwnerListProvider.class, order = 2)
     public GenericSchema getSchema() {
-        return super.getSchema();
+        return owner;
     }
 
     @NotNull
