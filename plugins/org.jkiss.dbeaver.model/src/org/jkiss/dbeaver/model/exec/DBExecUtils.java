@@ -458,17 +458,20 @@ public class DBExecUtils {
     public static void recoverSmartCommit(DBCExecutionContext executionContext) {
         DBPDataSourceContainer container = executionContext.getDataSource().getContainer();
         DBPPreferenceStore preferenceStore = container.getPreferenceStore();
+        DBPConnectionType connectionType = container.getConnectionConfiguration().getConnectionType();
+        if (!preferenceStore.getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT) &&
+        !connectionType.isSmartCommit()) {
+            return;
+        }
+
         boolean recoverSmartCommit;
-        if (preferenceStore.contains(ModelPreferences.TRANSACTIONS_SMART_COMMIT)
-            && preferenceStore.contains(ModelPreferences.TRANSACTIONS_SMART_COMMIT_RECOVER)
+        if (preferenceStore.contains(ModelPreferences.TRANSACTIONS_SMART_COMMIT_RECOVER)
         ) {
             // First check specific datasource settings
-            recoverSmartCommit = preferenceStore.getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT)
-                && preferenceStore.getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT_RECOVER);
+            recoverSmartCommit = preferenceStore.getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT_RECOVER);
         } else {
             // Or use settings from the connection type
-            DBPConnectionType connectionType = container.getConnectionConfiguration().getConnectionType();
-            recoverSmartCommit = connectionType.isSmartCommit() && connectionType.isSmartCommitRecover();
+            recoverSmartCommit = connectionType.isSmartCommitRecover();
         }
         if (recoverSmartCommit) {
             DBCTransactionManager transactionManager = DBUtils.getTransactionManager(executionContext);
