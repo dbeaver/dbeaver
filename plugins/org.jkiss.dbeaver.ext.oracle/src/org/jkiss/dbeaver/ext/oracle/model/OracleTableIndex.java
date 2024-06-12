@@ -121,7 +121,7 @@ public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTableBa
     }
 
     @Override
-    public List<OracleTableIndexColumn> getAttributeReferences(DBRProgressMonitor monitor)
+    public List<OracleTableIndexColumn> getAttributeReferences(@NotNull DBRProgressMonitor monitor)
     {
         return columns;
     }

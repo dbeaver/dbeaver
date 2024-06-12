@@ -240,7 +240,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
     }
 
     @Override
-    public List<PostgreIndexColumn> getAttributeReferences(DBRProgressMonitor monitor) {
+    public List<PostgreIndexColumn> getAttributeReferences(@NotNull DBRProgressMonitor monitor) {
         return columns;
     }
 

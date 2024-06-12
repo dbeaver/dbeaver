@@ -269,7 +269,7 @@ public final class DBUtils {
      */
     @Nullable
     public static DBSObject getObjectByPath(
-        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext executionContext,
         @NotNull DBSObjectContainer rootSC,
         @Nullable String catalogName,
@@ -286,15 +286,15 @@ public final class DBUtils {
         if (!CommonUtils.isEmpty(catalogName) && !CommonUtils.isEmpty(schemaName)) {
             // We have both both - just search both
             DBSObject catalog = rootSC.getChild(monitor, catalogName);
-            if (!(catalog instanceof DBSObjectContainer)) {
+            if (!(catalog instanceof DBSObjectContainer catalogOC)) {
                 return null;
             }
-            rootSC = (DBSObjectContainer) catalog;
+            rootSC = catalogOC;
             DBSObject schema = rootSC.getChild(monitor, schemaName);
-            if (!(schema instanceof DBSObjectContainer)) {
+            if (!(schema instanceof DBSObjectContainer schemaOC)) {
                 return null;
             }
-            rootSC = (DBSObjectContainer) schema;
+            rootSC = schemaOC;
         } else if (!CommonUtils.isEmpty(catalogName) || !CommonUtils.isEmpty(schemaName)) {
             // One container name
             String containerName = !CommonUtils.isEmpty(catalogName) ? catalogName : schemaName;
@@ -302,7 +302,7 @@ public final class DBUtils {
             if (!(sc instanceof DBSObjectContainer)) {
                 // Not found - try to find in selected object
                 DBSObject selectedObject = getSelectedObject(executionContext);
-                if (selectedObject instanceof DBSObjectContainer) {
+                if (selectedObject instanceof DBSObjectContainer objectContainer) {
                     if (selectedObject instanceof DBSSchema && selectedObject.getParentObject() instanceof DBSCatalog && CommonUtils.isEmpty(catalogName) &&
                         !CommonUtils.equalObjects(schemaName, selectedObject.getName())) {
                         // We search for schema and active object is schema. Let's search our schema in catalog
@@ -313,7 +313,7 @@ public final class DBUtils {
                         // Selected object is a catalog or schema which is also specified as catalogName/schemaName -
                         sc = selectedObject;
                     } else {
-                        sc = ((DBSObjectContainer) selectedObject).getChild(monitor, containerName);
+                        sc = objectContainer.getChild(monitor, containerName);
                     }
                 }
                 if (!(sc instanceof DBSObjectContainer)) {
@@ -353,7 +353,7 @@ public final class DBUtils {
 
     @Nullable
     public static DBSObject findNestedObject(
-        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext executionContext,
         @NotNull DBSObjectContainer parent,
         @NotNull List<String> names)
@@ -847,7 +847,7 @@ public final class DBUtils {
             try {
                 if (!isIndexedValue(parent, curValue)) {
                     curValue = parent.extractNestedValue(curValue, 0);
-                } else if (isValidIndex(curValue, nestedIndexes[curNestedIndex])) {
+                } else if (nestedIndexes != null && isValidIndex(curValue, nestedIndexes[curNestedIndex])) {
                     curValue = parent.extractNestedValue(curValue, nestedIndexes[curNestedIndex]);
                     curNestedIndex++;
                 } else {
@@ -2232,7 +2232,7 @@ public final class DBUtils {
         }
     }
 
-    public static DBSEntity getEntityFromMetaData(DBRProgressMonitor monitor, DBCExecutionContext executionContext, DBCEntityMetaData entityMeta) throws DBException {
+    public static DBSEntity getEntityFromMetaData(@NotNull DBRProgressMonitor monitor, DBCExecutionContext executionContext, DBCEntityMetaData entityMeta) throws DBException {
         final DBSObjectContainer objectContainer = getAdapter(DBSObjectContainer.class, executionContext.getDataSource());
         if (objectContainer != null) {
             DBSEntity entity = getEntityFromMetaData(monitor, executionContext, objectContainer, entityMeta, false);
@@ -2245,7 +2245,7 @@ public final class DBUtils {
         }
     }
 
-    public static DBSEntity getEntityFromMetaData(DBRProgressMonitor monitor, DBCExecutionContext executionContext, DBSObjectContainer objectContainer, DBCEntityMetaData entityMeta, boolean transformName) throws DBException {
+    public static DBSEntity getEntityFromMetaData(@NotNull DBRProgressMonitor monitor, DBCExecutionContext executionContext, DBSObjectContainer objectContainer, DBCEntityMetaData entityMeta, boolean transformName) throws DBException {
         final DBPDataSource dataSource = objectContainer.getDataSource();
         String catalogName = entityMeta.getCatalogName();
         String schemaName = entityMeta.getSchemaName();
@@ -2259,13 +2259,13 @@ public final class DBUtils {
             return null;
         }
         DBSObject entityObject = getObjectByPath(monitor, executionContext, objectContainer, catalogName, schemaName, entityName);
-        if (entityObject instanceof DBSAlias && !(entityObject instanceof DBSEntity)) {
-            entityObject = ((DBSAlias) entityObject).getTargetObject(monitor);
+        if (entityObject instanceof DBSAlias alias && !(entityObject instanceof DBSEntity) && !monitor.isForceCacheUsage()) {
+            entityObject = alias.getTargetObject(monitor);
         }
         if (entityObject == null) {
             return null;
-        } else if (entityObject instanceof DBSEntity) {
-            return (DBSEntity) entityObject;
+        } else if (entityObject instanceof DBSEntity entity) {
+            return entity;
         } else {
             log.debug("Unsupported table class: " + entityObject.getClass().getName());
             return null;
