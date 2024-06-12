@@ -54,7 +54,7 @@ public abstract class JDBCLazyDataTypeCache extends AbstractObjectCache<JDBCData
     }
 
     @Override
-    public DBSDataType getObject(@NotNull DBRProgressMonitor monitor, @Nullable JDBCDataSource jdbcDataSource, @NotNull String name) throws DBException
+    public DBSDataType getObject(@NotNull DBRProgressMonitor monitor, @NotNull JDBCDataSource jdbcDataSource, @NotNull String name) throws DBException
     {
         return getCachedObject(name);
     }

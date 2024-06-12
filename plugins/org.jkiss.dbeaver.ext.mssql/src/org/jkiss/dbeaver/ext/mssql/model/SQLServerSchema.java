@@ -248,10 +248,10 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
     }
 
     @Nullable
-    public SQLServerTableType getTableType(DBRProgressMonitor monitor, long tableId) throws DBException {
-        for (SQLServerTableBase table : tableCache.getAllObjects(monitor, this)) {
-            if (table.getObjectId() == tableId && table instanceof SQLServerTableType) {
-                return (SQLServerTableType) table;
+    public SQLServerTableType getTableType(@NotNull DBRProgressMonitor monitor, long tableId) throws DBException {
+        for (SQLServerTableBase table : getTables(monitor)) {
+            if (table.getObjectId() == tableId && table instanceof SQLServerTableType tt) {
+                return tt;
             }
         }
         log.debug("Table type '" + tableId + "' not found in schema " + getName());
@@ -275,7 +275,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
     @NotNull
     @Override
-    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
         return SQLServerTable.class;
     }
 
@@ -871,7 +871,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
         @NotNull
         @Override
-        public JDBCStatement prepareLookupStatement(JDBCSession session, SQLServerSchema schema, SQLServerProcedure object, String objectName) throws SQLException {
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull SQLServerSchema schema, @Nullable SQLServerProcedure object, @Nullable String objectName) throws SQLException {
             String sql = "SELECT p.*,ep.value as description" +
                 "\nFROM " + SQLServerUtils.getSystemTableName(schema.getDatabase(), "all_objects") + " p" +
                 "\nLEFT OUTER JOIN " + SQLServerUtils.getExtendedPropsTableName(schema.getDatabase()) + " ep ON ep.class=" + SQLServerObjectClass.OBJECT_OR_COLUMN.getClassId() + " AND ep.major_id=p.object_id AND ep.minor_id=0 AND ep.name='" + SQLServerConstants.PROP_MS_DESCRIPTION + "'" +
@@ -932,7 +932,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
         @NotNull
         @Override
-        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull SQLServerSchema schema, SQLServerTableTrigger object, String objectName) throws SQLException {
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull SQLServerSchema schema, @Nullable SQLServerTableTrigger object, @Nullable String objectName) throws SQLException {
             final SQLServerDataSource dataSource = schema.getDataSource();
             StringBuilder sql = new StringBuilder(500);
             sql.append("SELECT ");

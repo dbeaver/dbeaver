@@ -214,7 +214,7 @@ public abstract class PostgreTable extends PostgreTableReal
     }
 
     @Override
-    public Collection<PostgreIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+    public Collection<PostgreIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getSchema().getIndexCache().getObjects(monitor, getSchema(), this);
     }
 
@@ -253,6 +253,9 @@ public abstract class PostgreTable extends PostgreTableReal
 
     @Override
     public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (monitor == null) {
+            return null;
+        }
         List<DBSEntityAssociation> refs = new ArrayList<>(
             CommonUtils.safeList(getSubInheritance(monitor)));
         // Obtain a list of schemas containing references to this table to avoid fetching everything
@@ -323,7 +326,7 @@ public abstract class PostgreTable extends PostgreTableReal
 
     @Nullable
     public List<PostgreTableInheritance> getSuperInheritance(DBRProgressMonitor monitor) throws DBException {
-        if (superTables == null && getDataSource().getServerType().supportsInheritance() && isPersisted()) {
+        if (superTables == null && getDataSource().getServerType().supportsInheritance() && isPersisted() && monitor != null) {
             superTables = initSuperTables(monitor);
         }
         return superTables == null || superTables.isEmpty() ? null : superTables;
