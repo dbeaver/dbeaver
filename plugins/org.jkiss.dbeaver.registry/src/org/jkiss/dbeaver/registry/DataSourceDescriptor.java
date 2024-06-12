@@ -568,6 +568,11 @@ public class DataSourceDescriptor
         }
     }
 
+    @Override
+    public boolean isExtraMetadataReadEnabled() {
+        return !preferenceStore.getBoolean(ModelPreferences.META_DISABLE_EXTRA_READ);
+    }
+
     public Collection<FilterMapping> getObjectFilters() {
         return filterMap.values();
     }

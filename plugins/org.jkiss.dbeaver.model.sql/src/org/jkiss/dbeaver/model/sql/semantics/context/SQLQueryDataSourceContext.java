@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.sql.semantics.context;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -74,7 +75,10 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
             );
             return obj instanceof DBSTable table ? table : (obj instanceof DBSView view ? view : null);
         } else {
-            throw new UnsupportedOperationException();
+            // Semantic analyser should never be used for databases, which doesn't support table lookup
+            // It's managed by LSMDialectRegistry (see org.jkiss.dbeaver.lsm.dialectSyntax extension point)
+            // so that analyzers could be created only for supported dialects.
+            throw new UnsupportedOperationException("Should never happen");
         }
     }
 
