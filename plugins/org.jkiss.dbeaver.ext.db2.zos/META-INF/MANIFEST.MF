@@ -12,3 +12,4 @@ Bundle-Vendor: DBeaver Corp
 Bundle-ClassPath: .
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.ext.db2.zos
+Export-Package: org.jkiss.dbeaver.ext.db2.zos
