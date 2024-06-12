@@ -542,7 +542,7 @@
                     <replace provider="generic" driver="aws_redshift"/>
                     <replace provider="generic" driver="aws_redshift_42"/>
 
-                    <file type="jar" path="maven:/com.amazon.redshift:redshift-jdbc42:RELEASE[2.1.0.22]" load-optional-dependencies="true" bundle="!drivers.redshift"/>
+                    <file type="jar" path="maven:/com.amazon.redshift:redshift-jdbc42:RELEASE[2.1.0.29]" load-optional-dependencies="true" bundle="!drivers.redshift"/>
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.redshift"/>
                     <file type="jar" path="drivers/redshift" bundle="drivers.redshift"/>
 

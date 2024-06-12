@@ -72,8 +72,8 @@ public final class DB2NicknameCache extends JDBCStructLookupCache<DB2Schema, DB2
 
     @NotNull
     @Override
-    public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, DB2Nickname db2Nickname,
-        String db2NicknameName) throws SQLException
+    public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @Nullable DB2Nickname db2Nickname,
+                                                @Nullable String db2NicknameName) throws SQLException
     {
         if (db2Nickname != null || db2NicknameName != null) {
             final JDBCPreparedStatement dbStat = session.prepareStatement(SQL_NICK);

@@ -105,7 +105,6 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.StandardConstants;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
@@ -1900,7 +1899,8 @@ public class ResultSetViewer extends Viewer
             return false;
         }
         for (DBDAttributeBinding attr : model.getAttributes()) {
-            if (!DBExecUtils.isAttributeReadOnly(attr)) {
+            DBDRowIdentifier rowIdentifier = attr.getRowIdentifier();
+            if (rowIdentifier != null && rowIdentifier.isValidIdentifier()) {
                 return false;
             }
         }
@@ -2636,13 +2636,19 @@ public class ResultSetViewer extends Viewer
                 // Column enumeration is expensive
             }
         }
-        if (isExpensiveFilter && ConfirmationDialog.confirmAction(
-            viewerPanel.getShell(),
-            ConfirmationDialog.WARNING, ResultSetPreferences.CONFIRM_FILTER_RESULTSET,
-            ConfirmationDialog.CONFIRM,
-            curAttribute.getName()) != IDialogConstants.OK_ID)
-        {
-            return;
+        if (isExpensiveFilter) {
+            if (curAttribute.getEntityAttribute() == null) {
+                // No entity reference - we cannot fetch any filter values for this attribute anyway
+            } else {
+                if (ConfirmationDialog.confirmAction(
+                    viewerPanel.getShell(),
+                    ConfirmationDialog.WARNING, ResultSetPreferences.CONFIRM_FILTER_RESULTSET,
+                    ConfirmationDialog.CONFIRM,
+                    curAttribute.getName()) != IDialogConstants.OK_ID)
+                {
+                    return;
+                }
+            }
         }
 
         Collection<ResultSetRow> selectedRows = getSelection().getSelectedRows();
@@ -5223,7 +5229,7 @@ public class ResultSetViewer extends Viewer
                     if (CommonUtils.isNotEmpty(errorMessage) && query instanceof SQLQuery) {
                         String extraErrorMessage = ((SQLQuery) query).getExtraErrorMessage();
                         if (CommonUtils.isNotEmpty(extraErrorMessage)) {
-                            errorMessage = errorMessage + System.getProperty(StandardConstants.ENV_LINE_SEPARATOR) + extraErrorMessage;
+                            errorMessage = errorMessage + System.lineSeparator() + extraErrorMessage;
                         }
                     }
 
@@ -5257,7 +5263,6 @@ public class ResultSetViewer extends Viewer
                         }
                         if (getActivePresentation().getCurrentAttribute() == null || model.getRowCount() == 0) {
                             getActivePresentation().setCurrentAttribute(model.getVisibleAttribute(0));
-                            panelUpdated = true; // Attribute viewer refreshed
                         }
                     }
                 }
