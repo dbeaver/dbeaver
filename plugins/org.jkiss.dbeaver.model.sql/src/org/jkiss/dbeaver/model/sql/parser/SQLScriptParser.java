@@ -202,7 +202,11 @@ public class SQLScriptParser {
                     hasBlocks = true;
                 } else if (tokenType == SQLTokenType.T_BLOCK_END) {
                     if (curBlock != null) {
-                        curBlock = curBlock.parent;
+                        if (curBlock.togglePattern != null) {
+                            log.trace("SQLScriptParser: blocks structure recognition inconsistency - trying to leave toggled block on non-togging token");
+                        } else {
+                            curBlock = curBlock.parent;
+                        }
                     }
                 } else if (isDelimiter && curBlock != null) {
                     // Delimiter in some brackets or inside block. Ignore it.
