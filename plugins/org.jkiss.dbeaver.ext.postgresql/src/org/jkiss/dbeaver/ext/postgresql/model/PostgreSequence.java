@@ -251,7 +251,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
     }
 
     @Override
-    public Collection<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 

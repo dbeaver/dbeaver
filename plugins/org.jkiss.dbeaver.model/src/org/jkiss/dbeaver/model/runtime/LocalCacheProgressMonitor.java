@@ -14,22 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.runtime;
 
-package org.jkiss.dbeaver.model.struct.cache;
-
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-
-import java.util.List;
+import org.jkiss.dbeaver.Log;
 
 /**
- * Composite objects cache
+ * Progress monitor which forces cache usage
  */
-public interface DBSCompositeCache<PARENT extends DBSObject, OBJECT extends DBSObject> {
+public class LocalCacheProgressMonitor extends ProxyProgressMonitor {
 
-    List<OBJECT> getCachedObjects(@Nullable PARENT forParent);
+    private static final Log log = Log.getLog(LocalCacheProgressMonitor.class);
 
-    void clearObjectCache(@NotNull PARENT forParent);
+    public LocalCacheProgressMonitor(DBRProgressMonitor original) {
+        super(original);
+    }
 
+    @Override
+    public boolean isForceCacheUsage() {
+        return true;
+    }
 }

@@ -198,6 +198,16 @@ public class DB2Table extends DB2TableBase
         return getContainer().getTableCache().refreshObject(monitor, getContainer(), this);
     }
 
+    @Override
+    public DB2TableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException {
+        return getContainer().getTableCache().getChild(monitor, getContainer(), this, attributeName);
+    }
+
+    @Override
+    public List<DB2TableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return getContainer().getTableCache().getChildren(monitor, getContainer(), this);
+    }
+
     @NotNull
     @Override
     public DBSObjectState getObjectState()
@@ -279,6 +289,9 @@ public class DB2Table extends DB2TableBase
     public List<DB2TableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (referenceCache != null) {
             return new ArrayList<>(referenceCache);
+        }
+        if (monitor == null) {
+            return null;
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Find table references")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(

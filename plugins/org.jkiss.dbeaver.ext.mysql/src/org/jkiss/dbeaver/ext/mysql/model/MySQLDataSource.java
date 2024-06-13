@@ -465,7 +465,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
 
     @NotNull
     @Override
-    public Class<? extends MySQLCatalog> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) {
+    public Class<? extends MySQLCatalog> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) {
         return MySQLCatalog.class;
     }
 

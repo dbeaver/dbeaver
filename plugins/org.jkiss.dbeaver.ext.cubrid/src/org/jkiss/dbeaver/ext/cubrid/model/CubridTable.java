@@ -87,13 +87,12 @@ public class CubridTable extends GenericTable
         return (CubridUser) super.getContainer();
     }
 
-    @NotNull
     public boolean supportsTrigger() {
         return getParent().supportsTrigger();
     }
 
     @Nullable
-    public Collection<? extends GenericTableIndex> getIndexes(DBRProgressMonitor monitor)
+    public Collection<? extends GenericTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor)
             throws DBException {
         return getParent().getCubridIndexCache().getObjects(monitor, getContainer(), this);
     }
@@ -153,13 +152,12 @@ public class CubridTable extends GenericTable
         this.collation = charset == null ? null : charset.getDefaultCollation();
     }
 
-    @NotNull
     @Property(viewable = true, editable = true, order = 52)
     public boolean isReuseOID() {
         return reuseOID;
     }
 
-    public void setReuseOID(@NotNull boolean reuseOID) {
+    public void setReuseOID(boolean reuseOID) {
         this.reuseOID = reuseOID;
     }
 
@@ -192,7 +190,6 @@ public class CubridTable extends GenericTable
 
     public static class OwnerListProvider implements IPropertyValueListProvider<CubridTable>
     {
-        @NotNull
         @Override
         public boolean allowCustomValue() {
             return false;
@@ -241,7 +238,6 @@ public class CubridTable extends GenericTable
 
     public static class CharsetListProvider implements IPropertyValueListProvider<CubridTable>
     {
-        @NotNull
         @Override
         public boolean allowCustomValue() {
             return false;
@@ -256,7 +252,6 @@ public class CubridTable extends GenericTable
 
     public static class CollationListProvider implements IPropertyValueListProvider<CubridTable>
     {
-        @NotNull
         @Override
         public boolean allowCustomValue() {
             return false;

@@ -383,7 +383,7 @@ public class SQLContextInformer
                 } else if (structureAssistant != null) {
                     DBSObjectType[] objectTypes = structureAssistant.getHyperlinkObjectTypes();
                     DBCExecutionContext executionContext = editor.getExecutionContext();
-                    if (executionContext != null) {
+                    if (executionContext != null && executionContext.getDataSource().getContainer().isExtraMetadataReadEnabled()) {
                         DBSStructureAssistant.ObjectsSearchParams params = new DBSStructureAssistant.ObjectsSearchParams(objectTypes, objectName);
                         params.setParentObject(container);
                         params.setCaseSensitive(caseSensitive);
