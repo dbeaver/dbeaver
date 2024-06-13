@@ -298,7 +298,7 @@ public class MySQLTable extends MySQLTableBase
 
     @Override
     @Association
-    public Collection<MySQLTableIndex> getIndexes(DBRProgressMonitor monitor)
+    public Collection<MySQLTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         // Read indexes using cache
@@ -370,7 +370,7 @@ public class MySQLTable extends MySQLTableBase
     public synchronized Collection<MySQLTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        if (!foreignKeys.isFullyCached() && getDataSource().getInfo().supportsReferentialIntegrity()) {
+        if (!foreignKeys.isFullyCached() && getDataSource().getInfo().supportsReferentialIntegrity() && monitor != null) {
             List<MySQLTableForeignKey> fkList = loadForeignKeys(monitor, false);
             foreignKeys.setCache(fkList);
         }
@@ -472,7 +472,7 @@ public class MySQLTable extends MySQLTableBase
         throws DBException
     {
         List<MySQLTableForeignKey> fkList = new ArrayList<>();
-        if (!isPersisted()) {
+        if (!isPersisted() || monitor == null) {
             return fkList;
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table relations")) {
