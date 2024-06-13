@@ -16,24 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.altibase.tasks;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseProcedureStandAlone;
-import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteSettings;
 
-import java.util.Map;
-
 public class AltibaseToolProcedureCompileSettings extends SQLToolExecuteSettings<AltibaseProcedureStandAlone> {
-
-    @Override
-    public void loadConfiguration(@NotNull DBRRunnableContext runnableContext, 
-            @NotNull Map<String, Object> config, @NotNull DBPProject project) {
-        super.loadConfiguration(runnableContext, config, project);
-    }
-
-    @Override
-    public void saveConfiguration(Map<String, Object> config) {
-        super.saveConfiguration(config);
-    }
 }
