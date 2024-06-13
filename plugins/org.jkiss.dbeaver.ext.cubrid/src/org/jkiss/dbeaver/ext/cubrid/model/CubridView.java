@@ -32,35 +32,19 @@ import org.jkiss.dbeaver.model.meta.Property;
 public class CubridView extends GenericView
 {
     private CubridUser owner;
-    private CubridUser oldOwner;
     public CubridView(
             @NotNull GenericStructContainer container,
             @Nullable String tableName,
             @Nullable String tableType,
             @Nullable JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
-        String ownerName;
         if (dbResult != null) {
             String type = JDBCUtils.safeGetString(dbResult, CubridConstants.IS_SYSTEM_CLASS);
-            ownerName = JDBCUtils.safeGetString(dbResult, CubridConstants.OWNER_NAME);
             if (type != null) {
                 this.setSystem(type.equals("YES"));
             }
-        } else {
-            ownerName = getDataSource().getContainer().getConnectionConfiguration().getUserName();
-            ownerName = ownerName != null ? ownerName.toUpperCase() : "";
         }
-        for(GenericSchema cubridOwner : this.getDataSource().getSchemaList()){
-            if(cubridOwner.getName().equals(ownerName)) {
-                this.owner = (CubridUser) cubridOwner;
-                this.oldOwner = (CubridUser) cubridOwner;
-            }
-        }
-    }
-
-    @NotNull
-    public CubridUser getOldSchema() {
-        return this.oldOwner;
+        this.owner = (CubridUser) container;
     }
 
     public void setSchema(@NotNull CubridUser owner) {
@@ -76,7 +60,7 @@ public class CubridView extends GenericView
     @NotNull
     public String getUniqueName() {
         if (getDataSource().getSupportMultiSchema()) {
-            return this.getSchema().getName() + "." + this.getName();
+            return this.getContainer() + "." + this.getName();
         } else {
             return this.getName();
         }

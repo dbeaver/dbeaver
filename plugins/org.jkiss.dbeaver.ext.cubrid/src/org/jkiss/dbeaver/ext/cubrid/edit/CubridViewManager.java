@@ -91,7 +91,7 @@ public class CubridViewManager extends GenericViewManager implements DBEObjectRe
             viewDDL = "";
         }
         if (!view.isPersisted()) {
-            query.append("CREATE VIEW " + view.getSchema() + "." + view.getName() + "\nAS ");
+            query.append("CREATE VIEW " + view.getUniqueName() + "\nAS ");
             query.append(viewDDL);
             if (hasComment && view.getDescription() != null) {
                 query.append("\nCOMMENT = " + SQLUtils.quoteString(view, CommonUtils.notEmpty(view.getDescription())));
@@ -101,7 +101,7 @@ public class CubridViewManager extends GenericViewManager implements DBEObjectRe
                 query.append(viewDDL).append("\n");
             }
             if (hasComment && view.getDescription() != null) {
-                query.append("ALTER VIEW " + view.getContainer() + "." + view.getName()
+                query.append("ALTER VIEW " + view.getUniqueName()
                         + " COMMENT = " + SQLUtils.quoteString(view, CommonUtils.notEmpty(view.getDescription())));
             }
         }
