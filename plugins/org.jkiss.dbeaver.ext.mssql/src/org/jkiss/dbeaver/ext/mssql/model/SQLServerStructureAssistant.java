@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
@@ -364,7 +365,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
                 }
             }
         } catch (Throwable e) {
-            throw new DBException("Error while searching in system catalog", e, dataSource);
+            throw new DBDatabaseException("Error while searching in system catalog", e, dataSource);
         }
     }
 

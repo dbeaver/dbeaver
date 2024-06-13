@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model.session;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -70,7 +71,7 @@ public class PostgreSessionManager implements DBAServerSessionManager<PostgreSes
                 }
             }
         } catch (SQLException e) {
-            throw new DBException(e, session.getDataSource());
+            throw new DBDatabaseException(e, session.getDataSource());
         }
     }
 
@@ -83,7 +84,7 @@ public class PostgreSessionManager implements DBAServerSessionManager<PostgreSes
             }
         }
         catch (SQLException e) {
-            throw new DBException(e, session.getDataSource());
+            throw new DBDatabaseException(e, session.getDataSource());
         }
     }
 

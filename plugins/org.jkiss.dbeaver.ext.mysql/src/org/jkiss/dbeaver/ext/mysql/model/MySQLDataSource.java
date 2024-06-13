@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -538,7 +539,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                 }
             }
         } catch (SQLException ex) {
-            throw new DBException(ex, this);
+            throw new DBDatabaseException(ex, this);
         }
     }
 
@@ -642,7 +643,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                 }
             }
         } catch (SQLException ex) {
-            throw new DBException(ex, this);
+            throw new DBDatabaseException(ex, this);
         }
     }
 
@@ -689,7 +690,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                 }
             }
         } catch (SQLException ex) {
-            throw new DBException(ex, this);
+            throw new DBDatabaseException(ex, this);
         }
     }
 

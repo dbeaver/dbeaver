@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.hana.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -132,7 +133,7 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
                 findViewColumnsByMask(session, parentSchema, params, result);
             }
         } catch (SQLException ex) {
-            throw new DBException(ex, dataSource);
+            throw new DBDatabaseException(ex, dataSource);
         }
 
         return result;
