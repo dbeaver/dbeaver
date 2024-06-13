@@ -24,7 +24,9 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.dashboard.DBDashboardDataType;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardProvider;
+import org.jkiss.dbeaver.model.dashboard.DashboardConstants;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.utils.CommonUtils;
 
@@ -43,6 +45,7 @@ public class DashboardProviderDescriptor extends AbstractContextDescriptor imple
     private final boolean supportsFolders;
     private final boolean databaseRequired;
     private final String defaultRenderer;
+    private final DBDashboardDataType dataType;
     private DBDashboardProvider instance;
     private final Expression enabledWhen;
 
@@ -56,6 +59,11 @@ public class DashboardProviderDescriptor extends AbstractContextDescriptor imple
         this.supportsFolders = CommonUtils.toBoolean(config.getAttribute("supportsFolders"));
         this.databaseRequired = CommonUtils.toBoolean(config.getAttribute("databaseRequired"));
         this.defaultRenderer = CommonUtils.toString(config.getAttribute("defaultRenderer"));
+        this.dataType = CommonUtils.valueOf(
+            DBDashboardDataType.class,
+            config.getAttribute("dataType"),
+            DashboardConstants.DEF_DASHBOARD_DATA_TYPE
+        );
         this.implType = new ObjectType(config.getAttribute("class"));
         this.enabledWhen = getEnablementExpression(config);
     }
@@ -94,6 +102,11 @@ public class DashboardProviderDescriptor extends AbstractContextDescriptor imple
 
     public String getDefaultRenderer() {
         return defaultRenderer;
+    }
+
+    @NotNull
+    public DBDashboardDataType getDataType() {
+        return dataType;
     }
 
     @Override

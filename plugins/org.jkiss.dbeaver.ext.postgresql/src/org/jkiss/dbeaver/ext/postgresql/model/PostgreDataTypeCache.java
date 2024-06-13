@@ -157,7 +157,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
     }
 
     @Override
-    public void setCache(List<PostgreDataType> postgreDataTypes) {
+    public void setCache(@NotNull List<PostgreDataType> postgreDataTypes) {
         super.setCache(postgreDataTypes);
         for (PostgreDataType dt : postgreDataTypes) {
             if (!dt.isAlias()) {

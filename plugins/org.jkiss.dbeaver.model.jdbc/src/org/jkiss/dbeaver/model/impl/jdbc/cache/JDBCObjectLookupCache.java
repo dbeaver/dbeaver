@@ -52,7 +52,7 @@ public abstract class JDBCObjectLookupCache<OWNER extends DBSObject, OBJECT exte
         if (cachedObject != null) {
             return cachedObject;
         }
-        if (isFullyCached() || missingNames.contains(name)) {
+        if (isFullyCached() || missingNames.contains(name) || monitor == null) {
             return null;
         }
         // Now cache just one object
@@ -126,7 +126,7 @@ public abstract class JDBCObjectLookupCache<OWNER extends DBSObject, OBJECT exte
     }
 
     @Override
-    public void setCache(List<OBJECT> objects) {
+    public void setCache(@NotNull List<OBJECT> objects) {
         super.setCache(objects);
         this.missingNames.clear();
     }

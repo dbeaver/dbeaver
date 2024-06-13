@@ -45,10 +45,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.qm.meta.QMMConnectionInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMStatementExecuteInfo;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLSelectItem;
@@ -249,8 +246,8 @@ public class DBExecUtils {
             }
             if (lastError != null) {
                 recoveryState.recoveryFailed = true;
-                if (lastError instanceof DBException) {
-                    throw (DBException) lastError;
+                if (lastError instanceof DBException dbe) {
+                    throw dbe;
                 } else {
                     throw new DBException(lastError, dataSource);
                 }
@@ -499,7 +496,7 @@ public class DBExecUtils {
         }
     }
 
-    public static DBSEntityConstraint getBestIdentifier(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table, DBDAttributeBinding[] bindings, boolean readMetaData)
+    public static DBSEntityConstraint getBestIdentifier(@Nullable DBRProgressMonitor monitor, @NotNull DBSEntity table, DBDAttributeBinding[] bindings)
         throws DBException
     {
         if (table instanceof DBSDocumentContainer) {
@@ -508,7 +505,7 @@ public class DBExecUtils {
         List<DBSEntityConstraint> identifiers = new ArrayList<>(2);
         //List<DBSEntityConstraint> nonIdentifyingConstraints = null;
 
-        if (readMetaData) {
+        {
             if (table instanceof DBSTable && ((DBSTable) table).isView()) {
                 // Skip physical identifiers for views. There are nothing anyway
 
@@ -678,12 +675,9 @@ public class DBExecUtils {
     {
         DBRProgressMonitor monitor = session.getProgressMonitor();
         DBPDataSource dataSource = session.getDataSource();
-        boolean readMetaData = dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_READ_METADATA);
-        if (!readMetaData && sourceEntity == null) {
-            // Do not read metadata if source entity is not known
-            return;
-        }
-        boolean readReferences = dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_READ_REFERENCES);
+        DBPDataSourceContainer container = dataSource.getContainer();
+        DBRProgressMonitor mdMonitor = container.isExtraMetadataReadEnabled() ?
+            monitor : new LocalCacheProgressMonitor(monitor);
 
         final Map<DBCEntityMetaData, DBSEntity> entityBindingMap = new IdentityHashMap<>();
 
@@ -713,7 +707,7 @@ public class DBExecUtils {
                             entityMeta = sqlQuery.getEntityMetadata(false);
                         }
                         if (entityMeta != null) {
-                            entity = DBUtils.getEntityFromMetaData(monitor, session.getExecutionContext(), entityMeta);
+                            entity = DBUtils.getEntityFromMetaData(mdMonitor, session.getExecutionContext(), entityMeta);
                             if (entity != null) {
                                 queryEntityMetaScore = entityMeta.getCompleteScore();
                                 entityBindingMap.put(entityMeta, entity);
@@ -759,9 +753,9 @@ public class DBExecUtils {
                                 // MySQL returns source table name instead of view name. That's crazy.
                                 attrEntity = entity;
                             } else {
-                                attrEntity = DBUtils.getEntityFromMetaData(monitor, session.getExecutionContext(), attrEntityMeta);
+                                attrEntity = DBUtils.getEntityFromMetaData(mdMonitor, session.getExecutionContext(), attrEntityMeta);
 
-                                if (attrEntity == null) {
+                                if (attrEntity == null && !mdMonitor.isForceCacheUsage()) {
                                     log.debug("Table '" + DBUtils.getSimpleQualifiedName(attrEntityMeta.getCatalogName(), attrEntityMeta.getSchemaName(), attrEntityMeta.getEntityName()) + "' not found in metadata catalog");
                                 }
                             }
@@ -774,9 +768,7 @@ public class DBExecUtils {
                 if (attrEntity == null) {
                     attrEntity = entity;
                 }
-                if (attrEntity != null && binding instanceof DBDAttributeBindingMeta) {
-                    DBDAttributeBindingMeta bindingMeta = (DBDAttributeBindingMeta) binding;
-
+                if (attrEntity != null && binding instanceof DBDAttributeBindingMeta bindingMeta) {
                     // Table column can be found from results metadata or from SQL query parser
                     // If datasource supports table names in result metadata then table name must present in results metadata.
                     // Otherwise it is an expression.
@@ -825,11 +817,11 @@ public class DBExecUtils {
                         tableColumn = bindingMeta.getPseudoAttribute().createFakeAttribute(attrEntity, attrMeta);
                     } else if (columnName != null) {
                         if (sqlQuery == null) {
-                            tableColumn = attrEntity.getAttribute(monitor, columnName);
+                            tableColumn = attrEntity.getAttribute(mdMonitor, columnName);
                         } else {
                             boolean isAllColumns = sqlQuery.getSelectItemAsteriskIndex() != -1;
                             if (isAllColumns || (selectItem != null && (selectItem.isPlainColumn() || selectItem.getName().equals("*")))) {
-                                tableColumn = attrEntity.getAttribute(monitor, columnName);
+                                tableColumn = attrEntity.getAttribute(mdMonitor, columnName);
                             }
                         }
                     }
@@ -869,10 +861,9 @@ public class DBExecUtils {
                 // Init row identifiers
                 monitor.subTask("Detect unique identifiers");
                 for (DBDAttributeBinding binding : bindings) {
-                    if (!(binding instanceof DBDAttributeBindingMeta)) {
+                    if (!(binding instanceof DBDAttributeBindingMeta bindingMeta)) {
                         continue;
                     }
-                    DBDAttributeBindingMeta bindingMeta = (DBDAttributeBindingMeta) binding;
                     //monitor.subTask("Find attribute '" + binding.getName() + "' identifier");
                     DBSEntityAttribute attr = binding.getEntityAttribute();
                     if (attr == null) {
@@ -883,7 +874,7 @@ public class DBExecUtils {
                     if (attrEntity != null) {
                         DBDRowIdentifier rowIdentifier = locatorMap.get(attrEntity);
                         if (rowIdentifier == null) {
-                            DBSEntityConstraint entityIdentifier = getBestIdentifier(monitor, attrEntity, bindings, readMetaData);
+                            DBSEntityConstraint entityIdentifier = getBestIdentifier(mdMonitor, attrEntity, bindings);
                             if (entityIdentifier != null) {
                                 rowIdentifier = new DBDRowIdentifier(
                                     attrEntity,
@@ -899,7 +890,7 @@ public class DBExecUtils {
                 monitor.worked(1);
             }
 
-            if (readMetaData && readReferences && rows != null) {
+            if (rows != null && !mdMonitor.isForceCacheUsage()) {
                 monitor.subTask("Read results metadata");
                 // Read nested bindings
                 for (DBDAttributeBinding binding : bindings) {
@@ -915,10 +906,12 @@ public class DBExecUtils {
             }
 */
 
-            monitor.subTask("Complete metadata load");
-            // Reload attributes in row identifiers
-            for (DBDRowIdentifier rowIdentifier : locatorMap.values()) {
-                rowIdentifier.reloadAttributes(monitor, bindings);
+            if (!mdMonitor.isForceCacheUsage()) {
+                monitor.subTask("Complete metadata load");
+                // Reload attributes in row identifiers
+                for (DBDRowIdentifier rowIdentifier : locatorMap.values()) {
+                    rowIdentifier.reloadAttributes(mdMonitor, bindings);
+                }
             }
         }
         finally {

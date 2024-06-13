@@ -24,6 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.lsm.LSMAnalyzerParameters;
 import org.jkiss.dbeaver.model.lsm.sql.dialect.SQLStandardAnalyzer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -1062,7 +1063,7 @@ public class SQLScriptParser {
         private boolean elementStartsProperly(@NotNull SQLScriptElement element) {
             SQLStandardLexer lexer = SQLStandardAnalyzer.createLexer(
                 STMSource.fromString(element.getOriginalText()),
-                this.context.getDialect()
+                LSMAnalyzerParameters.forDialect(this.context.getDialect(), this.context.getSyntaxManager())
             );
             Token token = lexer.nextToken();
             while (token != null && token.getType() != -1 && token.getChannel() != Token.DEFAULT_CHANNEL) {

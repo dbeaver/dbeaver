@@ -413,7 +413,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
     }
 
     @Association
-    public Collection<OracleSchema> getSchemas(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OracleSchema> getSchemas(@NotNull DBRProgressMonitor monitor) throws DBException {
         return schemaCache.getAllObjects(monitor, this);
     }
 
@@ -578,7 +578,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 
     @NotNull
     @Override
-    public Class<? extends OracleSchema> getPrimaryChildType(@Nullable DBRProgressMonitor monitor)
+    public Class<? extends OracleSchema> getPrimaryChildType(@NotNull DBRProgressMonitor monitor)
         throws DBException {
         return OracleSchema.class;
     }

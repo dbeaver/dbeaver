@@ -75,19 +75,25 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
         } catch (InterruptedException e) {
             return new DBTTaskRunStatus();
         }
-        executeWithSettings(runnableContext, task, locale, log, listener, settings[0]);
+        executeWithSettings(runnableContext, task, locale, log, logStream, listener, settings[0]);
 
         return DBTTaskRunStatus.makeStatisticsStatus(totalStatistics);
     }
 
-    public void executeWithSettings(@NotNull DBRRunnableContext runnableContext, @Nullable DBTTask task, @NotNull Locale locale,
-                                    @NotNull Log log, @NotNull DBTTaskExecutionListener listener,
-                                    DataTransferSettings settings) throws DBException {
+    public void executeWithSettings(
+        @NotNull DBRRunnableContext runnableContext,
+        @Nullable DBTTask task,
+        @NotNull Locale locale,
+        @NotNull Log log,
+        @Nullable PrintStream logStream,
+        @NotNull DBTTaskExecutionListener listener,
+        DataTransferSettings settings
+    ) throws DBException {
         listener.taskStarted(task);
         int indexOfLastPipeWithDisabledReferentialIntegrity = -1;
         try {
             indexOfLastPipeWithDisabledReferentialIntegrity = initializePipes(runnableContext, settings, task);
-            Throwable error = runDataTransferJobs(runnableContext, task, locale, log, listener, settings);
+            Throwable error = runDataTransferJobs(runnableContext, task, locale, log, logStream, listener, settings);
             listener.taskFinished(task, null, error, settings);
         } catch (InvocationTargetException e) {
             DBWorkbench.getPlatformUI().showError(
@@ -154,6 +160,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
         DBTTask task,
         @NotNull Locale locale,
         @NotNull Log log,
+        @Nullable PrintStream logStream,
         @NotNull DBTTaskExecutionListener listener,
         @NotNull DataTransferSettings settings
     ) {
@@ -174,7 +181,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
 
                 final DataTransferJob[] jobs = new DataTransferJob[totalJobs];
                 for (int i = 0; i < totalJobs; i++) {
-                    DataTransferJob job = new DataTransferJob(settings, task, log, totalJobs == 1 ? monitor : null, i);
+                    DataTransferJob job = new DataTransferJob(settings, task, log, logStream, totalJobs == 1 ? monitor : null, i);
                     job.setJobGroup(group);
                     job.schedule();
                     jobs[i] = job;

@@ -152,7 +152,7 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2TableBase> {
     // -----------------
 
     @Override
-    public List<DB2IndexColumn> getAttributeReferences(DBRProgressMonitor monitor)
+    public List<DB2IndexColumn> getAttributeReferences(@NotNull DBRProgressMonitor monitor)
     {
         try {
             return getContainer().getIndexCache().getChildren(monitor, getContainer(), this);
