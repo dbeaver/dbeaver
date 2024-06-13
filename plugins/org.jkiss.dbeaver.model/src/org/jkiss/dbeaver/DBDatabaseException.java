@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -57,6 +58,7 @@ public class DBDatabaseException extends DBException {
         this.hasMessage = message != null;
     }
 
+    @Nullable
     public DBPDataSource getDataSource() {
         if (dataSource != null) {
             return dataSource;
