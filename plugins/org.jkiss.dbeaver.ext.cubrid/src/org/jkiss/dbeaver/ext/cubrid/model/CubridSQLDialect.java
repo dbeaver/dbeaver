@@ -25,11 +25,45 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 
 import java.sql.SQLException;
+import java.util.Arrays;
 
 public class CubridSQLDialect extends GenericSQLDialect
 {
     public static final String CUBRID_DIALECT_ID = "cubrid";
     private static final Log log = Log.getLog(CubridSQLDialect.class);
+    
+    private static final String[] CUBRID_KEY_WORD = {
+            "BIT", "CONNECT_BY_ISCYCLE", "CONNECT_BY_ISLEAF", "CONNECT_BY_ROOT", "CURRENT_DATE", "CURRENT_DATETIME", "CURRENT_TIME", "CURRENT_TIMESTAMP", "CURRENT_USER", "DATA_TYPE",
+            "DATABASE", "DATETIME", "DAY_HOUR", "DAY_MILLISECOND", "DAY_MINUTE", "DAY_SECOND", "DISTINCTROW", "DIV", "DO", "DUPLICATE",
+            "HOUR_MILLISECOND", "HOUR_MINUTE", "HOUR_SECOND", "LOCAL_TRANSACTION_ID", "MILLISECOND", "MINUTE_MILLISECOND", "MINUTE_SECOND", "MODULE", "NAMES", "NCHAR",
+            "ROWNUM", "SECOND_MILLISECOND", "SIBLINGS", "SQLCODE", "SQLERROR", "STATISTICS", "SYS_CONNECT_BY_PATH", "SYSDATE",
+            "SYSDATETIME", "SYSTIME", "TRUNCATE", "VALUE", "XOR", "YEAR_MONTH"
+    };
+    
+    private static final String[] REMOVE_KEY_WORD = {
+            "ABS", "ALIAS", "ALWAYS", "ARRAY", "ASENSITIVE", "ASSIGNMENT", "ASYMMETRIC", "ASYNC", "ATOMIC", "ATTRIBUTES",
+            "AUTHORIZATION", "BEGIN", "BINARY", "CALLED", "CARDINALITY", "CEIL", "CEILING", "CHAIN", "CHARACTERISTICS", "CHARACTERS",
+            "CHARACTER_LENGTH", "CHAR_LENGTH", "CLUSTER", "COLLECT", "COMMITTED", "COMPLETION", "CONDITION", "CONSTRUCTOR", "CONTAINS", "CORR",
+            "COVAR_POP", "COVAR_SAMP", "CUBE", "CUME_DIST", "CURSOR_NAME", "DATA_TYPE___", "DEFAULTS", "DEFINED", "DEFINER", "DEGREE",
+            "DENSE_RANK", "DEREF", "DERIVED", "DETERMINISTIC", "DICTIONARY", "DISPATCH", "DYNAMIC", "ELEMENT", "END-EXEC", "EVERY",
+            "EXCLUDE", "EXCLUDING", "EXP", "FILTER", "FINAL", "FLOOR", "FOLLOWING", "FREE", "FUSION", "GENERATED",
+            "GRANTED", "GROUPING", "HIERARCHY", "HOLD", "IMPLEMENTATION", "INCLUDING", "INCREMENT", "INSENSITIVE", "INSTANCE", "INSTANTIABLE",
+            "INVOKER", "KEY_TYPE", "LARGE", "LAST_DAY", "LATERAL", "LDB", "LENGTH", "LN", "LOCATOR", "LPAD",
+            "LTRIM", "MAP", "MATCHED", "MAXVALUE", "MEMBER", "MERGE", "MINVALUE", "MODIFIES", "MONETARY", "MONTHS_BETWEEN",
+            "MONTH_BETWEEN", "MORE", "MUMPS", "NESTING", "NEW", "NOCYCLE", "NOMAXVALUE", "NOMINVALUE", "NORMALIZE", "NORMALIZED",
+            "NULLS", "NUMBER", "OCTETS", "OID", "OLD", "OPERATION", "OPERATORS", "OPTIONS", "ORDERING", "ORDINALITY",
+            "OTHERS", "OVER", "OVERLAY", "OVERRIDING", "PAD", "PARAMETER", "PARTITION", "PATH", "PENDANT", "PERCENTILE_CONT",
+            "PERCENTILE_DISC", "PERCENT_RANK", "PLACING", "POWER", "PRECEDING", "PREORDER", "PRIVATE", "PROTECTED", "PROXY", "QUALIFY",
+            "RANGE", "RANK", "READS", "REGISTER", "REGR_AVGX", "REGR_AVGY", "REGR_COUNT", "REGR_INTERCEPT", "REGR_R2", "REGR_SLOPE",
+            "REGR_SXX", "REGR_SXY", "REGR_SYY", "RELEASE", "REPEATABLE", "RESTART", "RESULT", "ROW_NUMBER", "RPAD", "RTRIM",
+            "SCALE", "SCOPE___", "SECURITY", "SELF", "SERIAL", "SETNEQ", "SETS", "SHORT",
+            "SOURCE", "SPACE", "SPECIFIC", "SPECIFICTYPE", "SQRT", "START", "STATEMENT", "STATIC", "STDDEV", "STRUCTURE",
+            "STYLE", "SUBMULTISET", "SYMMETRIC", "SYSTEM", "SYS_TIMESTMAP", "SYS_USER", "TABLESAMPLE", "TATISTICS",
+            "TEST", "THERE", "TIES", "TO_CHAR", "TO_DATE", "TO_DATETIME", "TO_NUMBER", "TO_TIME", "TO_TIMESTAMP", "TRANSFORM",
+            "TRANSFORMS", "TREAT", "TYPE", "UESCAPE", "UNBOUNDED", "UNCOMMITTED", "UNNAMED", "UNNEST", "VARBINARY", "VARIANCE",
+            "VIRTUAL", "VISIBLE", "WAIT", "WIDTH_BUCKET", "WINDOW", "WITHIN"
+    };
+
 
     public CubridSQLDialect() {
         super("Cubrid", "cubrid");
@@ -43,6 +77,11 @@ public class CubridSQLDialect extends GenericSQLDialect
         super.initDriverSettings(session, dataSource, metaData);
         CubridDataSource source = (CubridDataSource) dataSource;
         source.setSupportMultiSchema(isSupportMultiSchema(session));
+        
+        for(String defualt: REMOVE_KEY_WORD) {
+            this.removeSQLKeyword(defualt);
+        }
+        this.addSQLKeywords(Arrays.asList(CUBRID_KEY_WORD));
     }
 
     @NotNull
