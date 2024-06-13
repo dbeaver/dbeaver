@@ -294,6 +294,7 @@ public class DashboardManagerDialog extends BaseDialog {
         DashboardItemConfiguration newDashboard = new DashboardItemConfiguration(
             providerDescriptor, null, "", "", "", "", true);
         newDashboard.setRenderer(providerDescriptor.getDefaultRenderer());
+        newDashboard.setDataType(providerDescriptor.getDataType());
         DashboardItemConfigurationDialog editDialog = new DashboardItemConfigurationDialog(getShell(), newDashboard, true);
         if (editDialog.open() == IDialogConstants.OK_ID) {
             DashboardRegistry.getInstance().createDashboardItem(newDashboard);

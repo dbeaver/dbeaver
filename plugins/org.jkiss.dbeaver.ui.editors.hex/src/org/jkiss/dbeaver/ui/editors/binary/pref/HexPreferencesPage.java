@@ -41,6 +41,7 @@ public class HexPreferencesPage extends AbstractPrefPage implements IWorkbenchPr
 
     public static final String PROP_FONT_DATA = "prop.hex.font.data";
     public static final String PROP_DEF_WIDTH = "default.hex.width";
+    public static final String DEFAULT_WIDTH_VALUE = "8";
 
     private HexPreferencesManager preferences = null;
 
@@ -70,7 +71,7 @@ public class HexPreferencesPage extends AbstractPrefPage implements IWorkbenchPr
     public static String getDefaultWidth() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         String defWidth = store.getString(HexEditorPreferences.HEX_DEF_WIDTH);
-        return CommonUtils.isEmpty(defWidth) ? "8" : defWidth;
+        return CommonUtils.isEmpty(defWidth) ? DEFAULT_WIDTH_VALUE : defWidth;
     }
 
     /**
@@ -103,6 +104,7 @@ public class HexPreferencesPage extends AbstractPrefPage implements IWorkbenchPr
     protected void performDefaults() {
         super.performDefaults();
         preferences.setFontData(null);
+        preferences.resetDefWidthValue(DEFAULT_WIDTH_VALUE);
     }
 
     /**

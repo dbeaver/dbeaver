@@ -204,6 +204,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
         private final CONTAINER_TYPE parentObject;
         private final DBSObject sourceObject;
         private OBJECT_TYPE newObject;
+        private DBNDatabaseNode newNode = null;
 
         public CreateJob(CommandTarget commandTarget, DBEObjectMaker<OBJECT_TYPE, CONTAINER_TYPE> objectMaker, CONTAINER_TYPE parentObject, DBSObject sourceObject, OBJECT_TYPE newObject) {
             super("Create new database object with " + objectMaker.getClass().getSimpleName());
@@ -249,7 +250,8 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                         if (monitor.isCanceled()) {
                             break;
                         }
-                        if (DBWorkbench.getPlatform().getNavigatorModel().findNode(newObject) != null) {
+                        newNode = DBWorkbench.getPlatform().getNavigatorModel().findNode(newObject);
+                        if (newNode != null) {
                             break;
                         }
                         RuntimeUtils.pause(100);
@@ -262,7 +264,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                     @Override
                     public void done(IJobChangeEvent event) {
                         UIUtils.syncExec(() -> {
-                            openNewObject();
+                            openNewObject(newNode);
                         });
                     }
                 });
@@ -275,10 +277,9 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             }
         }
 
-        private void openNewObject() {
+        private void openNewObject(@Nullable DBNDatabaseNode newChild) {
             IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
             try {
-                final DBNDatabaseNode newChild = DBWorkbench.getPlatform().getNavigatorModel().findNode(newObject);
                 if (newChild != null) {
                     DatabaseNavigatorView view = UIUtils.findView(workbenchWindow, DatabaseNavigatorView.class);
                     if (view != null) {

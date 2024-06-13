@@ -215,7 +215,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     }
 
     @Nullable
-    public DBSEntity getRealEntity(DBRProgressMonitor monitor) throws DBException {
+    public DBSEntity getRealEntity(@NotNull DBRProgressMonitor monitor) throws DBException {
         DBSObjectContainer realContainer = container.getRealContainer(monitor);
         if (realContainer == null) {
             return null;
@@ -436,8 +436,10 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     public synchronized List<DBVEntityForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
         // Bind logical foreign keys
         if (entityForeignKeys != null) {
-            for (DBVEntityForeignKey fk : entityForeignKeys) {
-                fk.getRealReferenceConstraint(monitor);
+            if (monitor != null) {
+                for (DBVEntityForeignKey fk : entityForeignKeys) {
+                    fk.getRealReferenceConstraint(monitor);
+                }
             }
         }
         return entityForeignKeys;
