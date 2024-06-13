@@ -59,9 +59,9 @@
                 </driver>
                 <main-properties drivers="*">
                     <propertyGroup label="Connection">
-                        <property id="server" label="Project" type="string" required="true"/>
-                        <property id="host" label="Instance" type="string" required="true"/>
-                        <property id="database" label="Database" type="string" required="true"/>
+                        <property id="server" label="Project" type="string" required="true" supportedConfigurationTypes="CUSTOM"/>
+                        <property id="host" label="Instance" type="string" required="true" supportedConfigurationTypes="CUSTOM"/>
+                        <property id="database" label="Database" type="string" required="true" supportedConfigurationTypes="CUSTOM"/>
                     </propertyGroup>
                 </main-properties>
 
