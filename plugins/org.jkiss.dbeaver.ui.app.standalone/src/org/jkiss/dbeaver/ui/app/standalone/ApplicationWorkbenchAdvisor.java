@@ -386,9 +386,9 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
                 return false;
             }
         }
-        // Close al content editors
-        // They are locks resources which are shared between other editors
-        // So we need to close em first
+        // Close all content editors
+        // They are locking resources which are shared between other editors
+        // So we need to close them first
         IWorkbenchPage workbenchPage = window.getActivePage();
         IEditorReference[] editors = workbenchPage.getEditorReferences();
         List<IEditorPart> editorsToRevert = new ArrayList<>();
@@ -399,7 +399,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             }
         }
         // We also save all saveable parts here. Because we need to do this before transaction finializer hook.
-        // Standard workbench finalizer works in the very end when it is too late
+        // Standard workbench finalizer works at the very end when it is too late
         // (all connections are closed at that moment)
         for (IEditorReference editor : editors) {
             IEditorPart editorPart = editor.getEditor(false);
@@ -411,7 +411,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             }
         }
 
-        // Revert all open editors to  avoid double confirmation
+        // Revert all open editors to avoid double confirmation
         for (IEditorPart editorPart : editorsToRevert) {
             try {
                 EditorUtils.revertEditorChanges(editorPart);
