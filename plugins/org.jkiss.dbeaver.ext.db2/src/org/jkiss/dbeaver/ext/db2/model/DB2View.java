@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.db2.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.editors.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2ViewCheck;
@@ -30,6 +31,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
+import java.util.List;
 
 /**
  * DB2 View
@@ -68,6 +70,16 @@ public class DB2View extends DB2ViewBase implements DB2SourceObject {
     {
         super.refreshObject(monitor);
         return getContainer().getViewCache().refreshObject(monitor, getContainer(), this);
+    }
+
+    @Override
+    public DB2TableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException {
+        return getContainer().getViewCache().getChild(monitor, getContainer(), this, attributeName);
+    }
+
+    @Override
+    public List<DB2TableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return getContainer().getViewCache().getChildren(monitor, getContainer(), this);
     }
 
     @Override

@@ -299,6 +299,11 @@ public class ReferenceValueEditor {
     private DBSEntityReferrer getEnumerableConstraint()
     {
         if (valueController instanceof IAttributeController) {
+            DBSDataContainer dataContainer = valueController.getDataController().getDataContainer();
+            if (dataContainer == null || dataContainer.getDataSource() == null ||
+                !dataContainer.getDataSource().getContainer().isExtraMetadataReadEnabled()) {
+                return null;
+            }
             return ResultSetUtils.getEnumerableConstraint(((IAttributeController) valueController).getBinding());
         }
         return null;

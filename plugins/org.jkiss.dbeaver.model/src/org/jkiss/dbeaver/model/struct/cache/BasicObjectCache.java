@@ -29,8 +29,8 @@ public abstract class BasicObjectCache<OWNER extends DBSObject, OBJECT extends D
 
     @Nullable
     @Override
-    public OBJECT getObject(@NotNull DBRProgressMonitor monitor, @Nullable OWNER owner, @NotNull String name) throws DBException {
-        if (!isFullyCached()) {
+    public OBJECT getObject(@NotNull DBRProgressMonitor monitor, @NotNull OWNER owner, @NotNull String name) throws DBException {
+        if (!isFullyCached() && !monitor.isForceCacheUsage()) {
             getAllObjects(monitor, owner);
         }
         return getCachedObject(name);
