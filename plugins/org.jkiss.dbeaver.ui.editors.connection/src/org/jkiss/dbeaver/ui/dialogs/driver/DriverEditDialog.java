@@ -1005,7 +1005,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
         //log.debug(message);
         Runnable runnable = () -> {
             DBPDataSource dataSource = error instanceof DBDatabaseException dbe ? dbe.getDataSource() : null;
-            String title = NLS.bind(UIConnectionMessages.dialog_edit_driver_dialog_bad_configuration, dataSource.getContainer().getDriver().getName());
+            String title = NLS.bind(UIConnectionMessages.dialog_edit_driver_dialog_bad_configuration,
+                dataSource == null ? "<unknown driver>" : dataSource.getContainer().getDriver().getName());
             new BadDriverConfigDialog(shell, title, message == null ? title : message, error).open();
         };
         UIUtils.syncExec(runnable);
