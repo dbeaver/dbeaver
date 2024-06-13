@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.model.sql.analyzer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
+import org.jkiss.dbeaver.model.lsm.LSMAnalyzerParameters;
 import org.jkiss.dbeaver.model.lsm.sql.dialect.LSMDialectRegistry;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.stm.*;
@@ -49,8 +51,10 @@ public class TableReferencesAnalyzerImpl implements TableReferencesAnalyzer {
     private void prepareTableReferences() {
         try {
             STMSource querySource = STMSource.fromReader(new StringReader(this.request.getActiveQuery().getText()));
-            LSMAnalyzer analyzer = LSMDialectRegistry.getInstance().getAnalyzerForDialect(
-                request.getContext().getDataSource().getSQLDialect());
+
+            SQLDialect dialect = request.getContext().getDataSource().getSQLDialect();
+            LSMAnalyzer analyzer = LSMDialectRegistry.getInstance().getAnalyzerFactoryForDialect(dialect)
+                 .createAnalyzer(LSMAnalyzerParameters.forDialect(dialect, request.getContext().getSyntaxManager()));
             STMTreeRuleNode tree = analyzer.parseSqlQueryTree(querySource, new STMSkippingErrorListener());
             tableReferences = getTableAndAliasFromSources(tree);
         } catch (Exception e) {

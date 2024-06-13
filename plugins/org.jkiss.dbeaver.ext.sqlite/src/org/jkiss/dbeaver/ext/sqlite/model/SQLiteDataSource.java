@@ -110,7 +110,7 @@ public class SQLiteDataSource extends GenericDataSource {
 
     @NotNull
     @Override
-    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
         return SQLiteTable.class;
     }
 

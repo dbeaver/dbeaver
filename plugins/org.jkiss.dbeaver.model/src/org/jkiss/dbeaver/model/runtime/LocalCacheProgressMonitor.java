@@ -14,19 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.bigquery.model;
+package org.jkiss.dbeaver.model.runtime;
 
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
+import org.jkiss.dbeaver.Log;
 
-public class BigQueryExecutionContext extends JDBCExecutionContext {
+/**
+ * Progress monitor which forces cache usage
+ */
+public class LocalCacheProgressMonitor extends ProxyProgressMonitor {
 
-    public BigQueryExecutionContext(JDBCRemoteInstance instance, String purpose) {
-        super(instance, purpose);
+    private static final Log log = Log.getLog(LocalCacheProgressMonitor.class);
+
+    public LocalCacheProgressMonitor(DBRProgressMonitor original) {
+        super(original);
     }
 
     @Override
-    public BigQueryDataSource getDataSource() {
-        return (BigQueryDataSource) super.getDataSource();
+    public boolean isForceCacheUsage() {
+        return true;
     }
 }

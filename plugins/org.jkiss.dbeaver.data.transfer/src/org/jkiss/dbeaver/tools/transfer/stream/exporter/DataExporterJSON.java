@@ -126,15 +126,15 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
                     try {
                         DBDContentStorage cs = content.getContents(session.getProgressMonitor());
                         if (cs != null) {
+                            out.write("\"");
                             if (ContentUtils.isTextContent(content)) {
                                 try (Reader in = cs.getContentReader()) {
-                                    out.write("\"");
                                     writeCellValue(in);
-                                    out.write("\"");
                                 }
                             } else {
                                 getSite().writeBinaryData(cs);
                             }
+                            out.write("\"");
                         }
                     } finally {
                         DTUtils.closeContents(resultSet, content);

@@ -119,7 +119,7 @@ public class SQLServerTable extends SQLServerTableBase
     public List<SQLServerTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        if (references != null) {
+        if (references != null || monitor == null) {
             return references;
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this,  "Read table references")) {

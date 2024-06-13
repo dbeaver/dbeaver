@@ -221,6 +221,22 @@ public final class SQLUtils {
         return like.replace("*", "%").replace("?", "_");
     }
 
+    public static String makeGlobFromSqlLikePattern(@NotNull String sqlLikePattern) {
+
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < sqlLikePattern.length(); i++) {
+            char charAtI = sqlLikePattern.charAt(i);
+            switch (charAtI) {
+                //fixme currently we allow users to use "*" in a wildcards.
+                case '_' -> result.append('?');
+                case '%' -> result.append('*');
+                case '?' -> result.append("\\?");
+                default -> result.append(charAtI);
+            }
+        }
+        return result.toString();
+    }
+
     public static boolean matchesLike(String string, String like)
     {
         Pattern pattern = Pattern.compile(makeLikePattern(like), Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
