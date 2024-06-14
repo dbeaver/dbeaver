@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.registry.DBConnectionConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.ThreadExceptionsContext;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -123,9 +124,11 @@ class DriverDependenciesTree {
 
     public boolean loadLibDependencies() throws DBException {
         boolean resolved = false;
+        Thread callerThread = Thread.currentThread();
         try {
             runnableContext.run(true, true, monitor -> {
                 monitor.beginTask("Resolve dependencies", 100);
+                ThreadExceptionsContext.bindCurrentContextFor(callerThread);
                 try {
                     dependencies.resolveDependencies(monitor);
                 } catch (Exception e) {
@@ -197,7 +200,10 @@ class DriverDependenciesTree {
             checkNetworkAccessible();
         } catch (DBException dbException) {
             DBWorkbench.getPlatformUI().showError("Download error",
-                "Network error", dbException);
+                String.format("Network error: %s", dbException.getMessage()),
+                GeneralUtils.transformExceptionsToStatus(
+                    ThreadExceptionsContext.getSetExceptionsForCurrentThread())
+            );
             return false;
         }
         DBWorkbench.getPlatformUI().showError("Resolve driver files", "Error downloading driver libraries", e);
@@ -219,7 +225,10 @@ class DriverDependenciesTree {
             } else {
                 message = UIConnectionMessages.dialog_driver_download_network_unavailable_msg;
             }
-            throw new DBException(message + "\n" + e.getClass().getName() + ":" + e.getMessage());
+            String exceptionMessage = message + "\n" + e.getClass().getName() + ":" + e.getMessage();
+            DBException dbException = new DBException(exceptionMessage);
+            ThreadExceptionsContext.registerExceptionForCurrentThread(dbException);
+            throw dbException;
         }
     }
 

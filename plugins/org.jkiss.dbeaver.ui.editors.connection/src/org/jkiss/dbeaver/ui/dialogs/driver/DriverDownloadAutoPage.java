@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.registry.DBConnectionConstants;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
+import org.jkiss.dbeaver.runtime.ThreadExceptionsContext;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.ui.UIConfirmation;
 import org.jkiss.dbeaver.ui.UITask;
@@ -140,6 +141,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
                 }
             }
         }
+        ThreadExceptionsContext.realiseResources();
         depsTree.resizeTree();
     }
 
