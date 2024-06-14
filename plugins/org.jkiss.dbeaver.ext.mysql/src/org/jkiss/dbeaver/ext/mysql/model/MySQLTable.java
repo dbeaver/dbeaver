@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
@@ -611,7 +612,7 @@ public class MySQLTable extends MySQLTableBase
             }
             return fkList;
         } catch (SQLException ex) {
-            throw new DBException(ex, getDataSource());
+            throw new DBDatabaseException(ex, getDataSource());
         }
     }
 

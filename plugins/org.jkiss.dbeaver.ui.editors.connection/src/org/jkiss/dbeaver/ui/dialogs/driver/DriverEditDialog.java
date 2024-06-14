@@ -31,6 +31,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -1003,8 +1004,9 @@ public class DriverEditDialog extends HelpEnabledDialog {
     public static void showBadConfigDialog(final Shell shell, final String message, final DBException error) {
         //log.debug(message);
         Runnable runnable = () -> {
-            DBPDataSource dataSource = error.getDataSource();
-            String title = NLS.bind(UIConnectionMessages.dialog_edit_driver_dialog_bad_configuration, dataSource.getContainer().getDriver().getName());
+            DBPDataSource dataSource = error instanceof DBDatabaseException dbe ? dbe.getDataSource() : null;
+            String title = NLS.bind(UIConnectionMessages.dialog_edit_driver_dialog_bad_configuration,
+                dataSource == null ? "<unknown driver>" : dataSource.getContainer().getDriver().getName());
             new BadDriverConfigDialog(shell, title, message == null ? title : message, error).open();
         };
         UIUtils.syncExec(runnable);
@@ -1021,7 +1023,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 message,
                 RuntimeUtils.stripStack(GeneralUtils.makeExceptionStatus(error)),
                 IStatus.ERROR);
-            dataSource = error.getDataSource();
+            dataSource = error instanceof DBDatabaseException dbe ? dbe.getDataSource() : null;
         }
 
         @Override

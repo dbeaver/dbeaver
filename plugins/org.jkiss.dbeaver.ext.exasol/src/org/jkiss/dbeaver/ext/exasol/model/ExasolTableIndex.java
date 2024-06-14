@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.exasol.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -137,7 +136,8 @@ public class ExasolTableIndex extends JDBCTableIndex<ExasolSchema, ExasolTable> 
 		return null;
 	}
 
-	@Override
+	@NotNull
+    @Override
 	public String getFullyQualifiedName(DBPEvaluationContext context) {
 		return type.getName() + " " + this.getColumnString();
 	}
