@@ -212,6 +212,7 @@ public abstract class OracleTrigger<PARENT extends DBSObject> extends OracleObje
             )};
     }
 
+    @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(),

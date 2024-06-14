@@ -125,7 +125,7 @@ public class DamengRole implements DBARole, DBPScriptObject, DBPObjectWithLongId
     }
 
     @Override
-    public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         this.userPrivCache.clearCache();
         this.objectPrivCache.clearCache();
         this.systemPrivCache.clearCache();
