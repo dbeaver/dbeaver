@@ -248,8 +248,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
 
     @Override
     public boolean isReadOnly() {
-        // TODO: 8/26/2022 Add support for editing nested cells
-        return controller.getAttributeReadOnlyStatus(getBinding()) != null || cellLocation.getRowIndexes() != null;
+        return controller.getAttributeReadOnlyStatus(getBinding()) != null;
     }
 
     @Override

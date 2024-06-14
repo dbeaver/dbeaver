@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.connection.InternalDatabaseConfig;
 
+import java.io.IOException;
 import java.sql.Connection;
 
 public interface JDBCDatabaseBackupHandler {
@@ -27,5 +28,5 @@ public interface JDBCDatabaseBackupHandler {
             @NotNull Connection connection,
             int currentSchemaVersion,
             @NotNull InternalDatabaseConfig databaseConfig
-    ) throws DBException;
+    ) throws DBException, IOException;
 }

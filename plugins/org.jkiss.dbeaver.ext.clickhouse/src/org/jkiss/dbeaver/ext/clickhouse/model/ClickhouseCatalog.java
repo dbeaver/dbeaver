@@ -104,7 +104,7 @@ public class ClickhouseCatalog extends GenericCatalog implements DBPObjectStatis
 
     @NotNull
     @Override
-    public Class<? extends DBSEntity> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSEntity> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
         return ClickhouseTable.class;
     }
 

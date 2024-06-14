@@ -239,7 +239,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
     }
 
     // If site is null then we need only item count. BAD CODE.
-    public static List<IContributionItem> fillCreateMenuItems(@Nullable IWorkbenchPartSite site, DBNNode node) {
+    public static List<IContributionItem> fillCreateMenuItems(@Nullable IWorkbenchPartSite site, @Nullable DBNNode node) {
         List<IContributionItem> createActions = new ArrayList<>();
         boolean projectResourceEditable =
             node == null || ObjectPropertyTester.nodeProjectHasPermission(node, RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
@@ -505,14 +505,23 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
 
         @Override
         protected IContributionItem[] getContributionItems() {
-
             IWorkbenchPage activePage = UIUtils.getActiveWorkbenchWindow().getActivePage();
+            if (activePage == null) {
+                return EMPTY_MENU;
+            }
             IWorkbenchPart activePart = activePage.getActivePart();
             if (activePart == null) {
                 return EMPTY_MENU;
             }
             IWorkbenchPartSite site = activePart.getSite();
-            DBNNode node = getNodeFromSelection(site.getSelectionProvider().getSelection());
+            if (site == null) {
+                return EMPTY_MENU;
+            }
+            ISelectionProvider selectionProvider = site.getSelectionProvider();
+            if (selectionProvider == null) {
+                return EMPTY_MENU;
+            }
+            DBNNode node = getNodeFromSelection(selectionProvider.getSelection());
 
             List<IContributionItem> createActions = fillCreateMenuItems(site, node);
             return createActions.toArray(new IContributionItem[0]);

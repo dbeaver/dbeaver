@@ -91,7 +91,7 @@ public class SQLServerView extends SQLServerTableBase implements DBSView {
 
     @Override
     @Association
-    public Collection<SQLServerTableIndex> getIndexes(DBRProgressMonitor monitor)
+    public Collection<SQLServerTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return null;

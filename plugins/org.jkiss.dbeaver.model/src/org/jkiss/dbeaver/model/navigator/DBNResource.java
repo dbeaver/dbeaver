@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
@@ -214,8 +215,8 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
     }
 
     @Override
-    public DBNNode[] getChildren(DBRProgressMonitor monitor) throws DBException {
-        if (children == null) {
+    public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (children == null && !monitor.isForceCacheUsage()) {
             this.children = readChildNodes(monitor);
         }
         return children;
