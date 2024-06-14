@@ -43,7 +43,6 @@ public class UIStatisticsActivator extends AbstractUIPlugin {
     }
 
     public static boolean isTrackingEnabled() {
-        // TODO: Need to somehow enforce this to be true if we're in the EAP
         return getDefault().getPreferences().getBoolean(PREF_FEATURE_TRACKING_ENABLED);
     }
 
