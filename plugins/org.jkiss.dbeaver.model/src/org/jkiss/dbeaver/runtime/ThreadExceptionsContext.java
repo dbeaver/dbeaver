@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ThreadExceptionsContext {
 
@@ -45,10 +46,15 @@ public class ThreadExceptionsContext {
         Thread threadForRegistry = getThreadForRegistry();
         List<Exception> exceptionList = THREAD_TO_EXCEPTIONS.get(threadForRegistry);
         if (exceptionList == null) {
-            exceptionList = new ArrayList<>();
-            exceptionList.add(exception);
-            THREAD_TO_EXCEPTIONS.put(threadForRegistry, exceptionList);
-            return;
+            synchronized (threadForRegistry) {
+                exceptionList = THREAD_TO_EXCEPTIONS.get(threadForRegistry);
+                if (exceptionList == null) {
+                    exceptionList = new CopyOnWriteArrayList<>();
+                    exceptionList.add(exception);
+                    THREAD_TO_EXCEPTIONS.put(threadForRegistry, exceptionList);
+                    return;
+                }
+            }
         }
         exceptionList.add(exception);
     }
