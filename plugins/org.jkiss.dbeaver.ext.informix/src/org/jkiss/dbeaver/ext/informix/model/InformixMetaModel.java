@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.informix.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.*;
@@ -129,7 +130,7 @@ public class InformixMetaModel extends GenericMetaModel
                 return result;
             }
         } catch (SQLException e) {
-            throw new DBException(e, container.getDataSource());
+            throw new DBDatabaseException(e, container.getDataSource());
         }
     }
 

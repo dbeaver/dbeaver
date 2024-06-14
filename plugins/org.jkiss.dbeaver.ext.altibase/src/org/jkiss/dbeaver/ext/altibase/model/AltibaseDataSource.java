@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.altibase.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
@@ -127,7 +128,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
                     dbName = JDBCUtils.safeGetStringTrimmed(resultSet, 1);
                 }
             } catch (SQLException e) {
-                throw new DBException(e, this);
+                throw new DBDatabaseException(e, this);
             }
         }
         
@@ -549,7 +550,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
                 }
             }
         } catch (DBException e) {
-            throw new DBException("Can't read tablespace statistics", e, getDataSource());
+            throw new DBDatabaseException("Can't read tablespace statistics", e, getDataSource());
         } finally {
             hasStatistics = true;
         }

@@ -168,6 +168,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             name.equalsIgnoreCase(SQLServerConstants.INFORMATION_SCHEMA_SCHEMA);
     }
 
+    @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
         if (!SQLServerUtils.supportsCrossDatabaseQueries(getDataSource())) {

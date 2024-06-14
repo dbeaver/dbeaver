@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
@@ -227,7 +228,7 @@ public class MySQLUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSav
                 }
             }
         } catch (SQLException e) {
-            throw new DBException(e, getDataSource());
+            throw new DBDatabaseException(e, getDataSource());
         }
     }
 
@@ -308,6 +309,7 @@ public class MySQLUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSav
         return this;
     }
 
+    @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
         return DBUtils.getQuotedIdentifier(dataSource, userName, false, true) + "@"

@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -149,7 +150,7 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
         //log.debug(message);
         Runnable runnable = () -> {
             // Display the dialog
-            DBPDataSource dataSource = error.getDataSource();
+            DBPDataSource dataSource = error instanceof DBDatabaseException dbe ? dbe.getDataSource() : null;
             if (dataSource == null) {
                 throw new IllegalStateException("No data source in error");
             }
@@ -172,7 +173,7 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
                 message,
                 GeneralUtils.makeExceptionStatus(error),
                 IStatus.ERROR);
-            dataSource = error.getDataSource();
+            dataSource = error instanceof DBDatabaseException dbe ? dbe.getDataSource() : null;
         }
 
         @Override

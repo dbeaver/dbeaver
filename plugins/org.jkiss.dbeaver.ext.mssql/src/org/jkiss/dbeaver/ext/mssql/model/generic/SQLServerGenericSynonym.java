@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model.generic;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
@@ -43,6 +44,7 @@ public class SQLServerGenericSynonym extends GenericSynonym implements DBPQualif
         this.targetObjectName = targetObjectName;
     }
 
+    @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(

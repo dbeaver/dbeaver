@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.mssql.model.generic;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
@@ -126,7 +127,7 @@ public class SQLServerGenericTable extends GenericTable implements DBPObjectWith
                 }
 
             } catch (SQLException e) {
-                throw new DBException(e, getDataSource());
+                throw new DBDatabaseException(e, getDataSource());
             }
         }
 
