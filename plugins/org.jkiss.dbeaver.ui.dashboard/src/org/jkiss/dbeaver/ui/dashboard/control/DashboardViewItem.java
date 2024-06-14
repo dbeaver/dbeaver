@@ -17,10 +17,7 @@
 package org.jkiss.dbeaver.ui.dashboard.control;
 
 import org.apache.commons.jexl3.JexlExpression;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
@@ -65,7 +62,7 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
     private DashboardItemRenderer renderer;
     private Composite dashboardControl;
     private final Label titleLabel;
-    private final ToolBar titleToolbar;
+    private final ToolBarManager titleToolbarManager;
     private final Composite chartComposite;
     private boolean autoUpdateEnabled;
 
@@ -117,8 +114,9 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
             titleLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             titleLabel.setBackground(defBG);
 
-            titleToolbar = new ToolBar(titleComposite, SWT.FLAT | SWT.HORIZONTAL);
-            titleToolbar.setBackground(defBG);
+            titleToolbarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
+            ToolBar toolBar = titleToolbarManager.createControl(titleComposite);
+            toolBar.setBackground(defBG);
 
             this.createContextMenu(titleLabel);
         }
@@ -169,12 +167,11 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
     }
 
     private void createDashboardRenderer() {
-
         try {
             curViewType = viewItemConfig.getViewType();
             renderer = curViewType.createRenderer();
             dashboardControl = renderer.createDashboard(chartComposite, this, groupContainer.getView(), computeSize(-1, -1));
-            renderer.fillDashboardToolbar(this, titleToolbar, dashboardControl, viewItemConfig);
+            updateToolBarActions();
         } catch (DBException e) {
             // Something went wrong
             Text errorLabel = new Text(this, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
@@ -183,6 +180,12 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
         }
 
         initChartRenderer();
+    }
+
+    private void updateToolBarActions() {
+        titleToolbarManager.removeAll();
+        renderer.fillDashboardToolbar(this, titleToolbarManager, dashboardControl, viewItemConfig);
+        titleToolbarManager.update(false);
     }
 
     private void initChartRenderer() {
@@ -441,7 +444,7 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
                 renderer.updateDashboardView(this);
             }
             if (forceLayout) {
-                chartComposite.layout(true, true);
+                layout(true, true);
             }
         });
     }
@@ -480,9 +483,9 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
             manager.add(ActionUtils.makeCommandContribution(UIUtils.getActiveWorkbenchWindow(), DashboardUIConstants.CMD_VIEW_DASHBOARD));
             manager.add(new Separator());
         }
-        if (!UIUtils.isInDialog(dashboardControl)) {
+        List<DashboardRendererType> viewTypes = DashboardUIRegistry.getInstance().getSupportedViewTypes(getItemDescriptor().getDataType());
+        if (!UIUtils.isInDialog(dashboardControl) && viewTypes.size() > 1) {
             MenuManager viewMenu = new MenuManager(UIDashboardMessages.dashboard_chart_composite_menu_manager_text);
-            List<DashboardRendererType> viewTypes = DashboardUIRegistry.getInstance().getSupportedViewTypes(getItemDescriptor().getDataType());
             for (DashboardRendererType viewType : viewTypes) {
                 Action changeViewAction = new Action(viewType.getTitle(), Action.AS_RADIO_BUTTON) {
                     @Override

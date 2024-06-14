@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.mssql.model.generic;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.*;
@@ -26,7 +27,10 @@ import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerView;
 import org.jkiss.dbeaver.ext.mssql.model.ServerType;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPErrorAssistant;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
@@ -43,9 +47,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -95,7 +97,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         return new SQLServerGenericSchema(dataSource, catalog, schemaName, 0);
     }
 
-    public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
+    public String getViewDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericView sourceObject, @NotNull Map<String, Object> options) throws DBException {
         return extractSource(monitor, sourceObject.getDataSource(), sourceObject, sourceObject.getCatalog(), sourceObject.getSchema().getName(), sourceObject.getName());
     }
 
@@ -135,7 +137,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                     }
                 }
             } catch (SQLException e) {
-                throw new DBException(e, dataSource);
+                throw new DBDatabaseException(e, dataSource);
             }
         } else {
             super.loadProcedures(monitor, container);
@@ -165,7 +167,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                     }
                 }
             } catch (SQLException e) {
-                throw new DBException(e, dataSource);
+                throw new DBDatabaseException(e, dataSource);
             }
         }
         if (getServerType() == ServerType.SYBASE) {
@@ -199,7 +201,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                     sourceObject.getSchema().getName(),
                     objectName);
             } catch (SQLException e) {
-                throw new DBException(e, dataSource);
+                throw new DBDatabaseException(e, dataSource);
             }
         }
         return extractSource(monitor, dataSource, sourceObject, sourceObject.getCatalog(), sourceObject.getSchema().getName(), objectName);
@@ -270,7 +272,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                 return result;
             }
         } catch (SQLException e) {
-            throw new DBException(e, container.getDataSource());
+            throw new DBDatabaseException(e, container.getDataSource());
         }
     }
 
@@ -339,7 +341,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                 }
             }
         } catch (SQLException e) {
-            throw new DBException(e, dataSource);
+            throw new DBDatabaseException(e, dataSource);
         }
     }
 
@@ -437,7 +439,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
             }
         } catch (SQLException e) {
             if (dataSource.discoverErrorType(e) == DBPErrorAssistant.ErrorType.CONNECTION_LOST) {
-                throw new DBException(e, dataSource);
+                throw new DBDatabaseException(e, dataSource);
             } else {
                 log.warn("Schema read failed: empty list returned. Try generic method.", e);
                 schemaReadFailed = true;
@@ -502,7 +504,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     @Override
-    public GenericSynonym createSynonymImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer container, @NotNull JDBCResultSet dbResult) throws DBException {
+    public GenericSynonym createSynonymImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer container, @NotNull JDBCResultSet dbResult) {
         String name = JDBCUtils.safeGetString(dbResult, "name");
         if (CommonUtils.isEmpty(name)) {
             return null;

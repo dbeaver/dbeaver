@@ -127,6 +127,9 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_ref_menu_no_associations;
     public static String controls_resultset_ref_menu_associations;
 
+    public static String controls_resultset_results_read_only;
+    public static String controls_resultset_results_edit_key;
+
     public static String controls_rs_pump_job_context_name;
     public static String controls_rs_pump_job_name;
 

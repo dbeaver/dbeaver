@@ -37,5 +37,5 @@ public class BigQueryConstants {
 
     public static final String DATA_TYPE_STRUCT = "STRUCT";
     public static final String DATA_TYPE_ARRAY = "ARRAY";
-
+    public static final String DATA_TYPE_GEOGRAPHY = "GEOGRAPHY";
 }

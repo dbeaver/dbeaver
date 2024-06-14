@@ -446,7 +446,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
 
     @NotNull
     @Override
-    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
         return SQLServerDatabase.class;
     }
 
