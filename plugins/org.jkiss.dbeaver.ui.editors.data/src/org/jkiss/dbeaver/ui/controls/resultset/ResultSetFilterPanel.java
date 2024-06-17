@@ -653,7 +653,14 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         searchJob.schedule();
         UIUtils.waitJobCompletion(searchJob);
 
-        String[] filterKeywords = { SQLConstants.KEYWORD_AND, SQLConstants.KEYWORD_OR, SQLConstants.KEYWORD_IS, SQLConstants.KEYWORD_NOT, SQLConstants.KEYWORD_NULL };
+        String[] filterKeywords = {
+            SQLConstants.KEYWORD_AND,
+            SQLConstants.KEYWORD_OR,
+            SQLConstants.KEYWORD_IS,
+            SQLConstants.KEYWORD_NOT,
+            SQLConstants.KEYWORD_NULL,
+            SQLConstants.KEYWORD_BETWEEN,
+            SQLConstants.KEYWORD_LIKE};
 
         for (String kw : filterKeywords) {
             if (attrName.isEmpty() || kw.startsWith(attrName.toUpperCase())) {

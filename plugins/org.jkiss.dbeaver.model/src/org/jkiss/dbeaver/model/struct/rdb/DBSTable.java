@@ -42,7 +42,7 @@ public interface DBSTable extends DBSEntity, DBPQualifiedObject {
      * @return list of indices
      * @throws DBException on any DB error
      */
-    Collection<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends DBSTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Keys are: primary keys and unique keys.
@@ -57,23 +57,12 @@ public interface DBSTable extends DBSEntity, DBPQualifiedObject {
     Collection<? extends DBSTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**
-     * Gets this table foreign keys
-     * @return foreign keys list
-     * @throws DBException on any DB error
-     * @param monitor progress monitor
-     */
-//    @Override
-//    Collection<? extends DBSTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException;
-
-    /**
      * Gets foreign keys which refers this table
      *
      * @param monitor progress monitor
      * @return foreign keys list
      * @throws DBException on any DB error
      */
-//    @Override
-//    Collection<? extends DBSTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException;
     @Nullable
     List<? extends DBSTrigger> getTriggers(@NotNull DBRProgressMonitor monitor) throws DBException;
 

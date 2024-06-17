@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.generic.model.meta;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
@@ -290,7 +291,7 @@ public class GenericMetaModel {
                 return null;
             } else {
                 log.error("Can't read schema list", ex);
-                throw new DBException(ex, dataSource);
+                throw new DBDatabaseException(ex, dataSource);
             }
         }
     }
@@ -468,7 +469,7 @@ public class GenericMetaModel {
             }
 
         } catch (SQLException e) {
-            throw new DBException(e, dataSource);
+            throw new DBDatabaseException(e, dataSource);
         }
     }
 

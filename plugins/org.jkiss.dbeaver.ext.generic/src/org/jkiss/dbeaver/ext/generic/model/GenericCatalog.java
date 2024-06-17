@@ -75,10 +75,10 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
     }
 
     @Association
-    public Collection<GenericSchema> getSchemas(DBRProgressMonitor monitor)
+    public Collection<GenericSchema> getSchemas(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        if (schemas == null && !isInitialized) {
+        if (schemas == null && !isInitialized && !monitor.isForceCacheUsage()) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load catalog schemas")) {
                 this.schemas = this.getDataSource().getMetaModel().loadSchemas(session, getDataSource(), this);
                 this.isInitialized = true;
@@ -150,7 +150,7 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
 
     @NotNull
     @Override
-    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor)
+    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         if (!CommonUtils.isEmpty(schemas) || (monitor != null && !CommonUtils.isEmpty(getSchemas(monitor)))) {

@@ -273,7 +273,12 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
             if (zoneName.isEmpty()) {
                 return ZoneId.systemDefault();
             }
-            zoneId = ZoneId.of(zoneName);
+            try {
+                zoneId = ZoneId.of(zoneName);
+            } catch (Exception e) {
+                log.debug(e);
+                zoneId = ZoneId.systemDefault();
+            }
             return zoneId;
         }
 

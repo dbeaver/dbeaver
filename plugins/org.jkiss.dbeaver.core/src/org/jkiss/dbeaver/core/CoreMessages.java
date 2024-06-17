@@ -296,6 +296,9 @@ public class CoreMessages extends NLS {
 
     public static String pref_page_database_general_separate_meta_connection;
     public static String pref_page_database_general_checkbox_case_sensitive_names;
+    public static String pref_page_database_general_group_performance;
+    public static String pref_page_database_general_checkbox_disable_extra_metadata;
+    public static String pref_page_database_general_checkbox_disable_extra_metadata_tip;
     public static String pref_page_database_general_checkbox_rollback_on_error;
     public static String pref_page_database_general_checkbox_show_row_count;
     public static String pref_page_database_general_group_metadata;

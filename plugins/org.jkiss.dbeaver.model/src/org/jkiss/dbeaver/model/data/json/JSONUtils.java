@@ -104,7 +104,13 @@ public class JSONUtils {
                 case '\f' -> result.append("\\f");
                 case '\b' -> result.append("\\b");
                 case '"', '\\', '/' -> result.append("\\").append(c);
-                default -> result.append(c);
+                default -> {
+                    if ((int) c < 32) {
+                        result.append(String.format("\\u%04x", (int) c));
+                    } else {
+                        result.append(c);
+                    }
+                }
             }
         }
         return result.toString();

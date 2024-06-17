@@ -66,7 +66,7 @@ public abstract class BaseFormatterConfigurationPage extends DialogPage implemen
     }
 
     @Override
-    public void loadSettings(DBPPreferenceStore preferenceStore) {
+    public void loadSettings(DBPPreferenceStore preferenceStore, boolean useDefaults) {
 
     }
 
