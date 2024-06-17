@@ -171,9 +171,9 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
                 {
                     for (IConfigurationElement propsElement : driversElement.getChildren(RegistryConstants.TAG_MAIN_PROPERTIES)) {
                         String driversSpec = propsElement.getAttribute("drivers");
-                        List<DBPPropertyDescriptor> mainProperties = new ArrayList<>();
+                        List<ProviderPropertyDescriptor> mainProperties = new ArrayList<>();
                         for (IConfigurationElement prop : propsElement.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP)) {
-                            mainProperties.addAll(ProviderPropertyDescriptor.extractProperties(prop));
+                            mainProperties.addAll(ProviderPropertyDescriptor.extractProviderProperties(prop));
                         }
                         List<DriverDescriptor> appDrivers;
                         if (CommonUtils.isEmpty(driversSpec) || driversSpec.equals("*")) {

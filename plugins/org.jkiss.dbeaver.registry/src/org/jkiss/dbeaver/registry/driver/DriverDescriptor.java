@@ -202,7 +202,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private final List<DriverFileSource> fileSources = new ArrayList<>();
     private final List<DBPDriverLibrary> libraries = new ArrayList<>();
     private final List<DBPDriverLibrary> origFiles = new ArrayList<>();
-    private final List<DBPPropertyDescriptor> mainPropertyDescriptors = new ArrayList<>();
+    private final List<ProviderPropertyDescriptor> mainPropertyDescriptors = new ArrayList<>();
     private final List<ProviderPropertyDescriptor> providerPropertyDescriptors = new ArrayList<>();
     private final List<OSDescriptor> supportedSystems = new ArrayList<>();
 
@@ -444,8 +444,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 }
                 this.mainPropertyDescriptors.addAll(
                     Arrays.stream(pp[0].getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP))
-                        .map(ProviderPropertyDescriptor::extractProperties)
-                        .flatMap(List<DBPPropertyDescriptor>::stream)
+                        .map(ProviderPropertyDescriptor::extractProviderProperties)
+                        .flatMap(List<ProviderPropertyDescriptor>::stream)
                         .toList());
             }
         }
@@ -1137,7 +1137,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return mainPropertyDescriptors.toArray(new DBPPropertyDescriptor[0]);
     }
 
-    public void addMainPropertyDescriptors(Collection<DBPPropertyDescriptor> props) {
+    public void addMainPropertyDescriptors(Collection<ProviderPropertyDescriptor> props) {
         mainPropertyDescriptors.addAll(props);
     }
 
