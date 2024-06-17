@@ -333,6 +333,20 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
         }
     }
 
+    @NotNull
+    @Override
+    protected String getInstructions(boolean chatCompletion) {
+        if (GPTModel.GPT_TURBO_4.equals(getModel())) {
+            return """
+                    Perform SQL completion.
+                    Query MUST start with "SELECT" and MUST be ENCLOSED with Markdown code block and terminated with semicolon.
+                    All database object names should be properly escaped according to the SQL dialect.
+                    You MAY add comments but placed OUTSIDE Markdown code block.
+                """;
+        }
+        return super.getInstructions(chatCompletion);
+    }
+
     protected GPTCompletionAdapter getServiceInstance(@NotNull DBCExecutionContext executionContext) throws DBException {
         DBPDataSourceContainer container = executionContext.getDataSource().getContainer();
         GPTCompletionAdapter service = clientInstances.get(container.getId());
