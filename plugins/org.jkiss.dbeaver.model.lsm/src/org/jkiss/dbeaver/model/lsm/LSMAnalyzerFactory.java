@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.lsm;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 
 /**
@@ -25,5 +26,6 @@ public interface LSMAnalyzerFactory {
     /**
      * Creates analyzer instance, parametrized with a given dialect
      */
-    LSMAnalyzer createAnalyzer(SQLDialect dialect);
+    @NotNull
+    LSMAnalyzer createAnalyzer(@NotNull LSMAnalyzerParameters parameters);
 }

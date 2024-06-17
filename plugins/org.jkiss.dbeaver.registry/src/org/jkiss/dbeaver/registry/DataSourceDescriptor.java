@@ -568,6 +568,11 @@ public class DataSourceDescriptor
         }
     }
 
+    @Override
+    public boolean isExtraMetadataReadEnabled() {
+        return !preferenceStore.getBoolean(ModelPreferences.META_DISABLE_EXTRA_READ);
+    }
+
     public Collection<FilterMapping> getObjectFilters() {
         return filterMap.values();
     }
@@ -1259,6 +1264,7 @@ public class DataSourceDescriptor
 
             return true;
         } catch (Throwable e) {
+            terminateChildProcesses();
             lastConnectionError = e.getMessage();
             //log.debug("Connection failed (" + getId() + ")", e);
             if (dataSource != null) {
@@ -1293,6 +1299,18 @@ public class DataSourceDescriptor
             }
         } finally {
             monitor.done();
+        }
+    }
+
+    private void terminateChildProcesses() {
+        synchronized (childProcesses) {
+            for (Iterator<DBRProcessDescriptor> iter = childProcesses.iterator(); iter.hasNext(); ) {
+                DBRProcessDescriptor process = iter.next();
+                if (process.isRunning() && process.getCommand().isTerminateAtDisconnect()) {
+                    process.terminate();
+                }
+                iter.remove();
+            }
         }
     }
 
@@ -1521,15 +1539,7 @@ public class DataSourceDescriptor
             return false;
         } finally {
             // Terminate child processes
-            synchronized (childProcesses) {
-                for (Iterator<DBRProcessDescriptor> iter = childProcesses.iterator(); iter.hasNext(); ) {
-                    DBRProcessDescriptor process = iter.next();
-                    if (process.isRunning() && process.getCommand().isTerminateAtDisconnect()) {
-                        process.terminate();
-                    }
-                    iter.remove();
-                }
-            }
+            terminateChildProcesses();
 
             this.dataSource = null;
             this.resolvedConnectionInfo = null;

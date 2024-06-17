@@ -16,15 +16,15 @@
  */
 package org.jkiss.dbeaver.erd.ui.editor;
 
+import org.eclipse.core.filesystem.URIUtil;
 import org.eclipse.core.resources.*;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.*;
 import org.eclipse.ui.part.FileEditorInput;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -52,6 +52,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 /**
  * Standalone ERD editor
@@ -125,16 +126,25 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
     {
         try {
             String diagramState = DiagramLoader.serializeDiagram(RuntimeUtils.makeMonitor(monitor), getDiagramPart(), getDiagram(), false, false);
-
-            final IFile file = EditorUtils.getFileFromInput(getEditorInput());
-            if (file == null) {
+            IEditorInput editorInput = getEditorInput();
+            final IFile file = EditorUtils.getFileFromInput(editorInput);
+            if (file != null) {
+                // file is in workspace
+                file.setContents(
+                    new ByteArrayInputStream(diagramState.getBytes(StandardCharsets.UTF_8)),
+                    true,
+                    true,
+                    monitor);
+            } else if (editorInput instanceof IURIEditorInput uriInput) {
+                // file is outside of workspace
+                IPath path = URIUtil.toPath(uriInput.getURI());
+                if (path == null) {
+                    throw new DBException("Can't determine diagram file");
+                }
+                Files.write(path.toPath(), diagramState.getBytes(StandardCharsets.UTF_8));
+            } else {
                 throw new DBException("Can't determine diagram file");
             }
-            file.setContents(
-                new ByteArrayInputStream(diagramState.getBytes(StandardCharsets.UTF_8)),
-                true,
-                true,
-                monitor);
             getCommandStack().markSaveLocation();
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError("Save diagram", null, e);

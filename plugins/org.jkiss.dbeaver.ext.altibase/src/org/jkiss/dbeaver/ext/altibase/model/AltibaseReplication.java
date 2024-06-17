@@ -147,7 +147,7 @@ public class AltibaseReplication extends AltibaseGlobalObject implements DBSObje
     }
     
     @Override
-    public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         return this.getDataSource().getReplicationCache().refreshObject(monitor, getDataSource(), this);
     }
 

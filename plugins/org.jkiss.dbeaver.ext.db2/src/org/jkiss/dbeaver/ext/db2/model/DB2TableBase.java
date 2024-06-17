@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.editors.DB2StatefulObject;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableIndexCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
-import org.jkiss.dbeaver.ext.db2.model.fed.DB2Nickname;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPObjectStatistics;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
@@ -46,7 +45,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 /**
  * Super class for DB2 Tables, Views, Nicknames
@@ -134,60 +132,18 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
         return this;
     }
 
-    // -----------------
-    // Columns
-    // -----------------
-
+    @Nullable
     @Override
-    public List<DB2TableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException
-    {
-        if (this instanceof DB2Table) {
-            return getContainer().getTableCache().getChildren(monitor, getContainer(), (DB2Table) this);
-        }
-        if (this instanceof DB2Nickname) {
-            return getContainer().getNicknameCache().getChildren(monitor, getContainer(), (DB2Nickname) this);
-        }
-        if (this instanceof DB2MaterializedQueryTable) {
-            return getContainer().getMaterializedQueryTableCache().getChildren(monitor, getContainer(),
-                (DB2MaterializedQueryTable) this);
-        }
-        if (this instanceof DB2View) {
-            return getContainer().getViewCache().getChildren(monitor, getContainer(), (DB2View) this);
-        }
-
-        // Other kinds don't have columns..
-        throw new DBException("Unknown object with columns encountered");
-    }
-
-    @Override
-    public DB2TableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException
-    {
-        if (this instanceof DB2Table) {
-            return getContainer().getTableCache().getChild(monitor, getContainer(), (DB2Table) this, attributeName);
-        }
-        if (this instanceof DB2Nickname) {
-            return getContainer().getNicknameCache().getChild(monitor, getContainer(), (DB2Nickname) this, attributeName);
-        }
-        if (this instanceof DB2MaterializedQueryTable) {
-            return getContainer().getMaterializedQueryTableCache().getChild(monitor, getContainer(),
-                (DB2MaterializedQueryTable) this, attributeName);
-        }
-        if (this instanceof DB2View) {
-            return getContainer().getViewCache().getChild(monitor, getContainer(), (DB2View) this, attributeName);
-        }
-
-        // Other kinds don't have columns..
-        throw new DBException("Unknown object with columns encountered");
-    }
+    public abstract DB2TableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException;
 
     // -----------------
     // Associations
     // -----------------
     @Override
     @Association
-    public Collection<DB2Index> getIndexes(DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2Index> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException
     {
-        return tableIndexCache.getAllObjects(monitor, this);
+        return monitor == null ? tableIndexCache.getCachedObjects() : tableIndexCache.getAllObjects(monitor, this);
     }
 
     // -----------------

@@ -130,7 +130,7 @@ public abstract class SQLQueryDataContext {
     /**
      * Representation of the information about rows sources involved in semantic model
      */
-    public class KnownSourcesInfo {
+    public static class KnownSourcesInfo {
         @NotNull
         private final Map<SQLQueryRowsSourceModel, SourceResolutionResult> sources = new HashMap<>();
 

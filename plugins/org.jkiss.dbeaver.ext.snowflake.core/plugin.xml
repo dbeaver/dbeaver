@@ -31,6 +31,7 @@
                         defaultPort="443"
                         description="Snowflake JDBC driver"
                         webURL="https://docs.snowflake.net/manuals/user-guide/jdbc-configure.html"
+                        databaseDocumentationSuffixURL="Snowflake"
                         categories="sql,analytic"
                         singleConnection="true">
                     <replace provider="generic" driver="snowflake_generic"/>

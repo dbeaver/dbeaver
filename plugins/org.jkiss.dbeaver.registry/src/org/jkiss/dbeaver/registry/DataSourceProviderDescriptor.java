@@ -51,6 +51,11 @@ import java.util.stream.Collectors;
  * DataSourceProviderDescriptor
  */
 public class DataSourceProviderDescriptor extends AbstractDescriptor implements DBPDataSourceProviderDescriptor {
+    private static final String ATTRIBUTE_CHANGE_FOLDER_LABEL = "changeFolderLabel"; //$NON-NLS-1$
+    private static final String ATTRIBUTE_CHANGE_FOLDER_TYPE = "changeFolderType"; //$NON-NLS-1$
+    private static final String ATTRIBUTE_REMOVE = "remove"; //$NON-NLS-1$
+    private static final String ATTRIBUTE_REPLACE_CHILDREN = "replaceChildren"; //$NON-NLS-1$
+
     private static final Log log = Log.getLog(DataSourceProviderDescriptor.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataSourceProvider"; //$NON-NLS-1$
@@ -475,19 +480,27 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         }
         DBXTreeNode parentNode = baseItem;
 
-        if (CommonUtils.getBoolean(config.getAttribute("replaceChildren"))) {
+        if (CommonUtils.getBoolean(config.getAttribute(ATTRIBUTE_REPLACE_CHILDREN))) {
             baseItem.clearChildren();
         }
 
-        String changeFolderType = config.getAttribute("changeFolderType");
+        if (CommonUtils.getBoolean(config.getAttribute(ATTRIBUTE_REMOVE))) {
+            baseItem.clearChildren();
+            DBXTreeNode folderNode = baseItem.getParent();
+            if (folderNode != null) {
+                folderNode.removeChild(baseItem);
+            }
+        }
+
+        String changeFolderType = config.getAttribute(ATTRIBUTE_CHANGE_FOLDER_TYPE);
         if (changeFolderType != null) {
             DBXTreeNode folderNode = baseItem.getParent();
             if (folderNode instanceof DBXTreeFolder folder) {
                 folder.setType(changeFolderType);
-                String changeFolderLabel = config.getAttribute("changeFolderLabel");
+                String changeFolderLabel = config.getAttribute(ATTRIBUTE_CHANGE_FOLDER_LABEL);
                 if (CommonUtils.isNotEmpty(changeFolderLabel)) {
-                   folder.setLabel(changeFolderLabel);
-                   folder.setDescription(changeFolderLabel);
+                    folder.setLabel(changeFolderLabel);
+                    folder.setDescription(changeFolderLabel);
                 }
             } else {
                 log.error("Can't update folder type to " + changeFolderType);
