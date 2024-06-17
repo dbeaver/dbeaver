@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.runtime;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,12 +27,12 @@ public class ThreadExceptionsContext {
 
     private static final Map<Thread, List<Exception>> THREAD_TO_EXCEPTIONS = new ConcurrentHashMap<>();
     private static final Map<Thread, Thread> THREAD_BINDING_MAP = new ConcurrentHashMap<>();
-    //private static final Logger log = LoggerFactory.getLogger(ThreadExceptionsContext.class);
+    private static final Log log = Log.getLog(ThreadExceptionsContext.class);
 
     public static List<Exception> getListExceptionsForCurrentThread() {
         Thread threadForRegistry = getThreadForRegistry();
         List<Exception> exceptionList = THREAD_TO_EXCEPTIONS.get(threadForRegistry);
-        if(exceptionList == null){
+        if (exceptionList == null) {
             return new ArrayList<>();
         }
         return new ArrayList<>(exceptionList);
@@ -42,7 +43,6 @@ public class ThreadExceptionsContext {
     }
 
     public static void registerExceptionForCurrentThread(Exception exception) {
-
         Thread threadForRegistry = getThreadForRegistry();
         List<Exception> exceptionList = THREAD_TO_EXCEPTIONS.get(threadForRegistry);
         if (exceptionList == null) {
@@ -68,18 +68,17 @@ public class ThreadExceptionsContext {
         Thread currentThread = Thread.currentThread();
         //todo if it will need, there can be used a set for threads
         if (THREAD_BINDING_MAP.get(currentThread) != null) {
-            //log.warn(String.format("Thread %s is already in the binding map for ThreadExceptionContext. Overriding...",
-            //    currentThread.getName()));
+            log.warn(String.format("Thread %s is already in the binding map for ThreadExceptionContext. Overriding...",
+                currentThread.getName()));
         }
         THREAD_BINDING_MAP.put(currentThread, callerThread);
     }
 
 
     public static void realiseResources() {
-
         Thread currentThread = Thread.currentThread();
-        while (THREAD_BINDING_MAP.values().remove(currentThread));
-        while (THREAD_TO_EXCEPTIONS.keySet().remove(currentThread));
+        while (THREAD_BINDING_MAP.values().remove(currentThread)) ;
+        while (THREAD_TO_EXCEPTIONS.keySet().remove(currentThread)) ;
     }
 
     private static @NotNull Thread getThreadForRegistry() {

@@ -584,19 +584,19 @@ public class GeneralUtils {
         if (exceptions.isEmpty()) {
             return new Status(IStatus.ERROR, (Class<?>) null, "Empty exceptions list");
         }
-        Set<String> excaptionMessageSet = new HashSet<>();
+        Set<String> exceptionMessageSet = new HashSet<>();
         IStatus prev = null;
         for (Exception exception : exceptions) {
             String message = exception.getMessage();
             if (prev == null) {
-                excaptionMessageSet.add(message);
+                exceptionMessageSet.add(message);
                 prev = new Status(
                     IStatus.ERROR,
                     ModelPreferences.PLUGIN_ID,
                     message,
                     null);
             } else {
-                if (excaptionMessageSet.contains(message)) {
+                if (exceptionMessageSet.contains(message)) {
                     continue;
                 }
                 prev = new MultiStatus(ModelPreferences.PLUGIN_ID,
