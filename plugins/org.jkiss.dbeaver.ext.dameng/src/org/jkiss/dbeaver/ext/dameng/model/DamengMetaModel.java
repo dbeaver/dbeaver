@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.dameng.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.dameng.DamengConstants;
@@ -65,7 +66,7 @@ public class DamengMetaModel extends GenericMetaModel {
     }
 
     @Override
-    public DamengSchema createSchemaImpl(GenericDataSource dataSource, GenericCatalog catalog, String schemaName) throws DBException {
+    public DamengSchema createSchemaImpl(@NotNull GenericDataSource dataSource, GenericCatalog catalog, @NotNull String schemaName) throws DBException {
         return new DamengSchema(dataSource, schemaName, true);
     }
 
@@ -201,7 +202,7 @@ public class DamengMetaModel extends GenericMetaModel {
     }
 
     @Override
-    public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
+    public String getViewDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericView sourceObject, @NotNull Map<String, Object> options) throws DBException {
         return DamengUtils.getDDL(monitor, sourceObject, DamengConstants.ObjectType.VIEW, sourceObject.getParentObject().getName());
     }
 
@@ -239,12 +240,12 @@ public class DamengMetaModel extends GenericMetaModel {
                 return result;
             }
         } catch (SQLException e) {
-            throw new DBException(e, container.getDataSource());
+            throw new DBDatabaseException(e, container.getDataSource());
         }
     }
 
     @Override
-    public void loadProcedures(DBRProgressMonitor monitor, GenericObjectContainer container) throws DBException {
+    public void loadProcedures(DBRProgressMonitor monitor, @NotNull GenericObjectContainer container) throws DBException {
         GenericDataSource dataSource = container.getDataSource();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read Dameng procedure source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -295,7 +296,7 @@ public class DamengMetaModel extends GenericMetaModel {
                 }
             }
         } catch (SQLException e) {
-            throw new DBException(e, dataSource);
+            throw new DBDatabaseException(e, dataSource);
         }
     }
 

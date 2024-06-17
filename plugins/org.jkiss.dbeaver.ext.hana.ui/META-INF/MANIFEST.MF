@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver HANA UI
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.hana.ui;singleton:=true
-Bundle-Version: 1.0.85.qualifier
-Bundle-Release-Date: 20240603
+Bundle-Version: 1.0.86.qualifier
+Bundle-Release-Date: 20240624
 Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.ext.hana,
  org.jkiss.dbeaver.ui.editors.connection,

@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPCloseableObject;
@@ -117,7 +117,7 @@ public class WMINamespace extends WMIContainer implements DBSObjectContainer, DB
             DBUtils.orderObjects(children);
             return children;
         } catch (WMIException e) {
-            throw new DBException(e, getDataSource());
+            throw new DBDatabaseException(e, getDataSource());
         }
     }
 
@@ -225,7 +225,7 @@ public class WMINamespace extends WMIContainer implements DBSObjectContainer, DB
             this.allClasses = allClasses;
             this.associations = allAssociations;
         } catch (WMIException e) {
-            throw new DBException(e, getDataSource());
+            throw new DBDatabaseException(e, getDataSource());
         }
     }
 
@@ -247,7 +247,7 @@ public class WMINamespace extends WMIContainer implements DBSObjectContainer, DB
 
     @NotNull
     @Override
-    public Class<? extends WMIContainer> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException
+    public Class<? extends WMIContainer> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return WMIContainer.class;
     }

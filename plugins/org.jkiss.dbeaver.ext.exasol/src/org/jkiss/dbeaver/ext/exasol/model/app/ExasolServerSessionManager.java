@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.exasol.model.app;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
@@ -74,7 +75,7 @@ public class ExasolServerSessionManager implements DBAServerSessionManager<Exaso
         try {
             return readSessions((JDBCSession) session);
         } catch (SQLException e) {
-            throw new DBException(e, session.getDataSource());
+            throw new DBDatabaseException(e, session.getDataSource());
         }
     }
 
@@ -88,7 +89,7 @@ public class ExasolServerSessionManager implements DBAServerSessionManager<Exaso
 
 
         } catch (SQLException e) {
-            throw new DBException(e, session.getDataSource());
+            throw new DBDatabaseException(e, session.getDataSource());
         }
 
     }

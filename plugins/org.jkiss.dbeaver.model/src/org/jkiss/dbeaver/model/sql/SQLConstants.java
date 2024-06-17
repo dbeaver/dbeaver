@@ -57,6 +57,7 @@ public class SQLConstants {
     public static final String KEYWORD_ON = "ON";
     public static final String KEYWORD_AND = "AND";
     public static final String KEYWORD_OR = "OR";
+    public static final String KEYWORD_BETWEEN = "BETWEEN";
     public static final String KEYWORD_IS = "IS";
     public static final String KEYWORD_NOT = "NOT";
     public static final String KEYWORD_NULL = "NULL";
@@ -140,7 +141,7 @@ public class SQLConstants {
         "ATOMIC",
         "AUTHORIZATION",
         "BEGIN",
-        "BETWEEN",
+        KEYWORD_BETWEEN,
         //"BIGINT",
         DATA_TYPE_BINARY,
         "BOTH",

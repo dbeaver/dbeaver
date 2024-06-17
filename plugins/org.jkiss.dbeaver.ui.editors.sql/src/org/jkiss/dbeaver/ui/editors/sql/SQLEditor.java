@@ -5026,7 +5026,10 @@ public class SQLEditor extends SQLEditorBase implements
         final DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext != null) {
             // Refresh active object
-            if (result == null || !result.hasError() && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)) {
+            if ((result == null || !result.hasError()) &&
+                executionContext.getDataSource().getContainer().isExtraMetadataReadEnabled() &&
+                getActivePreferenceStore().getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)
+            ) {
                 DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
                 if (contextDefaults != null) {
                     new AbstractJob("Refresh default object") {

@@ -236,7 +236,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     public boolean isReadMetadataForQueryAnalysisEnabled() {
-        return this.getActivePreferenceStore().getBoolean(SQLModelPreferences.READ_METADATA_FOR_SEMANTIC_ANALYSIS);
+        DBPPreferenceStore prefStore = this.getActivePreferenceStore();
+        return prefStore.getBoolean(SQLModelPreferences.READ_METADATA_FOR_SEMANTIC_ANALYSIS)
+            && !prefStore.getBoolean(ModelPreferences.META_DISABLE_EXTRA_READ);
     }
 
     private void handleInputChange(IEditorInput input) {
@@ -1200,6 +1202,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             case SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS:
             case SQLPreferenceConstants.SQL_FORMAT_ACTIVE_QUERY:
             case SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE:
+            case ModelPreferences.META_DISABLE_EXTRA_READ:
             case SQLPreferenceConstants.READ_METADATA_FOR_SEMANTIC_ANALYSIS:
             case ModelPreferences.SQL_FORMAT_KEYWORD_CASE:
             case ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA:

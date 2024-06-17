@@ -90,6 +90,7 @@ public class ExasolFunction
         return null;
     }
 
+    @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context)
     {
