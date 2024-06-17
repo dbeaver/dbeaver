@@ -270,7 +270,7 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
         if (quotes != null) {
             string = string.replace(quotes[0], quotes[0] + quotes[0]);
         } else {
-            string = string.replace("'", "''").replace("`", "``");
+            return super.escapeString(string);
         }
 
         return string.replaceAll("\\\\(?![_%?])", "\\\\\\\\");

@@ -17,13 +17,13 @@
 
 package org.jkiss.dbeaver.runtime;
 
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 
 /**
  * DBException
  */
-public class DBInterruptedException extends DBException {
+public class DBInterruptedException extends DBDatabaseException {
 
     public DBInterruptedException(String message) {
         super(message);

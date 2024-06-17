@@ -328,11 +328,15 @@ public class StandardSQLDialectQueryGenerator implements SQLDialectQueryGenerato
                 if (operator.getArgumentCount() == 0) {
                     return operator.getExpression();
                 }
-                conString.append("IS ");
-                if (constraint.isReverseOperator()) {
-                    conString.append("NOT ");
+                if (dataSource.getSQLDialect().useEmptyStringForNulls()) {
+                    conString.append("=''");
+                } else {
+                    conString.append("IS ");
+                    if (constraint.isReverseOperator()) {
+                        conString.append("NOT ");
+                    }
+                    conString.append("NULL");
                 }
-                conString.append("NULL");
                 return conString.toString();
             }
             if (constraint.isReverseOperator()) {

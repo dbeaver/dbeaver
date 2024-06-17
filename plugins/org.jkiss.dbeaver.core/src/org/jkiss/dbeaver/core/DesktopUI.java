@@ -23,7 +23,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.operation.ModalContext;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.dnd.Clipboard;
@@ -38,10 +37,10 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.services.IDisposable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
@@ -389,7 +388,7 @@ public class DesktopUI implements DBPPlatformUI {
 
     private static UserResponse showDatabaseError(String message, DBException error)
     {
-        DBPDataSource dataSource = error.getDataSource();
+        DBPDataSource dataSource = error instanceof DBDatabaseException dbe ? dbe.getDataSource() : null;
         DBPErrorAssistant.ErrorType errorType = dataSource == null ? DBPErrorAssistant.ErrorType.NORMAL : DBExecUtils.discoverErrorType(dataSource, error);
         switch (errorType) {
             case CONNECTION_LOST:
@@ -651,13 +650,10 @@ public class DesktopUI implements DBPPlatformUI {
                             }  
                         };
                         
-                        progress.run(true, runnable != null, new IRunnableWithProgress() {
-                            @Override
-                            public void run(IProgressMonitor monitor) throws InterruptedException {
-                                monitor.beginTask(operationDescription, IProgressMonitor.UNKNOWN);
-                                job.join();
-                                monitor.done();
-                            }
+                        progress.run(true, runnable != null, monitor -> {
+                            monitor.beginTask(operationDescription, IProgressMonitor.UNKNOWN);
+                            job.join();
+                            monitor.done();
                         });
                     }
                 } catch (Exception ex) {

@@ -976,8 +976,8 @@ public class SQLQueryJob extends DataSourceJob
 
         boolean result = executeSingleQuery(session, query, fireEvents);
         if (!result && lastError != null) {
-            if (lastError instanceof DBCException) {
-                throw (DBCException) lastError;
+            if (lastError instanceof DBCException dbce) {
+                throw dbce;
             } else {
                 throw new DBCException(lastError, getExecutionContext());
             }
