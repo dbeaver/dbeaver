@@ -594,7 +594,7 @@ public class GeneralUtils {
                     IStatus.ERROR,
                     ModelPreferences.PLUGIN_ID,
                     message,
-                    exception);
+                    null);
             } else {
                 if (excaptionMessageSet.contains(message)) {
                     continue;
@@ -603,7 +603,7 @@ public class GeneralUtils {
                     0,
                     new IStatus[]{prev},
                     message,
-                    exception);
+                    null);
             }
         }
         return prev;
