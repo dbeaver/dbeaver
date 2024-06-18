@@ -1121,7 +1121,7 @@ public class SQLEditor extends SQLEditorBase implements
         };
 
         switchPresentationSQLButton = new VerticalButton(presentationSwitchFolder, SWT.RIGHT | SWT.CHECK);
-        switchPresentationSQLButton.setText(SQLEditorMessages.editors_sql_description);
+        switchPresentationSQLButton.setText(SQLEditorMessages.editors_sql_editor_presentation);
         switchPresentationSQLButton.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCRIPT));
         switchPresentationSQLButton.setChecked(true);
         switchPresentationSQLButton.addSelectionListener(switchListener);
@@ -3063,6 +3063,27 @@ public class SQLEditor extends SQLEditorBase implements
 
         transactionStatusUpdateJob.cancel();
         transactionStatusUpdateJob = null;
+    }
+
+    @Override
+    public void editorContextMenuAboutToShow(IMenuManager menu) {
+        super.editorContextMenuAboutToShow(menu);
+
+        if (!extraPresentationManager.presentations.isEmpty()) {
+            for (Map.Entry<SQLPresentationDescriptor, SQLEditorPresentation> entry : extraPresentationManager.presentations.entrySet()) {
+                SQLPresentationDescriptor pd = entry.getKey();
+                if (pd == extraPresentationManager.activePresentationDescriptor) {
+                    continue;
+                }
+                menu.insertAfter(GROUP_SQL_EXTRAS, new Action(pd.getDescription(), DBeaverIcons.getImageDescriptor(pd.getIcon())) {
+                    @Override
+                    public void run() {
+                        showExtraPresentation(pd);
+                    }
+                });
+            }
+            menu.insertAfter(GROUP_SQL_EXTRAS, new Separator("presentations"));
+        }
     }
 
     private void deleteFileIfEmpty(IFile sqlFile) {

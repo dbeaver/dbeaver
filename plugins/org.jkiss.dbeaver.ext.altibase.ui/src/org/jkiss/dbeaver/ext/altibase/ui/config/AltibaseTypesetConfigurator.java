@@ -32,9 +32,9 @@ import java.util.Map;
  */
 public class AltibaseTypesetConfigurator implements DBEObjectConfigurator<AltibaseTypeset> {
 
-	@Override
+    @Override
     public AltibaseTypeset configureObject(DBRProgressMonitor monitor, DBECommandContext commandContext,
-    		Object container, AltibaseTypeset procedure, Map<String, Object> options) {
+            Object container, AltibaseTypeset procedure, Map<String, Object> options) {
         return new UITask<AltibaseTypeset>() {
             @Override
             protected AltibaseTypeset runTask() {
@@ -49,8 +49,8 @@ public class AltibaseTypesetConfigurator implements DBEObjectConfigurator<Altiba
                 procedure.setProcedureType(procedureType);
 
                 procedure.setObjectDefinitionText(
-                    "CREATE OR REPLACE TYPESET " + procedureName +
-                    (procedureType == DBSProcedureType.FUNCTION ? "() RETURN NUMBER" : "") + GeneralUtils.getDefaultLineSeparator() +
+                        "CREATE OR REPLACE TYPESET " + procedureName +
+                        (procedureType == DBSProcedureType.FUNCTION ? "() RETURN NUMBER" : "") + GeneralUtils.getDefaultLineSeparator() +
                         "AS" + GeneralUtils.getDefaultLineSeparator() +
                         "\t" + GeneralUtils.getDefaultLineSeparator() + 
                         "END");

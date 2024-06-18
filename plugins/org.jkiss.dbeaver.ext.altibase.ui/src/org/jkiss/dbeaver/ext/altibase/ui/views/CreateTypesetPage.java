@@ -89,8 +89,8 @@ public class CreateTypesetPage extends BaseObjectEditPage {
         return !CommonUtils.isEmpty(name);
     }
 
-	@Override
-	public DBSObject getObject() {
-		return procedure;
-	}
+    @Override
+    public DBSObject getObject() {
+        return procedure;
+    }
 }
