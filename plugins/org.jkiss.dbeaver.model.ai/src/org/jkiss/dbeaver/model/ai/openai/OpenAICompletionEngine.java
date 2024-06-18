@@ -350,7 +350,7 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
     @NotNull
     @Override
     protected String getInstructions(boolean chatCompletion) {
-        if (getModel().equals(GPTModel.GPT_TURBO) || getModel().equals(GPTModel.GPT_TURBO16)) {
+        if (GPTModel.GPT_TURBO.equals(getModel()) || GPTModel.GPT_TURBO16.equals(getModel())) {
             return """
                 You are SQL assistant. You must produce SQL code for given prompt.
                 You must produce valid SQL statement enclosed with Markdown code block and terminated with semicolon.
