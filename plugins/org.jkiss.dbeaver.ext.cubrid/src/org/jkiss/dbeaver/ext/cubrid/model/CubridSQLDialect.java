@@ -32,7 +32,7 @@ public class CubridSQLDialect extends GenericSQLDialect
     public static final String CUBRID_DIALECT_ID = "cubrid";
     private static final Log log = Log.getLog(CubridSQLDialect.class);
     
-    private static final String[] CUBRID_KEY_WORD = {
+    private static final String[] CUBRID_KEYWORD = {
             "BIT", "CONNECT_BY_ISCYCLE", "CONNECT_BY_ISLEAF", "CONNECT_BY_ROOT", "CURRENT_DATE", "CURRENT_DATETIME", "CURRENT_TIME", "CURRENT_TIMESTAMP", "CURRENT_USER", "DATA_TYPE",
             "DATABASE", "DATETIME", "DAY_HOUR", "DAY_MILLISECOND", "DAY_MINUTE", "DAY_SECOND", "DISTINCTROW", "DIV", "DO", "DUPLICATE",
             "HOUR_MILLISECOND", "HOUR_MINUTE", "HOUR_SECOND", "LOCAL_TRANSACTION_ID", "MILLISECOND", "MINUTE_MILLISECOND", "MINUTE_SECOND", "MODULE", "NAMES", "NCHAR",
@@ -40,7 +40,7 @@ public class CubridSQLDialect extends GenericSQLDialect
             "SYSDATETIME", "SYSTIME", "TRUNCATE", "VALUE", "XOR", "YEAR_MONTH"
     };
     
-    private static final String[] REMOVE_KEY_WORD = {
+    private static final String[] REMOVE_KEYWORD = {
             "ALIAS", "ALWAYS", "ARRAY", "ASENSITIVE", "ASSIGNMENT", "ASYMMETRIC", "ATOMIC",
             "AUTHORIZATION", "BINARY", "CALLED", "CARDINALITY", "CHAIN", "CHARACTERISTICS",
             "CLUSTER", "COLLECT", "COMPLETION", "CONDITION", "CONSTRUCTOR", "CONTAINS", "CORR",
@@ -78,10 +78,10 @@ public class CubridSQLDialect extends GenericSQLDialect
         CubridDataSource source = (CubridDataSource) dataSource;
         source.setSupportMultiSchema(isSupportMultiSchema(session));
         
-        for(String defualt: REMOVE_KEY_WORD) {
-            this.removeSQLKeyword(defualt);
+        for(String removeKeyWord: REMOVE_KEYWORD) {
+            this.removeSQLKeyword(removeKeyWord);
         }
-        this.addSQLKeywords(Arrays.asList(CUBRID_KEY_WORD));
+        this.addSQLKeywords(Arrays.asList(CUBRID_KEYWORD));
     }
 
     @NotNull
