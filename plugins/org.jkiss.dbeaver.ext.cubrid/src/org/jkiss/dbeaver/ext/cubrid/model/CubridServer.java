@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public class CubridServer implements DBSObject {
@@ -93,7 +94,6 @@ public class CubridServer implements DBSObject {
     @Nullable
     @Override
     @Property(viewable = true, length = PropertyLength.MULTILINE, order = 8)
-
     public String getDescription() {
         return description;
     }
