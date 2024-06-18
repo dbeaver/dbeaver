@@ -17,12 +17,15 @@
 
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.access.DBAPrivilegeOwner;
 import org.jkiss.dbeaver.model.dpi.DPIContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * PostgrePrivilegeOwner
@@ -41,5 +44,9 @@ public interface PostgrePrivilegeOwner extends PostgreObject, DBAPrivilegeOwner 
     @Override
     Collection<PostgrePrivilege> getPrivileges(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException;
 
-    String generateChangeOwnerQuery(String owner);
+    default String generateChangeOwnerQuery(String owner){
+        return generateChangeOwnerQuery(owner, new HashMap<>());
+    }
+
+    String generateChangeOwnerQuery(String owner, @NotNull Map<String, Object> options);
 }

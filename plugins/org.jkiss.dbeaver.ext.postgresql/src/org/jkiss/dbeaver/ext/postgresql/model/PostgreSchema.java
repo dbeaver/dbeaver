@@ -197,7 +197,7 @@ public class PostgreSchema implements
     }
 
     @Override
-    public String generateChangeOwnerQuery(String owner) {
+    public String generateChangeOwnerQuery(String owner, @NotNull Map<String, Object> options) {
         return null;
     }
 
