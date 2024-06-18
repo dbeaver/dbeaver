@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.netezza.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.*;
@@ -52,7 +54,7 @@ public class NetezzaMetaModel extends GenericMetaModel
         return true;
     }
 
-    public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
+    public String getViewDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericView sourceObject, @NotNull Map<String, Object> options) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
         GenericSchema schema = sourceObject.getSchema();
         GenericCatalog catalog = sourceObject.getCatalog();
@@ -91,7 +93,7 @@ public class NetezzaMetaModel extends GenericMetaModel
                 }
             }
         } catch (SQLException e) {
-            throw new DBException(e, dataSource);
+            throw new DBDatabaseException(e, dataSource);
         }
     }
 
@@ -119,7 +121,7 @@ public class NetezzaMetaModel extends GenericMetaModel
                 }
             }
         } catch (SQLException e) {
-            throw new DBException(e, dataSource);
+            throw new DBDatabaseException(e, dataSource);
         }
     }
 

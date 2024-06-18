@@ -49,4 +49,8 @@ public interface DBRProgressMonitor {
 
     List<DBRBlockingObject> getActiveBlocks();
 
+    default boolean isForceCacheUsage() {
+        return false;
+    }
+
 }

@@ -939,6 +939,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     private void readRequiredMeta(DBRProgressMonitor monitor)
         throws DBCException
     {
+        if (!getDataSource().getContainer().isExtraMetadataReadEnabled()) {
+            return;
+        }
         try {
             getAttributes(monitor);
         }

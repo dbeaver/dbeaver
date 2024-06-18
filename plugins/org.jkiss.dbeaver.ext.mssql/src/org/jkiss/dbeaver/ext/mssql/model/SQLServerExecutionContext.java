@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.dpi.DPIContainer;
+import org.jkiss.dbeaver.model.exec.DBCCachedContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -235,4 +236,9 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
     }
 */
 
+    @NotNull
+    @Override
+    public DBCCachedContextDefaults getCachedDefault() {
+        return new DBCCachedContextDefaults(activeDatabaseName, activeSchemaName);
+    }
 }

@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.db2;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.db2.info.DB2Parameter;
@@ -53,17 +54,11 @@ import java.util.List;
  */
 public class DB2Utils {
 
-    private static final Log    LOG                  = Log.getLog(DB2Utils.class);
+    private static final Log log = Log.getLog(DB2Utils.class);
 
     private static final String LINE_SEP             = ";\n";
 
     // TODO DF: many things in this class could probably be factorized or generic-field
-
-    // DB2LOOK
-    private static final String CALL_DB2LK_GEN       = "CALL SYSPROC.DB2LK_GENERATE_DDL(?,?)";
-    private static final String CALL_DB2LK_CLEAN     = "CALL SYSPROC.DB2LK_CLEAN_TABLE(?)";
-    private static final String SEL_DB2LK            = "SELECT SQL_STMT FROM SYSTOOLS.DB2LOOK_INFO WHERE OP_TOKEN = ? ORDER BY OP_SEQUENCE WITH UR";
-    private static final String DB2LK_COMMAND        = "-e -x -xd -td %s -t %s";
 
     // EXPLAIN
     private static final String CALL_INST_OBJ        = "CALL SYSPROC.SYSINSTALLOBJECTS(?,?,?,?)";
@@ -104,7 +99,7 @@ public class DB2Utils {
     // Admin Command
     // ------------------------
     public static void callAdminCmd(DBRProgressMonitor monitor, DB2DataSource dataSource, String command) throws SQLException, DBCException {
-        LOG.debug("Call admin_cmd with '" + command + "'");
+        log.debug("Call admin_cmd with '" + command + "'");
         String sql = String.format(CALL_ADMIN_CMD, command);
 
         monitor.beginTask("Executing command " + command, 1);
@@ -130,7 +125,7 @@ public class DB2Utils {
     public static String generateDDLforTable(DBRProgressMonitor monitor, String statementDelimiter, DB2DataSource dataSource,
         DB2Table db2Table, boolean includeViews) throws DBException
     {
-        LOG.debug("Generate DDL for " + db2Table.getFullyQualifiedName(DBPEvaluationContext.DDL));
+        log.debug("Generate DDL for " + db2Table.getFullyQualifiedName(DBPEvaluationContext.DDL));
 
         // The DB2LK_GENERATE_DDL SP does not generate DDL for System Tables for some reason...
         // As a workaround, display a message to the end-user
@@ -154,35 +149,40 @@ public class DB2Utils {
         int token;
         StringBuilder sb = new StringBuilder(2048);
         String command = String.format(
-            (includeViews ? "" : "-noview ") + DB2LK_COMMAND,
+            (includeViews ? "" : "-noview ") + "-e -x -xd -td %s -t %s",
             statementDelimiter,
             db2Table.getFullyQualifiedName(DBPEvaluationContext.DDL));
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Generate DDL")) {
-            LOG.debug("Calling DB2LK_GENERATE_DDL with command : " + command);
+            log.debug("Calling DB2LK_GENERATE_DDL with command : " + command);
 
-            try (JDBCCallableStatement stmtSP = session.prepareCall(CALL_DB2LK_GEN)) {
+            try (JDBCCallableStatement stmtSP = session.prepareCall("CALL SYSPROC.DB2LK_GENERATE_DDL(?,?)")) {
                 stmtSP.registerOutParameter(2, java.sql.Types.INTEGER);
                 stmtSP.setString(1, command);
                 stmtSP.executeUpdate();
                 token = stmtSP.getInt(2);
             }
 
-            LOG.debug("Token = " + token);
+            log.debug("Token = " + token);
             monitor.worked(1);
 
             // Read result
-            try (JDBCPreparedStatement stmtSel = session.prepareStatement(SEL_DB2LK)) {
+            try (JDBCPreparedStatement stmtSel = session.prepareStatement(
+                "SELECT SQL_STMT " +
+                "FROM SYSTOOLS.DB2LOOK_INFO " +
+                "WHERE OP_TOKEN = ? " +
+                "ORDER BY OP_SEQUENCE WITH UR")
+            ) {
                 stmtSel.setInt(1, token);
                 try (JDBCResultSet dbResult = stmtSel.executeQuery()) {
                     Clob ddlStmt;
-                    Long ddlLength;
-                    Long ddlStart = 1L;
+                    long ddlLength;
+                    long ddlStart = 1L;
                     while (dbResult.next()) {
                         ddlStmt = dbResult.getClob(1);
                         try {
                             ddlLength = ddlStmt.length() + 1L;
-                            String stmtSubString = ddlStmt.getSubString(ddlStart, ddlLength.intValue());
+                            String stmtSubString = ddlStmt.getSubString(ddlStart, (int) ddlLength);
                             if (CommonUtils.isNotEmpty(stmtSubString)) {
                                 sb.append(stmtSubString.trim()).append(LINE_SEP).append("\n");
                             }
@@ -190,7 +190,7 @@ public class DB2Utils {
                             try {
                                 ddlStmt.free();
                             } catch (Throwable e) {
-                                LOG.debug("Error freeing CLOB: " + e.getMessage());
+                                log.debug("Error freeing CLOB: " + e.getMessage());
                             }
                         }
                     }
@@ -200,18 +200,18 @@ public class DB2Utils {
             monitor.worked(2);
 
             // Clean
-            try (JDBCCallableStatement stmtSPClean = session.prepareCall(CALL_DB2LK_CLEAN)) {
+            try (JDBCCallableStatement stmtSPClean = session.prepareCall("CALL SYSPROC.DB2LK_CLEAN_TABLE(?)")) {
                 stmtSPClean.setInt(1, token);
                 stmtSPClean.executeUpdate();
             }
 
             monitor.worked(3);
-            LOG.debug("Terminated OK");
+            log.debug("Terminated OK");
 
             return sb.toString();
 
         } catch (SQLException e) {
-            throw new DBException(e, dataSource);
+            throw new DBDatabaseException(e, dataSource);
         } finally {
             monitor.done();
         }
@@ -233,7 +233,7 @@ public class DB2Utils {
 
     public static List<String> getListOfUsableTsForExplain(DBRProgressMonitor monitor, JDBCSession session) throws SQLException
     {
-        LOG.debug("Get List Of Usable Tablespaces For Explain Tables");
+        log.debug("Get List Of Usable Tablespaces For Explain Tables");
 
         List<String> listTablespaces = new ArrayList<>();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(SEL_LIST_TS_EXPLAIN)) {
@@ -250,7 +250,7 @@ public class DB2Utils {
     public static Boolean checkExplainTables(DBRProgressMonitor monitor, DB2DataSource dataSource, String explainTableSchemaName)
         throws DBCException
     {
-        LOG.debug("Check EXPLAIN tables in '" + explainTableSchemaName + "'");
+        log.debug("Check EXPLAIN tables in '" + explainTableSchemaName + "'");
 
         monitor.beginTask("Check EXPLAIN tables", 1);
 
@@ -262,13 +262,13 @@ public class DB2Utils {
                 stmtSP.setString(3, ""); // Tablespace
                 stmtSP.setString(4, explainTableSchemaName); // Schema
                 stmtSP.execute();
-                LOG.debug("EXPLAIN tables with schema " + explainTableSchemaName + " found.");
+                log.debug("EXPLAIN tables with schema " + explainTableSchemaName + " found.");
 
                 return true;
             } catch (SQLException e) {
-                LOG.debug("RC:" + e.getErrorCode() + " SQLState:" + e.getSQLState() + " " + e.getMessage());
+                log.debug("RC:" + e.getErrorCode() + " SQLState:" + e.getSQLState() + " " + e.getMessage());
                 if (e.getErrorCode() == CALL_INST_OBJ_BAD_RC) {
-                    LOG.debug("No valid EXPLAIN tables found in schema '" + explainTableSchemaName + "'.");
+                    log.debug("No valid EXPLAIN tables found in schema '" + explainTableSchemaName + "'.");
                     return false;
                 }
                 throw new DBCException(e, session.getExecutionContext());
@@ -281,7 +281,7 @@ public class DB2Utils {
     public static void createExplainTables(DBRProgressMonitor monitor, DB2DataSource dataSource, String explainTableSchemaName,
         String tablespaceName) throws DBCException
     {
-        LOG.debug("Create EXPLAIN tables in " + explainTableSchemaName);
+        log.debug("Create EXPLAIN tables in " + explainTableSchemaName);
 
         monitor.beginTask("Create EXPLAIN Tables", 1);
 
@@ -293,9 +293,9 @@ public class DB2Utils {
                 stmtSP.setString(4, explainTableSchemaName); // Schema
                 stmtSP.executeUpdate();
 
-                LOG.debug("Creation EXPLAIN Tables : OK");
+                log.debug("Creation EXPLAIN Tables : OK");
             } catch (SQLException e) {
-                LOG.error("SQLException occured during EXPLAIN tables creation in schema " + explainTableSchemaName, e);
+                log.error("SQLException occured during EXPLAIN tables creation in schema " + explainTableSchemaName, e);
                 throw new DBCException(e, session.getExecutionContext());
             }
         } finally {
@@ -309,7 +309,7 @@ public class DB2Utils {
 
     public static List<DB2ServerApplication> readApplications(DBRProgressMonitor monitor, JDBCSession session) throws SQLException
     {
-        LOG.debug("readApplications");
+        log.debug("readApplications");
 
         List<DB2ServerApplication> listApplications = new ArrayList<>();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(SEL_APP)) {
@@ -324,7 +324,7 @@ public class DB2Utils {
 
     public static List<DB2Parameter> readDBCfg(DBRProgressMonitor monitor, JDBCSession session) throws SQLException
     {
-        LOG.debug("readDBCfg");
+        log.debug("readDBCfg");
 
         List<DB2Parameter> listDBParameters = new ArrayList<>();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(SEL_DBCFG)) {
@@ -339,7 +339,7 @@ public class DB2Utils {
 
     public static List<DB2Parameter> readDBMCfg(DBRProgressMonitor monitor, JDBCSession session) throws SQLException
     {
-        LOG.debug("readDBMCfg");
+        log.debug("readDBMCfg");
 
         List<DB2Parameter> listDBMParameters = new ArrayList<>();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(SEL_DBMCFG)) {
@@ -354,7 +354,7 @@ public class DB2Utils {
 
     public static List<DB2XMLString> readXMLStrings(DBRProgressMonitor monitor, JDBCSession session) throws SQLException
     {
-        LOG.debug("readXMLStrings");
+        log.debug("readXMLStrings");
 
         List<DB2XMLString> listXMLStrings = new ArrayList<>();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(SEL_XMLSTRINGS)) {

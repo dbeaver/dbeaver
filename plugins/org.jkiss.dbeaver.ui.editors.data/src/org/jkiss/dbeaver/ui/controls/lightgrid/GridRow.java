@@ -52,12 +52,12 @@ class GridRow implements IGridRow {
     }
 
     @Override
-    public int getRowDepth() {
+    public int getLevel() {
         return 0;
     }
 
     @Override
     public String toString() {
-        return String.valueOf(position) + " - " + element;
+        return String.valueOf(originalPosition + 1);
     }
 }
