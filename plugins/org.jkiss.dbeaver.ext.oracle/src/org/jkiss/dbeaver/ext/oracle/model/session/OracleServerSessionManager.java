@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.oracle.model.session;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.internal.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
@@ -76,7 +77,7 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
                 }
             }
         } catch (SQLException e) {
-            throw new DBException(e, session.getDataSource());
+            throw new DBDatabaseException(e, session.getDataSource());
         }
     }
 
@@ -109,7 +110,7 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
             }
         }
         catch (SQLException e) {
-            throw new DBException(e, session.getDataSource());
+            throw new DBDatabaseException(e, session.getDataSource());
         }
     }
 
@@ -140,7 +141,7 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
                         }
                     }
                 } catch (SQLException e) {
-                    throw new DBException(e, session.getDataSource());
+                    throw new DBDatabaseException(e, session.getDataSource());
                 }
             }
 
@@ -172,7 +173,7 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
 						}
                     }							
                 } catch (SQLException e) {
-                    throw new DBException(e, session.getDataSource());
+                    throw new DBDatabaseException(e, session.getDataSource());
                 }
             }
 

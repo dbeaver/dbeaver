@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.firebird.model;
 
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -201,7 +202,7 @@ public class FireBirdProcedure extends GenericProcedure implements DBSObjectWith
                 }
             }
         } catch (SQLException e) {
-            throw new DBException(e, getDataSource());
+            throw new DBDatabaseException(e, getDataSource());
         }
     }
 

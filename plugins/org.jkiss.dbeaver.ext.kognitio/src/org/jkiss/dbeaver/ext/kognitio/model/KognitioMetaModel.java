@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.kognitio.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
@@ -122,28 +124,34 @@ public class KognitioMetaModel extends GenericMetaModel {
                             createText.append(createTextFragment2);
                     }
 
-                    if (createText.length() == 0) {
+                    if (createText.isEmpty()) {
                         return "-- Create text not found";
                     }
                     else {
-                        return preamble + createText.toString();
+                        return preamble + createText;
                     }
                 }
             }
         }
         catch (SQLException e) {
-            throw new DBException(e, dataSource);
+            throw new DBDatabaseException(e, dataSource);
         }
     }
 
-    public String getViewDDL(DBRProgressMonitor monitor,
-            GenericView sourceObject, Map<String, Object> options) throws DBException {
+    public String getViewDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericView sourceObject,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         return getObjectDDL(monitor, sourceObject, options, viewDDLSQL,
                 "Read Kognitio view create text");
     }
 
-    public String getTableDDL(DBRProgressMonitor monitor,
-            GenericTableBase sourceObject, Map<String, Object> options) throws DBException {
+    public String getTableDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericTableBase sourceObject,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         return getObjectDDL(monitor, sourceObject, options, tableDDLSQL,
                 "Read Kognitio base table create text");
     }

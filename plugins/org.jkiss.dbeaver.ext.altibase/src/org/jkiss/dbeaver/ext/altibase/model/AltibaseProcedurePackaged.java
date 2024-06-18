@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model;
 
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericFunctionResultType;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
@@ -128,7 +129,7 @@ public class AltibaseProcedurePackaged extends AltibaseProcedureBase {
                 dbResult.close();
             }
         } catch (SQLException e) {
-            throw new DBException(e, getDataSource());
+            throw new DBDatabaseException(e, getDataSource());
         }
     }
 }

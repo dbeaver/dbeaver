@@ -315,6 +315,7 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
         return null;
     }
 
+    @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
         return name;
