@@ -8,12 +8,22 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreObject;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreScriptObject;
 import org.jkiss.dbeaver.model.DBPSystemInfoObject;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public class GaussDBPackage implements PostgreObject, PostgreScriptObject, DBPSystemInfoObject {
 
-   @Override
+   public GaussDBPackage(GaussDBSchema schema, DBRProgressMonitor monitor, String string) {
+        // TODO Auto-generated constructor stub
+    }
+
+public GaussDBPackage(JDBCSession session, GaussDBSchema owner, JDBCResultSet dbResult) {
+    // TODO Auto-generated constructor stub
+}
+
+@Override
    public DBSObject getParentObject() {
       // TODO Auto-generated method stub
       return null;
@@ -66,5 +76,20 @@ public class GaussDBPackage implements PostgreObject, PostgreScriptObject, DBPSy
       // TODO Auto-generated method stub
       return null;
    }
+
+public GaussDBSchema getSchema() {
+    // TODO Auto-generated method stub
+    return null;
+}
+
+public String getExtendedDefinitionText() {
+    // TODO Auto-generated method stub
+    return null;
+}
+
+public String getObjectDefinitionText() {
+    // TODO Auto-generated method stub
+    return null;
+}
 
 }

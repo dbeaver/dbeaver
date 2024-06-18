@@ -3,72 +3,123 @@ package org.jkiss.dbeaver.ext.gaussdb.edit;
 import java.util.List;
 import java.util.Map;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.gaussdb.model.GaussDBDataSource;
 import org.jkiss.dbeaver.ext.gaussdb.model.GaussDBDatabase;
 import org.jkiss.dbeaver.ext.gaussdb.model.GaussDBPackage;
+import org.jkiss.dbeaver.ext.gaussdb.model.GaussDBSchema;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
 
 public class GaussDBPackageManager extends SQLObjectEditor<GaussDBPackage, GaussDBDatabase> implements
                                    DBEObjectRenamer<GaussDBPackage> {
 
-   @Override
-   public long getMakerOptions(DBPDataSource dataSource) {
-      // TODO Auto-generated method stub
-      return 0;
-   }
+    @Override
+    public long getMakerOptions(DBPDataSource dataSource) {
+        return 1 << 2;
+    }
 
-   @Override
-   public DBSObjectCache<? extends DBSObject, GaussDBPackage> getObjectsCache(GaussDBPackage object) {
-      // TODO Auto-generated method stub
-      return null;
-   }
+    @Override
+    public DBSObjectCache<? extends DBSObject, GaussDBPackage> getObjectsCache(GaussDBPackage object) {
+        return object.getSchema().packageCache;
+    }
 
-   @Override
-   public void renameObject(DBECommandContext commandContext,
-                            GaussDBPackage object,
-                            Map<String, Object> options,
-                            String newName) throws DBException {
-      // TODO Auto-generated method stub
+    @Override
+    public void renameObject(DBECommandContext commandContext,
+                             GaussDBPackage object,
+                             Map<String, Object> options,
+                             String newName) throws DBException {
+        ObjectRenameCommand command = new ObjectRenameCommand(object, ModelMessages.model_jdbc_rename_object, options, newName);
+        commandContext.addCommand(command, new RenameObjectReflector(), true);
+    }
 
-   }
+    @Override
+    protected void addObjectRenameActions(@NotNull DBRProgressMonitor monitor,
+                                          @NotNull DBCExecutionContext executionContext,
+                                          @NotNull List<DBEPersistAction> actions,
+                                          @NotNull ObjectRenameCommand command,
+                                          @NotNull Map<String, Object> options) {
+    }
 
-   @Override
-   protected GaussDBPackage createDatabaseObject(DBRProgressMonitor monitor,
-                                                 DBECommandContext context,
-                                                 Object container,
-                                                 Object copyFrom,
-                                                 Map<String, Object> options) throws DBException {
-      // TODO Auto-generated method stub
-      return null;
-   }
+    @Override
+    public boolean canCreateObject(Object container) {
+        return true;
+    }
 
-   @Override
-   protected void addObjectCreateActions(DBRProgressMonitor monitor,
-                                         DBCExecutionContext executionContext,
-                                         List<DBEPersistAction> actions,
-                                         SQLObjectEditor<GaussDBPackage, GaussDBDatabase>.ObjectCreateCommand command,
-                                         Map<String, Object> options) throws DBException {
-      // TODO Auto-generated method stub
+    @Override
+    public boolean canDeleteObject(GaussDBPackage object) {
+        return true;
+    }
 
-   }
+    @Override
+    protected GaussDBPackage createDatabaseObject(DBRProgressMonitor monitor,
+                                                  DBECommandContext context,
+                                                  Object container,
+                                                  Object copyFrom,
+                                                  Map<String, Object> options) throws DBException {
+        GaussDBSchema schema = (GaussDBSchema) container;
+        return new GaussDBPackage(schema, monitor, "NewPackage");
+    }
 
-   @Override
-   protected void addObjectDeleteActions(DBRProgressMonitor monitor,
-                                         DBCExecutionContext executionContext,
-                                         List<DBEPersistAction> actions,
-                                         SQLObjectEditor<GaussDBPackage, GaussDBDatabase>.ObjectDeleteCommand command,
-                                         Map<String, Object> options) throws DBException {
-      // TODO Auto-generated method stub
+    @Override
+    protected void addObjectCreateActions(DBRProgressMonitor monitor,
+                                          DBCExecutionContext executionContext,
+                                          List<DBEPersistAction> actions,
+                                          SQLObjectEditor<GaussDBPackage, GaussDBDatabase>.ObjectCreateCommand command,
+                                          Map<String, Object> options) throws DBException {
+        GaussDBPackage pkg = command.getObject();
+        createOrReplaceProcedureQuery(executionContext, actions, pkg);
+    }
 
-   }
+    @Override
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor,
+                                          DBCExecutionContext executionContext,
+                                          List<DBEPersistAction> actions,
+                                          SQLObjectEditor<GaussDBPackage, GaussDBDatabase>.ObjectDeleteCommand command,
+                                          Map<String, Object> options) throws DBException {
+        GaussDBPackage pkg = command.getObject();
+        actions.add(new SQLDatabasePersistAction("Drop package", "DROP PACKAGE " + pkg.getName()));
+    }
+
+    private void createOrReplaceProcedureQuery(DBCExecutionContext executionContext,
+                                               List<DBEPersistAction> actionList,
+                                               GaussDBPackage pack) {
+        String header = pack.getObjectDefinitionText().trim();
+        if (!header.endsWith(";")) {
+            header += ";";
+        }
+        if (!CommonUtils.isEmpty(header)) {
+            actionList.add(new SQLDatabasePersistAction("Create package header", header)); // $NON-NLS-1$
+        }
+        String body = pack.getExtendedDefinitionText();
+        if (!CommonUtils.isEmpty(body)) {
+            body = body.trim();
+            if (!body.endsWith(";")) {
+                body += ";";
+            }
+            actionList.add(new SQLDatabasePersistAction("Create package body", body));
+        } else {
+            actionList.add(new SQLDatabasePersistAction("Drop package header",
+                                                        "DROP PACKAGE BODY " + pack.getName(),
+                                                        DBEPersistAction.ActionType.OPTIONAL) // $NON-NLS-1$
+            );
+        }
+    }
 
 }
