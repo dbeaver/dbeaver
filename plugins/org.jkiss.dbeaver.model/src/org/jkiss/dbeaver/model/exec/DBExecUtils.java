@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -249,7 +250,7 @@ public class DBExecUtils {
                 if (lastError instanceof DBException dbe) {
                     throw dbe;
                 } else {
-                    throw new DBException(lastError, dataSource);
+                    throw new DBDatabaseException(lastError, dataSource);
                 }
             }
             return true;

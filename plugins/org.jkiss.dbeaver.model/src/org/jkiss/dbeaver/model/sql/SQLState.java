@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 
 import java.sql.SQLException;
 
@@ -145,6 +144,8 @@ public enum SQLState {
     SQL_IM014("IM014", "Invalid name of File DSN"),
     SQL_IM015("IM015", "Corrupt file data source"),;
 
+    public static final int ERROR_CODE_NONE = -1;
+
     private final String code;
     private final String description;
 
@@ -163,22 +164,21 @@ public enum SQLState {
 
     @Nullable
     public static String getStateFromException(Throwable error) {
-        if (error instanceof DBException) {
-            return ((DBException) error).getDatabaseState();
-        } else if (error instanceof SQLException) {
-            return ((SQLException) error).getSQLState();
-        } else {
-            return null;
+        for (Throwable cause = error; cause != null; cause = cause.getCause()) {
+            if (cause instanceof SQLException sqle) {
+                return sqle.getSQLState();
+            }
         }
+        return null;
     }
 
     public static int getCodeFromException(Throwable error) {
-        if (error instanceof DBException) {
-            return ((DBException) error).getErrorCode();
-        } else if (error instanceof SQLException) {
-            return ((SQLException) error).getErrorCode();
-        } else {
-            return 0;
+        for (Throwable cause = error; cause != null; cause = cause.getCause()) {
+            if (cause instanceof SQLException sqle) {
+                return sqle.getErrorCode();
+            }
         }
+        return ERROR_CODE_NONE;
     }
+
 }

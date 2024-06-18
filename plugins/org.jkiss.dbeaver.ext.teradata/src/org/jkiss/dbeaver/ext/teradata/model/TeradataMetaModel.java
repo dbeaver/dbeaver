@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.teradata.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
@@ -72,7 +73,7 @@ public class TeradataMetaModel extends GenericMetaModel implements DBDValueHandl
     @Override
     public String getTableDDL(
         @NotNull DBRProgressMonitor monitor,
-        GenericTableBase sourceObject,
+        @NotNull GenericTableBase sourceObject,
         @NotNull Map<String, Object> options
     ) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
@@ -94,7 +95,7 @@ public class TeradataMetaModel extends GenericMetaModel implements DBDValueHandl
                 }
             }
         } catch (SQLException e) {
-            throw new DBException(e, dataSource);
+            throw new DBDatabaseException(e, dataSource);
         }
     }
 
@@ -132,7 +133,7 @@ public class TeradataMetaModel extends GenericMetaModel implements DBDValueHandl
                 }
             }
         } catch (SQLException e) {
-            throw new DBException(e, dataSource);
+            throw new DBDatabaseException(e, dataSource);
         }
     }
 
@@ -244,7 +245,7 @@ public class TeradataMetaModel extends GenericMetaModel implements DBDValueHandl
                 return result;
             }
         } catch (SQLException e) {
-            throw new DBException(e, container.getDataSource());
+            throw new DBDatabaseException(e, container.getDataSource());
         }
     }
 

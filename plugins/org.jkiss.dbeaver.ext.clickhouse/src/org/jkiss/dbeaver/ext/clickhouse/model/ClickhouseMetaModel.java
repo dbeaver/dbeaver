@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.clickhouse.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
@@ -118,7 +119,7 @@ public class ClickhouseMetaModel extends GenericMetaModel implements DBCQueryTra
     }
 
     @Override
-    public String getTableDDL(DBRProgressMonitor monitor, GenericTableBase sourceObject, Map<String, Object> options) throws DBException {
+    public String getTableDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTableBase sourceObject, @NotNull Map<String, Object> options) throws DBException {
         GenericSchema schema =  sourceObject.getSchema();
         GenericCatalog catalog =  sourceObject.getCatalog();
 
@@ -148,7 +149,7 @@ public class ClickhouseMetaModel extends GenericMetaModel implements DBCQueryTra
                 }
             }
         } catch (SQLException e) {
-            throw new DBException(e, dataSource);
+            throw new DBDatabaseException(e, dataSource);
         }
     }
 
@@ -170,7 +171,7 @@ public class ClickhouseMetaModel extends GenericMetaModel implements DBCQueryTra
     }
 
     @Override
-    public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
+    public String getViewDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericView sourceObject, @NotNull Map<String, Object> options) throws DBException {
         return getTableDDL(monitor, sourceObject, options);
     }
 
