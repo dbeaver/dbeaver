@@ -340,7 +340,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
         MavenArtifactVersion version = getArtifactVersion(monitor);
         if (version == null) {
             String versionMessageError = preferredVersion != null ? String.format(":%s", preferredVersion) : "";
-            throw new IOException(String.format("Maven artifact %s %s not found", path, versionMessageError));
+            throw new IOException(String.format("Maven artifact %s %s is not found", path, versionMessageError));
         }
         return version;
     }
