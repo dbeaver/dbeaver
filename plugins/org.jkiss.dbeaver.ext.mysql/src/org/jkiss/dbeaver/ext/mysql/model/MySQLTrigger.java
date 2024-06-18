@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -156,7 +157,7 @@ public class MySQLTrigger extends AbstractTrigger implements MySQLSourceObject, 
                 }
             } catch (SQLException e) {
                 body = "-- " + e.getMessage();
-                throw new DBException(e, getDataSource());
+                throw new DBDatabaseException(e, getDataSource());
             }
         }
         return body;
@@ -168,6 +169,7 @@ public class MySQLTrigger extends AbstractTrigger implements MySQLSourceObject, 
         body = sourceText;
     }
 
+    @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(),

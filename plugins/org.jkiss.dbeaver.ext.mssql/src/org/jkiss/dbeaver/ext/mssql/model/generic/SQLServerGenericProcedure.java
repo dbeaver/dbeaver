@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model.generic;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericFunctionResultType;
 import org.jkiss.dbeaver.ext.generic.model.GenericPackage;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
@@ -41,6 +42,7 @@ public class SQLServerGenericProcedure extends GenericProcedure {
         super(container, name, null, DBSProcedureType.PROCEDURE, "", false);
     }
 
+    @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
         return super.getFullyQualifiedName(context);

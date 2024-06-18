@@ -14,30 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.runtime;
 
-package org.jkiss.dbeaver.runtime;
-
-import org.jkiss.dbeaver.DBDatabaseException;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.Log;
 
 /**
- * DBException
+ * Progress monitor which forces cache usage
  */
-public class DBInterruptedException extends DBDatabaseException {
+public class LocalCacheProgressMonitor extends ProxyProgressMonitor {
 
-    public DBInterruptedException(String message) {
-        super(message);
+    private static final Log log = Log.getLog(LocalCacheProgressMonitor.class);
+
+    public LocalCacheProgressMonitor(DBRProgressMonitor original) {
+        super(original);
     }
 
-    public DBInterruptedException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public DBInterruptedException(Throwable cause, DBPDataSource dataSource) {
-        super(cause, dataSource);
-    }
-
-    public DBInterruptedException(String message, Throwable cause, DBPDataSource dataSource) {
-        super(message, cause, dataSource);
+    @Override
+    public boolean isForceCacheUsage() {
+        return true;
     }
 }

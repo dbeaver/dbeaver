@@ -96,6 +96,7 @@ public class DamengSchema extends GenericSchema implements DBPQualifiedObject, D
         }
     }
 
+    @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(), this);

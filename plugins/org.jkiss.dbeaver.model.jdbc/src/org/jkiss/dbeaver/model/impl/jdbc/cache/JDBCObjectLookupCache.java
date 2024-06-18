@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -52,7 +53,7 @@ public abstract class JDBCObjectLookupCache<OWNER extends DBSObject, OBJECT exte
         if (cachedObject != null) {
             return cachedObject;
         }
-        if (isFullyCached() || missingNames.contains(name)) {
+        if (isFullyCached() || missingNames.contains(name) || monitor == null) {
             return null;
         }
         // Now cache just one object
@@ -113,7 +114,7 @@ public abstract class JDBCObjectLookupCache<OWNER extends DBSObject, OBJECT exte
                 return null;
             }
         } catch (SQLException ex) {
-            throw new DBException(ex, dataSource);
+            throw new DBDatabaseException(ex, dataSource);
         }
     }
 
@@ -126,7 +127,7 @@ public abstract class JDBCObjectLookupCache<OWNER extends DBSObject, OBJECT exte
     }
 
     @Override
-    public void setCache(List<OBJECT> objects) {
+    public void setCache(@NotNull List<OBJECT> objects) {
         super.setCache(objects);
         this.missingNames.clear();
     }

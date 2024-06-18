@@ -48,7 +48,7 @@ public class GenericDataSourceObjectContainer extends GenericObjectContainer {
 
     @NotNull
     @Override
-    public Class<? extends DBSEntity> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSEntity> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
         return GenericTable.class;
     }
 
