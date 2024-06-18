@@ -40,6 +40,7 @@ public class AltibaseToolPackageCompile extends SQLToolExecuteHandler<AltibasePa
         queries.add(new SQLDatabasePersistAction(sql));
     }
 
+    @Override
     public boolean needsRefreshOnFinish() {
         return true;
     }

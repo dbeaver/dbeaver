@@ -97,20 +97,10 @@ public class AltibaseMetaModel extends GenericMetaModel {
                 break;
             case "VIEW":
             case "SYSTEM VIEW":
-                table = new AltibaseView(owner, tableName, tableType, dbResult);
-                try {
-                    ((AltibaseView) table).refreshState(session);
-                } catch (DBCException e) {
-                    log.error(e);;
-                }
+                table = new AltibaseView(session, owner, tableName, tableType, dbResult);
                 break;
             case "MATERIALIZED VIEW":
-                table = new AltibaseMaterializedView(owner, tableName, tableType, dbResult);
-                try {
-                    ((AltibaseMaterializedView) table).refreshState(session);
-                } catch (DBCException e) {
-                    log.error(e);;
-                }
+                table = new AltibaseMaterializedView(session, owner, tableName, tableType, dbResult);
                 break;
             case "QUEUE":
                 table = new AltibaseQueue(owner, tableName, tableType, dbResult);
@@ -134,12 +124,14 @@ public class AltibaseMetaModel extends GenericMetaModel {
 
             if (tableType.equalsIgnoreCase(AltibaseConstants.OBJ_TYPE_MATERIALIZED_VIEW)) {
                 return new AltibaseMaterializedView(
+                        null,
                         container,
                         tableName,
                         tableType,
                         dbResult);
             } else {
                 return new AltibaseView(
+                        null,
                         container,
                         tableName,
                         tableType,

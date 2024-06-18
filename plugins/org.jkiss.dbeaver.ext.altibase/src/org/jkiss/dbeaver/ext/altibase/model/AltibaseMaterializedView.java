@@ -18,17 +18,12 @@ package org.jkiss.dbeaver.ext.altibase.model;
 
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 
 public class AltibaseMaterializedView extends AltibaseViewAbs {
 
-    public AltibaseMaterializedView(GenericStructContainer container, String tableName, String tableType, 
+    public AltibaseMaterializedView(JDBCSession session, GenericStructContainer container, String tableName, String tableType, 
             JDBCResultSet dbResult) {
-        super(container, tableName, tableType, dbResult);
-    }
-
-    protected String getQry4RefreshState() {
-        return "SELECT v.status FROM system_.sys_users_ u, system_.sys_views_ v, system_.sys_materialized_views_ m"
-                + " WHERE u.user_id = m.user_id AND u.user_id = v.user_id AND v.view_id = m.view_id"
-                + " AND u.user_name = ? AND m.mview_name = ?";
+        super(session, container, tableName, tableType, dbResult);
     }
 }

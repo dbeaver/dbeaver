@@ -45,6 +45,7 @@ public class AltibaseToolTableTruncate extends SQLToolExecuteHandler<AltibaseTab
         queries.add(new SQLDatabasePersistAction(sql.toString()));
     }
 
+    @Override
     public boolean needsRefreshOnFinish() {
         return true;
     }

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.altibase.tasks;
 
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseMaterializedView;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -34,10 +35,13 @@ public class AltibaseToolMViewRefresh extends SQLToolExecuteHandler<AltibaseMate
     @Override
     public void generateObjectQueries(DBCSession session, AltibaseToolMViewRefreshSettings settings, 
             List<DBEPersistAction> queries, AltibaseMaterializedView object) throws DBCException {
-        String sql = String.format("EXEC SYSTEM_.REFRESH_MATERIALIZED_VIEW('%s', '%s')", object.getSchemaName(), object.getName());
+        String sql = String.format("EXEC SYSTEM_.REFRESH_MATERIALIZED_VIEW('%s', '%s')", 
+                DBUtils.getQuotedIdentifier(object.getDataSource(), object.getSchemaName()),
+                DBUtils.getQuotedIdentifier(object.getDataSource(), object.getName()));
         queries.add(new SQLDatabasePersistAction(sql));
     }
 
+    @Override
     public boolean needsRefreshOnFinish() {
         return true;
     }

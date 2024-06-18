@@ -17,30 +17,39 @@
 package org.jkiss.dbeaver.ext.altibase.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericView;
 import org.jkiss.dbeaver.model.DBPStatefulObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 
-import java.sql.SQLException;
-
 public abstract class AltibaseViewAbs extends GenericView implements DBPStatefulObject {
 
-    protected abstract String getQry4RefreshState();
+    private static final Log log = Log.getLog(AltibaseViewAbs.class);
     
     protected String schemaName = null;
-    protected boolean valid = false;
+    protected boolean isValid = false;
 
-    public AltibaseViewAbs(GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
+    public AltibaseViewAbs(JDBCSession session, GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
         schemaName = container.getName();
+
+        // Create a new view
+        if (session == null) {
+            isValid = true;
+        // Fetch from a database
+        } else {
+            try {
+                isValid = AltibaseUtils.getViewStatus(session, tableType, getSchemaName(), getName());
+            } catch (DBCException e) {
+                log.warn("Can't update view status.", e);
+            }
+        }
     }
 
     @Override
@@ -48,35 +57,17 @@ public abstract class AltibaseViewAbs extends GenericView implements DBPStateful
         return schemaName;
     }
 
-    // Work-around to use generic metadata
-    public void refreshState(JDBCSession session) throws DBCException {
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(getQry4RefreshState())) {
-            dbStat.setString(1, schemaName);
-            dbStat.setString(2, getName());
-
-            dbStat.executeStatement();
-
-            try (JDBCResultSet dbResult = dbStat.getResultSet()) {
-                if (dbResult != null && dbResult.next()) {
-                    valid = JDBCUtils.safeGetBoolean(dbResult, 1, "0"); // 0 is Valid, 1 is invalid
-                }
-            }
-        } catch (SQLException e) {
-            throw new DBCException(e, session.getExecutionContext());
-        }
-    }
-
     @Override
     public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, 
                 "Refresh state of view '" + this.getName() + "'")) {
-            refreshState(session);
+            isValid = AltibaseUtils.getViewStatus(session, getTableType(), getSchemaName(), getName());
         }
     }
 
     @NotNull
     @Override
     public DBSObjectState getObjectState() {
-        return valid ? DBSObjectState.NORMAL : DBSObjectState.INVALID;
+        return isValid ? DBSObjectState.NORMAL : DBSObjectState.INVALID;
     }
 }

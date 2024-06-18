@@ -40,6 +40,7 @@ public class AltibaseToolViewCompile extends SQLToolExecuteHandler<AltibaseView,
         queries.add(new SQLDatabasePersistAction(sql));
     }
 
+    @Override
     public boolean needsRefreshOnFinish() {
         return true;
     }
