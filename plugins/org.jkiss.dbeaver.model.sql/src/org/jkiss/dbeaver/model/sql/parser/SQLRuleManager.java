@@ -96,6 +96,7 @@ public class SQLRuleManager {
 
         final TPToken keywordToken = new TPTokenDefault(SQLTokenType.T_KEYWORD);
         final TPToken typeToken = new TPTokenDefault(SQLTokenType.T_TYPE);
+        final TPToken functionToken = new TPTokenDefault(SQLTokenType.T_FUNCTION);
         final TPToken stringToken = new TPTokenDefault(SQLTokenType.T_STRING);
         final TPToken quotedToken = new TPTokenDefault(SQLTokenType.T_QUOTED);
         final TPToken numberToken = new TPTokenDefault(SQLTokenType.T_NUMBER);
@@ -227,7 +228,7 @@ public class SQLRuleManager {
 
         if (!minimalRules) {
             // Add word rule for keywords, functions, types, and constants.
-            SQLWordRule wordRule = new SQLWordRule(delimRule, typeToken, otherToken, dialect);
+            SQLWordRule wordRule = new SQLWordRule(delimRule, functionToken, otherToken, dialect);
             for (String reservedWord : dialect.getReservedWords()) {
                 DBPKeywordType keywordType = dialect.getKeywordType(reservedWord);
                 // Functions without parentheses has type 'DBPKeywordType.OTHER' (#8710)
