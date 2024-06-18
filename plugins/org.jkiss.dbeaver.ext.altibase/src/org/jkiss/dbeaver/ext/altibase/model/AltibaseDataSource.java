@@ -580,7 +580,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
                 }
             }
         } catch (SQLException ex) {
-            throw new DBException(ex, this);
+            throw new DBException("Failed to load database properties", ex);
         }
     }
     
