@@ -195,4 +195,9 @@ public interface SQLQueryNodeModelVisitor<T, R> {
 
     @Nullable
     R visitTableStatementDrop(@NotNull SQLQueryTableDropModel dropStatement, T arg);
+
+    @Nullable
+    R visitObjectStatementDrop(@NotNull SQLQueryObjectDropModel dropStatement, T arg);
+
+    R visitObjectReference(SQLQueryObjectDataModel objectReference, T arg);
 }

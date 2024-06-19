@@ -24,6 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzerParameters;
 import org.jkiss.dbeaver.model.lsm.sql.dialect.LSMDialectRegistry;
@@ -129,7 +130,11 @@ public class SQLQueryModelContext {
                     STMTreeNode stmtBodyNode = queryNode.getFirstStmChild();
                     yield switch (stmtBodyNode.getNodeKindId()) {
                         case SQLStandardParser.RULE_dropTableStatement ->
-                            SQLQueryTableDropModel.createModel(this, stmtBodyNode);
+                            SQLQueryTableDropModel.createModel(this, stmtBodyNode, false);
+                        case SQLStandardParser.RULE_dropViewStatement ->
+                            SQLQueryTableDropModel.createModel(this, stmtBodyNode, true);
+                        case SQLStandardParser.RULE_dropProcedureStatement ->
+                            SQLQueryObjectDropModel.createModel(this, stmtBodyNode, RelationalObjectType.TYPE_PROCEDURE);
                         default -> null;
                     };
                 }

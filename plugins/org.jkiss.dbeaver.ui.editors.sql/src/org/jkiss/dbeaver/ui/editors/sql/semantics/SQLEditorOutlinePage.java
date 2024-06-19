@@ -1265,13 +1265,41 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         public Object visitTableStatementDrop(@NotNull SQLQueryTableDropModel dropStatement, OutlineQueryNode node) {
             String tableNames = dropStatement.getTables().isEmpty() ? SQLConstants.QUESTION
                 : dropStatement.getTables().stream().map(t -> t.getName().toIdentifierString()).collect(Collectors.joining(", "));
-            String nodeName =  "DROP TABLE" + (dropStatement.getIfExists() ? " IF EXISTS " : " ") + tableNames;
+            String nodeName =  "DROP " + (dropStatement.isView() ? "VIEW" : "TABLE")
+                + (dropStatement.getIfExists() ? " IF EXISTS " : " ") + tableNames;
             this.makeNode(
                 node,
                 dropStatement,
                 nodeName,
                 UIIcon.REMOVE,
                 dropStatement.getTables().toArray(SQLQueryRowsTableDataModel[]::new)
+            );
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public Object visitObjectStatementDrop(@NotNull SQLQueryObjectDropModel dropStatement, OutlineQueryNode node) {
+            String procName = dropStatement.getObject().getName().toIdentifierString();
+            String nodeName =  "DROP " + dropStatement.getObject().getObjectType().getTypeName().toUpperCase()
+               + " " + (dropStatement.getIfExists() ? "IF EXISTS " : " ") + procName;
+            this.makeNode(
+                node,
+                dropStatement,
+                nodeName,
+                UIIcon.REMOVE,
+                dropStatement.getObject()
+            );
+            return null;
+        }
+
+        @Override
+        public Object visitObjectReference(SQLQueryObjectDataModel objectReference, OutlineQueryNode node) {
+            this.makeNode(
+                node,
+                objectReference,
+                objectReference.getName().toIdentifierString(),
+                objectReference.getObjectType().getImage()
             );
             return null;
         }

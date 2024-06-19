@@ -19,56 +19,50 @@ package org.jkiss.dbeaver.model.sql.semantics.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelContext;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryQualifiedName;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
-import java.util.List;
-import java.util.stream.Collectors;
+public class SQLQueryObjectDropModel extends SQLQueryModelContent {
 
-/**
- * Describes DELETE statement
- */
-public class SQLQueryTableDropModel extends SQLQueryModelContent {
-
-    private final List<SQLQueryRowsTableDataModel> tables;
-    private final boolean isView;
+    private final SQLQueryObjectDataModel object;
     private final boolean ifExists;
 
     @Nullable
     private SQLQueryDataContext dataContext = null;
 
-    public static SQLQueryModelContent createModel(SQLQueryModelContext context, STMTreeNode node, boolean isView) {
-        List<SQLQueryRowsTableDataModel> tables =
-            node.getChildren().stream().filter(n -> n.getNodeName().equals(STMKnownRuleNames.tableName))
-                .map(context::collectTableReference).collect(Collectors.toList());
+    public static SQLQueryModelContent createModel(SQLQueryModelContext context, STMTreeNode node, DBSObjectType objectType) {
+        SQLQueryObjectDataModel procedure =
+            node.getChildren().stream().filter(n -> n.getNodeName().equals(STMKnownRuleNames.qualifiedName))
+            .map(n -> new SQLQueryObjectDataModel(
+                context,
+                node, new SQLQueryQualifiedName(node, context.collectIdentifier(n.getFirstStmChild())),
+                objectType))
+            .findFirst().orElse(null);
         boolean ifExists = node.findChildOfName(STMKnownRuleNames.ifExistsSpec) != null; // "IF EXISTS" presented
-        return new SQLQueryTableDropModel(context, node, tables, ifExists, isView);
+        return new SQLQueryObjectDropModel(context, node, procedure, ifExists);
     }
 
-    private SQLQueryTableDropModel(
+    private SQLQueryObjectDropModel(
         @NotNull SQLQueryModelContext context,
         @NotNull STMTreeNode syntaxNode,
-        @Nullable List<SQLQueryRowsTableDataModel> tables,
-        boolean ifExists,
-        boolean isView) {
+        @Nullable SQLQueryObjectDataModel object,
+        boolean ifExists
+    ) {
         super(context, syntaxNode.getRealInterval(), syntaxNode);
-        this.tables = tables;
+        this.object = object;
         this.ifExists = ifExists;
-        this.isView = isView;
     }
 
-    public List<SQLQueryRowsTableDataModel> getTables() {
-        return this.tables;
+    public SQLQueryObjectDataModel getObject() {
+        return object;
     }
 
     public boolean getIfExists() {
         return this.ifExists;
-    }
-
-    public boolean isView() {
-        return isView;
     }
 
     @Nullable
@@ -86,13 +80,12 @@ public class SQLQueryTableDropModel extends SQLQueryModelContent {
     @Override
     protected void applyContext(@NotNull SQLQueryDataContext dataContext, @NotNull SQLQueryRecognitionContext recognitionContext) {
         this.dataContext = dataContext;
-        this.tables.forEach(t -> t.propagateContext(dataContext, recognitionContext));
     }
 
     @Nullable
     @Override
     protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg) {
-        return visitor.visitTableStatementDrop(this, arg);
+        return visitor.visitObjectStatementDrop(this, arg);
     }
 
 }
