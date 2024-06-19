@@ -26,18 +26,24 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 
 public class CubridTable extends GenericTable
 {
+    private final PartitionCache partitionCache = new PartitionCache();
     private CubridUser owner;
     private CubridCharset charset;
     private CubridCollation collation;
@@ -52,7 +58,7 @@ public class CubridTable extends GenericTable
         super(container, tableName, tableType, dbResult);
 
         String collationName;
-        if (dbResult != null) {
+        if (tableType.equals("TABLE") && dbResult != null) {
             String type = JDBCUtils.safeGetString(dbResult, CubridConstants.IS_SYSTEM_CLASS);
             this.reuseOID = (JDBCUtils.safeGetString(dbResult, CubridConstants.REUSE_OID)).equals("YES");
             collationName = JDBCUtils.safeGetString(dbResult, CubridConstants.COLLATION);
@@ -97,6 +103,12 @@ public class CubridTable extends GenericTable
     public List<CubridTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
             throws DBException {
         return (List<CubridTableColumn>) super.getAttributes(monitor);
+    }
+    
+    @NotNull
+    public Collection<CubridPartition> getPartitions(@NotNull DBRProgressMonitor monitor) throws DBException {
+
+        return partitionCache.getAllObjects(monitor, this);
     }
 
     @Nullable
@@ -189,6 +201,40 @@ public class CubridTable extends GenericTable
             return object.getDataSource().getSchemas().toArray();
         }
     }
+    
+    static class PartitionCache extends JDBCObjectCache<CubridTable, CubridPartition> {
+
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull CubridTable table) throws SQLException {
+           
+            StringBuilder sql = new StringBuilder("select * from db_partition where class_name = ?");
+            if(table.getDataSource().getSupportMultiSchema()) {
+                sql.append(" and owner_name = ?");
+            }
+            final JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
+            dbStat.setString(1, table.getName());
+            if(table.getDataSource().getSupportMultiSchema()) {
+                dbStat.setString(2, table.getSchema().getName());
+            }
+            
+            return dbStat;
+        }
+    
+        @Override
+        protected CubridPartition fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull CubridTable table,
+            @NotNull JDBCResultSet dbResult
+        ) throws SQLException, DBException {
+            String partition_class_name = JDBCUtils.safeGetString(dbResult, "partition_class_name");
+            String type = JDBCUtils.safeGetString(dbResult, "partition_type");
+            
+            return new CubridPartition(table, partition_class_name, type, dbResult);
+        }
+            
+    }
+
 
     public static class CharsetListProvider implements IPropertyValueListProvider<CubridTable>
     {

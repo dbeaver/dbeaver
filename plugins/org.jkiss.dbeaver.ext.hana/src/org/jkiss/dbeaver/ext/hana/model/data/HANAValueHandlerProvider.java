@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.ext.hana.model.data;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.hana.model.HANAConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -33,8 +34,10 @@ public class HANAValueHandlerProvider implements DBDValueHandlerProvider {
     public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences,
             DBSTypedObject typedObject) {
         switch (typedObject.getTypeName()) {
-        case "ST_GEOMETRY":
-        case "ST_POINT":
+        case HANAConstants.DATA_TYPE_NAME_REAL_VECTOR:
+            return HANAVectorValueHandler.INSTANCE;
+        case HANAConstants.DATA_TYPE_NAME_ST_GEOMETRY:
+        case HANAConstants.DATA_TYPE_NAME_ST_POINT:
             return HANAGeometryValueHandler.INSTANCE;
         default:
             return null;

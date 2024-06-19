@@ -165,6 +165,7 @@
 
             <datasource id="hana"/>
 
+            <type name="real_vector"/>
             <type name="ST_Geometry"/>
             <type name="ST_Point"/>
         </provider>
