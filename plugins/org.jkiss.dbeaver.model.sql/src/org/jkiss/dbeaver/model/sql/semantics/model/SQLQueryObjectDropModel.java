@@ -39,7 +39,7 @@ public class SQLQueryObjectDropModel extends SQLQueryModelContent {
             node.getChildren().stream().filter(n -> n.getNodeName().equals(STMKnownRuleNames.qualifiedName))
             .map(n -> new SQLQueryObjectDataModel(
                 context,
-                node, new SQLQueryQualifiedName(node, context.collectIdentifier(n.getFirstStmChild())),
+                n, new SQLQueryQualifiedName(n, context.collectIdentifier(n.getFirstStmChild())),
                 objectType))
             .findFirst().orElse(null);
         boolean ifExists = node.findChildOfName(STMKnownRuleNames.ifExistsSpec) != null; // "IF EXISTS" presented
