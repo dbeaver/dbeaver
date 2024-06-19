@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
@@ -45,6 +46,7 @@ import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilterObject
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -58,7 +60,7 @@ public abstract class ObjectBrowserDialogBase extends Dialog {
 
     private final String title;
     private final DBNNode rootNode;
-    private final DBNNode selectedNode;
+    private final DBNNode[] selectedNodes;
     private final boolean singleSelection;
     private final List<DBNNode> selectedObjects = new ArrayList<>();
     private TreeNodeSpecial specialNode;
@@ -67,16 +69,16 @@ public abstract class ObjectBrowserDialogBase extends Dialog {
     private static boolean showConnected;
 
     protected ObjectBrowserDialogBase(
-        Shell parentShell,
-        String title,
-        DBNNode rootNode,
-        DBNNode selectedNode,
-        boolean singleSelection)
-    {
+        @NotNull Shell parentShell,
+        @NotNull String title,
+        @NotNull DBNNode rootNode,
+        @NotNull List<? extends DBNNode> selectedNodes,
+        boolean singleSelection
+    ) {
         super(parentShell);
         this.title = title;
         this.rootNode = rootNode;
-        this.selectedNode = selectedNode;
+        this.selectedNodes = selectedNodes.toArray(DBNNode[]::new);
         this.singleSelection = singleSelection;
     }
 
@@ -113,12 +115,15 @@ public abstract class ObjectBrowserDialogBase extends Dialog {
         if (viewerFilter != null) {
             treeViewer.addFilter(viewerFilter);
         }
-        if (selectedNode != null) {
-            treeViewer.setSelection(new StructuredSelection(selectedNode));
-            if (!(selectedNode instanceof DBNDataSource) || ((DBNDataSource) selectedNode).getDataSourceContainer().isConnected()) {
-                treeViewer.expandToLevel(selectedNode, 1);
+        if (selectedNodes.length > 0) {
+            treeViewer.setSelection(new StructuredSelection(selectedNodes));
+            Collections.addAll(selectedObjects, selectedNodes);
+
+            for (DBNNode node : selectedNodes) {
+                if (!(node instanceof DBNDataSource dataSource) || dataSource.getDataSourceContainer().isConnected()) {
+                    treeViewer.expandToLevel(selectedNodes, 1);
+                }
             }
-            selectedObjects.add(selectedNode);
         }
         treeViewer.addSelectionChangedListener(event -> {
             selectedObjects.clear();
@@ -177,15 +182,12 @@ public abstract class ObjectBrowserDialogBase extends Dialog {
                 return true;
             }
             object = DBUtils.getAdapter(DBSObject.class, object);
-            if (object != null && matchesType(object, true)) {
-                return true;
-            }
+            return object != null && matchesType(object, true);
         } else if (node instanceof DBNObjectNode) {
             return matchesType(((DBNObjectNode) node).getNodeObject(), true);
         } else {
             return matchesType(node, true);
         }
-        return false;
     }
 
     protected boolean matchesType(Object object, boolean result) {
