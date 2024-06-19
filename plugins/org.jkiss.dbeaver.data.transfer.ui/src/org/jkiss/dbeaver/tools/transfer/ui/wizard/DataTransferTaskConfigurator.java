@@ -140,7 +140,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
                         group.getShell(),
                         isExport ? DTUIMessages.data_transfer_task_configurator_tables_title_choose_source : DTUIMessages.data_transfer_task_configurator_tables_title_choose_target,
                         rootNode,
-                        selNode,
+                        CommonUtils.singletonOrEmpty(selNode),
                         new Class[]{DBSInstance.class, DBSObjectContainer.class, tableClass},
                         new Class[]{tableClass},
                         null);
