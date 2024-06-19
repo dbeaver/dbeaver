@@ -46,7 +46,6 @@ public interface DBSObject extends DBPNamedObject, DBPObjectWithDescription, DBP
      * @return datasource reference or null
      */
     @DPIContainer
-    @Nullable
     DBPDataSource getDataSource();
 
 }

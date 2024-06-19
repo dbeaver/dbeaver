@@ -22,6 +22,8 @@ import java.util.Arrays;
 import java.util.Optional;
 
 public enum GPTModel {
+    GPT_4_OMNI("gpt-4o", 128000, true),
+    GPT_TURBO_4("gpt-4-turbo", 128000, true),
     GPT_TURBO("gpt-3.5-turbo", 4096, true),
     GPT_TURBO16("gpt-3.5-turbo-16k", 16384, true),
     GPT_TURBO_INSTRUCT("gpt-3.5-turbo-instruct", 4096, false),
