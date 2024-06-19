@@ -347,6 +347,20 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
         return createCompletionRequest(chatMode, messages, getMaxTokens());
     }
 
+    @NotNull
+    @Override
+    protected String getInstructions(boolean chatCompletion) {
+        if (GPTModel.GPT_TURBO.equals(getModel()) || GPTModel.GPT_TURBO16.equals(getModel())) {
+            return """
+                You are SQL assistant. You must produce SQL code for given prompt.
+                You must produce valid SQL statement enclosed with Markdown code block and terminated with semicolon.
+                All comments MUST be placed before query outside markdown code block.
+                Be polite.
+                """;
+        }
+        return super.getInstructions(chatCompletion);
+    }
+
     protected Object createCompletionRequest(boolean chatMode, @NotNull List<DAICompletionMessage> messages, int maxTokens) {
         Double temperature =
             CommonUtils.toDouble(getSettings().getProperties().get(AIConstants.AI_TEMPERATURE), 0.0);

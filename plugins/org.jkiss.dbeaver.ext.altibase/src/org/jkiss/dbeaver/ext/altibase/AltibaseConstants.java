@@ -125,4 +125,10 @@ public class AltibaseConstants {
     public static final int PSM_TYPE_PROCEDURE  = 0;
     public static final int PSM_TYPE_FUNCTION   = 1;
     public static final int PSM_TYPE_TYPESET    = 3;
+
+    /*
+     * V$PROPERTY attributes
+     */
+    public static final long IDP_ATTR_RD_WRITABLE = 0x00000000;
+    public static final long IDP_ATTR_RD_READONLY = 0x00000002;
 }
