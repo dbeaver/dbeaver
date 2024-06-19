@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.dpi.DPIContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -42,11 +41,7 @@ public interface PostgrePrivilegeOwner extends PostgreObject, DBAPrivilegeOwner 
      * @param includeNestedObjects - include permissions for all nested objects. For exmaple for table columns.
      */
     @Override
-    Collection<PostgrePrivilege> getPrivileges(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException;
+    Collection<PostgrePrivilege> getPrivileges(@NotNull DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException;
 
-    default String generateChangeOwnerQuery(String owner){
-        return generateChangeOwnerQuery(owner, new HashMap<>());
-    }
-
-    String generateChangeOwnerQuery(String owner, @NotNull Map<String, Object> options);
+    String generateChangeOwnerQuery(@NotNull String owner, @NotNull Map<String, Object> options);
 }
