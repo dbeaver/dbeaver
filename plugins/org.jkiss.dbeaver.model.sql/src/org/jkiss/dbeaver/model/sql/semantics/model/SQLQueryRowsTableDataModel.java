@@ -48,8 +48,8 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
     @Nullable
     private DBSEntity table = null;
 
-    public SQLQueryRowsTableDataModel(@NotNull STMTreeNode syntaxNode, @NotNull SQLQueryQualifiedName name) {
-        super(syntaxNode);
+    public SQLQueryRowsTableDataModel(SQLQueryModelContext context, @NotNull STMTreeNode syntaxNode, @NotNull SQLQueryQualifiedName name) {
+        super(context, syntaxNode);
         this.name = name;
     }
 

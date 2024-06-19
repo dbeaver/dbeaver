@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
@@ -36,12 +37,13 @@ public class SQLQueryTableInsertModel extends SQLQueryTableStatementModel {
     private final SQLQueryRowsSourceModel valuesRows;
     
     public SQLQueryTableInsertModel(
+        @NotNull SQLQueryModelContext context,
         @NotNull STMTreeNode syntaxNode,
         @Nullable SQLQueryRowsTableDataModel tableModel,
         @Nullable List<SQLQuerySymbolEntry> columnNames,
         @Nullable SQLQueryRowsSourceModel valuesRows
     ) {
-        super(syntaxNode, tableModel);
+        super(context, syntaxNode, tableModel);
         this.columnNames = columnNames;
         this.valuesRows = valuesRows;
     }

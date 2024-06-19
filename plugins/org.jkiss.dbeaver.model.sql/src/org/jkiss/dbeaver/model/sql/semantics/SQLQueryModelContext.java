@@ -53,9 +53,9 @@ import java.util.stream.Collectors;
 /**
  * Responsible for semantics model preparation based on the parsing result
  */
-public class SQLQueryModelRecognizer {
+public class SQLQueryModelContext {
 
-    private final HashSet<SQLQuerySymbolEntry> symbolEntries = new HashSet<>();
+    private final Set<SQLQuerySymbolEntry> symbolEntries = new HashSet<>();
     
     private final boolean isReadMetadataForSemanticAnalysis;
 
@@ -70,7 +70,7 @@ public class SQLQueryModelRecognizer {
 
     private SQLQueryDataContext queryDataContext;
 
-    public SQLQueryModelRecognizer(@Nullable DBCExecutionContext executionContext, boolean isReadMetadataForSemanticAnalysis, @NotNull SQLSyntaxManager syntaxManager) {
+    public SQLQueryModelContext(@Nullable DBCExecutionContext executionContext, boolean isReadMetadataForSemanticAnalysis, @NotNull SQLSyntaxManager syntaxManager) {
         this.isReadMetadataForSemanticAnalysis = isReadMetadataForSemanticAnalysis;
         this.executionContext = executionContext;
         this.syntaxManager = syntaxManager;
@@ -81,6 +81,18 @@ public class SQLQueryModelRecognizer {
             this.dialect = BasicSQLDialect.INSTANCE;
         }
         this.reservedWords = new HashSet<>(this.dialect.getReservedWords());
+    }
+
+    public SQLSyntaxManager getSyntaxManager() {
+        return syntaxManager;
+    }
+
+    public SQLDialect getDialect() {
+        return dialect;
+    }
+
+    public DBCExecutionContext getExecutionContext() {
+        return executionContext;
     }
 
     /**
@@ -221,13 +233,13 @@ public class SQLQueryModelRecognizer {
             && this.executionContext.getDataSource() instanceof DBSObjectContainer
             && this.executionContext.getDataSource().getSQLDialect() instanceof BasicSQLDialect
         ) {
-            return new SQLQueryDataSourceContext(this.executionContext, this.executionContext.getDataSource().getSQLDialect());
+            return new SQLQueryDataSourceContext(this);
         } else {
             Set<String> allColumnNames = new HashSet<>();
             Set<List<String>> allTableNames = new HashSet<>();
             this.traverseForIdentifiers(root, (e, c) -> allColumnNames.add(c.getName()), e -> allTableNames.add(e.toListOfStrings()), true);
             symbolEntries.clear();
-            return new SQLQueryDummyDataSourceContext(this.dialect, allColumnNames, allTableNames);
+            return new SQLQueryDummyDataSourceContext(this, allColumnNames, allTableNames);
         }
     }
 
@@ -315,7 +327,7 @@ public class SQLQueryModelRecognizer {
         STMTreeNode orderByClauseNode = node.findChildOfName(STMKnownRuleNames.orderByClause);
         SQLQueryValueExpression orderByExpr = orderByClauseNode == null ? null : this.collectValueExpression(orderByClauseNode);
         
-        return new SQLQueryTableUpdateModel(node, targetSet, setClauseList, sourceSet, whereClauseExpr, orderByExpr);
+        return new SQLQueryTableUpdateModel(this, node, targetSet, setClauseList, sourceSet, whereClauseExpr, orderByExpr);
     }
 
     @NotNull
@@ -338,7 +350,7 @@ public class SQLQueryModelRecognizer {
             valuesRows = null; // use default table? 
         }
         
-        return new SQLQueryTableInsertModel(node, tableModel, columnNames, valuesRows);        
+        return new SQLQueryTableInsertModel(this, node, tableModel, columnNames, valuesRows);
     }
 
     @NotNull
@@ -352,7 +364,7 @@ public class SQLQueryModelRecognizer {
         STMTreeNode whereClauseNode = node.findChildOfName(STMKnownRuleNames.whereClause);
         SQLQueryValueExpression whereClauseExpr = whereClauseNode == null ? null : this.collectValueExpression(whereClauseNode);
         
-        return new SQLQueryTableDeleteModel(node, tableModel, alias, whereClauseExpr);
+        return new SQLQueryTableDeleteModel(this, node, tableModel, alias, whereClauseExpr);
     }
 
     @NotNull
@@ -364,7 +376,7 @@ public class SQLQueryModelRecognizer {
             }
         }
         boolean ifExists = node.findChildOfName(STMKnownRuleNames.ifExistsSpec) != null; // "IF EXISTS" presented
-        return new SQLQueryTableDropModel(node, tables, ifExists);
+        return new SQLQueryTableDropModel(this, node, tables, ifExists);
     }
 
     @NotNull
@@ -506,7 +518,7 @@ public class SQLQueryModelRecognizer {
 
     @NotNull
     private SQLQueryRowsTableDataModel collectTableReference(@NotNull STMTreeNode node) {
-        return new SQLQueryRowsTableDataModel(node, collectTableName(node));
+        return new SQLQueryRowsTableDataModel(this, node, collectTableName(node));
     }
 
     @Nullable
@@ -823,7 +835,7 @@ public class SQLQueryModelRecognizer {
 
         @Override
         public void close() {
-            SQLQueryModelRecognizer.this.endScope(this.lexicalScope);   
+            SQLQueryModelContext.this.endScope(this.lexicalScope);
         }
     }
     
@@ -960,7 +972,7 @@ public class SQLQueryModelRecognizer {
         }
     }
 
-    private static class QueryExpressionMapper extends TreeMapper<SQLQueryRowsSourceModel, SQLQueryModelRecognizer> {
+    private static class QueryExpressionMapper extends TreeMapper<SQLQueryRowsSourceModel, SQLQueryModelContext> {
         @NotNull
         private static final Set<String> queryExpressionSubtreeNodeNames = Set.of(
             STMKnownRuleNames.sqlQuery,
@@ -995,7 +1007,7 @@ public class SQLQueryModelRecognizer {
         );
 
         @NotNull
-        private static final Map<String, TreeMapperCallback<SQLQueryRowsSourceModel, SQLQueryModelRecognizer>> translations = Map.ofEntries(
+        private static final Map<String, TreeMapperCallback<SQLQueryRowsSourceModel, SQLQueryModelContext>> translations = Map.ofEntries(
             Map.entry(STMKnownRuleNames.directSqlDataStatement, (n, cc, r) -> {
                 if (cc.isEmpty()) {
                     return null;
@@ -1008,7 +1020,7 @@ public class SQLQueryModelRecognizer {
                     STMTreeNode withNode = n.findChildOfName(STMKnownRuleNames.withClause);
                     boolean isRecursive = withNode.getChildCount() > 2; // is RECURSIVE keyword presented
 
-                    SQLQueryRowsCteModel cte = new SQLQueryRowsCteModel(n, isRecursive, resultQuery);
+                    SQLQueryRowsCteModel cte = new SQLQueryRowsCteModel(r, n, isRecursive, resultQuery);
 
                     STMTreeNode cteListNode = withNode.getStmChild(withNode.getChildCount() - 1);
                     for (int i = 0, j = 0; i < cteListNode.getChildCount() && j < subqueries.size(); i += 2, j++) {
@@ -1041,7 +1053,7 @@ public class SQLQueryModelRecognizer {
                             case SQLStandardParser.RULE_unionTerm -> SQLQueryRowsSetCorrespondingOperationKind.UNION;
                             default -> throw new UnsupportedOperationException("Unexpected child node kind at queryExpression");
                         };
-                        source = new SQLQueryRowsSetCorrespondingOperationModel(range, childNode, source, nextSource, corresponding, opKind);
+                        source = new SQLQueryRowsSetCorrespondingOperationModel(r, range, childNode, source, nextSource, corresponding, opKind);
                     }
                     return source;
                 }
@@ -1060,7 +1072,7 @@ public class SQLQueryModelRecognizer {
                             case SQLStandardParser.RULE_intersectTerm -> SQLQueryRowsSetCorrespondingOperationKind.INTERSECT;
                             default -> throw new UnsupportedOperationException("Unexpected child node kind at nonJoinQueryTerm");
                         };
-                        source = new SQLQueryRowsSetCorrespondingOperationModel(range, childNode, source, nextSource, corresponding, opKind);
+                        source = new SQLQueryRowsSetCorrespondingOperationModel(r, range, childNode, source, nextSource, corresponding, opKind);
                     }
                     return source;
                 }
@@ -1083,9 +1095,9 @@ public class SQLQueryModelRecognizer {
                                     .map(cn -> cn.findChildOfName(STMKnownRuleNames.joinCondition))
                                     .map(cn -> cn.findChildOfName(STMKnownRuleNames.searchCondition))
                                     .map(r::collectValueExpression)
-                                    .map(e -> new SQLQueryRowsNaturalJoinModel(range, childNode, currSource, nextSource, e))
-                                    .orElseGet(() -> new SQLQueryRowsNaturalJoinModel(range, childNode, currSource, nextSource, r.collectColumnNameList(childNode)));
-                            case SQLStandardParser.RULE_crossJoinTerm -> new SQLQueryRowsCrossJoinModel(range, childNode, currSource, nextSource);
+                                    .map(e -> new SQLQueryRowsNaturalJoinModel(r, range, childNode, currSource, nextSource, e))
+                                    .orElseGet(() -> new SQLQueryRowsNaturalJoinModel(r, range, childNode, currSource, nextSource, r.collectColumnNameList(childNode)));
+                            case SQLStandardParser.RULE_crossJoinTerm -> new SQLQueryRowsCrossJoinModel(r, range, childNode, currSource, nextSource);
                             default -> throw new UnsupportedOperationException("Unexpected child node kind at queryExpression");
                         };
                     }
@@ -1102,7 +1114,7 @@ public class SQLQueryModelRecognizer {
                         SQLQueryRowsSourceModel nextSource = cc.get(i);
                         Interval range = Interval.of(n.getRealInterval().a, childNode.getRealInterval().b);
                         source = switch (childNode.getNodeKindId()) {
-                            case SQLStandardParser.RULE_tableReference -> new SQLQueryRowsCrossJoinModel(range, childNode, source, nextSource);
+                            case SQLStandardParser.RULE_tableReference -> new SQLQueryRowsCrossJoinModel(r, range, childNode, source, nextSource);
                             default -> throw new UnsupportedOperationException("Unexpected child node kind at fromClause");
                         };
                     }
@@ -1169,9 +1181,9 @@ public class SQLQueryModelRecognizer {
                         .map(r::collectValueExpression).orElse(null);
                     SQLQueryValueExpression orderByClause = Optional.ofNullable(tableExpr.findChildOfName(STMKnownRuleNames.orderByClause))
                         .map(r::collectValueExpression).orElse(null);
-                    projectionModel = new SQLQueryRowsProjectionModel(n, selectListScope, source, resultModel, whereExpr, havingClause, groupByClause, orderByClause);
+                    projectionModel = new SQLQueryRowsProjectionModel(r, n, selectListScope, source, resultModel, whereExpr, havingClause, groupByClause, orderByClause);
                 } else {
-                    projectionModel = new SQLQueryRowsProjectionModel(n, selectListScope, source, resultModel);
+                    projectionModel = new SQLQueryRowsProjectionModel(r, n, selectListScope, source, resultModel);
                 }
                 return projectionModel;
             }),
@@ -1195,7 +1207,7 @@ public class SQLQueryModelRecognizer {
                         SQLQuerySymbolEntry correlationName = r.collectIdentifier(
                             lastSubnode.getStmChild(lastSubnode.getChildCount() == 1 || lastSubnode.getChildCount() == 4 ? 0 : 1)
                         );
-                        source = new SQLQueryRowsCorrelatedSourceModel(n, source, correlationName, r.collectColumnNameList(lastSubnode));
+                        source = new SQLQueryRowsCorrelatedSourceModel(r, n, source, correlationName, r.collectColumnNameList(lastSubnode));
                     }
                 }
                 return source;
@@ -1206,11 +1218,11 @@ public class SQLQueryModelRecognizer {
                 for (int i = 1; i < n.getChildCount(); i += 2) {
                     values.add(r.collectValueExpression(n.getStmChild(i)));
                 }
-                return new SQLQueryRowsTableValueModel(n, values);
+                return new SQLQueryRowsTableValueModel(r, n, values);
             })
         );
 
-        public QueryExpressionMapper(@Nullable SQLQueryModelRecognizer recognizer) {
+        public QueryExpressionMapper(@Nullable SQLQueryModelContext recognizer) {
             super(SQLQueryRowsSourceModel.class, queryExpressionSubtreeNodeNames, translations, recognizer);
         }
     }

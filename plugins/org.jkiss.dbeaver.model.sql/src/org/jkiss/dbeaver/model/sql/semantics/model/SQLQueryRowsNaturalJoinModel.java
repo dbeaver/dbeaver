@@ -20,10 +20,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
+import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
@@ -40,25 +37,27 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
     private final List<SQLQuerySymbolEntry> columsToJoin;
 
     public SQLQueryRowsNaturalJoinModel(
+        @NotNull SQLQueryModelContext context,
         @NotNull Interval range,
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryRowsSourceModel left,
         @NotNull SQLQueryRowsSourceModel right,
         @Nullable SQLQueryValueExpression condition
     ) {
-        super(range, syntaxNode, left, right);
+        super(context, range, syntaxNode, left, right);
         this.condition = condition;
         this.columsToJoin = null;
     }
 
     public SQLQueryRowsNaturalJoinModel(
+        @NotNull SQLQueryModelContext context,
         @NotNull Interval range,
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryRowsSourceModel left,
         @NotNull SQLQueryRowsSourceModel right,
         @Nullable List<SQLQuerySymbolEntry> columsToJoin
     ) {
-        super(range, syntaxNode, left, right);
+        super(context, range, syntaxNode, left, right);
         this.condition = null;
         this.columsToJoin = columsToJoin;
     }

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
@@ -44,6 +45,7 @@ public class SQLQueryTableUpdateModel extends SQLQueryModelContent {
     private SQLQueryDataContext resultContext = null;
     
     public SQLQueryTableUpdateModel(
+        @NotNull SQLQueryModelContext context,
         @NotNull STMTreeNode syntaxNode,
         @Nullable SQLQueryRowsSourceModel targetRows,
         @Nullable List<SQLQueryTableUpdateSetClauseModel> setClauseList,
@@ -51,7 +53,7 @@ public class SQLQueryTableUpdateModel extends SQLQueryModelContent {
         @Nullable SQLQueryValueExpression whereClause,
         @Nullable SQLQueryValueExpression orderByClause
     ) {
-        super(syntaxNode.getRealInterval(), syntaxNode);
+        super(context, syntaxNode.getRealInterval(), syntaxNode);
         this.targetRows = targetRows;
         this.setClauseList = setClauseList;
         this.sourceRows = sourceRows;

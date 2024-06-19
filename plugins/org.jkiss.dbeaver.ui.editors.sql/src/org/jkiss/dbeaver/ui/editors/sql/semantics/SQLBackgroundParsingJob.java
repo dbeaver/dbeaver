@@ -381,7 +381,7 @@ public class SQLBackgroundParsingJob {
         }
     }
 
-    private void doWork(DBRProgressMonitor jobMonitor) throws BadLocationException {
+    private void doWork(DBRProgressMonitor monitor) throws BadLocationException {
         TextViewer viewer = editor.getTextViewer();
         if (viewer == null || this.editor.getRuleManager() == null) {
             return;
@@ -504,21 +504,21 @@ public class SQLBackgroundParsingJob {
             boolean useRealMetadata = this.editor.isReadMetadataForQueryAnalysisEnabled();
             DBCExecutionContext executionContext = this.editor.getExecutionContext();
 
-            jobMonitor.beginTask("Background query analysis for " + editor.getTitle(), 1 + elements.size());
-            jobMonitor.worked(1);
+            monitor.beginTask("Background query analysis for " + editor.getTitle(), 1 + elements.size());
+            monitor.worked(1);
 
             SQLSyntaxManager syntaxManager = this.editor.getSyntaxManager();
 
             int i = 1;
             for (SQLScriptElement element : elements) {
-                if (jobMonitor.isCanceled()) {
+                if (monitor.isCanceled()) {
                     break;
                 }
                 try {
-                    SQLQueryModelRecognizer recognizer = new SQLQueryModelRecognizer(executionContext, useRealMetadata, syntaxManager);
+                    SQLQueryModelContext recognizer = new SQLQueryModelContext(executionContext, useRealMetadata, syntaxManager);
                     SQLQueryModel queryModel = recognizer.recognizeQuery(
                         element.getOriginalText(),
-                        jobMonitor
+                        monitor
                     );
                 
                     if (queryModel != null) {
@@ -540,14 +540,14 @@ public class SQLBackgroundParsingJob {
                 } catch (Throwable ex) {
                     log.debug("Error while analyzing query text: " + element.getOriginalText(), ex);
                 }
-                jobMonitor.worked(1);
-                jobMonitor.subTask("Background query analysis: subtask #" + (i++));
+                monitor.worked(1);
+                monitor.subTask("Background query analysis: subtask #" + (i++));
             }
             this.context.resetLastAccessCache();
         } catch (Throwable ex) {
             log.debug(ex);
         } finally {
-            jobMonitor.done();
+            monitor.done();
         }
         
         int parsedOffset = workOffset;

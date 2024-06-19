@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
@@ -37,17 +38,18 @@ public class SQLQueryTableDeleteModel extends SQLQueryTableStatementModel {
     private final SQLQueryRowsCorrelatedSourceModel aliasedTableModel;
     
     public SQLQueryTableDeleteModel(
+        @NotNull SQLQueryModelContext context,
         @NotNull STMTreeNode syntaxNode,
         @Nullable SQLQueryRowsTableDataModel tableModel,
-        @Nullable SQLQuerySymbolEntry alias, 
+        @Nullable SQLQuerySymbolEntry alias,
         @Nullable SQLQueryValueExpression whereClause
     ) {
-        super(syntaxNode, tableModel);
+        super(context, syntaxNode, tableModel);
         this.whereClause = whereClause;
         
         if (alias != null && tableModel != null) {
             Interval correlatedRegion = Interval.of(tableModel.getInterval().a, alias.getInterval().b);
-            this.aliasedTableModel = new SQLQueryRowsCorrelatedSourceModel(syntaxNode, tableModel, alias, Collections.emptyList());
+            this.aliasedTableModel = new SQLQueryRowsCorrelatedSourceModel(context, syntaxNode, tableModel, alias, Collections.emptyList());
         } else {
             this.aliasedTableModel  = null;
         }

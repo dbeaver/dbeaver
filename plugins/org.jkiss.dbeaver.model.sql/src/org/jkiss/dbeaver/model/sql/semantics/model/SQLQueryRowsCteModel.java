@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
@@ -38,8 +39,8 @@ public class SQLQueryRowsCteModel extends SQLQueryRowsSourceModel {
     @NotNull
     private final SQLQueryRowsSourceModel resultQuery;
 
-    public SQLQueryRowsCteModel(@NotNull STMTreeNode syntaxNode, boolean isRecursive, @NotNull SQLQueryRowsSourceModel resultQuery) {
-        super(syntaxNode, resultQuery);
+    public SQLQueryRowsCteModel(SQLQueryModelContext context, @NotNull STMTreeNode syntaxNode, boolean isRecursive, @NotNull SQLQueryRowsSourceModel resultQuery) {
+        super(context, syntaxNode, resultQuery);
         this.isRecursive = isRecursive;
         this.resultQuery = resultQuery;
     }
@@ -53,7 +54,7 @@ public class SQLQueryRowsCteModel extends SQLQueryRowsSourceModel {
         @NotNull List<SQLQuerySymbolEntry> columnNames,
         @NotNull SQLQueryRowsSourceModel source
     ) {
-        SQLQueryRowsCteSubqueryModel subquery = new SQLQueryRowsCteSubqueryModel(syntaxNode, subqueryName, columnNames, source);
+        SQLQueryRowsCteSubqueryModel subquery = new SQLQueryRowsCteSubqueryModel(getContext(), syntaxNode, subqueryName, columnNames, source);
         this.subqueries.add(subquery);
         super.registerSubnode(subquery);
     }

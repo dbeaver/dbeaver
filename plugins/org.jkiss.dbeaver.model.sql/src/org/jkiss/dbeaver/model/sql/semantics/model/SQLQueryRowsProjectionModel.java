@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.SQLDialect.ProjectionAliasVisibilityScope;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryLexicalScope;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
@@ -51,15 +52,17 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
 
 
     public SQLQueryRowsProjectionModel(
+        @NotNull SQLQueryModelContext context,
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryLexicalScope selectListScope,
         @NotNull SQLQueryRowsSourceModel fromSource,
         @NotNull SQLQuerySelectionResultModel result
     ) {
-        this(syntaxNode, selectListScope, fromSource, result, null, null, null, null);
+        this(context, syntaxNode, selectListScope, fromSource, result, null, null, null, null);
     }
 
     public SQLQueryRowsProjectionModel(
+        @NotNull SQLQueryModelContext context,
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryLexicalScope selectListScope,
         @NotNull SQLQueryRowsSourceModel fromSource,
@@ -69,7 +72,7 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
         @Nullable SQLQueryValueExpression groupByClause,
         @Nullable SQLQueryValueExpression orderByClause
     ) {
-        super(syntaxNode, fromSource, result, whereClause, havingClause, groupByClause, orderByClause);
+        super(context, syntaxNode, fromSource, result, whereClause, havingClause, groupByClause, orderByClause);
         this.result = result;
         this.selectListScope = selectListScope;
         this.fromSource = fromSource;

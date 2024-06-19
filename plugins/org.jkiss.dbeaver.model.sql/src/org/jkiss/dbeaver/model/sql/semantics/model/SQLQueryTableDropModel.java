@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
@@ -49,11 +50,12 @@ public class SQLQueryTableDropModel extends SQLQueryModelContent {
 */
 
     public SQLQueryTableDropModel(
+        @NotNull SQLQueryModelContext context,
         @NotNull STMTreeNode syntaxNode,
         @Nullable List<SQLQueryRowsTableDataModel> tables,
         boolean ifExists
     ) {
-        super(syntaxNode.getRealInterval(), syntaxNode);
+        super(context, syntaxNode.getRealInterval(), syntaxNode);
         this.tables = tables;
         this.ifExists = ifExists;
     }

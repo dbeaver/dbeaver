@@ -2,6 +2,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
@@ -17,8 +18,12 @@ public abstract class SQLQueryTableStatementModel extends SQLQueryModelContent {
     @Nullable
     private SQLQueryDataContext resultContext = null;
     
-    public SQLQueryTableStatementModel(@NotNull STMTreeNode syntaxNode, @Nullable SQLQueryRowsTableDataModel tableModel) {
-        super(syntaxNode.getRealInterval(), syntaxNode, tableModel);
+    public SQLQueryTableStatementModel(
+        @NotNull SQLQueryModelContext context,
+        @NotNull STMTreeNode syntaxNode,
+        @Nullable SQLQueryRowsTableDataModel tableModel
+    ) {
+        super(context, syntaxNode.getRealInterval(), syntaxNode, tableModel);
         this.tableModel = tableModel;
     }
 

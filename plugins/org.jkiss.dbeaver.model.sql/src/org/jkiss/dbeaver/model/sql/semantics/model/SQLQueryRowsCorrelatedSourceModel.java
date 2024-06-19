@@ -17,10 +17,7 @@
 package org.jkiss.dbeaver.model.sql.semantics.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
+import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
@@ -40,12 +37,13 @@ public class SQLQueryRowsCorrelatedSourceModel extends SQLQueryRowsSourceModel {
     private final List<SQLQuerySymbolEntry> correlationColumNames;
 
     public SQLQueryRowsCorrelatedSourceModel(
+        @NotNull SQLQueryModelContext context,
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryRowsSourceModel source,
         @NotNull SQLQuerySymbolEntry alias,
         @NotNull List<SQLQuerySymbolEntry> correlationColumNames
     ) {
-        super(syntaxNode, source);
+        super(context, syntaxNode, source);
         this.source = source;
         this.alias = alias;
         this.correlationColumNames = correlationColumNames;

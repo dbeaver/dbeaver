@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
@@ -40,6 +41,7 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
     private final SQLQueryRowsSetCorrespondingOperationKind kind;
 
     public SQLQueryRowsSetCorrespondingOperationModel(
+        @NotNull SQLQueryModelContext context,
         @NotNull Interval range,
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryRowsSourceModel left,
@@ -47,7 +49,7 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
         @NotNull List<SQLQuerySymbolEntry> correspondingColumnNames,
         @NotNull SQLQueryRowsSetCorrespondingOperationKind kind
     ) {
-        super(range, syntaxNode, left, right);
+        super(context, range, syntaxNode, left, right);
         this.correspondingColumnNames = correspondingColumnNames;
         this.kind = kind;
     }
