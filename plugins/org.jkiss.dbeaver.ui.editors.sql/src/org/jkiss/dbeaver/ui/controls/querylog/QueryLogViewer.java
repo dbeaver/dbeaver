@@ -630,9 +630,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
         EventHistoryReadService loadingService = new EventHistoryReadService(searchString);
         LoadingJob.createService(
-            loadingService,
-            new EvenHistoryReadVisualizer(loadingService))
-            .schedule();
+                loadingService,
+                new EvenHistoryReadVisualizer(loadingService))
+                .schedule();
     }
 
     @Override
@@ -1198,6 +1198,8 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
     class EventHistoryReadService extends AbstractLoadService<List<QMEvent>> {
 
+        private static final int RETRIES_QM_WAITING = 12;
+        private static final int WAITING_QM_SESSION_SECONDS_PER_TRY = 5;
         @Nullable
         private String searchString;
 
@@ -1224,7 +1226,14 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
                 String qmSessionId = null;
                 if (DBWorkbench.getPlatform().getApplication() instanceof QMSessionProvider provider) {
+                    int tries = 0;
                     qmSessionId = provider.getQmSessionId();
+                    //github#2946
+                    while (qmSessionId == null && tries < RETRIES_QM_WAITING) {
+                        Thread.sleep(WAITING_QM_SESSION_SECONDS_PER_TRY * 1000);
+                        qmSessionId = provider.getQmSessionId();
+                        tries++;
+                    }
                 }
                 var cursorFilter = new QMCursorFilter(
                     qmSessionId,
