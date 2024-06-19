@@ -268,7 +268,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     }
 
     @Override
-    public Collection<PostgrePrivilege> getPrivileges(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
+    public Collection<PostgrePrivilege> getPrivileges(@NotNull DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
         if (!isPersisted()) {
             return Collections.emptyList();
         }
@@ -298,7 +298,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     }
 
     @Override
-    public String generateChangeOwnerQuery(String owner, @NotNull Map<String, Object> options) {
+    public String generateChangeOwnerQuery(@NotNull String owner, @NotNull Map<String, Object> options) {
         return "ALTER TABLE " + DBUtils.getEntityScriptName(this, options) + " OWNER TO " + owner;
     }
 
@@ -307,8 +307,12 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         if (DBPScriptObject.OPTION_INCLUDE_COMMENTS.equals(option) && getDataSource().getServerType().supportsShowingOfExtraComments()) {
             return true;
         }
-        return DBPScriptObject.OPTION_DDL_ONLY_FOREIGN_KEYS.equals(option) || DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS.equals(option)
-               || DBPScriptObject.OPTION_INCLUDE_PERMISSIONS.equals(option);
+        if (DBPScriptObject.OPTION_INCLUDE_PERMISSIONS.equals(option)) {
+            return true;
+        }
+        return !this.isView() &&
+               (DBPScriptObject.OPTION_DDL_ONLY_FOREIGN_KEYS.equals(option) ||
+               DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS.equals(option));
     }
 
     public PostgreTableColumn createTableColumn(DBRProgressMonitor monitor, PostgreSchema schema, JDBCResultSet dbResult)

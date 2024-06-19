@@ -339,7 +339,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
         }
     }
 
-    public String generateChangeOwnerQuery(String owner, @NotNull Map<String, Object> options) {
+    public String generateChangeOwnerQuery(@NotNull String owner, @NotNull Map<String, Object> options) {
         return "ALTER SEQUENCE " + DBUtils.getEntityScriptName(this, options) + " OWNER TO " + owner;
     }
 
