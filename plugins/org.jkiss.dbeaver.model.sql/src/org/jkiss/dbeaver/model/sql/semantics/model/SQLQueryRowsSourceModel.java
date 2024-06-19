@@ -84,6 +84,8 @@ public abstract class SQLQueryRowsSourceModel extends SQLQueryModelContent {
         @NotNull SQLQueryDataContext context,
         @NotNull SQLQueryRecognitionContext statistics
     );
+
+
 }
 
 

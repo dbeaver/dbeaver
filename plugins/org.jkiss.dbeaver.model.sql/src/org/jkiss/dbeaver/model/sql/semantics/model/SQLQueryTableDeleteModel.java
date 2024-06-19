@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.Collections;
@@ -36,8 +37,21 @@ public class SQLQueryTableDeleteModel extends SQLQueryTableStatementModel {
     private final SQLQueryValueExpression whereClause;
     @Nullable 
     private final SQLQueryRowsCorrelatedSourceModel aliasedTableModel;
-    
-    public SQLQueryTableDeleteModel(
+
+    public static SQLQueryModelContent createModel(SQLQueryModelContext context, STMTreeNode node) {
+        STMTreeNode tableNameNode = node.findChildOfName(STMKnownRuleNames.tableName);
+        SQLQueryRowsTableDataModel tableModel = tableNameNode == null ? null : context.collectTableReference(tableNameNode);
+
+        STMTreeNode aliasNode = node.findChildOfName(STMKnownRuleNames.correlationName);
+        SQLQuerySymbolEntry alias = aliasNode == null ? null : context.collectIdentifier(aliasNode);
+
+        STMTreeNode whereClauseNode = node.findChildOfName(STMKnownRuleNames.whereClause);
+        SQLQueryValueExpression whereClauseExpr = whereClauseNode == null ? null : context.collectValueExpression(whereClauseNode);
+
+        return new SQLQueryTableDeleteModel(context, node, tableModel, alias, whereClauseExpr);
+    }
+
+    private SQLQueryTableDeleteModel(
         @NotNull SQLQueryModelContext context,
         @NotNull STMTreeNode syntaxNode,
         @Nullable SQLQueryRowsTableDataModel tableModel,

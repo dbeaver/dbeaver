@@ -21,8 +21,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -49,7 +51,18 @@ public class SQLQueryTableDropModel extends SQLQueryModelContent {
     }
 */
 
-    public SQLQueryTableDropModel(
+    public static SQLQueryModelContent createModel(SQLQueryModelContext context, STMTreeNode node) {
+        List<SQLQueryRowsTableDataModel> tables = new ArrayList<>(node.getChildCount());
+        for (STMTreeNode tableNameNode : node.getChildren()) {
+            if (tableNameNode.getNodeName().equals(STMKnownRuleNames.tableName)) {
+                tables.add(context.collectTableReference(tableNameNode));
+            }
+        }
+        boolean ifExists = node.findChildOfName(STMKnownRuleNames.ifExistsSpec) != null; // "IF EXISTS" presented
+        return new SQLQueryTableDropModel(context, node, tables, ifExists);
+    }
+
+    private SQLQueryTableDropModel(
         @NotNull SQLQueryModelContext context,
         @NotNull STMTreeNode syntaxNode,
         @Nullable List<SQLQueryRowsTableDataModel> tables,

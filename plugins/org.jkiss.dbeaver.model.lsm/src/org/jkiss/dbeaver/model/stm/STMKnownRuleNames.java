@@ -265,7 +265,6 @@ public class STMKnownRuleNames {
 
     // schema definition
     public static final String sqlSchemaStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_sqlSchemaStatement];
-    public static final String sqlSchemaDefinitionStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_sqlSchemaDefinitionStatement];
     public static final String schemaDefinition = SQLStandardParser.ruleNames[SQLStandardParser.RULE_schemaDefinition];
     public static final String schemaNameClause = SQLStandardParser.ruleNames[SQLStandardParser.RULE_schemaNameClause];
     public static final String schemaAuthorizationIdentifier = SQLStandardParser.ruleNames[SQLStandardParser.RULE_schemaAuthorizationIdentifier];
@@ -282,7 +281,6 @@ public class STMKnownRuleNames {
     public static final String tableElement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_tableElement];
 
     // schema ddl
-    public static final String sqlSchemaManipulationStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_sqlSchemaManipulationStatement];
     public static final String dropSchemaStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dropSchemaStatement];
     public static final String dropBehaviour = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dropBehaviour];
     public static final String alterTableStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_alterTableStatement];

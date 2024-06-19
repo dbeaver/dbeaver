@@ -317,8 +317,7 @@ columnIndex: UnsignedInteger;
 orderingSpecification: (ASC|DESC);
 
 // schema definition
-sqlSchemaStatement: (sqlSchemaDefinitionStatement|sqlSchemaManipulationStatement);
-sqlSchemaDefinitionStatement: (schemaDefinition|tableDefinition|viewDefinition);
+sqlSchemaStatement: (schemaDefinition|tableDefinition|viewDefinition|dropSchemaStatement|alterTableStatement|dropTableStatement|dropViewStatement|dropCharacterSetStatement);
 schemaDefinition: CREATE SCHEMA schemaNameClause (schemaCharacterSetSpecification)? (schemaElement)*;
 schemaNameClause: (schemaName|AUTHORIZATION schemaAuthorizationIdentifier|schemaName AUTHORIZATION schemaAuthorizationIdentifier);
 schemaAuthorizationIdentifier: authorizationIdentifier;
@@ -335,7 +334,6 @@ tableElementList: LeftParen tableElement (Comma tableElement)* RightParen;
 tableElement: (columnDefinition|tableConstraintDefinition);
 
 // schema ddl
-sqlSchemaManipulationStatement: (dropSchemaStatement|alterTableStatement|dropTableStatement|dropViewStatement|dropCharacterSetStatement);
 dropSchemaStatement: DROP SCHEMA schemaName dropBehaviour;
 dropBehaviour: (CASCADE|RESTRICT);
 alterTableStatement: ALTER TABLE tableName alterTableAction;

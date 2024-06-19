@@ -23,8 +23,10 @@ import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
+import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -35,8 +37,31 @@ public class SQLQueryTableInsertModel extends SQLQueryTableStatementModel {
     private final List<SQLQuerySymbolEntry> columnNames;
     @Nullable
     private final SQLQueryRowsSourceModel valuesRows;
-    
-    public SQLQueryTableInsertModel(
+
+
+    public static SQLQueryModelContent createModel(SQLQueryModelContext context, STMTreeNode node) {
+        STMTreeNode tableNameNode = node.findChildOfName(STMKnownRuleNames.tableName);
+        SQLQueryRowsTableDataModel tableModel = tableNameNode == null ? null : context.collectTableReference(tableNameNode);
+
+        List<SQLQuerySymbolEntry> columnNames;
+        SQLQueryRowsSourceModel valuesRows;
+
+        STMTreeNode insertColumnsAndSource = node.findChildOfName(STMKnownRuleNames.insertColumnsAndSource);
+        if (insertColumnsAndSource != null) {
+            STMTreeNode insertColumnList = insertColumnsAndSource.findChildOfName(STMKnownRuleNames.insertColumnList);
+            columnNames = insertColumnList == null ? null : context.collectColumnNameList(insertColumnList);
+
+            STMTreeNode valuesNode = insertColumnsAndSource.findChildOfName(STMKnownRuleNames.queryExpression);
+            valuesRows = valuesNode == null ? null : context.collectQueryExpression(valuesNode);
+        } else {
+            columnNames = Collections.emptyList();
+            valuesRows = null; // use default table?
+        }
+
+        return new SQLQueryTableInsertModel(context, node, tableModel, columnNames, valuesRows);
+    }
+
+    private SQLQueryTableInsertModel(
         @NotNull SQLQueryModelContext context,
         @NotNull STMTreeNode syntaxNode,
         @Nullable SQLQueryRowsTableDataModel tableModel,

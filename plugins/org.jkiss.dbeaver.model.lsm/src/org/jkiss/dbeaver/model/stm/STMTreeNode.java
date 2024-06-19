@@ -6,6 +6,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.Tree;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.AbstractList;
 import java.util.List;
@@ -45,7 +46,7 @@ public interface STMTreeNode extends Tree {
     /**
      * Get the text fragment covered by the node
      */
-    @Nullable
+    @NotNull
     default String getTextContent() {
         String result = null;
         if (this instanceof STMTreeRuleNode ruleNode) {
@@ -71,7 +72,7 @@ public interface STMTreeNode extends Tree {
                 result = b.getSymbol().getTokenSource().getInputStream().getText(textRange);
             }
         }
-        return result;
+        return CommonUtils.notEmpty(result);
     }
 
     /**

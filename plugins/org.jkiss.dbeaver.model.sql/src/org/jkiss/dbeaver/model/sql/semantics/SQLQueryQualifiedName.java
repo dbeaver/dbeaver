@@ -175,7 +175,7 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem {
 
     @Override
     public String toString() {
-        return super.toString() + "[" + String.join(".", this.toListOfStrings()) + "]";
+        return String.join(".", this.toListOfStrings());
     }
 
     @Override
