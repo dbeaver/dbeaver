@@ -1,25 +1,34 @@
 package org.jkiss.dbeaver.ext.gaussdb.ui;
 
-import java.awt.Composite;
+import java.util.ArrayList;
 import java.util.List;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.gaussdb.model.DBCompatibilityEnum;
 import org.jkiss.dbeaver.ext.gaussdb.model.GaussDBDataSource;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreCharset;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace;
-import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 public class GaussDBCreateDatabaseDialog extends BaseDialog {
-
     private final GaussDBDataSource dataSource;
     private List<PostgreRole>       allUsers;
     private List<PostgreCharset>    allEncodings;
@@ -33,7 +42,7 @@ public class GaussDBCreateDatabaseDialog extends BaseDialog {
     private String                  compatibleMode;
     private Combo                   dbCompatibleMode;
     private Combo                   userCombo;
-    private Combo                   encodinCombo;
+    private Combo                   encodingCombo;
     private Combo                   tablespaceCombo;
 
     public GaussDBCreateDatabaseDialog(Shell parentShell, GaussDBDataSource dataSource) {
@@ -55,58 +64,146 @@ public class GaussDBCreateDatabaseDialog extends BaseDialog {
             name = nameText.getText().trim();
             getButton(IDialogConstants.OK_ID).setEnabled(!name.isEmpty());
         });
-    }
 
-    public GaussDBDataSource getDataSource() {
-        return dataSource;
-    }
+        if (supportsRoles) {
+            userCombo = UIUtils.createLabelCombo(groupGeneral, PostgreMessages.dialog_create_db_label_owner,
+                                                 SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            userCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    owner = allUsers.get(userCombo.getSelectionIndex());
+                }
+            });
+        }
 
-    public List<PostgreRole> getAllUsers() {
-        return allUsers;
-    }
+        final Composite groupDefinition = UIUtils.createControlGroup(composite, PostgreMessages.dialog_create_db_group_definition,
+                                                                     2, GridData.FILL_HORIZONTAL, SWT.NONE);
+        if (supportsEncodings) {
+            encodingCombo = UIUtils.createLabelCombo(groupDefinition, PostgreMessages.dialog_create_db_label_encoding,
+                                                     SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            encodingCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    encoding = allEncodings.get(encodingCombo.getSelectionIndex());
+                }
+            });
+        }
 
-    public List<PostgreCharset> getAllEncodings() {
-        return allEncodings;
-    }
+        if (supportsTablespaces) {
+            tablespaceCombo = UIUtils.createLabelCombo(groupDefinition, PostgreMessages.dialog_create_db_label_tablesapce,
+                                                       SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            tablespaceCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (tablespaceCombo.getSelectionIndex() == 0) {
+                        tablespace = null;
+                    } else {
+                        tablespace = allTablespaces.get(tablespaceCombo.getSelectionIndex() - 1);
+                    }
+                }
+            });
+        }
 
-    public List<PostgreTablespace> getAllTablespaces() {
-        return allTablespaces;
-    }
+        dbCompatibleMode = UIUtils.createLabelCombo(groupDefinition, "DataBase Compatibility Mode",
+                                                    SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+        dbCompatibleMode.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                compatibleMode = dbCompatibleMode.getText();
+            }
+        });
 
-    public String getName() {
-        return name;
-    }
+        new AbstractJob("Load users") {
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                monitor.beginTask("Create database", 1);
+                try {
+                    PostgreDatabase database = dataSource.getDefaultInstance();
+                    allUsers = supportsRoles ? new ArrayList<>(database.getUsers(monitor)) : null;
+                    allEncodings = supportsEncodings ? new ArrayList<>(database.getEncodings(monitor)) : null;
+                    allTablespaces = supportsTablespaces ? new ArrayList<>(database.getTablespaces(monitor)) : null;
 
-    public PostgreRole getOwner() {
-        return owner;
-    }
+                    final PostgreRole dba = supportsRoles ? database.getDBA(monitor) : null;
+                    final String defUserName = dba == null ? "" : dba.getName();
+                    final PostgreCharset defCharset = supportsEncodings ? database.getDefaultEncoding(monitor) : null;
+                    final PostgreTablespace defTablespace = supportsTablespaces ? database.getDefaultTablespace(monitor) : null;
 
-    public String getDbTemplate() {
-        return dbTemplate;
-    }
+                    UIUtils.syncExec(() -> {
+                        if (userCombo != null) {
+                            for (PostgreRole authId : allUsers) {
+                                String name = authId.getName();
+                                userCombo.add(name);
+                                if (name.equals(defUserName)) {
+                                    owner = authId;
+                                }
+                            }
+                            userCombo.setText(defUserName);
+                        }
 
-    public PostgreCharset getEncoding() {
-        return encoding;
-    }
+                        if (encodingCombo != null) {
+                            for (PostgreCharset charset : allEncodings) {
+                                encodingCombo.add(charset.getName());
+                                if (charset == defCharset) {
+                                    encoding = defCharset;
+                                }
+                            }
+                            if (defCharset != null) {
+                                encodingCombo.setText(defCharset.getName());
+                            }
+                        }
 
-    public PostgreTablespace getTablespace() {
-        return tablespace;
+                        if (tablespaceCombo != null) {
+                            tablespaceCombo.add(PostgreMessages.dialog_create_db_tablespace_default);
+                            for (PostgreTablespace ts : allTablespaces) {
+                                tablespaceCombo.add(ts.getName());
+                                if (ts == defTablespace) {
+                                    tablespace = ts;
+                                }
+                            }
+                            tablespaceCombo.setText(defTablespace.getName());
+                        }
+
+                        if (dbCompatibleMode != null) {
+                            dbCompatibleMode.add("");
+                            for (DBCompatibilityEnum value : DBCompatibilityEnum.values()) {
+                                dbCompatibleMode.add(value.getText());
+                            }
+                        }
+                    });
+                } catch (DBException e) {
+                    return GeneralUtils.makeExceptionStatus(e);
+                } finally {
+                    monitor.done();
+                }
+                return Status.OK_STATUS;
+            }
+        }.schedule();
+
+        return composite;
     }
 
     public String getCompatibleMode() {
-        return compatibleMode;
+        return this.compatibleMode;
     }
 
-    public Combo getDbCompatibleMode() {
-        return dbCompatibleMode;
+    public String getName() {
+        return this.name;
     }
 
-    public Combo getEncodinCombo() {
-        return encodinCombo;
+    public PostgreRole getOwner() {
+        return this.owner;
     }
 
-    public Combo getTablespaceCombo() {
-        return tablespaceCombo;
+    public String getTemplateName() {
+        return this.dbTemplate;
+    }
+
+    public PostgreCharset getEncoding() {
+        return this.encoding;
+    }
+
+    public PostgreTablespace getTablespace() {
+        return this.tablespace;
     }
 
     @Override
