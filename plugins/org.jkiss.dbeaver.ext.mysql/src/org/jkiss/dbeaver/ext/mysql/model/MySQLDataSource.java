@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -465,7 +466,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
 
     @NotNull
     @Override
-    public Class<? extends MySQLCatalog> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) {
+    public Class<? extends MySQLCatalog> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) {
         return MySQLCatalog.class;
     }
 
@@ -538,7 +539,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                 }
             }
         } catch (SQLException ex) {
-            throw new DBException(ex, this);
+            throw new DBDatabaseException(ex, this);
         }
     }
 
@@ -630,14 +631,19 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     List<MySQLPrivilege> privileges = new ArrayList<>();
                     while (dbResult.next()) {
-                        MySQLPrivilege user = new MySQLPrivilege(this, dbResult);
+                        String context = JDBCUtils.safeGetString(dbResult, "context");
+                        if (CommonUtils.isEmpty(context)) {
+                            log.debug("Skip privilege with an empty context.");
+                            continue;
+                        }
+                        MySQLPrivilege user = new MySQLPrivilege(this, context, dbResult);
                         privileges.add(user);
                     }
                     return privileges;
                 }
             }
         } catch (SQLException ex) {
-            throw new DBException(ex, this);
+            throw new DBDatabaseException(ex, this);
         }
     }
 
@@ -684,7 +690,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                 }
             }
         } catch (SQLException ex) {
-            throw new DBException(ex, this);
+            throw new DBDatabaseException(ex, this);
         }
     }
 

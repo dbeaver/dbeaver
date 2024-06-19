@@ -21,6 +21,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
+import org.jkiss.dbeaver.ui.dashboard.control.DashboardListViewer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewer;
 import org.jkiss.dbeaver.ui.dashboard.view.DashboardAddItemDialog;
 
@@ -30,12 +31,14 @@ public class HandlerDashboardAddItem extends HandlerDashboardAbstract {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         DashboardViewer view = getActiveDashboardView(event);
         if (view != null) {
-            DashboardAddItemDialog addDialog = new DashboardAddItemDialog(HandlerUtil.getActiveShell(event), view.getConfiguration());
-            if (addDialog.open() == IDialogConstants.OK_ID) {
-                DashboardItemConfiguration selectedDashboard = addDialog.getSelectedDashboard();
-                if (selectedDashboard != null) {
-                    view.getConfiguration().readDashboardItemConfiguration(selectedDashboard);
-                    view.getDashboardListViewer().getDefaultGroup().addItem(selectedDashboard);
+            DashboardListViewer listViewer = view.getDashboardListViewer();
+            if (listViewer != null) {
+                DashboardAddItemDialog addDialog = new DashboardAddItemDialog(HandlerUtil.getActiveShell(event), view.getConfiguration());
+                if (addDialog.open() == IDialogConstants.OK_ID) {
+                    DashboardItemConfiguration selectedDashboard = addDialog.getSelectedDashboard();
+                    if (selectedDashboard != null) {
+                        listViewer.getDefaultGroup().addItem(selectedDashboard);
+                    }
                 }
             }
         }

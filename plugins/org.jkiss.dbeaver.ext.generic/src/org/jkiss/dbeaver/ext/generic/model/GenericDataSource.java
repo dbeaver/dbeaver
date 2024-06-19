@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -517,7 +518,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
                         if (e instanceof DBException) {
                             throw (DBException) e;
                         }
-                        throw new DBException("Error reading schema list", e, this);
+                        throw new DBDatabaseException("Error reading schema list", e, this);
                     }
                 }
 
@@ -529,7 +530,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
             if (ex instanceof DBException) {
                 throw (DBException) ex;
             }
-            throw new DBException("Error reading metadata", ex, this);
+            throw new DBDatabaseException("Error reading metadata", ex, this);
         }
     }
 
@@ -699,7 +700,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
 
     @NotNull
     @Override
-    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (!CommonUtils.isEmpty(catalogs)) {
             return GenericCatalog.class;
         } else if (schemas != null && !schemas.isEmpty()) {

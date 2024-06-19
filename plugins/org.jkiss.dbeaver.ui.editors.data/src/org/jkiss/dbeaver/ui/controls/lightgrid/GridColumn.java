@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.controls.lightgrid;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -53,7 +54,7 @@ public class GridColumn implements IGridColumn {
     private final GridColumn parent;
     private List<GridColumn> children;
 
-    private int level;
+    private final int level;
     private int width = DEFAULT_WIDTH;
     private int height = -1;
     private int pinIndex = -1;
@@ -83,6 +84,11 @@ public class GridColumn implements IGridColumn {
     @Override
     public int getIndex() {
         return grid.indexOf(this);
+    }
+
+    @Override
+    public int getLevel() {
+        return level;
     }
 
     /**
@@ -199,7 +205,7 @@ public class GridColumn implements IGridColumn {
         return height + childHeight;
     }
 
-    int computeHeaderWidth() {
+    int computeHeaderWidth(GC gc) {
         int x = leftMargin;
         final IGridLabelProvider labelProvider = grid.getLabelProvider();
         Image image = labelProvider.getImage(this);
@@ -209,13 +215,13 @@ public class GridColumn implements IGridColumn {
         {
             int textWidth;
             if (Boolean.TRUE.equals(labelProvider.getGridOption(IGridLabelProvider.OPTION_EXCLUDE_COLUMN_NAME_FOR_WIDTH_CALC))) {
-                textWidth = grid.sizingGC.stringExtent("X").x;
+                textWidth = gc.stringExtent("X").x;
             } else {
                 String text = labelProvider.getText(this);
                 String description = labelProvider.getDescription(this);
-                textWidth = grid.sizingGC.stringExtent(text).x;
+                textWidth = gc.stringExtent(text).x;
                 if (!CommonUtils.isEmpty(description)) {
-                    int descWidth = grid.sizingGC.stringExtent(description).x;
+                    int descWidth = gc.stringExtent(description).x;
                     if (descWidth > textWidth) {
                         textWidth = descWidth;
                     }
@@ -232,7 +238,7 @@ public class GridColumn implements IGridColumn {
         if (!CommonUtils.isEmpty(children)) {
             int childWidth = 0;
             for (GridColumn child : children) {
-                childWidth += child.computeHeaderWidth();
+                childWidth += child.computeHeaderWidth(gc);
             }
             return Math.max(x, childWidth);
         }
@@ -251,8 +257,8 @@ public class GridColumn implements IGridColumn {
     /**
      * Causes the receiver to be resized to its preferred size.
      */
-    void pack(boolean reflect) {
-        int newWidth = computeHeaderWidth();
+    void pack(GC gc, boolean reflect) {
+        int newWidth = computeHeaderWidth(gc);
         if (CommonUtils.isEmpty(children)) {
             // Calculate width of visible cells
             int topIndex = grid.getTopIndex();
@@ -260,13 +266,13 @@ public class GridColumn implements IGridColumn {
             if (topIndex >= 0 && bottomIndex >= topIndex) {
                 int itemCount = grid.getItemCount();
                 for (int i = topIndex; i <= bottomIndex && i < itemCount; i++) {
-                    newWidth = Math.max(newWidth, computeCellWidth(grid.getRow(i)));
+                    newWidth = Math.max(newWidth, computeCellWidth(gc, grid.getRow(i)));
                 }
             }
         } else {
             int childrenWidth = 0;
             for (GridColumn child : children) {
-                child.pack(reflect);
+                child.pack(gc, reflect);
                 childrenWidth += child.getWidth();
             }
             if (newWidth > childrenWidth) {
@@ -284,7 +290,7 @@ public class GridColumn implements IGridColumn {
         }
     }
 
-    private int computeCellWidth(IGridRow row) {
+    private int computeCellWidth(GC gc, IGridRow row) {
         int x = 0;
 
         x += leftMargin;
@@ -305,7 +311,7 @@ public class GridColumn implements IGridColumn {
             x += imageBounds.width + insideMargin;
         }
 
-        x += grid.sizingGC.textExtent(cellText).x + rightMargin;
+        x += gc.textExtent(cellText).x + rightMargin;
         return x;
     }
 
@@ -368,10 +374,6 @@ public class GridColumn implements IGridColumn {
 
     private void removeChild(GridColumn column) {
         children.remove(column);
-    }
-
-    public int getLevel() {
-        return level;
     }
 
     public boolean isParent(GridColumn col) {

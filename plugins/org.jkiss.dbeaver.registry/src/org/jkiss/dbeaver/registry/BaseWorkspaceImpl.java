@@ -279,6 +279,11 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse {
     }
 
     public static String readWorkspaceId() {
+        return readWorkspaceIdProperty() + "-" + getLocalHostId();
+    }
+
+    @NotNull
+    public static String readWorkspaceIdProperty() {
         // Check workspace ID
         Path metadataFolder = GeneralUtils.getMetadataFolder();
         Properties workspaceInfo = BaseWorkspaceImpl.readWorkspaceInfo(metadataFolder);
@@ -291,10 +296,10 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse {
             workspaceInfo.setProperty(WORKSPACE_ID, workspaceId);
             BaseWorkspaceImpl.writeWorkspaceInfo(metadataFolder, workspaceInfo);
         }
-        return workspaceId + "-" + getLocalHostId();
+        return workspaceId;
     }
 
-    private static String getLocalHostId() {
+    public static String getLocalHostId() {
         // Here we get local machine identifier. It is hashed and thus depersonalized
         try {
             InetAddress localHost = RuntimeUtils.getLocalHostOrLoopback();

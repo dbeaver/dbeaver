@@ -70,9 +70,8 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
     private static final Log log = Log.getLog(StatisticsNavigatorNodeRenderer.class);
     private static final int PERCENT_FILL_WIDTH = 50;
     //public static final String ITEM_WIDTH_ATTR = "item.width";
-
-    private static final RGB HOST_NAME_FG_DARK = new RGB(140,140,140);
-    private static final RGB HOST_NAME_FG_LIGHT = new RGB(105,105,105);
+    private static final String HOST_NAME_FOREGROUND_COLOR = "org.jkiss.dbeaver.ui.navigator.node.foreground";
+    private static final String TABLE_STATISTICS_BACKGROUND_COLOR = "org.jkiss.dbeaver.ui.navigator.node.statistics.background";
 
     // Disabled because of performance and a couple of glitches
     // Sometimes hover bg remains after mouse move
@@ -88,12 +87,16 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
 
     private final IPropertyChangeListener themeChangeListener;
     private Font fontItalic;
+    private Color hostNameColor;
+    private Color statisticsFrameColor;
 
     public StatisticsNavigatorNodeRenderer(INavigatorModelView view) {
         this.view = view;
         this.themeChangeListener = e -> {
             final ITheme theme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
             fontItalic = theme.getFontRegistry().getItalic(DatabaseNavigatorLabelProvider.TREE_TABLE_FONT);
+            hostNameColor = theme.getColorRegistry().get(HOST_NAME_FOREGROUND_COLOR);
+            statisticsFrameColor = theme.getColorRegistry().get(TABLE_STATISTICS_BACKGROUND_COLOR);
         };
         this.themeChangeListener.propertyChange(null);
 
@@ -270,11 +273,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
     private void drawText(@Nullable String text, @Nullable Color bgColor, Tree tree, GC gc, Event event, int widthOccupied) {
         if (!CommonUtils.isEmpty(text)) {
             Font oldFont = gc.getFont();
-
-            Color hostNameColor = UIUtils.getSharedColor(
-                (bgColor == null ? UIStyles.isDarkTheme() : UIUtils.isDark(bgColor.getRGB())) ?
-                    HOST_NAME_FG_DARK : HOST_NAME_FG_LIGHT);
-            gc.setForeground(hostNameColor);
+            gc.setForeground(this.hostNameColor);
             gc.setFont(fontItalic);
             Point hostTextSize = gc.stringExtent(text);
 
@@ -459,20 +458,21 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
             int xWidth = getTreeWidth(tree);
 
             if (xWidth - occupiedWidth > Math.max(PERCENT_FILL_WIDTH, textSize.x)) {
-                CTabFolder tabFolder = UIUtils.getParentOfType(tree, CTabFolder.class);
-                Color fillColor = tabFolder == null ? UIStyles.getDefaultWidgetBackground() : tabFolder.getBackground();
-
                 // Frame
-                gc.setForeground(fillColor);
+                gc.setForeground(statisticsFrameColor);
                 gc.drawRectangle(xWidth - PERCENT_FILL_WIDTH - 2, event.y + 1, PERCENT_FILL_WIDTH, event.height - 3);
 
                 // Bar
                 final int width = Math.max((int) Math.ceil((PERCENT_FILL_WIDTH - 3) * percentFull / 100.0), 1);
-                gc.setBackground(fillColor);
+                gc.setBackground(statisticsFrameColor);
                 gc.fillRectangle(xWidth - PERCENT_FILL_WIDTH, event.y + 3, width, event.height - 6);
 
                 // Text
-                gc.setForeground(tree.getForeground());
+                if (UIStyles.isDarkHighContrastTheme() && PERCENT_FILL_WIDTH - width < PERCENT_FILL_WIDTH / 2) {
+                    gc.setForeground(tree.getBackground());
+                } else {
+                    gc.setForeground(tree.getForeground());
+                }
                 gc.setFont(tree.getFont());
                 gc.drawText(sizeText, xWidth - textSize.x, event.y + (event.height - textSize.y) / 2, true);
 
@@ -571,7 +571,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                     }
                 });
             } catch (DBException e) {
-                log.error(e);
+                log.debug(e);
             } finally {
                 monitor.done();
             }

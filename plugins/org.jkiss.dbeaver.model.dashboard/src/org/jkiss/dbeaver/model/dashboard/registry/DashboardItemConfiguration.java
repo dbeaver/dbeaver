@@ -215,6 +215,10 @@ public class DashboardItemConfiguration extends AbstractContextDescriptor implem
         if (CommonUtils.isEmpty(this.renderer)) {
             this.renderer = DashboardConstants.DEF_DASHBOARD_VIEW_TYPE;
         }
+        if (this.renderer.equals("browser") && this.dataType == DBDashboardDataType.timeseries) {
+            // NOTE: Fix for old dashboards with browser renderer
+            this.dataType = DBDashboardDataType.provided;
+        }
         this.widthRatio = (float) CommonUtils.toDouble(config.getAttribute("ratio"), DashboardConstants.DEF_DASHBOARD_WIDTH_RATIO);
         this.calcType = CommonUtils.valueOf(DBDashboardCalcType.class, config.getAttribute("calc"), DashboardConstants.DEF_DASHBOARD_CALC_TYPE);
         this.valueType = CommonUtils.valueOf(DBDashboardValueType.class, config.getAttribute("value"), DashboardConstants.DEF_DASHBOARD_VALUE_TYPE);

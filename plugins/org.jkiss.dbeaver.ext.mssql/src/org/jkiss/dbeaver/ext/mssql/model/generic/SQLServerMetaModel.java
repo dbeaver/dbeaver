@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.mssql.model.generic;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.*;
@@ -61,6 +62,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     private final boolean sqlServer;
     private final Map<String, Boolean> sysViewsCache = new HashMap<>();
+    private boolean hasMetaDataProcedureView;
 
     public SQLServerMetaModel() {
         this(true);
@@ -95,14 +97,13 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         return new SQLServerGenericSchema(dataSource, catalog, schemaName, 0);
     }
 
-    public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
+    public String getViewDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericView sourceObject, @NotNull Map<String, Object> options) throws DBException {
         return extractSource(monitor, sourceObject.getDataSource(), sourceObject, sourceObject.getCatalog(), sourceObject.getSchema().getName(), sourceObject.getName());
     }
 
     @Override
     public void loadProcedures(DBRProgressMonitor monitor, @NotNull GenericObjectContainer container) throws DBException {
         if (!isSqlServer()) {
-            // #4378
             GenericDataSource dataSource = container.getDataSource();
             String dbName = DBUtils.getQuotedIdentifier(container.getParentObject());
             try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Sybase procedure list")) {
@@ -136,7 +137,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                     }
                 }
             } catch (SQLException e) {
-                throw new DBException(e, dataSource);
+                throw new DBDatabaseException(e, dataSource);
             }
         } else {
             super.loadProcedures(monitor, container);
@@ -166,27 +167,41 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                     }
                 }
             } catch (SQLException e) {
-                throw new DBException(e, dataSource);
+                throw new DBDatabaseException(e, dataSource);
             }
         }
         if (getServerType() == ServerType.SYBASE) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read routine definition")) {
-                try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT proc_defn from SYS.SYSPROCEDURE s\n" +
-                        "LEFT JOIN " + DBUtils.getQuotedIdentifier(sourceObject.getCatalog()) + ".dbo.sysobjects so " +
-                        "ON so.id = s.object_id\n" +
-                        "WHERE s.proc_name=?"
-                )) {
-                    dbStat.setString(1, objectName);
-                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                        if (dbResult.nextRow()) {
-                            return dbResult.getString(1);
+                if (dataSource instanceof SQLServerGenericDataSource sqlDataSource &&
+                    sqlDataSource.hasMetaDataProcedureView()) {
+                    try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                        "SELECT source, proc_defn " +
+                            "FROM SYS.SYSPROCEDURE s\n" +
+                            "LEFT JOIN " +
+                            DBUtils.getQuotedIdentifier(sourceObject.getCatalog()) + ".dbo.sysobjects so " +
+                            "ON so.id = s.object_id\n" +
+                            "WHERE s.proc_name=?")) {
+                        dbStat.setString(1, objectName);
+                        try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                            if (dbResult.nextRow()) {
+                                String source = dbResult.getString(1);
+                                if (!CommonUtils.isEmpty(source)) {
+                                    return source;
+                                }
+                                return dbResult.getString(2);
+                            }
+                            return "-- Routine '" + objectName + "' definition not found";
                         }
-                        return "-- Routine '" + objectName + "' definition not found";
                     }
                 }
+                return extractSource(monitor,
+                    dataSource,
+                    sourceObject,
+                    sourceObject.getCatalog(),
+                    sourceObject.getSchema().getName(),
+                    objectName);
             } catch (SQLException e) {
-                throw new DBException(e, dataSource);
+                throw new DBDatabaseException(e, dataSource);
             }
         }
         return extractSource(monitor, dataSource, sourceObject, sourceObject.getCatalog(), sourceObject.getSchema().getName(), objectName);
@@ -257,7 +272,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                 return result;
             }
         } catch (SQLException e) {
-            throw new DBException(e, container.getDataSource());
+            throw new DBDatabaseException(e, container.getDataSource());
         }
     }
 
@@ -326,7 +341,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                 }
             }
         } catch (SQLException e) {
-            throw new DBException(e, dataSource);
+            throw new DBDatabaseException(e, dataSource);
         }
     }
 
@@ -424,7 +439,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
             }
         } catch (SQLException e) {
             if (dataSource.discoverErrorType(e) == DBPErrorAssistant.ErrorType.CONNECTION_LOST) {
-                throw new DBException(e, dataSource);
+                throw new DBDatabaseException(e, dataSource);
             } else {
                 log.warn("Schema read failed: empty list returned. Try generic method.", e);
                 schemaReadFailed = true;
@@ -489,7 +504,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     @Override
-    public GenericSynonym createSynonymImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer container, @NotNull JDBCResultSet dbResult) throws DBException {
+    public GenericSynonym createSynonymImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer container, @NotNull JDBCResultSet dbResult) {
         String name = JDBCUtils.safeGetString(dbResult, "name");
         if (CommonUtils.isEmpty(name)) {
             return null;
@@ -531,5 +546,4 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     private String getSystemSchema() {
         return sqlServer ? SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA : SQLServerConstants.SYBASE_SYSTEM_SCHEMA;
     }
-
 }

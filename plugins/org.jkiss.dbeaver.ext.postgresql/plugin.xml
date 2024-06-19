@@ -332,6 +332,7 @@
                     defaultUser="postgres"
                     webURL="https://jdbc.postgresql.org/"
                     propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
+                    databaseDocumentationSuffixURL="Database-driver-PostgreSQL"
                     description="%driver.postgresql.description"
                     supportedConfigurationTypes="MANUAL,URL"
                     promoted="1"
@@ -534,13 +535,14 @@
                     description="AWS Redshift JDBC driver"
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
+                    databaseDocumentationSuffixURL="Database-driver-Amazon-Redshift"
                     propertiesURL="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-options.html"
                     categories="sql,analytic,bigdata,aws"
                     dialect="postgresql">
                     <replace provider="generic" driver="aws_redshift"/>
                     <replace provider="generic" driver="aws_redshift_42"/>
 
-                    <file type="jar" path="maven:/com.amazon.redshift:redshift-jdbc42:RELEASE[2.1.0.22]" load-optional-dependencies="true" bundle="!drivers.redshift"/>
+                    <file type="jar" path="maven:/com.amazon.redshift:redshift-jdbc42:RELEASE[2.1.0.29]" load-optional-dependencies="true" bundle="!drivers.redshift"/>
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.redshift"/>
                     <file type="jar" path="drivers/redshift" bundle="drivers.redshift"/>
 
@@ -584,6 +586,7 @@
                         defaultPort="5432"
                         webURL="https://cloud.google.com/sql"
                         propertiesURL="https://github.com/GoogleCloudPlatform/cloud-sql-jdbc-socket-factory#postgresql-1"
+                        databaseDocumentationSuffixURL="Database-driver-PostgreSQL-on-Google-Cloud"
                         description="%driver.gcloudpg.description"
                         supportedConfigurationTypes="MANUAL,URL"
                         categories="sql,cloud">

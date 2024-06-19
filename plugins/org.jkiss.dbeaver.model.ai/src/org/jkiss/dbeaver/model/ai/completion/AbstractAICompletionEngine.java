@@ -86,6 +86,22 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
 
     protected abstract int getMaxTokens();
 
+    /**
+     * Provides instructions for the AI so it can generate more accurate completions
+     *
+     * @param chatCompletion if the completion is for the chat mode, or for a single completion request.
+     */
+    @NotNull
+    protected String getInstructions(boolean chatCompletion) {
+        return """
+            You are SQL assistant. You must produce SQL code for given prompt.
+            You must produce valid SQL statement enclosed with Markdown code block and terminated with semicolon.
+            All database object names should be properly escaped according to the SQL dialect.
+            All comments MUST be placed before query outside markdown code block.
+            Be polite.
+            """;
+    }
+
     @Nullable
     abstract protected String requestCompletion(
         @NotNull DBRProgressMonitor monitor,

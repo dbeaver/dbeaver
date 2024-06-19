@@ -237,7 +237,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
                 }
             }
         } catch (Exception e) {
-            log.error("Error reading table statistics", e);
+            log.debug("Error reading table statistics", e);
         } finally {
             if (tableSize == null) {
                 tableSize = 0L;

@@ -18,14 +18,12 @@ package org.jkiss.dbeaver.ext.cubrid.model.plan;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanNodeKind;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -55,6 +53,7 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
         parseObject(parent == null ? this.getSegments() : segments);
         parseNode();
     }
+
 
     @NotNull
     @Property(order = 0, viewable = true)
@@ -98,6 +97,16 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
     @Override
     public Collection<CubridPlanNode> getNested() {
         return nested;
+    }
+
+    @Override
+    public DBCPlanNodeKind getNodeKind() {
+        if ("sscan".equals(name)) {
+            return DBCPlanNodeKind.TABLE_SCAN;
+        } else if ("iscan".equals(name)) {
+            return DBCPlanNodeKind.INDEX_SCAN;
+        }
+        return super.getNodeKind();
     }
 
     @Nullable

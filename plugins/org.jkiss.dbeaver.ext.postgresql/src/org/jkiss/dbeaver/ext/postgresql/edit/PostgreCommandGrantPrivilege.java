@@ -103,7 +103,7 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
             } else {
                 roleName = "";
             }
-            objectName = PostgreUtils.getObjectUniqueName(object);
+            objectName = PostgreUtils.getObjectUniqueName(object, options);
         }
 
         String objectType;

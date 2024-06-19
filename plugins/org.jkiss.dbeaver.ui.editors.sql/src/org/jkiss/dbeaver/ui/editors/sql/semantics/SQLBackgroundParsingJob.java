@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
+import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserContext;
 import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 import org.jkiss.dbeaver.model.sql.semantics.*;
@@ -503,19 +504,21 @@ public class SQLBackgroundParsingJob {
                 }
             }
 
-            boolean isReadMetadataForQueryAnalysis = this.editor.isReadMetadataForQueryAnalysisEnabled();
+            boolean useRealMetadata = this.editor.isReadMetadataForQueryAnalysisEnabled();
             DBCExecutionContext executionContext = this.editor.getExecutionContext();
             
             monitor.beginTask("Background query analysis for " + editor.getTitle(), 1 + elements.size());
             monitor.worked(1);
-            
+
+            SQLSyntaxManager syntaxManager = this.editor.getSyntaxManager();
+
             int i = 1;
             for (SQLScriptElement element : elements) {
                 if (monitor.isCanceled()) {
                     break;
                 }
                 try {
-                    SQLQueryModelRecognizer recognizer = new SQLQueryModelRecognizer(executionContext, isReadMetadataForQueryAnalysis);
+                    SQLQueryModelRecognizer recognizer = new SQLQueryModelRecognizer(executionContext, useRealMetadata, syntaxManager);
                     SQLQueryModel queryModel = recognizer.recognizeQuery(
                         element.getOriginalText(),
                         RuntimeUtils.makeMonitor(monitor)

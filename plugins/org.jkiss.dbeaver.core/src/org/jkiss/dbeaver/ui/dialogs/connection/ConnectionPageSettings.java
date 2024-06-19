@@ -26,10 +26,7 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.custom.CTabFolder2Adapter;
-import org.eclipse.swt.custom.CTabFolderEvent;
-import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.custom.*;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -37,7 +34,6 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
@@ -46,6 +42,7 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -62,6 +59,7 @@ import org.jkiss.dbeaver.registry.DataSourceViewRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
@@ -423,13 +421,10 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         item.setToolTipText(page.getDescription());
 
         if (page.getControl() == null) {
-            final Composite placeholder = new Composite(tabFolder, SWT.NONE);
-            placeholder.setLayout(new FillLayout());
-            item.setControl(placeholder);
+            // TODO: We should respect pages that might not want to be scrollable (e.g. if they have their own scrollable controls)
+            item.setControl(UIUtils.createScrolledComposite(tabFolder, SWT.H_SCROLL | SWT.V_SCROLL));
         } else {
-            final Control control = page.getControl();
-            control.setParent(tabFolder);
-            item.setControl(control);
+            item.setControl(page.getControl().getParent());
         }
 
         return item;
@@ -442,17 +437,21 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 IDialogPage page = (IDialogPage) selection.getData();
                 if (page.getControl() == null) {
                     // Create page
-                    Composite panel = (Composite) selection.getControl();
+                    ScrolledComposite panel = (ScrolledComposite) selection.getControl();
                     panel.setRedraw(false);
                     try {
                         page.createControl(panel);
                         Dialog.applyDialogFont(panel);
+                        UIUtils.configureScrolledComposite(panel, page.getControl());
                         panel.layout(true, true);
+                    } catch (Throwable e) {
+                        DBWorkbench.getPlatformUI().showError("Error creating configuration page", null, e);
                     } finally {
                         panel.setRedraw(true);
                     }
                 }
                 page.setVisible(true);
+                updatePageCompletion();
             }
         }
     }
@@ -463,9 +462,57 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     }
 
     @Override
+    protected void updatePageCompletion() {
+        for (CTabItem item : tabFolder.getItems()) {
+            final IDialogPage page = (IDialogPage) item.getData();
+            final boolean complete;
+
+            if (item.getData() instanceof IWizardPage p) {
+                complete = p.isPageComplete();
+            } else if (item.getData() instanceof IDataSourceConnectionEditor p) {
+                complete = p.isComplete();
+            } else {
+                continue;
+            }
+
+            if (complete || tabFolder.getSelection() == item) {
+                item.setImage(null);
+                item.setToolTipText(page.getDescription());
+            } else {
+                item.setImage(DBeaverIcons.getImage(DBIcon.SMALL_ERROR));
+                item.setToolTipText(Objects.requireNonNullElse(page.getErrorMessage(), "Page is incomplete"));
+            }
+        }
+
+        super.updatePageCompletion();
+    }
+
+    @Override
     public boolean isPageComplete() {
+        if (subPages != null) {
+            for (IDialogPage page : subPages) {
+                if (page instanceof IWizardPage wizardPage && !wizardPage.isPageComplete()) {
+                    return false;
+                }
+                if (page instanceof IDataSourceConnectionEditor editor && !editor.isComplete()) {
+                    return false;
+                }
+            }
+        }
         return wizard.getPageSettings() != this ||
             this.connectionEditor != null && this.connectionEditor.isComplete();
+    }
+
+    @Override
+    public String getErrorMessage() {
+        final IDialogPage subPage = getCurrentSubPage();
+        if (subPage != null && subPage.getErrorMessage() != null) {
+            return subPage.getErrorMessage();
+        }
+        if (connectionEditor != null && connectionEditor.getErrorMessage() != null) {
+            return connectionEditor.getErrorMessage();
+        }
+        return super.getErrorMessage();
     }
 
     @Override
@@ -499,7 +546,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
     @Override
     public void updateButtons() {
-        getWizard().getContainer().updateButtons();
+        updatePageCompletion();
+        // getWizard().getContainer().updateButtons();
     }
 
     @Override
@@ -605,8 +653,11 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
             if (!ArrayUtils.isEmpty(subPages)) {
                 for (IDialogPage page : subPages) {
-                    if (page instanceof IDataSourceConnectionEditor) {
-                        ((IDataSourceConnectionEditor) page).setSite(this);
+                    if (page instanceof IDataSourceConnectionEditor p) {
+                        p.setSite(this);
+                    }
+                    if (page instanceof IWizardPage p) {
+                        p.setWizard(getWizard());
                     }
                 }
             }
@@ -656,6 +707,13 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 break;
             }
         }
+    }
+
+    @Override
+    @Nullable
+    public IDialogPage getCurrentSubPage() {
+        final CTabItem selection = tabFolder.getSelection();
+        return selection != null ? (IDialogPage) selection.getData() : null;
     }
 
     private class AddNetworkHandlerAction extends Action {

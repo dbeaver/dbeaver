@@ -64,6 +64,7 @@ public class STMKnownRuleNames {
     // column definition
     public static final String columnDefinition = SQLStandardParser.ruleNames[SQLStandardParser.RULE_columnDefinition];
     public static final String columnName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_columnName];
+    public static final String columnIndex = SQLStandardParser.ruleNames[SQLStandardParser.RULE_columnIndex];
 
     // default
     public static final String defaultClause = SQLStandardParser.ruleNames[SQLStandardParser.RULE_defaultClause];
@@ -127,7 +128,7 @@ public class STMKnownRuleNames {
     public static final String dynamicParameterSpecification = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dynamicParameterSpecification];
     public static final String columnReference = SQLStandardParser.ruleNames[SQLStandardParser.RULE_columnReference];
     public static final String valueReference = SQLStandardParser.ruleNames[SQLStandardParser.RULE_valueReference];
-    public static final String valueExpressionCast = SQLStandardParser.ruleNames[SQLStandardParser.RULE_valueExpressionCast];
+    public static final String valueExpressionCastSpec = SQLStandardParser.ruleNames[SQLStandardParser.RULE_valueExpressionCastSpec];
     public static final String variableExpression = SQLStandardParser.ruleNames[SQLStandardParser.RULE_variableExpression];
 
     public static final String qualifier = SQLStandardParser.ruleNames[SQLStandardParser.RULE_qualifier];

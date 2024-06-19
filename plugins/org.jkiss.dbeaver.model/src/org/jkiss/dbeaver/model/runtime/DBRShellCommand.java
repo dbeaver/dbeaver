@@ -19,16 +19,18 @@ package org.jkiss.dbeaver.model.runtime;
 
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
+
 /**
  * DBRShellCommand
  */
-public class DBRShellCommand
-{
+public class DBRShellCommand {
 
     public static final int WAIT_PROCESS_TIMEOUT_MAX_SELECTION = 99999;
     public static final int WAIT_PROCESS_TIMEOUT_FOREVER = -1;
 
     private String command;
+    private List<String> commandParams;
     private boolean enabled;
     private boolean showProcessPanel = true;
     private boolean waitProcessFinish;
@@ -37,14 +39,17 @@ public class DBRShellCommand
     private int pauseAfterExecute = 0;
     private String workingDirectory;
 
-    public DBRShellCommand(String command)
-    {
+    public DBRShellCommand(String command) {
         this.command = command;
     }
 
-    public DBRShellCommand(DBRShellCommand command)
-    {
+    public DBRShellCommand(List<String> commandParams) {
+        this.commandParams = commandParams;
+    }
+
+    public DBRShellCommand(DBRShellCommand command) {
         this.command = command.command;
+        this.commandParams = command.commandParams;
         this.enabled = command.enabled;
         this.showProcessPanel = command.showProcessPanel;
         this.waitProcessFinish = command.waitProcessFinish;
@@ -54,61 +59,59 @@ public class DBRShellCommand
         this.workingDirectory = command.workingDirectory;
     }
 
-    public String getCommand()
-    {
+    public String getCommand() {
         return command;
     }
 
-    public void setCommand(String command)
-    {
+    public void setCommand(String command) {
         this.command = command;
     }
 
-    public boolean isEnabled()
-    {
+    public List<String> getCommandParams() {
+        return commandParams;
+    }
+
+    public void setCommandParams(List<String> commandParams) {
+        this.commandParams = commandParams;
+    }
+
+    public boolean isEnabled() {
         return enabled;
     }
 
-    public void setEnabled(boolean enabled)
-    {
+    public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
 
-    public boolean isShowProcessPanel()
-    {
+    public boolean isShowProcessPanel() {
         return showProcessPanel;
     }
 
-    public void setShowProcessPanel(boolean showProcessPanel)
-    {
+    public void setShowProcessPanel(boolean showProcessPanel) {
         this.showProcessPanel = showProcessPanel;
     }
 
-    public boolean isWaitProcessFinish()
-    {
+    public boolean isWaitProcessFinish() {
         return waitProcessFinish;
     }
 
-    public void setWaitProcessFinish(boolean waitProcessFinish)
-    {
+    public void setWaitProcessFinish(boolean waitProcessFinish) {
         this.waitProcessFinish = waitProcessFinish;
     }
 
     public int getWaitProcessTimeoutMs() {
-		return waitProcessTimeoutMs;
-	}
+        return waitProcessTimeoutMs;
+    }
 
-	public void setWaitProcessTimeoutMs(int waitProcessTimeoutMs) {
-		this.waitProcessTimeoutMs = waitProcessTimeoutMs;
-	}
+    public void setWaitProcessTimeoutMs(int waitProcessTimeoutMs) {
+        this.waitProcessTimeoutMs = waitProcessTimeoutMs;
+    }
 
-	public boolean isTerminateAtDisconnect()
-    {
+    public boolean isTerminateAtDisconnect() {
         return terminateAtDisconnect;
     }
 
-    public void setTerminateAtDisconnect(boolean terminateAtDisconnect)
-    {
+    public void setTerminateAtDisconnect(boolean terminateAtDisconnect) {
         this.terminateAtDisconnect = terminateAtDisconnect;
     }
 
@@ -120,30 +123,28 @@ public class DBRShellCommand
         this.pauseAfterExecute = pauseAfterExecute;
     }
 
-    public String getWorkingDirectory()
-    {
+    public String getWorkingDirectory() {
         return workingDirectory;
     }
 
-    public void setWorkingDirectory(String workingDirectory)
-    {
+    public void setWorkingDirectory(String workingDirectory) {
         this.workingDirectory = workingDirectory;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof DBRShellCommand)) {
+        if (!(obj instanceof DBRShellCommand source)) {
             return false;
         }
-        DBRShellCommand source = (DBRShellCommand)obj;
         return
             CommonUtils.equalObjects(this.command, source.command) &&
-            this.enabled == source.enabled &&
-            this.showProcessPanel == source.showProcessPanel &&
-            this.waitProcessFinish == source.waitProcessFinish &&
-            this.waitProcessTimeoutMs == source.waitProcessTimeoutMs &&
-            this.terminateAtDisconnect == source.terminateAtDisconnect &&
-            this.pauseAfterExecute == source.pauseAfterExecute &&
-            CommonUtils.equalObjects(this.workingDirectory, source.workingDirectory);
+            CommonUtils.equalObjects(this.commandParams, source.commandParams) &&
+                this.enabled == source.enabled &&
+                this.showProcessPanel == source.showProcessPanel &&
+                this.waitProcessFinish == source.waitProcessFinish &&
+                this.waitProcessTimeoutMs == source.waitProcessTimeoutMs &&
+                this.terminateAtDisconnect == source.terminateAtDisconnect &&
+                this.pauseAfterExecute == source.pauseAfterExecute &&
+                CommonUtils.equalObjects(this.workingDirectory, source.workingDirectory);
     }
 }

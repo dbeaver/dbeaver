@@ -28,6 +28,7 @@
                         defaultPort=""
                         description="Google Cloud Spanner Open Source JDBC Driver"
                         webURL="https://cloud.google.com/spanner/docs/use-oss-jdbc"
+                        databaseDocumentationSuffixURL="Database-driver-Google-Cloud-Spanner"
                         categories="sql,bigdata,cloud,gcp"
                         singleConnection="true">
                     <replace provider="google_spanner" driver="spanner_jdbc"/>

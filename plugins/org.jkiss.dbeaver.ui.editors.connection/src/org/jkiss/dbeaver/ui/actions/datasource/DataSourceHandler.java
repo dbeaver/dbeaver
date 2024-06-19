@@ -32,9 +32,7 @@ import org.eclipse.ui.ISaveablePart;
 import org.eclipse.ui.progress.UIJob;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreFeatures;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceTask;
@@ -50,9 +48,7 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandlerUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.entity.handlers.SaveChangesHandler;
@@ -98,7 +94,7 @@ public class DataSourceHandler {
                 return;
             }
 
-            CoreFeatures.CONNECTION_OPEN.use(Map.of(
+            ConnectionFeatures.CONNECTION_OPEN.use(Map.of(
                 "driver", dataSourceContainer.getDriver().getPreconfiguredId()
             ));
             final ConnectJob connectJob = new ConnectJob(dataSource);
@@ -165,7 +161,7 @@ public class DataSourceHandler {
                 return;
             }
 
-            CoreFeatures.CONNECTION_CLOSE.use(Map.of(
+            ConnectionFeatures.CONNECTION_CLOSE.use(Map.of(
                 "driver", dataSourceContainer.getDriver().getPreconfiguredId()
             ));
 
@@ -192,6 +188,10 @@ public class DataSourceHandler {
     }
 
     public static boolean checkAndCloseActiveTransaction(DBPDataSourceContainer container, boolean isReconnect) {
+        return checkAndCloseActiveTransaction(container, isReconnect, false);
+    }
+
+    public static boolean checkAndCloseActiveTransaction(DBPDataSourceContainer container, boolean isReconnect, boolean forceRollback) {
         try {
             DBPDataSource dataSource = container.getDataSource();
             if (dataSource == null) {
@@ -199,7 +199,7 @@ public class DataSourceHandler {
             }
 
             for (DBSInstance instance : dataSource.getAvailableInstances()) {
-                if (!checkAndCloseActiveTransaction(instance.getAllContexts(), isReconnect)) {
+                if (!checkAndCloseActiveTransaction(instance.getAllContexts(), isReconnect, forceRollback)) {
                     return false;
                 }
             }
@@ -210,6 +210,10 @@ public class DataSourceHandler {
     }
 
     public static boolean checkAndCloseActiveTransaction(DBCExecutionContext[] contexts, boolean isReconnect) {
+        return checkAndCloseActiveTransaction(contexts, isReconnect, false);
+    }
+
+    public static boolean checkAndCloseActiveTransaction(DBCExecutionContext[] contexts, boolean isReconnect, boolean forceRollback) {
         if (contexts == null) {
             return true;
         }
@@ -219,7 +223,7 @@ public class DataSourceHandler {
             // First rollback active transaction
             try {
                 if (QMUtils.isTransactionActive(context)) {
-                    if (commitTxn == null) {
+                    if (!forceRollback && commitTxn == null) {
                         // Ask for confirmation
                         TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer(
                             context.getDataSource().getContainer().getName() + " (" + context.getContextName() + ")",
@@ -227,17 +231,14 @@ public class DataSourceHandler {
                         );
                         UIUtils.syncExec(closeConfirmer);
                         switch (closeConfirmer.result) {
-                            case IDialogConstants.YES_ID:
-                                commitTxn = true;
-                                break;
-                            case IDialogConstants.NO_ID:
-                                commitTxn = false;
-                                break;
-                            default:
+                            case IDialogConstants.YES_ID -> commitTxn = true;
+                            case IDialogConstants.NO_ID -> commitTxn = false;
+                            default -> {
                                 return false;
+                            }
                         }
                     }
-                    final boolean commit = commitTxn;
+                    final boolean commit = !forceRollback && commitTxn;
                     UIUtils.runInProgressService(monitor -> closeActiveTransaction(monitor, context, commit));
                 }
             } catch (Throwable e) {
@@ -330,7 +331,7 @@ public class DataSourceHandler {
         public void run() {
             result = ConfirmationDialog.confirmAction(
                 null,
-                this.isReconnect ? DBeaverPreferences.CONFIRM_TXN_RECONNECT : DBeaverPreferences.CONFIRM_TXN_DISCONNECT,
+                this.isReconnect ? ConnectionPreferences.CONFIRM_TXN_RECONNECT : ConnectionPreferences.CONFIRM_TXN_DISCONNECT,
                 ConfirmationDialog.QUESTION_WITH_CANCEL,
                 name);
         }

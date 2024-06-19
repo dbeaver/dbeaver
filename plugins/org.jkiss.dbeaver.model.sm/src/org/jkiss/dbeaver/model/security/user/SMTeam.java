@@ -17,24 +17,28 @@
 package org.jkiss.dbeaver.model.security.user;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.LinkedHashSet;
-import java.util.Objects;
 import java.util.Set;
 
 public class SMTeam extends SMSubject {
 
+    @Nullable
     private String teamName;
+    @Nullable
     private String description;
+    @NotNull
     private Set<String> permissions = new LinkedHashSet<>();
 
-    public SMTeam(String teamId) {
+
+    public SMTeam(@NotNull String teamId) {
         this(teamId, null, null, true);
     }
 
-    public SMTeam(String teamId, String name, String description, boolean secretStorage) {
+    public SMTeam(@NotNull String teamId, @Nullable String name, @Nullable String description, boolean secretStorage) {
         super(teamId, null, secretStorage);
         this.teamName = name;
         this.description = description;
@@ -57,24 +61,26 @@ public class SMTeam extends SMSubject {
         return CommonUtils.isEmpty(teamName) ? subjectId : teamName;
     }
 
-    public void setTeamName(String teamName) {
+    public void setTeamName(@Nullable String teamName) {
         this.teamName = teamName;
     }
 
+    @Nullable
     @Property(viewable = true, order = 3)
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
+    public void setDescription(@Nullable String description) {
         this.description = description;
     }
 
+    @NotNull
     public Set<String> getPermissions() {
         return permissions;
     }
 
-    public void setPermissions(Set<String> permissions) {
+    public void setPermissions(@NotNull Set<String> permissions) {
         this.permissions = permissions;
     }
 

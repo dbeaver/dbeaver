@@ -31,9 +31,9 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionAnalyzer;
-import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
@@ -55,7 +55,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Stream;
+import java.util.function.Supplier;
 
 /**
  * The SQL content assist processor. This content assist processor proposes text
@@ -139,7 +139,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
         request.setContentType(contentType);
 
-        List<SQLCompletionProposalBase> proposals;
+        List<? extends Object> proposals;
         switch (contentType) {
             case IDocument.DEFAULT_CONTENT_TYPE:
             case SQLParserPartitions.CONTENT_TYPE_SQL_STRING:
@@ -150,7 +150,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
                 try {
                     String commandPrefix = editor.getSyntaxManager().getControlCommandPrefix();
-                    if (wordDetector.getStartOffset() >= commandPrefix.length() &&
+                    if (commandPrefix != null && wordDetector.getStartOffset() >= commandPrefix.length() &&
                         viewer.getDocument().get(wordDetector.getStartOffset() - commandPrefix.length(), commandPrefix.length()).equals(commandPrefix)) {
                         return makeCommandProposals(request, request.getWordPart());
                     }
@@ -158,64 +158,70 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                     log.debug(e);
                 }
 
-                SQLCompletionAnalyzer analyzer = new SQLCompletionAnalyzer(request);
-                SQLQueryCompletionAnalyzer newAnalyzer = new SQLQueryCompletionAnalyzer(this.editor, request);
                 DBPDataSource dataSource = editor.getDataSource();
 
                 SQLExperimentalAutocompletionMode mode =  SQLExperimentalAutocompletionMode.fromPreferences(this.editor.getActivePreferenceStore());
 
-                AbstractJob newJob = !mode.useNewAnalyzer ? null : new AbstractJob("Analyzing query for proposals...") {{
-                        setSystem(true);
-                        setUser(false);
-                        schedule();
-                    }
-
-                    @Override
-                    protected IStatus run(DBRProgressMonitor monitor) {
-                        try {
-                            monitor.beginTask("Seeking for SQL completion proposals", 1);
-                            try {
-                                monitor.subTask("Find proposals");
-                                if (editor.getDataSource() != null) {
-                                    DBExecUtils.tryExecuteRecover(monitor, editor.getDataSource(), newAnalyzer);
-                                } else {
-                                    newAnalyzer.run(monitor);
-                                }
-                            } finally {
-                                monitor.done();
-                            }
-                            return Status.OK_STATUS;
-                        } catch (Throwable e) {
-                            log.error(e);
-                            return Status.CANCEL_STATUS;
-                        }
-                    }
-                };
+                List<AbstractJob> completionJobs = new ArrayList<>();
+                List<Supplier<List<? extends Object>>> completionSuppliers = new ArrayList<>();
 
                 if (request.getWordPart() != null && mode.useOldAnalyzer) {
                     if (dataSource != null) {
+                        SQLCompletionAnalyzer analyzer = new SQLCompletionAnalyzer(request);
                         ProposalSearchJob searchJob = new ProposalSearchJob(analyzer);
                         searchJob.schedule();
+                        completionJobs.add(searchJob);
+                        completionSuppliers.add(analyzer::getProposals);
 
                         // Wait until job finished
                         UIUtils.waitJobCompletion(searchJob);
                     }
                 }
 
-                if (newJob != null) {
-                    UIUtils.waitJobCompletion(newJob);
+                if (mode.useNewAnalyzer) {
+                    SQLQueryCompletionAnalyzer newAnalyzer = new SQLQueryCompletionAnalyzer(this.editor, request);
+                    AbstractJob newJob = new AbstractJob("Analyzing query for proposals...") {
+                        {
+                            setSystem(true);
+                            setUser(false);
+                            schedule();
+                        }
+
+                        @Override
+                        protected IStatus run(DBRProgressMonitor monitor) {
+                            try {
+                                monitor.beginTask("Seeking for SQL completion proposals", 1);
+                                try {
+                                    monitor.subTask("Find proposals");
+                                    if (editor.getDataSource() != null) {
+                                        DBExecUtils.tryExecuteRecover(monitor, editor.getDataSource(), newAnalyzer);
+                                    } else {
+                                        newAnalyzer.run(monitor);
+                                    }
+                                } finally {
+                                    monitor.done();
+                                }
+                                return Status.OK_STATUS;
+                            } catch (Throwable e) {
+                                log.error(e);
+                                return Status.CANCEL_STATUS;
+                            }
+                        }
+                    };
+                    newJob.schedule();
+                    completionJobs.add(newJob);
+                    completionSuppliers.add(newAnalyzer::getProposals);
                 }
 
-                List<SQLCompletionProposalBase> a = newAnalyzer.getProposals();
-                List<SQLCompletionProposalBase> b = analyzer.getProposals();
-                proposals = Stream.concat(a.stream(), b.stream()).toList();
+                completionJobs.forEach(UIUtils::waitJobCompletion);
+                proposals = completionSuppliers.stream().flatMap(s -> s.get().stream()).toList();
                 break;
             default:
                 proposals = Collections.emptyList();
         }
 
         List<ICompletionProposal> result = new ArrayList<>();
-        for (SQLCompletionProposalBase cp : proposals) {
+        for (Object cp : proposals) {
             if (cp instanceof ICompletionProposal) {
                 result.add((ICompletionProposal) cp);
             }
@@ -372,9 +378,9 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     }
 
     private class ProposalSearchJob extends AbstractJob {
-        private final SQLCompletionAnalyzer analyzer;
+        private final DBRRunnableParametrized<DBRProgressMonitor> analyzer;
 
-        ProposalSearchJob(SQLCompletionAnalyzer analyzer) {
+        ProposalSearchJob(DBRRunnableParametrized<DBRProgressMonitor> analyzer) {
             super("Search proposals...");
             this.analyzer = analyzer;
             setSystem(true);

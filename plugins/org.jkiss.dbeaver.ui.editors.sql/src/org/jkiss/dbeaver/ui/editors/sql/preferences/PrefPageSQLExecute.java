@@ -265,7 +265,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
                 public void widgetSelected(SelectionEvent e) {
                     switch (e.text) {
                         case "params":
-                            ShellUtils.launchProgram(HelpUtils.getHelpExternalReference("SQL-Execution#dynamic-parameter-bindings"));
+                            ShellUtils.launchProgram(HelpUtils.getHelpExternalReference("SQL-Execution#dynamic-parameters-binding"));
                             break;
                         case "commands":
                             ShellUtils.launchProgram(HelpUtils.getHelpExternalReference("Client-Side-Scripting"));
@@ -296,50 +296,16 @@ public class PrefPageSQLExecute extends TargetPrefPage
     }
 
     @Override
-    protected void loadPreferences(DBPPreferenceStore store)
-    {
+    protected void loadPreferences(DBPPreferenceStore store) {
         try {
-            invalidateBeforeExecuteCheck.setSelection(store.getBoolean(SQLPreferenceConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE));
-            executeTimeoutText.setSelection(store.getInt(SQLPreferenceConstants.STATEMENT_TIMEOUT));
-            soundOnQueryEnd.setSelection(store.getBoolean(SQLPreferenceConstants.BEEP_ON_QUERY_END));
-            updateDefaultAfterExecute.setSelection(store.getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE));
-            clearOutputBeforeExecute.setSelection(store.getBoolean(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE));
-
-            commitTypeCombo.select(SQLScriptCommitType.valueOf(store.getString(SQLPreferenceConstants.SCRIPT_COMMIT_TYPE)).ordinal());
-            errorHandlingCombo.select(SQLScriptErrorHandling.valueOf(store.getString(SQLPreferenceConstants.SCRIPT_ERROR_HANDLING)).ordinal());
-            commitLinesText.setSelection(store.getInt(SQLPreferenceConstants.SCRIPT_COMMIT_LINES));
-            fetchResultSetsCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS));
-            resetCursorCheck.setSelection(store.getBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE));
-            maxEditorCheck.setSelection(store.getBoolean(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE));
-            UIUtils.setComboSelection(showStatisticsCombo, StatisticsTabOnExecutionBehavior.getByName(
-                store.getString(SQLPreferenceConstants.SHOW_STATISTICS_ON_EXECUTION)).getTitle()
-            );
-            setSelectionToStatisticsTabCheck.setSelection(
-                store.getBoolean(SQLPreferenceConstants.SET_SELECTION_TO_STATISTICS_TAB)
-            );
-            closeIncludedScriptAfterExecutionCheck.setSelection(
-                store.getBoolean(SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION)
-            );
-            statementDelimiterText.setText(store.getString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER));
-            ignoreNativeDelimiter.setSelection(store.getBoolean(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER));
-            blankLineDelimiterCombo.select(SQLScriptStatementDelimiterMode.fromPreferences(store).ordinal());
-            removeTrailingDelimiter.setSelection(store.getBoolean(ModelPreferences.QUERY_REMOVE_TRAILING_DELIMITER));
-
-            enableSQLParameters.setSelection(store.getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED));
-            enableSQLAnonymousParameters.setSelection(store.getBoolean(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED));
-            anonymousParameterMarkText.setText(store.getString(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK));
-            namedParameterPrefixText.setText(store.getString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX));
-            controlCommandPrefixText.setText(store.getString(ModelPreferences.SQL_CONTROL_COMMAND_PREFIX));
-            enableParametersInEmbeddedCode.setSelection(store.getBoolean(ModelPreferences.SQL_PARAMETERS_IN_EMBEDDED_CODE_ENABLED));
-            enableVariables.setSelection(store.getBoolean(ModelPreferences.SQL_VARIABLES_ENABLED));
+            loadPreferences(store, false);
         } catch (Exception e) {
             log.warn(e);
         }
     }
 
     @Override
-    protected void savePreferences(DBPPreferenceStore store)
-    {
+    protected void savePreferences(DBPPreferenceStore store) {
         try {
             store.setValue(SQLPreferenceConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE, invalidateBeforeExecuteCheck.getSelection());
             store.setValue(SQLPreferenceConstants.STATEMENT_TIMEOUT, executeTimeoutText.getSelection());
@@ -388,8 +354,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
     }
 
     @Override
-    protected void clearPreferences(DBPPreferenceStore store)
-    {
+    protected void clearPreferences(DBPPreferenceStore store) {
         store.setToDefault(SQLPreferenceConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE);
         store.setToDefault(SQLPreferenceConstants.STATEMENT_TIMEOUT);
 
@@ -421,43 +386,156 @@ public class PrefPageSQLExecute extends TargetPrefPage
 
     @Override
     protected void performDefaults() {
-        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        invalidateBeforeExecuteCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE));
-        executeTimeoutText.setSelection(store.getDefaultInt(SQLPreferenceConstants.STATEMENT_TIMEOUT));
-        soundOnQueryEnd.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.BEEP_ON_QUERY_END));
-        updateDefaultAfterExecute.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE));
-        clearOutputBeforeExecute.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE));
-        UIUtils.setComboSelection(commitTypeCombo, store.getDefaultString(SQLPreferenceConstants.SCRIPT_COMMIT_TYPE));
-        UIUtils.setComboSelection(errorHandlingCombo, store.getDefaultString(SQLPreferenceConstants.SCRIPT_ERROR_HANDLING));
-        commitLinesText.setSelection(store.getDefaultInt(SQLPreferenceConstants.SCRIPT_COMMIT_LINES));
-        fetchResultSetsCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS));
-        resetCursorCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE));
-        maxEditorCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE));
-        UIUtils.setComboSelection(showStatisticsCombo, StatisticsTabOnExecutionBehavior.getByName(
-            store.getString(SQLPreferenceConstants.SHOW_STATISTICS_ON_EXECUTION)).getTitle()
-        );
-        setSelectionToStatisticsTabCheck.setSelection(
-                store.getDefaultBoolean(SQLPreferenceConstants.SET_SELECTION_TO_STATISTICS_TAB));
-        closeIncludedScriptAfterExecutionCheck.setSelection(
-            store.getDefaultBoolean(SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION));
-        statementDelimiterText.setText(store.getDefaultString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER));
-        ignoreNativeDelimiter.setSelection(store.getDefaultBoolean(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER));
-        blankLineDelimiterCombo.select(SQLScriptStatementDelimiterMode.valueByName(store.getDefaultString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK)).ordinal());
-        removeTrailingDelimiter.setSelection(store.getDefaultBoolean(ModelPreferences.QUERY_REMOVE_TRAILING_DELIMITER));
-        enableSQLParameters.setSelection(store.getDefaultBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED));
-        enableSQLAnonymousParameters.setSelection(store.getDefaultBoolean(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED));
-        anonymousParameterMarkText.setText(store.getDefaultString(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK));
-        namedParameterPrefixText.setText(store.getDefaultString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX));
-        controlCommandPrefixText.setText(store.getDefaultString(ModelPreferences.SQL_CONTROL_COMMAND_PREFIX));
-        enableParametersInEmbeddedCode.setSelection(store.getDefaultBoolean(ModelPreferences.SQL_PARAMETERS_IN_EMBEDDED_CODE_ENABLED));
-        enableVariables.setSelection(store.getDefaultBoolean(ModelPreferences.SQL_VARIABLES_ENABLED));
+        loadPreferences(getTargetPreferenceStore(), true);
         super.performDefaults();
     }
 
     @Override
-    protected String getPropertyPageID()
-    {
+    protected String getPropertyPageID() {
         return PAGE_ID;
+    }
+
+    private void loadPreferences(DBPPreferenceStore store, boolean useDefaults) {
+        try {
+            invalidateBeforeExecuteCheck.setSelection(
+                useDefaults
+                    ? store.getDefaultBoolean(SQLPreferenceConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE)
+                    : store.getBoolean(SQLPreferenceConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE)
+            );
+            executeTimeoutText.setSelection(
+                useDefaults
+                    ? store.getDefaultInt(SQLPreferenceConstants.STATEMENT_TIMEOUT)
+                    : store.getInt(SQLPreferenceConstants.STATEMENT_TIMEOUT)
+            );
+            soundOnQueryEnd.setSelection(
+                useDefaults
+                    ? store.getDefaultBoolean(SQLPreferenceConstants.BEEP_ON_QUERY_END)
+                    : store.getBoolean(SQLPreferenceConstants.BEEP_ON_QUERY_END)
+            );
+            updateDefaultAfterExecute.setSelection(
+                useDefaults
+                    ? store.getDefaultBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)
+                    : store.getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)
+            );
+            clearOutputBeforeExecute.setSelection(
+                useDefaults
+                    ? store.getDefaultBoolean(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE)
+                    : store.getBoolean(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE)
+            );
+
+            SQLScriptCommitType commitType = CommonUtils.valueOf(
+                SQLScriptCommitType.class,
+                useDefaults ? null : store.getString(SQLPreferenceConstants.SCRIPT_COMMIT_TYPE),
+                SQLScriptCommitType.valueOf(store.getDefaultString(SQLPreferenceConstants.SCRIPT_COMMIT_TYPE))
+            );
+            commitTypeCombo.select(commitType.ordinal());
+
+            SQLScriptErrorHandling errorHandling = CommonUtils.valueOf(
+                SQLScriptErrorHandling.class,
+                useDefaults ? null : store.getString(SQLPreferenceConstants.SCRIPT_ERROR_HANDLING),
+                SQLScriptErrorHandling.valueOf(store.getDefaultString(SQLPreferenceConstants.SCRIPT_ERROR_HANDLING))
+            );
+            errorHandlingCombo.select(errorHandling.ordinal());
+
+            commitLinesText.setSelection(
+                useDefaults
+                    ? store.getDefaultInt(SQLPreferenceConstants.SCRIPT_COMMIT_LINES)
+                    : store.getInt(SQLPreferenceConstants.SCRIPT_COMMIT_LINES)
+            );
+            fetchResultSetsCheck.setSelection(
+                useDefaults
+                    ? store.getDefaultBoolean(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS)
+                    : store.getBoolean(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS)
+            );
+            resetCursorCheck.setSelection(
+                useDefaults
+                    ? store.getDefaultBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE)
+                    : store.getBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE)
+            );
+            maxEditorCheck.setSelection(
+                useDefaults
+                    ? store.getDefaultBoolean(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE)
+                    : store.getBoolean(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE)
+            );
+            UIUtils.setComboSelection(
+                showStatisticsCombo,
+                StatisticsTabOnExecutionBehavior.getByName(
+                    useDefaults
+                        ? store.getDefaultString(SQLPreferenceConstants.SHOW_STATISTICS_ON_EXECUTION)
+                        : store.getString(SQLPreferenceConstants.SHOW_STATISTICS_ON_EXECUTION)
+                ).getTitle()
+            );
+            setSelectionToStatisticsTabCheck.setSelection(
+                useDefaults
+                    ? store.getDefaultBoolean(SQLPreferenceConstants.SET_SELECTION_TO_STATISTICS_TAB)
+                    : store.getBoolean(SQLPreferenceConstants.SET_SELECTION_TO_STATISTICS_TAB)
+            );
+            closeIncludedScriptAfterExecutionCheck.setSelection(
+                useDefaults
+                    ? store.getDefaultBoolean(SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION)
+                    : store.getBoolean(SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION)
+            );
+            statementDelimiterText.setText(
+                useDefaults
+                    ? store.getDefaultString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER)
+                    : store.getString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER)
+            );
+            ignoreNativeDelimiter.setSelection(
+                useDefaults
+                    ? store.getDefaultBoolean(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER)
+                    : store.getBoolean(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER)
+            );
+            UIUtils.setComboSelection(
+                blankLineDelimiterCombo,
+                SQLScriptStatementDelimiterMode.valueByName(
+                    useDefaults
+                        ? store.getDefaultString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK)
+                        : store.getString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK)
+                ).getTitle()
+            );
+            removeTrailingDelimiter.setSelection(
+                useDefaults
+                    ? store.getDefaultBoolean(ModelPreferences.QUERY_REMOVE_TRAILING_DELIMITER)
+                    : store.getBoolean(ModelPreferences.QUERY_REMOVE_TRAILING_DELIMITER)
+            );
+            enableSQLParameters.setSelection(
+                useDefaults
+                    ? store.getDefaultBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED)
+                    : store.getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED)
+            );
+            enableSQLAnonymousParameters.setSelection(
+                useDefaults
+                    ? store.getDefaultBoolean(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED)
+                    : store.getBoolean(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED)
+            );
+            anonymousParameterMarkText.setText(
+                useDefaults
+                    ? store.getDefaultString(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK)
+                    : store.getString(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK)
+            );
+            namedParameterPrefixText.setText(
+                useDefaults
+                    ? store.getDefaultString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX)
+                    : store.getString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX)
+            );
+            controlCommandPrefixText.setText(
+                useDefaults
+                    ? store.getDefaultString(ModelPreferences.SQL_CONTROL_COMMAND_PREFIX)
+                    : store.getString(ModelPreferences.SQL_CONTROL_COMMAND_PREFIX)
+            );
+            enableParametersInEmbeddedCode.setSelection(
+                useDefaults
+                    ? store.getDefaultBoolean(ModelPreferences.SQL_PARAMETERS_IN_EMBEDDED_CODE_ENABLED)
+                    : store.getBoolean(ModelPreferences.SQL_PARAMETERS_IN_EMBEDDED_CODE_ENABLED)
+            );
+            enableVariables.setSelection(
+                useDefaults
+                    ? store.getDefaultBoolean(ModelPreferences.SQL_VARIABLES_ENABLED)
+                    : store.getBoolean(ModelPreferences.SQL_VARIABLES_ENABLED)
+            );
+        } catch (Exception e) {
+            log.warn(e);
+        }
     }
 
 }

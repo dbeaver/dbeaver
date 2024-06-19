@@ -27,7 +27,6 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
@@ -40,6 +39,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWizard;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
@@ -47,11 +47,19 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.EnumSet;
 
 /**
  * MultiPageWizardDialog
  */
 public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardContainer, IWizardContainer2, IPageChangeProvider, IPreferencePageContainer {
+
+    protected enum PageCompletionMark {
+        /** If a page is complete, a green check will be shown next to it */
+        COMPLETE,
+        /** If a page is incomplete, a red cross will be shown next to it */
+        ERROR
+    }
 
     private IWizard wizard;
     private Composite pageArea;
@@ -110,8 +118,9 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         updateButtons();
     }
 
-    protected boolean isNavigableWizard() {
-        return false;
+    @NotNull
+    protected EnumSet<PageCompletionMark> getShownCompletionMarks() {
+        return EnumSet.of(PageCompletionMark.ERROR);
     }
 
     protected Tree getPagesTree() {
@@ -184,9 +193,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         // Vertical separator
         new Label(pageContainer, SWT.SEPARATOR | SWT.VERTICAL)
             .setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, true));
-        ScrolledComposite scrolledComposite = UIUtils.createScrolledComposite(pageContainer);
-        pageArea = UIUtils.createPlaceholder(scrolledComposite, 1);
-        UIUtils.configureScrolledComposite(scrolledComposite, pageArea);
+        pageArea = UIUtils.createPlaceholder(pageContainer, 1);
         GridData gd = new GridData(GridData.FILL_BOTH);
         pageArea.setLayoutData(gd);
         pageArea.setLayout(new GridLayout(1, true));
@@ -452,20 +459,20 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     private void updatePageCompleteMark(TreeItem parent) {
-        if (!isNavigableWizard()) {
-            return;
-        }
+        final EnumSet<PageCompletionMark> shownCompletionMarks = getShownCompletionMarks();
+        final IWizardPage currentPage = getCurrentPage();
         for (TreeItem item : parent == null ? pagesTree.getItems() : parent.getItems()) {
             Object page = item.getData();
-            if (page instanceof IWizardPageNavigable && !((IWizardPageNavigable) page).isPageNavigable()) {
+            if (page instanceof IWizardPageNavigable pageNavigable && !pageNavigable.isPageNavigable()) {
                 continue;
             }
-            if (page instanceof IWizardPage && !((IWizardPage) page).isPageComplete()) {
-                //item.setFont(boldFont);
-                item.setImage((Image)null);
+            if (page == currentPage) {
+                // Don't show any completion marks for current page
+                item.setImage((Image) null);
+            } else if (page instanceof IWizardPage wizardPage && !wizardPage.isPageComplete()) {
+                item.setImage(shownCompletionMarks.contains(PageCompletionMark.ERROR) ? DBeaverIcons.getImage(DBIcon.SMALL_ERROR) : null);
             } else {
-                item.setFont(null);
-                item.setImage(DBeaverIcons.getImage(UIIcon.OK_MARK));
+                item.setImage(shownCompletionMarks.contains(PageCompletionMark.COMPLETE) ? DBeaverIcons.getImage(UIIcon.OK_MARK) : null);
             }
             updatePageCompleteMark(item);
         }
