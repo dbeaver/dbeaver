@@ -127,8 +127,8 @@ public final class DBUtils {
         if (ArrayUtils.isEmpty(quoteStrings)) {
             quoteStrings = BasicSQLDialect.DEFAULT_IDENTIFIER_QUOTES;
         }
-        for (int i = 0; i < quoteStrings.length; i++) {
-            str = getUnQuotedIdentifier(str, quoteStrings[i][0], quoteStrings[i][1]);
+        for (String[] quoteString : quoteStrings) {
+            str = getUnQuotedIdentifier(str, quoteString[0], quoteString[1]);
         }
         return str;
     }
@@ -419,7 +419,7 @@ public final class DBUtils {
      */
     @Nullable
     public static <T extends DBPNamedObject> T findObject(@Nullable T[] theList, String objectName) {
-        if (theList != null && theList.length > 0) {
+        if (theList != null) {
             for (T object : theList) {
                 if (object.getName().equals(objectName)) {
                     return object;
@@ -1995,7 +1995,7 @@ public final class DBUtils {
         if (entity instanceof DBDPseudoAttributeContainer pac) {
             try {
                 DBDPseudoAttribute[] pseudoAttributes = pac.getPseudoAttributes();
-                if (pseudoAttributes != null && pseudoAttributes.length > 0) {
+                if (pseudoAttributes != null) {
                     for (DBDPseudoAttribute pa : pseudoAttributes) {
                         String attrId = pa.getAlias();
                         if (CommonUtils.isEmpty(attrId)) {
