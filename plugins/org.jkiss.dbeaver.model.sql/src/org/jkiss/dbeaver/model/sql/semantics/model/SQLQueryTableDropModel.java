@@ -35,6 +35,19 @@ public class SQLQueryTableDropModel extends SQLQueryModelContent {
     @Nullable
     private SQLQueryDataContext dataContext = null;
 
+/*
+    public static SQLQueryTableDropModel createModel(@NotNull SQLQueryModelContext context, @NotNull STMTreeNode node) {
+        List<SQLQueryRowsTableDataModel> tables = new ArrayList<>(node.getChildCount());
+        for (STMTreeNode tableNameNode : node.getChildren()) {
+            if (tableNameNode.getNodeName().equals(STMKnownRuleNames.tableName)) {
+                tables.add(context.collectTableReference(tableNameNode));
+            }
+        }
+        boolean ifExists = node.findChildOfName(STMKnownRuleNames.ifExistsSpec) != null; // "IF EXISTS" presented
+        return new SQLQueryTableDropModel(node, tables, ifExists);
+    }
+*/
+
     public SQLQueryTableDropModel(
         @NotNull STMTreeNode syntaxNode,
         @Nullable List<SQLQueryRowsTableDataModel> tables,

@@ -98,7 +98,7 @@ public class SQLQueryModelRecognizer {
             STMTreeNode queryNode = tree.getStmChild(0);
             SQLQueryModelContent contents = switch (queryNode.getNodeKindId()) {
                 case SQLStandardParser.RULE_directSqlDataStatement -> {
-                    STMTreeNode stmtBodyNode = queryNode.getStmChild(queryNode.getChildCount() - 1);
+                    STMTreeNode stmtBodyNode = queryNode.getLastStmtChild();
                     // TODO collect CTE for insert-update-delete as well as recursive CTE
                     yield switch (stmtBodyNode.getNodeKindId()) {
                         case SQLStandardParser.RULE_deleteStatement -> this.collectDeleteStatement(stmtBodyNode);
@@ -109,7 +109,7 @@ public class SQLQueryModelRecognizer {
                     };
                 }
                 case SQLStandardParser.RULE_sqlSchemaStatement -> {
-                    STMTreeNode stmtBodyNode = queryNode.getStmChild(0).getStmChild(0);
+                    STMTreeNode stmtBodyNode = queryNode.getFirstStmChild().getFirstStmChild();
                     yield switch (stmtBodyNode.getNodeKindId()) {
                         case SQLStandardParser.RULE_dropTableStatement -> this.collectDropTableStatement(stmtBodyNode);
                         default -> null;
@@ -358,8 +358,7 @@ public class SQLQueryModelRecognizer {
     @NotNull
     private SQLQueryModelContent collectDropTableStatement(@NotNull STMTreeNode node) {
         List<SQLQueryRowsTableDataModel> tables = new ArrayList<>(node.getChildCount());
-        for (int i = 0; i < node.getChildCount(); i++) {
-            STMTreeNode tableNameNode = node.getStmChild(i);
+        for (STMTreeNode tableNameNode : node.getChildren()) {
             if (tableNameNode.getNodeName().equals(STMKnownRuleNames.tableName)) {
                 tables.add(this.collectTableReference(tableNameNode));
             }
@@ -536,26 +535,26 @@ public class SQLQueryModelRecognizer {
     
     @NotNull
     private SQLQueryQualifiedName collectQualifiedName(@NotNull STMTreeNode node, boolean forceUnquotted) { // qualifiedName
-        STMTreeNode entityNameNode = qualifiedNameDirectWrapperNames.contains(node.getNodeName()) ? node.getStmChild(0) : node;
+        STMTreeNode entityNameNode = qualifiedNameDirectWrapperNames.contains(node.getNodeName()) ? node.getFirstStmChild() : node;
         if (!entityNameNode.getNodeName().equals(STMKnownRuleNames.qualifiedName)) {
             throw new UnsupportedOperationException("identifier expected while facing with " + node.getNodeName());
         }
         
-        SQLQuerySymbolEntry entityName = collectIdentifier(entityNameNode.getStmChild(entityNameNode.getChildCount() - 1), forceUnquotted);
+        SQLQuerySymbolEntry entityName = collectIdentifier(entityNameNode.getLastStmtChild(), forceUnquotted);
         if (entityNameNode.getChildCount() == 1) {
             return this.registerScopeItem(new SQLQueryQualifiedName(entityNameNode, entityName));
         } else {
-            STMTreeNode schemaNameNode = entityNameNode.getStmChild(0);
+            STMTreeNode schemaNameNode = entityNameNode.getFirstStmChild();
             SQLQuerySymbolEntry schemaName = collectIdentifier(
-                schemaNameNode.getStmChild(schemaNameNode.getChildCount() - 1),
+                schemaNameNode.getLastStmtChild(),
                 forceUnquotted
             );
             if (schemaNameNode.getChildCount() == 1) {
                 return this.registerScopeItem(new SQLQueryQualifiedName(entityNameNode, schemaName, entityName));
             } else {
-                STMTreeNode catalogNameNode = schemaNameNode.getStmChild(0);
+                STMTreeNode catalogNameNode = schemaNameNode.getFirstStmChild();
                 SQLQuerySymbolEntry catalogName = collectIdentifier(
-                    catalogNameNode.getStmChild(catalogNameNode.getChildCount() - 1),
+                    catalogNameNode.getLastStmtChild(),
                     forceUnquotted
                 );
                 return this.registerScopeItem(new SQLQueryQualifiedName(entityNameNode, catalogName, schemaName, entityName));
