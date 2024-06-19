@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
@@ -121,7 +122,7 @@ public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTableBa
     }
 
     @Override
-    public List<OracleTableIndexColumn> getAttributeReferences(DBRProgressMonitor monitor)
+    public List<OracleTableIndexColumn> getAttributeReferences(@NotNull DBRProgressMonitor monitor)
     {
         return columns;
     }
@@ -170,7 +171,7 @@ public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTableBa
                         getName(),
                         getTable().getSchema().getName());
             } catch (SQLException e) {
-                throw new DBException(e, getDataSource());
+                throw new DBDatabaseException(e, getDataSource());
             }
         }
         return indexDDL;

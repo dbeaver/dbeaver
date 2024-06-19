@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -70,7 +71,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
     public List<OBJECT> getAllObjects(@NotNull DBRProgressMonitor monitor, @Nullable OWNER owner)
         throws DBException
     {
-        if (!isFullyCached()) {
+        if (!isFullyCached() && !monitor.isForceCacheUsage()) {
             loadObjects(monitor, owner);
         }
         return getCachedObjects();
@@ -80,7 +81,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
     public OBJECT getObject(@NotNull DBRProgressMonitor monitor, @NotNull OWNER owner, @NotNull String name)
         throws DBException
     {
-        if (!isFullyCached()) {
+        if (!isFullyCached() && !monitor.isForceCacheUsage()) {
             this.loadObjects(monitor, owner);
         }
         return getCachedObject(name);
@@ -89,7 +90,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
     protected synchronized void loadObjects(DBRProgressMonitor monitor, OWNER owner)
         throws DBException
     {
-        if (isFullyCached() || monitor.isCanceled()) {
+        if (isFullyCached() || monitor.isForceCacheUsage() || monitor.isCanceled()) {
             return;
         }
 
@@ -137,7 +138,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
                         afterCacheLoading(session, owner);
                     }
                 } catch (SQLException ex) {
-                    throw new DBException(ex, dataSource);
+                    throw new DBDatabaseException(ex, dataSource);
                 } catch (DBException ex) {
                     throw ex;
                 } catch (Exception ex) {

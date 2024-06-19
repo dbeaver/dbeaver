@@ -17,13 +17,13 @@
 
 package org.jkiss.dbeaver.model.exec;
 
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 
 /**
  * DBCException
  */
-public class DBCException extends DBException
+public class DBCException extends DBDatabaseException
 {
     private static final long serialVersionUID = 1L;
 

@@ -82,7 +82,7 @@ public class DamengDataSource extends GenericDataSource {
     }
 
     @Override
-    public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         super.refreshObject(monitor);
         tablespaceCache.clearCache();
         return this;
@@ -133,8 +133,9 @@ public class DamengDataSource extends GenericDataSource {
 
     static class RoleCache extends JDBCObjectCache<DamengDataSource, DamengRole> {
 
+        @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, DamengDataSource damengDataSource) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DamengDataSource damengDataSource) throws SQLException {
             return session.prepareStatement("SELECT\n" +
                     "ID,\n" +
                     "NAME,\n" +
@@ -154,15 +155,16 @@ public class DamengDataSource extends GenericDataSource {
         }
 
         @Override
-        protected DamengRole fetchObject(JDBCSession session, DamengDataSource damengDataSource, JDBCResultSet resultSet) throws SQLException, DBException {
+        protected DamengRole fetchObject(@NotNull JDBCSession session, @NotNull DamengDataSource damengDataSource, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new DamengRole(damengDataSource, resultSet);
         }
     }
 
     static class UserCache extends JDBCObjectCache<DamengDataSource, DamengUser> {
 
+        @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, DamengDataSource dataSource) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DamengDataSource dataSource) throws SQLException {
             return session.prepareStatement("SELECT\n" +
                     "USER_OBJ.*,\n" +
                     "SYSUSERS.*,\n" +
@@ -180,20 +182,21 @@ public class DamengDataSource extends GenericDataSource {
         }
 
         @Override
-        protected DamengUser fetchObject(JDBCSession session, DamengDataSource dataSource, JDBCResultSet resultSet) throws SQLException, DBException {
+        protected DamengUser fetchObject(@NotNull JDBCSession session, @NotNull DamengDataSource dataSource, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new DamengUser(dataSource, resultSet);
         }
     }
 
     public static class TablespaceCache extends JDBCObjectCache<DamengDataSource, DamengTablespace> {
 
+        @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, DamengDataSource dataSource) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DamengDataSource dataSource) throws SQLException {
             return session.prepareStatement("SELECT * FROM V$TABLESPACE");
         }
 
         @Override
-        protected DamengTablespace fetchObject(JDBCSession session, DamengDataSource dataSource, JDBCResultSet resultSet) throws SQLException, DBException {
+        protected DamengTablespace fetchObject(@NotNull JDBCSession session, @NotNull DamengDataSource dataSource, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new DamengTablespace(dataSource, resultSet);
         }
     }

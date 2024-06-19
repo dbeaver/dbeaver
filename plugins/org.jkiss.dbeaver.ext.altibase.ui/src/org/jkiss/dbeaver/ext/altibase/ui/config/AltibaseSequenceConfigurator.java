@@ -30,7 +30,7 @@ public class AltibaseSequenceConfigurator implements DBEObjectConfigurator<Altib
 
     @Override
     public AltibaseSequence configureObject(DBRProgressMonitor monitor, DBECommandContext commandContext,
-    		Object container, AltibaseSequence sequence, Map<String, Object> options) {
+            Object container, AltibaseSequence sequence, Map<String, Object> options) {
         return UITask.run(() -> {
             EntityEditPage page = new EntityEditPage(sequence.getDataSource(), DBSEntityType.SEQUENCE);
             if (!page.edit()) {

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
@@ -262,7 +263,7 @@ public class PostgreTrigger extends PostgreTriggerBase implements DBSEntityEleme
                         body = SQLFormatUtils.formatSQL(getDataSource(), body);
                     }
                 } catch (SQLException e) {
-                    throw new DBException(e, getDataSource());
+                    throw new DBDatabaseException(e, getDataSource());
                 }
             } else {
                 body = "CREATE TRIGGER " + DBUtils.getQuotedIdentifier(this)

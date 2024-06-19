@@ -88,6 +88,10 @@ public final class ModelPreferences
             this.title = title;
         }
 
+        public String getTitle() {
+            return title;
+        }
+
         public String getName() {
             return this.toString();
         }
@@ -156,6 +160,7 @@ public final class ModelPreferences
     public static final String CONTENT_CACHE_BLOB = "content.cache.blob"; //$NON-NLS-1$
     public static final String CONTENT_CACHE_MAX_SIZE = "content.cache.maxsize"; //$NON-NLS-1$
     public static final String META_SEPARATE_CONNECTION = "database.meta.separate.connection"; //$NON-NLS-1$
+    public static final String META_DISABLE_EXTRA_READ = "database.meta.disableAdditionalRead"; //$NON-NLS-1$
     public static final String META_CASE_SENSITIVE = "database.meta.casesensitive"; //$NON-NLS-1$
     public static final String META_USE_SERVER_SIDE_FILTERS = "database.meta.server.side.filters"; //$NON-NLS-1$
     public static final String META_EXTRA_DDL_INFO = "database.meta.extra.ddl.info"; //$NON-NLS-1$
@@ -186,8 +191,6 @@ public final class ModelPreferences
     public static final String RESULT_SET_IGNORE_COLUMN_LABEL = "resultset.column.label.ignore"; //$NON-NLS-1$
 
     public static final String RESULT_SET_REREAD_ON_SCROLLING = "resultset.reread.on.scroll"; //$NON-NLS-1$
-    public static final String RESULT_SET_READ_METADATA = "resultset.read.metadata"; //$NON-NLS-1$
-    public static final String RESULT_SET_READ_REFERENCES = "resultset.read.references"; //$NON-NLS-1$
     public static final String RESULT_SET_MAX_ROWS = "resultset.maxrows"; //$NON-NLS-1$
 
 
@@ -283,6 +286,7 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, MEMORY_CONTENT_MAX_SIZE, 10000);
         PrefUtils.setDefaultPreferenceValue(store, META_SEPARATE_CONNECTION, SeparateConnectionBehavior.DEFAULT.name());
         PrefUtils.setDefaultPreferenceValue(store, META_CASE_SENSITIVE, false);
+        PrefUtils.setDefaultPreferenceValue(store, META_DISABLE_EXTRA_READ, false);
         PrefUtils.setDefaultPreferenceValue(store, META_EXTRA_DDL_INFO, true);
         PrefUtils.setDefaultPreferenceValue(store, META_USE_SERVER_SIDE_FILTERS, true);
 
@@ -300,8 +304,6 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, RESULT_REFERENCE_DESCRIPTION_COLUMN_PATTERNS, String.join("|", DBVEntity.DEFAULT_DESCRIPTION_COLUMN_PATTERNS));
 
         PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_REREAD_ON_SCROLLING, true);
-        PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_READ_METADATA, true);
-        PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_READ_REFERENCES, true);
         PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_MAX_ROWS, 200);
 
         PrefUtils.setDefaultPreferenceValue(store, CONTENT_HEX_ENCODING, GeneralUtils.getDefaultFileEncoding());

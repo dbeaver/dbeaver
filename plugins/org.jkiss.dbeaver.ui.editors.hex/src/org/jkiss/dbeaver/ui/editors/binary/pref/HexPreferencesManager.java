@@ -417,8 +417,12 @@ public class HexPreferencesManager {
         sampleFontData = aFontData;
         refreshWidgets();
     }
-    
-   
+
+    void resetDefWidthValue(String defWidthValue) {
+        this.defWidthValue = defWidthValue;
+        int index = Arrays.asList(arrDefValuetoIndex).indexOf(defWidthValue);
+        cmbByteWidth.select(index);
+    }
 
     private static void showSelected(List aList, String item)
     {
