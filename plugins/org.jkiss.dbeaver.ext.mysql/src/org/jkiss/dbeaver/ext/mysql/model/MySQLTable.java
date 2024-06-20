@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
@@ -298,7 +299,7 @@ public class MySQLTable extends MySQLTableBase
 
     @Override
     @Association
-    public Collection<MySQLTableIndex> getIndexes(DBRProgressMonitor monitor)
+    public Collection<MySQLTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         // Read indexes using cache
@@ -370,7 +371,7 @@ public class MySQLTable extends MySQLTableBase
     public synchronized Collection<MySQLTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        if (!foreignKeys.isFullyCached() && getDataSource().getInfo().supportsReferentialIntegrity()) {
+        if (!foreignKeys.isFullyCached() && getDataSource().getInfo().supportsReferentialIntegrity() && monitor != null) {
             List<MySQLTableForeignKey> fkList = loadForeignKeys(monitor, false);
             foreignKeys.setCache(fkList);
         }
@@ -472,7 +473,7 @@ public class MySQLTable extends MySQLTableBase
         throws DBException
     {
         List<MySQLTableForeignKey> fkList = new ArrayList<>();
-        if (!isPersisted()) {
+        if (!isPersisted() || monitor == null) {
             return fkList;
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table relations")) {
@@ -611,7 +612,7 @@ public class MySQLTable extends MySQLTableBase
             }
             return fkList;
         } catch (SQLException ex) {
-            throw new DBException(ex, getDataSource());
+            throw new DBDatabaseException(ex, getDataSource());
         }
     }
 

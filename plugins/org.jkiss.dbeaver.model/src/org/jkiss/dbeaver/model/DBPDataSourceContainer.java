@@ -150,6 +150,8 @@ public interface DBPDataSourceContainer extends
 
     void setDefaultTransactionsIsolation(DBPTransactionIsolation isolationLevel);
 
+    boolean isExtraMetadataReadEnabled();
+
     /**
      * Search for object filter which corresponds specified object type and parent object.
      * Search filter which match any super class or interface implemented by specified type.

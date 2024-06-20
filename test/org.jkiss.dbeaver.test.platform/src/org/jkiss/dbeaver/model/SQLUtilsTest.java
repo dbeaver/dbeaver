@@ -44,4 +44,17 @@ public class SQLUtilsTest {
             + "-- AND ResourceId  = 1\n\r"
             + "ORDER BY PersonID ;"));
     }
+
+    @Test
+    public void makeGlobFromSqlLikePattern_whenWithNoSpecialSymbols_thenSuccess(){
+
+        String source = "key1234";
+        Assert.assertEquals(source, SQLUtils.makeGlobFromSqlLikePattern(source));
+    }
+
+    @Test
+    public void makeGlobFromSqlLikePattern_whenWithSpecialSymbols_thenSuccess(){
+
+        Assert.assertEquals("key?*\\?*\\", SQLUtils.makeGlobFromSqlLikePattern("key_%?*\\"));
+    }
 }

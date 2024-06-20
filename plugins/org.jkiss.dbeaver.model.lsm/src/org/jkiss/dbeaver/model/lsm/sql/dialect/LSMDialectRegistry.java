@@ -76,7 +76,7 @@ public class LSMDialectRegistry {
         }
     }
 
-    public LSMAnalyzer getAnalyzerForDialect(SQLDialect dialect) {
+    public LSMAnalyzerFactory getAnalyzerFactoryForDialect(SQLDialect dialect) {
         Class<?> dialectClass = dialect.getClass();
         LSMAnalyzerFactory analyzerFactory;
         do {
@@ -89,7 +89,7 @@ public class LSMDialectRegistry {
                 "Failed to resolve LSMAnalyzer for " + dialect.getDialectName() + " dialect. Illegal database driver configuration."
             );
         } else {
-            return analyzerFactory.createAnalyzer(dialect);
+            return analyzerFactory;
         }
     }
 }

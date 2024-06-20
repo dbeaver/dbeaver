@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.wmi.Activator;
@@ -304,7 +305,7 @@ public class WMIClass extends WMIContainer
             }
 
         } catch (WMIException e) {
-            throw new DBException(e, getDataSource());
+            throw new DBDatabaseException(e, getDataSource());
         }
     }
 
@@ -340,7 +341,7 @@ public class WMIClass extends WMIContainer
             }
 
         } catch (WMIException e) {
-            throw new DBException(e, getDataSource());
+            throw new DBDatabaseException(e, getDataSource());
         }
     }
 

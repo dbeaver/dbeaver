@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerPostgreSQL;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerType;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerTypeRegistry;
 import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -180,7 +179,7 @@ public class PostgreUtils {
             final String[] strings = vector.split(PostgreConstants.DEFAULT_ARRAY_DELIMITER);
             final long[] ids = new long[strings.length];
             for (int i = 0; i < strings.length; i++) {
-                ids[i] = Long.parseLong(strings[i]);
+                ids[i] = CommonUtils.toLong(strings[i]);
             }
             return ids;
         } else if (pgVector instanceof long[]) {
@@ -224,31 +223,29 @@ public class PostgreUtils {
         if (pgVector == null) {
             return null;
         }
-        if (pgVector instanceof String) {
-            final String vector = (String) pgVector;
+        if (pgVector instanceof String vector) {
             if (vector.isEmpty()) {
                 return null;
             }
             final String[] strings = vector.split(PostgreConstants.DEFAULT_ARRAY_DELIMITER);
             final int[] ids = new int[strings.length];
             for (int i = 0; i < strings.length; i++) {
-                ids[i] = Integer.parseInt(strings[i]);
+                ids[i] = CommonUtils.toInt(strings[i]);
             }
             return ids;
-        } else if (pgVector instanceof int[]) {
-            return (int[]) pgVector;
-        } else if (pgVector instanceof Integer[]) {
-            Integer[] objVector = (Integer[]) pgVector;
+        } else if (pgVector instanceof int[] intVector) {
+            return intVector;
+        } else if (pgVector instanceof Integer[] objVector) {
             int[] result = new int[objVector.length];
             for (int i = 0; i < objVector.length; i++) {
                 result[i] = objVector[i];
             }
             return result;
-        } else if (pgVector instanceof Number) {
-            return new int[]{((Number) pgVector).intValue()};
-        } else if (pgVector instanceof java.sql.Array) {
+        } else if (pgVector instanceof Number number) {
+            return new int[]{number.intValue()};
+        } else if (pgVector instanceof java.sql.Array pgArray) {
             try {
-                Object array = ((java.sql.Array) pgVector).getArray();
+                Object array = pgArray.getArray();
                 if (array == null) {
                     return null;
                 }
@@ -820,11 +817,11 @@ public class PostgreUtils {
         }
     }
 
-    public static String getObjectUniqueName(PostgrePrivilegeOwner object) {
+    public static String getObjectUniqueName(PostgrePrivilegeOwner object, Map<String, Object> options) {
         if (object instanceof PostgreProcedure) {
             return ((PostgreProcedure) object).getFullQualifiedSignature();
         } else {
-            return DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL);
+            return DBUtils.getEntityScriptName(object, options);
         }
     }
 
@@ -838,7 +835,7 @@ public class PostgreUtils {
             // Owner
             PostgreRole owner = object.getOwner(monitor);
             if (owner != null) {
-                String alterScript = object.generateChangeOwnerQuery(DBUtils.getQuotedIdentifier(owner));
+                String alterScript = object.generateChangeOwnerQuery(DBUtils.getQuotedIdentifier(owner), options);
                 if (!CommonUtils.isEmpty(alterScript)) {
                     actions.add(new SQLDatabasePersistAction("Owner change", alterScript));
                 }

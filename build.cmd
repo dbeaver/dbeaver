@@ -3,3 +3,4 @@ IF NOT EXIST ..\dbeaver-common git clone https://github.com/dbeaver/dbeaver-comm
 cd product/aggregate
 call mvn clean package -T 1C
 cd ../..
+pause
