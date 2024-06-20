@@ -35,6 +35,7 @@ public class GaussDBDatabaseConfigurator implements DBEObjectConfigurator<GaussD
                 database.setTemplateName(dialog.getTemplateName());
                 database.setInitialTablespace(dialog.getTablespace());
                 database.setInitialEncoding(dialog.getEncoding());
+                database.setDatabaseCompatibleMode(dialog.getCompatibleMode());
                 return database;
             }
         }.execute();
