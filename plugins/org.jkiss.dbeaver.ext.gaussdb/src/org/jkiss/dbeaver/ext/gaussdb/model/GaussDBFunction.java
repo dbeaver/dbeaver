@@ -14,5 +14,4 @@ public class GaussDBFunction extends GaussDBProcedure {
     public GaussDBFunction(PostgreSchema schema) {
         super(schema);
     }
-
 }

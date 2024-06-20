@@ -1,3 +1,4 @@
+
 package org.jkiss.dbeaver.ext.gaussdb.model;
 
 import java.sql.ResultSet;
@@ -31,15 +32,21 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class GaussDBDatabase extends PostgreDatabase {
 
-    private static final Log log = Log.getLog(GaussDBDatabase.class);
+    private static final Log   log = Log.getLog(GaussDBDatabase.class);
 
     private DBRProgressMonitor monitor;
 
-    private String characterType;
+    /**
+     * Character Type
+     */
+    private String             characterType;
 
-    private String databaseCompatibleMode;
+    /**
+     * dataBase Compatibility Mode
+     */
+    private String             databaseCompatibleMode;
 
-    private boolean isPackageSupported;
+    private boolean            isPackageSupported;
 
     protected GaussDBDatabase(DBRProgressMonitor monitor,
                               GaussDBDataSource dataSource,
@@ -90,8 +97,13 @@ public class GaussDBDatabase extends PostgreDatabase {
         return this.databaseCompatibleMode;
     }
 
+    /**
+     * is package supported
+     * 
+     * @return is package supported
+     */
     public boolean isPackageSupported() {
-        return this.isPackageSupported;
+        return isPackageSupported;
     }
 
     private void init(ResultSet dbResult) {
@@ -110,7 +122,7 @@ public class GaussDBDatabase extends PostgreDatabase {
     public void readDatabaseInfo(DBRProgressMonitor monitor) throws DBCException {
         try (JDBCSession session = getMetaContext().openSession(monitor, DBCExecutionPurpose.META, "Load database info")) {
             try (JDBCPreparedStatement dbStat = session
-                        .prepareStatement("select db.oid, db.* from pg_catalog.pg_database db where datname = ?")) {
+                        .prepareStatement("SELECT db.oid,db.* FROM pg_catalog.pg_database db WHERE datname=?")) {
                 dbStat.setString(1, super.getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.nextRow()) {
@@ -151,10 +163,8 @@ public class GaussDBDatabase extends PostgreDatabase {
 
     @Association
     public Collection<PostgreSchema> getSysSchemas(DBRProgressMonitor monitor) throws DBException {
-        if (monitor != null) {
-            checkInstanceConnection(monitor);
-        }
-        // Get System Schemas
+        checkInstanceConnection(monitor);
+        // Get System schemas
         List<PostgreSchema> list = super.schemaCache.getAllObjects(monitor, this).stream()
                     .filter(e -> e.getObjectId() < 16384 && !e.getName().toLowerCase(Locale.ENGLISH).contains("public"))
                     .collect(Collectors.toList());
@@ -163,10 +173,8 @@ public class GaussDBDatabase extends PostgreDatabase {
 
     @Association
     public Collection<PostgreSchema> getUserSchemas(DBRProgressMonitor monitor) throws DBException {
-        if (monitor != null) {
-            checkInstanceConnection(monitor);
-        }
-        // Get User Schemas
+        checkInstanceConnection(monitor);
+        // Get User schemas
         List<PostgreSchema> list = super.schemaCache.getAllObjects(monitor, this).stream()
                     .filter(e -> e.getObjectId() >= 16384 && !e.getName().contains("pg_")
                                 || e.getName().toLowerCase(Locale.ENGLISH).contains("public"))
@@ -189,10 +197,10 @@ public class GaussDBDatabase extends PostgreDatabase {
     @Override
     protected void loadInfo(ResultSet dbResult) {
         super.loadInfo(dbResult);
-        reflectInitDatabase(dbResult);
+        reflectInitDataBase(dbResult);
     }
 
-    private void reflectInitDatabase(ResultSet dbResult) {
+    private void reflectInitDataBase(ResultSet dbResult) {
         try {
             Class<?> forName = Class.forName("org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase");
             if (!dataSource.isServerVersionAtLeast(8, 4)) {
@@ -210,19 +218,133 @@ public class GaussDBDatabase extends PostgreDatabase {
                 connectionLimit.set(this, JDBCUtils.safeGetInt(dbResult, "datconnlimit"));
             }
 
-        } catch (Exception e) {
-            log.info("ReflectInitDatabase Exception : " + e.getMessage());
+        } catch (ClassNotFoundException | NoSuchFieldException | SecurityException | IllegalArgumentException
+                    | IllegalAccessException e) {
+            log.info("ReflectInitDataBase Exception", e);
         }
     }
 
+    /**
+     * set package supported
+     * 
+     * @param isPackageSupported
+     *            is package supported
+     */
     public void setPackageSupported(boolean isPackageSupported) {
         this.isPackageSupported = isPackageSupported;
     }
 
+    /**
+     * check package is supported
+     * 
+     * @param monitor
+     * @throws DBCException
+     * @throws SQLException
+     */
     public void checkPackageSupport(DBRProgressMonitor monitor) {
-        String compatibility = this.getDatabaseCompatibleMode();
-        boolean isPackageSupport = "ORA".equalsIgnoreCase(compatibility);
-        setPackageSupported(isPackageSupport);
+        try (JDBCSession session = getMetaContext().openSession(monitor, DBCExecutionPurpose.META, "Load database info")) {
+            boolean isV5R2 = this.isV5R2(session);
+            boolean isDistributed = this.isDistributedClusterV5(session);
+            boolean isPackageSupport = isV5R2 && !isDistributed;
+            if (isDistributed) {
+                // 分布式校验Oracle兼容和版本号
+                String compatibility = this.getDatabaseCompatibleMode();
+                int versionNum = this.getWorkVersionNum(session);
+                String version = this.getVersion(session);
+                isPackageSupport = isV5R2 && isDistributed && "ORA".equalsIgnoreCase(compatibility)
+                            && (versionNum == 93464 || version.contains("503.2.T55"));
+            }
+            setPackageSupported(isPackageSupport);
+        } catch (DBCException | SQLException e) {
+            log.info("checkPackageSupport Exception", e);
+        }
     }
 
+    private boolean isV5R2(JDBCSession session) throws DBCException {
+        try (JDBCPreparedStatement dbStat = session.prepareStatement("select version();")) {
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                if (dbResult.nextRow()) {
+                    String version = JDBCUtils.safeGetString(dbResult, "version");
+                    if (version != null && (version.contains("Kernel") || version.contains("openGauss"))) {
+                        int idxAfterKernel = version.indexOf("Kernel") + "Kernel ".length();
+                        int idxAfterOpenGauss = version.indexOf("openGauss") + "openGauss ".length();
+                        String kernelVersion = version.substring(idxAfterKernel, idxAfterKernel + "V500R002C00".length());
+                        String openGaussVersion = version.substring(idxAfterOpenGauss, idxAfterOpenGauss + "2.0.0".length());
+                        return kernelVersion.compareTo("V500R002C00") >= 0 || openGaussVersion.compareTo("2.0.0") >= 0;
+                    }
+                    return false;
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBCException(e, session.getExecutionContext());
+        }
+        return false;
+    }
+
+    /**
+     * get version
+     * 
+     * @return the version
+     * @throws DBCException
+     */
+    private String getVersion(JDBCSession session) throws DBCException {
+        String version = "";
+        try (JDBCPreparedStatement dbStat = session.prepareStatement("select version();")) {
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                if (dbResult.nextRow()) {
+                    version = JDBCUtils.safeGetString(dbResult, "version");
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBCException(e, session.getExecutionContext());
+        }
+        return version;
+    }
+
+    /**
+     * get version number.
+     * 
+     * @return version
+     * @throws DBCException
+     */
+    public int getWorkVersionNum(JDBCSession session) throws DBCException {
+        int version = 0;
+        try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT working_version_num();")) {
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                if (dbResult.nextRow()) {
+                    version = JDBCUtils.safeGetInt(dbResult, "working_version_num");
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBCException(e, session.getExecutionContext());
+        }
+        return version;
+
+    }
+
+    /**
+     * is Distributed Or Centralized Support
+     * 
+     * return true if Distributed in v5 and olap connections
+     * 
+     * @param monitor
+     * @throws DBCException
+     * @throws SQLException
+     */
+    public boolean isDistributedClusterV5(JDBCSession session) throws DBCException, SQLException {
+        try (JDBCPreparedStatement dbStat = session.prepareStatement("select count(*) from pgxc_node where node_type = 'C';")) {
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                if (dbResult.nextRow()) {
+                    int count = JDBCUtils.safeGetInt(dbResult, "count");
+                    if (count > 0) {
+                        return true;
+                    }
+                    return false;
+                }
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
+            }
+        }
+        return false;
+    }
 }

@@ -1,12 +1,14 @@
+
 package org.jkiss.dbeaver.ext.gaussdb.edit;
 
 import java.util.List;
 import java.util.Map;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.gaussdb.model.GaussDBDatabase;
 import org.jkiss.dbeaver.ext.gaussdb.model.DBCompatibilityEnum;
 import org.jkiss.dbeaver.ext.gaussdb.model.GaussDBDataSource;
-import org.jkiss.dbeaver.ext.gaussdb.model.GaussDBDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -26,6 +28,9 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
+/**
+ * GaussDBDatabaseManager
+ */
 public class GaussDBDatabaseManager extends SQLObjectEditor<GaussDBDatabase, GaussDBDataSource> implements
                                     DBEObjectRenamer<GaussDBDatabase> {
 
@@ -36,6 +41,7 @@ public class GaussDBDatabaseManager extends SQLObjectEditor<GaussDBDatabase, Gau
 
     @Override
     public DBSObjectCache<? extends DBSObject, GaussDBDatabase> getObjectsCache(GaussDBDatabase object) {
+        // TODO Auto-generated method stub
         return null;
     }
 
@@ -51,10 +57,10 @@ public class GaussDBDatabaseManager extends SQLObjectEditor<GaussDBDatabase, Gau
     }
 
     @Override
-    public void renameObject(DBECommandContext commandContext,
-                             GaussDBDatabase database,
-                             Map<String, Object> options,
-                             String newName) throws DBException {
+    public void renameObject(@NotNull DBECommandContext commandContext,
+                             @NotNull GaussDBDatabase database,
+                             @NotNull Map<String, Object> options,
+                             @NotNull String newName) throws DBException {
         processObjectRename(commandContext, database, options, newName);
     }
 
@@ -84,8 +90,8 @@ public class GaussDBDatabaseManager extends SQLObjectEditor<GaussDBDatabase, Gau
     protected void addObjectCreateActions(DBRProgressMonitor monitor,
                                           DBCExecutionContext executionContext,
                                           List<DBEPersistAction> actions,
-                                          SQLObjectEditor<GaussDBDatabase, GaussDBDataSource>.ObjectCreateCommand command,
-                                          Map<String, Object> options) throws DBException {
+                                          ObjectCreateCommand command,
+                                          Map<String, Object> options) {
         final GaussDBDatabase database = command.getObject();
         StringBuilder sql = new StringBuilder();
         sql.append("CREATE DATABASE ").append(DBUtils.getQuotedIdentifier(database));
@@ -100,7 +106,7 @@ public class GaussDBDatabaseManager extends SQLObjectEditor<GaussDBDatabase, Gau
             sql.append("\nTABLESPACE = ")
                         .append(DBUtils.getQuotedIdentifier(database.getDataSource(), database.getInitialTablespace().getName()));
         }
-        if (database.getDatabaseCompatibleMode() != null && "" != database.getDatabaseCompatibleMode()) {
+        if (database.getDatabaseCompatibleMode() != null && !"".equals(database.getDatabaseCompatibleMode())) {
             sql.append("\nDBCOMPATIBILITY = '").append(DBCompatibilityEnum.of(database.getDatabaseCompatibleMode()).getdValue())
                         .append("'");
         }
@@ -111,8 +117,8 @@ public class GaussDBDatabaseManager extends SQLObjectEditor<GaussDBDatabase, Gau
     protected void addObjectDeleteActions(DBRProgressMonitor monitor,
                                           DBCExecutionContext executionContext,
                                           List<DBEPersistAction> actions,
-                                          SQLObjectEditor<GaussDBDatabase, GaussDBDataSource>.ObjectDeleteCommand command,
-                                          Map<String, Object> options) throws DBException {
+                                          ObjectDeleteCommand command,
+                                          Map<String, Object> options) {
         actions.add(new DeleteDatabaseAction(command));
     }
 

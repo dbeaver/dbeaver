@@ -45,5 +45,4 @@ public class PostgreServerGaussDB extends PostgreServerExtensionBase {
     public PostgreDatabase.SchemaCache createSchemaCache(PostgreDatabase database) {
         return new GaussDBSchemaCache();
     }
-
 }

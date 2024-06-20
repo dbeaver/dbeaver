@@ -1,3 +1,7 @@
+/*
+ * DBeaver - Universal Database Manager
+ */
+
 package org.jkiss.dbeaver.ext.gaussdb.model;
 
 import java.lang.reflect.Field;
@@ -32,16 +36,19 @@ public class GaussDBDataSource extends PostgreDataSource {
     }
 
     @NotNull
+    @Override
     public GaussDBDatabase createDatabaseImpl(@NotNull DBRProgressMonitor monitor, ResultSet dbResult) throws DBException {
         return new GaussDBDatabase(monitor, this, dbResult);
     }
 
     @NotNull
+    @Override
     public GaussDBDatabase createDatabaseImpl(@NotNull DBRProgressMonitor monitor, String name) throws DBException {
         return new GaussDBDatabase(monitor, this, name);
     }
 
     @NotNull
+    @Override
     public GaussDBDatabase createDatabaseImpl(DBRProgressMonitor monitor,
                                               String name,
                                               PostgreRole owner,
@@ -52,6 +59,7 @@ public class GaussDBDataSource extends PostgreDataSource {
     }
 
     // True if we need multiple databases
+    @Override
     protected boolean isReadDatabaseList(DBPConnectionConfiguration configuration) {
         // It is configurable by default
         return configuration.getConfigurationType() != DBPDriverConfigurationType.URL
@@ -66,7 +74,8 @@ public class GaussDBDataSource extends PostgreDataSource {
             sqlDialect.set(this, new GaussDBDialect());
         } catch (ClassNotFoundException | NoSuchFieldException | SecurityException | IllegalArgumentException
                     | IllegalAccessException e) {
-            log.debug("GaussDBDataSource initSqlDialect error : " + e.getMessage());
+            log.debug("GaussDBDataSource initSqlDialect error " + e.getMessage());
         }
     }
+
 }

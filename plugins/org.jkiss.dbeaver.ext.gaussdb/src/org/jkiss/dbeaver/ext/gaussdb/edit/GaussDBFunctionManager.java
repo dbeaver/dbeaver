@@ -1,14 +1,15 @@
+/*
+ * DBeaver - Universal Database Manager
+ */
 package org.jkiss.dbeaver.ext.gaussdb.edit;
 
-import java.util.List;
-import java.util.Map;
-
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.gaussdb.model.GaussDBFunction;
+import org.jkiss.dbeaver.ext.gaussdb.model.GaussDBProcedure;
 import org.jkiss.dbeaver.ext.gaussdb.model.GaussDBSchema;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -22,20 +23,21 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
+import java.util.Map;
+
+/**
+ * GaussDBFunctionManager
+ */
 public class GaussDBFunctionManager extends SQLObjectEditor<GaussDBFunction, GaussDBSchema> implements
                                     DBEObjectRenamer<GaussDBFunction> {
 
+    @Nullable
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
-        return FEATURE_EDITOR_ON_CREATE;
-    }
-
-    @Override
-    public DBSObjectCache<? extends DBSObject, GaussDBFunction> getObjectsCache(GaussDBFunction object) {
+    public DBSObjectCache<GaussDBSchema, GaussDBFunction> getObjectsCache(GaussDBFunction object) {
         GaussDBSchema schema = (GaussDBSchema) object.getContainer();
         return schema.getGaussDBFunctionsCache();
     }
@@ -52,6 +54,11 @@ public class GaussDBFunctionManager extends SQLObjectEditor<GaussDBFunction, Gau
     }
 
     @Override
+    public long getMakerOptions(DBPDataSource dataSource) {
+        return FEATURE_EDITOR_ON_CREATE;
+    }
+
+    @Override
     protected void validateObjectProperties(DBRProgressMonitor monitor,
                                             ObjectChangeCommand command,
                                             Map<String, Object> options) throws DBException {
@@ -63,9 +70,9 @@ public class GaussDBFunctionManager extends SQLObjectEditor<GaussDBFunction, Gau
     @Override
     protected GaussDBFunction createDatabaseObject(DBRProgressMonitor monitor,
                                                    DBECommandContext context,
-                                                   Object container,
+                                                   final Object container,
                                                    Object copyFrom,
-                                                   Map<String, Object> options) throws DBException {
+                                                   Map<String, Object> options) {
         return new GaussDBFunction((PostgreSchema) container);
     }
 
@@ -73,8 +80,8 @@ public class GaussDBFunctionManager extends SQLObjectEditor<GaussDBFunction, Gau
     protected void addObjectCreateActions(DBRProgressMonitor monitor,
                                           DBCExecutionContext executionContext,
                                           List<DBEPersistAction> actions,
-                                          SQLObjectEditor<GaussDBFunction, GaussDBSchema>.ObjectCreateCommand command,
-                                          Map<String, Object> options) throws DBException {
+                                          ObjectCreateCommand command,
+                                          Map<String, Object> options) {
         createOrReplaceProcedureQuery(actions, command.getObject());
     }
 
@@ -93,16 +100,15 @@ public class GaussDBFunctionManager extends SQLObjectEditor<GaussDBFunction, Gau
     protected void addObjectDeleteActions(DBRProgressMonitor monitor,
                                           DBCExecutionContext executionContext,
                                           List<DBEPersistAction> actions,
-                                          SQLObjectEditor<GaussDBFunction, GaussDBSchema>.ObjectDeleteCommand command,
-                                          Map<String, Object> options) throws DBException {
+                                          ObjectDeleteCommand command,
+                                          Map<String, Object> options) {
         String objectType = command.getObject().getProcedureTypeName();
         actions.add(new SQLDatabasePersistAction("Drop function",
                                                  "DROP " + objectType + " " + command.getObject().getFullQualifiedSignature()) //$NON-NLS-1$
         );
-
     }
 
-    private void createOrReplaceProcedureQuery(List<DBEPersistAction> actions, PostgreProcedure procedure) {
+    private void createOrReplaceProcedureQuery(List<DBEPersistAction> actions, GaussDBProcedure procedure) {
         actions.add(new SQLDatabasePersistAction("Create function", procedure.getBody(), true));
     }
 
@@ -144,11 +150,11 @@ public class GaussDBFunctionManager extends SQLObjectEditor<GaussDBFunction, Gau
                                           List<DBEPersistAction> actions,
                                           ObjectRenameCommand command,
                                           Map<String, Object> options) {
-        GaussDBFunction procedure = command.getObject();
+        GaussDBProcedure procedure = command.getObject();
         actions.add(new SQLDatabasePersistAction("Rename function",
                                                  "ALTER " + command.getObject().getProcedureTypeName() + " "
                                                              + DBUtils.getQuotedIdentifier(procedure.getSchema()) + "."
-                                                             + PostgreProcedure.makeOverloadedName(procedure.getSchema(),
+                                                             + GaussDBProcedure.makeOverloadedName(procedure.getSchema(),
                                                                                                    command.getOldName(),
                                                                                                    procedure.getParameters(monitor),
                                                                                                    true, false, false)

@@ -1,3 +1,4 @@
+
 package org.jkiss.dbeaver.ext.gaussdb.model;
 
 import java.util.ArrayList;
@@ -38,9 +39,8 @@ public class GaussDBDialect extends PostgreDialect {
         }
         String namedParameterPrefix = prefStore.getString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX);
         boolean useBrackets = useBracketsForExec(proc);
-        if (useBrackets) {
+        if (useBrackets)
             sql.append("{ ");
-        }
         sql.append(getStoredProcedureCallInitialClause(proc)).append("(");
         if (!inParameters.isEmpty()) {
             boolean first = true;

@@ -1,3 +1,4 @@
+
 package org.jkiss.dbeaver.ext.gaussdb.model;
 
 import java.sql.ResultSet;
@@ -22,17 +23,14 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
 public class GaussDBProcedure extends PostgreProcedure {
-
-    private long proPackageId;
-
-    public String proKind;
-
-    public String proSrc;
+    public long   propackageid;
+    public String prokind;
+    public String procSrc;
 
     public String body = getBody();
 
-    public long getProPackageId() {
-        return proPackageId;
+    public long getPropackageid() {
+        return propackageid;
     }
 
     public GaussDBProcedure(PostgreSchema schema) {
@@ -41,8 +39,8 @@ public class GaussDBProcedure extends PostgreProcedure {
 
     public GaussDBProcedure(DBRProgressMonitor monitor, PostgreSchema schema, ResultSet dbResult) {
         super(monitor, schema, dbResult);
-        this.proPackageId = JDBCUtils.safeGetLong(dbResult, "propackageid");
-        this.proSrc = JDBCUtils.safeGetString(dbResult, "prosrc");
+        this.propackageid = JDBCUtils.safeGetLong(dbResult, "propackageid");
+        this.procSrc = JDBCUtils.safeGetString(dbResult, "prosrc");
     }
 
     @Override
@@ -51,16 +49,16 @@ public class GaussDBProcedure extends PostgreProcedure {
         boolean omitHeader = CommonUtils.getOption(options, OPTION_DEBUGGER_SOURCE);
         String procDDL = omitHeader ? "" : "-- DROP " + getProcedureTypeName() + " " + getFullQualifiedSignature() + ";\n\n";
         if (isPersisted() && (!getDataSource().getServerType().supportsFunctionDefRead() || omitHeader) && !isAggregate()) {
-            if (proSrc == null) {
+            if (procSrc == null) {
                 try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read procedure body")) {
-                    proSrc = JDBCUtils.queryString(session, "SELECT prosrc FROM pg_proc where oid = ?", getObjectId());
+                    procSrc = JDBCUtils.queryString(session, "SELECT prosrc FROM pg_proc where oid = ?", getObjectId());
                 } catch (SQLException e) {
                     throw new DBException("Error reading procedure body", e);
                 }
             }
             PostgreDataType returnType = getReturnType();
             String returnTypeName = returnType == null ? null : returnType.getFullTypeName();
-            procDDL += omitHeader ? proSrc : generateFunctionDeclaration(getLanguage(monitor), returnTypeName, proSrc);
+            procDDL += omitHeader ? procSrc : generateFunctionDeclaration(getLanguage(monitor), returnTypeName, procSrc);
         } else {
             if (body == null) {
                 if (!isPersisted()) {
@@ -69,11 +67,11 @@ public class GaussDBProcedure extends PostgreProcedure {
                     body = generateFunctionDeclaration(getLanguage(monitor), returnTypeName, "\n\t-- Enter function body here\n");
                 } else if (getObjectId() == 0) {
                     // No OID so let's use old (bad) way
-                    body = this.proSrc;
+                    body = this.procSrc;
                 } else {
                     try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read procedure body")) {
-                        body = JDBCUtils.queryString(session, "SELECT pg_get_functiondef(" + getObjectId() + ")");
-                        body = body == null ? this.proSrc : body.substring(4, body.length() - 2);
+                        String res = JDBCUtils.queryString(session, "SELECT pg_get_functiondef(" + getObjectId() + ")");
+                        body = res == null ? this.procSrc : res.substring(4, res.length() - 2);
                     } catch (SQLException e) {
                         throw new DBException("Error reading procedure body", e);
                     }

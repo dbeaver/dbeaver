@@ -87,5 +87,4 @@ public class GaussDBDataSourceProvider extends JDBCDataSourceProvider {
     public boolean providesDriverClasses() {
         return false;
     }
-
 }

@@ -1,6 +1,6 @@
+
 package org.jkiss.dbeaver.ext.gaussdb.model;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,28 +24,22 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class GaussDBSchema extends PostgreSchema {
 
-    public final PackageCache packageCache = new PackageCache();
-    private final ProceduresCache proceduresCache = new ProceduresCache();
-    private final FunctionsCache functionCache = new FunctionsCache();
+    public final PackageCache packageCache;
+    private final ProceduresCache proceduresCache;
+    private final FunctionsCache functionsCache;
 
-    public PackageCache getPackageCache() {
-        return packageCache;
-    }
-
-    public ProceduresCache getGaussDBProceduresCache() {
-        return proceduresCache;
-    }
-
-    public FunctionsCache getGaussDBFunctionsCache() {
-        return functionCache;
+    public GaussDBSchema(PostgreDatabase owner, String name, JDBCResultSet resultSet) throws SQLException {
+        super(owner, name, resultSet);
+        this.packageCache = new PackageCache();
+        this.proceduresCache = new ProceduresCache();
+        this.functionsCache = new FunctionsCache();
     }
 
     public GaussDBSchema(PostgreDatabase database, String name, PostgreRole owner) {
         super(database, name, owner);
-    }
-
-    public GaussDBSchema(PostgreDatabase database, String name, ResultSet dbResult) throws SQLException {
-        super(database, name, dbResult);
+        this.packageCache = new PackageCache();
+        this.proceduresCache = new ProceduresCache();
+        this.functionsCache = new FunctionsCache();
     }
 
     @Override
@@ -57,8 +51,16 @@ public class GaussDBSchema extends PostgreSchema {
         return false;
     }
 
-    public static boolean isUtilitySchema(String schemaName) {
+    public static boolean isUtilitySchema(String schema) {
         return false;
+    }
+
+    public ProceduresCache getGaussDBProceduresCache() {
+        return this.proceduresCache;
+    }
+
+    public FunctionsCache getGaussDBFunctionsCache() {
+        return this.functionsCache;
     }
 
     @Association
@@ -68,40 +70,39 @@ public class GaussDBSchema extends PostgreSchema {
 
     @Association
     public List<GaussDBProcedure> getGaussDBProcedures(DBRProgressMonitor monitor) throws DBException {
-        return proceduresCache.getAllObjects(monitor, this).stream()
-                    .filter(e -> e.getProPackageId() == oid && e.getKind() == PostgreProcedureKind.p).collect(Collectors.toList());
+        List<GaussDBProcedure> list = getGaussDBProceduresCache().getAllObjects(monitor, this).stream()
+                    .filter(e -> e.getPropackageid() == 0 && e.getKind() == PostgreProcedureKind.p)
+                .collect(Collectors.toList());
+        return list;
     }
 
     @Association
     public List<GaussDBFunction> getGaussDBFunctions(DBRProgressMonitor monitor) throws DBException {
-        return functionCache.getAllObjects(monitor, this).stream()
-                    .filter(e -> e.getProPackageId() == oid && e.getKind() == PostgreProcedureKind.f).collect(Collectors.toList());
+        List<GaussDBFunction> list = getGaussDBFunctionsCache().getAllObjects(monitor, this).stream()
+                    .filter(e -> e.getPropackageid() == 0 && e.getKind() == PostgreProcedureKind.f)
+                .collect(Collectors.toList());
+        return list;
     }
 
-    public static class PackageCache extends JDBCObjectCache<GaussDBSchema, GaussDBPackage> {
+    class PackageCache extends JDBCObjectCache<GaussDBSchema, GaussDBPackage> {
 
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session,
-                                                        @NotNull GaussDBSchema owner) throws SQLException {
-            JDBCPreparedStatement dbStat = session
-                        .prepareStatement("SELECT g.oid, g.pkgnamespace, g.pkgname as name from gs_package g where g.pkgnamespace = ?");
-            dbStat.setLong(1, owner.getObjectId());
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull GaussDBSchema owner)
+                throws SQLException {
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
+                    "select g.oid, g.pkgnamespace, g.pkgname as name from gs_package g where g.pkgnamespace = ?");
+            dbStat.setLong(1, GaussDBSchema.this.getObjectId());
             return dbStat;
         }
 
         @Override
-        protected GaussDBPackage fetchObject(@NotNull JDBCSession session,
-                                             @NotNull GaussDBSchema owner,
-                                             @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+        protected GaussDBPackage fetchObject(@NotNull JDBCSession session, @NotNull GaussDBSchema owner,
+                @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
             return new GaussDBPackage(session, owner, dbResult);
         }
-
     }
 
-    /**
-     * Procedures cache implementation
-     */
     public static class ProceduresCache extends JDBCObjectLookupCache<GaussDBSchema, GaussDBProcedure> {
 
         public ProceduresCache() {
@@ -110,21 +111,19 @@ public class GaussDBSchema extends PostgreSchema {
 
         @NotNull
         @Override
-        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session,
-                                                    @NotNull GaussDBSchema owner,
-                                                    @Nullable GaussDBProcedure object,
-                                                    @Nullable String objectName) throws SQLException {
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull GaussDBSchema owner,
+                @Nullable GaussDBProcedure object, @Nullable String objectName) throws SQLException {
             PostgreServerExtension serverType = owner.getDataSource().getServerType();
             String oidColumn = serverType.getProceduresOidColumn(); // Hack for Redshift SP support
-            boolean versionAtLeast7 = session.getDataSource().isServerVersionAtLeast(7, 2);
             JDBCPreparedStatement dbStat = session.prepareStatement("SELECT p." + oidColumn + " as poid,p.*,"
-                        + (session.getDataSource().isServerVersionAtLeast(8, 4) ? "pg_catalog.pg_get_expr(p.proargdefaults, 0)"
-                                    : "NULL")
-                        + " as arg_defaults,d.description\n" + "FROM pg_catalog." + serverType.getProceduresSystemTable() + " p\n"
-                        + "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=p." + oidColumn
-                        + (versionAtLeast7 ? " and d.classoid='pg_proc'::regclass " : "") + // to avoid objects duplication
-                        (versionAtLeast7 ? " AND d.objsubid = 0" : "") + // no links to columns
-                        "\nWHERE p.pronamespace=?" + (object == null ? "" : " AND p." + oidColumn + "=?") + "\nORDER BY p.proname");
+                    + (session.getDataSource().isServerVersionAtLeast(8, 4)
+                            ? "pg_catalog.pg_get_expr(p.proargdefaults, 0)"
+                            : "NULL")
+                    + " as arg_defaults,d.description\n" + "FROM pg_catalog." + serverType.getProceduresSystemTable()
+                    + " p\n" + "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=p." + oidColumn
+                    + (session.getDataSource().isServerVersionAtLeast(7, 2) ? " AND d.objsubid = 0" : "") + // no links to columns
+                    "\nWHERE p.pronamespace=?" + (object == null ? "" : " AND p." + oidColumn + "=?")
+                    + "\nORDER BY p.proname");
             dbStat.setLong(1, owner.getObjectId());
             if (object != null) {
                 dbStat.setLong(2, object.getObjectId());
@@ -133,17 +132,13 @@ public class GaussDBSchema extends PostgreSchema {
         }
 
         @Override
-        protected GaussDBProcedure fetchObject(@NotNull JDBCSession session,
-                                               @NotNull GaussDBSchema owner,
-                                               @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+        protected GaussDBProcedure fetchObject(@NotNull JDBCSession session, @NotNull GaussDBSchema owner,
+                @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
             return new GaussDBProcedure(session.getProgressMonitor(), owner, dbResult);
         }
 
     }
 
-    /**
-     * Procedures cache implementation
-     */
     public static class FunctionsCache extends JDBCObjectLookupCache<GaussDBSchema, GaussDBFunction> {
 
         public FunctionsCache() {
@@ -152,21 +147,19 @@ public class GaussDBSchema extends PostgreSchema {
 
         @NotNull
         @Override
-        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session,
-                                                    @NotNull GaussDBSchema owner,
-                                                    @Nullable GaussDBFunction object,
-                                                    @Nullable String objectName) throws SQLException {
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull GaussDBSchema owner,
+                @Nullable GaussDBFunction object, @Nullable String objectName) throws SQLException {
             PostgreServerExtension serverType = owner.getDataSource().getServerType();
             String oidColumn = serverType.getProceduresOidColumn(); // Hack for Redshift SP support
-            boolean versionAtLeast7 = session.getDataSource().isServerVersionAtLeast(7, 2);
             JDBCPreparedStatement dbStat = session.prepareStatement("SELECT p." + oidColumn + " as poid,p.*,"
-                        + (session.getDataSource().isServerVersionAtLeast(8, 4) ? "pg_catalog.pg_get_expr(p.proargdefaults, 0)"
-                                    : "NULL")
-                        + " as arg_defaults,d.description\n" + "FROM pg_catalog." + serverType.getProceduresSystemTable() + " p\n"
-                        + "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=p." + oidColumn
-                        + (versionAtLeast7 ? " and d.classoid='pg_proc'::regclass " : "") + // to avoid objects duplication
-                        (versionAtLeast7 ? " AND d.objsubid = 0" : "") + // no links to columns
-                        "\nWHERE p.pronamespace=?" + (object == null ? "" : " AND p." + oidColumn + "=?") + "\nORDER BY p.proname");
+                    + (session.getDataSource().isServerVersionAtLeast(8, 4)
+                            ? "pg_catalog.pg_get_expr(p.proargdefaults, 0)"
+                            : "NULL")
+                    + " as arg_defaults,d.description\n" + "FROM pg_catalog." + serverType.getProceduresSystemTable()
+                    + " p\n" + "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=p." + oidColumn
+                    + (session.getDataSource().isServerVersionAtLeast(7, 2) ? " AND d.objsubid = 0" : "") + // no links to columns
+                    "\nWHERE p.pronamespace=?" + (object == null ? "" : " AND p." + oidColumn + "=?")
+                    + "\nORDER BY p.proname");
             dbStat.setLong(1, owner.getObjectId());
             if (object != null) {
                 dbStat.setLong(2, object.getObjectId());
@@ -175,12 +168,10 @@ public class GaussDBSchema extends PostgreSchema {
         }
 
         @Override
-        protected GaussDBFunction fetchObject(@NotNull JDBCSession session,
-                                              @NotNull GaussDBSchema owner,
-                                              @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+        protected GaussDBFunction fetchObject(@NotNull JDBCSession session, @NotNull GaussDBSchema owner,
+                @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
             return new GaussDBFunction(session.getProgressMonitor(), owner, dbResult);
         }
 
     }
-
 }

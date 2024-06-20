@@ -1,14 +1,14 @@
+/*
+ * DBeaver - Universal Database Manager
+ */
 package org.jkiss.dbeaver.ext.gaussdb.edit;
 
-import java.util.List;
-import java.util.Map;
-
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.gaussdb.model.GaussDBProcedure;
 import org.jkiss.dbeaver.ext.gaussdb.model.GaussDBSchema;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -25,14 +25,16 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
+import java.util.Map;
+
+/**
+ * GaussDBProcedureManager
+ */
 public class GaussDBProcedureManager extends SQLObjectEditor<GaussDBProcedure, GaussDBSchema> implements
                                      DBEObjectRenamer<GaussDBProcedure> {
 
-    @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
-        return FEATURE_EDITOR_ON_CREATE;
-    }
-
+    @Nullable
     @Override
     public DBSObjectCache<GaussDBSchema, GaussDBProcedure> getObjectsCache(GaussDBProcedure object) {
         GaussDBSchema schema = (GaussDBSchema) object.getContainer();
@@ -48,6 +50,11 @@ public class GaussDBProcedureManager extends SQLObjectEditor<GaussDBProcedure, G
     @Override
     public boolean canDeleteObject(GaussDBProcedure object) {
         return object.getDataSource().getServerType().supportsFunctionCreate();
+    }
+
+    @Override
+    public long getMakerOptions(DBPDataSource dataSource) {
+        return FEATURE_EDITOR_ON_CREATE;
     }
 
     @Override
@@ -146,7 +153,7 @@ public class GaussDBProcedureManager extends SQLObjectEditor<GaussDBProcedure, G
         actions.add(new SQLDatabasePersistAction("Rename function",
                                                  "ALTER " + command.getObject().getProcedureTypeName() + " "
                                                              + DBUtils.getQuotedIdentifier(procedure.getSchema()) + "."
-                                                             + PostgreProcedure.makeOverloadedName(procedure.getSchema(),
+                                                             + GaussDBProcedure.makeOverloadedName(procedure.getSchema(),
                                                                                                    command.getOldName(),
                                                                                                    procedure.getParameters(monitor),
                                                                                                    true, false, false)
