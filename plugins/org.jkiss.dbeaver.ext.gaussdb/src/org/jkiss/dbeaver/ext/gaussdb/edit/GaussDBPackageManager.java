@@ -9,6 +9,7 @@ import org.jkiss.dbeaver.ext.gaussdb.model.GaussDBDataSource;
 import org.jkiss.dbeaver.ext.gaussdb.model.GaussDBDatabase;
 import org.jkiss.dbeaver.ext.gaussdb.model.GaussDBPackage;
 import org.jkiss.dbeaver.ext.gaussdb.model.GaussDBSchema;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -95,6 +96,13 @@ public class GaussDBPackageManager extends SQLObjectEditor<GaussDBPackage, Gauss
                                           Map<String, Object> options) throws DBException {
         GaussDBPackage pkg = command.getObject();
         actions.add(new SQLDatabasePersistAction("Drop package", "DROP PACKAGE " + pkg.getName()));
+    }
+    
+    @Override
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
+        if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
+            createOrReplaceProcedureQuery(executionContext, actionList, command.getObject());
+        }
     }
 
     private void createOrReplaceProcedureQuery(DBCExecutionContext executionContext,

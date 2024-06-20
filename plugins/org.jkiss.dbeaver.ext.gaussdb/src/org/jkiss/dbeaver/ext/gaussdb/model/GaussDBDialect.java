@@ -16,7 +16,7 @@ import org.jkiss.utils.CommonUtils;
 public class GaussDBDialect extends PostgreDialect {
 
     @Override
-    public boolean isDelimiterAfterQuery() {
+    public boolean isDelimiterAfterBlock() {
         return true;
     }
 

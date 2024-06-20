@@ -37,7 +37,7 @@ public class GaussDBFunctionManager extends SQLObjectEditor<GaussDBFunction, Gau
     @Override
     public DBSObjectCache<? extends DBSObject, GaussDBFunction> getObjectsCache(GaussDBFunction object) {
         GaussDBSchema schema = (GaussDBSchema) object.getContainer();
-        return schema.getGaussDBFunctionCache();
+        return schema.getGaussDBFunctionsCache();
     }
 
     @Override

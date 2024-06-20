@@ -90,7 +90,7 @@ public class GaussDBDatabase extends PostgreDatabase {
         return this.databaseCompatibleMode;
     }
 
-    public boolean isOackageSupported() {
+    public boolean isPackageSupported() {
         return this.isPackageSupported;
     }
 
@@ -207,7 +207,7 @@ public class GaussDBDatabase extends PostgreDatabase {
             if (!dataSource.isServerVersionAtLeast(8, 1)) {
                 Field connectionLimit = forName.getDeclaredField("connectionLimit");
                 connectionLimit.setAccessible(true);
-                connectionLimit.set(this, JDBCUtils.safeGetString(dbResult, "datconnlimit"));
+                connectionLimit.set(this, JDBCUtils.safeGetInt(dbResult, "datconnlimit"));
             }
 
         } catch (Exception e) {

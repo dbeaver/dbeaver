@@ -2,11 +2,14 @@ package org.jkiss.dbeaver.ext.gaussdb.model;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedureKind;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreServerExtension;
@@ -16,14 +19,26 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
+import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class GaussDBSchema extends PostgreSchema {
 
-    public final PackageCache packageCache = new PackageCache();;
-    private final ProceduresCache proceduresCache = new ProceduresCache();;
-    private final FunctionCache functionCache = new FunctionCache();;
+    public final PackageCache packageCache = new PackageCache();
+    private final ProceduresCache proceduresCache = new ProceduresCache();
+    private final FunctionsCache functionCache = new FunctionsCache();
+
+    public PackageCache getPackageCache() {
+        return packageCache;
+    }
+
+    public ProceduresCache getGaussDBProceduresCache() {
+        return proceduresCache;
+    }
+
+    public FunctionsCache getGaussDBFunctionsCache() {
+        return functionCache;
+    }
 
     public GaussDBSchema(PostgreDatabase database, String name, PostgreRole owner) {
         super(database, name, owner);
@@ -33,8 +48,34 @@ public class GaussDBSchema extends PostgreSchema {
         super(database, name, dbResult);
     }
 
-    public DBSObjectCache<? extends DBSObject, GaussDBFunction> getGaussDBFunctionCache() {
-        return null;
+    @Override
+    public boolean isSystem() {
+        return false;
+    }
+
+    public boolean isUtility() {
+        return false;
+    }
+
+    public static boolean isUtilitySchema(String schemaName) {
+        return false;
+    }
+
+    @Association
+    public List<GaussDBPackage> getPackages(DBRProgressMonitor monitor) throws DBException {
+        return packageCache.getAllObjects(monitor, this);
+    }
+
+    @Association
+    public List<GaussDBProcedure> getGaussDBProcedures(DBRProgressMonitor monitor) throws DBException {
+        return proceduresCache.getAllObjects(monitor, this).stream()
+                    .filter(e -> e.getProPackageId() == oid && e.getKind() == PostgreProcedureKind.p).collect(Collectors.toList());
+    }
+
+    @Association
+    public List<GaussDBFunction> getGaussDBFunctions(DBRProgressMonitor monitor) throws DBException {
+        return functionCache.getAllObjects(monitor, this).stream()
+                    .filter(e -> e.getProPackageId() == oid && e.getKind() == PostgreProcedureKind.f).collect(Collectors.toList());
     }
 
     public static class PackageCache extends JDBCObjectCache<GaussDBSchema, GaussDBPackage> {
@@ -103,9 +144,9 @@ public class GaussDBSchema extends PostgreSchema {
     /**
      * Procedures cache implementation
      */
-    public static class FunctionCache extends JDBCObjectLookupCache<GaussDBSchema, GaussDBFunction> {
+    public static class FunctionsCache extends JDBCObjectLookupCache<GaussDBSchema, GaussDBFunction> {
 
-        public FunctionCache() {
+        public FunctionsCache() {
             super();
         }
 
