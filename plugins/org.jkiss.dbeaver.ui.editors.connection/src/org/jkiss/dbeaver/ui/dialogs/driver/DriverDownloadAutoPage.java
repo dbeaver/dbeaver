@@ -140,8 +140,9 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
                     ((WizardDialog) getContainer()).close();
                 }
             }
+        } finally {
+            ThreadExceptionsContext.unregisterThreadListening();
         }
-        ThreadExceptionsContext.realiseResources();
         depsTree.resizeTree();
     }
 

@@ -125,6 +125,7 @@ class DriverDependenciesTree {
     public boolean loadLibDependencies() throws DBException {
         boolean resolved = false;
         Thread callerThread = Thread.currentThread();
+        ThreadExceptionsContext.registerThreadListening();
         try {
             runnableContext.run(true, true, monitor -> {
                 monitor.beginTask("Resolve dependencies", 100);

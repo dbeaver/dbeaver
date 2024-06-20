@@ -44,6 +44,10 @@ public class ThreadExceptionsContext {
 
     public static void registerExceptionForCurrentThread(Exception exception) {
         Thread threadForRegistry = getThreadForRegistry();
+        if (!THREAD_TO_EXCEPTIONS.containsKey(threadForRegistry)) {
+            log.debug(String.format("Thread id:%d is not listening", threadForRegistry.getId()));
+            return;
+        }
         List<Exception> exceptionList = THREAD_TO_EXCEPTIONS.get(threadForRegistry);
         if (exceptionList == null) {
             synchronized (threadForRegistry) {
@@ -57,6 +61,15 @@ public class ThreadExceptionsContext {
             }
         }
         exceptionList.add(exception);
+    }
+
+    public static void registerThreadListening(){
+        Thread currentThread = Thread.currentThread();
+        if(THREAD_TO_EXCEPTIONS.containsKey(currentThread)){
+            log.warn(String.format("Thread id: %d is already listening", currentThread.getId()));
+            return;
+        }
+        THREAD_TO_EXCEPTIONS.put(currentThread, null);
     }
 
     /**
@@ -75,7 +88,7 @@ public class ThreadExceptionsContext {
     }
 
 
-    public static void realiseResources() {
+    public static void unregisterThreadListening() {
         Thread currentThread = Thread.currentThread();
         while (THREAD_BINDING_MAP.values().remove(currentThread)) ;
         while (THREAD_TO_EXCEPTIONS.keySet().remove(currentThread)) ;
