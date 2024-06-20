@@ -128,8 +128,8 @@ class DriverDependenciesTree {
         ThreadExceptionsContext.registerThreadListening();
         try {
             runnableContext.run(true, true, monitor -> {
+
                 monitor.beginTask("Resolve dependencies", 100);
-                ThreadExceptionsContext.bindCurrentContextFor(callerThread);
                 try {
                     dependencies.resolveDependencies(monitor);
                 } catch (Exception e) {
