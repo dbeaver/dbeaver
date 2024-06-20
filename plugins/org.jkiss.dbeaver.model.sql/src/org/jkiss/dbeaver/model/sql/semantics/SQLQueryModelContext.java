@@ -38,7 +38,14 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDummyDataSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
-import org.jkiss.dbeaver.model.sql.semantics.model.*;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
+import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryObjectDropModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryTableDropModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryDeleteModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryInsertModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryUpdateModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.select.*;
 import org.jkiss.dbeaver.model.stm.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -118,17 +125,19 @@ public class SQLQueryModelContext {
                     // TODO collect CTE for insert-update-delete as well as recursive CTE
                     yield switch (stmtBodyNode.getNodeKindId()) {
                         case SQLStandardParser.RULE_deleteStatement ->
-                            SQLQueryTableDeleteModel.createModel(this, stmtBodyNode);
+                            SQLQueryDeleteModel.createModel(this, stmtBodyNode);
                         case SQLStandardParser.RULE_insertStatement ->
-                            SQLQueryTableInsertModel.createModel(this, stmtBodyNode);
+                            SQLQueryInsertModel.createModel(this, stmtBodyNode);
                         case SQLStandardParser.RULE_updateStatement ->
-                            SQLQueryTableUpdateModel.createModel(this, stmtBodyNode);
+                            SQLQueryUpdateModel.createModel(this, stmtBodyNode);
                         default -> this.collectQueryExpression(tree);
                     };
                 }
                 case SQLStandardParser.RULE_sqlSchemaStatement -> {
                     STMTreeNode stmtBodyNode = queryNode.getFirstStmChild();
                     yield switch (stmtBodyNode.getNodeKindId()) {
+                        case SQLStandardParser.RULE_createTableStatement -> null;
+                        case SQLStandardParser.RULE_createViewStatement -> null;
                         case SQLStandardParser.RULE_dropTableStatement ->
                             SQLQueryTableDropModel.createModel(this, stmtBodyNode, false);
                         case SQLStandardParser.RULE_dropViewStatement ->
@@ -305,7 +314,7 @@ public class SQLQueryModelContext {
         STMKnownRuleNames.exceptTerm,
         STMKnownRuleNames.intersectTerm,
         STMKnownRuleNames.uniqueConstraintDefinition,
-        STMKnownRuleNames.viewDefinition,
+        STMKnownRuleNames.createViewStatement,
         STMKnownRuleNames.insertColumnsAndSource,
 
         STMKnownRuleNames.referenceColumnList,
@@ -407,8 +416,8 @@ public class SQLQueryModelContext {
         STMKnownRuleNames.qualifier,
         STMKnownRuleNames.nonjoinedTableReference,
         STMKnownRuleNames.explicitTable,
-        STMKnownRuleNames.tableDefinition,
-        STMKnownRuleNames.viewDefinition,
+        STMKnownRuleNames.createTableStatement,
+        STMKnownRuleNames.createViewStatement,
         STMKnownRuleNames.alterTableStatement,
         STMKnownRuleNames.dropTableStatement,
         STMKnownRuleNames.dropViewStatement,

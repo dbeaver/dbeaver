@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.sql.semantics;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.context.SourceResolutionResult;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryRowsTableDataModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 

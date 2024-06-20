@@ -273,8 +273,8 @@ public class STMKnownRuleNames {
     public static final String schemaElement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_schemaElement];
 
     // table definition
-    public static final String tableDefinition = SQLStandardParser.ruleNames[SQLStandardParser.RULE_tableDefinition];
-    public static final String viewDefinition = SQLStandardParser.ruleNames[SQLStandardParser.RULE_viewDefinition];
+    public static final String createTableStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_createTableStatement];
+    public static final String createViewStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_createViewStatement];
     public static final String viewColumnList = SQLStandardParser.ruleNames[SQLStandardParser.RULE_viewColumnList];
     public static final String levelsClause = SQLStandardParser.ruleNames[SQLStandardParser.RULE_levelsClause];
     public static final String tableElementList = SQLStandardParser.ruleNames[SQLStandardParser.RULE_tableElementList];

@@ -20,7 +20,7 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
-import org.jkiss.dbeaver.model.sql.semantics.model.*;
+import org.jkiss.dbeaver.model.sql.semantics.model.select.*;
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 

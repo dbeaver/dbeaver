@@ -317,7 +317,8 @@ columnIndex: UnsignedInteger;
 orderingSpecification: (ASC|DESC);
 
 // schema definition
-sqlSchemaStatement: (schemaDefinition|tableDefinition|viewDefinition|
+sqlSchemaStatement: (schemaDefinition|
+    createTableStatement|createViewStatement
     alterTableStatement|
     dropSchemaStatement|dropTableStatement|dropViewStatement|dropProcedureStatement|dropCharacterSetStatement);
 schemaDefinition: CREATE SCHEMA schemaNameClause (schemaCharacterSetSpecification)? (schemaElement)*;
@@ -325,11 +326,11 @@ schemaNameClause: (schemaName|AUTHORIZATION schemaAuthorizationIdentifier|schema
 schemaAuthorizationIdentifier: authorizationIdentifier;
 authorizationIdentifier: identifier;
 schemaCharacterSetSpecification: DEFAULT CHARACTER SET characterSetSpecification;
-schemaElement: (tableDefinition|viewDefinition);
+schemaElement: (createTableStatement|createViewStatement);
 
 // table definition
-tableDefinition: CREATE ((GLOBAL|LOCAL) TEMPORARY)? TABLE tableName tableElementList (ON COMMIT (DELETE|PRESERVE) ROWS)?;
-viewDefinition: CREATE VIEW tableName (LeftParen viewColumnList RightParen)? AS queryExpression (WITH (levelsClause)? CHECK OPTION)?;
+createTableStatement: CREATE ((GLOBAL|LOCAL) TEMPORARY)? TABLE tableName tableElementList (ON COMMIT (DELETE|PRESERVE) ROWS)?;
+createViewStatement: CREATE VIEW tableName (LeftParen viewColumnList RightParen)? AS queryExpression (WITH (levelsClause)? CHECK OPTION)?;
 viewColumnList: columnNameList;
 levelsClause: (CASCADED|LOCAL);
 tableElementList: LeftParen tableElement (Comma tableElement)* RightParen;
