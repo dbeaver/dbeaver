@@ -918,6 +918,7 @@ public class DataSourceDescriptor
             if (selectedSharedCredentials != null) {
                 String subjectId = DataSourceUtils.getSubjectFromSecret(selectedSharedCredentials);
                 var selectedSharedCredentialsCopy = selectedSharedCredentials;
+                selectedSharedCredentialsCopy.setValue(secret);
                 try {
                     secretController.setSubjectSecretValue(subjectId, this,
                         new DBSSecretValue(subjectId, getSecretValueId(), "", secret));
