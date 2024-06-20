@@ -930,7 +930,7 @@ public class DataSourceDescriptor
                     //the list of available secrets has changed, force update
                     resetAllSecrets();
                     // to resave current secret without additional click in UI
-                    this.selectedSharedCredentials = selectedSharedCredentialsCopy;
+                    setSelectedSharedCredentials(selectedSharedCredentialsCopy);
                 } catch (DBException e) {
                     throw new DBException("Cannot set team '" + subjectId + "' credentials: " + e.getMessage(), e);
                 }
