@@ -2140,10 +2140,14 @@ public class UIUtils {
     }
 
     public static void resizeShell(@NotNull Shell shell) {
+        final Point compSize = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
+        resizeShell(shell, compSize);
+    }
+
+    public static void resizeShell(@NotNull Shell shell, Point compSize) {
         final Rectangle displayArea = shell.getDisplay().getClientArea();
         final Point shellLocation = shell.getLocation();
         final Point shellSize = shell.getSize();
-        final Point compSize = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
         boolean needsLayout = false;
 
         if (shellSize.x < compSize.x || shellSize.y < compSize.y) {
