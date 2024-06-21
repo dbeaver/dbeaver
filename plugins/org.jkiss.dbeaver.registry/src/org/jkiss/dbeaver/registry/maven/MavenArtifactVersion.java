@@ -254,7 +254,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
         return artifact.getFileURL(version, MavenArtifact.FILE_POM, snapshotVersion);
     }
 
-    private void cachePOM(File localPOM, DBRProgressMonitor monitor) throws IOException {
+    private void cachePOM(DBRProgressMonitor monitor, File localPOM) throws IOException {
         if (artifact.getRepository().getType() == MavenRepository.RepositoryType.LOCAL) {
             return;
         }
@@ -276,7 +276,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
 
         File localPOM = getLocalPOM();
         if (!localPOM.exists()) {
-            cachePOM(localPOM, monitor);
+            cachePOM(monitor, localPOM);
         }
 
 
