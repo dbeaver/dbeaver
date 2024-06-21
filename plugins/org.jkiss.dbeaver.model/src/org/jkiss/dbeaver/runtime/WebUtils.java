@@ -59,8 +59,8 @@ public class WebUtils {
     }
 
     @NotNull
-    public static URLConnection openConnection(String urlString, DBPAuthInfo authInfo, String referrer, DBRProgressMonitor monitor) throws IOException {
-        return openURLConnection(urlString, authInfo, referrer, "GET", 1, 10000, null, monitor);
+    public static URLConnection openConnection(DBRProgressMonitor monitor, String urlString, DBPAuthInfo authInfo, String referrer) throws IOException {
+        return openURLConnection(monitor, urlString, authInfo, referrer, "GET", 1, 10000, null);
     }
 
     /**
@@ -84,18 +84,18 @@ public class WebUtils {
         int timeout,
         Map<String, String> headers
     ) throws IOException {
-    return openURLConnection(urlString, authInfo, referrer, method, retryNumber, timeout, headers, null);
+    return openURLConnection(null, urlString, authInfo, referrer, method, retryNumber, timeout, headers);
     }
 
     public static URLConnection openURLConnection(
+        @Nullable DBRProgressMonitor monitor,
         String urlString,
         DBPAuthInfo authInfo,
         String referrer,
         String method,
         int retryNumber,
         int timeout,
-        Map<String, String> headers,
-        @Nullable DBRProgressMonitor monitor
+        Map<String, String> headers
     ) throws IOException {
         if (retryNumber > MAX_RETRY_COUNT) {
             String message = String.format("Too many redirects (%d times to %s)", retryNumber, urlString);

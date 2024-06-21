@@ -204,7 +204,7 @@ class DriverDependenciesTree {
         try {
             checkNetworkAccessible();
         } catch (DBException dbException) {
-            if(causeException instanceof DBExceptionWithHistory exceptionWithHistory){
+            if (causeException instanceof DBExceptionWithHistory exceptionWithHistory) {
                 List<Throwable> exceptions = exceptionWithHistory.getExceptions();
                 exceptions.add(dbException);
                 DBWorkbench.getPlatformUI().showError("Download error",
@@ -217,7 +217,7 @@ class DriverDependenciesTree {
                 return false;
             }
         }
-       return true;
+        return true;
     }
 
     private void checkNetworkAccessible() throws DBException {
