@@ -907,7 +907,7 @@ public class DBExecUtils {
             }
 */
 
-            if (!mdMonitor.isForceCacheUsage()) {
+            {
                 monitor.subTask("Complete metadata load");
                 // Reload attributes in row identifiers
                 for (DBDRowIdentifier rowIdentifier : locatorMap.values()) {
