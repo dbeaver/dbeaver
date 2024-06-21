@@ -67,15 +67,7 @@ public class GaussDBDataSource extends PostgreDataSource {
     }
 
     private void initSqlDialect() {
-        try {
-            Class<?> forName = Class.forName("org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource");
-            Field sqlDialect = forName.getDeclaredField("sqlDialect");
-            sqlDialect.setAccessible(true);
-            sqlDialect.set(this, new GaussDBDialect());
-        } catch (ClassNotFoundException | NoSuchFieldException | SecurityException | IllegalArgumentException
-                    | IllegalAccessException e) {
-            log.debug("GaussDBDataSource initSqlDialect error " + e.getMessage());
-        }
+        log.debug("GaussDBDataSource initSqlDialect TODO");
     }
 
 }

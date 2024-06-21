@@ -65,44 +65,11 @@ public class GaussDBCreateDatabaseDialog extends BaseDialog {
             getButton(IDialogConstants.OK_ID).setEnabled(!name.isEmpty());
         });
 
-        if (supportsRoles) {
-            userCombo = UIUtils.createLabelCombo(groupGeneral, PostgreMessages.dialog_create_db_label_owner,
-                                                 SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-            userCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    owner = allUsers.get(userCombo.getSelectionIndex());
-                }
-            });
-        }
-
         final Composite groupDefinition = UIUtils.createControlGroup(composite, PostgreMessages.dialog_create_db_group_definition,
                                                                      2, GridData.FILL_HORIZONTAL, SWT.NONE);
-        if (supportsEncodings) {
-            encodingCombo = UIUtils.createLabelCombo(groupDefinition, PostgreMessages.dialog_create_db_label_encoding,
-                                                     SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-            encodingCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    encoding = allEncodings.get(encodingCombo.getSelectionIndex());
-                }
-            });
-        }
-
-        if (supportsTablespaces) {
-            tablespaceCombo = UIUtils.createLabelCombo(groupDefinition, PostgreMessages.dialog_create_db_label_tablesapce,
-                                                       SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-            tablespaceCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    if (tablespaceCombo.getSelectionIndex() == 0) {
-                        tablespace = null;
-                    } else {
-                        tablespace = allTablespaces.get(tablespaceCombo.getSelectionIndex() - 1);
-                    }
-                }
-            });
-        }
+        supportsRoles(supportsRoles, groupGeneral);
+        supportsEncodings(supportsEncodings, groupDefinition);
+        supportsTablespaces(supportsTablespaces, groupDefinition);
 
         dbCompatibleMode = UIUtils.createLabelCombo(groupDefinition, "DataBase Compatibility Mode",
                                                     SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -113,6 +80,12 @@ public class GaussDBCreateDatabaseDialog extends BaseDialog {
             }
         });
 
+        scheduleLoadUsersJob(supportsRoles, supportsEncodings, supportsTablespaces);
+
+        return composite;
+    }
+
+    private void scheduleLoadUsersJob(boolean supportsRoles, boolean supportsEncodings, boolean supportsTablespaces) {
         new AbstractJob("Load users") {
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
@@ -128,48 +101,7 @@ public class GaussDBCreateDatabaseDialog extends BaseDialog {
                     final PostgreCharset defCharset = supportsEncodings ? database.getDefaultEncoding(monitor) : null;
                     final PostgreTablespace defTablespace = supportsTablespaces ? database.getDefaultTablespace(monitor) : null;
 
-                    UIUtils.syncExec(() -> {
-                        if (userCombo != null) {
-                            for (PostgreRole authId : allUsers) {
-                                String name = authId.getName();
-                                userCombo.add(name);
-                                if (name.equals(defUserName)) {
-                                    owner = authId;
-                                }
-                            }
-                            userCombo.setText(defUserName);
-                        }
-
-                        if (encodingCombo != null) {
-                            for (PostgreCharset charset : allEncodings) {
-                                encodingCombo.add(charset.getName());
-                                if (charset == defCharset) {
-                                    encoding = defCharset;
-                                }
-                            }
-                            if (defCharset != null) {
-                                encodingCombo.setText(defCharset.getName());
-                            }
-                        }
-
-                        if (tablespaceCombo != null) {
-                            tablespaceCombo.add(PostgreMessages.dialog_create_db_tablespace_default);
-                            for (PostgreTablespace ts : allTablespaces) {
-                                tablespaceCombo.add(ts.getName());
-                                if (ts == defTablespace) {
-                                    tablespace = ts;
-                                }
-                            }
-                            tablespaceCombo.setText(defTablespace.getName());
-                        }
-
-                        if (dbCompatibleMode != null) {
-                            dbCompatibleMode.add("");
-                            for (DBCompatibilityEnum value : DBCompatibilityEnum.values()) {
-                                dbCompatibleMode.add(value.getText());
-                            }
-                        }
-                    });
+                    UIUtils.syncExec(() -> populateDialog(defUserName, defCharset, defTablespace));
                 } catch (DBException e) {
                     return GeneralUtils.makeExceptionStatus(e);
                 } finally {
@@ -178,8 +110,87 @@ public class GaussDBCreateDatabaseDialog extends BaseDialog {
                 return Status.OK_STATUS;
             }
         }.schedule();
+    }
 
-        return composite;
+    private void populateDialog(String defUserName, PostgreCharset defCharset, PostgreTablespace defTablespace) {
+        if (userCombo != null) {
+            for (PostgreRole authId : allUsers) {
+                String name = authId.getName();
+                userCombo.add(name);
+                if (name.equals(defUserName)) {
+                    owner = authId;
+                }
+            }
+            userCombo.setText(defUserName);
+        }
+
+        if (encodingCombo != null) {
+            for (PostgreCharset charset : allEncodings) {
+                encodingCombo.add(charset.getName());
+                if (charset == defCharset) {
+                    encoding = defCharset;
+                }
+            }
+            if (defCharset != null) {
+                encodingCombo.setText(defCharset.getName());
+            }
+        }
+
+        if (tablespaceCombo != null) {
+            tablespaceCombo.add(PostgreMessages.dialog_create_db_tablespace_default);
+            for (PostgreTablespace ts : allTablespaces) {
+                tablespaceCombo.add(ts.getName());
+                if (ts == defTablespace) {
+                    tablespace = defTablespace;
+                }
+            }
+            if (defTablespace != null) {
+                tablespaceCombo.setText(defTablespace.getName());
+            }
+        }
+    }
+
+    private void supportsTablespaces(boolean supportsTablespaces, final Composite groupDefinition) {
+        if (supportsTablespaces) {
+            tablespaceCombo = UIUtils.createLabelCombo(groupDefinition, PostgreMessages.dialog_create_db_label_tablesapce,
+                                                       SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            tablespaceCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (tablespaceCombo.getSelectionIndex() == 0) {
+                        tablespace = null;
+                    } else {
+                        tablespace = allTablespaces.get(tablespaceCombo.getSelectionIndex() - 1);
+                    }
+                }
+            });
+        }
+    }
+
+    private void supportsEncodings(boolean supportsEncodings, final Composite groupDefinition) {
+        if (supportsEncodings) {
+            encodingCombo = UIUtils.createLabelCombo(groupDefinition, PostgreMessages.dialog_create_db_label_encoding,
+                                                     SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            encodingCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    encoding = allEncodings.get(encodingCombo.getSelectionIndex());
+                }
+            });
+        }
+    }
+
+    private void supportsRoles(boolean supportsRoles, final Composite groupGeneral) {
+        if (supportsRoles) {
+            userCombo = UIUtils.createLabelCombo(groupGeneral, PostgreMessages.dialog_create_db_label_owner,
+                                                 SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            userCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    owner = allUsers.get(userCombo.getSelectionIndex());
+                }
+            });
+        }
     }
 
     public String getCompatibleMode() {

@@ -51,7 +51,7 @@ public class GaussDBPackage implements PostgreObject, PostgreScriptObject, DBPSy
         this.proceduresCache = new ProceduresCache();
     }
 
-    public GaussDBPackage(GaussDBSchema schema, DBRProgressMonitor monitor, String name) {
+    public GaussDBPackage(GaussDBSchema schema, DBRProgressMonitor unusedMnitor, String name) {
         this.schema = schema;
         this.name = name;
         this.proceduresCache = new ProceduresCache();

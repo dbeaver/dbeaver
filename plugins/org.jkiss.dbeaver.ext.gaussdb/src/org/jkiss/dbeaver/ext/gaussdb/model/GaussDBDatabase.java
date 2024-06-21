@@ -200,28 +200,8 @@ public class GaussDBDatabase extends PostgreDatabase {
         reflectInitDataBase(dbResult);
     }
 
-    private void reflectInitDataBase(ResultSet dbResult) {
-        try {
-            Class<?> forName = Class.forName("org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase");
-            if (!dataSource.isServerVersionAtLeast(8, 4)) {
-                Field collate = forName.getDeclaredField("collate");
-                collate.setAccessible(true);
-                Field ctype = forName.getDeclaredField("ctype");
-                ctype.setAccessible(true);
-                collate.set(this, JDBCUtils.safeGetString(dbResult, "datcollate"));
-                ctype.set(this, JDBCUtils.safeGetString(dbResult, "datctype"));
-            }
-
-            if (!dataSource.isServerVersionAtLeast(8, 1)) {
-                Field connectionLimit = forName.getDeclaredField("connectionLimit");
-                connectionLimit.setAccessible(true);
-                connectionLimit.set(this, JDBCUtils.safeGetInt(dbResult, "datconnlimit"));
-            }
-
-        } catch (ClassNotFoundException | NoSuchFieldException | SecurityException | IllegalArgumentException
-                    | IllegalAccessException e) {
-            log.info("ReflectInitDataBase Exception", e);
-        }
+    private void reflectInitDataBase(ResultSet unusedDbResult) {
+        log.info("ReflectInitDataBase TODO");
     }
 
     /**
@@ -336,10 +316,7 @@ public class GaussDBDatabase extends PostgreDatabase {
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 if (dbResult.nextRow()) {
                     int count = JDBCUtils.safeGetInt(dbResult, "count");
-                    if (count > 0) {
-                        return true;
-                    }
-                    return false;
+                    return count > 0;
                 }
             } catch (SQLException e) {
                 throw new DBCException(e, session.getExecutionContext());

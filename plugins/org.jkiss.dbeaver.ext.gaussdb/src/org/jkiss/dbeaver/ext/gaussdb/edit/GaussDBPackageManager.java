@@ -44,14 +44,6 @@ public class GaussDBPackageManager extends SQLObjectEditor<GaussDBPackage, Gauss
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor,
-                                          DBCExecutionContext executionContext,
-                                          List<DBEPersistAction> actions,
-                                          ObjectRenameCommand command,
-                                          Map<String, Object> options) {
-    }
-
-    @Override
     public boolean canCreateObject(Object container) {
         return true;
     }
@@ -78,7 +70,7 @@ public class GaussDBPackageManager extends SQLObjectEditor<GaussDBPackage, Gauss
                                           SQLObjectEditor<GaussDBPackage, GaussDBDatabase>.ObjectCreateCommand command,
                                           Map<String, Object> options) throws DBException {
         GaussDBPackage pack = command.getObject();
-        createOrReplaceProcedureQuery(executionContext, actions, pack);
+        createOrReplaceProcedureQuery(actions, pack);
 
     }
 
@@ -89,7 +81,7 @@ public class GaussDBPackageManager extends SQLObjectEditor<GaussDBPackage, Gauss
                                           ObjectChangeCommand command,
                                           Map<String, Object> options) throws DBException {
         if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
-            createOrReplaceProcedureQuery(executionContext, actionList, command.getObject());
+            createOrReplaceProcedureQuery(actionList, command.getObject());
         }
     }
 
@@ -105,9 +97,7 @@ public class GaussDBPackageManager extends SQLObjectEditor<GaussDBPackage, Gauss
         );
     }
 
-    private void createOrReplaceProcedureQuery(DBCExecutionContext executionContext,
-                                               List<DBEPersistAction> actionList,
-                                               GaussDBPackage pack) throws DBException {
+    private void createOrReplaceProcedureQuery(List<DBEPersistAction> actionList, GaussDBPackage pack) throws DBException {
         String header = pack.getObjectDefinitionText().trim();
         if (!header.endsWith(";")) {
             header += ";";
@@ -129,5 +119,4 @@ public class GaussDBPackageManager extends SQLObjectEditor<GaussDBPackage, Gauss
             );
         }
     }
-
 }

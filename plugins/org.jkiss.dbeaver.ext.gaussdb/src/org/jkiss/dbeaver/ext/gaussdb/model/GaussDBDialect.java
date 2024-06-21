@@ -43,39 +43,7 @@ public class GaussDBDialect extends PostgreDialect {
             sql.append("{ ");
         sql.append(getStoredProcedureCallInitialClause(proc)).append("(");
         if (!inParameters.isEmpty()) {
-            boolean first = true;
-            for (DBSProcedureParameter parameter : inParameters) {
-                String typeName = parameter.getParameterType().getFullTypeName();
-                switch (parameter.getParameterKind()) {
-                case INOUT:
-                case IN:
-                    if (!first) {
-                        sql.append(", ");
-                    }
-                    if (castParams) {
-                        sql.append("cast(").append(namedParameterPrefix).append(CommonUtils.escapeIdentifier(parameter.getName()))
-                                    .append(" as ").append(typeName).append(")");
-                    } else {
-                        sql.append(namedParameterPrefix).append(CommonUtils.escapeIdentifier(parameter.getName()));
-                    }
-                    break;
-                case RETURN:
-                    continue;
-                default:
-                    if (isStoredProcedureCallIncludesOutParameters()) {
-                        if (!first) {
-                            sql.append(", ");
-                        }
-                        if (castParams) {
-                            sql.append("cast(?").append(" as ").append(typeName).append(")");
-                        } else {
-                            sql.append("?");
-                        }
-                    }
-                    break;
-                }
-                first = false;
-            }
+            inParametersProc(sql, castParams, inParameters, namedParameterPrefix);
         }
         sql.append(")");
         String callEndClause = getProcedureCallEndClause(proc);
@@ -88,6 +56,45 @@ public class GaussDBDialect extends PostgreDialect {
             sql.append(" }");
         }
         sql.append("\n\n");
+    }
+
+    private void inParametersProc(StringBuilder sql,
+                                  boolean castParams,
+                                  List<DBSProcedureParameter> inParameters,
+                                  String namedParameterPrefix) {
+        boolean first = true;
+        for (DBSProcedureParameter parameter : inParameters) {
+            String typeName = parameter.getParameterType().getFullTypeName();
+            switch (parameter.getParameterKind()) {
+            case INOUT:
+            case IN:
+                if (!first) {
+                    sql.append(", ");
+                }
+                if (castParams) {
+                    sql.append("cast(").append(namedParameterPrefix).append(CommonUtils.escapeIdentifier(parameter.getName()))
+                                .append(" as ").append(typeName).append(")");
+                } else {
+                    sql.append(namedParameterPrefix).append(CommonUtils.escapeIdentifier(parameter.getName()));
+                }
+                break;
+            case RETURN:
+                continue;
+            default:
+                if (isStoredProcedureCallIncludesOutParameters()) {
+                    if (!first) {
+                        sql.append(", ");
+                    }
+                    if (castParams) {
+                        sql.append("cast(?").append(" as ").append(typeName).append(")");
+                    } else {
+                        sql.append("?");
+                    }
+                }
+                break;
+            }
+            first = false;
+        }
     }
 
 }
