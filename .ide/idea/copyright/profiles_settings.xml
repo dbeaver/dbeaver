@@ -1,0 +1,10 @@
+<component name="CopyrightManager">
+  <settings>
+    <module2copyright>
+      <element module="DBeaver" copyright="DBeaver" />
+    </module2copyright>
+    <LanguageOptions name="__TEMPLATE__">
+      <option name="addBlankAfter" value="false" />
+    </LanguageOptions>
+  </settings>
+</component>
