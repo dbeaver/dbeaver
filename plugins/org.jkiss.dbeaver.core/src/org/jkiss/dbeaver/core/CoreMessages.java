@@ -521,6 +521,9 @@ public class CoreMessages extends NLS {
     public static String pref_page_connection_label_default_connection_template_variables;
     public static String pref_page_connection_label_default_connection_template_variables_tip;
 
+    public static String pref_page_connection_network_label;
+    public static String pref_page_connection_network_preferred_ip_stack_label;
+    public static String pref_page_connection_network_preferred_ip_addresses_label;
 
     public static String pref_page_connection_label_default_settings;
 

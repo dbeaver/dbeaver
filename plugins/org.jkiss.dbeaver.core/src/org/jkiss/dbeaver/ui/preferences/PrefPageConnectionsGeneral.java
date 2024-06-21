@@ -72,6 +72,8 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
     private DBNBrowseSettings defaultNavigatorSettings;
     private Text sampleConnectionName;
     private ConnectionNameResolver fakeConnectionNameResolver;
+    private Combo prefIpStackCombo;
+    private Combo prefIpAddressesCombo;
     private Button useWinTrustStoreCheck;
 
     public PrefPageConnectionsGeneral() {
@@ -120,6 +122,38 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
                     ConnectionNameResolver.getConnectionVariablesInfo(),
                     false
             );
+        }
+
+        {
+            Group group = UIUtils.createControlGroup(
+                composite,
+                CoreMessages.pref_page_connection_network_label,
+                2,
+                GridData.VERTICAL_ALIGN_BEGINNING,
+                0
+            );
+
+            prefIpStackCombo = UIUtils.createLabelCombo(
+                group,
+                CoreMessages.pref_page_connection_network_preferred_ip_stack_label,
+                SWT.READ_ONLY | SWT.DROP_DOWN
+            );
+            for (ModelPreferences.IPType type : ModelPreferences.IPType.values()) {
+                prefIpStackCombo.add(type.toString());
+            }
+            prefIpStackCombo.select(ModelPreferences.IPType.getPreferredStack().ordinal());
+
+            prefIpAddressesCombo = UIUtils.createLabelCombo(
+                group,
+                CoreMessages.pref_page_connection_network_preferred_ip_addresses_label,
+                SWT.READ_ONLY | SWT.DROP_DOWN
+            );
+            for (ModelPreferences.IPType type : ModelPreferences.IPType.values()) {
+                prefIpAddressesCombo.add(type.toString());
+            }
+            prefIpAddressesCombo.select(ModelPreferences.IPType.getPreferredAddresses().ordinal());
+
+            UIUtils.createInfoLabel(group, CoreMessages.pref_page_ui_general_label_options_take_effect_after_restart, SWT.NONE, 2);
         }
 
         if (DBWorkbench.getPlatform().getApplication().hasProductFeature(DBConnectionConstants.PRODUCT_FEATURE_SIMPLE_TRUSTSTORE)) {
@@ -266,6 +300,8 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
         connectionDefaultNamePatternText.setText(preferences.getDefaultString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN));
         sampleConnectionName.setText(GeneralUtils.replaceVariables(connectionDefaultNamePatternText.getText(), fakeConnectionNameResolver));
         connectionNamePattern = preferences.getDefaultString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN);
+        prefIpStackCombo.select(ModelPreferences.IPType.AUTO.ordinal());
+        prefIpAddressesCombo.select(ModelPreferences.IPType.AUTO.ordinal());
         if (RuntimeUtils.isWindows() && useWinTrustStoreCheck != null) {
             useWinTrustStoreCheck.setSelection(
                 preferences.getDefaultBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE));
@@ -294,9 +330,18 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
         if (!defaultNavigatorSettings.equals(DataSourceNavigatorSettings.getDefaultSettings())) {
             DataSourceNavigatorSettings.setDefaultSettings(defaultNavigatorSettings);
         }
-        DBWorkbench.getPlatform().getPreferenceStore().setValue(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN, connectionDefaultNamePatternText.getText());
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        store.setValue(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN, connectionDefaultNamePatternText.getText());
+        store.setValue(
+            ModelPreferences.PROP_PREFERRED_IP_STACK,
+            ModelPreferences.IPType.values()[prefIpStackCombo.getSelectionIndex()].name()
+        );
+        store.setValue(
+            ModelPreferences.PROP_PREFERRED_IP_ADDRESSES,
+            ModelPreferences.IPType.values()[prefIpAddressesCombo.getSelectionIndex()].name()
+        );
         if (RuntimeUtils.isWindows() && useWinTrustStoreCheck != null) {
-            DBWorkbench.getPlatform().getPreferenceStore().setValue(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE, useWinTrustStoreCheck.getSelection());
+            store.setValue(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE, useWinTrustStoreCheck.getSelection());
         }
         return super.performOk();
     }
