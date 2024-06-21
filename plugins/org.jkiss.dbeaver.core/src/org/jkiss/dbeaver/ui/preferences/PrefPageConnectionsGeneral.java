@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -332,17 +333,26 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
         }
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         store.setValue(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN, connectionDefaultNamePatternText.getText());
-        store.setValue(
-            ModelPreferences.PROP_PREFERRED_IP_STACK,
-            ModelPreferences.IPType.values()[prefIpStackCombo.getSelectionIndex()].name()
-        );
-        store.setValue(
-            ModelPreferences.PROP_PREFERRED_IP_ADDRESSES,
-            ModelPreferences.IPType.values()[prefIpAddressesCombo.getSelectionIndex()].name()
-        );
         if (RuntimeUtils.isWindows() && useWinTrustStoreCheck != null) {
             store.setValue(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE, useWinTrustStoreCheck.getSelection());
         }
+
+        ModelPreferences.IPType stack = ModelPreferences.IPType.values()[prefIpStackCombo.getSelectionIndex()];
+        ModelPreferences.IPType addresses = ModelPreferences.IPType.values()[prefIpAddressesCombo.getSelectionIndex()];
+
+        if (stack != ModelPreferences.IPType.getPreferredStack() || addresses != ModelPreferences.IPType.getPreferredAddresses()) {
+            store.setValue(ModelPreferences.PROP_PREFERRED_IP_STACK, stack.name());
+            store.setValue(ModelPreferences.PROP_PREFERRED_IP_ADDRESSES, addresses.name());
+
+            if (UIUtils.confirmAction(
+                getShell(),
+                NLS.bind(CoreMessages.pref_page_connection_network_restart_prompt_title, GeneralUtils.getProductName()),
+                NLS.bind(CoreMessages.pref_page_connection_network_restart_prompt_message, GeneralUtils.getProductName())
+            )) {
+                restartWorkbenchOnPrefChange();
+            }
+        }
+
         return super.performOk();
     }
 
