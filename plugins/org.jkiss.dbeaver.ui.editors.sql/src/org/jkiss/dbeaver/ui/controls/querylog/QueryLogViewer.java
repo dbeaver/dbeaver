@@ -77,6 +77,7 @@ import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogFilter;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.LongKeyMap;
@@ -1198,8 +1199,8 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
     class EventHistoryReadService extends AbstractLoadService<List<QMEvent>> {
 
-        private static final int RETRIES_QM_WAITING = 12;
-        private static final int WAITING_QM_SESSION_SECONDS_PER_TRY = 5;
+        private static final int RETRIES_QM_WAITING = 60;
+        private static final int WAITING_QM_SESSION_SECONDS_PER_TRY = 1;
         @Nullable
         private String searchString;
 
@@ -1228,9 +1229,11 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 if (DBWorkbench.getPlatform().getApplication() instanceof QMSessionProvider provider) {
                     int tries = 0;
                     qmSessionId = provider.getQmSessionId();
-                    //github#2946
                     while (qmSessionId == null && tries < RETRIES_QM_WAITING) {
-                        Thread.sleep(WAITING_QM_SESSION_SECONDS_PER_TRY * 1000);
+                        if (DBWorkbench.getPlatform().isShuttingDown()) {
+                            break;
+                        }
+                        RuntimeUtils.pause(WAITING_QM_SESSION_SECONDS_PER_TRY * 1000);
                         qmSessionId = provider.getQmSessionId();
                         tries++;
                     }
