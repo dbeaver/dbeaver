@@ -26,6 +26,9 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
+import org.eclipse.ui.forms.events.ExpansionAdapter;
+import org.eclipse.ui.forms.events.ExpansionEvent;
+import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -125,14 +128,41 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
             );
         }
 
+        if (DBWorkbench.getPlatform().getApplication().hasProductFeature(DBConnectionConstants.PRODUCT_FEATURE_SIMPLE_TRUSTSTORE)) {
+            createWinstoreSettings(composite);
+        }
+
         {
+            Group groupObjects = UIUtils.createControlGroup(composite, CoreMessages.pref_page_eclipse_ui_general_group_general, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Label descLabel = new Label(groupObjects, SWT.WRAP);
+            descLabel.setText(CoreMessages.pref_page_eclipse_ui_general_connections_group_label);
+
+            // Link to secure storage config
+            addLinkToSettings(groupObjects, PrefPageDrivers.PAGE_ID);
+            addLinkToSettings(groupObjects, PrefPageErrorHandle.PAGE_ID);
+            addLinkToSettings(groupObjects, PrefPageMetaData.PAGE_ID);
+            addLinkToSettings(groupObjects, PrefPageTransactions.PAGE_ID);
+        }
+
+        {
+            ExpandableComposite host = new ExpandableComposite(composite, SWT.NONE);
+            host.addExpansionListener(new ExpansionAdapter() {
+                @Override
+                public void expansionStateChanged(ExpansionEvent e) {
+                    UIUtils.resizeShell(parent.getShell());
+                }
+            });
+            host.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            host.setText(CoreMessages.pref_page_connection_expert_label);
+
             Group group = UIUtils.createControlGroup(
-                composite,
+                host,
                 CoreMessages.pref_page_connection_network_label,
                 2,
                 GridData.VERTICAL_ALIGN_BEGINNING,
                 0
             );
+            host.setClient(group);
 
             prefIpStackCombo = UIUtils.createLabelCombo(
                 group,
@@ -157,22 +187,6 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
             prefIpAddressesCombo.select(ModelPreferences.IPType.getPreferredAddresses().ordinal());
 
             UIUtils.createInfoLabel(group, CoreMessages.pref_page_ui_general_label_options_take_effect_after_restart, SWT.NONE, 2);
-        }
-
-        if (DBWorkbench.getPlatform().getApplication().hasProductFeature(DBConnectionConstants.PRODUCT_FEATURE_SIMPLE_TRUSTSTORE)) {
-            createWinstoreSettings(composite);
-        }
-
-        {
-            Group groupObjects = UIUtils.createControlGroup(composite, CoreMessages.pref_page_eclipse_ui_general_group_general, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
-            Label descLabel = new Label(groupObjects, SWT.WRAP);
-            descLabel.setText(CoreMessages.pref_page_eclipse_ui_general_connections_group_label);
-
-            // Link to secure storage config
-            addLinkToSettings(groupObjects, PrefPageDrivers.PAGE_ID);
-            addLinkToSettings(groupObjects, PrefPageErrorHandle.PAGE_ID);
-            addLinkToSettings(groupObjects, PrefPageMetaData.PAGE_ID);
-            addLinkToSettings(groupObjects, PrefPageTransactions.PAGE_ID);
         }
 
         Link urlHelpLabel = UIUtils.createLink(
