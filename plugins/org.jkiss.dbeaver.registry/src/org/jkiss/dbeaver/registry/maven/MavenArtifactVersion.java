@@ -254,12 +254,12 @@ public class MavenArtifactVersion implements IMavenIdentifier {
         return artifact.getFileURL(version, MavenArtifact.FILE_POM, snapshotVersion);
     }
 
-    private void cachePOM(File localPOM) throws IOException {
+    private void cachePOM(File localPOM, DBRProgressMonitor monitor) throws IOException {
         if (artifact.getRepository().getType() == MavenRepository.RepositoryType.LOCAL) {
             return;
         }
         String pomURL = getRemotePOMLocation();
-        try (InputStream is = WebUtils.openConnection(pomURL, artifact.getRepository().getAuthInfo(), null).getInputStream()) {
+        try (InputStream is = WebUtils.openConnection(pomURL, artifact.getRepository().getAuthInfo(), null, monitor).getInputStream()) {
             File folder = localPOM.getParentFile();
             if (!folder.exists() && !folder.mkdirs()) {
                 throw new IOException("Can't create cache folder '" + folder.getAbsolutePath() + "'");
@@ -276,7 +276,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
 
         File localPOM = getLocalPOM();
         if (!localPOM.exists()) {
-            cachePOM(localPOM);
+            cachePOM(localPOM, monitor);
         }
 
 

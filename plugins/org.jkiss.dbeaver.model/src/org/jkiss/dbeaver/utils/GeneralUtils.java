@@ -579,14 +579,14 @@ public class GeneralUtils {
         return makeExceptionStatus(severity, ex, false);
     }
 
-    public static IStatus transformExceptionsToStatus(@NotNull Set<Exception> exceptions) {
+    public static IStatus transformExceptionsToStatus(@NotNull List<Throwable> exceptions) {
 
         if (exceptions.isEmpty()) {
             return new Status(IStatus.ERROR, (Class<?>) null, "Empty exceptions list");
         }
         Set<String> exceptionMessageSet = new HashSet<>();
         IStatus prev = null;
-        for (Exception exception : exceptions) {
+        for (Throwable exception : exceptions) {
             String message = exception.getMessage();
             if (prev == null) {
                 exceptionMessageSet.add(message);

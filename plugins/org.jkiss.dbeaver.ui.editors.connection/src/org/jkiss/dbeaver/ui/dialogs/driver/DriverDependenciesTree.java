@@ -32,10 +32,11 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
+import org.jkiss.dbeaver.model.exec.DBExceptionWithHistory;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.ProgressMonitorWithExceptionContext;
 import org.jkiss.dbeaver.registry.DBConnectionConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.ThreadExceptionsContext;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -124,25 +125,28 @@ class DriverDependenciesTree {
 
     public boolean loadLibDependencies() throws DBException {
         boolean resolved = false;
-        Thread callerThread = Thread.currentThread();
-        ThreadExceptionsContext.registerThreadListening();
+        List<Throwable> exceptions = new ArrayList<>();
         try {
             runnableContext.run(true, true, monitor -> {
 
-                monitor.beginTask("Resolve dependencies", 100);
+                ProgressMonitorWithExceptionContext monitorWithExceptions = new ProgressMonitorWithExceptionContext(monitor);
+                monitorWithExceptions.beginTask("Resolve dependencies", 100);
                 try {
-                    dependencies.resolveDependencies(monitor);
+                    dependencies.resolveDependencies(monitorWithExceptions);
                 } catch (Exception e) {
                     throw new InvocationTargetException(e);
                 } finally {
-                    monitor.done();
+                    exceptions.addAll(monitorWithExceptions.getExceptions());
+                    monitorWithExceptions.done();
                 }
             });
             resolved = true;
         } catch (InterruptedException e) {
             // User just canceled download
         } catch (InvocationTargetException e) {
-            throw new DBException("Error resolving dependencies", e.getTargetException());
+            Throwable cause = e.getTargetException();
+            exceptions.add(cause);
+            throw new DBExceptionWithHistory("Error resolving dependencies", cause, exceptions);
         }
 
         filesTree.removeAll();
@@ -196,19 +200,24 @@ class DriverDependenciesTree {
         }
     }
 
-    public boolean handleDownloadError(DBException e) {
+    public boolean handleDownloadError(DBException causeException) {
         try {
             checkNetworkAccessible();
         } catch (DBException dbException) {
-            DBWorkbench.getPlatformUI().showError("Download error",
-                String.format("Network error: %s", dbException.getMessage()),
-                GeneralUtils.transformExceptionsToStatus(
-                    ThreadExceptionsContext.getSetExceptionsForCurrentThread())
-            );
-            return false;
+            if(causeException instanceof DBExceptionWithHistory exceptionWithHistory){
+                List<Throwable> exceptions = exceptionWithHistory.getExceptions();
+                exceptions.add(dbException);
+                DBWorkbench.getPlatformUI().showError("Download error",
+                    String.format("Network error: %s", dbException.getMessage()),
+                    GeneralUtils.transformExceptionsToStatus(exceptions));
+            } else {
+                DBWorkbench.getPlatformUI().showError("Download error",
+                    String.format("Network error: %s", dbException.getMessage()),
+                    dbException);
+                return false;
+            }
         }
-        DBWorkbench.getPlatformUI().showError("Resolve driver files", "Error downloading driver libraries", e);
-        return true;
+       return true;
     }
 
     private void checkNetworkAccessible() throws DBException {
@@ -227,9 +236,7 @@ class DriverDependenciesTree {
                 message = UIConnectionMessages.dialog_driver_download_network_unavailable_msg;
             }
             String exceptionMessage = message + "\n" + e.getClass().getName() + ":" + e.getMessage();
-            DBException dbException = new DBException(exceptionMessage);
-            ThreadExceptionsContext.registerExceptionForCurrentThread(dbException);
-            throw dbException;
+            throw new DBException(exceptionMessage);
         }
     }
 

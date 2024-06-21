@@ -14,16 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.exec;
 
-package org.jkiss.dbeaver.model.runtime;
+import org.jkiss.dbeaver.DBException;
 
-/**
- * Database progress monitor.
- * Similar to IProgressMonitor but with DBP specific features
- */
-public interface DBRProgressMonitorWithExceptions extends DBRProgressMonitor {
+import java.util.List;
 
-    void add();
-    void get();
+public class DBExceptionWithHistory extends DBException {
 
+    private final List<Throwable> exceptions;
+
+    public DBExceptionWithHistory(String message, Throwable cause, List<Throwable> exceptions) {
+        super(message, cause);
+        this.exceptions = exceptions;
+    }
+
+    public List<Throwable> getExceptions() {
+        return exceptions;
+    }
 }
