@@ -137,6 +137,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
             prefIpStackCombo = UIUtils.createLabelCombo(
                 group,
                 CoreMessages.pref_page_connection_network_preferred_ip_stack_label,
+                CoreMessages.pref_page_connection_network_preferred_ip_stack_tip,
                 SWT.READ_ONLY | SWT.DROP_DOWN
             );
             for (ModelPreferences.IPType type : ModelPreferences.IPType.values()) {
@@ -147,6 +148,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
             prefIpAddressesCombo = UIUtils.createLabelCombo(
                 group,
                 CoreMessages.pref_page_connection_network_preferred_ip_addresses_label,
+                CoreMessages.pref_page_connection_network_preferred_ip_addresses_tip,
                 SWT.READ_ONLY | SWT.DROP_DOWN
             );
             for (ModelPreferences.IPType type : ModelPreferences.IPType.values()) {
