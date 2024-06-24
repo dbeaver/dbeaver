@@ -77,6 +77,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     private static final FKType FK_TYPE_PHYSICAL = new FKType("Physical", true);
     public static final FKType FK_TYPE_LOGICAL = new FKType("Logical", false);
     private static final String NEW_COLUMN_LABEL = "<new>";
+    private static final String SELECT_COLUMN_LABEL = "<click>";
 
     private final DBSForeignKeyModifyRule[] supportedModifyRules;
     private final DBSEntityAssociation foreignKey;
@@ -197,7 +198,9 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     public EditForeignKeyPage(
         String title,
         DBSEntityAssociation foreignKey,
-        DBSForeignKeyModifyRule[] supportedModifyRules, Map<String, Object> options) {
+        DBSForeignKeyModifyRule[] supportedModifyRules,
+        Map<String, Object> options
+    ) {
         super(title);
         navigatorModel = foreignKey.getDataSource().getContainer().getProject().getNavigatorModel();
         assert navigatorModel != null;
@@ -231,7 +234,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
 
         if (ownerTableNode != null) {
             setImageDescriptor(DBeaverIcons.getImageDescriptor(ownerTableNode.getNodeIcon()));
-            setTitle(title + " | " + NLS.bind(EditorsMessages.dialog_struct_edit_fk_title,
+            setTitle(NLS.bind(EditorsMessages.dialog_struct_edit_fk_title,
                 title,
                 ownerTableNode.getNodeDisplayName()));
         }
@@ -485,6 +488,8 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             tableList.setFocus();
         }
 
+        setErrorMessage("Select reference table");
+
         return panel;
     }
 
@@ -567,7 +572,8 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                 }
             };
 
-            UIUtils.createControlLabel(tableGroup, EditorsMessages.edit_foreign_key_page_create_schema_container);
+            Label controlLabel = UIUtils.createControlLabel(
+                tableGroup, EditorsMessages.edit_foreign_key_page_create_schema_container);
             final CSmartCombo<DBNDatabaseNode> schemaCombo = new CSmartCombo<>(tableGroup, SWT.BORDER, labelProvider);
             schemaCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
@@ -580,6 +586,14 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                     }
                 }
             }
+            List<DBNDatabaseNode> allContainers = schemaCombo.getItems();
+            if (!allContainers.isEmpty()) {
+                String nodeType = allContainers.get(0).getMeta().getNodeTypeLabel(foreignKey.getDataSource(), null);
+                if (!CommonUtils.isEmpty(nodeType)) {
+                    controlLabel.setText(nodeType);
+                }
+            }
+
             if (selectedNode != null) {
                 schemaCombo.select(selectedNode);
             }
@@ -843,6 +857,8 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                     uniqueKeyCombo.add("<No unique keys in table '" + DBUtils.getObjectFullName(curRefTable, DBPEvaluationContext.UI) + "'>");
                 }
                 uniqueKeyCombo.select(0);
+                setErrorMessage(uniqueKeyCombo.getText());
+
                 curConstraint = null;
 
             } else {
@@ -919,6 +935,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         if ((curConstraints.isEmpty() || ukSelectionIndex < 0) && !enableCustomKeys) {
             return;
         }
+
         if (ukSelectionIndex >= 0) {
             curConstraint = curConstraints.isEmpty() ? null : curConstraints.get(ukSelectionIndex);
         }
@@ -963,6 +980,9 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                         item.setText(0, fkColumnInfo.ownColumn.getName());
                         item.setImage(0, getColumnIcon(fkColumnInfo.ownColumn));
                         item.setText(1, fkColumnInfo.ownColumn.getFullTypeName());
+                    } else {
+                        item.setText(0, SELECT_COLUMN_LABEL);
+                        item.setText(1, "");
                     }
                     item.setText(2, pkAttribute.getName());
                     item.setImage(2, getColumnIcon(pkAttribute));
@@ -995,7 +1015,20 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         if (enableCustomKeys) {
             enableCurConstraintEdit();
         }
+        verifyTableColumns();
         UIUtils.packColumns(columnsTable, true);
+    }
+
+    private void verifyTableColumns() {
+        String errorMessage = null;
+        for (TableItem item : columnsTable.getItems()) {
+            FKColumnInfo fkColumnInfo = (FKColumnInfo) item.getData();
+            if (fkColumnInfo.ownColumn == null && fkColumnInfo.customName == null) {
+                errorMessage = "You have to specify column for '" + fkColumnInfo.refColumn.getName() + "'";
+                break;
+            }
+        }
+        setErrorMessage(errorMessage);
     }
 
     private static List<DBSEntityAttribute> getValidAttributes(DBSEntity table) throws DBException {
@@ -1132,6 +1165,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             item.setText(1, fkInfo.ownColumn.getFullTypeName());
             columnOptionsButton.setEnabled(false);
         }
+        verifyTableColumns();
         updatePageState();
     }
 
