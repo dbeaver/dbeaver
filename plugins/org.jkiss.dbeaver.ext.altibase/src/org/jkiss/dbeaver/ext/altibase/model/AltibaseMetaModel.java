@@ -250,6 +250,14 @@ public class AltibaseMetaModel extends GenericMetaModel {
         return getDDLFromDbmsMetadata(monitor, sourceObject, (String) options.get("SCHEMA"), "DB_LINK");
     }
     
+    /**
+     * Get a specific Library DDL
+     */
+    public String getLibraryDDL(DBRProgressMonitor monitor, AltibaseLibrary sourceObject, 
+            Map<String, Object> options) throws DBException {
+        return getDDLFromDbmsMetadata(monitor, sourceObject, null, "LIBRARY");
+    }
+    
     @Override
     public String getViewDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericView sourceObject,
                              @NotNull Map<String, Object> options) throws DBException {
@@ -1229,5 +1237,27 @@ public class AltibaseMetaModel extends GenericMetaModel {
      */
     public AltibaseDbLink createDbLinkImpl(GenericStructContainer container, JDBCResultSet resultSet) {
         return new AltibaseDbLink(container, resultSet);
+    }
+    
+    //////////////////////////////////////////////////////
+    // Library
+    
+    /**
+     * Statement to load Library
+     */
+    public JDBCStatement prepareLibraryLoadStatement(JDBCSession session, 
+            GenericStructContainer container) throws SQLException {
+        final JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT l.* FROM system_.sys_users_ u, system_.sys_libraries_ l "
+                + "WHERE u.user_id = l.user_id AND u.user_name =  ? ORDER BY library_name ASC");
+        dbStat.setString(1, container.getName());
+        return dbStat;
+    }
+    
+    /**
+     * Create Library implementation
+     */
+    public AltibaseLibrary createLibraryImpl(GenericStructContainer container, JDBCResultSet resultSet) {
+        return new AltibaseLibrary(container, resultSet);
     }
 }

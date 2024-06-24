@@ -207,6 +207,11 @@
                         label="%tree.dblinks.node.name" description="%tree.dblinks.node.description">
                             <items label="%tree.dblink.node.name" path="dblink" property="dbLinks" icon="#link"/>
                         </folder>
+                        
+                        <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseLibrary" icon="#folder" 
+                        label="%tree.libraries.node.name" description="%tree.dblinks.node.description">
+                            <items label="%tree.library.node.name" path="library" property="libraries" icon="#file"/>
+                        </folder>
                     </items> <!--</items>-->
                 </folder> <!-- Schemas -->
                 <folder label="%tree.global_metadata.node.name" id="globalMetadataObjects" icon="#logical" description="Global metadata objects">
