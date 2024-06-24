@@ -253,6 +253,7 @@ public class SQLEditor extends SQLEditorBase implements
     private Boolean isDisableFetchResultSet = null;
     private boolean datasourceChanged;
     private TransactionStatusUpdateJob transactionStatusUpdateJob;
+    private AbstractPartListener partListener;
 
     private final ArrayList<SQLEditorAddIn> addIns = new ArrayList<>();
 
@@ -2165,6 +2166,22 @@ public class SQLEditor extends SQLEditorBase implements
 
         transactionStatusUpdateJob = new TransactionStatusUpdateJob();
         transactionStatusUpdateJob.schedule();
+        partListener = new AbstractPartListener() {
+            @Override
+            public void partActivated(IWorkbenchPart part) {
+                if (part instanceof SQLEditor e) {
+                    e.transactionStatusUpdateJob.schedule();
+                }
+            }
+
+            @Override
+            public void partDeactivated(IWorkbenchPart part) {
+                if (part instanceof SQLEditor e) {
+                    e.transactionStatusUpdateJob.cancel();
+                }
+            }
+        };
+        getSite().getPage().addPartListener(partListener);
     }
 
     /**
@@ -3057,6 +3074,8 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeChangeListener);
+        getSite().getPage().removePartListener(partListener);
+
         UIUtils.dispose(editorImage);
         baseEditorImage = null;
         editorImage = null;
@@ -5526,13 +5545,17 @@ public class SQLEditor extends SQLEditorBase implements
 
             UIUtils.syncExec(() -> updateStatusField(STATS_CATEGORY_TRANSACTION_TIMEOUT));
 
-            schedule(500);
+            schedule(1000);
             return Status.OK_STATUS;
         }
     }
 
     @Nullable
     private String getTransactionStatusText() throws DBCException {
+        if (true) {
+            return getTitle() + ": " + String.valueOf(System.currentTimeMillis());
+        }
+
         if (dataSourceContainer == null) {
             return null;
         }
