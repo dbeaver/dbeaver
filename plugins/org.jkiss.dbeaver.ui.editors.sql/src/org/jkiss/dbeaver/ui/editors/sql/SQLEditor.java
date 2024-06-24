@@ -5531,6 +5531,8 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private class TransactionStatusUpdateJob extends AbstractJob {
+        private static final int UPDATE_DELAY_MS = 1000;
+
         public TransactionStatusUpdateJob() {
             super("Update transaction status");
             setUser(false);
@@ -5545,17 +5547,13 @@ public class SQLEditor extends SQLEditorBase implements
 
             UIUtils.syncExec(() -> updateStatusField(STATS_CATEGORY_TRANSACTION_TIMEOUT));
 
-            schedule(1000);
+            schedule(UPDATE_DELAY_MS);
             return Status.OK_STATUS;
         }
     }
 
     @Nullable
     private String getTransactionStatusText() throws DBCException {
-        if (true) {
-            return getTitle() + ": " + String.valueOf(System.currentTimeMillis());
-        }
-
         if (dataSourceContainer == null) {
             return null;
         }
