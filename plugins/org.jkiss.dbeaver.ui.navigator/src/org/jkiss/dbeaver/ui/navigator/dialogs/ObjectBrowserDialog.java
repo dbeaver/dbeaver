@@ -20,6 +20,8 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystem;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
@@ -29,6 +31,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
@@ -38,21 +41,21 @@ import java.util.List;
  * @author Serge Rider
  */
 public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
-    private Class<?>[] allowedTypes;
-    private Class<?>[] resultTypes;
-    private Class<?>[] leafTypes;
+    private final Class<?>[] allowedTypes;
+    private final Class<?>[] resultTypes;
+    private final Class<?>[] leafTypes;
 
     private ObjectBrowserDialog(
-        Shell parentShell,
-        String title,
-        DBNNode rootNode,
-        DBNNode selectedNode,
+        @NotNull Shell parentShell,
+        @NotNull String title,
+        @NotNull DBNNode rootNode,
+        @NotNull List<? extends DBNNode> selectedNodes,
         boolean singleSelection,
-        Class<?>[] allowedTypes,
-        Class<?>[] resultTypes,
-        Class<?>[] leafTypes)
-    {
-        super(parentShell, title, rootNode, selectedNode, singleSelection);
+        @NotNull Class<?>[] allowedTypes,
+        @Nullable Class<?>[] resultTypes,
+        @Nullable Class<?>[] leafTypes
+    ) {
+        super(parentShell, title, rootNode, selectedNodes, singleSelection);
         this.allowedTypes = allowedTypes;
         this.resultTypes = resultTypes == null ? allowedTypes : resultTypes;
         this.leafTypes = leafTypes;
@@ -147,9 +150,26 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
         return false;
     }
 
-    public static DBNNode selectObject(Shell parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes, Class<?>[] leafTypes)
-    {
-        ObjectBrowserDialog scDialog = new ObjectBrowserDialog(parentShell, title, rootNode, selectedNode, true, allowedTypes, resultTypes, leafTypes);
+    @Nullable
+    public static DBNNode selectObject(
+        @NotNull Shell parentShell,
+        @NotNull String title,
+        @NotNull DBNNode rootNode,
+        @Nullable DBNNode selectedNode,
+        @NotNull Class<?>[] allowedTypes,
+        @Nullable Class<?>[] resultTypes,
+        @Nullable Class<?>[] leafTypes
+    ) {
+        ObjectBrowserDialog scDialog = new ObjectBrowserDialog(
+            parentShell,
+            title,
+            rootNode,
+            CommonUtils.singletonOrEmpty(selectedNode),
+            true,
+            allowedTypes,
+            resultTypes,
+            leafTypes
+        );
         if (scDialog.open() == IDialogConstants.OK_ID) {
             List<DBNNode> result = scDialog.getSelectedObjects();
             return result.isEmpty() ? null : result.get(0);
@@ -158,9 +178,27 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
         }
     }
 
-    public static List<DBNNode> selectObjects(Shell parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes, Class<?>[] leafTypes)
+    @Nullable
+    public static List<DBNNode> selectObjects(
+        @NotNull Shell parentShell,
+        @NotNull String title,
+        @NotNull DBNNode rootNode,
+        @NotNull List<? extends DBNNode> selectedNodes,
+        @NotNull Class<?>[] allowedTypes,
+        @Nullable Class<?>[] resultTypes,
+        @Nullable Class<?>[] leafTypes
+    )
     {
-        ObjectBrowserDialog scDialog = new ObjectBrowserDialog(parentShell, title, rootNode, selectedNode, false, allowedTypes, resultTypes, leafTypes);
+        ObjectBrowserDialog scDialog = new ObjectBrowserDialog(
+            parentShell,
+            title,
+            rootNode,
+            selectedNodes,
+            false,
+            allowedTypes,
+            resultTypes,
+            leafTypes
+        );
         if (scDialog.open() == IDialogConstants.OK_ID) {
             return scDialog.getSelectedObjects();
         } else {

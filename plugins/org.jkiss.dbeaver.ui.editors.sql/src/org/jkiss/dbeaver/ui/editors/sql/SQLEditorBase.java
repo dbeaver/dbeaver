@@ -752,7 +752,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
         super.editorContextMenuAboutToShow(menu);
 
-        //menu.add(new Separator("content"));//$NON-NLS-1$
         addAction(menu, GROUP_SQL_EXTRAS, SQLEditorContributor.ACTION_CONTENT_ASSIST_PROPOSAL);
         addAction(menu, GROUP_SQL_EXTRAS, SQLEditorContributor.ACTION_CONTENT_ASSIST_TIP);
         addAction(menu, GROUP_SQL_EXTRAS, SQLEditorContributor.ACTION_CONTENT_ASSIST_INFORMATION);
