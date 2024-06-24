@@ -160,7 +160,7 @@ public class GaussDBPackage implements PostgreObject, PostgreScriptObject, DBPSy
 
     @Association
     public List<GaussDBProcedure> getPackageProcedures(DBRProgressMonitor monitor) throws DBException {
-        List<GaussDBProcedure> list = new ArrayList();
+        List<GaussDBProcedure> list = new ArrayList<>();
         if (oid != 0) {
             list = getGaussDBProceduresCache().getAllObjects(monitor, this.schema).stream()
                         .filter(e -> e.getPropackageid() == oid && e.getKind() == PostgreProcedureKind.p)
@@ -171,7 +171,7 @@ public class GaussDBPackage implements PostgreObject, PostgreScriptObject, DBPSy
 
     @Association
     public List<GaussDBProcedure> getPackageFunctions(DBRProgressMonitor monitor) throws DBException {
-        List<GaussDBProcedure> list = new ArrayList();
+        List<GaussDBProcedure> list = new ArrayList<>();
         if (oid != 0) {
             list = getGaussDBProceduresCache().getAllObjects(monitor, this.schema).stream()
                         .filter(e -> e.getPropackageid() == oid && e.getKind() == PostgreProcedureKind.f)

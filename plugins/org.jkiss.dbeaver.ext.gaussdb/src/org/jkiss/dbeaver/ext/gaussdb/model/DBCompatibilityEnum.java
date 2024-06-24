@@ -69,4 +69,21 @@ public enum DBCompatibilityEnum {
         }
         return null;
     }
+
+    /**
+     * Query DBCompatibilityEnum text by value.
+     * 
+     * @param cValue
+     *            or dValue
+     * @return the DBCompatibilityEnum text
+     */
+    public static String queryTextByValue(String value) {
+        DBCompatibilityEnum[] enums = values();
+        for (DBCompatibilityEnum e : enums) {
+            if (e.cValue.equalsIgnoreCase(value) || e.dValue.equalsIgnoreCase(value)) {
+                return e.text;
+            }
+        }
+        return "";
+    }
 }

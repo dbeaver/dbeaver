@@ -4,12 +4,10 @@
 
 package org.jkiss.dbeaver.ext.gaussdb.model;
 
-import java.lang.reflect.Field;
 import java.sql.ResultSet;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreCharset;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
@@ -23,11 +21,8 @@ import org.jkiss.utils.CommonUtils;
 
 public class GaussDBDataSource extends PostgreDataSource {
 
-    private static final Log log = Log.getLog(GaussDBDataSource.class);
-
     public GaussDBDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
-        super(monitor, container);
-        initSqlDialect();
+        super(monitor, container, new GaussDBDialect());
     }
 
     @Override
@@ -66,8 +61,8 @@ public class GaussDBDataSource extends PostgreDataSource {
                     && CommonUtils.getBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB), true);
     }
 
-    private void initSqlDialect() {
-        log.debug("GaussDBDataSource initSqlDialect TODO");
+    @Override
+    public boolean isServerVersionAtLeast(int major, int minor) {
+        return true;
     }
-
 }
