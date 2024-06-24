@@ -41,7 +41,7 @@ public class PrefPageNetworkExpert extends AbstractPrefPage implements IWorkbenc
     private Combo prefIpAddressesCombo;
 
     @Override
-    public void init(IWorkbench iWorkbench) {
+    public void init(IWorkbench workbench) {
         // nothing to initialize
     }
 
