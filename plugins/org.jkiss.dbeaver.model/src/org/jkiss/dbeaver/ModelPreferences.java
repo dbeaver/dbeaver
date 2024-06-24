@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.qm.QMObjectType;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterProfile;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -140,7 +139,7 @@ public final class ModelPreferences
         public static IPType getPreferredStack() {
             return CommonUtils.valueOf(
                 IPType.class,
-                DBWorkbench.getPlatform().getPreferenceStore().getString(PROP_PREFERRED_IP_STACK),
+                preferences.getString(PROP_PREFERRED_IP_STACK),
                 AUTO
             );
         }
@@ -149,7 +148,7 @@ public final class ModelPreferences
         public static IPType getPreferredAddresses() {
             return CommonUtils.valueOf(
                 IPType.class,
-                DBWorkbench.getPlatform().getPreferenceStore().getString(PROP_PREFERRED_IP_ADDRESSES),
+                preferences.getString(PROP_PREFERRED_IP_ADDRESSES),
                 AUTO
             );
         }
@@ -413,5 +412,9 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.DICTIONARY_COLUMN_DIVIDER, " ");
         // Data formats
         DataFormatterProfile.initDefaultPreferences(store, Locale.getDefault());
+
+        // Network expert settings
+        PrefUtils.setDefaultPreferenceValue(store, PROP_PREFERRED_IP_STACK, IPType.AUTO.name());
+        PrefUtils.setDefaultPreferenceValue(store, PROP_PREFERRED_IP_ADDRESSES, IPType.AUTO.name());
     }
 }

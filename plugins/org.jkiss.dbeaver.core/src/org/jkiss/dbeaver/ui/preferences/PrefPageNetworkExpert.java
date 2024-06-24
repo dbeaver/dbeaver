@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -100,7 +99,7 @@ public class PrefPageNetworkExpert extends AbstractPrefPage implements IWorkbenc
         ModelPreferences.IPType addresses = ModelPreferences.IPType.values()[prefIpAddressesCombo.getSelectionIndex()];
 
         if (stack != ModelPreferences.IPType.getPreferredStack() || addresses != ModelPreferences.IPType.getPreferredAddresses()) {
-            DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+            DBPPreferenceStore store = ModelPreferences.getPreferences();
             store.setValue(ModelPreferences.PROP_PREFERRED_IP_STACK, stack.name());
             store.setValue(ModelPreferences.PROP_PREFERRED_IP_ADDRESSES, addresses.name());
 
