@@ -69,6 +69,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     final UserCache userCache = new UserCache();
     final RoleCache roleCache = new RoleCache();
     final ReplicationCache replCache;
+    final JobCache jobCache;
     private boolean hasStatistics;
     
     private GenericSchema publicSchema;
@@ -84,6 +85,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         
         queryGetActiveDB = CommonUtils.toString(container.getDriver().getDriverParameter(GenericConstants.PARAM_QUERY_GET_ACTIVE_DB));
         replCache = new ReplicationCache(this);
+        jobCache = new JobCache();
     }
     
     @Override
@@ -145,6 +147,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         this.userCache.clearCache();
         this.roleCache.clearCache();
         this.replCache.clearCache();
+        this.jobCache.clearCache();
         
         hasStatistics = false;
         
@@ -524,8 +527,28 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     public AltibaseReplication getReplication(DBRProgressMonitor monitor, String name) throws DBException {
         return replCache.getObject(monitor, this, name);
     }
-    
-    
+
+    ///////////////////////////////////////////////
+    // Jobs
+    static class JobCache extends JDBCObjectCache<GenericStructContainer, AltibaseJob> {
+        
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner) throws SQLException {
+            return session.prepareStatement("SELECT * FROM SYSTEM_.SYS_JOBS_ ORDER BY JOB_NAME ASC");
+        }
+
+        @Override
+        protected AltibaseJob fetchObject(@NotNull JDBCSession session, GenericStructContainer owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+            return new AltibaseJob(owner, dbResult);
+        }
+    }
+
+    @Association
+    public Collection<AltibaseJob> getJobs(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return jobCache.getAllObjects(monitor, this);
+    }
+
     ///////////////////////////////////////////////
     // Statistics
 
