@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.altibase.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.DBPObjectStatisticsCollector;
@@ -25,6 +26,8 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
@@ -37,11 +40,30 @@ public class AltibaseSchema extends GenericSchema implements DBPObjectStatistics
 
     private volatile boolean hasStatistics;
     
+    private DbLinkCache dbLinkCache;
+    
     /**
      * Altibase Schema
      */
     public AltibaseSchema(GenericDataSource dataSource, GenericCatalog catalog, String schemaName) {
         super(dataSource, catalog, schemaName);
+        this.dbLinkCache = new DbLinkCache();
+    }
+
+    @Override
+    public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        super.refreshObject(monitor);
+        this.dbLinkCache.clearCache();
+        hasStatistics = false;
+        return this;
+    }
+    
+    public List<AltibaseDbLink> getDbLinks(DBRProgressMonitor monitor) throws DBException {
+        return dbLinkCache.getAllObjects(monitor, this);
+    }
+
+    public DbLinkCache getDbLinkCache() {
+        return dbLinkCache;
     }
 
     @Override
@@ -121,13 +143,6 @@ public class AltibaseSchema extends GenericSchema implements DBPObjectStatistics
         return filteredProcedures;
     }
 
-    @Override
-    public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        super.refreshObject(monitor);
-        hasStatistics = false;
-        return this;
-    }
-
     public GenericTableIndex getIndex(DBRProgressMonitor monitor, String uniqueName) throws DBException {
         for (GenericTableIndex index : CommonUtils.safeCollection(getIndexes(monitor))) {
             if (uniqueName.equals(index.getName())) {
@@ -192,6 +207,23 @@ public class AltibaseSchema extends GenericSchema implements DBPObjectStatistics
                 }
             }
             hasStatistics = true;
+        }
+    }
+    
+    class DbLinkCache extends JDBCObjectCache<GenericObjectContainer, AltibaseDbLink> {
+
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, 
+                @NotNull GenericObjectContainer container) throws SQLException {
+            return ((AltibaseMetaModel)container.getDataSource().getMetaModel()).prepareDbLinkLoadStatement(session, container);
+        }
+
+        @Nullable
+        @Override
+        protected AltibaseDbLink fetchObject(@NotNull JDBCSession session, @NotNull GenericObjectContainer container, 
+                @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+            return ((AltibaseMetaModel)container.getDataSource().getMetaModel()).createDbLinkImpl(container, resultSet);
         }
     }
 }

@@ -223,10 +223,33 @@ public class AltibaseMetaModel extends GenericMetaModel {
      */
     public String getSynonymDDL(DBRProgressMonitor monitor, AltibaseSynonym sourceObject, 
             Map<String, Object> options) throws DBException {
-        return getDDLFromDbmsMetadata(monitor, sourceObject, sourceObject.getParentObject().getName(), "SYNONYM");
+        return getDDLFromDbmsMetadata(monitor, sourceObject, (String) options.get("SCHEMA"), "SYNONYM");
     }
 
-
+    /**
+     * Get a specific Replication DDL
+     */
+    public String getReplicationDDL(DBRProgressMonitor monitor, AltibaseReplication sourceObject, 
+            Map<String, Object> options) throws DBException {
+        return getDDLFromDbmsMetadata(monitor, sourceObject, null, "REPLICATION");
+    }
+    
+    /**
+     * Get a specific Job DDL
+     */
+    public String getJobDDL(DBRProgressMonitor monitor, AltibaseJob sourceObject, 
+            Map<String, Object> options) throws DBException {
+        return getDDLFromDbmsMetadata(monitor, sourceObject, null, "JOB");
+    }
+    
+    /**
+     * Get a specific DbLink DDL
+     */
+    public String getDbLinkDDL(DBRProgressMonitor monitor, AltibaseDbLink sourceObject, 
+            Map<String, Object> options) throws DBException {
+        return getDDLFromDbmsMetadata(monitor, sourceObject, (String) options.get("SCHEMA"), "DB_LINK");
+    }
+    
     @Override
     public String getViewDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericView sourceObject,
                              @NotNull Map<String, Object> options) throws DBException {
@@ -1184,5 +1207,27 @@ public class AltibaseMetaModel extends GenericMetaModel {
                 indexName,
                 indexType,
                 persisted);
+    }
+    
+    //////////////////////////////////////////////////////
+    // Database Links
+    
+    /**
+     * Statement to load dblink
+     */
+    public JDBCStatement prepareDbLinkLoadStatement(JDBCSession session, 
+            GenericStructContainer container) throws SQLException {
+        final JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT u.user_name, l.* FROM system_.sys_database_links_ l, system_.sys_users_ u"
+                + " WHERE l.user_id = u.user_id AND u.user_name = ? ORDER BY link_name ASC");
+        dbStat.setString(1, container.getName());
+        return dbStat;
+    }
+    
+    /**
+     * Create DbLink implementation
+     */
+    public AltibaseDbLink createDbLinkImpl(GenericStructContainer container, JDBCResultSet resultSet) {
+        return new AltibaseDbLink(container, resultSet);
     }
 }

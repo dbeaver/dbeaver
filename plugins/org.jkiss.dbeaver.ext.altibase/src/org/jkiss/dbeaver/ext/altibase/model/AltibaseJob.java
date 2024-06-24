@@ -17,15 +17,24 @@
 package org.jkiss.dbeaver.ext.altibase.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.Map;
 
-public class AltibaseJob  extends AltibaseGlobalObject{
+public class AltibaseJob extends AltibaseGlobalObject implements DBPScriptObject, DBPRefreshableObject {
 
+    protected String ddl;
+    
     private int jobId;
     private String jobName;
     private String execQuery;
@@ -42,7 +51,7 @@ public class AltibaseJob  extends AltibaseGlobalObject{
 
     public AltibaseJob(GenericStructContainer owner, @NotNull ResultSet resultSet) {
 
-        super((AltibaseDataSource) owner.getDataSource(), true);
+        super((AltibaseDataSource)owner.getDataSource(), true);
 
         jobId = JDBCUtils.safeGetInt(resultSet, "JOB_ID");
         jobName = JDBCUtils.safeGetString(resultSet, "JOB_NAME");
@@ -130,5 +139,21 @@ public class AltibaseJob  extends AltibaseGlobalObject{
     @Property(viewable = true, order = 12)
     public String getComment() {
         return comment;
+    }
+
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        if (CommonUtils.isEmpty(ddl)) {
+            ddl = ((AltibaseMetaModel) getDataSource().getMetaModel()).getJobDDL(monitor, this, options);
+        }
+        
+        return (CommonUtils.isEmpty(ddl)) ? "" : ddl + ";";
+    }
+
+    @Override
+    public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+        ddl = null;
+        this.getDataSource().getJobCache().clearCache();
+        return this;
     }
 }

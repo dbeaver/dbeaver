@@ -70,6 +70,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     final RoleCache roleCache = new RoleCache();
     final ReplicationCache replCache;
     final JobCache jobCache;
+    final DbLinkCache dbLinkCache;
     private boolean hasStatistics;
     
     private GenericSchema publicSchema;
@@ -86,6 +87,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         queryGetActiveDB = CommonUtils.toString(container.getDriver().getDriverParameter(GenericConstants.PARAM_QUERY_GET_ACTIVE_DB));
         replCache = new ReplicationCache(this);
         jobCache = new JobCache();
+        dbLinkCache = new DbLinkCache();
     }
     
     @Override
@@ -148,6 +150,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         this.roleCache.clearCache();
         this.replCache.clearCache();
         this.jobCache.clearCache();
+        this.dbLinkCache.clearCache();
         
         hasStatistics = false;
         
@@ -530,6 +533,12 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
 
     ///////////////////////////////////////////////
     // Jobs
+    
+
+    public JobCache getJobCache() {
+        return jobCache;
+    }
+
     static class JobCache extends JDBCObjectCache<GenericStructContainer, AltibaseJob> {
         
         @NotNull
@@ -548,7 +557,34 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     public Collection<AltibaseJob> getJobs(@NotNull DBRProgressMonitor monitor) throws DBException {
         return jobCache.getAllObjects(monitor, this);
     }
+    
+    ///////////////////////////////////////////////
+    // Public DB Links
+    
+    public DbLinkCache getDbLinkCache() {
+        return dbLinkCache;
+    }
+    
+    static class DbLinkCache extends JDBCObjectCache<GenericStructContainer, AltibaseDbLink> {
+        
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner) throws SQLException {
+            return session.prepareStatement("SELECT null as USER_NAME, l.* FROM system_.sys_database_links_ l"
+                    + " WHERE user_mode = 0 ORDER BY link_name ASC");
+        }
 
+        @Override
+        protected AltibaseDbLink fetchObject(@NotNull JDBCSession session, GenericStructContainer owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+            return new AltibaseDbLink(owner, dbResult);
+        }
+    }
+    
+    @Association
+    public Collection<AltibaseDbLink> getPublicDbLinks(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return dbLinkCache.getAllObjects(monitor, this);
+    }
+    
     ///////////////////////////////////////////////
     // Statistics
 
