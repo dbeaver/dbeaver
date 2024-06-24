@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -26,9 +25,6 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
-import org.eclipse.ui.forms.events.ExpansionAdapter;
-import org.eclipse.ui.forms.events.ExpansionEvent;
-import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -76,8 +72,6 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
     private DBNBrowseSettings defaultNavigatorSettings;
     private Text sampleConnectionName;
     private ConnectionNameResolver fakeConnectionNameResolver;
-    private Combo prefIpStackCombo;
-    private Combo prefIpAddressesCombo;
     private Button useWinTrustStoreCheck;
 
     public PrefPageConnectionsGeneral() {
@@ -142,51 +136,6 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
             addLinkToSettings(groupObjects, PrefPageErrorHandle.PAGE_ID);
             addLinkToSettings(groupObjects, PrefPageMetaData.PAGE_ID);
             addLinkToSettings(groupObjects, PrefPageTransactions.PAGE_ID);
-        }
-
-        {
-            ExpandableComposite host = new ExpandableComposite(composite, SWT.NONE);
-            host.addExpansionListener(new ExpansionAdapter() {
-                @Override
-                public void expansionStateChanged(ExpansionEvent e) {
-                    UIUtils.resizeShell(parent.getShell());
-                }
-            });
-            host.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-            host.setText(CoreMessages.pref_page_connection_expert_label);
-
-            Group group = UIUtils.createControlGroup(
-                host,
-                CoreMessages.pref_page_connection_network_label,
-                2,
-                GridData.VERTICAL_ALIGN_BEGINNING,
-                0
-            );
-            host.setClient(group);
-
-            prefIpStackCombo = UIUtils.createLabelCombo(
-                group,
-                CoreMessages.pref_page_connection_network_preferred_ip_stack_label,
-                CoreMessages.pref_page_connection_network_preferred_ip_stack_tip,
-                SWT.READ_ONLY | SWT.DROP_DOWN
-            );
-            for (ModelPreferences.IPType type : ModelPreferences.IPType.values()) {
-                prefIpStackCombo.add(type.toString());
-            }
-            prefIpStackCombo.select(ModelPreferences.IPType.getPreferredStack().ordinal());
-
-            prefIpAddressesCombo = UIUtils.createLabelCombo(
-                group,
-                CoreMessages.pref_page_connection_network_preferred_ip_addresses_label,
-                CoreMessages.pref_page_connection_network_preferred_ip_addresses_tip,
-                SWT.READ_ONLY | SWT.DROP_DOWN
-            );
-            for (ModelPreferences.IPType type : ModelPreferences.IPType.values()) {
-                prefIpAddressesCombo.add(type.toString());
-            }
-            prefIpAddressesCombo.select(ModelPreferences.IPType.getPreferredAddresses().ordinal());
-
-            UIUtils.createInfoLabel(group, CoreMessages.pref_page_ui_general_label_options_take_effect_after_restart, SWT.NONE, 2);
         }
 
         Link urlHelpLabel = UIUtils.createLink(
@@ -317,8 +266,6 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
         connectionDefaultNamePatternText.setText(preferences.getDefaultString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN));
         sampleConnectionName.setText(GeneralUtils.replaceVariables(connectionDefaultNamePatternText.getText(), fakeConnectionNameResolver));
         connectionNamePattern = preferences.getDefaultString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN);
-        prefIpStackCombo.select(ModelPreferences.IPType.AUTO.ordinal());
-        prefIpAddressesCombo.select(ModelPreferences.IPType.AUTO.ordinal());
         if (RuntimeUtils.isWindows() && useWinTrustStoreCheck != null) {
             useWinTrustStoreCheck.setSelection(
                 preferences.getDefaultBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE));
@@ -351,22 +298,6 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
         store.setValue(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN, connectionDefaultNamePatternText.getText());
         if (RuntimeUtils.isWindows() && useWinTrustStoreCheck != null) {
             store.setValue(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE, useWinTrustStoreCheck.getSelection());
-        }
-
-        ModelPreferences.IPType stack = ModelPreferences.IPType.values()[prefIpStackCombo.getSelectionIndex()];
-        ModelPreferences.IPType addresses = ModelPreferences.IPType.values()[prefIpAddressesCombo.getSelectionIndex()];
-
-        if (stack != ModelPreferences.IPType.getPreferredStack() || addresses != ModelPreferences.IPType.getPreferredAddresses()) {
-            store.setValue(ModelPreferences.PROP_PREFERRED_IP_STACK, stack.name());
-            store.setValue(ModelPreferences.PROP_PREFERRED_IP_ADDRESSES, addresses.name());
-
-            if (UIUtils.confirmAction(
-                getShell(),
-                NLS.bind(CoreMessages.pref_page_connection_network_restart_prompt_title, GeneralUtils.getProductName()),
-                NLS.bind(CoreMessages.pref_page_connection_network_restart_prompt_message, GeneralUtils.getProductName())
-            )) {
-                restartWorkbenchOnPrefChange();
-            }
         }
 
         return super.performOk();
