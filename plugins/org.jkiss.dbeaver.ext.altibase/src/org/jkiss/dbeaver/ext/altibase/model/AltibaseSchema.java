@@ -42,6 +42,7 @@ public class AltibaseSchema extends GenericSchema implements DBPObjectStatistics
     
     private DbLinkCache dbLinkCache;
     private LibraryCache libraryCache;
+    private DirectoryCache directoryCache;
     
     /**
      * Altibase Schema
@@ -50,6 +51,7 @@ public class AltibaseSchema extends GenericSchema implements DBPObjectStatistics
         super(dataSource, catalog, schemaName);
         this.dbLinkCache = new DbLinkCache();
         this.libraryCache = new LibraryCache();
+        this.directoryCache = new DirectoryCache();
     }
 
     @Override
@@ -57,6 +59,7 @@ public class AltibaseSchema extends GenericSchema implements DBPObjectStatistics
         super.refreshObject(monitor);
         this.dbLinkCache.clearCache();
         this.libraryCache.clearCache();
+        this.directoryCache.clearCache();
         hasStatistics = false;
         return this;
     }
@@ -76,6 +79,10 @@ public class AltibaseSchema extends GenericSchema implements DBPObjectStatistics
         return libraryCache;
     }
 
+    public List<AltibaseDirectory> getDirectories(DBRProgressMonitor monitor) throws DBException {
+        return directoryCache.getAllObjects(monitor, this);
+    }
+    
     @Override
     public List<AltibaseTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException {
         List<? extends GenericTableBase> tables = getTables(monitor);
@@ -251,6 +258,23 @@ public class AltibaseSchema extends GenericSchema implements DBPObjectStatistics
         protected AltibaseLibrary fetchObject(@NotNull JDBCSession session, @NotNull GenericObjectContainer container, 
                 @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return ((AltibaseMetaModel)container.getDataSource().getMetaModel()).createLibraryImpl(container, resultSet);
+        }
+    }
+    
+    class DirectoryCache extends JDBCObjectCache<GenericObjectContainer, AltibaseDirectory> {
+
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, 
+                @NotNull GenericObjectContainer container) throws SQLException {
+            return ((AltibaseMetaModel)container.getDataSource().getMetaModel()).prepareDirectoryLoadStatement(session, container);
+        }
+
+        @Nullable
+        @Override
+        protected AltibaseDirectory fetchObject(@NotNull JDBCSession session, @NotNull GenericObjectContainer container, 
+                @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+            return ((AltibaseMetaModel)container.getDataSource().getMetaModel()).createDirectoryImpl(container, resultSet);
         }
     }
   

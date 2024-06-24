@@ -258,6 +258,14 @@ public class AltibaseMetaModel extends GenericMetaModel {
         return getDDLFromDbmsMetadata(monitor, sourceObject, null, "LIBRARY");
     }
     
+    /**
+     * Get a specific Directory DDL
+     */
+    public String getDirectoryDDL(DBRProgressMonitor monitor, AltibaseDirectory sourceObject, 
+            Map<String, Object> options) throws DBException {
+        return getDDLFromDbmsMetadata(monitor, sourceObject, null, "DIRECTORY");
+    }
+    
     @Override
     public String getViewDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericView sourceObject,
                              @NotNull Map<String, Object> options) throws DBException {
@@ -1221,7 +1229,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
     // Database Links
     
     /**
-     * Statement to load dblink
+     * Statement to load DbLink
      */
     public JDBCStatement prepareDbLinkLoadStatement(JDBCSession session, 
             GenericStructContainer container) throws SQLException {
@@ -1259,5 +1267,27 @@ public class AltibaseMetaModel extends GenericMetaModel {
      */
     public AltibaseLibrary createLibraryImpl(GenericStructContainer container, JDBCResultSet resultSet) {
         return new AltibaseLibrary(container, resultSet);
+    }
+    
+    //////////////////////////////////////////////////////
+    // Directory
+    
+    /**
+     * Statement to load Directory
+     */
+    public JDBCStatement prepareDirectoryLoadStatement(JDBCSession session, 
+            GenericStructContainer container) throws SQLException {
+        final JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT d.* FROM system_.sys_users_ u, system_.sys_directories_ d "
+                + "WHERE u.user_id = d.user_id AND u.user_name =  ? ORDER BY directory_name ASC");
+        dbStat.setString(1, container.getName());
+        return dbStat;
+    }
+    
+    /**
+     * Create Directory implementation
+     */
+    public AltibaseDirectory createDirectoryImpl(GenericStructContainer container, JDBCResultSet resultSet) {
+        return new AltibaseDirectory(container, resultSet);
     }
 }
