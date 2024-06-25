@@ -51,6 +51,8 @@ import java.util.List;
  */
 public class ScriptsHandlerImpl extends AbstractResourceHandler implements DBPResourceCreator {
 
+    public static final String RESOURCE_TYPE_ID_SQL_SCRIPT = "sql-script";
+
     @Override
     public int getFeatures(IResource resource)
     {
