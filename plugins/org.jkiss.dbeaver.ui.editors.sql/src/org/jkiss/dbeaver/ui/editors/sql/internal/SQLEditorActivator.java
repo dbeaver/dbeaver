@@ -33,8 +33,7 @@ public class SQLEditorActivator extends AbstractUIPlugin {
     // The shared instance
     private static SQLEditorActivator plugin;
     private DBPPreferenceStore preferences;
-
-    private static SQLEditor.TransactionStatusUpdateJob transactionStatusUpdateJob;
+    private SQLEditor.TransactionStatusUpdateJob transactionStatusUpdateJob;
 
     public SQLEditorActivator() {
     }

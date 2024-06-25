@@ -3053,7 +3053,6 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeChangeListener);
-
         UIUtils.dispose(editorImage);
         baseEditorImage = null;
         editorImage = null;
