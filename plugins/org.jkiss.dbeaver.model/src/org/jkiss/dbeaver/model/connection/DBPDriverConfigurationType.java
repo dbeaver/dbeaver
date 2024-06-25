@@ -21,8 +21,7 @@ package org.jkiss.dbeaver.model.connection;
  */
 public enum DBPDriverConfigurationType {
     MANUAL,
-    URL,
-    CUSTOM;
+    URL;
 
     public boolean isDefault() {
         return this == MANUAL;

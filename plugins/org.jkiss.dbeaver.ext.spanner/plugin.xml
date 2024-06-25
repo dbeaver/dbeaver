@@ -30,7 +30,6 @@
                         webURL="https://cloud.google.com/spanner/docs/use-oss-jdbc"
                         databaseDocumentationSuffixURL="Database-driver-Google-Cloud-Spanner"
                         categories="sql,bigdata,cloud,gcp"
-                        supportedConfigurationTypes="CUSTOM"
                         singleConnection="true">
                     <replace provider="google_spanner" driver="spanner_jdbc"/>
                     <parameter name="omit-catalog" value="true"/>
@@ -59,9 +58,9 @@
                 </driver>
                 <main-properties drivers="*">
                     <propertyGroup label="Connection">
-                        <property id="server" label="Project" type="string" required="true" supportedConfigurationTypes="CUSTOM"/>
-                        <property id="host" label="Instance" type="string" required="true" supportedConfigurationTypes="CUSTOM"/>
-                        <property id="database" label="Database" type="string" required="true" supportedConfigurationTypes="CUSTOM"/>
+                        <property id="server" label="Project" type="string" required="true"/>
+                        <property id="host" label="Instance" type="string" required="true"/>
+                        <property id="database" label="Database" type="string" required="true"/>
                     </propertyGroup>
                 </main-properties>
 
