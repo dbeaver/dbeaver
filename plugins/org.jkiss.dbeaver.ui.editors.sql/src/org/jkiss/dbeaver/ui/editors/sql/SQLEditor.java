@@ -303,6 +303,10 @@ public class SQLEditor extends SQLEditorBase implements
         }
     };
 
+    static {
+        new TransactionStatusUpdateJob().schedule();
+    }
+
     public SQLEditor() {
         PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
     }
@@ -5552,7 +5556,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    public static final class TransactionStatusUpdateJob extends AbstractJob {
+    private static final class TransactionStatusUpdateJob extends AbstractJob {
         private static final int UPDATE_DELAY_MS = 1000;
 
         public TransactionStatusUpdateJob() {
@@ -5563,7 +5567,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
-            if (monitor.isCanceled()) {
+            if (monitor.isCanceled() || DBWorkbench.getPlatform().isShuttingDown()) {
                 return Status.CANCEL_STATUS;
             }
             IWorkbenchWindow window = UIUtils.findActiveWorkbenchWindow();
