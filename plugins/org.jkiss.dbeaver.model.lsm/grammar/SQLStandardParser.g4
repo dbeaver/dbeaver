@@ -317,25 +317,26 @@ columnIndex: UnsignedInteger;
 orderingSpecification: (ASC|DESC);
 
 // schema definition
-sqlSchemaStatement: (sqlSchemaDefinitionStatement|sqlSchemaManipulationStatement);
-sqlSchemaDefinitionStatement: (schemaDefinition|tableDefinition|viewDefinition);
+sqlSchemaStatement: (schemaDefinition|
+    createTableStatement|createViewStatement
+    alterTableStatement|
+    dropSchemaStatement|dropTableStatement|dropViewStatement|dropProcedureStatement|dropCharacterSetStatement);
 schemaDefinition: CREATE SCHEMA schemaNameClause (schemaCharacterSetSpecification)? (schemaElement)*;
 schemaNameClause: (schemaName|AUTHORIZATION schemaAuthorizationIdentifier|schemaName AUTHORIZATION schemaAuthorizationIdentifier);
 schemaAuthorizationIdentifier: authorizationIdentifier;
 authorizationIdentifier: identifier;
 schemaCharacterSetSpecification: DEFAULT CHARACTER SET characterSetSpecification;
-schemaElement: (tableDefinition|viewDefinition);
+schemaElement: (createTableStatement|createViewStatement);
 
 // table definition
-tableDefinition: CREATE ((GLOBAL|LOCAL) TEMPORARY)? TABLE tableName tableElementList (ON COMMIT (DELETE|PRESERVE) ROWS)?;
-viewDefinition: CREATE VIEW tableName (LeftParen viewColumnList RightParen)? AS queryExpression (WITH (levelsClause)? CHECK OPTION)?;
+createTableStatement: CREATE ((GLOBAL|LOCAL) TEMPORARY)? TABLE tableName tableElementList (ON COMMIT (DELETE|PRESERVE) ROWS)?;
+createViewStatement: CREATE VIEW tableName (LeftParen viewColumnList RightParen)? AS queryExpression (WITH (levelsClause)? CHECK OPTION)?;
 viewColumnList: columnNameList;
 levelsClause: (CASCADED|LOCAL);
 tableElementList: LeftParen tableElement (Comma tableElement)* RightParen;
 tableElement: (columnDefinition|tableConstraintDefinition);
 
 // schema ddl
-sqlSchemaManipulationStatement: (dropSchemaStatement|alterTableStatement|dropTableStatement|dropViewStatement|dropCharacterSetStatement);
 dropSchemaStatement: DROP SCHEMA schemaName dropBehaviour;
 dropBehaviour: (CASCADE|RESTRICT);
 alterTableStatement: ALTER TABLE tableName alterTableAction;
@@ -348,9 +349,11 @@ dropColumnDefaultClause: DROP DEFAULT;
 dropColumnDefinition: DROP (COLUMN)? columnName dropBehaviour;
 addTableConstraintDefinition: ADD tableConstraintDefinition;
 dropTableConstraintDefinition: DROP CONSTRAINT constraintName dropBehaviour;
-dropTableStatement: DROP TABLE tableName dropBehaviour;
-dropViewStatement: DROP VIEW tableName dropBehaviour;
+dropTableStatement: DROP TABLE ifExistsSpec? (tableName (Comma tableName)*)? dropBehaviour?;
+dropViewStatement: DROP VIEW ifExistsSpec?  (tableName (Comma tableName)*)? dropBehaviour?;
+dropProcedureStatement: DROP PROCEDURE ifExistsSpec? qualifiedName dropBehaviour?;
 dropCharacterSetStatement: DROP CHARACTER SET characterSetName;
+ifExistsSpec: IF EXISTS ;
 
 // data statements
 selectStatementSingleRow: SELECT (setQuantifier)? selectList INTO selectTargetList tableExpression;
