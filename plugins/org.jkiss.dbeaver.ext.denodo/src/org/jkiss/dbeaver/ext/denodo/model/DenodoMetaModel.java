@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.denodo.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
@@ -59,7 +61,7 @@ public class DenodoMetaModel extends GenericMetaModel
     }
 
     @Override
-    public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
+    public String getViewDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericView sourceObject, @NotNull Map<String, Object> options) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Denodo object DDL")) {
@@ -80,7 +82,7 @@ public class DenodoMetaModel extends GenericMetaModel
                 }
             }
         } catch (SQLException e) {
-            throw new DBException(e, dataSource);
+            throw new DBDatabaseException(e, dataSource);
         }
     }
 
@@ -101,7 +103,7 @@ public class DenodoMetaModel extends GenericMetaModel
                 }
             }
         } catch (SQLException e) {
-            throw new DBException(e, dataSource);
+            throw new DBDatabaseException(e, dataSource);
         }
     }
 

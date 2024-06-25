@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.edit.OracleTableColumnManager;
@@ -183,7 +184,7 @@ public class OracleUtils {
                 log.error("Error generating Oracle DDL. Generate default.", e);
                 return DBStructUtils.generateTableDDL(monitor, object, options, true);
             } else {
-                throw new DBException(e, dataSource);
+                throw new DBDatabaseException(e, dataSource);
             }
         }
     }

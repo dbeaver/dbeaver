@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model.impls.cockroach;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerExtensionBase;
@@ -207,7 +208,7 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
                 }
             }
         } catch (Exception e) {
-            throw new DBException(e, table.getDataSource());
+            throw new DBDatabaseException(e, table.getDataSource());
         }
     }
 
@@ -247,7 +248,7 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
                 }
             }
         } catch (Exception e) {
-            throw new DBException(e, table.getDataSource());
+            throw new DBDatabaseException(e, table.getDataSource());
         }
     }
 

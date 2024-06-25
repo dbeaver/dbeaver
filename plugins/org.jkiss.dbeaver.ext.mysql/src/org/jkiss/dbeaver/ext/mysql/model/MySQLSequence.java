@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -234,7 +235,7 @@ public class MySQLSequence implements DBSSequence, MySQLSourceObject, DBPQualifi
                 }
             } catch (SQLException e) {
                 body = "-- " + e.getMessage();
-                throw new DBException(e, getDataSource());
+                throw new DBDatabaseException(e, getDataSource());
             }
         } else if (body == null && !CommonUtils.isEmpty(name)) {
             StringBuilder sb = new StringBuilder();

@@ -6,6 +6,10 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.Tree;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.AbstractList;
+import java.util.List;
 
 /**
  * The interface describing the node of the syntax tree
@@ -42,7 +46,7 @@ public interface STMTreeNode extends Tree {
     /**
      * Get the text fragment covered by the node
      */
-    @Nullable
+    @NotNull
     default String getTextContent() {
         String result = null;
         if (this instanceof STMTreeRuleNode ruleNode) {
@@ -68,7 +72,7 @@ public interface STMTreeNode extends Tree {
                 result = b.getSymbol().getTokenSource().getInputStream().getText(textRange);
             }
         }
-        return result;
+        return CommonUtils.notEmpty(result);
     }
 
     /**
@@ -89,6 +93,14 @@ public interface STMTreeNode extends Tree {
         throw new UnsupportedOperationException();
     }
 
+    default STMTreeNode getFirstStmChild() {
+        return getStmChild(0);
+    }
+
+    default STMTreeNode getLastStmtChild() {
+        return getStmChild(getChildCount() - 1);
+    }
+
     /**
      * Returns child node by name
      */
@@ -102,4 +114,19 @@ public interface STMTreeNode extends Tree {
         }
         return null;
     }
+
+    default List<STMTreeNode> getChildren() {
+        return new AbstractList<>() {
+            @Override
+            public STMTreeNode get(int index) {
+                return getStmChild(index);
+            }
+
+            @Override
+            public int size() {
+                return getChildCount();
+            }
+        };
+    }
+
 }
