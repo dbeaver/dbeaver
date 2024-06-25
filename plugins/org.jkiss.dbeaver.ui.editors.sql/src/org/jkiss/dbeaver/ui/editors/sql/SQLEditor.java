@@ -5552,7 +5552,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    public static class TransactionStatusUpdateJob extends AbstractJob {
+    public static final class TransactionStatusUpdateJob extends AbstractJob {
         private static final int UPDATE_DELAY_MS = 1000;
 
         public TransactionStatusUpdateJob() {
