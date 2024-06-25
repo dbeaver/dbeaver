@@ -1269,6 +1269,8 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private class CustomFilterListener extends AbstractDropDownListener {
         @Override
         protected void fillDropDownMenu(MenuManager menuManager) {
+            menuManager.add(ActionUtils.makeCommandContribution(
+                viewer.getSite(), ResultSetHandlerMain.CMD_FILTER_EDIT_SETTINGS));
             if (viewer.getDataContainer() instanceof DBSEntity) {
                 menuManager.add(ActionUtils.makeCommandContribution(
                     viewer.getSite(), ResultSetHandlerMain.CMD_FILTER_SAVE_SETTING));
