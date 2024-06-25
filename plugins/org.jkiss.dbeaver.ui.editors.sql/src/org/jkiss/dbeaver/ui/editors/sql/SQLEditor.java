@@ -252,8 +252,6 @@ public class SQLEditor extends SQLEditorBase implements
     private boolean isResultSetAutoFocusEnabled = true;
     private Boolean isDisableFetchResultSet = null;
     private boolean datasourceChanged;
-    private TransactionStatusUpdateJob transactionStatusUpdateJob;
-    private AbstractPartListener partListener;
 
     private final ArrayList<SQLEditorAddIn> addIns = new ArrayList<>();
 
@@ -2163,25 +2161,6 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         extraPresentationManager = new ExtraPresentationManager();
-
-        transactionStatusUpdateJob = new TransactionStatusUpdateJob();
-        transactionStatusUpdateJob.schedule();
-        partListener = new AbstractPartListener() {
-            @Override
-            public void partActivated(IWorkbenchPart part) {
-                if (part instanceof SQLEditor e) {
-                    e.transactionStatusUpdateJob.schedule();
-                }
-            }
-
-            @Override
-            public void partDeactivated(IWorkbenchPart part) {
-                if (part instanceof SQLEditor e) {
-                    e.transactionStatusUpdateJob.cancel();
-                }
-            }
-        };
-        getSite().getPage().addPartListener(partListener);
     }
 
     /**
@@ -3074,14 +3053,10 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeChangeListener);
-        getSite().getPage().removePartListener(partListener);
 
         UIUtils.dispose(editorImage);
         baseEditorImage = null;
         editorImage = null;
-
-        transactionStatusUpdateJob.cancel();
-        transactionStatusUpdateJob = null;
     }
 
     @Override
@@ -5530,28 +5505,6 @@ public class SQLEditor extends SQLEditorBase implements
         return contextPrefStore;
     }
 
-    private class TransactionStatusUpdateJob extends AbstractJob {
-        private static final int UPDATE_DELAY_MS = 1000;
-
-        public TransactionStatusUpdateJob() {
-            super("Update transaction status");
-            setUser(false);
-            setSystem(true);
-        }
-
-        @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
-            if (monitor.isCanceled()) {
-                return Status.CANCEL_STATUS;
-            }
-
-            UIUtils.syncExec(() -> updateStatusField(STATS_CATEGORY_TRANSACTION_TIMEOUT));
-
-            schedule(UPDATE_DELAY_MS);
-            return Status.OK_STATUS;
-        }
-    }
-
     @Nullable
     private String getTransactionStatusText() throws DBCException {
         if (dataSourceContainer == null) {
@@ -5600,4 +5553,29 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
+    public static class TransactionStatusUpdateJob extends AbstractJob {
+        private static final int UPDATE_DELAY_MS = 1000;
+
+        public TransactionStatusUpdateJob() {
+            super("Update active transaction status");
+            setUser(false);
+            setSystem(true);
+        }
+
+        @Override
+        protected IStatus run(DBRProgressMonitor monitor) {
+            if (monitor.isCanceled()) {
+                return Status.CANCEL_STATUS;
+            }
+            IWorkbenchWindow window = UIUtils.findActiveWorkbenchWindow();
+            if (window != null) {
+                IWorkbenchPage page = window.getActivePage();
+                if (page != null && page.getActiveEditor() instanceof SQLEditor editor) {
+                    UIUtils.syncExec(() -> editor.updateStatusField(STATS_CATEGORY_TRANSACTION_TIMEOUT));
+                }
+            }
+            schedule(UPDATE_DELAY_MS);
+            return Status.OK_STATUS;
+        }
+    }
 }

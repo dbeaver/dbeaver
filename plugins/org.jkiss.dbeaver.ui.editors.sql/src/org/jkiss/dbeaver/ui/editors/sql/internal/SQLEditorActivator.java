@@ -21,6 +21,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorFeatures;
 import org.osgi.framework.BundleContext;
 
@@ -33,6 +34,8 @@ public class SQLEditorActivator extends AbstractUIPlugin {
     private static SQLEditorActivator plugin;
     private DBPPreferenceStore preferences;
 
+    private static SQLEditor.TransactionStatusUpdateJob transactionStatusUpdateJob;
+
     public SQLEditorActivator() {
     }
 
@@ -42,11 +45,19 @@ public class SQLEditorActivator extends AbstractUIPlugin {
         plugin = this;
         preferences = new BundlePreferenceStore(getBundle());
 
+        transactionStatusUpdateJob = new SQLEditor.TransactionStatusUpdateJob();
+        transactionStatusUpdateJob.schedule();
+
         DBRFeatureRegistry.getInstance().registerFeatures(SQLEditorFeatures.class);
     }
 
     @Override
     public void stop(BundleContext context) throws Exception {
+        if (transactionStatusUpdateJob != null) {
+            transactionStatusUpdateJob.cancel();
+            transactionStatusUpdateJob = null;
+        }
+
         plugin = null;
         super.stop(context);
     }
