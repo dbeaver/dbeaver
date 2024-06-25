@@ -235,13 +235,14 @@ public class AltibaseSchema extends GenericSchema implements DBPObjectStatistics
         @Override
         protected AltibaseDbLink fetchObject(@NotNull JDBCSession session, @NotNull GenericObjectContainer container, 
                 @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
-            return ((AltibaseMetaModel)container.getDataSource().getMetaModel()).createDbLinkImpl(container, resultSet);
+            return ((AltibaseMetaModel) container.getDataSource().getMetaModel()).createDbLinkImpl(container, resultSet);
         }
 
         @Override
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull GenericObjectContainer owner,
                 @Nullable AltibaseDbLink object, @Nullable String objectName) throws SQLException {
-            return ((AltibaseMetaModel)owner.getDataSource().getMetaModel()).prepareDbLinkLoadStatement(session, owner, object, objectName);
+            return ((AltibaseMetaModel) owner.getDataSource().getMetaModel()).prepareDbLinkLoadStatement(
+                    session, owner, object, objectName);
         }
     }
     
@@ -251,13 +252,14 @@ public class AltibaseSchema extends GenericSchema implements DBPObjectStatistics
         @Override
         protected AltibaseLibrary fetchObject(@NotNull JDBCSession session, @NotNull GenericObjectContainer container, 
                 @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
-            return ((AltibaseMetaModel)container.getDataSource().getMetaModel()).createLibraryImpl(container, resultSet);
+            return ((AltibaseMetaModel) container.getDataSource().getMetaModel()).createLibraryImpl(container, resultSet);
         }
 
         @Override
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull GenericObjectContainer owner,
                 @Nullable AltibaseLibrary object, @Nullable String objectName) throws SQLException {
-            return ((AltibaseMetaModel)owner.getDataSource().getMetaModel()).prepareLibraryLoadStatement(session, owner, object, objectName);
+            return ((AltibaseMetaModel) owner.getDataSource().getMetaModel()).prepareLibraryLoadStatement(
+                    session, owner, object, objectName);
         }
     }
     
@@ -267,13 +269,14 @@ public class AltibaseSchema extends GenericSchema implements DBPObjectStatistics
         @Override
         protected AltibaseDirectory fetchObject(@NotNull JDBCSession session, @NotNull GenericObjectContainer container, 
                 @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
-            return ((AltibaseMetaModel)container.getDataSource().getMetaModel()).createDirectoryImpl(container, resultSet);
+            return ((AltibaseMetaModel) container.getDataSource().getMetaModel()).createDirectoryImpl(container, resultSet);
         }
 
         @Override
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull GenericObjectContainer owner,
                 @Nullable AltibaseDirectory object, @Nullable String objectName) throws SQLException {
-            return ((AltibaseMetaModel)owner.getDataSource().getMetaModel()).prepareDirectoryLoadStatement(session, owner, object, objectName);
+            return ((AltibaseMetaModel) owner.getDataSource().getMetaModel()).prepareDirectoryLoadStatement(
+                    session, owner, object, objectName);
         }
     }
   

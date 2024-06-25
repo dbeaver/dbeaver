@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.altibase.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.model.GenericObjectContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -96,13 +95,13 @@ public class AltibaseDbLink extends AltibaseObject<GenericStructContainer> imple
     @NotNull
     @Property(viewable = true, order = 7)
     public String getUserMode() {
-        return isPublic()?"Public":"Private";
+        return isPublic() ? "Public" : "Private";
     }
 
     @NotNull
     @Property(viewable = true, order = 8)
     public String getLinkType() {
-        return (linkType == 0)?"Heterogeneous":"Homogeneous";
+        return (linkType == 0) ? "Heterogeneous" : "Homogeneous";
     }
 
     @NotNull
@@ -124,7 +123,7 @@ public class AltibaseDbLink extends AltibaseObject<GenericStructContainer> imple
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         if (CommonUtils.isEmpty(ddl)) {
-            options.put("SCHEMA", isPublic()? "PUBLIC" : this.getParentObject().getName());
+            options.put("SCHEMA", isPublic() ? "PUBLIC" : this.getParentObject().getName());
             ddl = ((AltibaseMetaModel) getDataSource().getMetaModel()).getDbLinkDDL(monitor, this, options);
         }
 

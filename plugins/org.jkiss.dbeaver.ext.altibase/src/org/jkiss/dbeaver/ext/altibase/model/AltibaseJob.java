@@ -52,7 +52,7 @@ public class AltibaseJob extends AltibaseGlobalObject implements DBPScriptObject
 
     public AltibaseJob(GenericStructContainer owner, @NotNull ResultSet resultSet) {
 
-        super((AltibaseDataSource)owner.getDataSource(), true);
+        super((AltibaseDataSource) owner.getDataSource(), true);
 
         jobId = JDBCUtils.safeGetInt(resultSet, "JOB_ID");
         jobName = JDBCUtils.safeGetString(resultSet, "JOB_NAME");

@@ -237,8 +237,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         DBSObject refObj = null;
         AltibaseSchema refSchema = (AltibaseSchema) this.getSchema(refSchemaName);
         
-        if (refSchema != null)
-        {
+        if (refSchema != null) {
             // No object type from database metadata, so need to find it one by one.
             if (refObj == null) {
                 refObj = refSchema.getTable(monitor, refObjName);
@@ -543,7 +542,8 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     static class JobCache extends JDBCObjectLookupCache<GenericStructContainer, AltibaseJob> {
         
         @Override
-        protected AltibaseJob fetchObject(@NotNull JDBCSession session, GenericStructContainer owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+        protected AltibaseJob fetchObject(@NotNull JDBCSession session, GenericStructContainer owner, 
+                @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
             return new AltibaseJob(owner, dbResult);
         }
 
@@ -579,7 +579,8 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     static class DbLinkCache extends JDBCObjectLookupCache<GenericStructContainer, AltibaseDbLink> {
 
         @Override
-        protected AltibaseDbLink fetchObject(@NotNull JDBCSession session, GenericStructContainer owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+        protected AltibaseDbLink fetchObject(@NotNull JDBCSession session, GenericStructContainer owner, 
+                @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
             return new AltibaseDbLink(owner, dbResult);
         }
 
@@ -649,7 +650,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     @NotNull
     private List<AltibaseProperty> loadPropertyList(@NotNull DBRProgressMonitor monitor) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load properties")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM V$PROPERTY ORDER BY NAME ASC" )) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM V$PROPERTY ORDER BY NAME ASC")) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     List<AltibaseProperty> propertyList = new ArrayList<>();
                     while (dbResult.next()) {
