@@ -120,6 +120,7 @@ public class DBPConnectionConfiguration implements DBPObject {
     private String connectionColor;
     private int keepAliveInterval;
     private boolean closeIdleConnection;
+    private boolean autoCommit;
     private int closeIdleInterval;
 
     private String authModelId;
@@ -137,6 +138,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.keepAliveInterval = 0;
         this.closeIdleConnection = true;
         this.closeIdleInterval = 0;
+        this.autoCommit = true;
     }
 
     public DBPConnectionConfiguration(@NotNull DBPConnectionConfiguration info) {
@@ -168,6 +170,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.bootstrap = new DBPConnectionBootstrap(info.bootstrap);
         this.connectionColor = info.connectionColor;
         this.keepAliveInterval = info.keepAliveInterval;
+        this.autoCommit = info.autoCommit;
         this.closeIdleConnection = info.closeIdleConnection;
         this.closeIdleInterval = info.closeIdleInterval;
     }
@@ -416,6 +419,14 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.keepAliveInterval = keepAliveInterval;
     }
 
+    public boolean isAutoCommit() {
+        return autoCommit;
+    }
+
+    public void setAutoCommit(boolean autoCommit) {
+        this.autoCommit = autoCommit;
+    }
+
     public boolean isCloseIdleConnection() {
         return closeIdleConnection;
     }
@@ -566,6 +577,7 @@ public class DBPConnectionConfiguration implements DBPObject {
                 CommonUtils.equalObjects(this.handlers, source.handlers) &&
                 CommonUtils.equalObjects(this.bootstrap, source.bootstrap) &&
                 this.keepAliveInterval == source.keepAliveInterval &&
+                this.autoCommit == source.isAutoCommit() &&
                 this.closeIdleConnection == source.closeIdleConnection &&
                 this.closeIdleInterval == source.closeIdleInterval;
     }
