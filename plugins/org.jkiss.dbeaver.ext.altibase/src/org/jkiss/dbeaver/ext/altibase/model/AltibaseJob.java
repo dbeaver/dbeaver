@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.altibase.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.model.GenericObjectContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -152,8 +153,7 @@ public class AltibaseJob extends AltibaseGlobalObject implements DBPScriptObject
 
     @Override
     public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
-        ddl = null;
-        this.getDataSource().getJobCache().clearCache();
-        return this;
+        AltibaseDataSource dataSouce = getDataSource();
+        return dataSouce.getJobCache().refreshObject(monitor, dataSouce, this);
     }
 }

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.altibase.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.model.GenericObjectContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -132,8 +133,18 @@ public class AltibaseDbLink extends AltibaseObject<GenericStructContainer> imple
 
     @Override
     public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
-        ddl = null;
-        this.getDataSource().getDbLinkCache().clearCache();
-        return this;
+        DBSObject dbsObject = null;
+        
+        // Non-schema DbLink
+        if (isPublic()) {
+            AltibaseDataSource dataSouce = getDataSource();
+            dbsObject = dataSouce.getDbLinkCache().refreshObject(monitor, dataSouce, this);
+        // Schema DbLink
+        } else {
+            AltibaseSchema schema = (AltibaseSchema) getParentObject();
+            dbsObject = schema.getDbLinkCache().refreshObject(monitor, schema, this);
+        }
+        
+        return dbsObject;
     }
 }

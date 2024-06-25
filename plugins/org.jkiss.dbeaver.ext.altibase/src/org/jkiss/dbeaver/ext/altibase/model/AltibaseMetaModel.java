@@ -1231,12 +1231,20 @@ public class AltibaseMetaModel extends GenericMetaModel {
     /**
      * Statement to load DbLink
      */
-    public JDBCStatement prepareDbLinkLoadStatement(JDBCSession session, 
-            GenericStructContainer container) throws SQLException {
+    public JDBCStatement prepareDbLinkLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container,
+            @Nullable AltibaseDbLink object, @Nullable String objectName) throws SQLException {
+        boolean isNullObject = object == null && objectName == null;
         final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT u.user_name, l.* FROM system_.sys_database_links_ l, system_.sys_users_ u"
-                + " WHERE l.user_id = u.user_id AND u.user_name = ? ORDER BY link_name ASC");
+                + " WHERE l.user_id = u.user_id AND u.user_name = ?"
+                + (isNullObject ? "" : " AND l.link_name = ?")
+                + " ORDER BY link_name ASC");
+        
         dbStat.setString(1, container.getName());
+        if (!isNullObject) {
+            dbStat.setString(2, object != null ? object.getName() : objectName);
+        }
+        
         return dbStat;
     }
     
@@ -1253,12 +1261,20 @@ public class AltibaseMetaModel extends GenericMetaModel {
     /**
      * Statement to load Library
      */
-    public JDBCStatement prepareLibraryLoadStatement(JDBCSession session, 
-            GenericStructContainer container) throws SQLException {
+    public JDBCStatement prepareLibraryLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container,
+            @Nullable AltibaseLibrary object, @Nullable String objectName) throws SQLException {
+        boolean isNullObject = object == null && objectName == null;
         final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT l.* FROM system_.sys_users_ u, system_.sys_libraries_ l "
-                + "WHERE u.user_id = l.user_id AND u.user_name =  ? ORDER BY library_name ASC");
+                + "WHERE u.user_id = l.user_id AND u.user_name =  ? "
+                + (isNullObject ? "" : " AND l.library_name = ?")
+                + " ORDER BY library_name ASC");
+        
         dbStat.setString(1, container.getName());
+        if (!isNullObject) {
+            dbStat.setString(2, object != null ? object.getName() : objectName);
+        }
+        
         return dbStat;
     }
     
@@ -1275,12 +1291,21 @@ public class AltibaseMetaModel extends GenericMetaModel {
     /**
      * Statement to load Directory
      */
-    public JDBCStatement prepareDirectoryLoadStatement(JDBCSession session, 
-            GenericStructContainer container) throws SQLException {
+    public JDBCStatement prepareDirectoryLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container,
+            @Nullable AltibaseDirectory object, @Nullable String objectName) throws SQLException {
+        boolean isNullObject = object == null && objectName == null;
         final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT d.* FROM system_.sys_users_ u, system_.sys_directories_ d "
-                + "WHERE u.user_id = d.user_id AND u.user_name =  ? ORDER BY directory_name ASC");
+                + "WHERE u.user_id = d.user_id AND u.user_name =  ? "
+                + (isNullObject ? "" : " AND d.directory_name = ?")
+                + " ORDER BY directory_name ASC");
+        
         dbStat.setString(1, container.getName());
+        
+        if (!isNullObject) {
+            dbStat.setString(2, object != null ? object.getName() : objectName);
+        }
+        
         return dbStat;
     }
     

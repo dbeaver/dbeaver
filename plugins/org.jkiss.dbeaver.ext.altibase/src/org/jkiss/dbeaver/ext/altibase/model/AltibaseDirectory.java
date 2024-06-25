@@ -19,13 +19,11 @@ package org.jkiss.dbeaver.ext.altibase.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.model.GenericObjectContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -94,29 +92,7 @@ public class AltibaseDirectory extends AltibaseObject<GenericStructContainer> im
 
     @Override
     public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
-        ddl = null;
-        if (monitor != null) {
-            monitor.beginTask("Load action for '" + this.getName() + "'...", 1);
-            try (final JDBCSession session = DBUtils.openMetaSession(monitor, this, 
-                    "Load action for Directory '" + this.getName() + "'")) {
-                try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                        "SELECT * FROM system_.sys_directories_ WHERE directory_id = ?")) {
-                    dbStat.setLong(1, getObjectId());
-
-                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                        if (dbResult.next()) {
-                            if (!monitor.isCanceled()) {
-                                updateState(dbResult);
-                            }
-                        }
-                    }
-                } catch (Exception e) {
-                    monitor.subTask("Error refreshing job state " + e.getMessage());
-                } finally {
-                    monitor.done();
-                }
-            }
-        }
-        return this;
+        AltibaseSchema schema = (AltibaseSchema) getParentObject();
+        return schema.getDirectoryCache().refreshObject(monitor, schema, this);
     }
 }
