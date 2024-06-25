@@ -709,7 +709,8 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
      * @param page the wizard page
      */
     private void updateSizeForPage(IWizardPage page) {
-        if (isAutoLayoutAvailable()) {
+        if (isAutoLayoutAvailable() &&
+            (!(page instanceof  ActiveWizardPage<?> awp) || awp.isAutoResizeEnabled())) {
             UIUtils.asyncExec(() -> {
                 Point pageCompSize = page.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT);
                 for (Control parent = page.getControl().getParent(); parent != null; parent = parent.getParent()) {
