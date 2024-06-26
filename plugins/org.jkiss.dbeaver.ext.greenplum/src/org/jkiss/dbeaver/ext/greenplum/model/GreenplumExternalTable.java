@@ -265,7 +265,7 @@ public class GreenplumExternalTable extends PostgreTable {
     }
 
     @Override
-    public String generateChangeOwnerQuery(String owner, @NotNull Map<String, Object> options) {
+    public String generateChangeOwnerQuery(@NotNull String owner, @NotNull Map<String, Object> options) {
         assert CommonUtils.isNotEmpty(owner);
 
         return "ALTER EXTERNAL TABLE " + DBUtils.getEntityScriptName(this, options) + " OWNER TO " + owner;

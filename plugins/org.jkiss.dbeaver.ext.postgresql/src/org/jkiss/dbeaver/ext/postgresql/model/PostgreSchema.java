@@ -183,7 +183,7 @@ public class PostgreSchema implements
     }
 
     @Override
-    public Collection<PostgrePrivilege> getPrivileges(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
+    public Collection<PostgrePrivilege> getPrivileges(@NotNull DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
         List<PostgrePrivilege> postgrePrivileges = new ArrayList<>(
             PostgreUtils.extractPermissionsFromACL(monitor, this, schemaAcl, false));
         if (defaultPrivileges == null) {
@@ -197,7 +197,7 @@ public class PostgreSchema implements
     }
 
     @Override
-    public String generateChangeOwnerQuery(String owner, @NotNull Map<String, Object> options) {
+    public String generateChangeOwnerQuery(@NotNull String owner, @NotNull Map<String, Object> options) {
         return null;
     }
 
