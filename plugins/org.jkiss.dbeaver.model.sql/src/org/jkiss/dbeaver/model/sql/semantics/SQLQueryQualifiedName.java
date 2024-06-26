@@ -19,9 +19,8 @@ package org.jkiss.dbeaver.model.sql.semantics;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.context.SourceResolutionResult;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryRowsTableDataModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.List;
@@ -100,7 +99,7 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem {
     /**
      * Set the definition to the qaulified name components based on the database metadata
      */
-    public void setDefinition(@NotNull DBSEntity realTable) {
+    public void setDefinition(@NotNull DBSObject realTable) {
         if (this.entityName != null) {
             this.entityName.setDefinition(new SQLQuerySymbolByDbObjectDefinition(realTable, SQLQuerySymbolClass.TABLE));
             if (this.schemaName != null) {
@@ -175,7 +174,7 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem {
 
     @Override
     public String toString() {
-        return super.toString() + "[" + String.join(".", this.toListOfStrings()) + "]";
+        return String.join(".", this.toListOfStrings());
     }
 
     @Override
