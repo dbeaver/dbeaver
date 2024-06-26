@@ -51,7 +51,6 @@ public interface DBSDataContainer extends DBSObject {
     long FLAG_FETCH_SEGMENT         = 1 << 4;
     long FLAG_REFRESH               = 1 << 8;
 
-    @Nullable
     DBPDataSource getDataSource();
 
     /**

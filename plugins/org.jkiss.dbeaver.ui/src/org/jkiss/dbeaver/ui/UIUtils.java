@@ -110,7 +110,7 @@ public class UIUtils {
     public static final Color COLOR_GREEN_CONTRAST = new Color(null, 23, 135, 58);
     public static final Color COLOR_VALIDATION_ERROR = new Color(255, 220, 220);
     
-    private static final Color COLOR_WHITE_DARK = new Color(null, 208, 208, 208);
+    private static final Color COLOR_WHITE_DARK = new Color(null, 192, 192, 192);
     private static final SharedTextColors SHARED_TEXT_COLORS = new SharedTextColors();
     private static final SharedFonts SHARED_FONTS = new SharedFonts();
     private static final String MAX_LONG_STRING = String.valueOf(Long.MAX_VALUE);
