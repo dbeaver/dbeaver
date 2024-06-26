@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.secret.DBSSecretObject;
 import org.jkiss.dbeaver.model.secret.DBSSecretValue;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -42,7 +43,11 @@ public class LocalSecretController implements DBSSecretController {
     @Nullable
     @Override
     public String getPrivateSecretValue(@NotNull String secretId) {
-        return preferenceStore.getString(makeKey(secretId));
+        String value = preferenceStore.getString(makeKey(secretId));
+        if (CommonUtils.isEmpty(value)) {
+            return null;
+        }
+        return value;
     }
 
     @Override

@@ -95,19 +95,6 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
         return false;
     }
 
-    @Nullable
-    private static String decryptPassword(String encPassword) {
-        if (!CommonUtils.isEmpty(encPassword)) {
-            try {
-                encPassword = ENCRYPTOR.decrypt(encPassword);
-            } catch (Throwable e) {
-                // could not decrypt - use as is
-                encPassword = null;
-            }
-        }
-        return encPassword;
-    }
-
     private static class DataSourcesParser implements SAXListener {
         DataSourceRegistry registry;
         DataSourceDescriptor curDataSource;

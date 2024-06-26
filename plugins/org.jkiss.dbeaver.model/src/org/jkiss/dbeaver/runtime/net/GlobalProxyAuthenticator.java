@@ -152,7 +152,7 @@ public class GlobalProxyAuthenticator extends Authenticator {
         String userName = secrets.getPrivateSecretValue(ModelPreferences.UI_PROXY_USER);
         String password = secrets.getPrivateSecretValue(ModelPreferences.UI_PROXY_PASSWORD);
 
-        if (userName != null) {
+        if (CommonUtils.isNotEmpty(userName)) {
             return new DBPAuthInfo(userName, CommonUtils.notEmpty(password), true);
         }
 
@@ -161,7 +161,7 @@ public class GlobalProxyAuthenticator extends Authenticator {
         userName = store.getString(ModelPreferences.UI_PROXY_USER);
         password = store.getString(ModelPreferences.UI_PROXY_PASSWORD);
 
-        if (userName != null) {
+        if (CommonUtils.isNotEmpty(userName)) {
             if (CommonUtils.isNotEmpty(password)) {
                 try {
                     password = new SecuredPasswordEncrypter().decrypt(password);
