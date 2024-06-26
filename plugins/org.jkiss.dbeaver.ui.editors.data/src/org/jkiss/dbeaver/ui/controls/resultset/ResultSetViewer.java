@@ -2530,14 +2530,14 @@ public class ResultSetViewer extends Viewer
         if (executionContext == null || !executionContext.isConnected()) {
             return "No connection to database";
         }
-        if (!executionContext.getDataSource().getContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_DATA)) {
-            return "Data edit restricted";
+        if (executionContext.getDataSource().getContainer().isConnectionReadOnly()) {
+            return "Connection is in read-only state";
         }
         if (executionContext.getDataSource().getInfo().isReadOnlyData()) {
             return "Read-only data container";
         }
-        if (executionContext.getDataSource().getContainer().isConnectionReadOnly()) {
-            return "Connection is in read-only state";
+        if (!executionContext.getDataSource().getContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_DATA)) {
+            return "Data edit restricted";
         }
         if (isUniqueKeyUndefinedButRequired(executionContext)) {
             return "No unique key defined";

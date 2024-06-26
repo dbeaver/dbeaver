@@ -2081,16 +2081,13 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
                     @Override
                     public String getStatusText() {
-                        if (controller.getDataContainer().getDataSource().getContainer().isConnectionReadOnly()) {
-                            return ResultSetMessages.controls_resultset_results_read_only;
-                        }
-                        return null;
+                        return getController().getReadOnlyStatus();
                     }
 
                     @Override
                     public DBPImage getStatusIcon() {
-                        if (controller.getDataContainer().getDataSource().getContainer().isConnectionReadOnly()) {
-                            return UIIcon.SQL_READONLY;
+                        if (getController().getReadOnlyStatus() != null) {
+                            return UIIcon.BUTTON_READ_ONLY;
                         }
                         return null;
                     }
@@ -2098,19 +2095,38 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 new IGridStatusColumn() {
                     @Override
                     public String getDisplayName() {
-                        return "Unique key";
+                        return ResultSetMessages.controls_resultset_results_edit_key;
                     }
 
                     @Override
                     public String getStatusText() {
-                        return null;
+                        DBDRowIdentifier rowIdentifier = getController().getModel().getDefaultRowIdentifier();
+                        if (rowIdentifier != null && !rowIdentifier.getAttributes().isEmpty()) {
+                            return rowIdentifier.getAttributes().stream()
+                                .map(DBDAttributeBinding::getName).collect(Collectors.joining(","));
+                        } else {
+                            if (rowIdentifier == null) {
+                                return "Table metadata not found. Data edit is not possible.";
+                            }
+                            if (rowIdentifier.getAttributes().isEmpty()) {
+                                return "No unique key was found. Data modification is not possible.";
+                            }
+                            return "Virtual key is used";
+                        }
                     }
 
                     @Override
                     public DBPImage getStatusIcon() {
-                        return null;
+                        DBDRowIdentifier rowIdentifier = getController().getModel().getDefaultRowIdentifier();
+                        if (rowIdentifier == null) {
+                            return ResultSetIcons.META_TABLE_NA;
+                        } else if (rowIdentifier.getAttributes().isEmpty()) {
+                            return ResultSetIcons.META_KEY_NA;
+                        } else {
+                            return ResultSetIcons.META_KEY_OK;
+                        }
                     }
-                }
+                },
             };
         }
 
@@ -2709,13 +2725,6 @@ public class SpreadsheetPresentation extends AbstractPresentation
         @Nullable
         @Override
         public Image getImage(IGridItem item) {
-            if (item == null) {
-                if (getSpreadsheet().getContentProvider().isGridReadOnly()) {
-                    return DBeaverIcons.getImage(UIIcon.SQL_READONLY);
-                } else {
-                    return DBeaverIcons.getImage(UIIcon.EDIT);
-                }
-            }
             if (!showAttributeIcons) {
                 return null;
             }
@@ -2872,22 +2881,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         @Nullable
         @Override
         public String getToolTipText(IGridItem element) {
-            if (element == null) {
-                String readOnlyStatus = getController().getReadOnlyStatus();
-                if (readOnlyStatus == null && controller.isAllAttributesReadOnly()) {
-                    readOnlyStatus = ResultSetMessages.controls_resultset_results_read_only;
-                }
-                if (readOnlyStatus != null) {
-                    return readOnlyStatus;
-                }
-                DBDRowIdentifier rowIdentifier = getController().getModel().getDefaultRowIdentifier();
-                if (rowIdentifier != null && !rowIdentifier.getAttributes().isEmpty()) {
-                    String rowKeyString = rowIdentifier.getAttributes().stream()
-                        .map(DBDAttributeBinding::getName).collect(Collectors.joining(","));
-                    return NLS.bind(ResultSetMessages.controls_resultset_results_edit_key, rowKeyString);
-                }
-                return null;
-            } else if (element.getElement() instanceof DBDAttributeBinding attributeBinding) {
+            if (element.getElement() instanceof DBDAttributeBinding attributeBinding) {
                 final String name = attributeBinding.getName();
                 final String typeName = attributeBinding.getFullTypeName();
                 final String description = attributeBinding.getDescription();
