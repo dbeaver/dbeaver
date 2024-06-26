@@ -586,6 +586,36 @@ public class GeneralUtils {
         return makeExceptionStatus(severity, ex, false);
     }
 
+    public static IStatus transformExceptionsToStatus(@NotNull List<Throwable> exceptions) {
+
+        if (exceptions.isEmpty()) {
+            return new Status(IStatus.ERROR, (Class<?>) null, "Empty exceptions list");
+        }
+        Set<String> exceptionMessageSet = new HashSet<>();
+        IStatus prev = null;
+        for (Throwable exception : exceptions) {
+            String message = exception.getMessage();
+            if (prev == null) {
+                exceptionMessageSet.add(message);
+                prev = new Status(
+                    IStatus.ERROR,
+                    ModelPreferences.PLUGIN_ID,
+                    message,
+                    null);
+            } else {
+                if (exceptionMessageSet.contains(message)) {
+                    continue;
+                }
+                prev = new MultiStatus(ModelPreferences.PLUGIN_ID,
+                    0,
+                    new IStatus[]{prev},
+                    message,
+                    null);
+            }
+        }
+        return prev;
+    }
+
     private static IStatus makeExceptionStatus(int severity, Throwable ex, boolean nested) {
         if (ex instanceof InvocationTargetException) {
             ex = ((InvocationTargetException) ex).getTargetException();
