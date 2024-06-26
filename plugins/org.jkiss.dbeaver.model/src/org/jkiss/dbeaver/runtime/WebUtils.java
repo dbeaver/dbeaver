@@ -166,7 +166,7 @@ public class WebUtils {
                     }
                 }
             } catch (Exception e) {
-                String message = String.format("Exception during to connect to %s", connection.getURL().toString());
+                String message = String.format("Exception during a connection to %s", connection.getURL().toString());
                 IOException ioException = new IOException(message, e);
                 if (monitor instanceof ProgressMonitorWithExceptionContext monitorWithExceptionContext) {
                     monitorWithExceptionContext.addException(ioException);
