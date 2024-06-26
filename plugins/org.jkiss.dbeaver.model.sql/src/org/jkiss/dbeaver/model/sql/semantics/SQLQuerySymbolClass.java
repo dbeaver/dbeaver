@@ -27,6 +27,7 @@ public enum SQLQuerySymbolClass {
     CATALOG(SQLTokenType.T_SCHEMA),
     SCHEMA(SQLTokenType.T_SCHEMA),
     TABLE(SQLTokenType.T_TABLE),
+    OBJECT(SQLTokenType.T_TABLE),
     TABLE_ALIAS(SQLTokenType.T_TABLE_ALIAS),
     COLUMN(SQLTokenType.T_COLUMN),
     COLUMN_DERIVED(SQLTokenType.T_COLUMN_DERIVED),
