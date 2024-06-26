@@ -24,14 +24,14 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Query model for recognition
  */
 public class SQLQueryModel extends SQLQueryNodeModel {
     @NotNull
-    private final HashSet<SQLQuerySymbolEntry> symbolEntries;
+    private final Set<SQLQuerySymbolEntry> symbolEntries;
     @Nullable
     private final SQLQueryModelContent queryContent;
 
@@ -39,7 +39,7 @@ public class SQLQueryModel extends SQLQueryNodeModel {
     public SQLQueryModel(
         @NotNull STMTreeNode syntaxNode,
         @Nullable SQLQueryModelContent queryContent,
-        @NotNull HashSet<SQLQuerySymbolEntry> symbolEntries
+        @NotNull Set<SQLQuerySymbolEntry> symbolEntries
     ) {
         super(syntaxNode.getRealInterval(), syntaxNode, queryContent);
         this.queryContent = queryContent;
