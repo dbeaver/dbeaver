@@ -51,12 +51,15 @@ public class ClickhouseTypeParser {
 
     private static final Gson gson = new Gson();
 
+    // FIXME: Disabled as per dbeaver/dbeaver#34283
+    private static final boolean ENABLE_COMPLEX_TYPE_PARSING = false;
+
     private ClickhouseTypeParser() {
         // prevents instantiation
     }
 
     public static boolean isComplexType(@NotNull String typeName) {
-        return typeName.startsWith("Map") || typeName.startsWith("Tuple") || typeName.startsWith("Array");
+        return ENABLE_COMPLEX_TYPE_PARSING && (typeName.startsWith("Map") || typeName.startsWith("Tuple") || typeName.startsWith("Array"));
     }
 
     @Nullable
@@ -76,9 +79,9 @@ public class ClickhouseTypeParser {
             return null;
         }
 
-        if (type instanceof ClickhouseMapType map) {
+        if (type instanceof ClickhouseMapType map && ENABLE_COMPLEX_TYPE_PARSING) {
             return new JDBCCompositeMap(session, map, ((Map<?, ?>) object));
-        } else if (type instanceof ClickhouseTupleType tuple) {
+        } else if (type instanceof ClickhouseTupleType tuple && ENABLE_COMPLEX_TYPE_PARSING) {
             final Object[] values;
             if (object instanceof Map) {
                 values = ((Map<?, ?>) object).entrySet().stream()
