@@ -21,14 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
-import org.jkiss.dbeaver.ext.cubrid.model.CubridDataSource;
-import org.jkiss.dbeaver.ext.cubrid.model.CubridProcedure;
-import org.jkiss.dbeaver.ext.cubrid.model.CubridSequence;
-import org.jkiss.dbeaver.ext.cubrid.model.CubridSynonym;
-import org.jkiss.dbeaver.ext.cubrid.model.CubridTable;
-import org.jkiss.dbeaver.ext.cubrid.model.CubridTrigger;
-import org.jkiss.dbeaver.ext.cubrid.model.CubridUser;
-import org.jkiss.dbeaver.ext.cubrid.model.CubridView;
+import org.jkiss.dbeaver.ext.cubrid.model.*;
 import org.jkiss.dbeaver.ext.cubrid.model.plan.CubridQueryPlanner;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
@@ -96,11 +89,13 @@ public class CubridMetaModel extends GenericMetaModel
             @Nullable GenericTableBase object,
             @Nullable String objectName)
             throws SQLException {
-        String sql = "select a.*,a.class_name as TABLE_NAME, case when class_type = 'CLASS' then 'TABLE' \r\n"
-                + "when class_type = 'VCLASS' then 'VIEW' end as TABLE_TYPE, \r\n"
-                + "a.comment as REMARKS, b.current_val from db_class a LEFT JOIN \r\n"
-                + "db_serial b on a.class_name = b.class_name "
-                + "where a.owner_name = ?";
+        String sql = "select a.*,a.class_name as TABLE_NAME, case when class_type = 'CLASS' then 'TABLE'\r\n"
+                + " when class_type = 'VCLASS' then 'VIEW' end as TABLE_TYPE,\r\n"
+                + " a.comment as REMARKS, b.current_val from db_class a LEFT JOIN\r\n"
+                + " db_serial b on a.class_name = b.class_name\r\n"
+                + " left join db_partition p on a.class_name = p.partition_class_name\r\n"
+                + " where a.owner_name = ? and p.partition_class_name is null";
+
         final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         dbStat.setString(1, owner.getName());
         return dbStat;
@@ -389,7 +384,7 @@ public class CubridMetaModel extends GenericMetaModel
 
     @Nullable
     @Override
-    public String getViewDDL(@NotNull DBRProgressMonitor monitor, @Nullable GenericView object, @Nullable Map<String, Object> options) throws DBException {
+    public String getViewDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericView object, @NotNull Map<String, Object> options) throws DBException {
         String ddl = "-- View definition not available";
         try (JDBCSession session = DBUtils.openMetaSession(monitor, object, "Load view ddl")) {
             String sql = String.format("show create view %s", ((CubridView) object).getUniqueName());
