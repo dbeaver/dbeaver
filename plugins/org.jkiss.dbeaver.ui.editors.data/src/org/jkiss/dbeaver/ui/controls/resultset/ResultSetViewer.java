@@ -1987,7 +1987,13 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public String getAttributeReadOnlyStatus(DBDAttributeBinding attr) {
+    public String getAttributeReadOnlyStatus(DBDAttributeBinding attr, boolean onlyAttribute) {
+        if (!onlyAttribute) {
+            String dataStatus = getReadOnlyStatus();
+            if (dataStatus != null) {
+                return dataStatus;
+            }
+        }
         boolean newRow = (curRow != null && curRow.getState() == ResultSetRow.STATE_ADDED);
         if (!newRow) {
             return DBExecUtils.getAttributeReadOnlyStatus(attr);

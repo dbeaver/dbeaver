@@ -678,7 +678,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                             IGridColumn colElement = spreadsheet.getColumn(colNum);
                             final DBDAttributeBinding attr = getAttributeFromGrid(colElement, gridRow);
                             final ResultSetRow row = getResultRowFromGrid(colElement, gridRow);
-                            if (attr == null || row == null || controller.getAttributeReadOnlyStatus(attr) != null) {
+                            if (attr == null || row == null || controller.getAttributeReadOnlyStatus(attr, false) != null) {
                                 continue;
                             }
                             final Object newValue;
@@ -728,7 +728,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     if (attr == null || row == null) {
                         continue;
                     }
-                    if (controller.getAttributeReadOnlyStatus(attr) != null) {
+                    if (controller.getAttributeReadOnlyStatus(attr, false) != null) {
                         // No inline editors for readonly columns
                         continue;
                     }
@@ -1193,7 +1193,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         Composite placeholder = null;
         if (inline) {
-            String readOnlyStatus = controller.getAttributeReadOnlyStatus(attr);
+            String readOnlyStatus = controller.getAttributeReadOnlyStatus(attr, false);
             if (readOnlyStatus != null) {
                 controller.setStatus(
                     NLS.bind(ResultSetMessages.controls_resultset_viewer_action_open_value_editor_column_readonly,
@@ -2169,7 +2169,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         @Override
         public boolean isElementReadOnly(IGridColumn element) {
             if (element.getElement() instanceof DBDAttributeBinding) {
-                return controller.getAttributeReadOnlyStatus((DBDAttributeBinding) element.getElement()) != null;
+                return controller.getAttributeReadOnlyStatus((DBDAttributeBinding) element.getElement(), false) != null;
             }
             return false;
         }
@@ -2762,7 +2762,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         private boolean isAttributeReadOnly(@NotNull DBDAttributeBinding attr) {
             return
                 CommonUtils.isBitSet(controller.getDecorator().getDecoratorFeatures(), IResultSetDecorator.FEATURE_EDIT)
-                && controller.getAttributeReadOnlyStatus(attr) != null
+                && controller.getAttributeReadOnlyStatus(attr, true) != null
                 && !controller.isAllAttributesReadOnly();
         }
 
@@ -2890,7 +2890,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 String tip = CommonUtils.isEmpty(description) ?
                     name + ": " + typeName :
                     name + ": " + typeName + "\n" + description;
-                String readOnlyStatus = controller.getAttributeReadOnlyStatus(attributeBinding);
+                String readOnlyStatus = controller.getAttributeReadOnlyStatus(attributeBinding, true);
                 if (readOnlyStatus != null) {
                     tip += " (Read-only: " + readOnlyStatus + ")";
                 }
@@ -2977,7 +2977,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     if (attr.getValueHandler() != origAttr.getValueHandler()) {
                         continue;
                     }
-                    if (controller.getAttributeReadOnlyStatus(attr) != null) {
+                    if (controller.getAttributeReadOnlyStatus(attr, false) != null) {
                         // No inline editors for readonly columns
                         continue;
                     }
