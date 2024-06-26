@@ -299,7 +299,8 @@ class GridCellRenderer extends AbstractRenderer {
                     break;
                 case IGridContentProvider.ALIGN_RIGHT:
                     int width = column.getWidth();
-                    if (x >= origin.x + width - (leftMargin + imageBounds.width) && x <= origin.x + width - RIGHT_MARGIN &&
+                    x += RIGHT_MARGIN;
+                    if (x >= origin.x + width - (leftMargin + imageBounds.width) && x <= origin.x + width &&
                         y >= origin.y + verMargin && y <= origin.y + verMargin + imageBounds.height) {
                         return true;
                     }
