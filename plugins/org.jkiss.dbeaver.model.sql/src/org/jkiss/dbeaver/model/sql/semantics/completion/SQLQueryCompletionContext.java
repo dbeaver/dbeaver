@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SourceResolutionResult;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryRowsSourceModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.stm.LSMInspections;
 import org.jkiss.dbeaver.model.stm.STMTreeTermNode;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
