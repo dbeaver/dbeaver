@@ -2071,6 +2071,50 @@ public class SpreadsheetPresentation extends AbstractPresentation
         }
 
         @Override
+        public IGridStatusColumn[] getStatusColumns() {
+            return new IGridStatusColumn[] {
+                new IGridStatusColumn() {
+                    @Override
+                    public String getDisplayName() {
+                        return "Read-only";
+                    }
+
+                    @Override
+                    public String getStatusText() {
+                        if (controller.getDataContainer().getDataSource().getContainer().isConnectionReadOnly()) {
+                            return ResultSetMessages.controls_resultset_results_read_only;
+                        }
+                        return null;
+                    }
+
+                    @Override
+                    public DBPImage getStatusIcon() {
+                        if (controller.getDataContainer().getDataSource().getContainer().isConnectionReadOnly()) {
+                            return UIIcon.SQL_READONLY;
+                        }
+                        return null;
+                    }
+                },
+                new IGridStatusColumn() {
+                    @Override
+                    public String getDisplayName() {
+                        return "Unique key";
+                    }
+
+                    @Override
+                    public String getStatusText() {
+                        return null;
+                    }
+
+                    @Override
+                    public DBPImage getStatusIcon() {
+                        return null;
+                    }
+                }
+            };
+        }
+
+        @Override
         public boolean isVoidCell(IGridColumn gridColumn, IGridRow gridRow) {
             return getCellValue(gridColumn, gridRow, false) == DBDVoid.INSTANCE;
         }
