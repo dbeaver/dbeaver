@@ -2102,8 +2102,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     public String getStatusText() {
                         DBDRowIdentifier rowIdentifier = getController().getModel().getDefaultRowIdentifier();
                         if (rowIdentifier != null && !rowIdentifier.getAttributes().isEmpty()) {
-                            return rowIdentifier.getAttributes().stream()
-                                .map(DBDAttributeBinding::getName).collect(Collectors.joining(","));
+                            return
+                                rowIdentifier.getUniqueKey().getConstraintType().getName() + " " +
+                                rowIdentifier.getAttributes().stream()
+                                    .map(DBDAttributeBinding::getName).collect(Collectors.joining(","));
                         } else {
                             if (rowIdentifier == null) {
                                 return "Table metadata not found. Data edit is not possible.";
@@ -2758,8 +2760,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
         }
 
         private boolean isAttributeReadOnly(@NotNull DBDAttributeBinding attr) {
-            return !controller.getModel().isUpdateInProgress()
-                && CommonUtils.isBitSet(controller.getDecorator().getDecoratorFeatures(), IResultSetDecorator.FEATURE_EDIT)
+            return
+                CommonUtils.isBitSet(controller.getDecorator().getDecoratorFeatures(), IResultSetDecorator.FEATURE_EDIT)
                 && controller.getAttributeReadOnlyStatus(attr) != null
                 && !controller.isAllAttributesReadOnly();
         }
