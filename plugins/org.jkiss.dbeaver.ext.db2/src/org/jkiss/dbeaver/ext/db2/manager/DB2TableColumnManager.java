@@ -74,7 +74,7 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
     public boolean canEditObject(DB2TableColumn object) {
         // Edit is only available for DB2Table and not for other kinds of tables (View, MQTs, Nicknames..)
         DB2TableBase db2TableBase = object.getParentObject();
-        if ((db2TableBase != null) & (db2TableBase.getClass().equals(DB2Table.class))) {
+        if ((db2TableBase != null) && (db2TableBase.getClass().equals(DB2Table.class))) {
             return true;
         } else {
             return false;

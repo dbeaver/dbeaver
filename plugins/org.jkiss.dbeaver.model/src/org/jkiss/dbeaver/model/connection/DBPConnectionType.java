@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.connection;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourcePermission;
 import org.jkiss.dbeaver.model.DBPDataSourcePermissionOwner;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -51,7 +50,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             false,
             false,
             false,
-            false,
+            true,
             true,
             1800, //30 minutes
             true,
@@ -67,7 +66,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             false,
             true,
             false,
-            false,
+            true,
             true,
             900, //30 minutes
             true,

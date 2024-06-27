@@ -53,7 +53,8 @@ public class AISettingsRegistry {
 
         private final SMSessionPersistent session;
 
-        private AISettings mruSettings = null;
+        private volatile AISettings mruSettings = null;
+        private volatile boolean settingsReadInProgress = false;
 
         private AISettingsSessionHolder(SMSessionPersistent session) {
             this.session = session;
@@ -72,8 +73,19 @@ public class AISettingsRegistry {
             AISettings mruSettings = this.mruSettings;
             AISettings sharedSettings = this.session.getAttribute(AISettings.class.getName());
             if (mruSettings == null || !mruSettings.equals(sharedSettings)) {
-                // if current context is not initialized or was invalidated, then reload settings for this session
-                this.setSettings(mruSettings = loadSettingsFromConfig());
+                if (settingsReadInProgress) {
+                    // FIXME: it is a hack. Settings loading may cause infinite recursion because
+                    // conf loading shows UI which may re-ask settings
+                    // The fix is to disable UI during config read? But this lead to UI freeze..
+                    return new AISettings();
+                }
+                settingsReadInProgress = true;
+                try {
+                    // if current context is not initialized or was invalidated, then reload settings for this session
+                    this.setSettings(mruSettings = loadSettingsFromConfig());
+                } finally {
+                    settingsReadInProgress = false;
+                }
             }
             return mruSettings;
         }
