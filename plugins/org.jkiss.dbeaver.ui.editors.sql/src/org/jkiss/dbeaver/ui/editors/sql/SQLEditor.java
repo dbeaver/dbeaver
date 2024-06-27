@@ -4863,16 +4863,16 @@ public class SQLEditor extends SQLEditorBase implements
                     int resultsIndex = 0;
                     for (QueryResultsContainer results : queryProcessor.resultContainers) {
                         if (results.query != query) {
-                            if (results.query instanceof SQLQuery sqlQuery && sqlQuery.getData() == SQLQueryJob.STATS_RESULTS) {
-                                continue;
-                            }
                             // This happens when query results is statistics tab
                             // in that case we need to update tab selection and
                             // select new statistics tab
                             // see #16605
                             // But we need to avoid the result tab with the select statement
                             // because the statistics window can not be in focus in this case
-                            results.handleExecuteResult(result);
+
+                            if (!(results.query instanceof SQLQuery sqlQuery && sqlQuery.getData() == SQLQueryJob.STATS_RESULTS)) {
+                                results.handleExecuteResult(result);
+                            }
                             if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.SET_SELECTION_TO_STATISTICS_TAB) &&
                                 query.getType() != SQLQueryType.SELECT
                             ) {
