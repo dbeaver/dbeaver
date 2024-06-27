@@ -2888,17 +2888,15 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 final String typeName = attributeBinding.getFullTypeName();
                 final String description = attributeBinding.getDescription();
                 StringBuilder tip = new StringBuilder();
-                if (CommonUtils.isEmpty(description)) {
-                    tip.append(name).append(": ").append(typeName);
-                } else {
-                    tip.append(name).append(": ").append(typeName).append("\n").append(description);
-                }
-                String readOnlyStatus = controller.getAttributeReadOnlyStatus(attributeBinding, true);
-                if (readOnlyStatus != null) {
-                    tip.append(" (").append(ResultSetMessages.controls_resultset_results_read_only_status)
-                        .append(": ").append(readOnlyStatus).append(")");
+                tip.append("Column: ");
+                tip.append(name).append(": ").append(typeName);
+                if (!CommonUtils.isEmpty(description)) {
+                    tip.append("\nDescription: ").append(description);
                 }
                 DBDRowIdentifier rowIdentifier = attributeBinding.getRowIdentifier();
+                if (rowIdentifier != null) {
+                    tip.append("\nTable: ").append(DBUtils.getObjectFullName(rowIdentifier.getEntity(), DBPEvaluationContext.UI));
+                }
                 if (rowIdentifier != null &&
                     !rowIdentifier.getAttributes().isEmpty() &&
                     rowIdentifier != getController().getModel().getDefaultRowIdentifier()
@@ -2908,6 +2906,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         .append("(")
                         .append(rowIdentifier.getAttributes().stream().map(DBDAttributeBinding::getName).collect(Collectors.joining(",")))
                         .append(")");
+                }
+                String readOnlyStatus = controller.getAttributeReadOnlyStatus(attributeBinding, true);
+                if (readOnlyStatus != null) {
+                    tip.append("\n").append(ResultSetMessages.controls_resultset_results_read_only_status)
+                        .append(": ").append(readOnlyStatus);
                 }
                 return tip.toString();
             }

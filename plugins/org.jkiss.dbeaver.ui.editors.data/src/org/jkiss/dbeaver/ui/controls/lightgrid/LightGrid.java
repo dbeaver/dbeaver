@@ -4891,7 +4891,7 @@ public abstract class LightGrid extends Canvas {
                     Rectangle iconBounds = statusImage.getBounds();
                     xPos -= iconBounds.width;
                     gc.drawImage(statusImage, xPos, y + (height - iconBounds.height) / 2);
-                    xPos -= 2;
+                    xPos -= 1;
                 }
             }
         }
