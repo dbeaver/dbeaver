@@ -141,8 +141,12 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
             }
         };
 
+        if (catalogPanel.isEmptyDashboardTable()) {
+            dashDivider.setWeights(1000, 0);
+        } else {
+            dashDivider.setWeights(650, 350);
+        }
 
-        dashDivider.setWeights(650, 350);
         dashDivider.setMaximizedControl(dashContainer);
 
         updateStatus();

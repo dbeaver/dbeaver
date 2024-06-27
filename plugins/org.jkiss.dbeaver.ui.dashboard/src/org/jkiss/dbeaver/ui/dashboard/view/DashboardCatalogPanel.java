@@ -56,9 +56,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -177,6 +175,28 @@ public abstract class DashboardCatalogPanel extends Composite implements Dashboa
         });
         dashboardTable.setContentProvider(new TreeContentProvider() {
             @Override
+            public Object[] getElements(Object inputElement) {
+                //fixme
+                Object[] elements = super.getElements(inputElement);
+                List<Object> result = new ArrayList<>();
+                for (Object element : elements) {
+                    DashboardProviderDescriptor dpd = (DashboardProviderDescriptor) element;
+                    List<DashboardItemConfiguration> dashboards = new ArrayList<>(DashboardRegistry.getInstance().getDashboardItems(
+                        dpd,
+                        dataSourceContainer,
+                        false));
+                    if (itemFilter != null) {
+                        dashboards.removeIf(itemFilter::apply);
+                    }
+                    if(!dashboards.isEmpty()){
+                        result.add(element);
+                    }
+                }
+
+                return result.toArray();
+            }
+
+            @Override
             public Object[] getChildren(Object parentElement) {
                 try {
                     DBDashboardContext context;
@@ -208,6 +228,7 @@ public abstract class DashboardCatalogPanel extends Composite implements Dashboa
                             dashboards.removeIf(itemFilter::apply);
                         }
                         dashboards.sort(Comparator.comparing(DashboardItemConfiguration::getTitle));
+                        this.dashboards = new ArrayList<>(dashboards);
                         return dashboards.toArray();
                     }
                 } catch (DBException e) {
@@ -242,6 +263,12 @@ public abstract class DashboardCatalogPanel extends Composite implements Dashboa
 
         dashboardTable.setInput(dbProviders);
         dashboardTable.expandToLevel(2);
+    }
+
+    @NotNull
+    public boolean isEmptyDashboardTable() {
+        return Arrays.stream(dashboardTable.getTree().getItems())
+            .allMatch(Objects::isNull);
     }
 
     private static void addDragAndDropSupport(Tree table) {
