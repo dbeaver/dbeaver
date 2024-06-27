@@ -149,4 +149,11 @@ public interface DBPApplication {
     default boolean isEarlyAccessProgramActive() {
         return false;
     }
+
+    /**
+     * Whether the user is allowed to switch workspaces or the default workspace is enforced
+     */
+    default boolean isWorkspaceSwitchingAllowed() {
+        return true;
+    }
 }

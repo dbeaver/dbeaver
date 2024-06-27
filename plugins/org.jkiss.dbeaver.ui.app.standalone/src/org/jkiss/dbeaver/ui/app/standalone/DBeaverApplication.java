@@ -71,8 +71,10 @@ import org.osgi.framework.Version;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.net.URL;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -117,7 +119,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private boolean reuseWorkspace = false;
     private boolean primaryInstance = true;
     private boolean headlessMode = false;
-    private boolean ignoreRecentWorkspaces = false;
 
     private DBeaverInstanceServer instanceServer;
 
@@ -344,7 +345,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         if (instanceLoc.isSet()) {
             return false;
         }
-        if (ignoreRecentWorkspaces) {
+        if (!isWorkspaceSwitchingAllowed()) {
             return false;
         }
         Collection<String> recentWorkspaces = getRecentWorkspaces(instanceLoc);
@@ -817,10 +818,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     public void setResetWorkspaceConfigurationOnRestart(boolean resetWorkspaceConfigurationOnRestart) {
         this.resetWorkspaceConfigurationOnRestart = resetWorkspaceConfigurationOnRestart;
-    }
-
-    protected void setIgnoreRecentWorkspaces(boolean ignoreRecentWorkspaces) {
-        this.ignoreRecentWorkspaces = ignoreRecentWorkspaces;
     }
 
     private void saveStartupActions() {
