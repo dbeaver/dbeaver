@@ -948,7 +948,7 @@ public class DBExecUtils {
             return "Attribute is read-only";
         }
         DBDRowIdentifier rowIdentifier = attribute.getRowIdentifier();
-        if (rowIdentifier == null) {
+        if (rowIdentifier == null || rowIdentifier.getAttributes().isEmpty()) {
             String status = attribute.getRowIdentifierStatus();
             return status != null ? status : "No row identifier found";
         }

@@ -2076,7 +2076,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 new IGridStatusColumn() {
                     @Override
                     public String getDisplayName() {
-                        return "Read-only";
+                        return ResultSetMessages.controls_resultset_results_read_only_status;
                     }
 
                     @Override
@@ -2887,14 +2887,29 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 final String name = attributeBinding.getName();
                 final String typeName = attributeBinding.getFullTypeName();
                 final String description = attributeBinding.getDescription();
-                String tip = CommonUtils.isEmpty(description) ?
-                    name + ": " + typeName :
-                    name + ": " + typeName + "\n" + description;
+                StringBuilder tip = new StringBuilder();
+                if (CommonUtils.isEmpty(description)) {
+                    tip.append(name).append(": ").append(typeName);
+                } else {
+                    tip.append(name).append(": ").append(typeName).append("\n").append(description);
+                }
                 String readOnlyStatus = controller.getAttributeReadOnlyStatus(attributeBinding, true);
                 if (readOnlyStatus != null) {
-                    tip += " (Read-only: " + readOnlyStatus + ")";
+                    tip.append(" (").append(ResultSetMessages.controls_resultset_results_read_only_status)
+                        .append(": ").append(readOnlyStatus).append(")");
                 }
-                return tip;
+                DBDRowIdentifier rowIdentifier = attributeBinding.getRowIdentifier();
+                if (rowIdentifier != null &&
+                    !rowIdentifier.getAttributes().isEmpty() &&
+                    rowIdentifier != getController().getModel().getDefaultRowIdentifier()
+                ) {
+                    tip.append("\n").append(ResultSetMessages.controls_resultset_results_edit_key).append(": ")
+                        .append(rowIdentifier.getEntity().getName())
+                        .append("(")
+                        .append(rowIdentifier.getAttributes().stream().map(DBDAttributeBinding::getName).collect(Collectors.joining(",")))
+                        .append(")");
+                }
+                return tip.toString();
             }
             return null;
         }
