@@ -36,16 +36,20 @@ grammar ClickhouseDataTypes;
 package org.jkiss.dbeaver.ext.clickhouse;
 }
 
-ENUM_KW: 'Enum' ('8'|'16');
-MAP_KV: 'Map';
-ARRAY_KV: 'Array';
-TUPLE_KV: 'Tuple';
+Enum: 'Enum' ('8'|'16');
+Map: 'Map';
+Array: 'Array';
+Tuple: 'Tuple';
+Int: 'U'? 'Int' ('8'|'16'|'32'|'64'|'128'|'256');
+Float: 'Float' ('32'|'64');
+Decimal: 'Decimal' ('32'|'64'|'128'|'256')?;
 
 RightParen: ')';
 LeftParen: '(';
 
 Space: [ \t]+ -> channel(HIDDEN);
 Number: [-]?[0-9]+;
+Identifier: [a-zA-Z_][a-zA-Z0-9_]*;
 
 Comma: ',';
 Eq: '=';
@@ -80,25 +84,22 @@ simpleType
  | ipv6Type
  ;
 
-enumType: ENUM_KW LeftParen enumEntryList RightParen;
+enumType: Enum LeftParen enumEntryList RightParen;
 enumEntryList: enumEntry (Comma enumEntry)*;
 enumEntry: String Eq Number;
 
-tupleType: TUPLE_KV LeftParen tupleElementList RightParen;
+tupleType: Tuple LeftParen tupleElementList RightParen;
 tupleElementList: tupleElement (Comma tupleElement)*;
-tupleElement: anyType; // TODO support named elements (Name? type)
+tupleElement: (key=Identifier)? value=anyType;
 
-arrayType: ARRAY_KV LeftParen anyType RightParen;
-mapType: MAP_KV LeftParen key=anyType Comma value=anyType RightParen;
+arrayType: Array LeftParen anyType RightParen;
+mapType: Map LeftParen key=anyType Comma value=anyType RightParen;
 
 stringType: 'String';
 uuidType: 'UUID';
 boolType: 'Boolean';
-intType: unsigned='U'? 'Int' bits=('8' | '16' | '32' | '64' | '128' | '256');
-floatType: 'Float' bits=('32' | '64');
+intType: Int;
+floatType: Float;
 ipv4Type: 'IPV4';
 ipv6Type: 'IPV6';
-decimalType
- : 'Decimal' bits=('32' | '64' | '128' | '256') LeftParen Comma scale=Number RightParen
- | 'Decimal' LeftParen precision=Number Comma scale=Number RightParen
- ;
+decimalType: Decimal (LeftParen (precision=Number Comma)? scale=Number RightParen)?;
