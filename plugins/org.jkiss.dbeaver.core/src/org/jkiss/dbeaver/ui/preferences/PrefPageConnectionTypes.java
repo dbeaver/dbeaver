@@ -298,10 +298,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     getSelectedType().setSmartCommit(smartCommitCheck.getSelection());
-                    updateButtons();
-                    if (!smartCommitCheck.getSelection()) {
-                        getSelectedType().setSmartCommitRecover(false);
-                    }
+                    updateCommitRecoverCheckBox();
                 }
             });
             smartCommitRecoverCheck = UIUtils.createCheckbox(placeholder,
@@ -391,15 +388,14 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         urlHelpLabel.setLayoutData(gridData);
 
         performDefaults(false);
-        updateButtons();
+        updateCommitRecoverCheckBox();
 
         return composite;
     }
 
-    private void updateButtons() {
+    private void updateCommitRecoverCheckBox() {
         if (!smartCommitCheck.getSelection()) {
             smartCommitRecoverCheck.setEnabled(false);
-            smartCommitRecoverCheck.setSelection(false);
         } else if (!smartCommitRecoverCheck.isEnabled()) {
             smartCommitRecoverCheck.setEnabled(true);
         }

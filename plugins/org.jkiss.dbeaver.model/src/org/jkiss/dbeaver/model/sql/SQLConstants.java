@@ -676,6 +676,7 @@ public class SQLConstants {
     public static final char STRUCT_SEPARATOR = '.'; //$NON-NLS-1$
     public static final String CONFIG_COLOR_KEYWORD = "org.jkiss.dbeaver.sql.editor.color.keyword.foreground";
     public static final String CONFIG_COLOR_DATATYPE = "org.jkiss.dbeaver.sql.editor.color.datatype.foreground";
+    public static final String CONFIG_COLOR_FUNCTION = "org.jkiss.dbeaver.sql.editor.color.function.foreground";
     public static final String CONFIG_COLOR_STRING = "org.jkiss.dbeaver.sql.editor.color.string.foreground";
     public static final String CONFIG_COLOR_TABLE = "org.jkiss.dbeaver.sql.editor.color.table.foreground";
     public static final String CONFIG_COLOR_TABLE_ALIAS = "org.jkiss.dbeaver.sql.editor.color.table.alias.foreground";
