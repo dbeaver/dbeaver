@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -113,7 +114,7 @@ public abstract class JDBCObjectLookupCache<OWNER extends DBSObject, OBJECT exte
                 return null;
             }
         } catch (SQLException ex) {
-            throw new DBException(ex, dataSource);
+            throw new DBDatabaseException(ex, dataSource);
         }
     }
 

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
@@ -281,7 +282,7 @@ public class MySQLCatalog implements
                     }
                 }
             } catch (SQLException e) {
-                throw new DBException(e, getDataSource());
+                throw new DBDatabaseException(e, getDataSource());
             }
         }
         return databaseSize;

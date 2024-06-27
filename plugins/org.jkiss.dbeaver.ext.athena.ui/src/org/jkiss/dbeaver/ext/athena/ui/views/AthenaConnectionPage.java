@@ -129,9 +129,9 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
                         ObjectBrowserDialogBase dialog = new ObjectBrowserDialogBase(
                             s3LocationText.getShell(), "S3 browser",
                             fsRootNode,
-                            selectedNode,
-                            true)
-                        {
+                            CommonUtils.singletonOrEmpty(selectedNode),
+                            true
+                        ) {
                             @Override
                             protected boolean matchesResultNode(DBNNode node) {
                                 return node instanceof DBNPathBase &&

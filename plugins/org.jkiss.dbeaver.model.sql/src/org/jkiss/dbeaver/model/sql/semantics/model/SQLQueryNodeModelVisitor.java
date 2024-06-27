@@ -19,6 +19,14 @@ package org.jkiss.dbeaver.model.sql.semantics.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDummyDataSourceContext.DummyTableRowsSource;
+import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryObjectDataModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryObjectDropModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryTableDropModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryDeleteModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryInsertModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryUpdateModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryUpdateSetClauseModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.select.*;
 
 /**
  * Query model visitor. Each new model class of a top-level of the query abstraction should have the corresponding method here.
@@ -173,23 +181,31 @@ public interface SQLQueryNodeModelVisitor<T, R> {
      * Visit DELETE statement
      */
     @Nullable
-    R visitTableStatementDelete(@NotNull SQLQueryTableDeleteModel deleteStatement, T arg);
+    R visitTableStatementDelete(@NotNull SQLQueryDeleteModel deleteStatement, T arg);
 
     /**
      * Visit INSERT statement
      */
     @Nullable
-    R visitTableStatementInsert(@NotNull SQLQueryTableInsertModel insertStatement, T arg);
+    R visitTableStatementInsert(@NotNull SQLQueryInsertModel insertStatement, T arg);
 
     /**
      * Visit UPDATE statement
      */
     @Nullable
-    R visitTableStatementUpdate(@NotNull SQLQueryTableUpdateModel updateStatement, T arg);
+    R visitTableStatementUpdate(@NotNull SQLQueryUpdateModel updateStatement, T arg);
 
     /**
      * Visit SET clause of a UPDATE statement
      */
     @Nullable
-    R visitTableStatementUpdateSetClause(@NotNull SQLQueryTableUpdateSetClauseModel setClause, T arg);
+    R visitTableStatementUpdateSetClause(@NotNull SQLQueryUpdateSetClauseModel setClause, T arg);
+
+    @Nullable
+    R visitTableStatementDrop(@NotNull SQLQueryTableDropModel dropStatement, T arg);
+
+    @Nullable
+    R visitObjectStatementDrop(@NotNull SQLQueryObjectDropModel dropStatement, T arg);
+
+    R visitObjectReference(SQLQueryObjectDataModel objectReference, T arg);
 }

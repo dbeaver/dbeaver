@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
@@ -142,7 +143,7 @@ public abstract class JDBCStructLookupCache<OWNER extends DBSObject, OBJECT exte
                 afterCacheLoading(session, owner);
             }
         } catch (SQLException ex) {
-            throw new DBException("Error loading object metadata from database", ex, dataSource);
+            throw new DBDatabaseException("Error loading object metadata from database", ex, dataSource);
         }
     }
 

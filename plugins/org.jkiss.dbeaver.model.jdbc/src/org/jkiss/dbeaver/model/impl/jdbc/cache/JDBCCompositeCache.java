@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -389,7 +390,7 @@ public abstract class JDBCCompositeCache<
             if (ex instanceof SQLFeatureNotSupportedException) {
                 log.debug("Error reading cache " + getClass().getSimpleName() + ", feature not supported: " + ex.getMessage());
             } else {
-                throw new DBException(ex, dataSource);
+                throw new DBDatabaseException(ex, dataSource);
             }
         }
         finally {

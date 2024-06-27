@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.db2.editors;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.db2.model.*;
@@ -132,7 +133,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
         try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, "Find objects by name")) {
             return searchAllObjects(session, schema, db2ObjectTypes, params);
         } catch (SQLException ex) {
-            throw new DBException(ex, dataSource);
+            throw new DBDatabaseException(ex, dataSource);
         }
     }
 

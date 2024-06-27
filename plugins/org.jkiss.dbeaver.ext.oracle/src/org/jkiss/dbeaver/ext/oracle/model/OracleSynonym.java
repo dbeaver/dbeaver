@@ -104,6 +104,7 @@ public class OracleSynonym extends OracleSchemaObject implements DBSAlias {
         return null;
     }
 
+    @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
         if (OracleConstants.USER_PUBLIC.equals(getSchema().getName())) {

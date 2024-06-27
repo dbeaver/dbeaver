@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.hana.model;
 
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
@@ -146,7 +147,7 @@ public class HANADependency implements DBSObject {
                 return dependencies;
             }
         } catch (SQLException e) {
-            throw new DBException(e, object.getDataSource());
+            throw new DBDatabaseException(e, object.getDataSource());
         }
     }
 

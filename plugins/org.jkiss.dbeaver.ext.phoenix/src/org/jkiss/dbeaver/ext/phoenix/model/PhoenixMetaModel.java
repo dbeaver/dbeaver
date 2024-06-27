@@ -46,7 +46,7 @@ public class PhoenixMetaModel extends GenericMetaModel implements DBCQueryTransf
 
 
 
-    public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
+    public String getViewDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericView sourceObject, @NotNull Map<String, Object> options) throws DBException {
         return getTableDDL(monitor, sourceObject, options);
     }
 

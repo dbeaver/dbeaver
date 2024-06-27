@@ -155,6 +155,7 @@ public class PostgreRule implements PostgreObject, PostgreScriptObject, DBPQuali
         definition = sourceText;
     }
 
+    @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(),

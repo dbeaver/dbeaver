@@ -26,14 +26,14 @@ import org.jkiss.dbeaver.model.lsm.LSMAnalyzerParameters;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser.SqlQueriesContext;
 import org.jkiss.dbeaver.model.stm.STMErrorListener;
 
+import javax.xml.stream.FactoryConfigurationError;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.xml.stream.FactoryConfigurationError;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.transform.TransformerException;
 
 public class SyntaxParserTest {
 
@@ -93,6 +93,9 @@ public class SyntaxParserTest {
                 + " GROUP BY City";
 
         inputText = "SELECT * FROM EMPLOYEES e WHERE e.EMPLOYEE_ID > :xl ";
+
+        inputText = "DROP PROCEDURE IF EXISTS sdgfsadgf";
+
         var input = CharStreams.fromString(inputText);
         var params = new LSMAnalyzerParameters(
             Map.of("\"", "\""),

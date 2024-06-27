@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.db2.model.app;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
@@ -61,7 +62,7 @@ public class DB2ServerApplicationManager implements DBAServerSessionManager<DB2S
         try {
             return DB2Utils.readApplications(session.getProgressMonitor(), (JDBCSession) session);
         } catch (SQLException e) {
-            throw new DBException(e, session.getDataSource());
+            throw new DBDatabaseException(e, session.getDataSource());
         }
     }
 
@@ -72,7 +73,7 @@ public class DB2ServerApplicationManager implements DBAServerSessionManager<DB2S
             String cmd = String.format(FORCE_APP_CMD, sessionType.getAgentId());
             DB2Utils.callAdminCmd(session.getProgressMonitor(), dataSource, cmd);
         } catch (SQLException e) {
-            throw new DBException(e, session.getDataSource());
+            throw new DBDatabaseException(e, session.getDataSource());
         }
     }
 

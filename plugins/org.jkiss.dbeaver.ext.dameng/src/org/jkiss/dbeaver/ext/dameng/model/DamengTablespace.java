@@ -143,7 +143,7 @@ public class DamengTablespace implements DBPRefreshableObject, DBPObjectStatisti
     }
 
     @Override
-    public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         fileCache.clearCache();
         return this;
     }

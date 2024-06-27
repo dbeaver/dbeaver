@@ -65,12 +65,12 @@ public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase>
     }
 
     @Override
-    public Collection<PostgrePrivilege> getPrivileges(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
+    public Collection<PostgrePrivilege> getPrivileges(@NotNull DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
         return PostgreUtils.extractPermissionsFromACL(monitor, this, getAcl(), false);
     }
 
     @Override
-    public String generateChangeOwnerQuery(String owner) {
+    public String generateChangeOwnerQuery(@NotNull String owner, @NotNull Map<String, Object> options) {
         return null;
     }
 
