@@ -14,20 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.clickhouse.model;
+package org.jkiss.dbeaver.model.runtime;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.utils.Pair;
-
+import java.util.ArrayList;
 import java.util.List;
 
-public class ClickhouseMapType extends ClickhouseTupleType {
-    public ClickhouseMapType(
-        @NotNull ClickhouseDataSource dataSource,
-        @NotNull DBSDataType keyType,
-        @NotNull DBSDataType valueType
-    ) {
-        super(dataSource, "Map", List.of(new Pair<>("Key", keyType), new Pair<>("Value", valueType)));
+/**
+ * Progress monitor with extra logging
+ */
+public class ProgressMonitorWithExceptionContext extends ProxyProgressMonitor {
+
+    private final List<Exception> exceptions = new ArrayList<>();
+
+    public ProgressMonitorWithExceptionContext(DBRProgressMonitor monitor) {
+        super(monitor);
+    }
+
+    public void addException(Exception e) {
+        exceptions.add(e);
+    }
+
+    public List<Exception> getExceptions() {
+        return exceptions;
     }
 }
