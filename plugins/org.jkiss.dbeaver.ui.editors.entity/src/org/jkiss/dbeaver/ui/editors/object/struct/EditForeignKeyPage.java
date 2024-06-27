@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ui.editors.object.struct;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
@@ -43,7 +45,6 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -57,6 +58,11 @@ import org.jkiss.dbeaver.ui.controls.CSmartCombo;
 import org.jkiss.dbeaver.ui.controls.ObjectContainerSelectorPanel;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.editors.object.internal.ObjectEditorMessages;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorContentProvider;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilterObjectType;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -85,7 +91,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     private DBSEntity curRefTable;
     private List<DBSEntityConstraint> curConstraints;
     private DBNDatabaseNode ownerTableNode, ownerContainerNode;
-    private Table tableList;
+    private DatabaseNavigatorTree tableList;
     private Combo uniqueKeyCombo;
     private Text fkNameText;
     private Table columnsTable;
@@ -346,28 +352,47 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             }
 
             DBNNode rootNode = containerNode == null ? navigatorModel.getRoot() : containerNode;
+            DBNNode tablesNode = rootNode instanceof DBNDatabaseNode dbNode ? getTablesNode(dbNode) : rootNode;
 
             UIUtils.createControlLabel(panel, ObjectEditorMessages.dialog_struct_edit_fk_label_ref_table);
-            tableList = new Table(panel, SWT.SINGLE | SWT.BORDER | SWT.FULL_SELECTION);
-            tableList.setLinesVisible(true);
-            UIUtils.createTableColumn(tableList, SWT.LEFT, "Table name");
-            UIUtils.createTableColumn(tableList, SWT.LEFT, "Description");
+            tableList = new DatabaseNavigatorTree(
+                panel,
+                tablesNode,
+                SWT.BORDER | SWT.FULL_SELECTION,
+                false,
+                new DatabaseNavigatorTreeFilter()) {
+                @NotNull
+                @Override
+                protected DatabaseNavigatorContentProvider createContentProvider(boolean showRoot) {
+                    return new DatabaseNavigatorContentProvider(this, showRoot) {
+                        @Override
+                        public boolean hasChildren(Object parent) {
+                            // Do not show anything below tables
+                            if (parent instanceof DBNDatabaseNode dbnNode && dbnNode.getObject() instanceof DBSEntity) {
+                                return false;
+                            }
+                            return super.hasChildren(parent);
+                        }
+                    };
+                }
+            };
+            tableList.getViewer().addFilter(new ViewerFilter() {
+                @Override
+                public boolean select(Viewer viewer, Object parentElement, Object element) {
+                    return element instanceof DBNDatabaseNode dbnNode && dbnNode.getObject() instanceof DBSEntity;
+                }
+            });
+            tableList.setFilterObjectType(DatabaseNavigatorTreeFilterObjectType.table);
+            NavigatorUtils.addContextMenu(null, tableList.getViewer());
             final GridData gd = new GridData(GridData.FILL_BOTH);
             gd.widthHint = 500;
             gd.heightHint = 150;
             tableList.setLayoutData(gd);
-            tableList.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    handleRefTableSelect((DBNDatabaseNode) e.item.getData());
-                }
-            });
-            if (rootNode instanceof DBNDatabaseNode) {
-                loadTableList((DBNDatabaseNode) rootNode);
+            tableList.getViewer().addSelectionChangedListener(
+                event -> handleRefTableSelect((DBNDatabaseNode) event.getStructuredSelection().getFirstElement()));
+            if (tablesNode instanceof DBNDatabaseNode dbnNode) {
+                loadTableList(dbnNode);
             }
-            UIUtils.asyncExec(() -> {
-                UIUtils.packColumns(tableList, true);
-            });
         }
 
         final Composite pkGroup = UIUtils.createComposite(panel, enableCustomKeys ? 3 : 2);
@@ -485,7 +510,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         }
 
         if (tableList != null) {
-            tableList.setFocus();
+            tableList.getViewer().getTree().setFocus();
         }
 
         setErrorMessage("Select reference table");
@@ -604,30 +629,36 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                     // Here is another trick
                     // We need to find table container node
                     // This node is a child of schema node and has the same meta as our original table parent node
-                    DBNDatabaseNode newContainerNode = null;
-                    DBXTreeNode tableContainerMeta = ((DBNDatabaseNode) ownerTableNode.getParentNode()).getMeta();
                     DBNDatabaseNode schemaNode = schemaCombo.getSelectedItem();
-                    if (schemaNode.getMeta() == tableContainerMeta) {
-                        newContainerNode = schemaNode;
-                    } else {
-                        try {
-                            for (DBNNode child : schemaNode.getChildren(new VoidProgressMonitor())) {
-                                if (child instanceof DBNDatabaseNode dbNode && dbNode.getMeta() == tableContainerMeta) {
-                                    newContainerNode = dbNode;
-                                    break;
-                                }
-                            }
-                        } catch (DBException e1) {
-                            log.debug(e1);
-                            // Shouldn't be here
-                        }
-                    }
+                    DBNDatabaseNode newContainerNode = getTablesNode(schemaNode);
                     if (newContainerNode != null) {
                         loadTableList(newContainerNode);
                     }
                 }
             });
         }
+    }
+
+    @Nullable
+    private DBNDatabaseNode getTablesNode(DBNDatabaseNode schemaNode) {
+        DBNDatabaseNode newContainerNode = null;
+        DBXTreeNode tableContainerMeta = ((DBNDatabaseNode) ownerTableNode.getParentNode()).getMeta();
+        if (schemaNode.getMeta() == tableContainerMeta) {
+            newContainerNode = schemaNode;
+        } else {
+            try {
+                for (DBNNode child : schemaNode.getChildren(new VoidProgressMonitor())) {
+                    if (child instanceof DBNDatabaseNode dbNode && dbNode.getMeta() == tableContainerMeta) {
+                        newContainerNode = dbNode;
+                        break;
+                    }
+                }
+            } catch (DBException e1) {
+                log.debug(e1);
+                // Shouldn't be here
+            }
+        }
+        return newContainerNode;
     }
 
     private void createContainerSelector(Composite tableGroup) throws DBException {
@@ -716,62 +747,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     }
 
     private void loadTableList(DBNDatabaseNode newContainerNode) {
-        tableList.removeAll();
-        final List<DBNDatabaseNode> entities = new ArrayList<>();
-        try {
-            UIUtils.runInProgressService(monitor -> {
-                try {
-                    loadEntities(monitor, entities, newContainerNode);
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
-                }
-            });
-        } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError(
-                ObjectEditorMessages.edit_foreign_key_page_error_loading_table_title,
-                ObjectEditorMessages.edit_foreign_key_page_error_loading_table_message,
-                e);
-        } catch (InterruptedException e) {
-            // Ignore
-        }
-
-        for (DBNDatabaseNode entityNode : entities) {
-            DBSObject table = entityNode.getObject();
-            TableItem tableItem = new TableItem(tableList, SWT.LEFT);
-            tableItem.setText(0, entityNode.getNodeDisplayName());
-            tableItem.setText(1, CommonUtils.notEmpty(entityNode.getNodeDescription()));
-            tableItem.setImage(DBeaverIcons.getImage(entityNode.getNodeIconDefault()));
-            if (table instanceof DBSEntity) {
-
-            }
-            tableItem.setData(entityNode);
-        }
-
-    }
-
-    private void loadEntities(DBRProgressMonitor monitor, List<DBNDatabaseNode> entities, DBNDatabaseNode container) throws DBException {
-        for (DBNNode childNode : container.getChildren(monitor)) {
-            if (monitor.isCanceled()) {
-                break;
-            }
-            if (childNode instanceof DBNDatabaseFolder) {
-                DBXTreeItem itemsMeta = ((DBNDatabaseFolder) childNode).getItemsMeta();
-                if (itemsMeta != null) {
-                    Class<?> childrenClass = ((DBNDatabaseFolder) childNode).getChildrenClass(itemsMeta);
-                    if (childrenClass != null && DBSEntity.class.isAssignableFrom(childrenClass)) {
-                        loadEntities(monitor, entities, (DBNDatabaseFolder) childNode);
-                    }
-                }
-            } else {
-                if (childNode instanceof DBNDatabaseNode dbNode) {
-                    DBSObject object = dbNode.getObject();
-                    // Extr checks. In fact just for PosgreSQL like databases where everything is a table
-                    if (object instanceof DBSEntity && !(object instanceof DBSSequence) && !(object instanceof DBSDataType)) {
-                        entities.add(dbNode);
-                    }
-                }
-            }
-        }
+        tableList.setInput(newContainerNode);
     }
 
     private void handleRefTableSelect(DBNDatabaseNode refTableNode) {
