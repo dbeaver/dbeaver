@@ -1089,9 +1089,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 layoutData.horizontalSpan = 2;
                 sqlDetailsPanel.setLayoutData(layoutData);
                 UIUtils.createLabelText(sqlDetailsPanel, ModelMessages.controls_querylog_column_catalog_name,
-                    qmmStatementExecuteInfo.getCatalog(), SWT.READ_ONLY, new GridData(GridData.FILL_HORIZONTAL));
+                    qmmStatementExecuteInfo.getCatalog(), SWT.BORDER | SWT.READ_ONLY, new GridData(GridData.FILL_HORIZONTAL));
                 UIUtils.createLabelText(sqlDetailsPanel, ModelMessages.controls_querylog_column_schema_name,
-                    qmmStatementExecuteInfo.getSchema(), SWT.READ_ONLY, new GridData(GridData.FILL_HORIZONTAL));
+                    qmmStatementExecuteInfo.getSchema(), SWT.BORDER | SWT.READ_ONLY, new GridData(GridData.FILL_HORIZONTAL));
             } else {
                 final Text messageText = new Text(topFrame, SWT.BORDER | SWT.MULTI | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
                 messageText.setText(COLUMN_TEXT.getText(object, true));
