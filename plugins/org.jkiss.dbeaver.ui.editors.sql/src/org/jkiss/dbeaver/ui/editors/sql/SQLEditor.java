@@ -2981,7 +2981,7 @@ public class SQLEditor extends SQLEditorBase implements
         DBPImage bottomLeft;
         DBPImage bottomRight;
 
-        if (executionContext == null) {
+        if (getExecutionContext() == null) {
             if (dsContainer instanceof DBPStatefulObject && ((DBPStatefulObject) dsContainer).getObjectState() == DBSObjectState.INVALID) {
                 bottomRight = DBIcon.OVER_ERROR;
             } else {
