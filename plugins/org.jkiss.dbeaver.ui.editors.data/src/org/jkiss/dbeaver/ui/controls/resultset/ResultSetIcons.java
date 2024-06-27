@@ -25,6 +25,7 @@ public class ResultSetIcons {
 
     public static final DBIcon META_KEY_NA = new DBIcon("meta_key_na", "meta_key_na.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon META_KEY_OK = new DBIcon("meta_key_ok", "meta_key_ok.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon META_KEY_VIRTUAL = new DBIcon("meta_key_virt", "meta_key_virt.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon META_TABLE_NA = new DBIcon("meta_table_na", "meta_table_na.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     static  {

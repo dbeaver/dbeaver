@@ -65,6 +65,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.*;
@@ -2124,6 +2125,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
                             return ResultSetIcons.META_TABLE_NA;
                         } else if (rowIdentifier.getAttributes().isEmpty()) {
                             return ResultSetIcons.META_KEY_NA;
+                        } else if (rowIdentifier.getUniqueKey() instanceof DBVEntityConstraint) {
+                            return ResultSetIcons.META_KEY_VIRTUAL;
                         } else {
                             return ResultSetIcons.META_KEY_OK;
                         }
