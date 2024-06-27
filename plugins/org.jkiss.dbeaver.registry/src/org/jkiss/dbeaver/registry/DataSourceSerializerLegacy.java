@@ -85,12 +85,12 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
         @NotNull DBPDataSourceConfigurationStorage configurationStorage,
         @NotNull DataSourceConfigurationManager configurationManager,
         @NotNull DataSourceRegistry.ParseResults parseResults,
-        Collection<String> dataSourceIds, boolean refresh
+        Collection<String> dataSourceIds
     ) throws DBException {
         try (InputStream is = configurationManager.readConfiguration(configurationStorage.getStorageName(), dataSourceIds)) {
             if (is != null) {
                 SAXReader parser = new SAXReader(is);
-                final DataSourcesParser dsp = new DataSourcesParser(registry, configurationStorage, refresh, parseResults);
+                final DataSourcesParser dsp = new DataSourcesParser(registry, configurationStorage, parseResults);
                 parser.parse(dsp);
             }
         } catch (Exception ex) {
@@ -116,7 +116,6 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
         DataSourceRegistry registry;
         DataSourceDescriptor curDataSource;
         DBPDataSourceConfigurationStorage storage;
-        boolean refresh;
         boolean isDescription = false;
         DBRShellCommand curCommand = null;
         private DBWHandlerConfiguration curNetworkHandler;
@@ -125,10 +124,9 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
         private final DataSourceRegistry.ParseResults parseResults;
         private boolean passwordReadCanceled = false;
 
-        private DataSourcesParser(DataSourceRegistry registry, DBPDataSourceConfigurationStorage storage, boolean refresh, DataSourceRegistry.ParseResults parseResults) {
+        private DataSourcesParser(DataSourceRegistry registry, DBPDataSourceConfigurationStorage storage, DataSourceRegistry.ParseResults parseResults) {
             this.registry = registry;
             this.storage = storage;
-            this.refresh = refresh;
             this.parseResults = parseResults;
         }
 

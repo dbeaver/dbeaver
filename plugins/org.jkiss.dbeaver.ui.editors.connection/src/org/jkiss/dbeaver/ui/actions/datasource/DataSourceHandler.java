@@ -24,7 +24,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -46,7 +45,6 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
@@ -64,9 +62,6 @@ public class DataSourceHandler {
     private static final Log log = Log.getLog(DataSourceHandler.class);
 
     public static final int END_TRANSACTION_WAIT_TIME = 3000;
-
-    // The maximum number of simultaneous connections when using an EAP version
-    private static final int EAP_MAX_CONNECTIONS_LIMIT = 5;
 
     /**
      * Connects datasource
@@ -92,24 +87,6 @@ public class DataSourceHandler {
                     }
                 }
                 return;
-            }
-
-            if (DBWorkbench.getPlatform().getApplication().isEarlyAccessProgramActive()) {
-                final long liveConnectionCount = DataSourceRegistry.getAllDataSources().stream()
-                    .filter(DBPDataSourceContainer::isConnected)
-                    .count();
-                if (liveConnectionCount >= EAP_MAX_CONNECTIONS_LIMIT) {
-                    // NOTE: This MIGHT interfere with QMDB or any other tools that have embedded databases
-                    DBWorkbench.getPlatformUI().showWarningMessageBox(
-                        "Too many connections",
-                        NLS.bind(
-                            "You can''t connect to ''{0}'' because you have reached the early access program limit of {1} simultaneous connections.",
-                            dataSourceContainer.getName(),
-                            EAP_MAX_CONNECTIONS_LIMIT
-                        )
-                    );
-                    return;
-                }
             }
 
             // Ask for additional credentials if needed
