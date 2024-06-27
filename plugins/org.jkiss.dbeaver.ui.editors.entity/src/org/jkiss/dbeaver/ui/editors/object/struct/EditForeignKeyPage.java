@@ -56,7 +56,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CSmartCombo;
 import org.jkiss.dbeaver.ui.controls.ObjectContainerSelectorPanel;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
-import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
+import org.jkiss.dbeaver.ui.editors.object.internal.ObjectEditorMessages;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -234,7 +234,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
 
         if (ownerTableNode != null) {
             setImageDescriptor(DBeaverIcons.getImageDescriptor(ownerTableNode.getNodeIcon()));
-            setTitle(NLS.bind(EditorsMessages.dialog_struct_edit_fk_title,
+            setTitle(NLS.bind(ObjectEditorMessages.dialog_struct_edit_fk_title,
                 title,
                 ownerTableNode.getNodeDisplayName()));
         }
@@ -301,10 +301,10 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             tableGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             UIUtils.createLabelText(
                 tableGroup,
-                EditorsMessages.dialog_struct_edit_fk_label_table, DBUtils.getObjectFullName(foreignKey.getParentObject(), DBPEvaluationContext.UI), SWT.READ_ONLY | SWT.BORDER);
+                ObjectEditorMessages.dialog_struct_edit_fk_label_table, DBUtils.getObjectFullName(foreignKey.getParentObject(), DBPEvaluationContext.UI), SWT.READ_ONLY | SWT.BORDER);
 
             if (allowedKeyTypes.length > 1) {
-                UIUtils.createControlLabel(tableGroup, EditorsMessages.dialog_struct_edit_fk_label_key_type);
+                UIUtils.createControlLabel(tableGroup, ObjectEditorMessages.dialog_struct_edit_fk_label_key_type);
                 Composite ktPanel = UIUtils.createFormPlaceholder(tableGroup, allowedKeyTypes.length, 1);
                 //keyTypeCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
                 for (FKType type : allowedKeyTypes) {
@@ -335,7 +335,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             } else {
                 UIUtils.createLabelText(
                     tableGroup,
-                    EditorsMessages.dialog_struct_edit_fk_label_ref_table, DBUtils.getObjectFullName(curRefTable, DBPEvaluationContext.UI), SWT.READ_ONLY | SWT.BORDER);
+                    ObjectEditorMessages.dialog_struct_edit_fk_label_ref_table, DBUtils.getObjectFullName(curRefTable, DBPEvaluationContext.UI), SWT.READ_ONLY | SWT.BORDER);
             }
         }
 
@@ -347,7 +347,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
 
             DBNNode rootNode = containerNode == null ? navigatorModel.getRoot() : containerNode;
 
-            UIUtils.createControlLabel(panel, EditorsMessages.dialog_struct_edit_fk_label_ref_table);
+            UIUtils.createControlLabel(panel, ObjectEditorMessages.dialog_struct_edit_fk_label_ref_table);
             tableList = new Table(panel, SWT.SINGLE | SWT.BORDER | SWT.FULL_SELECTION);
             tableList.setLinesVisible(true);
             UIUtils.createTableColumn(tableList, SWT.LEFT, "Table name");
@@ -373,7 +373,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         final Composite pkGroup = UIUtils.createComposite(panel, enableCustomKeys ? 3 : 2);
         {
             pkGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            uniqueKeyCombo = UIUtils.createLabelCombo(pkGroup, EditorsMessages.dialog_struct_edit_fk_combo_unik, SWT.DROP_DOWN | SWT.READ_ONLY);
+            uniqueKeyCombo = UIUtils.createLabelCombo(pkGroup, ObjectEditorMessages.dialog_struct_edit_fk_combo_unik, SWT.DROP_DOWN | SWT.READ_ONLY);
             //uniqueKeyCombo.setEnabled(false);
             uniqueKeyCombo.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -385,7 +385,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             if (enableCustomKeys) {
                 customUKButton = UIUtils.createDialogButton(
                     pkGroup,
-                    EditorsMessages.dialog_struct_edit_fk_custom_uk_button_create,
+                    ObjectEditorMessages.dialog_struct_edit_fk_custom_uk_button_create,
                     new SelectionAdapter() {
                         @Override
                         public void widgetSelected(SelectionEvent e) {
@@ -396,12 +396,12 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             }
 
             if (supportsCustomName()) {
-                fkNameText = UIUtils.createLabelText(pkGroup, EditorsMessages.dialog_struct_edit_fk_name, "");
+                fkNameText = UIUtils.createLabelText(pkGroup, ObjectEditorMessages.dialog_struct_edit_fk_name, "");
                 fkNameText.addModifyListener(e -> fkName = fkNameText.getText());
             }
         }
         {
-            UIUtils.createControlLabel(panel, EditorsMessages.dialog_struct_edit_fk_label_columns);
+            UIUtils.createControlLabel(panel, ObjectEditorMessages.dialog_struct_edit_fk_label_columns);
             columnsTable = new Table(panel, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER);
             columnsTable.setHeaderVisible(true);
             columnsTable.setLinesVisible(true);
@@ -410,10 +410,10 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             gd.heightHint = 100;
             columnsTable.setLayoutData(gd);
 
-            UIUtils.createTableColumn(columnsTable, SWT.LEFT, EditorsMessages.dialog_struct_edit_fk_column_column);
-            UIUtils.createTableColumn(columnsTable, SWT.LEFT, EditorsMessages.dialog_struct_edit_fk_column_col_type);
-            UIUtils.createTableColumn(columnsTable, SWT.LEFT, EditorsMessages.dialog_struct_edit_fk_column_ref_col);
-            UIUtils.createTableColumn(columnsTable, SWT.LEFT, EditorsMessages.dialog_struct_edit_fk_column_ref_col_type);
+            UIUtils.createTableColumn(columnsTable, SWT.LEFT, ObjectEditorMessages.dialog_struct_edit_fk_column_column);
+            UIUtils.createTableColumn(columnsTable, SWT.LEFT, ObjectEditorMessages.dialog_struct_edit_fk_column_col_type);
+            UIUtils.createTableColumn(columnsTable, SWT.LEFT, ObjectEditorMessages.dialog_struct_edit_fk_column_ref_col);
+            UIUtils.createTableColumn(columnsTable, SWT.LEFT, ObjectEditorMessages.dialog_struct_edit_fk_column_ref_col_type);
 
             final TableEditor tableEditor = new TableEditor(columnsTable);
             tableEditor.horizontalAlignment = SWT.CENTER;
@@ -444,9 +444,9 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             {
                 // Cascades
                 cascadeGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-                final Combo onDeleteCombo = UIUtils.createLabelCombo(cascadeGroup, EditorsMessages.dialog_struct_edit_fk_combo_on_delete, SWT.DROP_DOWN | SWT.READ_ONLY);
+                final Combo onDeleteCombo = UIUtils.createLabelCombo(cascadeGroup, ObjectEditorMessages.dialog_struct_edit_fk_combo_on_delete, SWT.DROP_DOWN | SWT.READ_ONLY);
                 onDeleteCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-                final Combo onUpdateCombo = UIUtils.createLabelCombo(cascadeGroup, EditorsMessages.dialog_struct_edit_fk_combo_on_update, SWT.DROP_DOWN | SWT.READ_ONLY);
+                final Combo onUpdateCombo = UIUtils.createLabelCombo(cascadeGroup, ObjectEditorMessages.dialog_struct_edit_fk_combo_on_update, SWT.DROP_DOWN | SWT.READ_ONLY);
                 onUpdateCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 for (DBSForeignKeyModifyRule modifyRule : supportedModifyRules) {
                     onDeleteCombo.add(modifyRule.getName());
@@ -533,7 +533,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         DBVEntityConstraint constraint = vRefEntity.getBestIdentifier();
 
         EditConstraintPage page = new EditConstraintPage(
-            EditorsMessages.dialog_struct_edit_fk_page_title,
+            ObjectEditorMessages.dialog_struct_edit_fk_page_title,
             constraint);
         if (page.edit()) {
             constraint.setAttributes(page.getSelectedAttributes());
@@ -573,7 +573,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             };
 
             Label controlLabel = UIUtils.createControlLabel(
-                tableGroup, EditorsMessages.edit_foreign_key_page_create_schema_container);
+                tableGroup, ObjectEditorMessages.edit_foreign_key_page_create_schema_container);
             final CSmartCombo<DBNDatabaseNode> schemaCombo = new CSmartCombo<>(tableGroup, SWT.BORDER, labelProvider);
             schemaCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
@@ -635,8 +635,8 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             tableGroup,
             this.getOwnerProject(),
             CONTAINER_LOGICAL_FK,
-            EditorsMessages.edit_foreign_key_page_create_container_reference_table_container,
-            EditorsMessages.edit_foreign_key_page_create_container_select_reference_table_container) {
+            ObjectEditorMessages.edit_foreign_key_page_create_container_reference_table_container,
+            ObjectEditorMessages.edit_foreign_key_page_create_container_select_reference_table_container) {
             @Nullable
             @Override
             protected DBNNode getSelectedNode() {
@@ -728,8 +728,8 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             });
         } catch (InvocationTargetException e) {
             DBWorkbench.getPlatformUI().showError(
-                EditorsMessages.edit_foreign_key_page_error_loading_table_title,
-                EditorsMessages.edit_foreign_key_page_error_loading_table_message,
+                ObjectEditorMessages.edit_foreign_key_page_error_loading_table_title,
+                ObjectEditorMessages.edit_foreign_key_page_error_loading_table_message,
                 e);
         } catch (InterruptedException e) {
             // Ignore
@@ -871,7 +871,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             }
 
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError(EditorsMessages.dialog_struct_edit_fk_error_load_constraints_title, EditorsMessages.dialog_struct_edit_fk_error_load_constraints_message, e.getTargetException());
+            DBWorkbench.getPlatformUI().showError(ObjectEditorMessages.dialog_struct_edit_fk_error_load_constraints_title, ObjectEditorMessages.dialog_struct_edit_fk_error_load_constraints_message, e.getTargetException());
         } catch (InterruptedException e) {
             // do nothing
         }
@@ -1009,8 +1009,8 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             }
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(
-                EditorsMessages.dialog_struct_edit_fk_error_load_constraint_columns_title,
-                EditorsMessages.dialog_struct_edit_fk_error_load_constraint_columns_message, e);
+                ObjectEditorMessages.dialog_struct_edit_fk_error_load_constraint_columns_title,
+                ObjectEditorMessages.dialog_struct_edit_fk_error_load_constraint_columns_message, e);
         }
         if (enableCustomKeys) {
             enableCurConstraintEdit();
@@ -1207,7 +1207,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         @Nullable Collection<? extends DBSEntityAttribute> refAttributes) {
         DBVEntityForeignKey virtualFK = new DBVEntityForeignKey(vEntity);
         EditForeignKeyPage editDialog = new EditForeignKeyPage(
-            EditorsMessages.dialog_struct_edit_fk_virtual_page_title,
+            ObjectEditorMessages.dialog_struct_edit_fk_virtual_page_title,
             virtualFK,
             new DBSForeignKeyModifyRule[]{DBSForeignKeyModifyRule.NO_ACTION},
             Collections.emptyMap());

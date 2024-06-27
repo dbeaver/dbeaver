@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomFormEditor;
-import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
+import org.jkiss.dbeaver.ui.editors.object.internal.ObjectEditorMessages;
 import org.jkiss.utils.CommonUtils;
 
 public class PropertyObjectEditPage<OBJECT extends DBSObject> extends BaseObjectEditPage {
@@ -100,7 +100,7 @@ public class PropertyObjectEditPage<OBJECT extends DBSObject> extends BaseObject
     }
 
     private void createDefaultEditControls(Composite composite) {
-        final Text nameText = UIUtils.createLabelText(composite, EditorsMessages.dialog_struct_label_text_name, object.getName());
+        final Text nameText = UIUtils.createLabelText(composite, ObjectEditorMessages.dialog_struct_label_text_name, object.getName());
         nameText.selectAll();
         nameText.addModifyListener(e -> {
             if (object instanceof DBPNamedObject2 && object.getDataSource() != null) {
@@ -112,7 +112,7 @@ public class PropertyObjectEditPage<OBJECT extends DBSObject> extends BaseObject
         });
 
 //        UIUtils
-//            .createControlLabel(composite, EditorsMessages.dialog_struct_label_text_properties)
+//            .createControlLabel(composite, ObjectEditorMessages.dialog_struct_label_text_properties)
 //            .setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
         propertyEditor = new CustomFormEditor(getObject(), getCommandContext(), propertySource);
