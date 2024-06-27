@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.object.struct;
 
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -25,6 +26,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.TableEditor;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -58,6 +60,7 @@ import org.jkiss.dbeaver.ui.controls.CSmartCombo;
 import org.jkiss.dbeaver.ui.controls.ObjectContainerSelectorPanel;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.editors.object.internal.ObjectEditorMessages;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorContentProvider;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
@@ -383,7 +386,18 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                 }
             });
             tableList.setFilterObjectType(DatabaseNavigatorTreeFilterObjectType.table);
-            NavigatorUtils.addContextMenu(null, tableList.getViewer());
+            NavigatorUtils.createContextMenu(null, tableList.getViewer(), manager -> {
+                manager.add(new Action(UIMessages.ui_properties_tree_viewer_action_copy_name) {
+                    @Override
+                    public void run() {
+                        Object firstElement = tableList.getViewer().getStructuredSelection().getFirstElement();
+                        if (firstElement instanceof DBNNode node) {
+                            UIUtils.setClipboardContents(
+                                getShell().getDisplay(), TextTransfer.getInstance(), node.getNodeDisplayName());
+                        }
+                    }
+                });
+            });
             final GridData gd = new GridData(GridData.FILL_BOTH);
             gd.widthHint = 500;
             gd.heightHint = 150;
