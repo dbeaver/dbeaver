@@ -294,10 +294,12 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
         if (!defaultNavigatorSettings.equals(DataSourceNavigatorSettings.getDefaultSettings())) {
             DataSourceNavigatorSettings.setDefaultSettings(defaultNavigatorSettings);
         }
-        DBWorkbench.getPlatform().getPreferenceStore().setValue(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN, connectionDefaultNamePatternText.getText());
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        store.setValue(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN, connectionDefaultNamePatternText.getText());
         if (RuntimeUtils.isWindows() && useWinTrustStoreCheck != null) {
-            DBWorkbench.getPlatform().getPreferenceStore().setValue(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE, useWinTrustStoreCheck.getSelection());
+            store.setValue(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE, useWinTrustStoreCheck.getSelection());
         }
+
         return super.performOk();
     }
 
