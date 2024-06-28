@@ -72,6 +72,8 @@ public interface IGridContentProvider extends IContentProvider {
 
     ElementState getDefaultState(@NotNull IGridColumn element);
 
+    IGridStatusColumn[] getStatusColumns();
+
     int getColumnPinIndex(@NotNull IGridColumn element);
 
     boolean isElementSupportsFilter(@Nullable IGridColumn element);

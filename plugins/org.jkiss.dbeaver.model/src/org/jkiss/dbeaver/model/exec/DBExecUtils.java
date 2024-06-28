@@ -940,6 +940,10 @@ public class DBExecUtils {
     }
 
     public static String getAttributeReadOnlyStatus(@NotNull DBDAttributeBinding attribute) {
+        return getAttributeReadOnlyStatus(attribute, true);
+    }
+
+    public static String getAttributeReadOnlyStatus(@NotNull DBDAttributeBinding attribute, boolean checkValidKey) {
         if (attribute == null || attribute.getMetaAttribute() == null) {
             return "Null meta attribute";
         }
@@ -950,6 +954,11 @@ public class DBExecUtils {
         if (rowIdentifier == null) {
             String status = attribute.getRowIdentifierStatus();
             return status != null ? status : "No row identifier found";
+        }
+        if (checkValidKey) {
+            if (rowIdentifier.isIncomplete()) {
+                return "No valid row identifier found";
+            }
         }
         DBSEntity dataContainer = rowIdentifier.getEntity();
         if (!(dataContainer instanceof DBSDataManipulator)) {
