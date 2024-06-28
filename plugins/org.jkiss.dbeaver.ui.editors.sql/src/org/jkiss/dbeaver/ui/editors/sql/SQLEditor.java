@@ -4870,7 +4870,7 @@ public class SQLEditor extends SQLEditorBase implements
                             // But we need to avoid the result tab with the select statement
                             // because the statistics window can not be in focus in this case
 
-                            if (!(results.query instanceof SQLQuery sqlQuery && sqlQuery.getData() == SQLQueryJob.STATS_RESULTS)) {
+                            if (!(scriptMode && results.query instanceof SQLQuery sqlQuery && sqlQuery.getData() == SQLQueryJob.STATS_RESULTS)) {
                                 results.handleExecuteResult(result);
                             }
                             if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.SET_SELECTION_TO_STATISTICS_TAB) &&
