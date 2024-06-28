@@ -228,7 +228,6 @@ public abstract class DashboardCatalogPanel extends Composite implements Dashboa
                             dashboards.removeIf(itemFilter::apply);
                         }
                         dashboards.sort(Comparator.comparing(DashboardItemConfiguration::getTitle));
-                        this.dashboards = new ArrayList<>(dashboards);
                         return dashboards.toArray();
                     }
                 } catch (DBException e) {

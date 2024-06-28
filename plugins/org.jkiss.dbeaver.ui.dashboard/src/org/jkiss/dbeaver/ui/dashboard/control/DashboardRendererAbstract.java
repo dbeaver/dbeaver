@@ -51,6 +51,15 @@ public abstract class DashboardRendererAbstract implements DashboardItemRenderer
                     HandlerDashboardViewItem.openDashboardViewDialog(itemContainer);
                 }
             });
+            manager.add(new Action("Refresh chart", DBeaverIcons.getImageDescriptor(UIIcon.REFRESH)) {
+                @Override
+                public void run() {
+                    itemContainer.getGroup().selectItem(itemContainer);
+                    ActionUtils.runCommand(
+                        DashboardUIConstants.CMD_RESET_DASHBOARD,
+                        itemContainer.getGroup().getView().getWorkbenchSite());
+                }
+            });
             manager.add(new Action("Settings", DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION)) {
                 @Override
                 public void run() {
