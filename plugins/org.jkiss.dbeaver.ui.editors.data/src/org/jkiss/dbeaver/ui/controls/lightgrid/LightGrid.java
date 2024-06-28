@@ -4227,8 +4227,8 @@ public abstract class LightGrid extends Canvas {
                 }
             } else if (rowHeaderVisible && hoveringItem >= 0 && x <= rowHeaderWidth) {
                 newTip = getLabelProvider().getToolTipText(getRow(hoveringItem));
-            } else {
-                // Top-left cell?
+            } else if (rowHeaderVisible && x <= rowHeaderWidth && columnHeadersVisible && y <= headerHeight) {
+                // Top-left cell
                 StringBuilder status = new StringBuilder();
                 for (IGridStatusColumn gsc : getContentProvider().getStatusColumns()) {
                     String statusText = gsc.getStatusText();

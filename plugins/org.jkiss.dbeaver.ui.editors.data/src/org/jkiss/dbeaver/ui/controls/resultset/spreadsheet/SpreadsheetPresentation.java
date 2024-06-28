@@ -679,7 +679,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
                             IGridColumn colElement = spreadsheet.getColumn(colNum);
                             final DBDAttributeBinding attr = getAttributeFromGrid(colElement, gridRow);
                             final ResultSetRow row = getResultRowFromGrid(colElement, gridRow);
-                            if (attr == null || row == null || controller.getAttributeReadOnlyStatus(attr, false) != null) {
+                            if (attr == null || row == null ||
+                                controller.getAttributeReadOnlyStatus(attr, true, true) != null
+                            ) {
                                 continue;
                             }
                             final Object newValue;
@@ -729,7 +731,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     if (attr == null || row == null) {
                         continue;
                     }
-                    if (controller.getAttributeReadOnlyStatus(attr, false) != null) {
+                    if (controller.getAttributeReadOnlyStatus(attr, true, true) != null) {
                         // No inline editors for readonly columns
                         continue;
                     }
@@ -1194,7 +1196,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         Composite placeholder = null;
         if (inline) {
-            String readOnlyStatus = controller.getAttributeReadOnlyStatus(attr, false);
+            String readOnlyStatus = controller.getAttributeReadOnlyStatus(attr, true, true);
             if (readOnlyStatus != null) {
                 controller.setStatus(
                     NLS.bind(ResultSetMessages.controls_resultset_viewer_action_open_value_editor_column_readonly,
@@ -2102,7 +2104,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     @Override
                     public String getStatusText() {
                         DBDRowIdentifier rowIdentifier = getController().getModel().getDefaultRowIdentifier();
-                        if (rowIdentifier != null && !rowIdentifier.getAttributes().isEmpty()) {
+                        if (rowIdentifier != null && !rowIdentifier.isIncomplete()) {
                             return
                                 rowIdentifier.getUniqueKey().getConstraintType().getName() + " " +
                                 rowIdentifier.getAttributes().stream()
@@ -2111,7 +2113,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                             if (rowIdentifier == null) {
                                 return "Table metadata not found. Data edit is not possible.";
                             }
-                            if (rowIdentifier.getAttributes().isEmpty()) {
+                            if (rowIdentifier.isIncomplete()) {
                                 return "No unique key was found. Data modification is not possible.";
                             }
                             return "Virtual key is used";
@@ -2123,7 +2125,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         DBDRowIdentifier rowIdentifier = getController().getModel().getDefaultRowIdentifier();
                         if (rowIdentifier == null) {
                             return ResultSetIcons.META_TABLE_NA;
-                        } else if (rowIdentifier.getAttributes().isEmpty()) {
+                        } else if (rowIdentifier.isIncomplete()) {
                             return ResultSetIcons.META_KEY_NA;
                         } else if (rowIdentifier.getUniqueKey() instanceof DBVEntityConstraint) {
                             return ResultSetIcons.META_KEY_VIRTUAL;
@@ -2172,7 +2174,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
         @Override
         public boolean isElementReadOnly(IGridColumn element) {
             if (element.getElement() instanceof DBDAttributeBinding) {
-                return controller.getAttributeReadOnlyStatus((DBDAttributeBinding) element.getElement(), false) != null;
+                return controller.getAttributeReadOnlyStatus(
+                    (DBDAttributeBinding) element.getElement(),
+                    true, true) != null;
             }
             return false;
         }
@@ -2765,7 +2769,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         private boolean isAttributeReadOnly(@NotNull DBDAttributeBinding attr) {
             return
                 CommonUtils.isBitSet(controller.getDecorator().getDecoratorFeatures(), IResultSetDecorator.FEATURE_EDIT)
-                && controller.getAttributeReadOnlyStatus(attr, true) != null
+                && controller.getAttributeReadOnlyStatus(attr, true, true) != null
                 && !controller.isAllAttributesReadOnly();
         }
 
@@ -2901,7 +2905,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     tip.append("\nTable: ").append(DBUtils.getObjectFullName(rowIdentifier.getEntity(), DBPEvaluationContext.UI));
                 }
                 if (rowIdentifier != null &&
-                    !rowIdentifier.getAttributes().isEmpty() &&
+                    !rowIdentifier.isIncomplete() &&
                     rowIdentifier != getController().getModel().getDefaultRowIdentifier()
                 ) {
                     tip.append("\n").append(ResultSetMessages.controls_resultset_results_edit_key).append(": ")
@@ -2910,7 +2914,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         .append(rowIdentifier.getAttributes().stream().map(DBDAttributeBinding::getName).collect(Collectors.joining(",")))
                         .append(")");
                 }
-                String readOnlyStatus = controller.getAttributeReadOnlyStatus(attributeBinding, true);
+                String readOnlyStatus = controller.getAttributeReadOnlyStatus(attributeBinding, true, true);
                 if (readOnlyStatus != null) {
                     tip.append("\n").append(ResultSetMessages.controls_resultset_results_read_only_status)
                         .append(": ").append(readOnlyStatus);
@@ -2998,7 +3002,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     if (attr.getValueHandler() != origAttr.getValueHandler()) {
                         continue;
                     }
-                    if (controller.getAttributeReadOnlyStatus(attr, false) != null) {
+                    if (controller.getAttributeReadOnlyStatus(attr, true, false) != null) {
                         // No inline editors for readonly columns
                         continue;
                     }
