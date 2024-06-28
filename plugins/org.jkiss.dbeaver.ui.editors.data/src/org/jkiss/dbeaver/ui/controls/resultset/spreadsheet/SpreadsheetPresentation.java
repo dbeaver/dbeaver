@@ -2110,6 +2110,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
                                 rowIdentifier.getAttributes().stream()
                                     .map(DBDAttributeBinding::getName).collect(Collectors.joining(","));
                         } else {
+                            DBSDataContainer dataContainer = getController().getDataContainer();
+                            if (dataContainer != null && !dataContainer.isFeatureSupported(DBSDataManipulator.FEATURE_DATA_UPDATE)) {
+                                return "Data modification is not supported by database.";
+                            }
                             if (rowIdentifier == null) {
                                 return "Table metadata not found. Data edit is not possible.";
                             }
