@@ -927,7 +927,8 @@ public class SQLScriptParser {
         boolean keepDelimiters,
         boolean parseParameters
     ) {
-        LinkedList<SQLScriptElement> queryList = new LinkedList<>(); // using linked list to prevent copy on expand and many-to-one replace
+        // LinkedList is crucial to prevent copy on expand and for many-to-one replacements efficiency
+        List<SQLScriptElement> queryList = new LinkedList<>();
 
         IDocument document = parserContext.getDocument();
         if (document.getLength() == 0) {
@@ -960,11 +961,10 @@ public class SQLScriptParser {
                 }
             }
         }
-        return new ArrayList<>(queryList);
+        return queryList;
     }
 
-    private static void expandQueries(@NotNull SQLParserContext parserContext, @NotNull LinkedList<SQLScriptElement> queryList) {
-        // LinkedList is crucial for many-to-one replacements efficiency
+    private static void expandQueries(@NotNull SQLParserContext parserContext, @NotNull List<SQLScriptElement> queryList) {
         var continuationDetector = new ScriptElementContinuationDetector(parserContext);
         var it = queryList.listIterator();
         while (it.hasNext()) {
@@ -1073,7 +1073,7 @@ public class SQLScriptParser {
 
     private static class ScriptElementContinuationDetector {
         private final Set<Integer> statementStartTokenIds = LSMInspections.prepareOffquerySyntaxInspection().predictedTokensIds;
-        private final HashSet<String> statementStartKeywords = new HashSet<>();
+        private final Set<String> statementStartKeywords = new HashSet<>();
 
         private final SQLParserContext context;
         private final LSMAnalyzerParameters analyzerParameters;
