@@ -205,6 +205,8 @@ public class SQLEditor extends SQLEditorBase implements
         MULTIPLE_RESULTS_PER_TAB_PROPERTY, MULTIPLE_RESULTS_PER_TAB_PROP_NAME,
         SQLPreferenceConstants.MULTIPLE_RESULTS_PER_TAB, CommonUtils.toString(false));
 
+    private static volatile TransactionStatusUpdateJob transactionStatusUpdateJob;
+
     static final String STATS_CATEGORY_TRANSACTION_TIMEOUT = "TransactionTimeout";
     private ResultSetOrientation resultSetOrientation = ResultSetOrientation.HORIZONTAL;
     private CustomSashForm resultsSash;
@@ -302,10 +304,6 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
     };
-
-    static {
-        new TransactionStatusUpdateJob().schedule();
-    }
 
     public SQLEditor() {
         PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
@@ -1044,6 +1042,15 @@ public class SQLEditor extends SQLEditorBase implements
         // Update controls
         UIExecutionQueue.queueExec(this::onDataSourceChange);
         themeChangeListener.propertyChange(null);
+
+        if (transactionStatusUpdateJob == null) {
+            synchronized (this) {
+                if (transactionStatusUpdateJob == null) {
+                    transactionStatusUpdateJob = new TransactionStatusUpdateJob();
+                    transactionStatusUpdateJob.schedule();
+                }
+            }
+        }
     }
 
     protected boolean isHideQueryText() {
