@@ -1989,14 +1989,18 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public String getAttributeReadOnlyStatus(DBDAttributeBinding attr) {
-        String dataStatus = getReadOnlyStatus();
-        if (dataStatus != null) {
-            return dataStatus;
+    public String getAttributeReadOnlyStatus(DBDAttributeBinding attr, boolean checkEntity, boolean checkKey) {
+        if (checkEntity) {
+            String dataStatus = getReadOnlyStatus();
+            if (dataStatus != null) {
+                return dataStatus;
+            }
         }
         boolean newRow = (curRow != null && curRow.getState() == ResultSetRow.STATE_ADDED);
         if (!newRow) {
-            return DBExecUtils.getAttributeReadOnlyStatus(attr);
+            return DBExecUtils.getAttributeReadOnlyStatus(
+                attr,
+                checkKey);
         }
         return null;
     }
@@ -2532,14 +2536,14 @@ public class ResultSetViewer extends Viewer
         if (executionContext == null || !executionContext.isConnected()) {
             return "No connection to database";
         }
-        if (!executionContext.getDataSource().getContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_DATA)) {
-            return "Data edit restricted";
+        if (executionContext.getDataSource().getContainer().isConnectionReadOnly()) {
+            return "Connection is in read-only state";
         }
         if (executionContext.getDataSource().getInfo().isReadOnlyData()) {
             return "Read-only data container";
         }
-        if (executionContext.getDataSource().getContainer().isConnectionReadOnly()) {
-            return "Connection is in read-only state";
+        if (!executionContext.getDataSource().getContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_DATA)) {
+            return "Data edit restricted";
         }
         if (isUniqueKeyUndefinedButRequired(executionContext)) {
             return "No unique key defined";
