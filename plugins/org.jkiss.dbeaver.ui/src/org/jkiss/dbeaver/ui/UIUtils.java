@@ -110,7 +110,7 @@ public class UIUtils {
     public static final Color COLOR_GREEN_CONTRAST = new Color(null, 23, 135, 58);
     public static final Color COLOR_VALIDATION_ERROR = new Color(255, 220, 220);
     
-    private static final Color COLOR_WHITE_DARK = new Color(null, 208, 208, 208);
+    private static final Color COLOR_WHITE_DARK = new Color(null, 192, 192, 192);
     private static final SharedTextColors SHARED_TEXT_COLORS = new SharedTextColors();
     private static final SharedFonts SHARED_FONTS = new SharedFonts();
     private static final String MAX_LONG_STRING = String.valueOf(Long.MAX_VALUE);
@@ -1001,11 +1001,12 @@ public class UIUtils {
      * Creates {@link ScrolledComposite} from the {@link Composite}
      *
      * @param parent composite parent
+     * @param style composite style
      * @return ScrolledComposite
      */
     @NotNull
-    public static ScrolledComposite createScrolledComposite(@NotNull Composite parent) {
-        ScrolledComposite scrolledComposite = new ScrolledComposite(parent, SWT.V_SCROLL);
+    public static ScrolledComposite createScrolledComposite(@NotNull Composite parent, int style) {
+        ScrolledComposite scrolledComposite = new ScrolledComposite(parent, style);
         scrolledComposite.setLayout(new GridLayout(1, false));
         scrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         return scrolledComposite;
@@ -1024,10 +1025,9 @@ public class UIUtils {
         scrolledComposite.addControlListener(new ControlAdapter() {
             @Override
             public void controlResized(ControlEvent e) {
-                scrolledComposite.setMinHeight(content.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+                scrolledComposite.setMinSize(content.computeSize(SWT.DEFAULT, SWT.DEFAULT));
             }
         });
-        scrolledComposite.setMinSize(content.computeSize(SWT.DEFAULT, SWT.DEFAULT));
     }
 
     public static Composite createPlaceholder(@NotNull Composite parent, int columns, int spacing) {
@@ -2140,10 +2140,14 @@ public class UIUtils {
     }
 
     public static void resizeShell(@NotNull Shell shell) {
+        final Point compSize = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
+        resizeShell(shell, compSize);
+    }
+
+    public static void resizeShell(@NotNull Shell shell, Point compSize) {
         final Rectangle displayArea = shell.getDisplay().getClientArea();
         final Point shellLocation = shell.getLocation();
         final Point shellSize = shell.getSize();
-        final Point compSize = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
         boolean needsLayout = false;
 
         if (shellSize.x < compSize.x || shellSize.y < compSize.y) {

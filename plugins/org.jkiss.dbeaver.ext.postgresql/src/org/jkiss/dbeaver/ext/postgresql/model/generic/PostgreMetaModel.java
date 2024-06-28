@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.model.generic;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
@@ -72,11 +73,11 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
         return new PostgreGenericTypeCache(container);
     }
 
-    public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
+    public String getViewDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericView sourceObject, @NotNull Map<String, Object> options) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read view definition")) {
             return JDBCUtils.queryString(session, "SELECT definition FROM PG_CATALOG.PG_VIEWS WHERE SchemaName=? and ViewName=?", sourceObject.getContainer().getName(), sourceObject.getName());
         } catch (SQLException e) {
-            throw new DBException(e, sourceObject.getDataSource());
+            throw new DBDatabaseException(e, sourceObject.getDataSource());
         }
     }
 
@@ -88,7 +89,7 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
                 " FROM pg_catalog.pg_proc P, pg_catalog.pg_namespace NS\n" +
                 "WHERE ns.oid=p.pronamespace AND ns.nspname=? AND p.proname=?", sourceObject.getContainer().getName(), sourceObject.getName());
         } catch (SQLException e) {
-            throw new DBException(e, sourceObject.getDataSource());
+            throw new DBDatabaseException(e, sourceObject.getDataSource());
         }
     }
 
@@ -133,7 +134,7 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
                     JDBCUtils.safeGetLong(seqResults, 4));
             }
         } catch (SQLException e) {
-            throw new DBException(e, container.getDataSource());
+            throw new DBDatabaseException(e, container.getDataSource());
         }
     }
 
@@ -242,7 +243,7 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
 
             }
         } catch (SQLException e) {
-            throw new DBException(e, container.getDataSource());
+            throw new DBDatabaseException(e, container.getDataSource());
         }
     }
 

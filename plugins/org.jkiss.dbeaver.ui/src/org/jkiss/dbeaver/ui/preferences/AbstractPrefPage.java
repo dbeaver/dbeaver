@@ -19,8 +19,10 @@ package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.preference.PreferencePage;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
@@ -50,5 +52,16 @@ public abstract class AbstractPrefPage extends PreferencePage {
 
     protected boolean hasAccessToPage() {
         return true;
+    }
+
+    protected void restartWorkbenchOnPrefChange() {
+        Runnable restarter = () -> PlatformUI.getWorkbench().restart();
+        if (getContainer() instanceof Window window) {
+            window.getShell().addDisposeListener(e ->
+                UIUtils.asyncExec(restarter));
+            window.close();
+        } else {
+            restarter.run();
+        }
     }
 }

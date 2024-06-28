@@ -527,7 +527,7 @@ public class DataSourceDescriptor
         }
     }
 
-    public void forgetSecrets() {
+    public void resetAllSecrets() {
         this.secretsResolved = false;
         this.secretsContainsDatabaseCreds = false;
         this.availableSharedCredentials = null;
@@ -566,6 +566,11 @@ public class DataSourceDescriptor
         } else {
             connectionInfo.getBootstrap().setDefaultTransactionIsolation(isolationLevel.getCode());
         }
+    }
+
+    @Override
+    public boolean isExtraMetadataReadEnabled() {
+        return !preferenceStore.getBoolean(ModelPreferences.META_DISABLE_EXTRA_READ);
     }
 
     public Collection<FilterMapping> getObjectFilters() {
@@ -895,6 +900,7 @@ public class DataSourceDescriptor
         persistSecrets(secretController, false);
     }
 
+    //TODO move secret management logic to separate service
     void persistSecrets(DBSSecretController secretController, boolean isNewDataSource) throws DBException {
         if (!CommonUtils.isBitSet(
             secretController.getSupportedFeatures(),
@@ -916,11 +922,15 @@ public class DataSourceDescriptor
         } else {
             if (selectedSharedCredentials != null) {
                 String subjectId = DataSourceUtils.getSubjectFromSecret(selectedSharedCredentials);
+                var selectedSharedCredentialsCopy = selectedSharedCredentials;
+                selectedSharedCredentialsCopy.setValue(secret);
                 try {
                     secretController.setSubjectSecretValue(subjectId, this,
                         new DBSSecretValue(subjectId, getSecretValueId(), "", secret));
                     //the list of available secrets has changed, force update
-                    forgetSecrets();
+                    resetAllSecrets();
+                    // to resave current secret without additional click in UI
+                    setSelectedSharedCredentials(selectedSharedCredentialsCopy);
                 } catch (DBException e) {
                     throw new DBException("Cannot set team '" + subjectId + "' credentials: " + e.getMessage(), e);
                 }
@@ -937,7 +947,7 @@ public class DataSourceDescriptor
         if (!isSharedCredentials()) {
             return List.of();
         }
-        forgetSecrets();
+        resetAllSecrets();
         resolveSecretsIfNeeded();
         if (availableSharedCredentials == null) {
             this.availableSharedCredentials = List.of();
@@ -960,11 +970,13 @@ public class DataSourceDescriptor
         return selectedSharedCredentials;
     }
 
+    @Override
     public synchronized void setSelectedSharedCredentials(@NotNull DBSSecretValue secretValue) {
         this.selectedSharedCredentials = secretValue;
         loadFromSecret(this.selectedSharedCredentials.getValue());
     }
 
+    @Override
     public synchronized boolean isSharedCredentialsSelected() {
         return selectedSharedCredentials != null;
     }
@@ -1257,6 +1269,7 @@ public class DataSourceDescriptor
 
             return true;
         } catch (Throwable e) {
+            terminateChildProcesses();
             lastConnectionError = e.getMessage();
             //log.debug("Connection failed (" + getId() + ")", e);
             if (dataSource != null) {
@@ -1279,7 +1292,7 @@ public class DataSourceDescriptor
                 }
             }
             if (isSharedCredentials()) {
-                this.forgetSecrets();
+                this.resetAllSecrets();
             }
             proxyHandler = null;
             // Failed
@@ -1291,6 +1304,18 @@ public class DataSourceDescriptor
             }
         } finally {
             monitor.done();
+        }
+    }
+
+    private void terminateChildProcesses() {
+        synchronized (childProcesses) {
+            for (Iterator<DBRProcessDescriptor> iter = childProcesses.iterator(); iter.hasNext(); ) {
+                DBRProcessDescriptor process = iter.next();
+                if (process.isRunning() && process.getCommand().isTerminateAtDisconnect()) {
+                    process.terminate();
+                }
+                iter.remove();
+            }
         }
     }
 
@@ -1334,12 +1359,6 @@ public class DataSourceDescriptor
         }
         var secretController = DBSSecretController.getProjectSecretController(getProject());
         resolveSecrets(secretController);
-    }
-
-    public void refreshSecretFromConfiguration() {
-        if (selectedSharedCredentials != null) {
-            selectedSharedCredentials.setValue(saveToSecret());
-        }
     }
 
     public void openDataSource(DBRProgressMonitor monitor, boolean initialize) throws DBException {
@@ -1519,20 +1538,12 @@ public class DataSourceDescriptor
             return false;
         } finally {
             // Terminate child processes
-            synchronized (childProcesses) {
-                for (Iterator<DBRProcessDescriptor> iter = childProcesses.iterator(); iter.hasNext(); ) {
-                    DBRProcessDescriptor process = iter.next();
-                    if (process.isRunning() && process.getCommand().isTerminateAtDisconnect()) {
-                        process.terminate();
-                    }
-                    iter.remove();
-                }
-            }
+            terminateChildProcesses();
 
             this.dataSource = null;
             this.resolvedConnectionInfo = null;
             // Reset resolved secrets
-            forgetSecrets();
+            resetAllSecrets();
 
             this.connectTime = null;
 

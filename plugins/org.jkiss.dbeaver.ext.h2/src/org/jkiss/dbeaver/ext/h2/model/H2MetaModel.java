@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.h2.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
@@ -69,14 +70,14 @@ public class H2MetaModel extends GenericMetaModel
     }
 
     @Override
-    public String getTableDDL(DBRProgressMonitor monitor, GenericTableBase sourceObject, Map<String, Object> options) throws DBException {
+    public String getTableDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTableBase sourceObject, @NotNull Map<String, Object> options) throws DBException {
         // We tried here using SELECT SQL FROM INFORMATION_SCHEMA.TABLES, but it is not good
         // And this SQL result does not have info about keys or indexes
         return super.getTableDDL(monitor, sourceObject, options);
     }
 
     @Override
-    public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
+    public String getViewDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericView sourceObject, @NotNull Map<String, Object> options) throws DBException {
         // Since version 2 H2 keeps part of data in the system views.
         // But VIEW_DEFINITION field is empty for system views in the INFORMATION_SCHEMA.VIEWS
         // Maybe someday something will change, but until we will show anything for system views
@@ -96,7 +97,7 @@ public class H2MetaModel extends GenericMetaModel
                     }
                 }
             } catch (SQLException e) {
-                throw new DBException(e, dataSource);
+                throw new DBDatabaseException(e, dataSource);
             }
         }
         return super.getViewDDL(monitor, sourceObject, options);
@@ -119,7 +120,7 @@ public class H2MetaModel extends GenericMetaModel
             dbStat = session.prepareStatement("SELECT tc.*, tc.CONSTRAINT_NAME AS PK_NAME, ccu.COLUMN_NAME, cc.CHECK_CLAUSE AS CHECK_EXPRESSION FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc LEFT JOIN\n" +
                 "INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE ccu ON tc.CONSTRAINT_SCHEMA = ccu.CONSTRAINT_SCHEMA AND tc.CONSTRAINT_NAME = ccu.CONSTRAINT_NAME\n" +
                 "LEFT JOIN INFORMATION_SCHEMA.CHECK_CONSTRAINTS cc ON tc.CONSTRAINT_SCHEMA = cc.CONSTRAINT_SCHEMA AND tc.CONSTRAINT_NAME = cc.CONSTRAINT_NAME\n" +
-                "WHERE tc.CONSTRAINT_TYPE <> 'REFERENTIAL' AND tc.CONSTRAINT_SCHEMA = ?"
+                "WHERE tc.CONSTRAINT_TYPE NOT IN ('REFERENTIAL', 'FOREIGN KEY') AND tc.CONSTRAINT_SCHEMA = ?"
                 + (forParent != null ? "AND tc.TABLE_NAME = ?" : ""));
             dbStat.setString(1, owner.getName());
             if (forParent != null) {
@@ -294,7 +295,7 @@ public class H2MetaModel extends GenericMetaModel
                     }
                 }
             } catch (SQLException e) {
-                throw new DBException(e, container.getDataSource());
+                throw new DBDatabaseException(e, container.getDataSource());
             }
         }
     }

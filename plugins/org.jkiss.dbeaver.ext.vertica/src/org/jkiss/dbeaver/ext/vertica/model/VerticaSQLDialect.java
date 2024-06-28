@@ -40,10 +40,14 @@ public class VerticaSQLDialect extends GenericSQLDialect implements TPRuleProvid
     private static final String[][] VERTICA_BEGIN_END_BLOCK = new String[][]{
             {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END},
             {SQLConstants.KEYWORD_CASE, SQLConstants.BLOCK_END},
+            {"LOOP", SQLConstants.BLOCK_END + " LOOP"}
     };
 
     private static String[] EXEC_KEYWORDS = {"CALL"};
 
+    private static final String[] VERTICA_BLOCK_HEADERS = new String[]{
+        "DECLARE"
+    };
     private static String[] VERTICA_KEYWORDS = new String[]{
         // SELECT * FROM keywords WHERE reserved = 'R'
         "BIT",
@@ -123,6 +127,11 @@ public class VerticaSQLDialect extends GenericSQLDialect implements TPRuleProvid
     @Override
     public String[][] getBlockBoundStrings() {
         return VERTICA_BEGIN_END_BLOCK;
+    }
+
+    @Override
+    public String[] getBlockHeaderStrings() {
+        return VERTICA_BLOCK_HEADERS;
     }
 
     @NotNull

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -114,14 +115,16 @@ public abstract class JDBCCompositeCache<
         return getObjects(monitor, owner, null);
     }
 
-    public List<OBJECT> getObjects(DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
+    public List<OBJECT> getObjects(@NotNull DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
         throws DBException
     {
-        loadObjects(monitor, owner, forParent);
+        if (!monitor.isCanceled() && !monitor.isForceCacheUsage()) {
+            loadObjects(monitor, owner, forParent);
+        }
         return getCachedObjects(forParent);
     }
 
-    public <TYPE extends OBJECT> List<TYPE > getTypedObjects(DBRProgressMonitor monitor, OWNER owner, PARENT forParent, Class<TYPE> type)
+    public <TYPE extends OBJECT> List<TYPE > getTypedObjects(@NotNull DBRProgressMonitor monitor, OWNER owner, PARENT forParent, Class<TYPE> type)
         throws DBException
     {
         List<TYPE> result = new ArrayList<>();
@@ -137,7 +140,7 @@ public abstract class JDBCCompositeCache<
     }
 
     @Override
-    public List<OBJECT> getCachedObjects(PARENT forParent)
+    public List<OBJECT> getCachedObjects(@Nullable PARENT forParent)
     {
         if (forParent == null) {
             synchronized (objectCache) {
@@ -159,7 +162,7 @@ public abstract class JDBCCompositeCache<
     }
 
     @Override
-    public OBJECT getObject(@NotNull DBRProgressMonitor monitor, @Nullable OWNER owner, @NotNull String objectName)
+    public OBJECT getObject(@NotNull DBRProgressMonitor monitor, @NotNull OWNER owner, @NotNull String objectName)
         throws DBException
     {
         loadObjects(monitor, owner, null);
@@ -167,7 +170,7 @@ public abstract class JDBCCompositeCache<
         return getCachedObject(objectName);
     }
 
-    public OBJECT getObject(DBRProgressMonitor monitor, OWNER owner, PARENT forParent, String objectName)
+    public OBJECT getObject(@NotNull DBRProgressMonitor monitor, @NotNull OWNER owner, @Nullable PARENT forParent, @NotNull String objectName)
         throws DBException
     {
         loadObjects(monitor, owner, forParent);
@@ -213,7 +216,7 @@ public abstract class JDBCCompositeCache<
     }
 
     @Override
-    public void clearObjectCache(PARENT forParent)
+    public void clearObjectCache(@NotNull PARENT forParent)
     {
         if (forParent == null) {
             super.clearCache();
@@ -242,7 +245,7 @@ public abstract class JDBCCompositeCache<
     }
 
     @Override
-    public void setCache(List<OBJECT> objects) {
+    public void setCache(@NotNull List<OBJECT> objects) {
         super.setCache(objects);
         synchronized (objectCache) {
             objectCache.clear();
@@ -274,7 +277,8 @@ public abstract class JDBCCompositeCache<
         throws DBException
     {
         synchronized (objectCache) {
-            if ((forParent == null && isFullyCached()) ||
+            if (monitor.isForceCacheUsage() ||
+                (forParent == null && isFullyCached()) ||
                 (forParent != null && (!forParent.isPersisted() || objectCache.containsKey(forParent))))
             {
                 return;
@@ -386,7 +390,7 @@ public abstract class JDBCCompositeCache<
             if (ex instanceof SQLFeatureNotSupportedException) {
                 log.debug("Error reading cache " + getClass().getSimpleName() + ", feature not supported: " + ex.getMessage());
             } else {
-                throw new DBException(ex, dataSource);
+                throw new DBDatabaseException(ex, dataSource);
             }
         }
         finally {

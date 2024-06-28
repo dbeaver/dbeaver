@@ -201,5 +201,10 @@ public class PostgreServerCrateDB extends PostgreServerExtensionBase {
     public boolean supportsCopyFromStdIn() {
         return false;
     }
+
+    @Override
+    public boolean supportsColumnsRequiring() {
+        return false;
+    }
 }
 

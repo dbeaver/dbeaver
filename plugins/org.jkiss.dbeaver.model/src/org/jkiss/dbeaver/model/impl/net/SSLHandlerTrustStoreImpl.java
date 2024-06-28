@@ -198,11 +198,14 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
         return createTrustStoreSslContext(dataSource, sslConfig).getSocketFactory();
     }
 
-    public static void loadDerFromPem(
+    public static boolean loadDerFromPem(
         final @NotNull DBWHandlerConfiguration handler,
         final @NotNull Path tempDerFile
     ) throws IOException {
         final byte[] key = SSLHandlerTrustStoreImpl.readCertificate(handler, SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY);
+        if (key == null) {
+            return false;
+        }
         final Reader reader = new StringReader(new String(key, StandardCharsets.UTF_8));
         Files.write(tempDerFile, DefaultCertificateStorage.loadDerFromPem(reader));
         String derCertPath = tempDerFile.toAbsolutePath().toString();
@@ -214,6 +217,7 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
         // Unfortunately, we can't delete the temp file here.
         // The chain is built asynchronously by the driver, and we don't know at which moment in time it will happen.
         // It will still be deleted during shutdown.
+        return true;
     }
 
     /**

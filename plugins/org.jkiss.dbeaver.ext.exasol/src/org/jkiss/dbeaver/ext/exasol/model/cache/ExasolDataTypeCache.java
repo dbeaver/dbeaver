@@ -69,7 +69,7 @@ public final class ExasolDataTypeCache
 	}
 	
 	@Override
-	public void setCache(List<ExasolDataType> objects) {
+	public void setCache(@NotNull List<ExasolDataType> objects) {
 		super.setCache(objects);
 		for (ExasolDataType dt: objects)
 		{

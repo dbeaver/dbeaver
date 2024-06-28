@@ -19,11 +19,11 @@
 
 package org.jkiss.dbeaver.debug;
 
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 
 @SuppressWarnings("serial")
-public class DBGException extends DBException {
+public class DBGException extends DBDatabaseException {
 
     public DBGException(String message, Throwable e) {
         super(message, e);

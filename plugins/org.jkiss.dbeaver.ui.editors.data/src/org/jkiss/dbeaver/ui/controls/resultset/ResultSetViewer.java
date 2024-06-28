@@ -105,7 +105,6 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.StandardConstants;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
@@ -157,6 +156,7 @@ public class ResultSetViewer extends Viewer
     private static final DateTimeFormatter EXECUTION_TIME_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, HH:mm:ss");
 
     private static final IResultSetListener[] EMPTY_LISTENERS = new IResultSetListener[0];
+    private static final String CSS_CLASS_RESULT_SET_VIEWER = "ResultSetViewer";
 
     private IResultSetFilterManager filterManager;
     @NotNull
@@ -268,6 +268,7 @@ public class ResultSetViewer extends Viewer
         boolean supportsPanels = (decoratorFeatures & IResultSetDecorator.FEATURE_PANELS) != 0;
 
         this.mainPanel = UIUtils.createPlaceholder(parent, supportsPanels ? 3 : 2);
+        CSSUtils.setCSSClass(this.mainPanel, CSS_CLASS_RESULT_SET_VIEWER);
 
         this.autoRefreshControl = new AutoRefreshControl(
             this.mainPanel, ResultSetViewer.class.getSimpleName(), monitor -> refreshData(null));
@@ -309,9 +310,9 @@ public class ResultSetViewer extends Viewer
         this.viewerPanel = UIUtils.createPlaceholder(mainPanel, 1);
         this.viewerPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
         this.viewerPanel.setData(CONTROL_ID, this);
-        CSSUtils.setCSSClass(this.viewerPanel, DBStyles.COLORED_BY_CONNECTION_TYPE);
         UIUtils.setHelp(this.viewerPanel, IHelpContextIds.CTX_RESULT_SET_VIEWER);
         this.viewerPanel.setRedraw(false);
+        CSSUtils.setCSSClass(this.viewerPanel, CSS_CLASS_RESULT_SET_VIEWER);
 
         if (supportsPanels) {
             this.panelSwitchFolder = new VerticalFolder(mainPanel, SWT.RIGHT);
@@ -1670,7 +1671,7 @@ public class ResultSetViewer extends Viewer
             return Status.OK_STATUS;
         }
     };
-    
+
     private final IPropertyChangeListener propertyEvaluationRequestListener = ev -> {
         if (TOOLBAR_CONFIGURATION_VISIBLE_PROPERTY.equals(ev.getProperty())) { //$NON-NLS-1$
             if (!getControl().isDisposed()) {
@@ -1844,7 +1845,7 @@ public class ResultSetViewer extends Viewer
                 CSSUtils.setCSSClass(statusLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
             }
         }
-        
+
         statusBarLayoutJob.schedule(10);
     }
 
@@ -1900,7 +1901,8 @@ public class ResultSetViewer extends Viewer
             return false;
         }
         for (DBDAttributeBinding attr : model.getAttributes()) {
-            if (!DBExecUtils.isAttributeReadOnly(attr)) {
+            DBDRowIdentifier rowIdentifier = attr.getRowIdentifier();
+            if (rowIdentifier != null && rowIdentifier.isValidIdentifier()) {
                 return false;
             }
         }
@@ -2636,13 +2638,19 @@ public class ResultSetViewer extends Viewer
                 // Column enumeration is expensive
             }
         }
-        if (isExpensiveFilter && ConfirmationDialog.confirmAction(
-            viewerPanel.getShell(),
-            ConfirmationDialog.WARNING, ResultSetPreferences.CONFIRM_FILTER_RESULTSET,
-            ConfirmationDialog.CONFIRM,
-            curAttribute.getName()) != IDialogConstants.OK_ID)
-        {
-            return;
+        if (isExpensiveFilter) {
+            if (curAttribute.getEntityAttribute() == null) {
+                // No entity reference - we cannot fetch any filter values for this attribute anyway
+            } else {
+                if (ConfirmationDialog.confirmAction(
+                    viewerPanel.getShell(),
+                    ConfirmationDialog.WARNING, ResultSetPreferences.CONFIRM_FILTER_RESULTSET,
+                    ConfirmationDialog.CONFIRM,
+                    curAttribute.getName()) != IDialogConstants.OK_ID)
+                {
+                    return;
+                }
+            }
         }
 
         Collection<ResultSetRow> selectedRows = getSelection().getSelectedRows();
@@ -5223,7 +5231,7 @@ public class ResultSetViewer extends Viewer
                     if (CommonUtils.isNotEmpty(errorMessage) && query instanceof SQLQuery) {
                         String extraErrorMessage = ((SQLQuery) query).getExtraErrorMessage();
                         if (CommonUtils.isNotEmpty(extraErrorMessage)) {
-                            errorMessage = errorMessage + System.getProperty(StandardConstants.ENV_LINE_SEPARATOR) + extraErrorMessage;
+                            errorMessage = errorMessage + System.lineSeparator() + extraErrorMessage;
                         }
                     }
 
@@ -5257,7 +5265,6 @@ public class ResultSetViewer extends Viewer
                         }
                         if (getActivePresentation().getCurrentAttribute() == null || model.getRowCount() == 0) {
                             getActivePresentation().setCurrentAttribute(model.getVisibleAttribute(0));
-                            panelUpdated = true; // Attribute viewer refreshed
                         }
                     }
                 }

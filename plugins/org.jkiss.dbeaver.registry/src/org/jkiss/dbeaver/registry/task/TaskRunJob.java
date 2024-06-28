@@ -54,11 +54,11 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
 
     private static final Log log = Log.getLog(TaskRunJob.class);
 
-    private static AtomicInteger taskNumber = new AtomicInteger(0);
+    private static final AtomicInteger taskNumber = new AtomicInteger(0);
 
     private final TaskImpl task;
     private final Locale locale;
-    private DBTTaskExecutionListener executionListener;
+    private final DBTTaskExecutionListener executionListener;
     private Log taskLog = log;
     private DBRProgressMonitor activeMonitor;
     private DBTTaskRunStatus taskRunStatus = new DBTTaskRunStatus();
@@ -66,6 +66,8 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
     private long taskStartTime;
     private long elapsedTime;
     private Throwable taskError;
+
+    private boolean canceledByTimeOut = false;
 
     public TaskRunJob(TaskImpl task, Locale locale, DBTTaskExecutionListener executionListener) {
         super("Task [" + task.getType().getName() + "] runner - " + task.getName());
@@ -93,10 +95,10 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
         Path logFile = Objects.requireNonNull(task.getRunLog(taskRun)); // must exist on local machine
         task.addNewRun(taskRun);
 
-        try (PrintStream logStream = new PrintStream(Files.newOutputStream(logFile), true, StandardCharsets.UTF_8.name())) {
-            log.debug(String.format("Task '%s' (%s) started", task.getName(), task.getId()));
+        try (PrintStream logStream = new PrintStream(Files.newOutputStream(logFile), true, StandardCharsets.UTF_8)) {
             taskLog = Log.getLog(TaskRunJob.class);
             Log.setLogWriter(logStream);
+            taskLog.info(String.format("Task '%s' (%s) started", task.getName(), task.getId()));
             monitor.beginTask("Run task '" + task.getName() + " (" + task.getType().getName() + ")", 1);
             try {
                 taskRunStatus = executeTask(new TaskLoggingProgressMonitor(monitor, task), logStream);
@@ -106,12 +108,12 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
                 taskLog.error("Task fatal error", e);
             } finally {
                 monitor.done();
-                taskLog.flush();
-                Log.setLogWriter(null);
-                log.debug(String.format("Task '%s' (%s) finished in %s ms", task.getName(), task.getId(), elapsedTime));
-
+             
                 taskRun.setRunDuration(elapsedTime);
-                if (taskError != null) {
+                if (activeMonitor.isCanceled() || monitor.isCanceled()) {
+                    taskRun.setErrorMessage("Canceled");
+                    taskLog.info(String.format("Task '%s' (%s) cancelled after %s ms", task.getName(), task.getId(), elapsedTime));
+                } else if (taskError != null) {
                     String errorMessage = taskError.getMessage();
                     if (CommonUtils.isEmpty(errorMessage)) {
                         errorMessage = taskError.getClass().getName();
@@ -120,8 +122,13 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
                     StringWriter buf = new StringWriter();
                     taskError.printStackTrace(new PrintWriter(buf, true));
                     taskRun.setErrorStackTrace(buf.toString());
+                    taskLog.info(String.format("Task '%s' (%s) finished with errros in %s ms", task.getName(), task.getId(), elapsedTime));
+                } else {
+                    taskLog.info(String.format("Task '%s' (%s) finished successfully in %s ms", task.getName(), task.getId(), elapsedTime));
                 }
                 task.updateRun(taskRun);
+                taskLog.flush();
+                Log.setLogWriter(null);
             }
         } catch (IOException e) {
             log.error("Error opning task run log file", e);
@@ -133,7 +140,16 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
         activeMonitor = monitor;
         DBTaskUtils.confirmTaskOrThrow(task, taskLog, logWriter);
         DBTTaskHandler taskHandler = task.getType().createHandler();
-        return taskHandler.executeTask(this, task, locale, taskLog, logWriter, executionListener);
+        DBTTaskRunStatus taskStatus = taskHandler.executeTask(this, task, locale, taskLog, logWriter, executionListener);
+        if (monitor.isCanceled()) {
+            if (canceledByTimeOut) {
+                taskStatus.setResultMessage("by timeout reached");
+            }
+            if (taskStatus.getResultMessage() == null) {
+                taskStatus.setResultMessage("by user");
+            }
+        }
+        return taskStatus;
     }
 
     @Override
@@ -175,6 +191,22 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
         @Override
         public void subTaskFinished(@Nullable DBTTask task, @Nullable Throwable error, @Nullable Object settings) {
             parent.subTaskFinished(task, error, settings);
+        }
+    }
+
+    /**
+     * Cancel task by time reached
+     */
+    public void cancelByTimeReached() {
+        if (task.getMaxExecutionTime() > 0
+            && taskStartTime > 0
+            && (System.currentTimeMillis() - taskStartTime) > (task.getMaxExecutionTime() * 1000L)) {
+            canceledByTimeOut = true;
+            cancel();
+            activeMonitor.getNestedMonitor().setCanceled(true);
+            if (isRunDirectly()) {
+                canceling();
+            }
         }
     }
 

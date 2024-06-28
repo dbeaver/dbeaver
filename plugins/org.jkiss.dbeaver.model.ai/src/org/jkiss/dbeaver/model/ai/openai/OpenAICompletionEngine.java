@@ -156,15 +156,13 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
         final DBCExecutionContext executionContext = context.getExecutionContext();
         DBSObjectContainer mainObject = getScopeObject(context, executionContext);
 
-        final GPTModel model = getModel();
         final DAICompletionMessage metadataMessage = MetadataProcessor.INSTANCE.createMetadataMessage(
             monitor,
             context,
             mainObject,
             formatter,
-            model.isChatAPI(),
-            getMaxTokens() - AIConstants.MAX_RESPONSE_TOKENS,
-            chatCompletion
+            getInstructions(chatCompletion),
+            getMaxTokens() - AIConstants.MAX_RESPONSE_TOKENS
         );
 
         final List<DAICompletionMessage> mergedMessages = new ArrayList<>();
@@ -186,7 +184,7 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
             mainObject,
             completionText,
             formatter,
-            model.isChatAPI()
+            getModel().isChatAPI()
         );
     }
 
@@ -347,6 +345,20 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
 
     protected Object createCompletionRequest(boolean chatMode, @NotNull List<DAICompletionMessage> messages) {
         return createCompletionRequest(chatMode, messages, getMaxTokens());
+    }
+
+    @NotNull
+    @Override
+    protected String getInstructions(boolean chatCompletion) {
+        if (GPTModel.GPT_TURBO.equals(getModel()) || GPTModel.GPT_TURBO16.equals(getModel())) {
+            return """
+                You are SQL assistant. You must produce SQL code for given prompt.
+                You must produce valid SQL statement enclosed with Markdown code block and terminated with semicolon.
+                All comments MUST be placed before query outside markdown code block.
+                Be polite.
+                """;
+        }
+        return super.getInstructions(chatCompletion);
     }
 
     protected Object createCompletionRequest(boolean chatMode, @NotNull List<DAICompletionMessage> messages, int maxTokens) {

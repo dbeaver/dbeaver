@@ -79,4 +79,8 @@ public abstract class ActiveWizardPage<WIZARD extends IWizard> extends WizardPag
     public void deactivatePage() {
 
     }
+
+    public boolean isAutoResizeEnabled() {
+        return true;
+    }
 }

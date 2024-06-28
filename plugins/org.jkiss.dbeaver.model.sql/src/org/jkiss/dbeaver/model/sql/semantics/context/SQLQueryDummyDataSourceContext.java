@@ -22,13 +22,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryQualifiedName;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
+import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryRowsSourceModel;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryRowsTableDataModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
@@ -38,7 +35,7 @@ import java.util.*;
 
 public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
 
-    private final SQLDialect dialect;
+    private final SQLQueryModelContext context;
 
     private final DummyDbObject dummyDataSource;
     private final DummyDbObject defaultDummyCatalog;
@@ -50,7 +47,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     private final Set<String> knownCatalogNames;
 
     @FunctionalInterface
-    private static interface DummyObjectCtor {
+    private interface DummyObjectCtor {
         DummyDbObject apply(DummyDbObject parent, String name, int index);
     }
     
@@ -250,7 +247,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
 
         @NotNull
         @Override
-        public Class<? extends DBSObject> getPrimaryChildType(DBRProgressMonitor monitor) throws DBException {
+        public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
             return DummyDbObject.class;
         }
 
@@ -293,11 +290,13 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         public void removeContextAttribute(String attributeName) {
         }
 
+        @NotNull
         @Override
         public DBPDataSourceContainer getContainer() {
             return null;
         }
 
+        @NotNull
         @Override
         public DBPDataSourceInfo getInfo() {
             return null;
@@ -310,7 +309,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
 
         @Override
         public SQLDialect getSQLDialect() {
-            return dialect;
+            return context.getDialect();
         }
 
         @Override
@@ -323,7 +322,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         }
 
         @Override
-        public Collection<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+        public Collection<? extends DBSTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
             return Collections.emptyList();
         }
 
@@ -339,11 +338,11 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     }
 
     public SQLQueryDummyDataSourceContext(
-        @NotNull SQLDialect dialect,
+        @NotNull SQLQueryModelContext context,
         @NotNull Set<String> knownColumnNames,
         @NotNull Set<List<String>> knownTableNames
     ) {
-        this.dialect = dialect;
+        this.context = context;
         this.knownColumnNames = knownColumnNames;
         this.knownTableNames = new HashSet<>();
         this.knownSchemaNames = new HashSet<>();
@@ -440,7 +439,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     
     @Override
     public DBSEntity findRealTable(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
-        List<String> rawTableName = tableName.stream().map(this.dialect::getUnquotedIdentifier).toList();
+        List<String> rawTableName = tableName.stream().map(this.context.getDialect()::getUnquotedIdentifier).toList();
         DummyDbObject catalog = rawTableName.size() > 2
             ? this.dummyDataSource.getChildrenMapImpl().get(rawTableName.get(rawTableName.size() - 3)) : this.defaultDummyCatalog;
         DummyDbObject schema = rawTableName.size() > 1
@@ -458,15 +457,16 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         return null;
     }
     
+    @NotNull
     @Override
     public SQLDialect getDialect() {
-        return this.dialect;
+        return this.context.getDialect();
     }
     
     @NotNull
     @Override
     public SQLQueryRowsSourceModel getDefaultTable(@NotNull STMTreeNode syntaxNode) {
-        return new DummyTableRowsSource(syntaxNode);
+        return new DummyTableRowsSource(context, syntaxNode);
     }
     
     @Override
@@ -476,8 +476,8 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     
     public class DummyTableRowsSource extends SQLQueryRowsTableDataModel {
         
-        public DummyTableRowsSource(@NotNull STMTreeNode syntaxNode) {
-            super(syntaxNode, new SQLQueryQualifiedName(syntaxNode, new SQLQuerySymbolEntry(syntaxNode, "DummyTable", "DummyTable")));
+        public DummyTableRowsSource(SQLQueryModelContext context, @NotNull STMTreeNode syntaxNode) {
+            super(context, syntaxNode, new SQLQueryQualifiedName(syntaxNode, new SQLQuerySymbolEntry(syntaxNode, "DummyTable", "DummyTable")));
         }
 
         @NotNull
