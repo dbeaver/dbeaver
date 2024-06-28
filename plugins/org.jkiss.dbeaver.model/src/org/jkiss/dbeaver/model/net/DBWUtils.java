@@ -16,13 +16,18 @@
  */
 package org.jkiss.dbeaver.model.net;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.utils.CommonUtils;
 
 public class DBWUtils {
 
 
-    public static final String LOCALHOST_NAME = "127.0.0.1";
+    public static final String LOOPBACK_HOST_NAME = "127.0.0.1";
+    public static final String LOOPBACK_IPV6_HOST_NAME = ":1";
+    public static final String LOOPBACK_IPV6_FULL_HOST_NAME = "0:0:0:0:0:0:0:1";
+    public static final String LOCALHOST_NAME = "localhost";
+    public static final String LOCAL_NAME = "local";
 
     public static void updateConfigWithTunnelInfo(
         DBWHandlerConfiguration configuration,
@@ -32,7 +37,7 @@ public class DBWUtils {
     ) {
         // Replace database host/port and URL
         if (CommonUtils.isEmpty(localHost)) {
-            connectionInfo.setHostName(LOCALHOST_NAME);
+            connectionInfo.setHostName(LOOPBACK_HOST_NAME);
         } else {
             connectionInfo.setHostName(localHost);
         }
@@ -42,5 +47,32 @@ public class DBWUtils {
             String newURL = configuration.getDriver().getConnectionURL(connectionInfo);
             connectionInfo.setUrl(newURL);
         }
+    }
+
+    @NotNull
+    public static String getTargetTunnelHostName(DBPConnectionConfiguration cfg) {
+        String hostText = cfg.getHostName();
+        // For localhost ry to get real host name from tunnel configuration
+        if (isLocalAddress(hostText)) {
+            for (DBWHandlerConfiguration hc : cfg.getHandlers()) {
+                if (hc.isEnabled() && hc.getType() == DBWHandlerType.TUNNEL) {
+                    String tunnelHost = hc.getStringProperty(DBWHandlerConfiguration.PROP_HOST);
+                    if (!CommonUtils.isEmpty(tunnelHost)) {
+                        hostText = tunnelHost;
+                        break;
+                    }
+                }
+            }
+        }
+        return CommonUtils.notEmpty(hostText);
+    }
+
+    public static boolean isLocalAddress(String hostText) {
+        return CommonUtils.isEmpty(hostText) ||
+            hostText.equals(LOCALHOST_NAME) ||
+            hostText.equals(LOCAL_NAME) ||
+            hostText.equals(LOOPBACK_HOST_NAME) ||
+            hostText.equals(LOOPBACK_IPV6_HOST_NAME) ||
+            hostText.equals(LOOPBACK_IPV6_FULL_HOST_NAME);
     }
 }

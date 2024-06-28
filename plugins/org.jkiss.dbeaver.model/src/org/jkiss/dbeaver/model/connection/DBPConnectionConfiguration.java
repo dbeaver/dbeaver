@@ -41,6 +41,7 @@ import java.util.*;
 public class DBPConnectionConfiguration implements DBPObject {
     // Variables
     public static final String VARIABLE_HOST = "host";
+    public static final String VARIABLE_HOST_TUNNEL = "host.tunnel";
     public static final String VARIABLE_PORT = "port";
     public static final String VARIABLE_SERVER = "server";
     public static final String VARIABLE_DATABASE = "database";
@@ -48,6 +49,7 @@ public class DBPConnectionConfiguration implements DBPObject {
     public static final String VARIABLE_PASSWORD = "password";
     public static final String VARIABLE_URL = "url";
     public static final String VARIABLE_CONN_TYPE = "connection.type";
+    public static final String VARIABLE_CONN_TYPE_LEGACY = "connectionType";
     public static final String VARIABLE_DATASOURCE = "datasource";
     public static final String VAR_PROJECT_PATH = "project.path";
     public static final String VAR_PROJECT_NAME = "project.name";
@@ -55,11 +57,13 @@ public class DBPConnectionConfiguration implements DBPObject {
     public static final String VARIABLE_PREFIX_PROPERTIES = "properties.";
     public static final String VARIABLE_PREFIX_AUTH = "auth.";
     public static final String VARIABLE_PREFIX_ORIGIN = "origin.";
+    public static final String VARIABLE_PREFIX_TAG = "tag.";
 
     public static final String VARIABLE_DATE = "date";
 
     public static final String[][] CONNECT_VARIABLES = new String[][]{
         {VARIABLE_HOST, "target database host"},
+        {VARIABLE_HOST_TUNNEL, "tunnel host name"},
         {VARIABLE_PORT, "target database port"},
         {VARIABLE_SERVER, "target server name"},
         {VARIABLE_DATABASE, "target database name"},
@@ -176,6 +180,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.clientHomeId = clientHomeId;
     }
 
+    @Nullable
     public String getHostName() {
         return hostName;
     }

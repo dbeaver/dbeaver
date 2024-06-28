@@ -1069,4 +1069,46 @@
         </handler>
     </extension>
 
+    <extension point="org.eclipse.ui.themes">
+        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.navigator.label" id="org.jkiss.dbeaver.ui.navigator">
+            <description>%themeElementCategory.org.jkiss.dbeaver.ui.navigator.description</description>
+        </themeElementCategory>
+
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.ui.navigator.node.new.background.label"
+                categoryId="org.jkiss.dbeaver.ui.navigator"
+                id="org.jkiss.dbeaver.ui.navigator.node.new.background"
+               value="228, 255, 181">
+            <description>%colorDefinition.org.jkiss.dbeaver.ui.navigator.node.new.background.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.ui.navigator.node.modified.background.label"
+                categoryId="org.jkiss.dbeaver.ui.navigator"
+                id="org.jkiss.dbeaver.ui.navigator.node.modified.background"
+                value="255, 228, 181">
+            <description>%colorDefinition.org.jkiss.dbeaver.ui.navigator.node.modified.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.ui.navigator.node.transient.foreground.label"
+                categoryId="org.jkiss.dbeaver.ui.navigator"
+                id="org.jkiss.dbeaver.ui.navigator.node.transient.foreground"
+                value="38, 100, 36">
+            <description>%colorDefinition.org.jkiss.dbeaver.ui.navigator.node.transient.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.ui.navigator.node.foreground.label"
+                categoryId="org.jkiss.dbeaver.ui.navigator"
+                id="org.jkiss.dbeaver.ui.navigator.node.foreground"
+                value="105, 105, 105">
+            <description>%colorDefinition.org.jkiss.dbeaver.ui.navigator.node.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.ui.navigator.node.statistics.background.label"
+                categoryId="org.jkiss.dbeaver.ui.navigator"
+                id="org.jkiss.dbeaver.ui.navigator.node.statistics.background"
+                value="240, 240, 240">
+            <description>%colorDefinition.org.jkiss.dbeaver.ui.navigator.node.statistics.background.description</description>
+        </colorDefinition>
+    </extension>
+
 </plugin>

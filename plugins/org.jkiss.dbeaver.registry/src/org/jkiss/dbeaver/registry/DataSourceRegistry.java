@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfileProvider;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -53,25 +54,19 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePersistentRegistry, DBPDataSourceRegistryCache {
-    @Deprecated
-    public static final String DEFAULT_AUTO_COMMIT = "default.autocommit"; //$NON-NLS-1$
-    @Deprecated
-    public static final String DEFAULT_ISOLATION = "default.isolation"; //$NON-NLS-1$
-    @Deprecated
-    public static final String DEFAULT_ACTIVE_OBJECT = "default.activeObject"; //$NON-NLS-1$
+    private static final Log log = Log.getLog(DataSourceRegistry.class);
 
     private static final long DISCONNECT_ALL_TIMEOUT = 5000;
 
-    private static final Log log = Log.getLog(DataSourceRegistry.class);
-
-    public static final String OLD_CONFIG_FILE_NAME = "data-sources.xml"; //$NON-NLS-1$
-
     private final DBPProject project;
     private final DataSourceConfigurationManager configurationManager;
+    @NotNull
+    private final DBPPreferenceStore preferenceStore;
 
     private final List<DBPDataSourceConfigurationStorage> storages = new ArrayList<>();
     private final Map<String, DataSourceDescriptor> dataSources = new LinkedHashMap<>();
@@ -88,13 +83,17 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     protected Throwable lastError;
 
     public DataSourceRegistry(DBPProject project) {
-        this(project, new DataSourceConfigurationManagerNIO(project));
+        this(project, new DataSourceConfigurationManagerNIO(project), DBWorkbench.getPlatform().getPreferenceStore());
     }
 
-    public DataSourceRegistry(@NotNull DBPProject project, DataSourceConfigurationManager configurationManager) {
+    public DataSourceRegistry(
+        @NotNull DBPProject project,
+        DataSourceConfigurationManager configurationManager,
+        @NotNull DBPPreferenceStore preferenceStore
+    ) {
         this.project = project;
         this.configurationManager = configurationManager;
-
+        this.preferenceStore = preferenceStore;
         boolean isLoaded = loadDataSources(true);
         if (!isMultiUser() && isLoaded) {
             DataSourceProviderRegistry.getInstance().fireRegistryChange(this, true);
@@ -160,6 +159,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     }
 
     @NotNull
+    public DBPPreferenceStore getPreferenceStore() {
+        return preferenceStore;
+    }
+
+    @NotNull
     DBPDataSourceConfigurationStorage getDefaultStorage() {
         synchronized (storages) {
             for (DBPDataSourceConfigurationStorage storage : storages) {
@@ -193,7 +197,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
 
     @Nullable
     @Override
-    public DataSourceDescriptor getDataSource(String id) {
+    public DataSourceDescriptor getDataSource(@NotNull String id) {
         synchronized (dataSources) {
             return dataSources.get(id);
         }
@@ -201,7 +205,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
 
     @Nullable
     @Override
-    public DataSourceDescriptor getDataSource(DBPDataSource dataSource) {
+    public DataSourceDescriptor getDataSource(@NotNull DBPDataSource dataSource) {
         synchronized (dataSources) {
             for (DataSourceDescriptor dsd : dataSources.values()) {
                 if (dsd.getDataSource() == dataSource) {
@@ -252,13 +256,13 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
 
     @NotNull
     @Override
-    public DBPDataSourceContainer createDataSource(DBPDriver driver, DBPConnectionConfiguration connConfig) {
+    public DBPDataSourceContainer createDataSource(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connConfig) {
         return new DataSourceDescriptor(this, DataSourceDescriptor.generateNewId(driver), driver, connConfig);
     }
 
     @NotNull
     @Override
-    public DBPDataSourceContainer createDataSource(DBPDataSourceContainer source) {
+    public DBPDataSourceContainer createDataSource(@NotNull DBPDataSourceContainer source) {
         DataSourceDescriptor newDS = new DataSourceDescriptor((DataSourceDescriptor) source, this);
         newDS.setId(DataSourceDescriptor.generateNewId(source.getDriver()));
         return newDS;
@@ -282,8 +286,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         return rootFolders;
     }
 
+    @NotNull
     @Override
-    public DataSourceFolder addFolder(DBPDataSourceFolder parent, String name) {
+    public DataSourceFolder addFolder(@Nullable DBPDataSourceFolder parent, @NotNull String name) {
         return createFolder(parent, name);
     }
 
@@ -294,7 +299,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     }
 
     @Override
-    public void removeFolder(DBPDataSourceFolder folder, boolean dropContents) {
+    public void removeFolder(@NotNull DBPDataSourceFolder folder, boolean dropContents) {
         final DataSourceFolder folderImpl = (DataSourceFolder) folder;
         final String folderPath = folder.getFolderPath();
 
@@ -341,8 +346,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         return null;
     }
 
+    @NotNull
     @Override
-    public DBPDataSourceFolder getFolder(String path) {
+    public DBPDataSourceFolder getFolder(@NotNull String path) {
         return findFolderByPath(path, true, null);
     }
 
@@ -394,7 +400,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     }
 
     @Override
-    public void updateSavedFilter(DBSObjectFilter filter) {
+    public void updateSavedFilter(@NotNull DBSObjectFilter filter) {
         DBSObjectFilter filterCopy = new DBSObjectFilter(filter);
         for (int i = 0; i < savedFilters.size(); i++) {
             if (CommonUtils.equalObjects(savedFilters.get(i).getName(), filter.getName())) {
@@ -406,7 +412,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     }
 
     @Override
-    public void removeSavedFilter(String filterName) {
+    public void removeSavedFilter(@NotNull String filterName) {
         for (int i = 0; i < savedFilters.size(); ) {
             if (CommonUtils.equalObjects(savedFilters.get(i).getName(), filterName)) {
                 savedFilters.remove(i);
@@ -425,7 +431,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
 
     @Nullable
     @Override
-    public DBWNetworkProfile getNetworkProfile(String source, String name) {
+    public DBWNetworkProfile getNetworkProfile(@Nullable String source, @NotNull String name) {
         if (!CommonUtils.isEmpty(source)) {
             // Search in external sources
             DBWNetworkProfileProvider profileProvider = RuntimeUtils.getObjectAdapter(this.getProject(), DBWNetworkProfileProvider.class);
@@ -449,7 +455,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     }
 
     @Override
-    public void updateNetworkProfile(DBWNetworkProfile profile) {
+    public void updateNetworkProfile(@NotNull DBWNetworkProfile profile) {
         for (int i = 0; i < networkProfiles.size(); i++) {
             if (CommonUtils.equalObjects(networkProfiles.get(i).getProfileName(), profile.getProfileName())) {
                 networkProfiles.set(i, profile);
@@ -460,7 +466,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     }
 
     @Override
-    public void removeNetworkProfile(DBWNetworkProfile profile) {
+    public void removeNetworkProfile(@NotNull DBWNetworkProfile profile) {
         try {
             DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
             secretController.setPrivateSecretValue(
@@ -477,7 +483,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
 
     @Nullable
     @Override
-    public DBAAuthProfile getAuthProfile(String id) {
+    public DBAAuthProfile getAuthProfile(@NotNull String id) {
         synchronized (authProfiles) {
             return authProfiles.get(id);
         }
@@ -504,14 +510,28 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     }
 
     @Override
-    public void updateAuthProfile(DBAAuthProfile profile) {
+    public void updateAuthProfile(@NotNull DBAAuthProfile profile) {
         synchronized (authProfiles) {
             authProfiles.put(profile.getProfileId(), profile);
         }
     }
 
+    /**
+     * Set new collection of profiles.
+     *
+     * @param profiles - profile collection
+     */
     @Override
-    public void removeAuthProfile(DBAAuthProfile profile) {
+    public void setAuthProfiles(@NotNull Collection<DBAAuthProfile> profiles) {
+        synchronized (authProfiles) {
+            authProfiles.clear();
+            authProfiles.putAll(profiles.stream()
+                .collect(Collectors.toMap(DBAAuthProfile::getProfileId, Function.identity())));
+        }
+    }
+
+    @Override
+    public void removeAuthProfile(@NotNull DBAAuthProfile profile) {
         // Remove secrets
         if (getProject().isUseSecretStorage()) {
             try {
@@ -574,7 +594,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         try {
             this.fireDataSourceEvent(DBPEvent.Action.OBJECT_REMOVE, dataSource);
         } finally {
-            ((DataSourceDescriptor) dataSource).dispose();
+            dataSource.dispose();
         }
     }
 
@@ -641,6 +661,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
             false);
     }
 
+    @Nullable
     @Override
     public Throwable getLastError() {
         Throwable error = this.lastError;
@@ -673,7 +694,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         notifyDataSourceListeners(new DBPEvent(action, object));
     }
 
-    public void notifyDataSourceListeners(final DBPEvent event) {
+    public void notifyDataSourceListeners(@NotNull final DBPEvent event) {
         final List<DBPEventListener> listeners;
         synchronized (dataSourceListeners) {
             if (dataSourceListeners.isEmpty()) {
@@ -719,9 +740,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         return result;
     }
 
+    @NotNull
     @Override
     public Set<DBPDataSourceFolder> getTemporaryFolders() {
-        Set<DBPDataSourceFolder> result = new HashSet<>(Collections.emptySet());
+        Set<DBPDataSourceFolder> result = new LinkedHashSet<>();
         Set<DBPDataSourceFolder> folders = getDataSources().stream()
             .filter(DBPDataSourceContainer::isTemporary)
             .map(DBPDataSourceContainer::getFolder)
@@ -938,6 +960,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         }
     }
 
+    @NotNull
     @Override
     public DBPProject getProject() {
         return project;
@@ -1035,7 +1058,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         boolean disconnected;
 
         @Override
-        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+        public void run(DBRProgressMonitor monitor) {
             monitor = new ProxyProgressMonitor(monitor) {
                 @Override
                 public boolean isCanceled() {

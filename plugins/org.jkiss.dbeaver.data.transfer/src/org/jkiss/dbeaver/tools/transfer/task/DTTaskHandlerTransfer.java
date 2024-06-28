@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.tools.transfer.task;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.jobs.JobGroup;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -24,6 +26,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.*;
@@ -72,19 +75,25 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
         } catch (InterruptedException e) {
             return new DBTTaskRunStatus();
         }
-        executeWithSettings(runnableContext, task, locale, log, listener, settings[0]);
+        executeWithSettings(runnableContext, task, locale, log, logStream, listener, settings[0]);
 
         return DBTTaskRunStatus.makeStatisticsStatus(totalStatistics);
     }
 
-    public void executeWithSettings(@NotNull DBRRunnableContext runnableContext, @Nullable DBTTask task, @NotNull Locale locale,
-                                    @NotNull Log log, @NotNull DBTTaskExecutionListener listener,
-                                    DataTransferSettings settings) throws DBException {
+    public void executeWithSettings(
+        @NotNull DBRRunnableContext runnableContext,
+        @Nullable DBTTask task,
+        @NotNull Locale locale,
+        @NotNull Log log,
+        @Nullable PrintStream logStream,
+        @NotNull DBTTaskExecutionListener listener,
+        DataTransferSettings settings
+    ) throws DBException {
         listener.taskStarted(task);
         int indexOfLastPipeWithDisabledReferentialIntegrity = -1;
         try {
             indexOfLastPipeWithDisabledReferentialIntegrity = initializePipes(runnableContext, settings, task);
-            Throwable error = runDataTransferJobs(runnableContext, task, locale, log, listener, settings);
+            Throwable error = runDataTransferJobs(runnableContext, task, locale, log, logStream, listener, settings);
             listener.taskFinished(task, null, error, settings);
         } catch (InvocationTargetException e) {
             DBWorkbench.getPlatformUI().showError(
@@ -151,6 +160,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
         DBTTask task,
         @NotNull Locale locale,
         @NotNull Log log,
+        @Nullable PrintStream logStream,
         @NotNull DBTTaskExecutionListener listener,
         @NotNull DataTransferSettings settings
     ) {
@@ -162,18 +172,39 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
         final Throwable[] error = new Throwable[1];
         try {
             runnableContext.run(true, true, monitor -> {
+                final JobGroup group;
+                if (totalJobs > 1) {
+                    group = new JobGroup("Data transfer", totalJobs, totalJobs);
+                } else {
+                    group = null;
+                }
+
                 final DataTransferJob[] jobs = new DataTransferJob[totalJobs];
                 for (int i = 0; i < totalJobs; i++) {
-                    DataTransferJob job = new DataTransferJob(settings, task, log, monitor, i);
+                    DataTransferJob job = new DataTransferJob(settings, task, log, logStream, totalJobs == 1 ? monitor : null, i);
+                    job.setJobGroup(group);
                     job.schedule();
                     jobs[i] = job;
                 }
+
                 monitor.beginTask("Performing data transfer in parallel", settings.getDataPipes().size());
-                for (DataTransferJob job : jobs) {
+
+                if (group != null) {
                     try {
-                        job.join();
-                    } catch (InterruptedException e) {
-                        break;
+                        group.join(0, new ProxyProgressMonitor(monitor));
+                    } catch (InterruptedException | OperationCanceledException e) {
+                        group.cancel();
+                        return;
+                    }
+                }
+
+                for (DataTransferJob job : jobs) {
+                    if (group == null) {
+                        try {
+                            job.join();
+                        } catch (InterruptedException e) {
+                            break;
+                        }
                     }
                     final IStatus result = job.getResult();
                     if (result.getException() != null) {
@@ -189,7 +220,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
                 monitor.beginTask("Finalizing data transfer", 1);
                 try {
                     // End of transfer - signal last pipe about it
-                    dataPipes.get(dataPipes.size() - 1).getConsumer().finishTransfer(monitor, null, task, true);
+                    dataPipes.get(dataPipes.size() - 1).getConsumer().finishTransfer(monitor, error[0], task, true);
                 } finally {
                     monitor.done();
                 }

@@ -105,6 +105,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
         return super.getName();
     }
 
+    @NotNull
     @Property(viewable = true, editable = true, order = 20, listProvider = ColumnTypeNameListProvider.class)
     @Override
     public String getTypeName()
@@ -113,7 +114,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
     }
 
     @Override
-    public void setTypeName(String typeName) throws DBException {
+    public void setTypeName(@NotNull String typeName) throws DBException {
         super.setTypeName(typeName);
         final DBPDataTypeProvider dataTypeProvider = DBUtils.getParentOfType(DBPDataTypeProvider.class, this);
         if (dataTypeProvider != null) {
@@ -206,7 +207,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
 //            query.append(", ").append(descColumns);
 //        }
         query.append("\nFROM ").append(DBUtils.getObjectFullName(getTable(), DBPEvaluationContext.DML));
-        if (valuePattern instanceof String) {
+        if (valuePattern instanceof String str && !str.isBlank()) {
             query.append("\nWHERE ");
             if (getDataKind() == DBPDataKind.STRING) {
                 final SQLExpressionFormatter caseInsensitiveFormatter = caseInsensitiveSearch
@@ -229,7 +230,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
         }
 
         try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, false)) {
-            if (valuePattern instanceof String) {
+            if (valuePattern instanceof String str && !str.isBlank()) {
                 if (getDataKind() == DBPDataKind.STRING) {
                     valueHandler.bindValueObject(session, dbStat, this, 0, "%" + valuePattern + "%");
                 } else {

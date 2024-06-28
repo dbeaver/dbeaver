@@ -33,8 +33,7 @@ import java.sql.SQLException;
  * PostgreTableRegular
  */
 public class PostgreTableRegular extends PostgreTable implements DBPReferentialIntegrityController {
-    public PostgreTableRegular(PostgreSchema catalog)
-    {
+    public PostgreTableRegular(PostgreSchema catalog) {
         super(catalog);
     }
 
@@ -80,6 +79,7 @@ public class PostgreTableRegular extends PostgreTable implements DBPReferentialI
         return DISABLE_REFERENTIAL_INTEGRITY_STATEMENT;
     }
 
+    @NotNull
     @Override
     public DBSObjectType getObjectType() {
         return RelationalObjectType.TYPE_TABLE;

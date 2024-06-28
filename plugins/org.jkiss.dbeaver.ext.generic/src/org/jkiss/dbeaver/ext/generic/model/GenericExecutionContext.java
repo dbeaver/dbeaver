@@ -24,10 +24,7 @@ import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.dpi.DPIContainer;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -296,9 +293,9 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
         dataSource.setSelectedEntityType(GenericConstants.ENTITY_TYPE_CATALOG);
 
         if (oldSelectedCatalog != null) {
-            DBUtils.fireObjectSelect(oldSelectedCatalog, false);
+            DBUtils.fireObjectSelect(oldSelectedCatalog, false, this);
         }
-        DBUtils.fireObjectSelect(catalog, true);
+        DBUtils.fireObjectSelect(catalog, true, this);
     }
 
     @Override
@@ -313,9 +310,9 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
         setDefaultSchema(monitor, schema.getName());
 
         if (oldSelectedSchema != null) {
-            DBUtils.fireObjectSelect(oldSelectedSchema, false);
+            DBUtils.fireObjectSelect(oldSelectedSchema, false, this);
         }
-        DBUtils.fireObjectSelect(schema, true);
+        DBUtils.fireObjectSelect(schema, true, this);
     }
 
     private void setDefaultSchema(DBRProgressMonitor monitor, String schemaName) throws DBCException {
@@ -362,7 +359,7 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
         if (!CommonUtils.equalObjects(oldEntityName, selectedEntityName)) {
             final DBSObject newDefaultObject = getDefaultObject();
             if (newDefaultObject != null) {
-                DBUtils.fireObjectSelectionChange(oldDefaultObject, newDefaultObject);
+                DBUtils.fireObjectSelectionChange(oldDefaultObject, newDefaultObject, this);
                 return true;
             }
         }
@@ -387,4 +384,37 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
         return null;
     }
 
+    public String getDefaultCatalogCached() {
+        if (!CommonUtils.isEmpty(selectedEntityName)) {
+            GenericDataSource dataSource = getDataSource();
+            if (dataSource.hasCatalogs()) {
+                if (dataSource.getSelectedEntityType() == null ||
+                    dataSource.getSelectedEntityType().equals(GenericConstants.ENTITY_TYPE_CATALOG) ||
+                    !dataSource.hasSchemas()) {
+                    return selectedEntityName;
+                }
+            }
+        }
+        return null;
+    }
+
+    public String getDefaultSchemaCached() {
+        if (!CommonUtils.isEmpty(selectedEntityName)) {
+            GenericDataSource dataSource = getDataSource();
+            if (!dataSource.hasCatalogs() && dataSource.hasSchemas()) {
+                if (dataSource.getSelectedEntityType() == null ||
+                    dataSource.getSelectedEntityType().equals(GenericConstants.ENTITY_TYPE_SCHEMA) ||
+                    !dataSource.hasCatalogs()) {
+                    return selectedEntityName;
+                }
+            }
+        }
+        return null;
+    }
+
+    @NotNull
+    @Override
+    public DBCCachedContextDefaults getCachedDefault() {
+        return new DBCCachedContextDefaults(getDefaultCatalogCached(), getDefaultSchemaCached());
+    }
 }

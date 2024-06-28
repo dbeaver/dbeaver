@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
@@ -214,7 +215,7 @@ public abstract class PostgreTable extends PostgreTableReal
     }
 
     @Override
-    public Collection<PostgreIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+    public Collection<PostgreIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getSchema().getIndexCache().getObjects(monitor, getSchema(), this);
     }
 
@@ -237,6 +238,7 @@ public abstract class PostgreTable extends PostgreTableReal
     public synchronized Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
+
         final List<PostgreTableInheritance> superTables = getSuperInheritance(monitor);
         final Collection<PostgreTableForeignKey> foreignKeys = getForeignKeys(monitor);
         if (CommonUtils.isEmpty(superTables)) {
@@ -252,6 +254,9 @@ public abstract class PostgreTable extends PostgreTableReal
 
     @Override
     public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (monitor == null) {
+            return null;
+        }
         List<DBSEntityAssociation> refs = new ArrayList<>(
             CommonUtils.safeList(getSubInheritance(monitor)));
         // Obtain a list of schemas containing references to this table to avoid fetching everything
@@ -275,7 +280,7 @@ public abstract class PostgreTable extends PostgreTableReal
                     }
                 }
             } catch (SQLException e) {
-                throw new DBException(e, getDataSource());
+                throw new DBDatabaseException(e, getDataSource());
             }
         }
         return refs;
@@ -322,7 +327,7 @@ public abstract class PostgreTable extends PostgreTableReal
 
     @Nullable
     public List<PostgreTableInheritance> getSuperInheritance(DBRProgressMonitor monitor) throws DBException {
-        if (superTables == null && getDataSource().getServerType().supportsInheritance() && isPersisted()) {
+        if (superTables == null && getDataSource().getServerType().supportsInheritance() && isPersisted() && monitor != null) {
             superTables = initSuperTables(monitor);
         }
         return superTables == null || superTables.isEmpty() ? null : superTables;
@@ -498,6 +503,7 @@ public abstract class PostgreTable extends PostgreTableReal
         return super.refreshObject(monitor);
     }
 
+    @NotNull
     @Override
     public List<DBSEntityConstraintInfo> getSupportedConstraints() {
         return List.of(

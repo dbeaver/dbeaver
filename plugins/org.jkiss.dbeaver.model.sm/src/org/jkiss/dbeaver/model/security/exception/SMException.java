@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
 public class SMException extends DBCException {
+
     public SMException(String message) {
         super(message);
     }

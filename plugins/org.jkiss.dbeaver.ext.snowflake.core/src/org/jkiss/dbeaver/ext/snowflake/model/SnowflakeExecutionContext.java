@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.exec.DBCCachedContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -110,7 +111,7 @@ class SnowflakeExecutionContext extends GenericExecutionContext {
         }
         activeDatabaseName = catalogName;
 
-        DBUtils.fireObjectSelectionChange(oldActiveDatabase, catalog);
+        DBUtils.fireObjectSelectionChange(oldActiveDatabase, catalog, this);
 
         if (schema != null) {
             setDefaultSchema(monitor, schema, force);
@@ -130,7 +131,7 @@ class SnowflakeExecutionContext extends GenericExecutionContext {
         setActiveSchema(monitor, newSchemaName);
         GenericSchema oldActiveSchema = getDefaultSchema();
         activeSchemaName = newSchemaName;
-        DBUtils.fireObjectSelectionChange(oldActiveSchema, newActiveSchema);
+        DBUtils.fireObjectSelectionChange(oldActiveSchema, newActiveSchema, this);
     }
 
     @Override
@@ -203,5 +204,10 @@ class SnowflakeExecutionContext extends GenericExecutionContext {
             log.error("Unable to set active schema due to unexpected SQLException. schemaName=" + schemaName);
             throw new DBCException(e, this);
         }
+    }
+    @NotNull
+    @Override
+    public DBCCachedContextDefaults getCachedDefault() {
+        return new DBCCachedContextDefaults(activeDatabaseName, activeSchemaName);
     }
 }

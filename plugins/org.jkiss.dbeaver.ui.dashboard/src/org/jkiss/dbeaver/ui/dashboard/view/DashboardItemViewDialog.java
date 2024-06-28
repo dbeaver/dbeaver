@@ -20,30 +20,35 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dashboard.control.DashboardItem;
-import org.jkiss.dbeaver.ui.dashboard.control.DashboardList;
+import org.jkiss.dbeaver.ui.dashboard.control.DashboardListControl;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardListViewer;
+import org.jkiss.dbeaver.ui.dashboard.control.DashboardViewItem;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
-import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfigurationList;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
+import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 
 /**
  * Dashboard view dialog
  */
-public class DashboardItemViewDialog extends BaseDialog {
+public class DashboardItemViewDialog extends AbstractPopupPanel {
 
     private static final String DIALOG_ID = "DBeaver.DashboardItemViewDialog";//$NON-NLS-1$
 
-    private final DashboardViewContainer parentPart;
-    private final DashboardItem sourceItem;
+    private final DashboardContainer parentPart;
+    private final DashboardConfigurationList configuration;
+    private final DashboardViewItem sourceItem;
 
-    public DashboardItemViewDialog(DashboardViewContainer parentPart, DashboardItem sourceItem) {
-        super(parentPart.getSite().getShell(), UIDashboardMessages.dialog_dashboard_item_view_title, null);
+    public DashboardItemViewDialog(DashboardContainer parentPart, DashboardConfigurationList configuration, DashboardViewItem sourceItem) {
+        super(parentPart.getWorkbenchSite().getShell(), UIDashboardMessages.dialog_dashboard_item_view_title);
 
         this.parentPart = parentPart;
+        this.configuration = configuration;
         this.sourceItem = sourceItem;
     }
 
@@ -54,9 +59,7 @@ public class DashboardItemViewDialog extends BaseDialog {
 
     @Override
     protected Composite createDialogArea(Composite parent) {
-        Composite dialogArea = super.createDialogArea(parent);
-
-        Composite chartGroup = UIUtils.createPlaceholder(dialogArea, 1);
+        Composite chartGroup = UIUtils.createPlaceholder(parent, 1);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 450;
         gd.heightHint = 300;
@@ -64,25 +67,35 @@ public class DashboardItemViewDialog extends BaseDialog {
         chartGroup.setLayout(new FillLayout());
 
         DashboardListViewer dashboardListViewer = new DashboardListViewer(
-            parentPart.getSite(),
-            sourceItem.getDataSourceContainer(),
+            parentPart.getWorkbenchSite(),
+            null,
+            configuration,
             parentPart.getViewConfiguration());
         dashboardListViewer.setSingleChartMode(true);
         dashboardListViewer.createControl(chartGroup);
 
-        DashboardItem targetItem  = new DashboardItem(
-            (DashboardList) dashboardListViewer.getDefaultGroup(),
-            sourceItem.getDashboardId());
+        DashboardViewItem targetItem  = new DashboardViewItem(
+            (DashboardListControl) dashboardListViewer.getDefaultGroup(),
+            sourceItem.getItemDescriptor());
         targetItem.moveViewFrom(sourceItem, false);
 
-        return dialogArea;
+        closeOnFocusLost(
+            dashboardListViewer.getControl(),
+            chartGroup);
+
+        return chartGroup;
+    }
+
+    @Override
+    protected Control createButtonBar(Composite parent) {
+        return parent;
     }
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.CLOSE_LABEL, true);
+        Button okButton = createButton(parent, IDialogConstants.OK_ID, IDialogConstants.CLOSE_LABEL, true);
 
-        UIUtils.asyncExec(() -> getButton(IDialogConstants.OK_ID).setFocus());
+        UIUtils.asyncExec(okButton::setFocus);
     }
 
 }

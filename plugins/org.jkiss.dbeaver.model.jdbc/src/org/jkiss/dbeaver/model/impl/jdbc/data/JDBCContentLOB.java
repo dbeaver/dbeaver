@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
@@ -63,8 +64,8 @@ public abstract class JDBCContentLOB extends JDBCContentAbstract implements DBDC
 
     @Override
     public boolean updateContents(
-        DBRProgressMonitor monitor,
-        DBDContentStorage storage)
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBDContentStorage storage)
     {
         if (this.storage != null) {
             if (this.originalStorage != null && this.originalStorage != this.storage) {

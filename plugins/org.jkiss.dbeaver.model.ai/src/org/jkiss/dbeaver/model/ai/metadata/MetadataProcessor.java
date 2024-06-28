@@ -60,7 +60,7 @@ public class MetadataProcessor {
             return "";
         }
         StringBuilder description = new StringBuilder();
-        if (object instanceof DBSEntity) {
+        if (object instanceof DBSEntity entity) {
             String name = useFullyQualifiedName && context != null ? DBUtils.getObjectFullName(
                 context.getDataSource(),
                 object,
@@ -69,18 +69,18 @@ public class MetadataProcessor {
             description.append('\n');
             formatter.addObjectDescriptionIfNeeded(description, object, monitor);
             if (object instanceof DBSTable table) {
-                description.append(table.isView() ? "Create View: " : "Create Table: ");
+                description.append(table.isView() ? "CREATE VIEW" : "CREATE TABLE");
             }
-            description.append(name).append("(\n\t");
-            DBSEntityAttribute firstAttr = addPromptAttributes(monitor, (DBSEntity) object, description, formatter);
-            formatter.addExtraDescription(monitor, (DBSEntity) object, description, firstAttr);
-            description.append("\n);");
-        } else if (object instanceof DBSObjectContainer) {
+            description.append(" ").append(name).append("(");
+            DBSEntityAttribute firstAttr = addPromptAttributes(monitor, entity, description, formatter);
+            formatter.addExtraDescription(monitor, entity, description, firstAttr);
+            description.append(");");
+        } else if (object instanceof DBSObjectContainer objectContainer) {
             monitor.subTask("Load cache of " + object.getName());
-            ((DBSObjectContainer) object).cacheStructure(
+            objectContainer.cacheStructure(
                 monitor,
                 DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ATTRIBUTES);
-            for (DBSObject child : ((DBSObjectContainer) object).getChildren(monitor)) {
+            for (DBSObject child : objectContainer.getChildren(monitor)) {
                 if (DBUtils.isSystemObject(child) || DBUtils.isHiddenObject(child) || child instanceof DBSTablePartition) {
                     continue;
                 }
@@ -111,37 +111,15 @@ public class MetadataProcessor {
         @NotNull DAICompletionContext context,
         @Nullable DBSObjectContainer mainObject,
         @NotNull IAIFormatter formatter,
-        boolean isChatAPI,
-        int maxRequestTokens,
-        boolean chatCompletion
+        @NotNull String instructions,
+        int maxRequestTokens
     ) throws DBException {
         if (mainObject == null || mainObject.getDataSource() == null) {
             throw new DBException("Invalid completion request");
         }
 
         final DBCExecutionContext executionContext = context.getExecutionContext();
-
-        final StringBuilder sb = new StringBuilder();
-
-        if (chatCompletion && isChatAPI) {
-            sb.append(
-                """
-                You MUST perform SQL completion.
-                Your query must start with "SELECT" and MUST be enclosed with Markdown code block.
-                Talk naturally, as if you were talking to a human.
-                """);
-        } else if (isChatAPI) {
-            sb.append(
-                """
-                Perform SQL completion. Start response with SELECT keyword.
-                AVOID using Markdown.
-                Any comments MUST be placed in SQL multiline comment block at start of the query.
-                AVOID single line comments.
-                """);
-        } else {
-            sb.append("Perform SQL completion. AVOID using Markdown");
-        }
-
+        final StringBuilder sb = new StringBuilder(instructions);
         final String extraInstructions = formatter.getExtraInstructions(monitor, mainObject, executionContext);
         if (CommonUtils.isNotEmpty(extraInstructions)) {
             sb.append(", ").append(extraInstructions);
@@ -206,7 +184,7 @@ public class MetadataProcessor {
                     if (prevAttribute != null) {
                         prompt.append(",");
                         formatter.addObjectDescriptionIfNeeded(prompt, prevAttribute, monitor);
-                        prompt.append("\n\t");
+                        //prompt.append("\n\t");
                     }
                     prompt.append(attribute.getName());
                     formatter.addColumnTypeIfNeeded(prompt, attribute, monitor);
@@ -222,7 +200,7 @@ public class MetadataProcessor {
             return false;
         }
         DBSObject parent = object.getParentObject();
-        DBCExecutionContextDefaults contextDefaults = context.getContextDefaults();
+        DBCExecutionContextDefaults<?,?> contextDefaults = context.getContextDefaults();
         return parent != null && !(parent.equals(contextDefaults.getDefaultCatalog())
             || parent.equals(contextDefaults.getDefaultSchema()));
     }

@@ -16,78 +16,41 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.model;
 
-import org.apache.commons.jexl3.JexlExpression;
-import org.eclipse.swt.widgets.Control;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchSite;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
-import java.util.Date;
 import java.util.List;
 
 /**
- * Dashboard container
+ * Dashboard view container
  */
-public interface DashboardContainer {
+public interface DashboardContainer extends DBPDataSourceContainerProvider {
 
-    String getDashboardId();
+    @NotNull
+    DashboardConfigurationList getConfiguration();
 
-    String getDashboardTitle();
+    List<? extends DashboardGroupContainer> getGroups();
 
-    String getDashboardDescription();
+    DBCExecutionContext getExecutionContext();
 
-    DashboardViewType getDashboardViewType();
+    DashboardConfiguration getViewConfiguration();
 
-    DashboardDataType getDashboardDataType();
+    boolean isSingleChartMode();
 
-    DashboardCalcType getDashboardCalcType();
+    @NotNull
+    IWorkbenchSite getWorkbenchSite();
+    @Nullable
+    IWorkbenchPart getWorkbenchPart();
 
-    DashboardValueType getDashboardValueType();
+    void updateSelection();
 
-    DashboardInterval getDashboardInterval();
+    void showChartCatalog();
 
-    DashboardFetchType getDashboardFetchType();
+    void saveChanges();
 
-    /**
-     * Maximum item counts
-     */
-    int getDashboardMaxItems();
-
-    /**
-     * Maximum age in ms
-     */
-    long getDashboardMaxAge();
-
-    /**
-     * Dashboard update period in seconds
-     */
-    long getUpdatePeriod();
-
-    DBPDataSourceContainer getDataSourceContainer();
-
-    DashboardGroupContainer getGroup();
-
-    DashboardMapQuery getMapQuery();
-
-    String[] getMapKeys();
-
-    String[] getMapLabels();
-
-    JexlExpression getMapFormula();
-
-    List<? extends DashboardQuery> getQueryList();
-
-    Date getLastUpdateTime();
-
-    void updateDashboardData(DashboardDataset dataset);
-
-    void resetDashboardData();
-
-    void updateDashboardView();
-
-    boolean isAutoUpdateEnabled();
-
-    void disableAutoUpdate();
-
-    Control getDashboardControl();
-
+    void hideChartCatalog();
 }

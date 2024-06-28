@@ -16,6 +16,14 @@
 		</page>
 	</extension>
 
+	<extension point="org.eclipse.core.expressions.propertyTesters">
+		<propertyTester class="org.jkiss.dbeaver.ui.editors.sql.ai.AIPropertyTester"
+						id="org.jkiss.dbeaver.ui.editors.sql.ai.AIPropertyTester"
+						namespace="org.jkiss.dbeaver.ui.editors.sql.ai"
+						properties="isDisabled"
+						type="java.lang.Object"/>
+	</extension>
+
 	<extension point="org.eclipse.ui.bindings">
 		<key commandId="org.jkiss.dbeaver.ui.editors.sql.ai.showCompletion" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+I"/>
 	</extension>
@@ -33,7 +41,7 @@
 				<visibleWhen>
 				    <and>
 						<with variable="activePart">
-							<not><test property="org.jkiss.dbeaver.core.global.hasPreference" value="ai.completion.disabled"/></not>
+							<not><test property="org.jkiss.dbeaver.ui.editors.sql.ai.isDisabled" forcePluginActivation="true"/></not>
 						</with>
                         <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="sqlEditor.side.top,org.jkiss.dbeaver.ui.editors.sql.ai.showCompletion"/>
 					</and>
@@ -45,7 +53,7 @@
 	<extension point="org.eclipse.core.expressions.definitions">
 		<definition id="org.jkiss.dbeaver.core.ai.completion.enabled">
 			<not>
-				<test property="org.jkiss.dbeaver.core.global.hasPreference" value="ai.completion.disabled"/>
+				<test property="org.jkiss.dbeaver.ui.editors.sql.ai.isDisabled" forcePluginActivation="true" />
 			</not>
 		</definition>
 	</extension>

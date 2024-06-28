@@ -33,7 +33,7 @@
         <serverType id="gcloudpg" name="Google Cloud SQL - PostgreSQL" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerGCloud" logo="icons/google_cloud_sql_logo.png" customURL="true" cloudServer="true" needsPort="false" supportsClient="false"/>
         <serverType id="cratedb" name="CrateDB" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerCrateDB" logo="icons/cratedb_logo.png" customURL="true"/>
         <serverType id="materialize" name="Materialize" class="org.jkiss.dbeaver.ext.postgresql.model.impls.materialize.PostgreServerMaterialize" logo="icons/materialize_logo.png" customURL="true"/>
-        <serverType id="risingwave" name="RisingWave" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerRisingWave" logo="icons/risingwave_logo.png" customURL="true"/>
+        <serverType id="risingwave" name="RisingWave" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerRisingWave" logo="icons/risingwave_logo.png" customURL="true" supportsClient="false"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.postgresql.fdw.config">
@@ -120,7 +120,7 @@
                                                 </items>
                                             </items>
                                         </folder>
-                                        <folder label="%tree.dependencies.node.name" icon="#references" description="%tree.dependencies.node.tip" virtual="true">
+                                        <folder label="%tree.dependencies.node.name" icon="#references" description="%tree.dependencies.node.tip" virtual="true" visibleIf="connected &amp;&amp; dataSource.serverType.supportsDependencies()">
                                             <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="#reference" virtual="true"/>
                                         </folder>
                                         <folder label="%tree.references.node.name" icon="#references" description="%tree.references.node.tip" virtual="true" visibleIf="connected &amp;&amp; dataSource.serverType.supportsForeignKeys()">
@@ -161,7 +161,7 @@
                                                 </items>
                                             </items>
                                         </folder>
-                                        <folder label="%tree.dependencies.node.name" icon="#references" description="%tree.dependencies.node.tip" virtual="true">
+                                        <folder label="%tree.dependencies.node.name" icon="#references" description="%tree.dependencies.node.tip" virtual="true" visibleIf="connected &amp;&amp; dataSource.serverType.supportsDependencies()">
                                             <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="#reference" virtual="true"/>
                                         </folder>
                                     </items>
@@ -172,7 +172,7 @@
                                             <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                             </items>
                                         </folder>
-                                        <folder label="%tree.dependencies.node.name" icon="#references" description="%tree.dependencies.node.tip" virtual="true">
+                                        <folder label="%tree.dependencies.node.name" icon="#references" description="%tree.dependencies.node.tip" virtual="true" visibleIf="connected &amp;&amp; dataSource.serverType.supportsDependencies()">
                                             <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="#reference" virtual="true"/>
                                         </folder>
                                         <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger" label="%tree.triggers.node.name" icon="#triggers" description="View triggers" visibleIf="connected &amp;&amp; dataSource.serverType.supportsTriggers()">
@@ -195,7 +195,7 @@
                                                 </items>
                                             </items>
                                         </folder>
-                                        <folder label="%tree.dependencies.node.name" icon="#references" description="%tree.dependencies.node.tip" virtual="true">
+                                        <folder label="%tree.dependencies.node.name" icon="#references" description="%tree.dependencies.node.tip" virtual="true" visibleIf="connected &amp;&amp; dataSource.serverType.supportsDependencies()">
                                             <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="#reference" virtual="true"/>
                                         </folder>
                                     </items>
@@ -211,7 +211,7 @@
                                         <folder label="%tree.procedure_columns.node.name" icon="#columns" description="%tree.procedure_columns.node.name">
                                             <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
                                         </folder>
-                                        <folder label="%tree.dependencies.node.name" icon="#references" description="%tree.dependencies.node.tip">
+                                        <folder label="%tree.dependencies.node.name" icon="#references" description="%tree.dependencies.node.tip" visibleIf="connected &amp;&amp; dataSource.serverType.supportsDependencies()">
                                             <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="#reference" virtual="true"/>
                                         </folder>
                                     </items>
@@ -245,7 +245,7 @@
                         </folder>
 
                         <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreInformation" label="%tree.information.node.name"
-                                icon="#folder_info" id="information" description="%tree.information.node.tip">
+                                icon="#folder_info" id="information" description="%tree.information.node.tip" adminFolder="true">
                             <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreForeignDataWrapper" label="%tree.foreignDataWrappers.node.name" description="Foreign data wrappers" visibleIf="connected &amp;&amp; dataSource.serverType.supportsForeignServers()">
                                 <items label="%tree.foreignDataWrapper.node.name" path="foreignDataWrapper" property="foreignDataWrappers"/>
                             </folder>
@@ -261,7 +261,7 @@
                             </folder>
                         </folder>
 
-                        <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreRole" label="%tree.roles.node.name" icon="#folder_user" description="%tree.roles.node.tip" visibleIf="connected &amp;&amp; dataSource.serverType.supportsRoles()">
+                        <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreRole" label="%tree.roles.node.name" icon="#folder_user" description="%tree.roles.node.tip" visibleIf="connected &amp;&amp; dataSource.serverType.supportsRoles()" adminFolder="true">
                             <items label="%tree.role.node.name" path="users" property="authIds" icon="#user">
                                 <icon if="!object.canLogin" icon="#user_group"/>
                                 <folder id="members" type="org.jkiss.dbeaver.ext.postgresql.model.PostgreRoleMember" label="%tree.role.members.node.name" icon="#folder_user" description="%tree.role.members.node.tip" visibleIf="!object.canLogin"  navigable="false">
@@ -276,7 +276,7 @@
                     </items>
                 </folder>
 
-                <folder label="%tree.administer.node.name" icon="#folder_admin" id="folderAdmin" description="%tree.administer.node.tip">
+                <folder label="%tree.administer.node.name" icon="#folder_admin" id="folderAdmin" description="%tree.administer.node.tip" adminFolder="true">
                     <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreJob" label="%tree.jobs.node.name" description="%tree.jobs.node.description">
                         <items label="%tree.job.node.name" path="job" property="defaultInstance.jobs" icon="#job">
                             <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreJobStep" label="%tree.job.steps.node.name">
@@ -291,7 +291,7 @@
                 </folder>
 
                 <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreInformation" label="%tree.information.node.name"
-                        icon="#folder_info" id="folder_info" description="%tree.information.node.tip">
+                        icon="#folder_info" id="folder_info" description="%tree.information.node.tip" adminFolder="true">
                     <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreAccessMethod" label="%tree.accessMethods.node.name" icon="#languages" description="%tree.accessMethods.node.tip">
                         <items label="%tree.accessMethod.node.name" path="accessMethod" property="defaultInstance.accessMethods" icon="#accessMethod">
                             <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreOperatorClass" label="%tree.opClasses.node.name" icon="#operator" description="%tree.opClasses.node.tip">
@@ -332,6 +332,7 @@
                     defaultUser="postgres"
                     webURL="https://jdbc.postgresql.org/"
                     propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
+                    databaseDocumentationSuffixURL="Database-driver-PostgreSQL"
                     description="%driver.postgresql.description"
                     supportedConfigurationTypes="MANUAL,URL"
                     promoted="1"
@@ -534,13 +535,14 @@
                     description="AWS Redshift JDBC driver"
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
+                    databaseDocumentationSuffixURL="Database-driver-Amazon-Redshift"
                     propertiesURL="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-options.html"
                     categories="sql,analytic,bigdata,aws"
                     dialect="postgresql">
                     <replace provider="generic" driver="aws_redshift"/>
                     <replace provider="generic" driver="aws_redshift_42"/>
 
-                    <file type="jar" path="maven:/com.amazon.redshift:redshift-jdbc42:RELEASE[2.1.0.22]" load-optional-dependencies="true" bundle="!drivers.redshift"/>
+                    <file type="jar" path="maven:/com.amazon.redshift:redshift-jdbc42:RELEASE[2.1.0.29]" load-optional-dependencies="true" bundle="!drivers.redshift"/>
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.redshift"/>
                     <file type="jar" path="drivers/redshift" bundle="drivers.redshift"/>
 
@@ -584,6 +586,7 @@
                         defaultPort="5432"
                         webURL="https://cloud.google.com/sql"
                         propertiesURL="https://github.com/GoogleCloudPlatform/cloud-sql-jdbc-socket-factory#postgresql-1"
+                        databaseDocumentationSuffixURL="Database-driver-PostgreSQL-on-Google-Cloud"
                         description="%driver.gcloudpg.description"
                         supportedConfigurationTypes="MANUAL,URL"
                         categories="sql,cloud">
@@ -824,7 +827,7 @@
         </task>
         <task id="pgScriptExecute" name="%task.pgScriptExecute.name" description="%task.pgScriptExecute.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.png" type="postgresql" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreScriptExecuteHandler">
             <datasource id="postgresql"/>
-            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase" if="object.dataSource.serverType.supportsNativeClient()"/>
         </task>
 
         <!-- SQL tools -->
@@ -910,6 +913,12 @@ SELECT
         <generator id="alterTypeAddValue" class="org.jkiss.dbeaver.ext.postgresql.model.sql.generator.SQLGeneratorTypeAddValue" label="ADD VALUE" description="ALTER TYPE ADD VALUE" order="1002">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType"/>
         </generator>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlBackup">
+        <backup id="backupPostgre" class="org.jkiss.dbeaver.ext.postgresql.backup.JDBCDatabasePostgresBackupHandler" dialect="postgresql"
+                label="backup" description="Backup database">
+        </backup>
     </extension>
 
 </plugin>

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
@@ -60,6 +61,7 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
         return dataSource;
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getSupportedObjectTypes()
     {
@@ -72,6 +74,7 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
             };
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getHyperlinkObjectTypes()
     {
@@ -81,6 +84,7 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
         };
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getAutoCompleteObjectTypes()
     {
@@ -90,6 +94,7 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
         };
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getSearchObjectTypes() {
         //TODO: currently, we do not search for data types, although it's absolutely possible.
@@ -162,7 +167,7 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
                 }
             }
         } catch (SQLException ex) {
-            throw new DBException(ex, getDataSource());
+            throw new DBDatabaseException(ex, getDataSource());
         }
         return references;
     }

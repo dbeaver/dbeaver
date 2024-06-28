@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
@@ -335,7 +336,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
                     enumValues = values.toArray();
                 }
             } catch (SQLException e) {
-                throw new DBException("Error reading enum values", e, getDataSource());
+                throw new DBDatabaseException("Error reading enum values", e, getDataSource());
             }
         }
     }
@@ -350,6 +351,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
         return super.getName();
     }
 
+    @NotNull
     @Override
     public String getFullTypeName() {
         return super.getFullTypeName();
@@ -371,6 +373,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
         return getParentObject().getDatabase();
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         if (dataKind != null) {

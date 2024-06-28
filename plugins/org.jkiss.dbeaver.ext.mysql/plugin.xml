@@ -182,11 +182,13 @@
                         defaultUser="root"
                         webURL="http://www.mysql.com/products/connector/"
                         propertiesURL="https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-reference-configuration-properties.html"
+                        databaseDocumentationSuffixURL="Database-driver-MySQL"
                         description="Driver for MySQL 5.x+"
                         categories="sql">
 
-                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[5.1.44]"/>
+                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[5.1.49]"/>
                     <file type="license" path="https://www.gnu.org/licenses/old-licenses/lgpl-2.0.txt" bundle="!drivers.mysql"/>
+                    <file type="jar" path="drivers/mysql/mysql5" bundle="drivers.mysql"/>
                     <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
 
                     <property name="connectTimeout" value="20000"/>
@@ -213,7 +215,8 @@
                         defaultPort="3306"
                         defaultUser="root"
                         webURL="https://www.mysql.com/products/connector/"
-                        propertiesURL="https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-configuration-properties.html"
+                        propertiesURL="https://dev.mysql.com/doc/connector-j/en/connector-j-reference-configuration-properties.html"
+                        databaseDocumentationSuffixURL="Database-driver-MySQL"
                         description="Driver for MySQL 8 and later"
                         promoted="1"
                         categories="sql">
@@ -242,7 +245,8 @@
                     defaultPort="3306"
                     defaultUser="root"
                     webURL="https://dev.mysql.com/doc/ndbapi/en/mccj-using-connectorj.html"
-                    propertiesURL="https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-configuration-properties.html"
+                    propertiesURL="https://dev.mysql.com/doc/connector-j/en/connector-j-reference-configuration-properties.html"
+                    databaseDocumentationSuffixURL="Database-driver-MySQL"
                     description="Driver for MySQL NDB cluster"
                     categories="sql">
                     <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE[8.2.0]" bundle="!drivers.mysql"/>

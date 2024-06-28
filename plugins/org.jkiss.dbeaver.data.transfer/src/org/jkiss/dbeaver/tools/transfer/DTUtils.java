@@ -258,7 +258,7 @@ public class DTUtils {
         DBRRunnableContext runnableContext,
         OBJECT_CONTEXT context,
         @NotNull OBJECT_TYPE object
-    ) {
+    )  throws DBException {
         DTObjectSerializer<OBJECT_CONTEXT, OBJECT_TYPE> serializer = SerializerRegistry.getInstance().createSerializer(object);
         if (serializer == null) {
             return null;
@@ -290,16 +290,16 @@ public class DTUtils {
         }
 
         @Override
-        public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) throws DBCException {
+        public void fetchStart(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, long offset, long maxRows) throws DBCException {
             attributes = DBUtils.makeLeafAttributeBindings(session, container, resultSet);
         }
 
         @Override
-        public void fetchRow(DBCSession session, DBCResultSet resultSet) throws DBCException {
+        public void fetchRow(@NotNull DBCSession session, @NotNull DBCResultSet resultSet) throws DBCException {
         }
 
         @Override
-        public void fetchEnd(DBCSession session, DBCResultSet resultSet) throws DBCException {
+        public void fetchEnd(@NotNull DBCSession session, @NotNull DBCResultSet resultSet) throws DBCException {
         }
 
         @Override

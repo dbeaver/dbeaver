@@ -463,7 +463,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
     {
         IFile configFile = project.getFile(DataSourceRegistry.LEGACY_CONFIG_FILE_NAME);
         if (configFile == null || !configFile.exists()) {
-            configFile = project.getFile(DataSourceRegistry.OLD_CONFIG_FILE_NAME);
+            configFile = project.getFile(DataSourceRegistry.LEGACY2_CONFIG_FILE_NAME);
         }
         if (configFile == null || !configFile.exists()) {
             return;

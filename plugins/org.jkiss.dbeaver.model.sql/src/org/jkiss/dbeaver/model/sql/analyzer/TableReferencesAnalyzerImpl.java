@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.model.sql.analyzer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
+import org.jkiss.dbeaver.model.lsm.LSMAnalyzerParameters;
 import org.jkiss.dbeaver.model.lsm.sql.dialect.LSMDialectRegistry;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.stm.*;
@@ -46,11 +48,13 @@ public class TableReferencesAnalyzerImpl implements TableReferencesAnalyzer {
         this.request = request;
     }
 
-    private void prepareTableReferences(@NotNull String query) {
+    private void prepareTableReferences() {
         try {
-            STMSource querySource = STMSource.fromReader(new StringReader(query));
-            LSMAnalyzer analyzer = LSMDialectRegistry.getInstance().getAnalyzerForDialect(
-                request.getContext().getDataSource().getSQLDialect());
+            STMSource querySource = STMSource.fromReader(new StringReader(this.request.getActiveQuery().getText()));
+
+            SQLDialect dialect = request.getContext().getDataSource().getSQLDialect();
+            LSMAnalyzer analyzer = LSMDialectRegistry.getInstance().getAnalyzerFactoryForDialect(dialect)
+                 .createAnalyzer(LSMAnalyzerParameters.forDialect(dialect, request.getContext().getSyntaxManager()));
             STMTreeRuleNode tree = analyzer.parseSqlQueryTree(querySource, new STMSkippingErrorListener());
             tableReferences = getTableAndAliasFromSources(tree);
         } catch (Exception e) {
@@ -58,17 +62,24 @@ public class TableReferencesAnalyzerImpl implements TableReferencesAnalyzer {
             tableReferences = Collections.emptyMap();
         }
     }
+    
+    private boolean prepareTableReferencesIfNeeded() {
+        if (tableReferences == null || tableReferences.isEmpty()) {
+            final SQLScriptElement activeQuery = request.getActiveQuery();
+            if (activeQuery == null) {
+                return false;
+            }
+            this.prepareTableReferences();
+        }
+        return true;
+    }
 
     @NotNull
     @Override
     public Map<String, String> getFilteredTableReferences(@NotNull String tableAlias, boolean allowPartialMatch) {
         Map<String, String> result;
-        if (tableReferences == null || tableReferences.isEmpty()) {
-            final SQLScriptElement activeQuery = request.getActiveQuery();
-            if (activeQuery == null) {
-                return Collections.emptyMap();
-            }
-            prepareTableReferences(activeQuery.getText());
+        if (!this.prepareTableReferencesIfNeeded()) {
+            return Collections.emptyMap();
         }
         if (CommonUtils.isNotEmpty(tableAlias) && tableReferences.size() > 0) {
             result = tableReferences.entrySet().stream()
@@ -84,9 +95,11 @@ public class TableReferencesAnalyzerImpl implements TableReferencesAnalyzer {
 
     @NotNull
     @Override
-    public Map<String, String> getTableAliasesFromQuery(@NotNull String query) {
+    public Map<String, String> getTableAliasesFromQuery() {
         try {
-            prepareTableReferences(query);
+            if (!this.prepareTableReferencesIfNeeded()) {
+                return Collections.emptyMap();
+            }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }

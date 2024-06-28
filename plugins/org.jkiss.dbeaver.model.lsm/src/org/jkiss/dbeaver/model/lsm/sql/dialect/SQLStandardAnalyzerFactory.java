@@ -16,8 +16,10 @@
  */
 package org.jkiss.dbeaver.model.lsm.sql.dialect;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzerFactory;
+import org.jkiss.dbeaver.model.lsm.LSMAnalyzerParameters;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 
 public class SQLStandardAnalyzerFactory implements LSMAnalyzerFactory {
@@ -26,8 +28,9 @@ public class SQLStandardAnalyzerFactory implements LSMAnalyzerFactory {
         // do nothing
     }
 
+    @NotNull
     @Override
-    public LSMAnalyzer createAnalyzer(SQLDialect dialect) {
-        return new SQLStandardAnalyzer(dialect);
+    public LSMAnalyzer createAnalyzer(@NotNull LSMAnalyzerParameters parameters) {
+        return new SQLStandardAnalyzer(parameters);
     }
 }

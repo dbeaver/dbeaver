@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.registry.driver;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -39,6 +40,7 @@ public class RemoteNativeClientLocation implements DBPNativeClientLocation {
         return clientDescriptor.getId();
     }
 
+    @NotNull
     @Override
     public File getPath() {
         NativeClientDistributionDescriptor distribution = clientDescriptor.findDistribution();
@@ -49,6 +51,7 @@ public class RemoteNativeClientLocation implements DBPNativeClientLocation {
         return new File(getName());
     }
 
+    @NotNull
     @Override
     public String getDisplayName() {
         return clientDescriptor.getLabel();

@@ -17,13 +17,14 @@
 package org.jkiss.dbeaver.model.security;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObjectController;
 import org.jkiss.dbeaver.model.auth.SMAuthCredentialsManager;
 import org.jkiss.dbeaver.model.security.user.SMAuthPermissions;
 import org.jkiss.dbeaver.model.security.user.SMObjectPermissions;
-import org.jkiss.dbeaver.model.security.user.SMTeam;
 import org.jkiss.dbeaver.model.security.user.SMUser;
+import org.jkiss.dbeaver.model.security.user.SMUserTeam;
 
 import java.util.List;
 import java.util.Map;
@@ -46,7 +47,7 @@ public interface SMController extends DBPObjectController,
      * @throws DBException the db exception
      */
     @NotNull
-    SMTeam[] getCurrentUserTeams() throws DBException;
+    SMUserTeam[] getCurrentUserTeams() throws DBException;
 
     /**
      * Gets current active user.
@@ -72,7 +73,14 @@ public interface SMController extends DBPObjectController,
      * @param value the value
      * @throws DBException the db exception
      */
-    void setCurrentUserParameter(String name, Object value) throws DBException;
+    void setCurrentUserParameter(@NotNull String name, @Nullable Object value) throws DBException;
+
+    /**
+     * Sets user parameters.
+     *
+     * @throws DBException the db exception
+     */
+    void setCurrentUserParameters(@NotNull Map<String, Object> parameters) throws DBException;
 
     ///////////////////////////////////////////
     // Credentials
@@ -213,4 +221,13 @@ public interface SMController extends DBPObjectController,
         @NotNull String objectId,
         @NotNull SMObjectType objectType
     ) throws DBException;
+
+    /**
+     * checks that the current suer has the required role and is a member of the same teams as the specified list of
+     * users
+     */
+    boolean hasAccessToUsers(@NotNull String teamRole, @NotNull Set<String> userIds) throws DBException;
+
+    @NotNull
+    String[] getTeamMembers(String teamId) throws DBException;
 }

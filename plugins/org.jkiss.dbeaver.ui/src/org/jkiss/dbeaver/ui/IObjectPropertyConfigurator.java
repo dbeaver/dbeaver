@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui;
 
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 /**
  * IObjectPropertyConfigurator
@@ -37,5 +38,10 @@ public interface IObjectPropertyConfigurator<OBJECT, SETTINGS> {
     void resetSettings(@NotNull SETTINGS settings);
 
     boolean isComplete();
+
+    @Nullable
+    default String getErrorMessage() {
+        return null;
+    }
 
 }

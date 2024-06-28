@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,8 @@ public class AltibaseConstants {
     public static final String TYPE_NAME_GEOMETRY = "GEOMETRY";
     public static final String TYPE_NAME_TIMESTAMP = "TIMESTAMP";
     public static final String TYPE_NAME_DATE = "DATE";
+
+    public static final String OPERATION_MODIFY = "MODIFY";
     
     public static final String SRID_EQ = "SRID=";
     
@@ -116,4 +118,10 @@ public class AltibaseConstants {
     public static final String RESULT_YES_VALUE = "YES";
     public static final String RESULT_Y_VALUE = "Y";
     public static final String RESULT_1_VALUE = "1";
+    
+    /*
+     * V$PROPERTY attributes
+     */
+    public static final long IDP_ATTR_RD_WRITABLE = 0x00000000;
+    public static final long IDP_ATTR_RD_READONLY = 0x00000002;
 }

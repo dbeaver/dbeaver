@@ -32,11 +32,11 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
  */
 public class LocalResultSetColumn implements DBCAttributeMetaData
 {
-    protected final DBCResultSet resultSet;
+    protected final transient DBCResultSet resultSet;
     private final int index;
     private final String label;
     private final DBPDataKind dataKind;
-    private final DBSTypedObject typedObject;
+    private final transient DBSTypedObject typedObject;
 
     public LocalResultSetColumn(DBCResultSet resultSet, int index, String label, DBPDataKind dataKind)
     {
@@ -117,6 +117,7 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
         return label;
     }
 
+    @NotNull
     @Property(viewable = true, order = 5)
     @Override
     public String getTypeName()
@@ -126,6 +127,7 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
             typedObject.getTypeName();
     }
 
+    @NotNull
     @Override
     public String getFullTypeName() {
         return typedObject == null ? DBUtils.getFullTypeName(this) : typedObject.getFullTypeName();
@@ -137,18 +139,21 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
         return typedObject == null ? 0 : typedObject.getTypeID();
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind()
     {
         return dataKind;
     }
 
+    @Nullable
     @Override
     public Integer getScale()
     {
         return typedObject == null ? null : typedObject.getScale();
     }
 
+    @Nullable
     @Override
     public Integer getPrecision()
     {

@@ -18,10 +18,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPNamedObject2;
-import org.jkiss.dbeaver.model.DBPQualifiedObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -30,7 +27,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
 /**
  * GenericSequence
  */
-public class GenericSequence implements DBSSequence, DBPQualifiedObject, DBPNamedObject2
+public class GenericSequence implements DBSSequence, DBPQualifiedObject, DBPNamedObject2, DBPSaveableObject
 {
     private GenericStructContainer container;
     private String name;
@@ -39,6 +36,7 @@ public class GenericSequence implements DBSSequence, DBPQualifiedObject, DBPName
     private Number minValue;
     private Number maxValue;
     private Number incrementBy;
+    private boolean persisted;
 
     public GenericSequence(GenericStructContainer container, String name, String description, Number lastValue, Number minValue, Number maxValue, Number incrementBy) {
         this.container = container;
@@ -48,6 +46,18 @@ public class GenericSequence implements DBSSequence, DBPQualifiedObject, DBPName
         this.minValue = minValue;
         this.maxValue = maxValue;
         this.incrementBy = incrementBy;
+        this.persisted = true;
+    }
+
+    // Constructor for newly created object
+    public GenericSequence(@NotNull GenericStructContainer container, @NotNull String name) {
+        this.container = container;
+        this.name = name;
+        this.lastValue = 0;
+        this.minValue = 1;
+        this.maxValue = Long.MAX_VALUE;
+        this.incrementBy = 1;
+        this.persisted = false;
     }
 
     @NotNull
@@ -64,7 +74,12 @@ public class GenericSequence implements DBSSequence, DBPQualifiedObject, DBPName
 
     @Override
     public boolean isPersisted() {
-        return true;
+        return persisted;
+    }
+
+    @Override
+    public void setPersisted(boolean persisted) {
+        this.persisted = persisted;
     }
 
     @Nullable

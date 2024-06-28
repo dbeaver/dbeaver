@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -60,7 +62,7 @@ public class PostgreMaterializedView extends PostgreViewBase
     }
 
     @Override
-    public Collection<PostgreIndex> getIndexes(DBRProgressMonitor monitor) throws DBException
+    public Collection<PostgreIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return getSchema().getIndexCache().getObjects(monitor, getSchema(), this);
     }
@@ -96,6 +98,7 @@ public class PostgreMaterializedView extends PostgreViewBase
     }
 
 
+    @NotNull
     @Override
     public DBSObjectType getObjectType() {
         return RelationalObjectType.TYPE_MATERIALIZED_VIEW;

@@ -17,12 +17,14 @@
 
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.Nullable;
+
 /**
  * DBS object wrapper
  */
-public interface DBSWrapper
-{
+public interface DBSWrapper {
 
+    @Nullable
     DBSObject getObject();
 
 }

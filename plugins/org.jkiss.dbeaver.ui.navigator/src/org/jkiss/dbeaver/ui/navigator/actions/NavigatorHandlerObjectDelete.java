@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.navigator.actions;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -43,6 +44,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.Reply;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.dialogs.NavigatorNodesDeletionConfirmations;
 import org.jkiss.utils.CommonUtils;
 
@@ -54,6 +56,9 @@ import java.util.stream.Collectors;
 
 public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase implements IElementUpdater {
     private static final Log log = Log.getLog(NavigatorHandlerObjectDelete.class);
+
+    public NavigatorHandlerObjectDelete() {
+    }
 
     @Override
     public Object execute(final ExecutionEvent event) throws ExecutionException {
@@ -208,22 +213,31 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
     }
 
     @Override
+    public boolean isEnabled() {
+        return super.isEnabled();
+    }
+
+    @Override
     public void updateElement(UIElement element, Map parameters) {
-//        if (!updateUI) {
-//            return;
-//        }
-//        final ISelectionProvider selectionProvider = UIUtils.getSelectionProvider(element.getServiceLocator());
-//        if (selectionProvider != null) {
-//            ISelection selection = selectionProvider.getSelection();
-//
-//            if (selection instanceof IStructuredSelection && ((IStructuredSelection) selection).size() > 1) {
-//                element.setText(UINavigatorMessages.actions_navigator_delete_objects);
-//            } else {
-//                DBNNode node = NavigatorUtils.getSelectedNode(selection);
-//                if (node != null) {
-//                    element.setText(UINavigatorMessages.actions_navigator_delete_ + " " + node.getNodeTypeLabel()  + " '" + node.getNodeName() + "'");
-//                }
-//            }
-//        }
+        if (!updateUI) {
+            return;
+        }
+        if (!UPDATE_GLOBAL_ACTION_LABELS) {
+            // We cannot update labels/icons for context-dependent global actions
+            // Because main menu is not updated on every menu show. And only the first text is saved
+            return;
+        }
+
+        final ISelectionProvider selectionProvider = UIUtils.getSelectionProvider(element.getServiceLocator());
+        if (selectionProvider != null) {
+            ISelection selection = selectionProvider.getSelection();
+
+            if (selection instanceof IStructuredSelection structuredSelection && structuredSelection.size() == 1) {
+                DBNNode node = NavigatorUtils.getSelectedNode(structuredSelection);
+                if (node != null) {
+                    element.setText(NLS.bind(UINavigatorMessages.actions_navigator_delete, node.getNodeTypeLabel()));
+                }
+            }
+        }
     }
 }

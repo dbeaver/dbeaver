@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.nio.file.Path;
 import java.util.Map;
@@ -94,6 +95,33 @@ public interface DBTTaskManager {
     @NotNull
     Path getStatisticsFolder(@NotNull DBTTask task);
 
-    Job runTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener, @NotNull Map<String, Object> options) throws DBException;
+    /**
+     * Runs a task synchronously, blocking the calling thread.
+     *
+     * @param monitor  progress monitor
+     * @param task     task to run
+     * @param listener task execution listener
+     * @return task run status
+     * @throws DBException on any error
+     * @see #scheduleTask(DBTTask, DBTTaskExecutionListener)
+     */
+    @NotNull
+    DBTTaskRunStatus runTask(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBTTask task,
+        @NotNull DBTTaskExecutionListener listener
+    ) throws DBException;
+
+    /**
+     * Schedules a task to be run at some point in the future.
+     *
+     * @param task     task to run
+     * @param listener task execution listener
+     * @throws DBException on any error
+     * @return job that will run the task
+     * @see #runTask(DBRProgressMonitor, DBTTask, DBTTaskExecutionListener)
+     */
+    @NotNull
+    Job scheduleTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener) throws DBException;
 
 }

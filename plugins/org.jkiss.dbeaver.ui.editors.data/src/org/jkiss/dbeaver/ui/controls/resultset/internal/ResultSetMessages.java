@@ -120,11 +120,16 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_viewer_hide_columns_error_title;
     public static String controls_resultset_viewer_hide_columnss_error_text;
     public static String controls_resultset_viewer_show_hidden_columns;
+    public static String controls_resultset_viewer_collection_size_text;
 
     public static String controls_resultset_ref_menu_no_references;
     public static String controls_resultset_ref_menu_references;
     public static String controls_resultset_ref_menu_no_associations;
     public static String controls_resultset_ref_menu_associations;
+
+    public static String controls_resultset_results_read_only;
+    public static String controls_resultset_results_read_only_status;
+    public static String controls_resultset_results_edit_key;
 
     public static String controls_rs_pump_job_context_name;
     public static String controls_rs_pump_job_name;
@@ -327,6 +332,8 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_database_resultsets_label_binary_strings_max_length;
     public static String pref_page_database_resultsets_label_auto_fetch_segment;
     public static String pref_page_database_resultsets_label_auto_fetch_segment_tip;
+    public static String pref_page_database_resultsets_label_automatic_row_count;
+    public static String pref_page_database_resultsets_label_automatic_row_count_tip;
     public static String pref_page_database_resultsets_label_reread_on_scrolling;
     public static String pref_page_database_resultsets_label_reread_on_scrolling_tip;
     public static String pref_page_database_resultsets_label_use_sql;

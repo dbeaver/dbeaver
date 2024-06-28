@@ -29,6 +29,8 @@ public class RegistryConstants {
     public static final String TAG_PARAMETER = "parameter"; //$NON-NLS-1$
     public static final String TAG_PROPERTY = "property"; //$NON-NLS-1$
     public static final String TAG_PROPERTIES = "properties"; //$NON-NLS-1$
+    public static final String TAG_EXTENSIONS = "extensions"; //$NON-NLS-1$
+    public static final String TAG_TAGS = "tags"; //$NON-NLS-1$
     public static final String TAG_FILE = "file"; //$NON-NLS-1$
     public static final String TAG_FILE_SOURCE = "fileSource"; //$NON-NLS-1$
     public static final String TAG_LIBRARY = "library"; // [LEGACY: from DBeaver 1.1.0]  //$NON-NLS-1$
@@ -84,6 +86,7 @@ public class RegistryConstants {
     public static final String ATTR_SAMPLE_URL = "sampleURL"; //$NON-NLS-1$
     public static final String ATTR_WEB_URL = "webURL"; //$NON-NLS-1$
     public static final String ATTR_PROPERTIES_WEB_URL = "propertiesURL"; //$NON-NLS-1$
+    public static final String ATTR_DATABASE_DOCUMENTATION_SUFFIX_URL = "databaseDocumentationSuffixURL"; //$NON-NLS-1$
     public static final String ATTR_SUPPORTS_DRIVER_PROPERTIES = "supportsDriverProperties"; //$NON-NLS-1$
     public static final String ATTR_CLIENT_REQUIRED = "clientRequired"; //$NON-NLS-1$
     public static final String ATTR_ANONYMOUS = "anonymous"; //$NON-NLS-1$

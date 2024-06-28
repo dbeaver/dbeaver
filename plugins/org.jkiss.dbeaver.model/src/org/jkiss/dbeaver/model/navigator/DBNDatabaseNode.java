@@ -217,13 +217,12 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
     }
 
     @Override
-    public DBNDatabaseNode[] getChildren(DBRProgressMonitor monitor)
-        throws DBException {
+    public DBNDatabaseNode[] getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         boolean needsLoad;
         synchronized (this) {
             needsLoad = childNodes == null && hasChildren(false);
         }
-        if (needsLoad) {
+        if (needsLoad && !monitor.isForceCacheUsage()) {
             if (this.initializeNode(monitor, null)) {
                 final List<DBNDatabaseNode> tmpList = new ArrayList<>();
                 loadChildren(monitor, getMeta(), null, tmpList, this, true);
@@ -472,9 +471,9 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                         loadChildren(monitor, item, oldList, toList, source, reflect);
                     }
                 }
-            } else if (child instanceof DBXTreeFolder) {
-                if (hideFolders || ((mergeEntities || supportsOptionalFolders) && ((DBXTreeFolder)child).isOptional())) {
-                    if (child.isVirtual()) {
+            } else if (child instanceof DBXTreeFolder treeFolder) {
+                if (hideFolders || ((mergeEntities || supportsOptionalFolders) && treeFolder.isOptional())) {
+                    if (child.isVirtual() || treeFolder.isAdminFolder()) {
                         continue;
                     }
                     // Fall down
@@ -833,7 +832,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             if (pathName.length() > 0) {
                 pathName.insert(0, '/');
             }
-            pathName.insert(0, node.getNodeDisplayName().replace("/", DBNModel.SLASH_ESCAPE_TOKEN));
+            pathName.insert(0, DBNUtils.encodeNodePath(node.getNodeDisplayName()));
         }
         return pathName.toString();
     }

@@ -231,25 +231,18 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         return connection != null;
     }
 
-    @NotNull
     @Override
-    public InvalidateResult invalidateContext(@NotNull DBRProgressMonitor monitor, boolean closeOnFailure)
-        throws DBException
-    {
-        if (this.connection == null) {
-            connect(monitor);
-            return InvalidateResult.CONNECTED;
+    public void invalidateContext(@NotNull DBRProgressMonitor monitor, @NotNull DBCInvalidatePhase phase) throws DBException {
+        if (phase == DBCInvalidatePhase.BEFORE_INVALIDATE) {
+            closeContext(false);
         }
 
-        Boolean prevAutocommit = autoCommit;
-        Integer txnLevel = transactionIsolationLevel;
-        closeContext(false);
-        // Try to connect again.
-        // If connect will fail then context will remain in the list but with null connection.
-        // On next invalidate it will try to reopen
-        connect(monitor, prevAutocommit, txnLevel, this, false);
-
-        return InvalidateResult.RECONNECTED;
+        if (phase == DBCInvalidatePhase.INVALIDATE) {
+            // Try to connect again.
+            // If connect will fail then context will remain in the list but with null connection.
+            // On next invalidate it will try to reopen
+            connect(monitor, autoCommit, transactionIsolationLevel, this, false);
+        }
     }
 
     @Override
@@ -447,7 +440,11 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
                 dbCon.rollback();
             }
         } catch (SQLException e) {
-            throw new JDBCException(e, this);
+            if (JDBCUtils.isRollbackWarning(e)) {
+                log.debug("Rollback warning: " + e.getMessage());
+            } else {
+                throw new JDBCException(e, this);
+            }
         } finally {
             if (session.isLoggingEnabled()) {
                 QMUtils.getDefaultHandler().handleTransactionRollback(this, savepoint);

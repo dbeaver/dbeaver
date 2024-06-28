@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.dameng.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.dameng.DamengConstants;
@@ -65,7 +66,7 @@ public class DamengMetaModel extends GenericMetaModel {
     }
 
     @Override
-    public DamengSchema createSchemaImpl(GenericDataSource dataSource, GenericCatalog catalog, String schemaName) throws DBException {
+    public DamengSchema createSchemaImpl(@NotNull GenericDataSource dataSource, GenericCatalog catalog, @NotNull String schemaName) throws DBException {
         return new DamengSchema(dataSource, schemaName, true);
     }
 
@@ -87,43 +88,51 @@ public class DamengMetaModel extends GenericMetaModel {
     }
 
     @Override
-    public boolean supportsSequences(GenericDataSource dataSource) {
+    public boolean supportsSequences(@NotNull GenericDataSource dataSource) {
         return true;
     }
 
     @Override
     public JDBCStatement prepareSequencesLoadStatement(JDBCSession session, GenericStructContainer container) throws SQLException {
         JDBCPreparedStatement dbStat = session.prepareStatement("SELECT " +
-                "SEQ_OBJ.NAME, " +
-                "SEQ_OBJ.INFO4 AS INCREMENT, " +
-                "SF_SEQUENCE_GET_MAX(SCH_OBJ.NAME,SEQ_OBJ.NAME) AS MAX_VALUE," +
-                "SF_SEQUENCE_GET_MIN(SCH_OBJ.NAME,SEQ_OBJ.NAME) AS MIN_VALUE," +
-                "SF_SEQ_CURRVAL(SCH_OBJ.NAME,SEQ_OBJ.NAME) AS LAST_VALUE " +
-                "FROM " +
-                "SYSOBJECTS SEQ_OBJ, " +
-                "SYSOBJECTS SCH_OBJ " +
-                "WHERE SEQ_OBJ.SCHID = SCH_OBJ.ID " +
-                "AND SEQ_OBJ.SUBTYPE$ = 'SEQ' " +
-                "AND SCH_OBJ.NAME = ?");
+            "SEQ_OBJ.NAME, " +
+            "SEQ_OBJ.INFO4 AS INCREMENT, " +
+            "SF_SEQUENCE_GET_MAX(SCH_OBJ.NAME,SEQ_OBJ.NAME) AS MAX_VALUE," +
+            "SF_SEQUENCE_GET_MIN(SCH_OBJ.NAME,SEQ_OBJ.NAME) AS MIN_VALUE," +
+            "SF_SEQ_CURRVAL(SCH_OBJ.NAME,SEQ_OBJ.NAME) AS LAST_VALUE, " +
+            "SF_SEQUENCE_GET_CACHE_NUM(SCH_OBJ.NAME,SEQ_OBJ.NAME) CACHE_SIZE," +
+            "SEQ_OBJ.INFO1 & 0x0000FF IS_CYCLE," +
+            "SEQ_OBJ.INFO1 & 0x00FF00 IS_ORDER," +
+            "SEQ_OBJ.INFO1 & 0xFF0000 IS_CACHE" +
+            "\nFROM " +
+            "SYSOBJECTS SEQ_OBJ, " +
+            "SYSOBJECTS SCH_OBJ " +
+            "\nWHERE SEQ_OBJ.SCHID = SCH_OBJ.ID " +
+            "AND SEQ_OBJ.SUBTYPE$ = 'SEQ' " +
+            "AND SCH_OBJ.NAME = ?");
         dbStat.setString(1, container.getName());
         return dbStat;
     }
 
     @Override
-    public GenericSequence createSequenceImpl(JDBCSession session, GenericStructContainer container, JDBCResultSet dbResult) throws DBException {
+    public GenericSequence createSequenceImpl(
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer container,
+        @NotNull JDBCResultSet dbResult
+    ) {
         String name = JDBCUtils.safeGetString(dbResult, 1);
         if (CommonUtils.isEmpty(name)) {
             return null;
         }
-        Number lastValue = JDBCUtils.safeGetBigDecimal(dbResult, "LAST_VALUE");
-        Number incrementBy = JDBCUtils.safeGetBigDecimal(dbResult, "INCREMENT");
-        Number minValue = JDBCUtils.safeGetBigDecimal(dbResult, "MIN_VALUE");
-        Number maxValue = JDBCUtils.safeGetBigDecimal(dbResult, "MAX_VALUE");
-        return new GenericSequence(container, name, "", lastValue, minValue, maxValue, incrementBy);
+        long lastValue = JDBCUtils.safeGetLong(dbResult, "LAST_VALUE");
+        long incrementBy = JDBCUtils.safeGetLong(dbResult, "INCREMENT");
+        long minValue = JDBCUtils.safeGetLong(dbResult, "MIN_VALUE");
+        long maxValue = JDBCUtils.safeGetLong(dbResult, "MAX_VALUE");
+        return new DamengSequence(container, name, null, lastValue, minValue, maxValue, incrementBy, dbResult);
     }
 
     @Override
-    public boolean supportsDatabaseTriggers(GenericDataSource dataSource) {
+    public boolean supportsDatabaseTriggers(@NotNull GenericDataSource dataSource) {
         return true;
     }
 
@@ -134,7 +143,11 @@ public class DamengMetaModel extends GenericMetaModel {
 
 
     @Override
-    public JDBCStatement prepareTableTriggersLoadStatement(JDBCSession session, GenericStructContainer container, GenericTableBase table) throws SQLException {
+    public JDBCStatement prepareTableTriggersLoadStatement(
+        JDBCSession session,
+        @NotNull GenericStructContainer container,
+        GenericTableBase table
+    ) throws SQLException {
         JDBCPreparedStatement dbStat = session.prepareStatement("SELECT " +
                 "TABTRIG_OBJ_INNER.NAME AS TRIGGER_NAME, TAB_OBJ_INNER.NAME AS OWNER,* " +
                 "FROM " +
@@ -189,7 +202,7 @@ public class DamengMetaModel extends GenericMetaModel {
     }
 
     @Override
-    public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
+    public String getViewDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericView sourceObject, @NotNull Map<String, Object> options) throws DBException {
         return DamengUtils.getDDL(monitor, sourceObject, DamengConstants.ObjectType.VIEW, sourceObject.getParentObject().getName());
     }
 
@@ -227,12 +240,12 @@ public class DamengMetaModel extends GenericMetaModel {
                 return result;
             }
         } catch (SQLException e) {
-            throw new DBException(e, container.getDataSource());
+            throw new DBDatabaseException(e, container.getDataSource());
         }
     }
 
     @Override
-    public void loadProcedures(DBRProgressMonitor monitor, GenericObjectContainer container) throws DBException {
+    public void loadProcedures(DBRProgressMonitor monitor, @NotNull GenericObjectContainer container) throws DBException {
         GenericDataSource dataSource = container.getDataSource();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read Dameng procedure source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -283,7 +296,7 @@ public class DamengMetaModel extends GenericMetaModel {
                 }
             }
         } catch (SQLException e) {
-            throw new DBException(e, dataSource);
+            throw new DBDatabaseException(e, dataSource);
         }
     }
 

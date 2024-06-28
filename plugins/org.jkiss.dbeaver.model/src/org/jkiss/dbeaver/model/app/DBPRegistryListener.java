@@ -17,14 +17,15 @@
 
 package org.jkiss.dbeaver.model.app;
 
+import org.jkiss.code.NotNull;
+
 /**
  * DBPRegistryListener
  */
-public interface DBPRegistryListener
-{
+public interface DBPRegistryListener {
 
-    void handleRegistryLoad(DBPDataSourceRegistry registry);
+    void handleRegistryLoad(@NotNull DBPDataSourceRegistry registry);
 
-    void handleRegistryUnload(DBPDataSourceRegistry registry);
+    void handleRegistryUnload(@NotNull DBPDataSourceRegistry registry);
 
 }

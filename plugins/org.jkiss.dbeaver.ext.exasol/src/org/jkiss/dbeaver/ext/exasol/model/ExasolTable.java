@@ -314,6 +314,7 @@ public class ExasolTable extends ExasolTableBase implements DBPScriptObject, DBP
     // Associations
     // -----------------
 
+    @NotNull
     @Override
     public List<DBSEntityConstraintInfo> getSupportedConstraints() {
         return List.of(
@@ -378,6 +379,16 @@ public class ExasolTable extends ExasolTableBase implements DBPScriptObject, DBP
     }
 
     @Override
+    public ExasolTableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException {
+        return getContainer().getTableCache().getChild(monitor, getContainer(), this, attributeName);
+    }
+
+    @Override
+    public List<ExasolTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return getContainer().getTableCache().getChildren(monitor, getContainer(), this);
+    }
+
+    @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         return ExasolUtils.generateDDLforTable(monitor, this.getDataSource(), this);
     }
@@ -431,7 +442,7 @@ public class ExasolTable extends ExasolTableBase implements DBPScriptObject, DBP
         setHasPartitionKey(hasPartitionKey);
     }
     
-    public List<ExasolTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+    public List<ExasolTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getIndexCache().getObjects(monitor, getSchema(), getObject());
     }
     
@@ -441,7 +452,7 @@ public class ExasolTable extends ExasolTableBase implements DBPScriptObject, DBP
     }
     
     @Override
-    public Collection<ExasolTableForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException {
+    public Collection<ExasolTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
         ExasolTableForeignKeyCache associationCache = getSchema().getAssociationCache();
         Collection<ExasolTableForeignKey> refForeignKeys = new ArrayList<ExasolTableForeignKey>();
         for (ExasolTableForeignKey exasolTableForeignKey : associationCache.getObjects(monitor, getSchema(), null)) {

@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
+import org.jkiss.dbeaver.model.access.DBAAuthModelExternal;
 import org.jkiss.dbeaver.model.access.DBACredentialsProvider;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -37,10 +38,7 @@ import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.dpi.*;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
-import org.jkiss.dbeaver.model.exec.DBExecUtils;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.SimpleExclusiveLock;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -66,8 +64,6 @@ import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.StringReader;
@@ -150,7 +146,9 @@ public class DataSourceDescriptor
     @NotNull
     private final DataSourcePreferenceStore preferenceStore;
     @NotNull
-    private final Map<String, String> properties;
+    private final Map<String, String> tags;
+    @NotNull
+    private final Map<String, String> extensions;
     @Nullable
     private DBPDataSource dataSource;
     @Nullable
@@ -224,8 +222,9 @@ public class DataSourceDescriptor
         this.originalDriver = originalDriver;
         this.driver = substitutedDriver;
         this.connectionInfo = connectionInfo;
-        this.properties = new LinkedHashMap<>();
-        this.preferenceStore = new DataSourcePreferenceStore(this);
+        this.tags = new LinkedHashMap<>();
+        this.extensions = new LinkedHashMap<>();
+        this.preferenceStore = new DataSourcePreferenceStore(registry.getPreferenceStore(), this);
         this.virtualModel = new DBVModel(this);
         this.navigatorSettings = new DataSourceNavigatorSettings(DataSourceNavigatorSettings.getDefaultSettings());
         this.forceUseSingleConnection = driver.isSingleConnection();
@@ -275,7 +274,8 @@ public class DataSourceDescriptor
             this.folder = (DataSourceFolder) registry.getFolder(source.folder.getFolderPath());
         }
 
-        this.properties = new LinkedHashMap<>(source.properties);
+        this.tags = new LinkedHashMap<>(source.tags);
+        this.extensions = new LinkedHashMap<>(source.extensions);
         this.preferenceStore = new DataSourcePreferenceStore(this);
         this.preferenceStore.setProperties(source.preferenceStore.getProperties());
         this.preferenceStore.setDefaultProperties(source.preferenceStore.getDefaultProperties());
@@ -527,7 +527,7 @@ public class DataSourceDescriptor
         }
     }
 
-    public void forgetSecrets() {
+    public void resetAllSecrets() {
         this.secretsResolved = false;
         this.secretsContainsDatabaseCreds = false;
         this.availableSharedCredentials = null;
@@ -571,6 +571,11 @@ public class DataSourceDescriptor
         } else {
             connectionInfo.getBootstrap().setDefaultTransactionIsolation(isolationLevel.getCode());
         }
+    }
+
+    @Override
+    public boolean isExtraMetadataReadEnabled() {
+        return !preferenceStore.getBoolean(ModelPreferences.META_DISABLE_EXTRA_READ);
     }
 
     public Collection<FilterMapping> getObjectFilters() {
@@ -695,6 +700,7 @@ public class DataSourceDescriptor
         return clientHome;
     }
 
+    @NotNull
     @Override
     public DBWNetworkHandler[] getActiveNetworkHandlers() {
         if (proxyHandler == null && tunnelHandler == null) {
@@ -899,6 +905,7 @@ public class DataSourceDescriptor
         persistSecrets(secretController, false);
     }
 
+    //TODO move secret management logic to separate service
     void persistSecrets(DBSSecretController secretController, boolean isNewDataSource) throws DBException {
         if (!CommonUtils.isBitSet(
             secretController.getSupportedFeatures(),
@@ -920,11 +927,15 @@ public class DataSourceDescriptor
         } else {
             if (selectedSharedCredentials != null) {
                 String subjectId = DataSourceUtils.getSubjectFromSecret(selectedSharedCredentials);
+                var selectedSharedCredentialsCopy = selectedSharedCredentials;
+                selectedSharedCredentialsCopy.setValue(secret);
                 try {
                     secretController.setSubjectSecretValue(subjectId, this,
                         new DBSSecretValue(subjectId, getSecretValueId(), "", secret));
                     //the list of available secrets has changed, force update
-                    forgetSecrets();
+                    resetAllSecrets();
+                    // to resave current secret without additional click in UI
+                    setSelectedSharedCredentials(selectedSharedCredentialsCopy);
                 } catch (DBException e) {
                     throw new DBException("Cannot set team '" + subjectId + "' credentials: " + e.getMessage(), e);
                 }
@@ -932,14 +943,16 @@ public class DataSourceDescriptor
         }
     }
 
+    /**
+     * this method always forcibly updates available secrets and should always return actual secrets,
+     * to get secrets using cache use {@link #listSharedCredentialFromCache}
+     */
     @NotNull
     public synchronized List<DBSSecretValue> listSharedCredentials() throws DBException {
         if (!isSharedCredentials()) {
             return List.of();
         }
-        if (availableSharedCredentials != null) {
-            return availableSharedCredentials;
-        }
+        resetAllSecrets();
         resolveSecretsIfNeeded();
         if (availableSharedCredentials == null) {
             this.availableSharedCredentials = List.of();
@@ -947,10 +960,14 @@ public class DataSourceDescriptor
         return availableSharedCredentials;
     }
 
-    @NotNull
-    public synchronized List<DBSSecretValue> listAllSharedCredentials() throws DBException {
-        var secretController = DBSSecretController.getProjectSecretController(getProject());
-        return secretController.listAllSharedSecrets(this);
+    /**
+     * returns secrets from the cache or reads them if they do not exist, may contain outdated secrets
+     */
+    private synchronized List<DBSSecretValue> listSharedCredentialFromCache() throws DBException {
+        if (availableSharedCredentials != null) {
+            return availableSharedCredentials;
+        }
+        return listSharedCredentials();
     }
 
     @Nullable
@@ -958,11 +975,13 @@ public class DataSourceDescriptor
         return selectedSharedCredentials;
     }
 
+    @Override
     public synchronized void setSelectedSharedCredentials(@NotNull DBSSecretValue secretValue) {
         this.selectedSharedCredentials = secretValue;
         loadFromSecret(this.selectedSharedCredentials.getValue());
     }
 
+    @Override
     public synchronized boolean isSharedCredentialsSelected() {
         return selectedSharedCredentials != null;
     }
@@ -1116,7 +1135,7 @@ public class DataSourceDescriptor
         resolveSecretsIfNeeded();
 
         if (isSharedCredentials() && !isSharedCredentialsSelected()) {
-            var sharedCreds = listSharedCredentials();
+            var sharedCreds = listSharedCredentialFromCache();
             if (!CommonUtils.isEmpty(sharedCreds)) {
                 log.debug("Shared credentials not selected - use first one: " + sharedCreds.get(0).getDisplayName());
                 setSelectedSharedCredentials(sharedCreds.get(0));
@@ -1211,16 +1230,12 @@ public class DataSourceDescriptor
                     tunnelHandler = tunnelConfiguration.createHandler(DBWTunnel.class);
                     try {
                         if (!tunnelConfiguration.isSavePassword()) {
-                            DBWTunnel.AuthCredentials rc = tunnelHandler.getRequiredCredentials(tunnelConfiguration, null);
+                            DBWTunnel.AuthCredentials rc = tunnelHandler.getRequiredCredentials(tunnelConfiguration);
                             if (rc != DBWTunnel.AuthCredentials.NONE) {
                                 if (!askForPassword(this, tunnelConfiguration, rc)) {
                                     tunnelHandler = null;
                                     return false;
                                 }
-                            }
-                            if (!askForSSHJumpServerPassword(tunnelConfiguration)) {
-                                tunnelHandler = null;
-                                return false;
                             }
                         }
                         // We need to resolve jump server differently due to it being a part of ssh configuration
@@ -1259,6 +1274,7 @@ public class DataSourceDescriptor
 
             return true;
         } catch (Throwable e) {
+            terminateChildProcesses();
             lastConnectionError = e.getMessage();
             //log.debug("Connection failed (" + getId() + ")", e);
             if (dataSource != null) {
@@ -1281,7 +1297,7 @@ public class DataSourceDescriptor
                 }
             }
             if (isSharedCredentials()) {
-                this.forgetSecrets();
+                this.resetAllSecrets();
             }
             proxyHandler = null;
             // Failed
@@ -1293,6 +1309,18 @@ public class DataSourceDescriptor
             }
         } finally {
             monitor.done();
+        }
+    }
+
+    private void terminateChildProcesses() {
+        synchronized (childProcesses) {
+            for (Iterator<DBRProcessDescriptor> iter = childProcesses.iterator(); iter.hasNext(); ) {
+                DBRProcessDescriptor process = iter.next();
+                if (process.isRunning() && process.getCommand().isTerminateAtDisconnect()) {
+                    process.terminate();
+                }
+                iter.remove();
+            }
         }
     }
 
@@ -1338,52 +1366,6 @@ public class DataSourceDescriptor
         resolveSecrets(secretController);
     }
 
-    public void refreshSecretFromConfiguration() {
-        if (selectedSharedCredentials != null) {
-            selectedSharedCredentials.setValue(saveToSecret());
-        }
-    }
-
-
-    private boolean askForSSHJumpServerPassword(@NotNull DBWHandlerConfiguration tunnelConfiguration) {
-        String jumpServerSettingsPrefix = DataSourceUtils.getJumpServerSettingsPrefix(0);
-        if (tunnelConfiguration.getBooleanProperty(jumpServerSettingsPrefix + DBConstants.PROP_ID_ENABLED)) {
-            DBPConnectionConfiguration actualConfig = getActualConnectionConfiguration();
-            DBPConnectionConfiguration connConfig = getConnectionConfiguration();
-            String prompt = NLS.bind(RegistryMessages.dialog_connection_auth_title_for_handler, "SSH jump server");
-            DBWTunnel.AuthCredentials rc = tunnelHandler.getRequiredCredentials(tunnelConfiguration, jumpServerSettingsPrefix);
-            if (rc != DBWTunnel.AuthCredentials.NONE) {
-                DBPAuthInfo dbpAuthInfo = askCredentials(this, rc, prompt,
-                    tunnelConfiguration.getStringProperty(jumpServerSettingsPrefix + DBConstants.PROP_ID_NAME),
-                    //$NON-NLS-1$
-                    tunnelConfiguration.getSecureProperty(jumpServerSettingsPrefix + DBConstants.PROP_FEATURE_PASSWORD),
-                    //$NON-NLS-1$
-                    false
-                );
-                if (dbpAuthInfo != null) {
-                    if (rc.equals(DBWTunnel.AuthCredentials.CREDENTIALS)) {
-                        tunnelConfiguration.setProperty(jumpServerSettingsPrefix + DBConstants.PROP_ID_NAME, //$NON-NLS-1$
-                            dbpAuthInfo.getUserName()
-                        );
-                    }
-                    tunnelConfiguration.setSecureProperty(jumpServerSettingsPrefix + DBConstants.PROP_FEATURE_PASSWORD, //$NON
-                        // -NLS-1$
-                        dbpAuthInfo.getUserPassword()
-                    );
-                    actualConfig.updateHandler(tunnelConfiguration);
-
-                    if (tunnelConfiguration.isSavePassword() && connConfig != actualConfig) {
-                        // Save changes in real connection info
-                        connConfig.updateHandler(tunnelConfiguration);
-                    }
-                } else {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
     public void openDataSource(DBRProgressMonitor monitor, boolean initialize) throws DBException {
         final DBPDataSourceProvider provider = driver.getDataSourceProvider();
         final DBPDataSourceProviderSynchronizable providerSynchronizable = GeneralUtils.adapt(provider, DBPDataSourceProviderSynchronizable.class);
@@ -1411,12 +1393,25 @@ public class DataSourceDescriptor
 
         if (initialize) {
             monitor.subTask("Initialize data source");
-            try {
-                dataSource.initialize(monitor);
-                dataSource.getSQLDialect().afterDataSourceInitialization(dataSource);
-            } catch (Throwable e) {
-                log.error("Error initializing datasource", e);
-                throw e;
+            // Disable manual commit for init stage (because it may produce errors and modify transaction scope)
+            boolean revertMetaToManualCommit = false;
+            try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Read server information")) {
+                DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
+                if (txnManager != null && !txnManager.isAutoCommit()) {
+                    txnManager.setAutoCommit(monitor, true);
+                    revertMetaToManualCommit = true;
+                }
+
+                try {
+                    dataSource.initialize(monitor);
+                    dataSource.getSQLDialect().afterDataSourceInitialization(dataSource);
+                } catch (Throwable e) {
+                    log.error("Error initializing datasource", e);
+                    throw e;
+                }
+                if (revertMetaToManualCommit) {
+                    txnManager.setAutoCommit(monitor, false);
+                }
             }
         }
     }
@@ -1548,20 +1543,12 @@ public class DataSourceDescriptor
             return false;
         } finally {
             // Terminate child processes
-            synchronized (childProcesses) {
-                for (Iterator<DBRProcessDescriptor> iter = childProcesses.iterator(); iter.hasNext(); ) {
-                    DBRProcessDescriptor process = iter.next();
-                    if (process.isRunning() && process.getCommand().isTerminateAtDisconnect()) {
-                        process.terminate();
-                    }
-                    iter.remove();
-                }
-            }
+            terminateChildProcesses();
 
             this.dataSource = null;
             this.resolvedConnectionInfo = null;
             // Reset resolved secrets
-            forgetSecrets();
+            resetAllSecrets();
 
             this.connectTime = null;
 
@@ -1673,24 +1660,49 @@ public class DataSourceDescriptor
         registry.notifyDataSourceListeners(event);
     }
 
-    @Nullable
     @Override
-    public String getProperty(@NotNull String name) {
-        return properties.get(name);
+    public Map<String, String> getTags() {
+        return new LinkedHashMap<>(tags);
+    }
+
+    public void setTags(Map<String, String> tags) {
+        this.tags.clear();
+        this.tags.putAll(tags);
     }
 
     @Override
-    public void setProperty(@NotNull String name, @Nullable String value) {
+    public String getTagValue(String tagName) {
+        return tags.get(tagName);
+    }
+
+    @Override
+    public void setTagValue(String tagName, String tagValue) {
+        tags.put(tagName, tagValue);
+    }
+
+    @Nullable
+    @Override
+    public String getExtension(@NotNull String name) {
+        return extensions.get(name);
+    }
+
+    @Override
+    public void setExtension(@NotNull String name, @Nullable String value) {
         if (value == null) {
-            this.properties.remove(name);
+            this.extensions.remove(name);
         } else {
-            this.properties.put(name, value);
+            this.extensions.put(name, value);
         }
     }
 
     @NotNull
-    public Map<String, String> getProperties() {
-        return properties;
+    public Map<String, String> getExtensions() {
+        return extensions;
+    }
+
+    public void setExtensions(Map<String, String> extensions) {
+        this.extensions.clear();
+        this.extensions.putAll(extensions);
     }
 
     @Override
@@ -1897,7 +1909,8 @@ public class DataSourceDescriptor
         this.virtualModel.copyFrom(descriptor.getVirtualModel());
 
         this.description = descriptor.description;
-        this.properties.putAll(descriptor.properties);
+        this.tags.putAll(descriptor.tags);
+        this.extensions.putAll(descriptor.extensions);
         this.savePassword = descriptor.savePassword;
         this.connectionReadOnly = descriptor.connectionReadOnly;
         this.forceUseSingleConnection = descriptor.forceUseSingleConnection;
@@ -1939,7 +1952,7 @@ public class DataSourceDescriptor
                 CommonUtils.equalObjects(this.clientHome, source.clientHome) &&
                 CommonUtils.equalObjects(this.lockPasswordHash, source.lockPasswordHash) &&
                 CommonUtils.equalObjects(this.folder, source.folder) &&
-                CommonUtils.equalObjects(this.properties, source.properties) &&
+                CommonUtils.equalObjects(this.extensions, source.extensions) &&
                 CommonUtils.equalObjects(this.preferenceStore, source.preferenceStore) &&
                 CommonUtils.equalsContents(this.connectionModifyRestrictions, source.connectionModifyRestrictions);
     }
@@ -1987,27 +2000,8 @@ public class DataSourceDescriptor
 
     @Override
     public IVariableResolver getVariablesResolver(boolean actualConfig) {
-        return name -> {
-            DBPConnectionConfiguration configuration = actualConfig ? getActualConnectionConfiguration() : getConnectionConfiguration();
-            String propValue = configuration.getProperties().get(name);
-            if (propValue != null) {
-                return propValue;
-            }
-
-            name = name.toLowerCase(Locale.ENGLISH);
-            return switch (name) {
-                case DBPConnectionConfiguration.VARIABLE_HOST -> configuration.getHostName();
-                case DBPConnectionConfiguration.VARIABLE_PORT -> configuration.getHostPort();
-                case DBPConnectionConfiguration.VARIABLE_SERVER -> configuration.getServerName();
-                case DBPConnectionConfiguration.VARIABLE_DATABASE -> configuration.getDatabaseName();
-                case DBPConnectionConfiguration.VARIABLE_USER -> configuration.getUserName();
-                case DBPConnectionConfiguration.VARIABLE_PASSWORD -> configuration.getUserPassword();
-                case DBPConnectionConfiguration.VARIABLE_URL -> configuration.getUrl();
-                case DBPConnectionConfiguration.VARIABLE_CONN_TYPE -> configuration.getConnectionType().getId();
-                case DBPConnectionConfiguration.VARIABLE_DATE -> RuntimeUtils.getCurrentDate();
-                default -> SystemVariablesResolver.INSTANCE.get(name);
-            };
-        };
+        DBPConnectionConfiguration configuration = actualConfig ? getActualConnectionConfiguration() : getConnectionConfiguration();
+        return new DataSourceVariableResolver(this, configuration);
     }
 
     @Override
@@ -2041,6 +2035,12 @@ public class DataSourceDescriptor
         }
 
         var reqAuthProvider = getConnectionConfiguration().getAuthModelDescriptor().getRequiredAuthProviderId();
+        if (!CommonUtils.isEmpty(reqAuthProvider)) {
+            return reqAuthProvider;
+        }
+        if (getConnectionConfiguration().getAuthModel() instanceof DBAAuthModelExternal<?> authModelExternal) {
+            return authModelExternal.getRequiredExternalAuth(getConnectionConfiguration());
+        }
         return CommonUtils.isEmpty(reqAuthProvider) ? null : reqAuthProvider;
     }
 

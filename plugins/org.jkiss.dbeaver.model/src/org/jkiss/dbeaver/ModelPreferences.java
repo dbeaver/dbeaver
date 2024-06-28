@@ -17,7 +17,7 @@
 
 package org.jkiss.dbeaver;
 
-import org.jkiss.dbeaver.bundle.ModelActivator;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -71,6 +71,59 @@ public final class ModelPreferences
         }
     }
     
+
+    public enum SQLScriptStatementDelimiterMode {
+        BLANK_LINE_AND_SEPARATOR(true, false, "Always"),
+        ONLY_SEPARATOR(false, false, "Never"),
+        SMART(true, true, "Smart");
+
+        public final boolean useBlankLine;
+        public final boolean useSmart;
+
+        public final String title;
+
+        SQLScriptStatementDelimiterMode(boolean useBlankLine, boolean useSmart, String title) {
+            this.useBlankLine = useBlankLine;
+            this.useSmart = useSmart;
+            this.title = title;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public String getName() {
+            return this.toString();
+        }
+
+        public static SQLScriptStatementDelimiterMode valueByName(String name) {
+            if (name == null) {
+                return SMART;
+            }  else {
+                switch (name) {
+                    case "true" -> {
+                        return SQLScriptStatementDelimiterMode.BLANK_LINE_AND_SEPARATOR;
+                    }
+                    case "false" -> {
+                        return SQLScriptStatementDelimiterMode.ONLY_SEPARATOR;
+                    }
+                    default -> {
+                        try {
+                            return SQLScriptStatementDelimiterMode.valueOf(name);
+                        } catch (IllegalArgumentException e) {
+                            return SQLScriptStatementDelimiterMode.SMART;
+                        }
+                    }
+                }
+            }
+        }
+
+        @NotNull
+        public static SQLScriptStatementDelimiterMode fromPreferences(@NotNull DBPPreferenceStore preferenceStore) {
+            return valueByName(preferenceStore.getString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK));            
+        }
+    }
+    
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.model";
     public static final String CLIENT_TIMEZONE = "java.client.timezone";
     public static final String CLIENT_BROWSER = "swt.client.browser";
@@ -107,6 +160,7 @@ public final class ModelPreferences
     public static final String CONTENT_CACHE_BLOB = "content.cache.blob"; //$NON-NLS-1$
     public static final String CONTENT_CACHE_MAX_SIZE = "content.cache.maxsize"; //$NON-NLS-1$
     public static final String META_SEPARATE_CONNECTION = "database.meta.separate.connection"; //$NON-NLS-1$
+    public static final String META_DISABLE_EXTRA_READ = "database.meta.disableAdditionalRead"; //$NON-NLS-1$
     public static final String META_CASE_SENSITIVE = "database.meta.casesensitive"; //$NON-NLS-1$
     public static final String META_USE_SERVER_SIDE_FILTERS = "database.meta.server.side.filters"; //$NON-NLS-1$
     public static final String META_EXTRA_DDL_INFO = "database.meta.extra.ddl.info"; //$NON-NLS-1$
@@ -137,8 +191,6 @@ public final class ModelPreferences
     public static final String RESULT_SET_IGNORE_COLUMN_LABEL = "resultset.column.label.ignore"; //$NON-NLS-1$
 
     public static final String RESULT_SET_REREAD_ON_SCROLLING = "resultset.reread.on.scroll"; //$NON-NLS-1$
-    public static final String RESULT_SET_READ_METADATA = "resultset.read.metadata"; //$NON-NLS-1$
-    public static final String RESULT_SET_READ_REFERENCES = "resultset.read.references"; //$NON-NLS-1$
     public static final String RESULT_SET_MAX_ROWS = "resultset.maxrows"; //$NON-NLS-1$
 
 
@@ -192,17 +244,6 @@ public final class ModelPreferences
     private static Bundle mainBundle;
     private static DBPPreferenceStore preferences;
 
-    public static synchronized DBPPreferenceStore getPreferences() {
-        if (preferences == null) {
-            setMainBundle(ModelActivator.getInstance().getBundle());
-        }
-        return preferences;
-    }
-
-    public static void setPreferences(DBPPreferenceStore preferences) {
-        ModelPreferences.preferences = preferences;
-    }
-
     public static void setMainBundle(Bundle mainBundle) {
         ModelPreferences.mainBundle = mainBundle;
         ModelPreferences.preferences = new BundlePreferenceStore(mainBundle);
@@ -211,6 +252,10 @@ public final class ModelPreferences
 
     public static Bundle getMainBundle() {
         return mainBundle;
+    }
+
+    public static DBPPreferenceStore getPreferences() {
+        return preferences;
     }
 
     private static void initializeDefaultPreferences(DBPPreferenceStore store) {
@@ -235,12 +280,13 @@ public final class ModelPreferences
         // SQL execution
         PrefUtils.setDefaultPreferenceValue(store, SCRIPT_STATEMENT_DELIMITER, SQLConstants.DEFAULT_STATEMENT_DELIMITER);
         PrefUtils.setDefaultPreferenceValue(store, SCRIPT_IGNORE_NATIVE_DELIMITER, false);
-        PrefUtils.setDefaultPreferenceValue(store, SCRIPT_STATEMENT_DELIMITER_BLANK, true);
+        PrefUtils.setDefaultPreferenceValue(store, SCRIPT_STATEMENT_DELIMITER_BLANK, SQLScriptStatementDelimiterMode.BLANK_LINE_AND_SEPARATOR);
         PrefUtils.setDefaultPreferenceValue(store, QUERY_REMOVE_TRAILING_DELIMITER, true);
 
         PrefUtils.setDefaultPreferenceValue(store, MEMORY_CONTENT_MAX_SIZE, 10000);
         PrefUtils.setDefaultPreferenceValue(store, META_SEPARATE_CONNECTION, SeparateConnectionBehavior.DEFAULT.name());
         PrefUtils.setDefaultPreferenceValue(store, META_CASE_SENSITIVE, false);
+        PrefUtils.setDefaultPreferenceValue(store, META_DISABLE_EXTRA_READ, false);
         PrefUtils.setDefaultPreferenceValue(store, META_EXTRA_DDL_INFO, true);
         PrefUtils.setDefaultPreferenceValue(store, META_USE_SERVER_SIDE_FILTERS, true);
 
@@ -258,8 +304,6 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, RESULT_REFERENCE_DESCRIPTION_COLUMN_PATTERNS, String.join("|", DBVEntity.DEFAULT_DESCRIPTION_COLUMN_PATTERNS));
 
         PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_REREAD_ON_SCROLLING, true);
-        PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_READ_METADATA, true);
-        PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_READ_REFERENCES, true);
         PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_MAX_ROWS, 200);
 
         PrefUtils.setDefaultPreferenceValue(store, CONTENT_HEX_ENCODING, GeneralUtils.getDefaultFileEncoding());

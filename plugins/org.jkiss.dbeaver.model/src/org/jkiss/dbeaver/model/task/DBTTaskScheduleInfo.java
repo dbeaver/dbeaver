@@ -16,15 +16,24 @@
  */
 package org.jkiss.dbeaver.model.task;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+
 /**
  * Scheduled task details
  */
 public interface DBTTaskScheduleInfo {
 
+    @Nullable
+    String getProjectId();
+
+    @NotNull
     String getTaskId();
 
+    @Nullable
     String getNextRunInfo();
 
+    @Nullable
     String getStatus();
 
 }

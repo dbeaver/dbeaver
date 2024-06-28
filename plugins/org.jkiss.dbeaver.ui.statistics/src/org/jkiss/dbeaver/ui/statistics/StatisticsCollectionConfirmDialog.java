@@ -77,13 +77,12 @@ public class StatisticsCollectionConfirmDialog extends BaseDialog {
     protected void buttonPressed(int buttonId) {
         if (shareData.getSelection()) {
             // DO NOT SEND
-            UIStatisticsActivator.setSkipDataShareConfirmation(false);
             UIStatisticsActivator.setTrackingEnabled(buttonId == IDialogConstants.NO_ID);
         } else {
             // SEND
-            UIStatisticsActivator.setSkipDataShareConfirmation(true);
             UIStatisticsActivator.setTrackingEnabled(buttonId == IDialogConstants.YES_ID);
         }
+        UIStatisticsActivator.setSkipDataShareConfirmation(true);
         close();
 
         super.buttonPressed(buttonId);

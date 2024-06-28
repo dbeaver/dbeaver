@@ -53,7 +53,7 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
 
     @Override
     protected MySQLExportSettings createTaskSettings(DBRRunnableContext context, DBTTask task) throws DBException {
-        MySQLExportSettings settings = new MySQLExportSettings();
+        MySQLExportSettings settings = new MySQLExportSettings(task.getProject());
         settings.loadSettings(context, new TaskPreferenceStore(task));
 
         return settings;

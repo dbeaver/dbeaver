@@ -47,6 +47,7 @@ public class DBXTreeFolder extends DBXTreeNode {
     private String optionalItem;
 
     private boolean isOptional;
+    private boolean isAdminFolder;
 
     private List<String> contributedCategories = null;
     private ItemType[] itemTypes = null;
@@ -82,6 +83,7 @@ public class DBXTreeFolder extends DBXTreeNode {
         this.description = config.getAttribute("description");
         this.optionalItem = config.getAttribute("optionalItem");
         this.isOptional = isOptional;
+        this.isAdminFolder = CommonUtils.getBoolean(config.getAttribute("adminFolder"), false);
 
         IConfigurationElement[] itemTypesConfig = config.getChildren("itemType");
         if (!ArrayUtils.isEmpty(itemTypesConfig)) {
@@ -160,6 +162,10 @@ public class DBXTreeFolder extends DBXTreeNode {
 
     public boolean isOptional() {
         return isOptional;
+    }
+
+    public boolean isAdminFolder() {
+        return isAdminFolder;
     }
 
     @Override

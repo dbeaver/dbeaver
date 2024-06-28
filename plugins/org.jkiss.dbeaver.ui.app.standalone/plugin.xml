@@ -38,7 +38,7 @@
     <extension point="org.eclipse.core.runtime.products" id="product">
         <product application="org.jkiss.dbeaver.ui.app.standalone.standalone" description="%productSubTitle" name="DBeaver">
             <property name="aboutText" value="%aboutText"/>
-            <property name="copyright" value="%productCopyright"/>
+            <property name="copyright" value="© 2024 DBeaver Corp"/>
             <property name="subTitle" value="%productSubTitle"/>
             <property name="website" value="%productWebsite"/>
             <property name="email" value="%productEmail"/>
@@ -65,7 +65,7 @@
     <extension point="org.eclipse.core.runtime.products" id="appstore">
         <product application="org.jkiss.dbeaver.ui.app.standalone.appstore" description="%productSubTitle" name="DBeaver CE">
             <property name="aboutText" value="%aboutText"/>
-            <property name="copyright" value="%productCopyright"/>
+            <property name="copyright" value="© 2024 DBeaver Corp"/>
             <property name="subTitle" value="%productSubTitle"/>
             <property name="website" value="%productWebsite"/>
             <property name="email" value="%productEmail"/>
@@ -94,6 +94,11 @@
     </extension>
 
     <extension point="org.eclipse.ui.commands">
+        <command
+            id="org.jkiss.dbeaver.core.util.collectDiagnosticInfo"
+            categoryId="org.jkiss.dbeaver.core.util"
+            name="%command.org.jkiss.dbeaver.core.util.collectDiagnosticInfo.name"
+            description="%command.org.jkiss.dbeaver.core.util.collectDiagnosticInfo.description"/>
         <command
             id="org.jkiss.dbeaver.core.util.resetSettings"
             categoryId="org.jkiss.dbeaver.core.util"
@@ -191,6 +196,10 @@
             </activeWhen>
         </handler>
         <handler commandId="org.eclipse.ui.edit.text.openLocalFile" class="org.jkiss.dbeaver.ui.app.standalone.actions.OpenLocalFileActionExt"/>
+        <handler
+            commandId="org.jkiss.dbeaver.core.util.collectDiagnosticInfo"
+            class="org.jkiss.dbeaver.ui.app.standalone.actions.CollectDiagnosticInfoHandler"
+        />
         <handler commandId="org.jkiss.dbeaver.core.util.resetSettings" class="org.jkiss.dbeaver.ui.app.standalone.actions.ResetSettingsHandler"/>
         <handler commandId="org.jkiss.dbeaver.core.util.clearHistory" class="org.jkiss.dbeaver.ui.app.standalone.actions.ClearHistoryHandler"/>
         <handler commandId="org.jkiss.dbeaver.core.try.pro" class="org.jkiss.dbeaver.ui.app.standalone.actions.TryPROHandler"/>
@@ -313,6 +322,7 @@
 
         <menuContribution allPopups="false" locationURI="menu:help">
             <separator name="misc" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.core.util.collectDiagnosticInfo" style="push"/>
             <command commandId="org.jkiss.dbeaver.core.util.resetSettings" style="push"/>
             <command commandId="org.jkiss.dbeaver.core.util.clearHistory" style="push"/>
             <separator name="misc_end" visible="true"/>
@@ -470,6 +480,12 @@
             exitAfterExecute="true"
             hasArg="true"
             handler="org.jkiss.dbeaver.ui.app.standalone.cli.SQLTranslatorHandler"/>
+        <parameter name="databaseList"
+            longName="database-driver-list"
+            description="Show list of supported database drivers in json format."
+            exitAfterExecute="false"
+            hasArg="true"
+            handler="org.jkiss.dbeaver.ui.app.standalone.cli.DataBaseInfoHandler"/>
     </extension>
 
     <!-- Disable Eclipse debug and refactoring in standalone applications -->

@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.runtime.IVariableResolver;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * DBPDataSourceContainer
@@ -117,6 +118,8 @@ public interface DBPDataSourceContainer extends
      */
     List<DBSSecretValue> listSharedCredentials() throws DBException;
     void setSharedCredentials(boolean sharedCredentials);
+    boolean isSharedCredentialsSelected();
+    void setSelectedSharedCredentials(@NotNull DBSSecretValue secretValue);
 
     boolean isConnectionReadOnly();
 
@@ -147,6 +150,8 @@ public interface DBPDataSourceContainer extends
 
     void setDefaultTransactionsIsolation(DBPTransactionIsolation isolationLevel);
 
+    boolean isExtraMetadataReadEnabled();
+
     /**
      * Search for object filter which corresponds specified object type and parent object.
      * Search filter which match any super class or interface implemented by specified type.
@@ -163,6 +168,7 @@ public interface DBPDataSourceContainer extends
 
     DBPNativeClientLocation getClientHome();
 
+    @NotNull
     DBWNetworkHandler[] getActiveNetworkHandlers();
 
     /**
@@ -221,11 +227,6 @@ public interface DBPDataSourceContainer extends
 
     void fireEvent(DBPEvent event);
 
-    @Nullable
-    String getProperty(@NotNull String name);
-
-    void setProperty(@NotNull String name, @Nullable String value);
-
     /**
      * Preference store associated with this datasource
      * @return preference store
@@ -255,6 +256,11 @@ public interface DBPDataSourceContainer extends
     void resetPassword();
 
     /**
+     * Marks all secrets (credentials) as unresolved
+     */
+    void resetAllSecrets();
+
+    /**
      * Make variable resolver for datasource properties.
      *
      * @param actualConfig if true then actual connection config will be used (e.g. with preprocessed host/port values).
@@ -280,6 +286,23 @@ public interface DBPDataSourceContainer extends
     DBPDriverSubstitutionDescriptor getDriverSubstitution();
 
     void setDriverSubstitution(@Nullable DBPDriverSubstitutionDescriptor driverSubstitution);
+
+    /**
+     * Datasource tags. Tags can be used in various 3rd party integrations.
+     */
+    Map<String, String> getTags();
+
+    String getTagValue(String tagName);
+
+    void setTagValue(String tagName, String tagValue);
+
+    /**
+     * Extension settings. Any custom attributes assigned by product plugins for internal configuration purposes
+     */
+    @Nullable
+    String getExtension(@NotNull String name);
+
+    void setExtension(@NotNull String name, @Nullable String value);
 
     void dispose();
 

@@ -50,7 +50,7 @@ import java.util.Map;
  * Oracle data type
  */
 public class OracleDataType extends OracleObject<DBSObject>
-    implements DBSDataType, DBSEntity, DBPQualifiedObject, OracleSourceObject, DBPScriptObjectExt {
+    implements DBSDataType, DBSEntity, DBPQualifiedObject, OracleSourceObject, DBPScriptObjectExt, DBPImageProvider {
 
     private static final Log log = Log.getLog(OracleDataType.class);
 
@@ -85,6 +85,7 @@ public class OracleDataType extends OracleObject<DBSObject>
         PREDEFINED_TYPES.put("CFILE", new TypeDesc(DBPDataKind.CONTENT, Types.OTHER, 0, 0, 0));
         PREDEFINED_TYPES.put("CHAR", new TypeDesc(DBPDataKind.STRING, Types.CHAR, 0, 0, 0));
         PREDEFINED_TYPES.put("CLOB", new TypeDesc(DBPDataKind.CONTENT, Types.CLOB, 0, 0, 0));
+        PREDEFINED_TYPES.put("JSON", new TypeDesc(DBPDataKind.CONTENT, Types.OTHER, 0, 0, 0));
         PREDEFINED_TYPES.put("CONTIGUOUS ARRAY", new TypeDesc(DBPDataKind.ARRAY, Types.ARRAY, 0, 0, 0));
         // DATE IS TIMESTAMP. It always keeps time value. But sometimes it is visualized as DATE (see #2457)
         PREDEFINED_TYPES.put("DATE", new TypeDesc(DBPDataKind.DATETIME, Types.TIMESTAMP, 0, 0, 0));
@@ -298,12 +299,14 @@ public class OracleDataType extends OracleObject<DBSObject>
         this.sourceDefinition = source;
     }
 
+    @NotNull
     @Override
     public String getTypeName()
     {
         return getFullyQualifiedName(DBPEvaluationContext.DDL);
     }
 
+    @NotNull
     @Override
     public String getFullTypeName() {
         return DBUtils.getFullTypeName(this);
@@ -315,12 +318,14 @@ public class OracleDataType extends OracleObject<DBSObject>
         return valueType;
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind()
     {
         return JDBCUtils.resolveDataKind(getDataSource(), getName(), valueType);
     }
 
+    @Nullable
     @Override
     public Integer getScale()
     {
@@ -455,7 +460,7 @@ public class OracleDataType extends OracleObject<DBSObject>
     public List<OracleDataTypeAttribute> getAttributes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return attributeCache != null ? attributeCache.getAllObjects(monitor, this) : null;
+        return attributeCache == null ? null : attributeCache.getAllObjects(monitor, this);
     }
 
     @Nullable
@@ -611,6 +616,15 @@ public class OracleDataType extends OracleObject<DBSObject>
     {
 
     }
+
+    @Override
+    public DBPImage getObjectImage() {
+        if (OracleConstants.TYPE_NAME_JSON.equals(getName())) {
+            return DBIcon.TYPE_JSON;
+        }
+        return null;
+    }
+
 
     private class AttributeCache extends JDBCObjectCache<OracleDataType, OracleDataTypeAttribute> {
         @NotNull

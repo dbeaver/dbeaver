@@ -88,7 +88,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     public static final String WORKSPACE_DIR_LEGACY = "${user.home}/.dbeaver"; //$NON-NLS-1$
     public static final String WORKSPACE_DIR_4 = "${user.home}/.dbeaver4"; //$NON-NLS-1$
-    public static final String DBEAVER_DATA_DIR = "DBeaverData";
 
     public static final String[] WORKSPACE_DIR_PREVIOUS = {
         WORKSPACE_DIR_4,
@@ -102,10 +101,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     public static final String DEFAULT_WORKSPACE_FOLDER = "workspace6";
 
-    private static final String PLUGINS_FOLDER = ".plugins";
-    private static final String CORE_RESOURCES_PLUGIN_FOLDER = "org.eclipse.core.resources";
     private static final String STARTUP_ACTIONS_FILE = "dbeaver-startup-actions.properties";
-
     private static final String RESET_USER_PREFERENCES = "reset_user_preferences";
     private static final String RESET_WORKSPACE_CONFIGURATION = "reset_workspace_configuration";
 
@@ -135,7 +131,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private long lastUserActivityTime = -1;
 
     public DBeaverApplication() {
-        this(DBEAVER_DATA_DIR, DEFAULT_WORKSPACE_FOLDER);
+        this(DesktopPlatform.DBEAVER_DATA_DIR, DEFAULT_WORKSPACE_FOLDER);
     }
 
     protected DBeaverApplication(String defaultWorkspaceLocation, String defaultAppWorkspaceName) {
@@ -168,6 +164,12 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     @Override
     public long getLastUserActivityTime() {
         return lastUserActivityTime;
+    }
+
+    @NotNull
+    @Override
+    public DBPPreferenceStore getPreferenceStore() {
+        return DBeaverActivator.getInstance().getPreferences();
     }
 
     @Override
@@ -213,7 +215,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                 e.printStackTrace();
             }
         }
-
         // Register core components
         initializeApplicationServices();
 
@@ -234,7 +235,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
         final Runtime runtime = Runtime.getRuntime();
 
-        loadStartupActions(instanceLoc);
         initializeConfiguration();
 
         // Debug logger
@@ -267,7 +267,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         try {
             instanceServer = DBeaverInstanceServer.createServer();
         } catch (Exception e) {
-            log.error("Can't start instance server", e);
+            log.error("Can't start instance server: " + e.getMessage());
         }
 
         TimezoneRegistry.overrideTimezone();
@@ -275,7 +275,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         if (RuntimeUtils.isWindows()
             && CommonUtils.isEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE))
             && CommonUtils.isEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE_TYPE))
-            && ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
+            && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
         ) {
             System.setProperty(GeneralUtils.PROP_TRUST_STORE_TYPE, GeneralUtils.VALUE_TRUST_STORE_TYPE_WINDOWS);
         }
@@ -823,31 +823,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         this.ignoreRecentWorkspaces = ignoreRecentWorkspaces;
     }
 
-    private void loadStartupActions(@NotNull Location instanceLoc) {
-        final Path path = GeneralUtils.getMetadataFolder().resolve(STARTUP_ACTIONS_FILE);
-
-        if (Files.notExists(path)) {
-            return;
-        }
-
-        try (Reader reader = Files.newBufferedReader(path)) {
-            final Properties properties = new Properties();
-            properties.load(reader);
-
-            if (!properties.isEmpty()) {
-                processStartupActions(instanceLoc, properties.stringPropertyNames());
-            }
-        } catch (Exception e) {
-            log.error("Unable to read startup actions", e);
-        } finally {
-            try {
-                Files.delete(path);
-            } catch (IOException e) {
-                log.error("Unable to delete startup actions file: " + e.getMessage());
-            }
-        }
-    }
-
     private void saveStartupActions() {
         final Properties props = new Properties();
 
@@ -858,76 +833,14 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         if (resetUserPreferencesOnRestart) {
             props.setProperty(RESET_USER_PREFERENCES, Boolean.TRUE.toString());
         }
-
         if (!props.isEmpty()) {
-            try (Writer writer = Files.newBufferedWriter(GeneralUtils.getMetadataFolder().resolve(STARTUP_ACTIONS_FILE))) {
+            Path path = GeneralUtils.getMetadataFolder().resolve(STARTUP_ACTIONS_FILE);
+            try (Writer writer = Files.newBufferedWriter(path)) {
                 props.store(writer, "DBeaver startup actions");
             } catch (Exception e) {
                 log.error("Unable to save startup actions", e);
             }
         }
-    }
-
-    private void processStartupActions(@NotNull Location instanceLoc, @NotNull Set<String> actions) throws Exception {
-        final boolean resetUserPreferences = actions.contains(RESET_USER_PREFERENCES);
-        final boolean resetWorkspaceConfiguration = actions.contains(RESET_WORKSPACE_CONFIGURATION);
-
-        if (!resetUserPreferences && !resetWorkspaceConfiguration || !instanceLoc.isSet()) {
-            return;
-        }
-
-        final Path path = new File(instanceLoc.getDataArea("").toURI()).toPath();
-
-        if (Files.notExists(path) || !Files.isDirectory(path)) {
-            return;
-        }
-
-        Files.walkFileTree(path, new SimpleFileVisitor<>() {
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                log.trace("Deleting " + file);
-
-                try {
-                    Files.delete(file);
-                } catch (IOException e) {
-                    log.trace("Unable to delete " + file + ":" + e.getMessage());
-                }
-
-                return FileVisitResult.CONTINUE;
-            }
-
-            @Override
-            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
-                if (dir.endsWith(PLUGINS_FOLDER)) {
-                    return FileVisitResult.CONTINUE;
-                }
-
-                final Path relative = path.relativize(dir);
-
-                if (resetUserPreferences && !relative.startsWith(CORE_RESOURCES_PLUGIN_FOLDER)) {
-                    return FileVisitResult.CONTINUE;
-                }
-
-                if (resetWorkspaceConfiguration && relative.startsWith(CORE_RESOURCES_PLUGIN_FOLDER)) {
-                    return FileVisitResult.CONTINUE;
-                }
-
-                return FileVisitResult.SKIP_SUBTREE;
-            }
-
-            @Override
-            public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
-                log.trace("Deleting " + dir);
-
-                try {
-                    Files.delete(dir);
-                } catch (IOException e) {
-                    log.trace("Unable to delete " + dir + ":" + e.getMessage());
-                }
-
-                return FileVisitResult.CONTINUE;
-            }
-        });
     }
 
     private class ProxyPrintStream extends OutputStream {

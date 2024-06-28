@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -51,6 +52,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
         this.dataSource = dataSource;
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getSupportedObjectTypes()
     {
@@ -66,6 +68,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
             };
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getSearchObjectTypes() {
         return new DBSObjectType[] {
@@ -79,6 +82,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
         };
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getHyperlinkObjectTypes()
     {
@@ -89,6 +93,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
         };
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getAutoCompleteObjectTypes()
     {
@@ -141,7 +146,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
             return objects;
         }
         catch (SQLException ex) {
-            throw new DBException(ex, dataSource);
+            throw new DBDatabaseException(ex, dataSource);
         }
     }
 

@@ -26,6 +26,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.Trees;
 import org.jkiss.code.NotNull;
 
+
 public class STMTreeRuleNode extends ParserRuleContext implements STMTreeNode {
     
     private String nodeName = null;
@@ -36,6 +37,11 @@ public class STMTreeRuleNode extends ParserRuleContext implements STMTreeNode {
     
     public STMTreeRuleNode(@NotNull ParserRuleContext parent, int invokingStateNumber) {
         super(parent, invokingStateNumber);
+    }
+    
+    @Override
+    public int getAtnState() {
+        return super.invokingState;
     }
     
     @Override
@@ -61,8 +67,9 @@ public class STMTreeRuleNode extends ParserRuleContext implements STMTreeNode {
         if (this.start == null || this.stop == null) {
             return Interval.INVALID;
         }
-        
-        return new Interval(this.getStart().getStartIndex(), this.getStop().getStopIndex());
+        int start = this.getStart().getStartIndex();
+        int end = this.getStop().getStopIndex();
+        return new Interval(start, Math.max(start, end));
     }
 
     @NotNull

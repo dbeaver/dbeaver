@@ -20,6 +20,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceOrigin;
+import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
@@ -60,6 +61,8 @@ public class DataSourceVariableResolver extends SystemVariablesResolver {
             switch (name) {
                 case DBPConnectionConfiguration.VARIABLE_HOST:
                     return configuration.getHostName();
+                case DBPConnectionConfiguration.VARIABLE_HOST_TUNNEL:
+                    return DBWUtils.getTargetTunnelHostName(configuration);
                 case DBPConnectionConfiguration.VARIABLE_PORT:
                     return configuration.getHostPort();
                 case DBPConnectionConfiguration.VARIABLE_SERVER:
@@ -71,6 +74,7 @@ public class DataSourceVariableResolver extends SystemVariablesResolver {
                 case DBPConnectionConfiguration.VARIABLE_URL:
                     return configuration.getUrl();
                 case DBPConnectionConfiguration.VARIABLE_CONN_TYPE:
+                case DBPConnectionConfiguration.VARIABLE_CONN_TYPE_LEGACY:
                     return configuration.getConnectionType().getId();
             }
             // isSecure() is always false here due to dbeaver/pro#1861
@@ -84,6 +88,10 @@ public class DataSourceVariableResolver extends SystemVariablesResolver {
             if (name.startsWith(DBPConnectionConfiguration.VARIABLE_PREFIX_AUTH)) {
                 return configuration.getAuthProperty(
                     name.substring(DBPConnectionConfiguration.VARIABLE_PREFIX_AUTH.length()));
+            }
+            String propValue = configuration.getProperty(name);
+            if (propValue != null) {
+                return propValue;
             }
         }
         if (dataSourceContainer != null) {
@@ -110,7 +118,13 @@ public class DataSourceVariableResolver extends SystemVariablesResolver {
                     log.debug("Invalid datasource origin property '" + originProperty + "': " + e.getMessage(), e);
                 }
             }
+            if (name.startsWith(DBPConnectionConfiguration.VARIABLE_PREFIX_TAG)) {
+                return dataSourceContainer.getTagValue(
+                    name.substring(DBPConnectionConfiguration.VARIABLE_PREFIX_TAG.length()));
+            }
+
         }
+
         return super.get(name);
     }
 }

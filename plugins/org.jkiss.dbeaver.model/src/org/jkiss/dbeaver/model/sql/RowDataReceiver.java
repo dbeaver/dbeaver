@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -35,16 +36,16 @@ public class RowDataReceiver implements DBDDataReceiver {
     }
 
     @Override
-    public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) {
+    public void fetchStart(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, long offset, long maxRows) {
 
     }
 
     @Override
-    public void fetchRow(DBCSession session, DBCResultSet resultSet)
+    public void fetchRow(@NotNull DBCSession session, @NotNull DBCResultSet resultSet)
         throws DBCException {
         DBCResultSetMetaData rsMeta = resultSet.getMeta();
         // Compare attributes with existing model attributes
-        List<DBCAttributeMetaData> attributes = rsMeta.getAttributes();
+        List<? extends DBCAttributeMetaData> attributes = rsMeta.getAttributes();
         if (attributes.size() != curAttributes.length) {
             log.debug("Wrong meta attributes count (" + attributes.size() + " <> " + curAttributes.length + ") - can't refresh");
             return;
@@ -73,7 +74,7 @@ public class RowDataReceiver implements DBDDataReceiver {
     }
 
     @Override
-    public void fetchEnd(DBCSession session, DBCResultSet resultSet) {
+    public void fetchEnd(@NotNull DBCSession session, @NotNull DBCResultSet resultSet) {
 
     }
 

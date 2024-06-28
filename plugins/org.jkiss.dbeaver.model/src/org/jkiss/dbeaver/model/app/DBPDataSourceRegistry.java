@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.access.DBACredentialsProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.secret.DBPSecretHolder;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 
@@ -35,13 +36,9 @@ import java.util.Set;
 
 /**
  * Datasource registry.
- * Extends DBPObject to support datasources ObjectManager
+ * Keeps all database connection information in a project
  */
 public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
-
-    String LEGACY_CONFIG_FILE_PREFIX = ".dbeaver-data-sources"; //$NON-NLS-1$
-    String LEGACY_CONFIG_FILE_EXT = ".xml"; //$NON-NLS-1$
-    String LEGACY_CONFIG_FILE_NAME = LEGACY_CONFIG_FILE_PREFIX + LEGACY_CONFIG_FILE_EXT;
 
     String MODERN_CONFIG_FILE_PREFIX = "data-sources"; //$NON-NLS-1$
     String MODERN_CONFIG_FILE_EXT = ".json"; //$NON-NLS-1$
@@ -50,16 +47,22 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
     String CREDENTIALS_CONFIG_FILE_EXT = ".json"; //$NON-NLS-1$
     String CREDENTIALS_CONFIG_FILE_NAME = CREDENTIALS_CONFIG_FILE_PREFIX + CREDENTIALS_CONFIG_FILE_EXT;
 
+    String LEGACY_CONFIG_FILE_PREFIX = ".dbeaver-data-sources"; //$NON-NLS-1$
+    String LEGACY_CONFIG_FILE_EXT = ".xml"; //$NON-NLS-1$
+    String LEGACY_CONFIG_FILE_NAME = LEGACY_CONFIG_FILE_PREFIX + LEGACY_CONFIG_FILE_EXT;
+    String LEGACY2_CONFIG_FILE_NAME = "data-sources.xml"; //$NON-NLS-1$
+
     /**
      * Owner project.
      */
+    @NotNull
     DBPProject getProject();
 
     @Nullable
-    DBPDataSourceContainer getDataSource(String id);
+    DBPDataSourceContainer getDataSource(@NotNull String id);
 
     @Nullable
-    DBPDataSourceContainer getDataSource(DBPDataSource dataSource);
+    DBPDataSourceContainer getDataSource(@NotNull DBPDataSource dataSource);
 
     @Nullable
     DBPDataSourceContainer findDataSourceByName(String name);
@@ -71,10 +74,10 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
     List<? extends DBPDataSourceContainer> getDataSources();
 
     @NotNull
-    DBPDataSourceContainer createDataSource(DBPDriver driver, DBPConnectionConfiguration connConfig);
+    DBPDataSourceContainer createDataSource(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connConfig);
 
     @NotNull
-    DBPDataSourceContainer createDataSource(DBPDataSourceContainer source);
+    DBPDataSourceContainer createDataSource(@NotNull DBPDataSourceContainer source);
 
     void addDataSourceListener(@NotNull DBPEventListener listener);
 
@@ -92,11 +95,13 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
     @NotNull
     List<? extends DBPDataSourceFolder> getRootFolders();
 
-    DBPDataSourceFolder getFolder(String path);
+    @Nullable
+    DBPDataSourceFolder getFolder(@NotNull String path);
 
-    DBPDataSourceFolder addFolder(DBPDataSourceFolder parent, String name);
+    @NotNull
+    DBPDataSourceFolder addFolder(@Nullable DBPDataSourceFolder parent, @NotNull String name);
 
-    void removeFolder(DBPDataSourceFolder folder, boolean dropContents);
+    void removeFolder(@NotNull DBPDataSourceFolder folder, boolean dropContents);
 
     /**
      * Moves connection folder
@@ -107,51 +112,59 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
     DBSObjectFilter getSavedFilter(String name);
     @NotNull
     List<DBSObjectFilter> getSavedFilters();
-    void updateSavedFilter(DBSObjectFilter filter);
-    void removeSavedFilter(String filterName);
+    void updateSavedFilter(@NotNull DBSObjectFilter filter);
+    void removeSavedFilter(@NotNull String filterName);
 
     // Network profiles
 
     @Nullable
-    DBWNetworkProfile getNetworkProfile(String source, String name);
+    DBWNetworkProfile getNetworkProfile(@Nullable String source, @NotNull String name);
     @NotNull
     List<DBWNetworkProfile> getNetworkProfiles();
-    void updateNetworkProfile(DBWNetworkProfile profile);
-    void removeNetworkProfile(DBWNetworkProfile profile);
+    void updateNetworkProfile(@NotNull DBWNetworkProfile profile);
+    void removeNetworkProfile(@NotNull DBWNetworkProfile profile);
 
     // Auth profiles
 
     @Nullable
-    DBAAuthProfile getAuthProfile(String id);
+    DBAAuthProfile getAuthProfile(@NotNull String id);
     @NotNull
     List<DBAAuthProfile> getAllAuthProfiles();
     @NotNull
     List<DBAAuthProfile> getApplicableAuthProfiles(@Nullable DBPDriver driver);
-    void updateAuthProfile(DBAAuthProfile profile);
-    void removeAuthProfile(DBAAuthProfile profile);
 
+    void updateAuthProfile(@NotNull DBAAuthProfile profile);
+    void removeAuthProfile(@NotNull DBAAuthProfile profile);
+
+    /**
+     * Set collection of profiles.
+     *
+     * @param profiles - profile collection
+     */
+    void setAuthProfiles(@NotNull Collection<DBAAuthProfile> profiles);
 
     void flushConfig();
     void refreshConfig();
 
     /**
-     * Refreshes configuration of specified datasources
+     * Refreshes configuration of specified data sources
      */
     void refreshConfig(@Nullable Collection<String> dataSourceIds);
 
     /**
      * Returns and nullifies last registry save/load error.
      */
+    @Nullable
     Throwable getLastError();
 
     boolean hasError();
 
     /**
-     * Throws lasty occured load/save error
+     * Throws last occurred load/save error
      */
     void checkForErrors() throws DBException;
 
-    void notifyDataSourceListeners(final DBPEvent event);
+    void notifyDataSourceListeners(@NotNull DBPEvent event);
 
     // Registry auth provider. Null by default.
     @Nullable
@@ -160,12 +173,16 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
     /**
      * Sets auth credentials provider to the registry.
      */
-    void setAuthCredentialsProvider(DBACredentialsProvider authCredentialsProvider);
+    void setAuthCredentialsProvider(@Nullable DBACredentialsProvider authCredentialsProvider);
 
     /**
      * Returns all folders having temporary connections.
      */
+    @NotNull
     Set<DBPDataSourceFolder> getTemporaryFolders();
+
+    @NotNull
+    DBPPreferenceStore getPreferenceStore();
 
     void dispose();
 

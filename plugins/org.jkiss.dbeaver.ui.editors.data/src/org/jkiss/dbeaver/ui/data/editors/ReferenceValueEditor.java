@@ -59,10 +59,8 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.ReaderWriterLock.ExceptableFunction;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
+import java.util.*;
 
 /**
  * ReferenceValueEditor
@@ -204,9 +202,16 @@ public class ReferenceValueEditor {
         
         private List<DBDLabelValuePair> loadComparableKeyValues(DBSDictionaryAccessor accessor) throws DBException {
             List<DBDLabelValuePair> data;
+            DBRProgressMonitor monitor = accessor.getProgressMonitor();
+            if (monitor.isCanceled()) {
+                return Collections.emptyList();
+            }
             if (currPageNumber == 0) {
                 List<DBDLabelValuePair> prefix = searchText == null ? accessor.getValuesNear(keyValue, true, 0, halfPageSize)
                     : accessor.getSimilarValuesNear(searchText, true, true, keyValue, true, 0, halfPageSize);
+                if (monitor.isCanceled()) {
+                    return Collections.emptyList();
+                }
                 List<DBDLabelValuePair> suffix = searchText == null ? accessor.getValuesNear(keyValue, false, 0, halfPageSize)
                     : accessor.getSimilarValuesNear(searchText, true, true, keyValue, false, 0, halfPageSize);
                 estimateHead(prefix.size(), halfPageSize);
@@ -294,6 +299,11 @@ public class ReferenceValueEditor {
     private DBSEntityReferrer getEnumerableConstraint()
     {
         if (valueController instanceof IAttributeController) {
+            DBSDataContainer dataContainer = valueController.getDataController().getDataContainer();
+            if (dataContainer == null || dataContainer.getDataSource() == null ||
+                !dataContainer.getDataSource().getContainer().isExtraMetadataReadEnabled()) {
+                return null;
+            }
             return ResultSetUtils.getEnumerableConstraint(((IAttributeController) valueController).getBinding());
         }
         return null;
@@ -735,6 +745,10 @@ public class ReferenceValueEditor {
             return valueController.getExecutionContext();
         }
 
+        @Override
+        public boolean isForceCancel() {
+            return false;
+        }
     }
 
     private class SelectorLoaderVisualizer extends ProgressLoaderVisualizer<EnumValuesData> {

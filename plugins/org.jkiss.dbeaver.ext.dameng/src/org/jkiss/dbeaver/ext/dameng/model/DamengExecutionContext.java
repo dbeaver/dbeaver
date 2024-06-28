@@ -17,13 +17,11 @@
 
 package org.jkiss.dbeaver.ext.dameng.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
@@ -115,9 +113,15 @@ public class DamengExecutionContext extends JDBCExecutionContext implements DBCE
             JDBCUtils.executeSQL(session, "SET SCHEMA " + DBUtils.getQuotedIdentifier(session.getDataSource(), activeSchemaName));
             this.activeSchemaName = activeSchemaName;
             DBSObject newDefaultSchema = getDefaultSchema();
-            DBUtils.fireObjectSelectionChange(oldDefaultSchema, newDefaultSchema);
+            DBUtils.fireObjectSelectionChange(oldDefaultSchema, newDefaultSchema, this);
         } catch (SQLException e) {
             throw new DBCException(e, this);
         }
+    }
+
+    @NotNull
+    @Override
+    public DBCCachedContextDefaults getCachedDefault() {
+        return new DBCCachedContextDefaults(null, activeSchemaName);
     }
 }

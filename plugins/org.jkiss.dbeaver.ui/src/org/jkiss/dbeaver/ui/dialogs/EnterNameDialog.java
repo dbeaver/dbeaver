@@ -81,10 +81,16 @@ public class EnterNameDialog extends Dialog {
         }
         propNameText.addModifyListener(e -> updateButtonsState());
 
+        createControlsAfterName(propGroup);
+
         return propGroup;
     }
 
     protected void createControlsBeforeName(Composite composite) {
+
+    }
+
+    protected void createControlsAfterName(Composite composite) {
 
     }
 

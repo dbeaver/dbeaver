@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -281,7 +282,11 @@ public abstract class JDBCDataSource extends AbstractDataSource
             try {
                 driverInstance = getDriverInstance(monitor);
             } catch (DBException e) {
-                throw new DBCConnectException("Can't create driver instance", e, this);
+                throw new DBCConnectException("Can't create driver instance"
+                    + " (class '"
+                    + driverClassName
+                    + "').",
+                    e, this);
             }
         } else {
             if (!CommonUtils.isEmpty(driverClassName)) {
@@ -289,7 +294,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
                     driver.loadDriver(monitor);
                     Class.forName(driverClassName, true, driver.getClassLoader());
                 } catch (Exception e) {
-                    throw new DBCException("Driver class '" + driverClassName + "' not found", e);
+                    throw new DBCConnectException("Driver class '" + driverClassName + "' not found", e, this);
                 }
             }
         }
@@ -439,7 +444,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
     }
 
     @Override
-    public void shutdown(DBRProgressMonitor monitor)
+    public void shutdown(@NotNull DBRProgressMonitor monitor)
     {
         for (JDBCRemoteInstance instance : getAvailableInstances()) {
             Object exclusiveLock = instance.getExclusiveLock().acquireExclusiveLock();
@@ -493,7 +498,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
                 log.error("Error obtaining database info", e);
             }
         } catch (SQLException ex) {
-            throw new DBException("Error getting JDBC meta data", ex, this);
+            throw new DBDatabaseException("Error getting JDBC meta data", ex, this);
         } finally {
             if (dataSourceInfo == null) {
                 log.warn("NULL datasource info was created");
@@ -803,7 +808,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
             statement.cancel();
         }
         catch (SQLException e) {
-            throw new DBException(e, this);
+            throw new DBDatabaseException(e, this);
         }
     }
 

@@ -6,22 +6,47 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.Tree;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.utils.CommonUtils;
 
+import java.util.AbstractList;
+import java.util.List;
+
+/**
+ * The interface describing the node of the syntax tree
+ */
 public interface STMTreeNode extends Tree {
-    
+
+    /**
+     * Provides information about the grammar rule to the syntax tree nodes
+     */
     void fixup(@NotNull STMParserOverrides parserCtx);
 
     default int getNodeKindId() {
         return -1;
-    } 
-    
+    }
+
+    /**
+     * Get the state of the antlr parser finite state machine associated with the entry point to the corresponding syntax rule for the text
+     */
+    int getAtnState();
+
+
+    /**
+     * Get the name of the syntax tree node
+     */
     @NotNull
     String getNodeName();
-        
+
+    /**
+     * Get the text range interval covered by the node
+     */
     @NotNull
     Interval getRealInterval();
 
-    @Nullable
+    /**
+     * Get the text fragment covered by the node
+     */
+    @NotNull
     default String getTextContent() {
         String result = null;
         if (this instanceof STMTreeRuleNode ruleNode) {
@@ -47,9 +72,12 @@ public interface STMTreeNode extends Tree {
                 result = b.getSymbol().getTokenSource().getInputStream().getText(textRange);
             }
         }
-        return result;
+        return CommonUtils.notEmpty(result);
     }
 
+    /**
+     * Get the text fragment provided by antlr (without hidden channel tokens)
+     */
     @NotNull
     String getText();
 
@@ -65,6 +93,14 @@ public interface STMTreeNode extends Tree {
         throw new UnsupportedOperationException();
     }
 
+    default STMTreeNode getFirstStmChild() {
+        return getStmChild(0);
+    }
+
+    default STMTreeNode getLastStmtChild() {
+        return getStmChild(getChildCount() - 1);
+    }
+
     /**
      * Returns child node by name
      */
@@ -78,4 +114,19 @@ public interface STMTreeNode extends Tree {
         }
         return null;
     }
+
+    default List<STMTreeNode> getChildren() {
+        return new AbstractList<>() {
+            @Override
+            public STMTreeNode get(int index) {
+                return getStmChild(index);
+            }
+
+            @Override
+            public int size() {
+                return getChildCount();
+            }
+        };
+    }
+
 }

@@ -97,6 +97,8 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceMonitorJob;
@@ -771,7 +773,7 @@ public class SQLEditor extends SQLEditorBase implements
                 new AbstractJob("Notify context change") {
                     @Override
                     protected IStatus run(DBRProgressMonitor monitor) {
-                        DBUtils.fireObjectSelect(instance, true);
+                        DBUtils.fireObjectSelect(instance, true, newContext);
                         return Status.OK_STATUS;
                     }
                 }.schedule(200);
@@ -1119,7 +1121,7 @@ public class SQLEditor extends SQLEditorBase implements
         };
 
         switchPresentationSQLButton = new VerticalButton(presentationSwitchFolder, SWT.RIGHT | SWT.CHECK);
-        switchPresentationSQLButton.setText(SQLEditorMessages.editors_sql_description);
+        switchPresentationSQLButton.setText(SQLEditorMessages.editors_sql_editor_presentation);
         switchPresentationSQLButton.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCRIPT));
         switchPresentationSQLButton.setChecked(true);
         switchPresentationSQLButton.addSelectionListener(switchListener);
@@ -2888,8 +2890,14 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     protected void onDataSourceChange() {
-        if (resultsSash == null || resultsSash.isDisposed()) {
+        this.onDataSourceChange(true);
+    }
+    
+    protected void onDataSourceChange(boolean contextChanged) {
+        if (contextChanged) {
             reloadSyntaxRules();
+        }
+        if (resultsSash == null || resultsSash.isDisposed()) {
             return;
         }
 
@@ -2930,8 +2938,6 @@ public class SQLEditor extends SQLEditorBase implements
             // Update command states
             SQLEditorPropertyTester.firePropertyChange(SQLEditorPropertyTester.PROP_CAN_EXECUTE);
             SQLEditorPropertyTester.firePropertyChange(SQLEditorPropertyTester.PROP_CAN_EXPLAIN);
-
-            reloadSyntaxRules();
         }
 
         if (!isHideQueryText()) {
@@ -2975,7 +2981,7 @@ public class SQLEditor extends SQLEditorBase implements
         DBPImage bottomLeft;
         DBPImage bottomRight;
 
-        if (executionContext == null) {
+        if (getExecutionContext() == null) {
             if (dsContainer instanceof DBPStatefulObject && ((DBPStatefulObject) dsContainer).getObjectState() == DBSObjectState.INVALID) {
                 bottomRight = DBIcon.OVER_ERROR;
             } else {
@@ -3059,6 +3065,27 @@ public class SQLEditor extends SQLEditorBase implements
         transactionStatusUpdateJob = null;
     }
 
+    @Override
+    public void editorContextMenuAboutToShow(IMenuManager menu) {
+        super.editorContextMenuAboutToShow(menu);
+
+        if (!extraPresentationManager.presentations.isEmpty()) {
+            for (Map.Entry<SQLPresentationDescriptor, SQLEditorPresentation> entry : extraPresentationManager.presentations.entrySet()) {
+                SQLPresentationDescriptor pd = entry.getKey();
+                if (pd == extraPresentationManager.activePresentationDescriptor) {
+                    continue;
+                }
+                menu.insertAfter(GROUP_SQL_EXTRAS, new Action(pd.getDescription(), DBeaverIcons.getImageDescriptor(pd.getIcon())) {
+                    @Override
+                    public void run() {
+                        showExtraPresentation(pd);
+                    }
+                });
+            }
+            menu.insertAfter(GROUP_SQL_EXTRAS, new Separator("presentations"));
+        }
+    }
+
     private void deleteFileIfEmpty(IFile sqlFile) {
         if (sqlFile == null || !sqlFile.exists()) {
             return;
@@ -3140,7 +3167,23 @@ public class SQLEditor extends SQLEditorBase implements
                             break;
                     }
                     updateExecutionContext(null);
-                    onDataSourceChange();
+                    
+                    boolean contextChanged = false;
+                    if (event.getAction().equals(DBPEvent.Action.OBJECT_SELECT)
+                        && event.getData() == this.getExecutionContext()
+                        && event.getEnabled()
+                    ) {
+                        DBCExecutionContext execContext = this.getExecutionContext();
+                        DBCExecutionContextDefaults<DBSCatalog, DBSSchema> ctxDefault = execContext == null
+                            ? null
+                            : execContext.getContextDefaults();
+                        if (ctxDefault != null
+                            && (event.getObject() == ctxDefault.getDefaultCatalog() || event.getObject() == ctxDefault.getDefaultSchema())
+                        ) {
+                            contextChanged = true;
+                        }
+                    }
+                    onDataSourceChange(contextChanged);
                 }
             );
         }
@@ -4087,7 +4130,7 @@ public class SQLEditor extends SQLEditorBase implements
         @NotNull
         @Override
         public DBCStatistics readData(
-            @NotNull DBCExecutionSource source,
+            @Nullable DBCExecutionSource source,
             @NotNull DBCSession session,
             @NotNull DBDDataReceiver dataReceiver,
             DBDDataFilter dataFilter,
@@ -5004,7 +5047,10 @@ public class SQLEditor extends SQLEditorBase implements
         final DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext != null) {
             // Refresh active object
-            if (result == null || !result.hasError() && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)) {
+            if ((result == null || !result.hasError()) &&
+                executionContext.getDataSource().getContainer().isExtraMetadataReadEnabled() &&
+                getActivePreferenceStore().getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)
+            ) {
                 DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
                 if (contextDefaults != null) {
                     new AbstractJob("Refresh default object") {
@@ -5012,7 +5058,7 @@ public class SQLEditor extends SQLEditorBase implements
                         protected IStatus run(DBRProgressMonitor monitor) {
                             monitor.beginTask("Refresh default objects", 1);
                             try {
-                                DBUtils.refreshContextDefaultsAndReflect(monitor, contextDefaults);
+                                DBUtils.refreshContextDefaultsAndReflect(monitor, contextDefaults, executionContext);
                             } finally {
                                 monitor.done();
                             }
@@ -5516,7 +5562,8 @@ public class SQLEditor extends SQLEditorBase implements
 
         if ((isTransactionInProgress && rollbackTimeoutSeconds > 0) &&
             (rollbackTimeoutSeconds > elapsedSeconds) &&
-            (disconnectTimeoutSeconds <= 0 || rollbackTimeoutSeconds < disconnectTimeoutSeconds)
+            (disconnectTimeoutSeconds <= 0 || rollbackTimeoutSeconds < disconnectTimeoutSeconds) &&
+            !DBExecUtils.isExecutionInProgress(dataSourceContainer.getDataSource())
         ) {
             return NLS.bind(
                 SQLEditorMessages.sql_editor_status_bar_rollback_label,

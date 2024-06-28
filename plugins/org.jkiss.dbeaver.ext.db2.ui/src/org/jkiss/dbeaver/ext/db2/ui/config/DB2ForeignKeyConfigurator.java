@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ext.db2.ui.config;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKeyColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey;
@@ -51,38 +50,43 @@ public class DB2ForeignKeyConfigurator implements DBEObjectConfigurator<DB2Table
     }
 
     @Override
-    public DB2TableForeignKey configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull DB2TableForeignKey foreignKey, @NotNull Map<String, Object> options) {
-        return new UITask<DB2TableForeignKey>() {
-            @Override
-            protected DB2TableForeignKey runTask() {
-                EditForeignKeyPage editDialog = new EditForeignKeyPage(
-                    DB2Messages.edit_db2_foreign_key_manager_dialog_title, foreignKey, FK_RULES, options);
-                if (!editDialog.edit()) {
-                    return null;
-                }
-
-                DBSForeignKeyModifyRule deleteRule = editDialog.getOnDeleteRule();
-                DBSForeignKeyModifyRule updateRule = editDialog.getOnUpdateRule();
-                DB2TableUniqueKey ukConstraint = (DB2TableUniqueKey) editDialog.getUniqueConstraint();
-
-                foreignKey.setReferencedConstraint(ukConstraint);
-                foreignKey.setDb2DeleteRule(DB2DeleteUpdateRule.getDB2RuleFromDBSRule(deleteRule));
-                foreignKey.setDb2UpdateRule(DB2DeleteUpdateRule.getDB2RuleFromDBSRule(updateRule));
-
-                List<DB2TableForeignKeyColumn> columns = new ArrayList<>(editDialog.getColumns().size());
-                DB2TableForeignKeyColumn column;
-                int colIndex = 1;
-                for (EditForeignKeyPage.FKColumnInfo tableColumn : editDialog.getColumns()) {
-                    column = new DB2TableForeignKeyColumn(foreignKey, (DB2TableColumn) tableColumn.getOwnColumn(), colIndex++);
-                    columns.add(column);
-                }
-
-                foreignKey.setAttributeReferences(columns);
-                SQLForeignKeyManager.updateForeignKeyName(monitor, foreignKey);
-
-                return foreignKey;
+    public DB2TableForeignKey configureObject(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBECommandContext commandContext,
+        @Nullable Object container,
+        @NotNull DB2TableForeignKey foreignKey,
+        @NotNull Map<String, Object> options) {
+        return UITask.run(() -> {
+            EditForeignKeyPage editDialog = new EditForeignKeyPage(
+                DB2Messages.edit_db2_foreign_key_manager_dialog_title, foreignKey, FK_RULES, options);
+            if (!editDialog.edit()) {
+                return null;
             }
-        }.execute();
+
+            DBSForeignKeyModifyRule deleteRule = editDialog.getOnDeleteRule();
+            DBSForeignKeyModifyRule updateRule = editDialog.getOnUpdateRule();
+            DB2TableUniqueKey ukConstraint = (DB2TableUniqueKey) editDialog.getUniqueConstraint();
+
+            foreignKey.setReferencedConstraint(ukConstraint);
+            foreignKey.setDb2DeleteRule(DB2DeleteUpdateRule.getDB2RuleFromDBSRule(deleteRule));
+            foreignKey.setDb2UpdateRule(DB2DeleteUpdateRule.getDB2RuleFromDBSRule(updateRule));
+
+            List<DB2TableForeignKeyColumn> columns = new ArrayList<>(editDialog.getColumns().size());
+            DB2TableForeignKeyColumn column;
+            int colIndex = 1;
+            for (EditForeignKeyPage.FKColumnInfo tableColumn : editDialog.getColumns()) {
+                column = new DB2TableForeignKeyColumn(
+                    foreignKey,
+                    tableColumn.getOrCreateOwnColumn(monitor, commandContext, foreignKey.getTable()),
+                    colIndex++);
+                columns.add(column);
+            }
+
+            foreignKey.setAttributeReferences(columns);
+            SQLForeignKeyManager.updateForeignKeyName(monitor, foreignKey);
+
+            return foreignKey;
+        });
     }
 
 }

@@ -51,6 +51,8 @@ import java.util.List;
  */
 public class ScriptsHandlerImpl extends AbstractResourceHandler implements DBPResourceCreator {
 
+    public static final String RESOURCE_TYPE_ID_SQL_SCRIPT = "sql-script";
+
     @Override
     public int getFeatures(IResource resource)
     {
@@ -72,6 +74,7 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler implements DBPRe
         }
     }
 
+    @Nullable
     @Override
     public String getResourceDescription(@NotNull IResource resource)
     {
@@ -127,8 +130,9 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler implements DBPRe
         return null;
     }
 
+    @NotNull
     @Override
-    public IResource createResource(IFolder folder) throws CoreException, DBException {
+    public IResource createResource(@NotNull IFolder folder) throws CoreException, DBException {
         return SQLEditorHandlerOpenEditor.openNewEditor(
             new SQLNavigatorContext(),
             new StructuredSelection(folder));

@@ -198,7 +198,7 @@ class ResultSetPersister {
             return false;
         }
         final DBDRowIdentifier rowIdentifier = model.getDefaultRowIdentifier();
-        if (rowIdentifier == null || rowIdentifier.getAttributes().isEmpty()) {
+        if (rowIdentifier == null || rowIdentifier.isIncomplete()) {
             // No key - can't refresh
             return false;
         }
@@ -567,7 +567,7 @@ class ResultSetPersister {
             // Probably we have only virtual one with empty attribute set
             DBDRowIdentifier identifier = viewer.getVirtualEntityIdentifier();
             if (identifier != null) {
-                if (CommonUtils.isEmpty(identifier.getAttributes())) {
+                if (identifier.isIncomplete()) {
                     // Empty identifier. We have to define it
                     if (!UITask.run(() -> ValidateUniqueKeyUsageDialog.validateUniqueKey(viewer, executionContext))) {
                         throw new DBCException("No unique key defined");
@@ -694,7 +694,7 @@ class ResultSetPersister {
                     if (container instanceof ISmartTransactionManager) {
                         if (((ISmartTransactionManager) container).isSmartAutoCommit()) {
                             DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
-                            if (txnManager != null && txnManager.isAutoCommit()) {
+                            if (txnManager != null && txnManager.isSupportsTransactions() && txnManager.isAutoCommit()) {
                                 monitor.subTask("Disable auto-commit mode");
                                 txnManager.setAutoCommit(monitor, false);
                             }
@@ -880,15 +880,15 @@ class ResultSetPersister {
         }
 
         @Override
-        public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) {
+        public void fetchStart(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, long offset, long maxRows) {
 
         }
 
         @Override
-        public void fetchRow(DBCSession session, DBCResultSet resultSet)
+        public void fetchRow(@NotNull DBCSession session, @NotNull DBCResultSet resultSet)
             throws DBCException {
             DBCResultSetMetaData rsMeta = resultSet.getMeta();
-            List<DBCAttributeMetaData> keyAttributes = rsMeta.getAttributes();
+            List<? extends DBCAttributeMetaData> keyAttributes = rsMeta.getAttributes();
             for (int i = 0; i < keyAttributes.size(); i++) {
                 DBCAttributeMetaData keyAttribute = keyAttributes.get(i);
                 DBDValueHandler valueHandler = DBUtils.findValueHandler(session, keyAttribute);
@@ -933,7 +933,7 @@ class ResultSetPersister {
         }
 
         @Override
-        public void fetchEnd(DBCSession session, DBCResultSet resultSet) {
+        public void fetchEnd(@NotNull DBCSession session, @NotNull DBCResultSet resultSet) {
 
         }
 

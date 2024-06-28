@@ -163,8 +163,6 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
 
         configurator.createControl(handlerComposite, handlerDescriptor, this::updatePageCompletion);
 
-        configurator.loadSettings(handlerConfiguration);
-
         if (useHandlerCheck != null) {
             useHandlerCheck.setSelection(handlerConfiguration.isEnabled());
         }
@@ -172,14 +170,23 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
         enableHandlerContent();
         updateProfileList();
 
-        if (activeProfile != null) {
-            DBWHandlerConfiguration profileConfig = activeProfile.getConfiguration(handlerDescriptor);
-            if (profileConfig != null) {
-                configurator.loadSettings(profileConfig);
-            }
-        }
-
         setControl(composite);
+    }
+
+    @Override
+    protected void updatePageCompletion() {
+        if (isPageComplete()) {
+            setPageComplete(true);
+            setErrorMessage(null);
+        } else {
+            setPageComplete(false);
+            setErrorMessage(configurator.getErrorMessage());
+        }
+    }
+
+    @Override
+    public boolean isPageComplete() {
+        return handlerConfiguration == null || !handlerConfiguration.isEnabled() || configurator.isComplete();
     }
 
     private void setConnectionConfigProfile(DBWNetworkProfile profile) {
@@ -260,6 +267,7 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
         }
         if (useHandlerCheck != null) {
             useHandlerCheck.setEnabled(!hasProfileConfig);
+            updatePageCompletion();
         }
     }
 

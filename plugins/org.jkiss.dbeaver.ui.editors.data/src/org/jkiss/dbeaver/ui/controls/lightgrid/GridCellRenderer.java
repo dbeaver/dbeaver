@@ -250,8 +250,11 @@ class GridCellRenderer extends AbstractRenderer {
     }
 
     boolean isOverLink(GridColumn column, int row, int x, int y) {
-        IGridContentProvider contentProvider = grid.getContentProvider();
         IGridRow rowElement = grid.getRow(row);
+        if (rowElement == null) {
+            return false;
+        }
+        IGridContentProvider contentProvider = grid.getContentProvider();
         IGridContentProvider.CellInformation cellInfo = grid.getContentProvider().getCellInfo(
             column, rowElement, false);
 
@@ -269,7 +272,9 @@ class GridCellRenderer extends AbstractRenderer {
             Rectangle imageBounds;
             if (isToggle) {
                 String cellText = grid.getCellText(cellInfo.text);
-                Point textSize = grid.sizingGC.textExtent(cellText);
+                GC sizingGC = new GC(grid);
+                Point textSize = sizingGC.textExtent(cellText);
+                sizingGC.dispose();
                 imageBounds = new Rectangle(0, 0, textSize.x, textSize.y);
             } else {
                 DBPImage cellImage = cellInfo.image;
@@ -294,7 +299,8 @@ class GridCellRenderer extends AbstractRenderer {
                     break;
                 case IGridContentProvider.ALIGN_RIGHT:
                     int width = column.getWidth();
-                    if (x >= origin.x + width - (leftMargin + imageBounds.width) && x <= origin.x + width - RIGHT_MARGIN &&
+                    x += RIGHT_MARGIN;
+                    if (x >= origin.x + width - (leftMargin + imageBounds.width) && x <= origin.x + width &&
                         y >= origin.y + verMargin && y <= origin.y + verMargin + imageBounds.height) {
                         return true;
                     }

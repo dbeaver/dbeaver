@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.model.secret;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
+import java.util.Objects;
+
 public class DBSSecretValue {
     @Nullable
     private String subjectId;
@@ -89,5 +91,21 @@ public class DBSSecretValue {
 
     public void setValue(@Nullable String value) {
         this.value = value;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DBSSecretValue that = (DBSSecretValue) o;
+        return Objects.equals(subjectId, that.subjectId)
+            && Objects.equals(id, that.id)
+            && Objects.equals(displayName, that.displayName)
+            && Objects.equals(value, that.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(subjectId, id, displayName, value);
     }
 }

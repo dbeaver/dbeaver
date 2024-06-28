@@ -57,7 +57,6 @@ import java.util.stream.Collectors;
  * (e.g. TreeViewer sometimes update only first TreeItem corresponding to model certain model object).
  */
 public class DBNModel implements IResourceChangeListener {
-    public static final String SLASH_ESCAPE_TOKEN = "%2F";
 
     private static final Log log = Log.getLog(DBNModel.class);
 
@@ -271,7 +270,9 @@ public class DBNModel implements IResourceChangeListener {
                 break;
             }
         }
-        return new NodePath(nodeType, CommonUtils.splitString(path, '/'));
+        final List<String> items = CommonUtils.splitString(path, '/');
+        items.replaceAll(DBNUtils::decodeNodePath);
+        return new NodePath(nodeType, items);
     }
 
     @Nullable
@@ -327,7 +328,8 @@ public class DBNModel implements IResourceChangeListener {
             log.debug("Project node not found");
             return null;
         }
-        final NodePath nodePath = getNodePath(path);
+        NodePath nodePath = getNodePath(path);
+       
         if (nodePath.legacyFormat) {
             return DBNLegacyUtils.legacyGetNodeByPath(monitor, projectNode, nodePath);
         }
@@ -353,9 +355,10 @@ public class DBNModel implements IResourceChangeListener {
         }
         String expectedNodePathName = nodePath.pathItems.get(currentLevel);
         //skip fake root resource node
-        //2 because project node is 1, fake resource node must be 2 in the path
-        if (currentLevel == 2 && DBNResource.FAKE_RESOURCE_ROOT_NODE.equals(expectedNodePathName)) {
+        //1 because project node is 0, fake resource node must be 1 in the path
+        if (currentLevel == 1 && DBNResource.FAKE_RESOURCE_ROOT_NODE.equals(expectedNodePathName)) {
             currentLevel++;
+            expectedNodePathName = nodePath.pathItems.get(currentLevel);
         }
         DBNNode[] children = currentNode.getChildren(monitor);
         if (children == null) {

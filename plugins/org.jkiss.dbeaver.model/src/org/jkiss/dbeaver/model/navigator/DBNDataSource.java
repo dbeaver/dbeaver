@@ -71,6 +71,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
         super.dispose(reflect);
     }
 
+    @Nullable
     @Override
     public DBPDataSourceContainer getObject()
     {
@@ -299,7 +300,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
 
     @NotNull
     public static String makeDataSourceItemPath(DBPDataSourceContainer dataSource) {
-        return NodePathType.database.getPrefix() + dataSource.getId();
+        return NodePathType.database.getPrefix() + DBNUtils.encodeNodePath(dataSource.getId());
     }
 
 }

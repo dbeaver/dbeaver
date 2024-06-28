@@ -484,7 +484,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         return null;
     }
 
-    public void saveTaskState(DBRRunnableContext runnableContext, DBTTask task, Map<String, Object> state) {
+    public void saveTaskState(DBRRunnableContext runnableContext, DBTTask task, Map<String, Object> state)  throws DBException {
         List<IDataTransferNode<?>> producers = new ArrayList<>();
         List<IDataTransferNode<?>> consumers = new ArrayList<>();
         for (DataTransferPipe pipe : settings.getDataPipes()) {
@@ -615,7 +615,14 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         @Override
         protected void runTask() throws DBException {
             DTTaskHandlerTransfer handlerTransfer = new DTTaskHandlerTransfer();
-            handlerTransfer.executeWithSettings(this, getCurrentTask(), Locale.getDefault(), log, this, settings);
+            handlerTransfer.executeWithSettings(
+                this,
+                getCurrentTask(),
+                Locale.getDefault(),
+                log,
+                null,
+                this,
+                settings);
         }
 
     }

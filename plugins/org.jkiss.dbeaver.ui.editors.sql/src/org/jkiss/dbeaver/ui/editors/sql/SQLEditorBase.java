@@ -67,6 +67,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
 import org.jkiss.dbeaver.model.sql.parser.*;
+import org.jkiss.dbeaver.model.sql.semantics.SQLDocumentSyntaxContext;
+import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionContext;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
@@ -77,7 +79,7 @@ import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.preferences.*;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLBackgroundParsingJob;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLDocumentSyntaxContext;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLEditorOutlinePage;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.*;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
@@ -186,6 +188,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         return backgroundParsingJob == null ? null : backgroundParsingJob.getCurrentContext();
     }
 
+    @Nullable
+    public SQLQueryCompletionContext obtainCompletionContext(int position) {
+        return backgroundParsingJob == null ? null : backgroundParsingJob.obtainCompletionContext(position);
+    }
+
     @Override
     protected void setDocumentProvider(IEditorInput input) {
         if (input instanceof StringEditorInput) {
@@ -229,7 +236,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     public boolean isReadMetadataForQueryAnalysisEnabled() {
-        return this.getActivePreferenceStore().getBoolean(SQLModelPreferences.READ_METADATA_FOR_SEMANTIC_ANALYSIS);
+        DBPPreferenceStore prefStore = this.getActivePreferenceStore();
+        return prefStore.getBoolean(SQLModelPreferences.READ_METADATA_FOR_SEMANTIC_ANALYSIS)
+            && !prefStore.getBoolean(ModelPreferences.META_DISABLE_EXTRA_READ);
     }
 
     private void handleInputChange(IEditorInput input) {
@@ -557,7 +566,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     protected SourceViewerDecorationSupport getSourceViewerDecorationSupport(ISourceViewer viewer) {
         if (fSourceViewerDecorationSupport == null) {
-            fSourceViewerDecorationSupport= new SQLSourceViewerDecorationSupport(viewer, getOverviewRuler(), getAnnotationAccess(), getSharedColors());
+            fSourceViewerDecorationSupport = new SQLSourceViewerDecorationSupport(viewer, getOverviewRuler(), getAnnotationAccess(), getSharedColors());
             configureSourceViewerDecorationSupport(fSourceViewerDecorationSupport);
         }
         return fSourceViewerDecorationSupport;
@@ -644,7 +653,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         if (this.getSyntaxContext() == null) {
             this.reloadSyntaxRules();
         }
-        if ((null == outlinePage || outlinePage.getControl().isDisposed()) && this.getSyntaxContext() != null) {
+        if ((outlinePage == null || outlinePage.getControl() == null || outlinePage.getControl().isDisposed())) {
             outlinePage = new SQLEditorOutlinePage(this);
         }
         return outlinePage;
@@ -743,7 +752,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
         super.editorContextMenuAboutToShow(menu);
 
-        //menu.add(new Separator("content"));//$NON-NLS-1$
         addAction(menu, GROUP_SQL_EXTRAS, SQLEditorContributor.ACTION_CONTENT_ASSIST_PROPOSAL);
         addAction(menu, GROUP_SQL_EXTRAS, SQLEditorContributor.ACTION_CONTENT_ASSIST_TIP);
         addAction(menu, GROUP_SQL_EXTRAS, SQLEditorContributor.ACTION_CONTENT_ASSIST_INFORMATION);
@@ -1193,6 +1201,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             case SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS:
             case SQLPreferenceConstants.SQL_FORMAT_ACTIVE_QUERY:
             case SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE:
+            case ModelPreferences.META_DISABLE_EXTRA_READ:
             case SQLPreferenceConstants.READ_METADATA_FOR_SEMANTIC_ANALYSIS:
             case ModelPreferences.SQL_FORMAT_KEYWORD_CASE:
             case ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA:

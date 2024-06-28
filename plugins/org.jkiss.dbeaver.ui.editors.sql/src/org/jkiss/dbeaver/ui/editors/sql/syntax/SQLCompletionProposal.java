@@ -114,15 +114,14 @@ public class SQLCompletionProposal extends SQLCompletionProposalBase implements 
                     } else {
                         if (docLen <= replacementSum + 2) {
                             insertTrailingSpace = true;
-                        } else if (Character.isWhitespace(document.getChar(replacementSum))) {
-                            insertTrailingSpace = docLen > replacementSum + 1 && (!Character.isSpaceChar(document.getChar(replacementSum + 1)));
                         } else {
-                            insertTrailingSpace = true;
+                            final char ch = document.getChar(replacementSum);
+                            insertTrailingSpace = !Character.isWhitespace(ch) || ch == '\r' || ch == '\n';
                         }
                         if (insertTrailingSpace) {
                             replaceOn += ' ';
+                            cursorPosition++;
                         }
-                        cursorPosition++;
                     }
                 }
             }
@@ -266,7 +265,7 @@ public class SQLCompletionProposal extends SQLCompletionProposalBase implements 
                 StyledString.createColorRegistryStyler(SQLConstants.CONFIG_COLOR_KEYWORD, null));
         } else if (getProposalType() == DBPKeywordType.FUNCTION) {
             return new StyledString(getDisplayString(),
-                StyledString.createColorRegistryStyler(SQLConstants.CONFIG_COLOR_DATATYPE, null));
+                StyledString.createColorRegistryStyler(SQLConstants.CONFIG_COLOR_FUNCTION, null));
         } else {
             return new StyledString(getDisplayString());
         }

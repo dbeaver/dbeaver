@@ -35,6 +35,9 @@ public class SQLConstants {
     public static final String ML_COMMENT_START = "/*";
     public static final String ML_COMMENT_END = "*/";
     public static final String SL_COMMENT = "--";
+    public static final String ASTERISK = "*";
+    public static final String QUESTION = "?";
+    public static final String DOT = ".";
 
     public static final String KEYWORD_SELECT = "SELECT";
     public static final String KEYWORD_INSERT = "INSERT";
@@ -47,15 +50,22 @@ public class SQLConstants {
     public static final String KEYWORD_FROM = "FROM";
     public static final String KEYWORD_INTO = "INTO";
     public static final String KEYWORD_JOIN = "JOIN";
+    public static final String KEYWORD_CROSS_JOIN = "CROSS JOIN";
+    public static final String KEYWORD_NATURAL_JOIN = "NATURAL JOIN";
     public static final String KEYWORD_WHERE = "WHERE";
     public static final String KEYWORD_SET = "SET";
     public static final String KEYWORD_ON = "ON";
     public static final String KEYWORD_AND = "AND";
     public static final String KEYWORD_OR = "OR";
+    public static final String KEYWORD_BETWEEN = "BETWEEN";
     public static final String KEYWORD_IS = "IS";
     public static final String KEYWORD_NOT = "NOT";
     public static final String KEYWORD_NULL = "NULL";
     public static final String KEYWORD_IN = "IN";
+    public static final String KEYWORD_VALUES = "VALUES";
+    public static final String KEYWORD_ORDER_BY = "ORDER BY";
+    public static final String KEYWORD_GROUP_BY = "GROUP BY";
+    public static final String KEYWORD_HAVING = "HAVING";
 
     public static final String KEYWORD_LIKE = "LIKE";
     public static final String KEYWORD_ILIKE = "ILIKE";
@@ -69,6 +79,11 @@ public class SQLConstants {
     public static final String KEYWORD_EXPLAIN = "EXPLAIN";
 
     public static final String KEYWORD_CASE = "CASE";
+    
+    public static final String KEYWORD_QUALIFY = "QUALIFY";
+
+    public static final String KEYWORD_AS = "AS";
+    public static final String KEYWORD_USING = "USING";
 
     public static final String DATA_TYPE_VARCHAR = "varchar";
     public static final String DATA_TYPE_BIGINT = "BIGINT";
@@ -126,7 +141,7 @@ public class SQLConstants {
         "ATOMIC",
         "AUTHORIZATION",
         "BEGIN",
-        "BETWEEN",
+        KEYWORD_BETWEEN,
         //"BIGINT",
         DATA_TYPE_BINARY,
         "BOTH",
@@ -339,7 +354,7 @@ public class SQLConstants {
         "USER",
         "USING",
         //"VALUE", // too common for column names
-        "VALUES",
+        KEYWORD_VALUES,
 //        "VAR_POP",
 //        "VAR_SAMP",
         //"VARCHAR",
@@ -575,7 +590,8 @@ public class SQLConstants {
 //        "USER_DEFINED_TYPE_SCHEMA",
         "WORK",
         "WRITE",
-        "ZONE"
+        "ZONE",
+        KEYWORD_QUALIFY
     };
 
     public static final String[] SQL2003_FUNCTIONS = {
@@ -660,6 +676,7 @@ public class SQLConstants {
     public static final char STRUCT_SEPARATOR = '.'; //$NON-NLS-1$
     public static final String CONFIG_COLOR_KEYWORD = "org.jkiss.dbeaver.sql.editor.color.keyword.foreground";
     public static final String CONFIG_COLOR_DATATYPE = "org.jkiss.dbeaver.sql.editor.color.datatype.foreground";
+    public static final String CONFIG_COLOR_FUNCTION = "org.jkiss.dbeaver.sql.editor.color.function.foreground";
     public static final String CONFIG_COLOR_STRING = "org.jkiss.dbeaver.sql.editor.color.string.foreground";
     public static final String CONFIG_COLOR_TABLE = "org.jkiss.dbeaver.sql.editor.color.table.foreground";
     public static final String CONFIG_COLOR_TABLE_ALIAS = "org.jkiss.dbeaver.sql.editor.color.table.alias.foreground";

@@ -145,8 +145,8 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
 
     @NotNull
     @Override
-    public DBPApplication getApplication() {
-        return BaseApplicationImpl.getInstance();
+    public DBeaverHeadlessApplication getApplication() {
+        return (DBeaverHeadlessApplication) BaseApplicationImpl.getInstance();
     }
 
     @NotNull
@@ -154,6 +154,7 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
         return qmController;
     }
 
+    @NotNull
     @Override
     public DBPGlobalEventManager getGlobalEventManager() {
         return GlobalEventManagerImpl.getInstance();
@@ -168,7 +169,7 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
     @NotNull
     @Override
     public DBPPreferenceStore getPreferenceStore() {
-        return DBeaverTestActivator.getInstance().getPreferences();
+        return getApplication().getPreferenceStore();
     }
 
     @NotNull
@@ -184,7 +185,7 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
     }
 
     @NotNull
-    public Path getTempFolder(DBRProgressMonitor monitor, String name) {
+    public Path getTempFolder(@NotNull DBRProgressMonitor monitor, @NotNull String name) {
         if (tempFolder == null) {
             // Make temp folder
             monitor.subTask("Create temp folder");

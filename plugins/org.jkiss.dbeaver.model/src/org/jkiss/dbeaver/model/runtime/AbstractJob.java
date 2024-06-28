@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -49,6 +50,7 @@ public abstract class AbstractJob extends Job
     private volatile long cancelTimestamp = -1;
     private AbstractJob attachedJob = null;
     private boolean skipErrorOnCanceling;
+    private volatile boolean runDirectly = false;
 
     // Attached job may be used to "overwrite" current job.
     // It happens if some other AbstractJob runs in sync mode
@@ -85,6 +87,7 @@ public abstract class AbstractJob extends Job
     {
         progressMonitor = monitor;
         blockCanceled = false;
+        runDirectly = true;
         try {
             finished = false;
             IStatus result;
@@ -168,11 +171,19 @@ public abstract class AbstractJob extends Job
         }
     }
 
+    public boolean isForceCancel() {
+        return true;
+    }
+
     private void runBlockCanceler() {
         final List<DBRBlockingObject> activeBlocks = new ArrayList<>(
             CommonUtils.safeList(progressMonitor.getActiveBlocks()));
         if (activeBlocks.isEmpty()) {
             // Nothing to cancel
+            return;
+        }
+
+        if (!isForceCancel() && activeBlocks.size() < 2) {
             return;
         }
 
@@ -194,7 +205,7 @@ public abstract class AbstractJob extends Job
                 }
                 preferenceStore = dataSource.getContainer().getPreferenceStore();
             } else {
-                preferenceStore = ModelPreferences.getPreferences();
+                preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
             }
 
             int cancelCheckTimeout = preferenceStore.getInt(ModelPreferences.EXECUTE_CANCEL_CHECK_TIMEOUT);
@@ -254,5 +265,9 @@ public abstract class AbstractJob extends Job
             }
             return Status.OK_STATUS;
         }
+    }
+
+    public boolean isRunDirectly() {
+        return runDirectly;
     }
 }

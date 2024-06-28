@@ -252,9 +252,6 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
             project = dataSourceContainer.getRegistry().getProject();
         }
         final DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
-        navigatorModel.ensureProjectLoaded(project);
-        //dataSourceContainer, project, nodePath, nodeName, activePageId, activeFolderId
-
         long connectionTimeout = dataSourceContainer.getPreferenceStore().getInt(ModelPreferences.CONNECTION_VALIDATION_TIMEOUT);
         long connectionStart = System.currentTimeMillis();
         while (!dataSourceContainer.isConnected()) {
@@ -294,6 +291,8 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
             final DBNNode[] editorNodeResult = new DBNNode[1];
             DBExecUtils.tryExecuteRecover(monitor, dataSource, param -> {
                 try {
+                    // FIXME: DBNModel#getNodeByObject should ensure that the project is loaded, not the caller
+                    navigatorModel.ensureProjectLoaded(project);
                     DBNDataSource dsNode = (DBNDataSource) navigatorModel.getNodeByObject(monitor, this.dataSourceContainer, true);
                     if (dsNode == null) {
                         throw new DBException("Datasource '" + this.dataSourceContainer.getName() + "' navigator node not found");

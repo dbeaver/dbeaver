@@ -527,6 +527,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             }
 
             // Auth profiles
+            List<DBAAuthProfile> profiles = new ArrayList<>();
             for (Map.Entry<String, Map<String, Object>> vmMap : JSONUtils.getNestedObjects(configurationMap, "auth-profiles")) {
                 String profileId = vmMap.getKey();
                 Map<String, Object> profileMap = vmMap.getValue();
@@ -542,9 +543,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 profile.setUserName(authCreds.getUserName());
                 profile.setUserPassword(authCreds.getUserPassword());
                 profile.setProperties(authCreds.getProperties());
-
-                registry.updateAuthProfile(profile);
+                profiles.add(profile);
             }
+            registry.setAuthProfiles(profiles);
 
             // Connections
             for (Map.Entry<String, Map<String, Object>> conMap : JSONUtils.getNestedObjects(configurationMap, "connections")) {
@@ -605,7 +606,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         id,
                         originalDriver,
                         substitutedDriver,
-                        new DBPConnectionConfiguration());
+                        new DBPConnectionConfiguration()
+                    );
                 } else {
                     oldDataSource = new DataSourceDescriptor(dataSource, registry);
                     // Clean settings - they have to be loaded later by parser
@@ -665,7 +667,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                             dataSource.setSavePassword(true);
                         }
                         dataSource.getConnectionConfiguration().setAuthProperties(creds.getProperties());
-                        dataSource.forgetSecrets();
+                        dataSource.resetAllSecrets();
                     }
                     {
                         // Still try to read credentials directly from configuration (#6564)
@@ -792,10 +794,19 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     }
                 }
 
-                // Properties
-                dataSource.getProperties().putAll(
-                    JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_PROPERTIES)
-                );
+                {
+                    // Extensions
+                    if (conObject.containsKey(RegistryConstants.TAG_PROPERTIES)) {
+                        // Backward compatibility
+                        dataSource.setExtensions(
+                            JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_PROPERTIES));
+                    } else {
+                        dataSource.setExtensions(
+                            JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_EXTENSIONS));
+                    }
+                }
+                dataSource.setTags(
+                    JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_TAGS));
 
                 // Preferences
                 Map<String, String> preferenceProperties = dataSource.getPreferenceStore().getProperties();
@@ -1223,8 +1234,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
             }
         }
 
-        // Properties
-        JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, dataSource.getProperties(), true);
+        // Extensions
+        JSONUtils.serializeProperties(json, RegistryConstants.TAG_EXTENSIONS, dataSource.getExtensions(), true);
+        // Tags
+        JSONUtils.serializeProperties(json, RegistryConstants.TAG_TAGS, dataSource.getTags(), true);
 
         // Preferences
         {

@@ -82,13 +82,15 @@ public class ExasolFunction
         return DBSProcedureType.FUNCTION;
     }
 
+    @Nullable
     @Override
     public Collection<? extends DBSProcedureParameter> getParameters(
-            DBRProgressMonitor monitor) throws DBException
+        @NotNull DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
 
+    @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context)
     {

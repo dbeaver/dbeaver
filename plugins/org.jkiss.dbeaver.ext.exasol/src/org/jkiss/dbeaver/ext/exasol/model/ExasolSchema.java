@@ -161,7 +161,7 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
 
     @NotNull
     @Override
-    public Class<ExasolTable> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Class<ExasolTable> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
     	return ExasolTable.class;
     }
 
