@@ -712,7 +712,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                     setContainerInfo(null);
                 } else {
                     setContainerInfo(node);
-                    loadTableList(ownerContainerNode);
+                    loadTableList(getTablesNode(ownerContainerNode));
                 }
             }
         };
