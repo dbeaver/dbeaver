@@ -100,7 +100,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         WorkspaceConfigEventManager.addConfigChangedListener(DriverDescriptorSerializerLegacy.DRIVERS_FILE_NAME, o -> {
             // Delete custom drivers because they are removed from drivers.xml
             for (DataSourceProviderDescriptor dataSourceProvider : dataSourceProviders) {
-                dataSourceProvider.getDrivers().removeIf(DriverDescriptor::isCustom);
+                dataSourceProvider.getDrivers().removeIf(driver -> driver.isCustom() || driver.isDisabled());
             }
             readDriversConfig();
         });
