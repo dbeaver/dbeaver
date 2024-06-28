@@ -75,12 +75,12 @@ public class SQLScriptParser {
      * @return the sql script element
      */
     public static SQLScriptElement parseQuery(
-            @NotNull final SQLParserContext context,
-            final int startPos,
-            final int endPos,
-            final int currentPos,
-            final boolean scriptMode,
-            final boolean keepDelimiters
+        @NotNull final SQLParserContext context,
+        final int startPos,
+        final int endPos,
+        final int currentPos,
+        final boolean scriptMode,
+        final boolean keepDelimiters
     ) {
         return tryExpandElement(parseQueryImpl(context, startPos, endPos, currentPos, scriptMode, keepDelimiters), context);
     }
@@ -994,7 +994,8 @@ public class SQLScriptParser {
                     it.remove();
                     it.add(continuationDetector.prepareExtendedSQLScriptElement(firstElement, lastElement));
                 } else {
-                    // if there is nothing to capture, return the currElement back because it apparently is a head of the next query to handle on the next iteration
+                    // if there is nothing to capture, return the currElement back
+                    // because it apparently is a head of the next query to handle on the next iteration
                     it.previous();
                 }
             }
