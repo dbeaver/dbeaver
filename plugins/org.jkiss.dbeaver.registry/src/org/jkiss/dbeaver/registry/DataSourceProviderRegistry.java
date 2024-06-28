@@ -289,12 +289,15 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             }
         }
 
-        int driverCount = 0, customDriverCount = 0;
+        int driverCount = 0;
+        int customDriverCount = 0;
         for (DataSourceProviderDescriptor pd : dataSourceProviders) {
             for (DBPDriver dd : pd.getDrivers()) {
                 if (!dd.isDisabled() && dd.getReplacedBy() == null) {
                     driverCount++;
-                    if (dd.isCustom()) customDriverCount++;
+                    if (dd.isCustom()) {
+                        customDriverCount++;
+                    }
                 }
             }
         }
