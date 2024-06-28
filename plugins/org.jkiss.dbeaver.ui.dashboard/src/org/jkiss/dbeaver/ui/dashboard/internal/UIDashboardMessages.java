@@ -97,7 +97,8 @@ public class UIDashboardMessages extends NLS {
     // dashboard manager dialog
     public static String dialog_dashboard_manager_title;
     public static String dialog_dashboard_manager_treecolumn_name;
-    public static String dialog_dashboard_manager_button_new;
+    public static String dialog_dashboard_manager_button_database_new;
+    public static String dialog_dashboard_manager_button_web_new;
     public static String dialog_dashboard_manager_button_copy;
     public static String dialog_dashboard_manager_button_edit;
     public static String dialog_dashboard_manager_button_delete;
