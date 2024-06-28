@@ -532,6 +532,11 @@ public class DataSourceDescriptor
         this.secretsContainsDatabaseCreds = false;
         this.availableSharedCredentials = null;
         this.selectedSharedCredentials = null;
+        if (sharedCredentials) {
+            // For shared credentials reset cache also
+            connectionInfo.setUserName(null);
+            connectionInfo.setUserPassword(null);
+        }
     }
 
     @Nullable
