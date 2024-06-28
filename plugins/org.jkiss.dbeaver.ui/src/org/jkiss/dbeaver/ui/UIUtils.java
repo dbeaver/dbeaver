@@ -2175,7 +2175,7 @@ public class UIUtils {
     public static void waitJobCompletion(@NotNull AbstractJob job, @Nullable IProgressMonitor monitor) {
         // Wait until job finished
         Display display = Display.getCurrent();
-        while (!job.isFinished()) {
+        while (!job.isFinished() && !DBWorkbench.getPlatform().isShuttingDown()) {
             if (monitor != null && monitor.isCanceled()) {
                 job.cancel();
             }

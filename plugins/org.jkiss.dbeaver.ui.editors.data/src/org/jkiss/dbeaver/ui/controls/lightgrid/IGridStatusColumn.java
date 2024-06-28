@@ -14,23 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.denodo.model;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+package org.jkiss.dbeaver.ui.controls.lightgrid;
 
-public class DenodoDataSource extends GenericDataSource {
+import org.jkiss.dbeaver.model.DBPImage;
 
-    public DenodoDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, DenodoMetaModel metaModel)
-        throws DBException
-    {
-        super(monitor, container, metaModel, new DenodoSQLDialect());
-    }
+public interface IGridStatusColumn {
 
-    @Override
-    protected boolean isPopulateClientAppName() {
-        return false;
-    }
+    String getDisplayName();
+
+    String getStatusText();
+
+    DBPImage getStatusIcon();
 }
