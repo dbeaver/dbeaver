@@ -14,17 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.css;
 
-public class DBStyles {
+package org.jkiss.dbeaver.ui.controls.lightgrid;
 
-    public static final String COLORED_BY_CONNECTION_TYPE = "coloredByConnectionType";
-    public static final String ATTR_MIMIC_CONTROL = "mimicControl";
+import org.jkiss.dbeaver.model.DBPImage;
 
-    public static final String DATABASE_EDITOR_COMPOSITE_DATASOURCE = "databaseEditorCompositeBackground";
+public interface IGridStatusColumn {
 
-    private DBStyles() {
-    }
+    String getDisplayName();
 
+    String getStatusText();
 
+    DBPImage getStatusIcon();
 }

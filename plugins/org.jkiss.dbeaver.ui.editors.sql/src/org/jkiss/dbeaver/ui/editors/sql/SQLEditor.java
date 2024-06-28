@@ -2981,7 +2981,7 @@ public class SQLEditor extends SQLEditorBase implements
         DBPImage bottomLeft;
         DBPImage bottomRight;
 
-        if (executionContext == null) {
+        if (getExecutionContext() == null) {
             if (dsContainer instanceof DBPStatefulObject && ((DBPStatefulObject) dsContainer).getObjectState() == DBSObjectState.INVALID) {
                 bottomRight = DBIcon.OVER_ERROR;
             } else {
@@ -4068,8 +4068,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Nullable
         @Override
-        public ResultSetViewer getResultSetController()
-        {
+        public ResultSetViewer getResultSetController() {
             return viewer;
         }
 
@@ -4079,14 +4078,12 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Nullable
         @Override
-        public DBSDataContainer getDataContainer()
-        {
+        public DBSDataContainer getDataContainer() {
             return this;
         }
 
         @Override
-        public boolean isReadyToRun()
-        {
+        public boolean isReadyToRun() {
             return queryProcessor.curJob == null || queryProcessor.curJobRunning.get() <= 0;
         }
 
@@ -4109,8 +4106,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         @Override
-        public String[] getSupportedFeatures()
-        {
+        public String[] getSupportedFeatures() {
             if (dataContainer != null) {
                 return dataContainer.getSupportedFeatures();
             }
@@ -4221,8 +4217,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Nullable
         @Override
-        public String getDescription()
-        {
+        public String getDescription() {
             if (dataContainer != null) {
                 return dataContainer.getDescription();
             } else {
@@ -4232,15 +4227,13 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Nullable
         @Override
-        public DBSObject getParentObject()
-        {
+        public DBSObject getParentObject() {
             return getDataSource();
         }
 
         @Nullable
         @Override
-        public DBPDataSource getDataSource()
-        {
+        public DBPDataSource getDataSource() {
             return SQLEditor.this.getDataSource();
         }
 
@@ -4251,8 +4244,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         @NotNull
         @Override
-        public String getName()
-        {
+        public String getName() {
             if (dataContainer != null) {
                 return dataContainer.getName();
             }
@@ -4877,7 +4869,10 @@ public class SQLEditor extends SQLEditorBase implements
                             // see #16605
                             // But we need to avoid the result tab with the select statement
                             // because the statistics window can not be in focus in this case
-                            results.handleExecuteResult(result);
+
+                            if (!(scriptMode && results.query instanceof SQLQuery sqlQuery && sqlQuery.getData() == SQLQueryJob.STATS_RESULTS)) {
+                                results.handleExecuteResult(result);
+                            }
                             if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.SET_SELECTION_TO_STATISTICS_TAB) &&
                                 query.getType() != SQLQueryType.SELECT
                             ) {
