@@ -341,6 +341,10 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         return drivers;
     }
 
+    public void removeCustomAndDisabledDrivers() {
+        drivers.removeIf(driver -> driver.isCustom() || driver.isDisabled());
+    }
+
     public List<DriverDescriptor> getEnabledDrivers() {
         List<DriverDescriptor> eDrivers = new ArrayList<>();
         for (DriverDescriptor driver : drivers) {
