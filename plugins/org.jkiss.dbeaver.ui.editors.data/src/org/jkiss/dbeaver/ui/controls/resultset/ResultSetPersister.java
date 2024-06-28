@@ -198,7 +198,7 @@ class ResultSetPersister {
             return false;
         }
         final DBDRowIdentifier rowIdentifier = model.getDefaultRowIdentifier();
-        if (rowIdentifier == null || rowIdentifier.getAttributes().isEmpty()) {
+        if (rowIdentifier == null || rowIdentifier.isIncomplete()) {
             // No key - can't refresh
             return false;
         }
@@ -567,7 +567,7 @@ class ResultSetPersister {
             // Probably we have only virtual one with empty attribute set
             DBDRowIdentifier identifier = viewer.getVirtualEntityIdentifier();
             if (identifier != null) {
-                if (CommonUtils.isEmpty(identifier.getAttributes())) {
+                if (identifier.isIncomplete()) {
                     // Empty identifier. We have to define it
                     if (!UITask.run(() -> ValidateUniqueKeyUsageDialog.validateUniqueKey(viewer, executionContext))) {
                         throw new DBCException("No unique key defined");

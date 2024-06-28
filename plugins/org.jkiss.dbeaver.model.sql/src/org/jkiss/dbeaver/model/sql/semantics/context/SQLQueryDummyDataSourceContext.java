@@ -290,11 +290,13 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         public void removeContextAttribute(String attributeName) {
         }
 
+        @NotNull
         @Override
         public DBPDataSourceContainer getContainer() {
             return null;
         }
 
+        @NotNull
         @Override
         public DBPDataSourceInfo getInfo() {
             return null;

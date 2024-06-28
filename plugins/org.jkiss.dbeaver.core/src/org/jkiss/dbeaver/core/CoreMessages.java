@@ -521,6 +521,13 @@ public class CoreMessages extends NLS {
     public static String pref_page_connection_label_default_connection_template_variables;
     public static String pref_page_connection_label_default_connection_template_variables_tip;
 
+    public static String pref_page_network_expert_label;
+    public static String pref_page_network_expert_preferred_ip_stack_label;
+    public static String pref_page_network_expert_preferred_ip_stack_tip;
+    public static String pref_page_network_expert_preferred_ip_addresses_label;
+    public static String pref_page_network_expert_preferred_ip_addresses_tip;
+    public static String pref_page_network_expert_restart_prompt_title;
+    public static String pref_page_network_expert_restart_prompt_message;
 
     public static String pref_page_connection_label_default_settings;
 

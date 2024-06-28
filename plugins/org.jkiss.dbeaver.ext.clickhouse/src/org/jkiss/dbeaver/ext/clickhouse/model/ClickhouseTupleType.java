@@ -22,9 +22,9 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.utils.Pair;
 
 import java.sql.Types;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,16 +34,33 @@ public class ClickhouseTupleType extends ClickhouseAbstractDataType implements D
     private final List<ClickhouseTupleTypeAttribute> attributes;
     private final String name;
 
-    public ClickhouseTupleType(@NotNull ClickhouseDataSource dataSource, @NotNull DBSDataType[] types, @NotNull String[] names) {
+    public ClickhouseTupleType(
+        @NotNull ClickhouseDataSource dataSource,
+        @NotNull List<Pair<String, DBSDataType>> elements
+    ) {
+        this(dataSource, "Tuple", elements);
+    }
+
+    protected ClickhouseTupleType(
+        @NotNull ClickhouseDataSource dataSource,
+        @NotNull String name,
+        @NotNull List<Pair<String, DBSDataType>> elements
+    ) {
         super(dataSource);
 
-        this.attributes = IntStream.range(0, types.length)
-            .mapToObj(index -> new ClickhouseTupleTypeAttribute(this, types[index], names[index], index))
-            .collect(Collectors.toList());
+        this.attributes = IntStream.range(0, elements.size())
+            .mapToObj(index -> new ClickhouseTupleTypeAttribute(
+                this,
+                elements.get(index).getSecond(),
+                elements.get(index).getFirst(),
+                index
+            ))
+            .toList();
 
-        this.name = Arrays.stream(types)
+        this.name = name + elements.stream()
+            .map(Pair::getSecond)
             .map(DBSTypedObject::getFullTypeName)
-            .collect(Collectors.joining(", ", "Tuple(", ")"));
+            .collect(Collectors.joining(", ", "(", ")"));
     }
 
     @NotNull
