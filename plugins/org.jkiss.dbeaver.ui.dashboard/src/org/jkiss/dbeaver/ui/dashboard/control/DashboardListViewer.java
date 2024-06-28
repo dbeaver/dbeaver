@@ -39,7 +39,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.model.*;
-import org.jkiss.dbeaver.ui.dashboard.view.DashboardCatalogPanel;
+import org.jkiss.dbeaver.ui.dashboard.view.catalogpanel.DashboardCatalogPanel;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.IOException;
@@ -141,11 +141,6 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
             }
         };
 
-//        if (catalogPanel.isEmptyDashboardTable()) {
-//            dashDivider.setWeights(1000, 0);
-//        } else {
-//            dashDivider.setWeights(650, 350);
-//        }
         dashDivider.setWeights(650, 350);
         dashDivider.setMaximizedControl(dashContainer);
 
