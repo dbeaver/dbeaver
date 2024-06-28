@@ -58,7 +58,6 @@ public class DashboardManagerDialog extends BaseDialog {
 
     private DashboardItemConfiguration selectedDashboard;
 
-    private final List<Button> newChartButtons;
     private Button copyButton;
     private Button editButton;
     private Button deleteButton;
@@ -66,7 +65,6 @@ public class DashboardManagerDialog extends BaseDialog {
 
     public DashboardManagerDialog(Shell shell) {
         super(shell, UIDashboardMessages.dialog_dashboard_manager_title, null);
-        newChartButtons = new ArrayList<>();
     }
 
     @Override
@@ -203,13 +201,12 @@ public class DashboardManagerDialog extends BaseDialog {
                 Button newChartButton = UIUtils.createPushButton(buttonBar,
                     NLS.bind(UIDashboardMessages.dialog_dashboard_manager_button_new, dashboardProvider.getLabel()),
                     null, new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        createDashboard(dashboardProvider);
-                    }
-                });
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            createDashboard(dashboardProvider);
+                        }
+                    });
                 newChartButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-                newChartButtons.add(newChartButton);
             }
 
             copyButton = UIUtils.createPushButton(buttonBar, UIDashboardMessages.dialog_dashboard_manager_button_copy, null, new SelectionAdapter() {
@@ -277,7 +274,6 @@ public class DashboardManagerDialog extends BaseDialog {
     }
 
     private void updateButtons() {
-        newChartButtons.forEach(button -> button.setEnabled(true));
         copyButton.setEnabled(selectedDashboard != null);
         editButton.setEnabled(selectedDashboard != null);
         deleteButton.setEnabled(selectedDashboard != null && selectedDashboard.isCustom());
@@ -328,8 +324,7 @@ public class DashboardManagerDialog extends BaseDialog {
         if (UIUtils.confirmAction(
             getShell(),
             UIDashboardMessages.dialog_dashboard_manager_shell_delete_title,
-            NLS.bind(UIDashboardMessages.dialog_dashboard_manager_shell_delete_question, selectedDashboard.getName())))
-        {
+            NLS.bind(UIDashboardMessages.dialog_dashboard_manager_shell_delete_question, selectedDashboard.getName()))) {
             DashboardRegistry.getInstance().removeDashboardItem(selectedDashboard);
             selectedDashboard = null;
             refreshDashboards();
