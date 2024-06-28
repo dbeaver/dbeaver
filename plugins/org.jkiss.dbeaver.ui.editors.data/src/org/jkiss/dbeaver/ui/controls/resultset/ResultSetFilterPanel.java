@@ -135,6 +135,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
         {
             this.filterComposite = new Composite(this, SWT.BORDER);
+
             gl = new GridLayout(5, false);
             gl.marginHeight = 0;
             gl.marginWidth = 0;
@@ -270,7 +271,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             filtersCustomButton.setEnabled(true);
             filtersCustomButton.addSelectionListener(new CustomFilterListener());
 
-            UIUtils.createToolBarSeparator(filterToolbar, SWT.VERTICAL);
+            //UIUtils.createToolBarSeparator(filterToolbar, SWT.VERTICAL);
 
             historyBackButton = new ToolItem(filterToolbar, SWT.DROP_DOWN | SWT.NO_FOCUS);
             historyBackButton.setImage(DBeaverIcons.getImage(UIIcon.RS_BACK));
@@ -282,6 +283,13 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             historyForwardButton.setEnabled(false);
             historyForwardButton.addSelectionListener(new HistoryMenuListener(historyForwardButton, false));
         }
+
+        CSSUtils.setMimicControl(this, filtersText);
+        CSSUtils.setMimicControl(this.filterComposite, filtersText);
+        if (filterExpandPanel != null) CSSUtils.setMimicControl(filterExpandPanel, filtersText);
+        if (executePanel != null) CSSUtils.setMimicControl(executePanel, filtersText);
+        if (historyPanel != null) CSSUtils.setMimicControl(historyPanel, filtersText);
+        if (filterToolbar != null) CSSUtils.setMimicControl(filterToolbar, filtersText);
 
         this.addControlListener(new ControlListener() {
             @Override
@@ -818,7 +826,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 textOffset += iconBounds.width + 2;
             }
             int textHeight = e.gc.getFontMetrics().getHeight();
-            e.gc.drawText(activeDisplayName, textOffset, 2);
+            e.gc.drawText(activeDisplayName, textOffset, 0);
             e.gc.setClipping((Rectangle) null);
         }
     }

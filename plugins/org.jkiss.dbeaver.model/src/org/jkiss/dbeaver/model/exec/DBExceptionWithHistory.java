@@ -14,20 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.clickhouse.model;
+package org.jkiss.dbeaver.model.exec;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.utils.Pair;
+import org.jkiss.dbeaver.DBException;
 
 import java.util.List;
 
-public class ClickhouseMapType extends ClickhouseTupleType {
-    public ClickhouseMapType(
-        @NotNull ClickhouseDataSource dataSource,
-        @NotNull DBSDataType keyType,
-        @NotNull DBSDataType valueType
-    ) {
-        super(dataSource, "Map", List.of(new Pair<>("Key", keyType), new Pair<>("Value", valueType)));
+public class DBExceptionWithHistory extends DBException {
+
+    private final List<Throwable> exceptions;
+
+    public DBExceptionWithHistory(String message, Throwable cause, List<Throwable> exceptions) {
+        super(message, cause);
+        this.exceptions = exceptions;
+    }
+
+    public List<Throwable> getExceptions() {
+        return exceptions;
     }
 }

@@ -14,20 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.clickhouse.model;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.utils.Pair;
+package org.jkiss.dbeaver.ui.controls.lightgrid;
 
-import java.util.List;
+import org.jkiss.dbeaver.model.DBPImage;
 
-public class ClickhouseMapType extends ClickhouseTupleType {
-    public ClickhouseMapType(
-        @NotNull ClickhouseDataSource dataSource,
-        @NotNull DBSDataType keyType,
-        @NotNull DBSDataType valueType
-    ) {
-        super(dataSource, "Map", List.of(new Pair<>("Key", keyType), new Pair<>("Value", valueType)));
-    }
+public interface IGridStatusColumn {
+
+    String getDisplayName();
+
+    String getStatusText();
+
+    DBPImage getStatusIcon();
 }
