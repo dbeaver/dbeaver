@@ -46,20 +46,20 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 
 public class GaussDBCreateDatabaseDialog extends BaseDialog {
     private final GaussDBDataSource dataSource;
-    private List<PostgreRole>       allUsers;
-    private List<PostgreCharset>    allEncodings;
+    private List<PostgreRole> allUsers;
+    private List<PostgreCharset> allEncodings;
     private List<PostgreTablespace> allTablespaces;
 
-    private String                  name;
-    private PostgreRole             owner;
-    private String                  dbTemplate;
-    private PostgreCharset          encoding;
-    private PostgreTablespace       tablespace;
-    private String                  compatibleMode;
-    private Combo                   dbCompatibleMode;
-    private Combo                   userCombo;
-    private Combo                   encodingCombo;
-    private Combo                   tablespaceCombo;
+    private String name;
+    private PostgreRole owner;
+    private String dbTemplate;
+    private PostgreCharset encoding;
+    private PostgreTablespace tablespace;
+    private String compatibleMode;
+    private Combo dbCompatibleMode;
+    private Combo userCombo;
+    private Combo encodingCombo;
+    private Combo tablespaceCombo;
 
     public GaussDBCreateDatabaseDialog(Shell parentShell, GaussDBDataSource dataSource) {
         super(parentShell, PostgreMessages.dialog_create_db_title, null);
@@ -74,21 +74,21 @@ public class GaussDBCreateDatabaseDialog extends BaseDialog {
 
         final Composite composite = super.createDialogArea(parent);
         final Composite groupGeneral = UIUtils.createControlGroup(composite, PostgreMessages.dialog_create_db_group_general, 2,
-                                                                  GridData.FILL_HORIZONTAL, SWT.NONE);
+            GridData.FILL_HORIZONTAL, SWT.NONE);
         final Text nameText = UIUtils.createLabelText(groupGeneral, PostgreMessages.dialog_create_db_label_db_name, "");
         nameText.addModifyListener(e -> {
             name = nameText.getText().trim();
             getButton(IDialogConstants.OK_ID).setEnabled(!name.isEmpty());
         });
 
-        final Composite groupDefinition = UIUtils.createControlGroup(composite, PostgreMessages.dialog_create_db_group_definition,
-                                                                     2, GridData.FILL_HORIZONTAL, SWT.NONE);
+        final Composite groupDefinition = UIUtils.createControlGroup(composite, PostgreMessages.dialog_create_db_group_definition, 2,
+            GridData.FILL_HORIZONTAL, SWT.NONE);
         supportsRoles(supportsRoles, groupGeneral);
         supportsEncodings(supportsEncodings, groupDefinition);
         supportsTablespaces(supportsTablespaces, groupDefinition);
 
         dbCompatibleMode = UIUtils.createLabelCombo(groupDefinition, "DataBase Compatibility Mode",
-                                                    SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
         dbCompatibleMode.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -169,7 +169,7 @@ public class GaussDBCreateDatabaseDialog extends BaseDialog {
     private void supportsTablespaces(boolean supportsTablespaces, final Composite groupDefinition) {
         if (supportsTablespaces) {
             tablespaceCombo = UIUtils.createLabelCombo(groupDefinition, PostgreMessages.dialog_create_db_label_tablesapce,
-                                                       SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+                SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
             tablespaceCombo.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -186,7 +186,7 @@ public class GaussDBCreateDatabaseDialog extends BaseDialog {
     private void supportsEncodings(boolean supportsEncodings, final Composite groupDefinition) {
         if (supportsEncodings) {
             encodingCombo = UIUtils.createLabelCombo(groupDefinition, PostgreMessages.dialog_create_db_label_encoding,
-                                                     SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+                SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
             encodingCombo.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -199,7 +199,7 @@ public class GaussDBCreateDatabaseDialog extends BaseDialog {
     private void supportsRoles(boolean supportsRoles, final Composite groupGeneral) {
         if (supportsRoles) {
             userCombo = UIUtils.createLabelCombo(groupGeneral, PostgreMessages.dialog_create_db_label_owner,
-                                                 SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+                SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
             userCombo.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {

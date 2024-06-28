@@ -40,7 +40,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
 public class GaussDBProcedure extends PostgreProcedure {
-    public long   propackageid;
+    public long propackageid;
     public String prokind;
     public String procSrc;
 
@@ -75,7 +75,7 @@ public class GaussDBProcedure extends PostgreProcedure {
 
             if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_COMMENTS) && !CommonUtils.isEmpty(getDescription())) {
                 procDDL += "\nCOMMENT ON " + getProcedureTypeName() + " " + getFullQualifiedSignature() + " IS "
-                            + SQLUtils.quoteString(this, getDescription()) + ";\n";
+                    + SQLUtils.quoteString(this, getDescription()) + ";\n";
             }
 
             if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_PERMISSIONS)) {
@@ -88,9 +88,8 @@ public class GaussDBProcedure extends PostgreProcedure {
         return procDDL;
     }
 
-    private String getObjectDefinitionTextWhenPersisted(DBRProgressMonitor monitor,
-                                                        boolean omitHeader,
-                                                        String procDDL) throws DBCException, DBException {
+    private String getObjectDefinitionTextWhenPersisted(DBRProgressMonitor monitor, boolean omitHeader,
+        String procDDL) throws DBCException, DBException {
         if (procSrc == null) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read procedure body")) {
                 procSrc = JDBCUtils.queryString(session, "SELECT prosrc FROM pg_proc where oid = ?", getObjectId());
@@ -103,8 +102,7 @@ public class GaussDBProcedure extends PostgreProcedure {
         return (procDDL + (omitHeader ? procSrc : generateFunctionDeclaration(getLanguage(monitor), returnTypeName, procSrc)));
     }
 
-    private String getObjectDefinitionTextWhenBodyNull(DBRProgressMonitor monitor, String procDDL) throws DBException,
-                                                                                                   DBCException {
+    private String getObjectDefinitionTextWhenBodyNull(DBRProgressMonitor monitor, String procDDL) throws DBException, DBCException {
         if (body == null) {
             if (!isPersisted()) {
                 PostgreDataType returnType = getReturnType();

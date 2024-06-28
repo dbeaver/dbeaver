@@ -34,11 +34,8 @@ public class GaussDBPackageConfigurator implements DBEObjectConfigurator<GaussDB
     public static final DBSEntityType PACKAGE = new DBSEntityType("package", "Package", DBIcon.TREE_PACKAGE, true);
 
     @Override
-    public GaussDBPackage configureObject(DBRProgressMonitor monitor,
-                                          DBECommandContext commandContext,
-                                          Object container,
-                                          GaussDBPackage gaussdbPackage,
-                                          Map<String, Object> options) {
+    public GaussDBPackage configureObject(DBRProgressMonitor monitor, DBECommandContext commandContext, Object container,
+        GaussDBPackage gaussdbPackage, Map<String, Object> options) {
         return new UITask<GaussDBPackage>() {
             @Override
             protected GaussDBPackage runTask() throws DBException {
@@ -48,10 +45,10 @@ public class GaussDBPackageConfigurator implements DBEObjectConfigurator<GaussDB
                 }
                 String packName = editPage.getEntityName();
                 gaussdbPackage.setName(packName);
-                gaussdbPackage.setObjectDefinitionText("CREATE OR REPLACE PACKAGE " + packName + "\n" + "AS\n"
-                            + "-- Package header\n" + "END " + packName + ";");
-                gaussdbPackage.setExtendedDefinitionText("CREATE OR REPLACE PACKAGE BODY " + packName + "\n" + "AS\n"
-                            + "-- Package body\n" + "END " + packName + ";");
+                gaussdbPackage.setObjectDefinitionText(
+                    "CREATE OR REPLACE PACKAGE " + packName + "\n" + "AS\n" + "-- Package header\n" + "END " + packName + ";");
+                gaussdbPackage.setExtendedDefinitionText(
+                    "CREATE OR REPLACE PACKAGE BODY " + packName + "\n" + "AS\n" + "-- Package body\n" + "END " + packName + ";");
                 return gaussdbPackage;
             }
         }.execute();

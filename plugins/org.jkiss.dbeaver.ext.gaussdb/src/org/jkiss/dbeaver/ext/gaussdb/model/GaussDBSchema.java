@@ -87,16 +87,14 @@ public class GaussDBSchema extends PostgreSchema {
     @Association
     public List<GaussDBProcedure> getGaussDBProcedures(DBRProgressMonitor monitor) throws DBException {
         List<GaussDBProcedure> list = getGaussDBProceduresCache().getAllObjects(monitor, this).stream()
-                    .filter(e -> e.getPropackageid() == 0 && e.getKind() == PostgreProcedureKind.p)
-                .collect(Collectors.toList());
+            .filter(e -> e.getPropackageid() == 0 && e.getKind() == PostgreProcedureKind.p).collect(Collectors.toList());
         return list;
     }
 
     @Association
     public List<GaussDBFunction> getGaussDBFunctions(DBRProgressMonitor monitor) throws DBException {
         List<GaussDBFunction> list = getGaussDBFunctionsCache().getAllObjects(monitor, this).stream()
-                    .filter(e -> e.getPropackageid() == 0 && e.getKind() == PostgreProcedureKind.f)
-                .collect(Collectors.toList());
+            .filter(e -> e.getPropackageid() == 0 && e.getKind() == PostgreProcedureKind.f).collect(Collectors.toList());
         return list;
     }
 
@@ -104,17 +102,17 @@ public class GaussDBSchema extends PostgreSchema {
 
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull GaussDBSchema owner)
-                throws SQLException {
-            final JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "select g.oid, g.pkgnamespace, g.pkgname as name from gs_package g where g.pkgnamespace = ?");
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session,
+            @NotNull GaussDBSchema owner) throws SQLException {
+            final JDBCPreparedStatement dbStat = session
+                .prepareStatement("select g.oid, g.pkgnamespace, g.pkgname as name from gs_package g where g.pkgnamespace = ?");
             dbStat.setLong(1, GaussDBSchema.this.getObjectId());
             return dbStat;
         }
 
         @Override
         protected GaussDBPackage fetchObject(@NotNull JDBCSession session, @NotNull GaussDBSchema owner,
-                @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+            @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
             return new GaussDBPackage(session, owner, dbResult);
         }
     }
@@ -128,18 +126,15 @@ public class GaussDBSchema extends PostgreSchema {
         @NotNull
         @Override
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull GaussDBSchema owner,
-                @Nullable GaussDBProcedure object, @Nullable String objectName) throws SQLException {
+            @Nullable GaussDBProcedure object, @Nullable String objectName) throws SQLException {
             PostgreServerExtension serverType = owner.getDataSource().getServerType();
             String oidColumn = serverType.getProceduresOidColumn(); // Hack for Redshift SP support
             JDBCPreparedStatement dbStat = session.prepareStatement("SELECT p." + oidColumn + " as poid,p.*,"
-                    + (session.getDataSource().isServerVersionAtLeast(8, 4)
-                            ? "pg_catalog.pg_get_expr(p.proargdefaults, 0)"
-                            : "NULL")
-                    + " as arg_defaults,d.description\n" + "FROM pg_catalog." + serverType.getProceduresSystemTable()
-                    + " p\n" + "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=p." + oidColumn
-                    + (session.getDataSource().isServerVersionAtLeast(7, 2) ? " AND d.objsubid = 0" : "") + // no links to columns
-                    "\nWHERE p.pronamespace=?" + (object == null ? "" : " AND p." + oidColumn + "=?")
-                    + "\nORDER BY p.proname");
+                + (session.getDataSource().isServerVersionAtLeast(8, 4) ? "pg_catalog.pg_get_expr(p.proargdefaults, 0)" : "NULL")
+                + " as arg_defaults,d.description\n" + "FROM pg_catalog." + serverType.getProceduresSystemTable() + " p\n"
+                + "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=p." + oidColumn
+                + (session.getDataSource().isServerVersionAtLeast(7, 2) ? " AND d.objsubid = 0" : "") + // no links to columns
+                "\nWHERE p.pronamespace=?" + (object == null ? "" : " AND p." + oidColumn + "=?") + "\nORDER BY p.proname");
             dbStat.setLong(1, owner.getObjectId());
             if (object != null) {
                 dbStat.setLong(2, object.getObjectId());
@@ -149,7 +144,7 @@ public class GaussDBSchema extends PostgreSchema {
 
         @Override
         protected GaussDBProcedure fetchObject(@NotNull JDBCSession session, @NotNull GaussDBSchema owner,
-                @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+            @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
             return new GaussDBProcedure(session.getProgressMonitor(), owner, dbResult);
         }
 
@@ -164,18 +159,15 @@ public class GaussDBSchema extends PostgreSchema {
         @NotNull
         @Override
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull GaussDBSchema owner,
-                @Nullable GaussDBFunction object, @Nullable String objectName) throws SQLException {
+            @Nullable GaussDBFunction object, @Nullable String objectName) throws SQLException {
             PostgreServerExtension serverType = owner.getDataSource().getServerType();
             String oidColumn = serverType.getProceduresOidColumn(); // Hack for Redshift SP support
             JDBCPreparedStatement dbStat = session.prepareStatement("SELECT p." + oidColumn + " as poid,p.*,"
-                    + (session.getDataSource().isServerVersionAtLeast(8, 4)
-                            ? "pg_catalog.pg_get_expr(p.proargdefaults, 0)"
-                            : "NULL")
-                    + " as arg_defaults,d.description\n" + "FROM pg_catalog." + serverType.getProceduresSystemTable()
-                    + " p\n" + "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=p." + oidColumn
-                    + (session.getDataSource().isServerVersionAtLeast(7, 2) ? " AND d.objsubid = 0" : "") + // no links to columns
-                    "\nWHERE p.pronamespace=?" + (object == null ? "" : " AND p." + oidColumn + "=?")
-                    + "\nORDER BY p.proname");
+                + (session.getDataSource().isServerVersionAtLeast(8, 4) ? "pg_catalog.pg_get_expr(p.proargdefaults, 0)" : "NULL")
+                + " as arg_defaults,d.description\n" + "FROM pg_catalog." + serverType.getProceduresSystemTable() + " p\n"
+                + "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=p." + oidColumn
+                + (session.getDataSource().isServerVersionAtLeast(7, 2) ? " AND d.objsubid = 0" : "") + // no links to columns
+                "\nWHERE p.pronamespace=?" + (object == null ? "" : " AND p." + oidColumn + "=?") + "\nORDER BY p.proname");
             dbStat.setLong(1, owner.getObjectId());
             if (object != null) {
                 dbStat.setLong(2, object.getObjectId());
@@ -185,7 +177,7 @@ public class GaussDBSchema extends PostgreSchema {
 
         @Override
         protected GaussDBFunction fetchObject(@NotNull JDBCSession session, @NotNull GaussDBSchema owner,
-                @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+            @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
             return new GaussDBFunction(session.getProgressMonitor(), owner, dbResult);
         }
 

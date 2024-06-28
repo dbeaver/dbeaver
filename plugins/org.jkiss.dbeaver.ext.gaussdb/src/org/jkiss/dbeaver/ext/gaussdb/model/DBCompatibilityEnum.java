@@ -22,9 +22,7 @@ public enum DBCompatibilityEnum {
     ORACLE("Oracle", "A", "ORA"), MYSQL("MySQL", "B", "MYSQL"), TEDATA("Teradata", "C", "TD"), POSTGRES("PostgreSQL", "PG", "PG");
 
     private final String text;
-
     private final String cValue;
-
     private final String dValue;
 
     /**

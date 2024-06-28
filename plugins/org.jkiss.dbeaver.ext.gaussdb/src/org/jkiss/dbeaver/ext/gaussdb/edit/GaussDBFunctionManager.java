@@ -46,98 +46,91 @@ import java.util.Map;
 /**
  * GaussDBFunctionManager
  */
-public class GaussDBFunctionManager extends SQLObjectEditor<GaussDBFunction, GaussDBSchema> implements
-                                    DBEObjectRenamer<GaussDBFunction> {
+public class GaussDBFunctionManager extends SQLObjectEditor<GaussDBFunction, GaussDBSchema>
+    implements DBEObjectRenamer<GaussDBFunction> {
 
     @Nullable
     @Override
-    public DBSObjectCache<GaussDBSchema, GaussDBFunction> getObjectsCache(GaussDBFunction object) {
+    public DBSObjectCache<GaussDBSchema, GaussDBFunction> getObjectsCache(GaussDBFunction object)
+    {
         GaussDBSchema schema = (GaussDBSchema) object.getContainer();
         return schema.getGaussDBFunctionsCache();
     }
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(Object container)
+    {
         return container instanceof PostgreSchema
-                    && ((PostgreSchema) container).getDataSource().getServerType().supportsFunctionCreate();
+            && ((PostgreSchema) container).getDataSource().getServerType().supportsFunctionCreate();
     }
 
     @Override
-    public boolean canDeleteObject(GaussDBFunction object) {
+    public boolean canDeleteObject(GaussDBFunction object)
+    {
         return object.getDataSource().getServerType().supportsFunctionCreate();
     }
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(DBPDataSource dataSource)
+    {
         return FEATURE_EDITOR_ON_CREATE;
     }
 
     @Override
-    protected void validateObjectProperties(DBRProgressMonitor monitor,
-                                            ObjectChangeCommand command,
-                                            Map<String, Object> options) throws DBException {
+    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, Map<String, Object> options)
+        throws DBException
+    {
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("Function name cannot be empty");
         }
     }
 
     @Override
-    protected GaussDBFunction createDatabaseObject(DBRProgressMonitor monitor,
-                                                   DBECommandContext context,
-                                                   final Object container,
-                                                   Object copyFrom,
-                                                   Map<String, Object> options) {
+    protected GaussDBFunction createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container,
+        Object copyFrom, Map<String, Object> options)
+    {
         return new GaussDBFunction((PostgreSchema) container);
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor,
-                                          DBCExecutionContext executionContext,
-                                          List<DBEPersistAction> actions,
-                                          ObjectCreateCommand command,
-                                          Map<String, Object> options) {
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext,
+        List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
+    {
         createOrReplaceProcedureQuery(actions, command.getObject());
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor,
-                                          DBCExecutionContext executionContext,
-                                          List<DBEPersistAction> actionList,
-                                          ObjectChangeCommand command,
-                                          Map<String, Object> options) {
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext,
+        List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    {
         if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
             createOrReplaceProcedureQuery(actionList, command.getObject());
         }
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor,
-                                          DBCExecutionContext executionContext,
-                                          List<DBEPersistAction> actions,
-                                          ObjectDeleteCommand command,
-                                          Map<String, Object> options) {
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext,
+        List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
+    {
         String objectType = command.getObject().getProcedureTypeName();
         actions.add(new SQLDatabasePersistAction("Drop function",
-                                                 "DROP " + objectType + " " + command.getObject().getFullQualifiedSignature()) //$NON-NLS-1$
+            "DROP " + objectType + " " + command.getObject().getFullQualifiedSignature()) //$NON-NLS-1$
         );
     }
 
-    private void createOrReplaceProcedureQuery(List<DBEPersistAction> actions, GaussDBProcedure procedure) {
+    private void createOrReplaceProcedureQuery(List<DBEPersistAction> actions, GaussDBProcedure procedure)
+    {
         actions.add(new SQLDatabasePersistAction("Create function", procedure.getBody(), true));
     }
 
     @Override
-    protected void addObjectExtraActions(DBRProgressMonitor monitor,
-                                         DBCExecutionContext executionContext,
-                                         List<DBEPersistAction> actions,
-                                         NestedObjectCommand<GaussDBFunction, PropertyHandler> command,
-                                         Map<String, Object> options) {
+    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext,
+        List<DBEPersistAction> actions, NestedObjectCommand<GaussDBFunction, PropertyHandler> command, Map<String, Object> options)
+    {
         if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
             actions.add(new SQLDatabasePersistAction("Comment function",
-                                                     "COMMENT ON " + command.getObject().getProcedureTypeName() + " "
-                                                                 + command.getObject().getFullQualifiedSignature() + " IS "
-                                                                 + SQLUtils.quoteString(command.getObject(),
-                                                                                        command.getObject().getDescription())));
+                "COMMENT ON " + command.getObject().getProcedureTypeName() + " " + command.getObject().getFullQualifiedSignature()
+                    + " IS " + SQLUtils.quoteString(command.getObject(), command.getObject().getDescription())));
         }
         boolean isDDL = CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SOURCE);
         if (isDDL) {
@@ -151,30 +144,22 @@ public class GaussDBFunctionManager extends SQLObjectEditor<GaussDBFunction, Gau
     }
 
     @Override
-    public void renameObject(@NotNull DBECommandContext commandContext,
-                             @NotNull GaussDBFunction object,
-                             @NotNull Map<String, Object> options,
-                             @NotNull String newName) throws DBException {
+    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull GaussDBFunction object,
+        @NotNull Map<String, Object> options, @NotNull String newName) throws DBException
+    {
         processObjectRename(commandContext, object, options, newName);
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor,
-                                          DBCExecutionContext executionContext,
-                                          List<DBEPersistAction> actions,
-                                          ObjectRenameCommand command,
-                                          Map<String, Object> options) {
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext,
+        List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
+    {
         GaussDBProcedure procedure = command.getObject();
         actions.add(new SQLDatabasePersistAction("Rename function",
-                                                 "ALTER " + command.getObject().getProcedureTypeName() + " "
-                                                             + DBUtils.getQuotedIdentifier(procedure.getSchema()) + "."
-                                                             + GaussDBProcedure.makeOverloadedName(procedure.getSchema(),
-                                                                                                   command.getOldName(),
-                                                                                                   procedure.getParameters(monitor),
-                                                                                                   true, false, false)
-                                                             + " RENAME TO "
-                                                             + DBUtils.getQuotedIdentifier(procedure.getDataSource(),
-                                                                                           command.getNewName())));
+            "ALTER " + command.getObject().getProcedureTypeName() + " " + DBUtils.getQuotedIdentifier(procedure.getSchema()) + "."
+                + GaussDBProcedure.makeOverloadedName(procedure.getSchema(), command.getOldName(), procedure.getParameters(monitor),
+                    true, false, false)
+                + " RENAME TO " + DBUtils.getQuotedIdentifier(procedure.getDataSource(), command.getNewName())));
     }
 
 }

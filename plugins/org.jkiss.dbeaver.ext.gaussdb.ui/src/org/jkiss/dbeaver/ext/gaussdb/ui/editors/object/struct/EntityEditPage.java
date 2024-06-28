@@ -36,7 +36,7 @@ import org.jkiss.utils.CommonUtils;
 public class EntityEditPage extends BaseObjectEditPage {
 
     private DBPDataSource dataSource;
-    private String        name;
+    private String name;
 
     public EntityEditPage(DBPDataSource dataSource, DBSEntityType entityType) {
         super("Create new " + entityType.getName());

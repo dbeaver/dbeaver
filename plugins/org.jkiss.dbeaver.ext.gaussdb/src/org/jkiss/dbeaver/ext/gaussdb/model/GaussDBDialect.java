@@ -38,10 +38,8 @@ public class GaussDBDialect extends PostgreDialect {
     }
 
     @Override
-    public void generateStoredProcedureCall(StringBuilder sql,
-                                            DBSProcedure proc,
-                                            Collection<? extends DBSProcedureParameter> parameters,
-                                            boolean castParams) {
+    public void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc,
+        Collection<? extends DBSProcedureParameter> parameters, boolean castParams) {
         List<DBSProcedureParameter> inParameters = new ArrayList<>();
         if (parameters != null) {
             inParameters.addAll(parameters);
@@ -74,14 +72,13 @@ public class GaussDBDialect extends PostgreDialect {
         sql.append("\n\n");
     }
 
-    private void inParametersProc(StringBuilder sql,
-                                  boolean castParams,
-                                  List<DBSProcedureParameter> inParameters,
-                                  String namedParameterPrefix) {
+    private void inParametersProc(StringBuilder sql, boolean castParams, List<DBSProcedureParameter> inParameters,
+        String namedParameterPrefix) {
         boolean first = true;
         for (DBSProcedureParameter parameter : inParameters) {
             String typeName = parameter.getParameterType().getFullTypeName();
-            switch (parameter.getParameterKind()) {
+            switch (parameter.getParameterKind())
+            {
             case INOUT:
             case IN:
                 if (!first) {
@@ -89,7 +86,7 @@ public class GaussDBDialect extends PostgreDialect {
                 }
                 if (castParams) {
                     sql.append("cast(").append(namedParameterPrefix).append(CommonUtils.escapeIdentifier(parameter.getName()))
-                                .append(" as ").append(typeName).append(")");
+                        .append(" as ").append(typeName).append(")");
                 } else {
                     sql.append(namedParameterPrefix).append(CommonUtils.escapeIdentifier(parameter.getName()));
                 }

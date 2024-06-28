@@ -53,10 +53,10 @@ import java.util.Locale;
  */
 public class GaussDBConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
 
-    private Text    urlText;
-    private Text    hostText;
-    private Text    portText;
-    private Text    dbText;
+    private Text urlText;
+    private Text hostText;
+    private Text portText;
+    private Text dbText;
     private boolean activated = false;
 
     @Override
@@ -86,7 +86,7 @@ public class GaussDBConnectionPage extends ConnectionPageWithAuth implements IDi
         mainGroup.setLayoutData(gd);
 
         Group addrGroup = UIUtils.createControlGroup(mainGroup, UIConnectionMessages.dialog_connection_server_label, 4,
-                                                     GridData.FILL_HORIZONTAL, 0);
+            GridData.FILL_HORIZONTAL, 0);
 
         SelectionAdapter typeSwitcher = new SelectionAdapter() {
             @Override
@@ -110,9 +110,8 @@ public class GaussDBConnectionPage extends ConnectionPageWithAuth implements IDi
         PostgreServerType serverType = getServerType(driver);
 
         Label hostLabel = UIUtils.createControlLabel(addrGroup,
-                                                     serverType.isCloudServer()
-                                                                 ? PostgreMessages.dialog_setting_connection_cloud_instance
-                                                                 : PostgreMessages.dialog_setting_connection_host);
+            serverType.isCloudServer() ? PostgreMessages.dialog_setting_connection_cloud_instance
+                : PostgreMessages.dialog_setting_connection_host);
         addControlToGroup(GROUP_CONNECTION, hostLabel);
         hostText = new Text(addrGroup, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -168,7 +167,7 @@ public class GaussDBConnectionPage extends ConnectionPageWithAuth implements IDi
             return !CommonUtils.isEmpty(urlText.getText());
         } else {
             return super.isComplete() && hostText != null && !CommonUtils.isEmpty(hostText.getText())
-                        && (portText == null || !CommonUtils.isEmpty(portText.getText()));
+                && (portText == null || !CommonUtils.isEmpty(portText.getText()));
         }
     }
 
@@ -238,7 +237,8 @@ public class GaussDBConnectionPage extends ConnectionPageWithAuth implements IDi
 
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
-        return new IDialogPage[] { new PostgreConnectionPageAdvanced(), new DriverPropertiesDialogPage(this) };
+        return new IDialogPage[]
+        { new PostgreConnectionPageAdvanced(), new DriverPropertiesDialogPage(this) };
     }
 
     private void updateUrl() {

@@ -48,14 +48,14 @@ import org.jkiss.utils.CommonUtils;
 
 public class GaussDBPackage implements PostgreObject, PostgreScriptObject, DBPSystemInfoObject {
 
-    private static final Log      log               = Log.getLog(GaussDBPackage.class);
-    private GaussDBSchema         schema;
-    protected long                ownerId;
-    private long                  oid;
-    private String                name;
-    private String                description;
-    private String                sourceDeclaration = "";
-    private String                sourceDefinition  = "";
+    private static final Log log = Log.getLog(GaussDBPackage.class);
+    private GaussDBSchema schema;
+    protected long ownerId;
+    private long oid;
+    private String name;
+    private String description;
+    private String sourceDeclaration = "";
+    private String sourceDefinition = "";
 
     private final ProceduresCache proceduresCache;
 
@@ -77,7 +77,7 @@ public class GaussDBPackage implements PostgreObject, PostgreScriptObject, DBPSy
         JDBCPreparedStatement prepareStatement;
         try {
             prepareStatement = session
-                        .prepareStatement("select pkg.src from DBE_PLDEVELOPER.gs_source pkg where pkg.id = ? and type = ?");
+                .prepareStatement("select pkg.src from DBE_PLDEVELOPER.gs_source pkg where pkg.id = ? and type = ?");
             prepareStatement.setLong(1, objectId);
             prepareStatement.setString(2, "package");
             JDBCResultSet dbResult = prepareStatement.executeQuery();
@@ -179,8 +179,7 @@ public class GaussDBPackage implements PostgreObject, PostgreScriptObject, DBPSy
         List<GaussDBProcedure> list = new ArrayList<>();
         if (oid != 0) {
             list = getGaussDBProceduresCache().getAllObjects(monitor, this.schema).stream()
-                        .filter(e -> e.getPropackageid() == oid && e.getKind() == PostgreProcedureKind.p)
-                        .collect(Collectors.toList());
+                .filter(e -> e.getPropackageid() == oid && e.getKind() == PostgreProcedureKind.p).collect(Collectors.toList());
         }
         return list;
     }
@@ -190,8 +189,7 @@ public class GaussDBPackage implements PostgreObject, PostgreScriptObject, DBPSy
         List<GaussDBProcedure> list = new ArrayList<>();
         if (oid != 0) {
             list = getGaussDBProceduresCache().getAllObjects(monitor, this.schema).stream()
-                        .filter(e -> e.getPropackageid() == oid && e.getKind() == PostgreProcedureKind.f)
-                        .collect(Collectors.toList());
+                .filter(e -> e.getPropackageid() == oid && e.getKind() == PostgreProcedureKind.f).collect(Collectors.toList());
         }
         return list;
     }
@@ -208,20 +206,17 @@ public class GaussDBPackage implements PostgreObject, PostgreScriptObject, DBPSy
 
         @NotNull
         @Override
-        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session,
-                                                    @NotNull PostgreSchema owner,
-                                                    @Nullable GaussDBProcedure object,
-                                                    @Nullable String objectName) throws SQLException {
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner,
+            @Nullable GaussDBProcedure object, @Nullable String objectName) throws SQLException {
             PostgreServerExtension serverType = owner.getDataSource().getServerType();
             String oidColumn = serverType.getProceduresOidColumn(); // Hack for Redshift SP support
             JDBCPreparedStatement dbStat = session.prepareStatement("SELECT p." + oidColumn + " as poid,p.*,"
-                        + (session.getDataSource().isServerVersionAtLeast(8, 4) ? "pg_catalog.pg_get_expr(p.proargdefaults, 0)"
-                                    : "NULL")
-                        + " as arg_defaults,d.description\n" + "FROM pg_catalog." + serverType.getProceduresSystemTable() + " p\n"
-                        + "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=p." + oidColumn
-                        + (session.getDataSource().isServerVersionAtLeast(7, 2) ? " AND d.objsubid = 0" : "") + // no links to
-                                                                                                                // columns
-                        "\nWHERE p.pronamespace=?" + (object == null ? "" : " AND p." + oidColumn + "=?") + "\nORDER BY p.proname");
+                + (session.getDataSource().isServerVersionAtLeast(8, 4) ? "pg_catalog.pg_get_expr(p.proargdefaults, 0)" : "NULL")
+                + " as arg_defaults,d.description\n" + "FROM pg_catalog." + serverType.getProceduresSystemTable() + " p\n"
+                + "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=p." + oidColumn
+                + (session.getDataSource().isServerVersionAtLeast(7, 2) ? " AND d.objsubid = 0" : "") + // no links to
+                                                                                                        // columns
+                "\nWHERE p.pronamespace=?" + (object == null ? "" : " AND p." + oidColumn + "=?") + "\nORDER BY p.proname");
             dbStat.setLong(1, owner.getObjectId());
             if (object != null) {
                 dbStat.setLong(2, object.getObjectId());
@@ -230,9 +225,8 @@ public class GaussDBPackage implements PostgreObject, PostgreScriptObject, DBPSy
         }
 
         @Override
-        protected GaussDBProcedure fetchObject(@NotNull JDBCSession session,
-                                               @NotNull PostgreSchema owner,
-                                               @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+        protected GaussDBProcedure fetchObject(@NotNull JDBCSession session, @NotNull PostgreSchema owner,
+            @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
             return new GaussDBProcedure(session.getProgressMonitor(), owner, dbResult);
         }
     }

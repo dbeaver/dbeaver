@@ -57,12 +57,8 @@ public class GaussDBDataSource extends PostgreDataSource {
 
     @NotNull
     @Override
-    public GaussDBDatabase createDatabaseImpl(DBRProgressMonitor monitor,
-                                              String name,
-                                              PostgreRole owner,
-                                              String templateName,
-                                              PostgreTablespace tablespace,
-                                              PostgreCharset encoding) throws DBException {
+    public GaussDBDatabase createDatabaseImpl(DBRProgressMonitor monitor, String name, PostgreRole owner, String templateName,
+        PostgreTablespace tablespace, PostgreCharset encoding) throws DBException {
         return new GaussDBDatabase(monitor, this, name, owner, templateName, tablespace, encoding);
     }
 
@@ -71,7 +67,7 @@ public class GaussDBDataSource extends PostgreDataSource {
     protected boolean isReadDatabaseList(DBPConnectionConfiguration configuration) {
         // It is configurable by default
         return configuration.getConfigurationType() != DBPDriverConfigurationType.URL
-                    && CommonUtils.getBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB), true);
+            && CommonUtils.getBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB), true);
     }
 
     @Override

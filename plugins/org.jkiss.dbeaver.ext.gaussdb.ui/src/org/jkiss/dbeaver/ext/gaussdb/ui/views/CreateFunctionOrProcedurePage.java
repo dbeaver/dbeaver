@@ -47,22 +47,21 @@ import org.jkiss.utils.CommonUtils;
 
 public class CreateFunctionOrProcedurePage extends BaseObjectEditPage {
 
-    protected static final Log       log = Log.getLog(CreateFunctionOrProcedurePage.class);
+    protected static final Log log = Log.getLog(CreateFunctionOrProcedurePage.class);
 
-    private String                   name;
-    private DBSProcedureType         type;
+    private String name;
+    private DBSProcedureType type;
 
-    private final GaussDBProcedure   parent;
+    private final GaussDBProcedure parent;
     private final DBRProgressMonitor monitor;
-    private PostgreLanguage          language;
-    private PostgreDataType          returnType;
-    private Combo                    returnTypeCombo;
+    private PostgreLanguage language;
+    private PostgreDataType returnType;
+    private Combo returnTypeCombo;
 
-    private boolean                  isFunction;
+    private boolean isFunction;
 
     public CreateFunctionOrProcedurePage(DBRProgressMonitor monitor, GaussDBProcedure parent, boolean isFunction) {
-        super(isFunction ? GaussDBMessages.dialog_struct_create_function_title
-                    : GaussDBMessages.dialog_struct_create_procedure_title);
+        super(isFunction ? GaussDBMessages.dialog_struct_create_function_title : GaussDBMessages.dialog_struct_create_procedure_title);
         this.parent = parent;
         this.monitor = monitor;
         this.isFunction = isFunction;
@@ -83,9 +82,8 @@ public class CreateFunctionOrProcedurePage extends BaseObjectEditPage {
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         propsGroup.setLayoutData(gd);
 
-        final Text containerText = UIUtils
-                    .createLabelText(propsGroup, GaussDBMessages.dialog_struct_create_procedure_container,
-                                     DBUtils.getObjectFullName(this.parent.getParentObject(), DBPEvaluationContext.UI));
+        final Text containerText = UIUtils.createLabelText(propsGroup, GaussDBMessages.dialog_struct_create_procedure_container,
+            DBUtils.getObjectFullName(this.parent.getParentObject(), DBPEvaluationContext.UI));
         containerText.setEditable(false);
         final Text nameText = UIUtils.createLabelText(propsGroup, GaussDBMessages.dialog_struct_create_procedure_label_name, null);
         nameText.addModifyListener(e -> {
@@ -95,7 +93,7 @@ public class CreateFunctionOrProcedurePage extends BaseObjectEditPage {
         Combo typeCombo;
         if (getPredefinedProcedureType() == null) {
             typeCombo = UIUtils.createLabelCombo(propsGroup, GaussDBMessages.dialog_struct_create_procedure_combo_type,
-                                                 SWT.DROP_DOWN | SWT.READ_ONLY);
+                SWT.DROP_DOWN | SWT.READ_ONLY);
             typeCombo.add(DBSProcedureType.PROCEDURE.name());
             typeCombo.add(DBSProcedureType.FUNCTION.name());
 

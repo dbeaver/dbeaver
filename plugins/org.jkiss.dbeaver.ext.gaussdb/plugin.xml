@@ -44,7 +44,7 @@
                         defaultPort="8000"
                         
                         description="%driver.gaussdb.description"
-                        categories="sql,analytic">
+                        categories="sql">
 
                     <file type="jar" path="https://repo.huaweicloud.com/repository/maven/huaweicloudsdk/gsjdbc4/gsjdbc4/1.0/gsjdbc4-1.0.jar"
                           bundle="!drivers.gaussdb"/>

@@ -29,15 +29,14 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 public class GaussDBSchemaCache extends PostgreDatabase.SchemaCache {
 
     @Override
-    protected GaussDBSchema fetchObject(@NotNull JDBCSession session,
-                                        @NotNull PostgreDatabase owner,
-                                        @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+    protected GaussDBSchema fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner,
+        @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
         String name = JDBCUtils.safeGetString(resultSet, "nspname");
         if (name == null) {
             return null;
         }
         if (GaussDBSchema.isUtilitySchema(name)
-                    && !owner.getDataSource().getContainer().getNavigatorSettings().isShowUtilityObjects()) {
+            && !owner.getDataSource().getContainer().getNavigatorSettings().isShowUtilityObjects()) {
             return null;
         }
         return new GaussDBSchema(owner, name, resultSet);

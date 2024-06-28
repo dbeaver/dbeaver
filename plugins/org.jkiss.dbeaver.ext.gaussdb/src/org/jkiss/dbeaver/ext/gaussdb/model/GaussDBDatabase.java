@@ -46,29 +46,24 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class GaussDBDatabase extends PostgreDatabase {
 
-    private static final Log   log = Log.getLog(GaussDBDatabase.class);
+    private static final Log log = Log.getLog(GaussDBDatabase.class);
 
     private DBRProgressMonitor monitor;
 
     /**
      * Character Type
      */
-    private String             characterType;
+    private String characterType;
 
     /**
      * dataBase Compatibility Mode
      */
-    private String             databaseCompatibleMode;
+    private String databaseCompatibleMode;
 
-    private boolean            isPackageSupported;
+    private boolean isPackageSupported;
 
-    protected GaussDBDatabase(DBRProgressMonitor monitor,
-                              GaussDBDataSource dataSource,
-                              String name,
-                              PostgreRole owner,
-                              String templateName,
-                              PostgreTablespace tablespace,
-                              PostgreCharset encoding) throws DBException {
+    protected GaussDBDatabase(DBRProgressMonitor monitor, GaussDBDataSource dataSource, String name, PostgreRole owner,
+        String templateName, PostgreTablespace tablespace, PostgreCharset encoding) throws DBException {
         super(monitor, dataSource, name, owner, templateName, tablespace, encoding);
         this.monitor = monitor;
     }
@@ -136,7 +131,7 @@ public class GaussDBDatabase extends PostgreDatabase {
     public void readDatabaseInfo(DBRProgressMonitor monitor) throws DBCException {
         try (JDBCSession session = getMetaContext().openSession(monitor, DBCExecutionPurpose.META, "Load database info")) {
             try (JDBCPreparedStatement dbStat = session
-                        .prepareStatement("SELECT db.oid,db.* FROM pg_catalog.pg_database db WHERE datname=?")) {
+                .prepareStatement("SELECT db.oid,db.* FROM pg_catalog.pg_database db WHERE datname=?")) {
                 dbStat.setString(1, super.getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.nextRow()) {
@@ -152,21 +147,18 @@ public class GaussDBDatabase extends PostgreDatabase {
     public static class SchemaCache extends JDBCObjectLookupCache<PostgreDatabase, PostgreSchema> {
         @NotNull
         @Override
-        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session,
-                                                    @NotNull PostgreDatabase database,
-                                                    @Nullable PostgreSchema object,
-                                                    @Nullable String objectName) throws SQLException {
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase database,
+            @Nullable PostgreSchema object, @Nullable String objectName) throws SQLException {
             StringBuilder catalogQuery = new StringBuilder("SELECT n.oid,n.*,d.description FROM pg_catalog.pg_namespace n\n"
-                        + "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=n.oid AND d.objsubid=0 AND d.classoid='pg_namespace'::regclass\n");
+                + "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=n.oid AND d.objsubid=0 AND d.classoid='pg_namespace'::regclass\n");
             catalogQuery.append(" ORDER BY nspname");
             JDBCPreparedStatement dbStat = session.prepareStatement(catalogQuery.toString());
             return dbStat;
         }
 
         @Override
-        protected PostgreSchema fetchObject(@NotNull JDBCSession session,
-                                            @NotNull PostgreDatabase owner,
-                                            @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected PostgreSchema fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner,
+            @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             String name = JDBCUtils.safeGetString(resultSet, "nspname");
             if (name == null) {
                 return null;
@@ -180,8 +172,8 @@ public class GaussDBDatabase extends PostgreDatabase {
         checkInstanceConnection(monitor);
         // Get System schemas
         List<PostgreSchema> list = super.schemaCache.getAllObjects(monitor, this).stream()
-                    .filter(e -> e.getObjectId() < 16384 && !e.getName().toLowerCase(Locale.ENGLISH).contains("public"))
-                    .collect(Collectors.toList());
+            .filter(e -> e.getObjectId() < 16384 && !e.getName().toLowerCase(Locale.ENGLISH).contains("public"))
+            .collect(Collectors.toList());
         return list;
     }
 
@@ -189,17 +181,15 @@ public class GaussDBDatabase extends PostgreDatabase {
     public Collection<PostgreSchema> getUserSchemas(DBRProgressMonitor monitor) throws DBException {
         checkInstanceConnection(monitor);
         // Get User schemas
-        List<PostgreSchema> list = super.schemaCache.getAllObjects(monitor, this).stream()
-                    .filter(e -> e.getObjectId() >= 16384 && !e.getName().contains("pg_")
-                                || e.getName().toLowerCase(Locale.ENGLISH).contains("public"))
-                    .collect(Collectors.toList());
+        List<PostgreSchema> list = super.schemaCache.getAllObjects(monitor, this).stream().filter(
+            e -> e.getObjectId() >= 16384 && !e.getName().contains("pg_") || e.getName().toLowerCase(Locale.ENGLISH).contains("public"))
+            .collect(Collectors.toList());
         return list;
     }
 
     @Override
-    public GaussDBSchema createSchemaImpl(@NotNull PostgreDatabase owner,
-                                          @NotNull String name,
-                                          @NotNull JDBCResultSet resultSet) throws SQLException {
+    public GaussDBSchema createSchemaImpl(@NotNull PostgreDatabase owner, @NotNull String name,
+        @NotNull JDBCResultSet resultSet) throws SQLException {
         return new GaussDBSchema(owner, name, resultSet);
     }
 

@@ -33,16 +33,13 @@ import java.util.Map;
  */
 public class GaussDBProcedureConfigurator implements DBEObjectConfigurator<GaussDBProcedure> {
 
-    protected static final Log log        = Log.getLog(GaussDBProcedureConfigurator.class);
+    protected static final Log log = Log.getLog(GaussDBProcedureConfigurator.class);
 
-    public static boolean      isFunction = false;
+    public static boolean isFunction = false;
 
     @Override
-    public GaussDBProcedure configureObject(DBRProgressMonitor monitor,
-                                            DBECommandContext commandContext,
-                                            Object container,
-                                            GaussDBProcedure newProcedure,
-                                            Map<String, Object> options) {
+    public GaussDBProcedure configureObject(DBRProgressMonitor monitor, DBECommandContext commandContext, Object container,
+        GaussDBProcedure newProcedure, Map<String, Object> options) {
         return new UITask<GaussDBProcedure>() {
             @Override
             protected GaussDBProcedure runTask() {
@@ -53,9 +50,9 @@ public class GaussDBProcedureConfigurator implements DBEObjectConfigurator<Gauss
                 newProcedure.setKind(PostgreProcedureKind.p);
                 newProcedure.setName(editPage.getProcedureName());
                 String procedure = "CREATE [OR REPLACE] PROCEDURE " + newProcedure.getFullQualifiedSignature()
-                            + " ([ parameter [IN|OUT|INOUT] datatype[,parameter [IN|OUT|INOUT] datatype] ])\r\n" + "\r\n" + "AS\r\n"
-                            + "\r\n" + "DECLARE\r\n" + "\r\n" + " /*declaration_section*/\r\n" + "\r\n" + "BEGIN\r\n" + "\r\n"
-                            + " /*executable_section*/\r\n" + "\r\n" + "END;";
+                    + " ([ parameter [IN|OUT|INOUT] datatype[,parameter [IN|OUT|INOUT] datatype] ])\r\n" + "\r\n" + "AS\r\n" + "\r\n"
+                    + "DECLARE\r\n" + "\r\n" + " /*declaration_section*/\r\n" + "\r\n" + "BEGIN\r\n" + "\r\n"
+                    + " /*executable_section*/\r\n" + "\r\n" + "END;";
                 newProcedure.setObjectDefinitionText(procedure);
                 return newProcedure;
             }

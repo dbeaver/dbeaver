@@ -34,16 +34,13 @@ import org.jkiss.dbeaver.ui.UIUtils;
 public class GaussDBDatabaseConfigurator implements DBEObjectConfigurator<GaussDBDatabase> {
 
     @Override
-    public GaussDBDatabase configureObject(@NotNull DBRProgressMonitor monitor,
-                                           @Nullable DBECommandContext commandContext,
-                                           @Nullable Object container,
-                                           @NotNull GaussDBDatabase database,
-                                           @NotNull Map<String, Object> options) {
+    public GaussDBDatabase configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext,
+        @Nullable Object container, @NotNull GaussDBDatabase database, @NotNull Map<String, Object> options) {
         return new UITask<GaussDBDatabase>() {
             @Override
             protected GaussDBDatabase runTask() throws DBException {
                 GaussDBCreateDatabaseDialog dialog = new GaussDBCreateDatabaseDialog(UIUtils.getActiveWorkbenchShell(),
-                                                                                     database.getDataSource());
+                    database.getDataSource());
                 if (dialog.open() != IDialogConstants.OK_ID) {
                     return null;
                 }

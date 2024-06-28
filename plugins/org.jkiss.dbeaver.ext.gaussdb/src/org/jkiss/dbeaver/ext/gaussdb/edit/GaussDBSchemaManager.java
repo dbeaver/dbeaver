@@ -32,11 +32,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 public class GaussDBSchemaManager extends PostgreSchemaManager {
 
     @Override
-    protected GaussDBSchema createDatabaseObject(DBRProgressMonitor monitor,
-                                                 DBECommandContext context,
-                                                 final Object container,
-                                                 Object copyFrom,
-                                                 Map<String, Object> options) {
+    protected GaussDBSchema createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container,
+        Object copyFrom, Map<String, Object> options) {
         GaussDBDatabase database = (GaussDBDatabase) container;
         return database.createSchemaImpl(database, "NewSchema", (PostgreRole) null);
     }

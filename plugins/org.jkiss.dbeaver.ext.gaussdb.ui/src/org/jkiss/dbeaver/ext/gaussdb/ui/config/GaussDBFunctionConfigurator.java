@@ -34,16 +34,13 @@ import java.util.Map;
  */
 public class GaussDBFunctionConfigurator implements DBEObjectConfigurator<GaussDBFunction> {
 
-    protected static final Log log        = Log.getLog(GaussDBFunctionConfigurator.class);
+    protected static final Log log = Log.getLog(GaussDBFunctionConfigurator.class);
 
-    public static boolean      isFunction = true;
+    public static boolean isFunction = true;
 
     @Override
-    public GaussDBFunction configureObject(DBRProgressMonitor monitor,
-                                           DBECommandContext commandContext,
-                                           Object container,
-                                           GaussDBFunction newProcedure,
-                                           Map<String, Object> options) {
+    public GaussDBFunction configureObject(DBRProgressMonitor monitor, DBECommandContext commandContext, Object container,
+        GaussDBFunction newProcedure, Map<String, Object> options) {
         return new UITask<GaussDBFunction>() {
             @Override
             protected GaussDBFunction runTask() {
@@ -59,9 +56,9 @@ public class GaussDBFunctionConfigurator implements DBEObjectConfigurator<GaussD
                     newProcedure.setLanguage(language);
                 }
                 String function = "CREATE [OR REPLACE] FUNCTION " + newProcedure.getFullQualifiedSignature()
-                            + " ([ parameter [IN|OUT|INOUT] datatype[,parameter [IN|OUT|INOUT] datatype] ])\r\n" + " RETURNS "
-                            + newProcedure.getReturnType().getDefaultValue() + "\r\n" + " LANGUAGE " + language.getName() + "\r\n"
-                            + "\r\n" + "AS\r\n" + "\r\n" + " '/*iso file path and name*/',$$/*function name*/$$";
+                    + " ([ parameter [IN|OUT|INOUT] datatype[,parameter [IN|OUT|INOUT] datatype] ])\r\n" + " RETURNS "
+                    + newProcedure.getReturnType().getDefaultValue() + "\r\n" + " LANGUAGE " + language.getName() + "\r\n" + "\r\n"
+                    + "AS\r\n" + "\r\n" + " '/*iso file path and name*/',$$/*function name*/$$";
                 newProcedure.setObjectDefinitionText(function);
                 return newProcedure;
             }
