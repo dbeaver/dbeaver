@@ -29,4 +29,5 @@ public class DashboardUIConstants {
     public static final String CMD_RESET_DASHBOARD = "org.jkiss.dbeaver.ui.dashboard.reset";
     public static final String CMD_VIEW_DASHBOARD = "org.jkiss.dbeaver.ui.dashboard.view";
 
+    public static final String DASHBOARD_DOCUMENTATION_URL_SUFFIX = "Dashboards/";
 }

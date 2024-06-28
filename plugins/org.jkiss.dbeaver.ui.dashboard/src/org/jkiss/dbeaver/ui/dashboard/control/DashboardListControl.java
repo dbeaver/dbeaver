@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.DashboardUIConstants;
@@ -40,6 +41,7 @@ import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.dbeaver.ui.dashboard.view.DashboardItemConfigurationTransfer;
 import org.jkiss.dbeaver.ui.dashboard.view.DashboardItemTransfer;
 import org.jkiss.dbeaver.ui.dashboard.view.DashboardManagerDialog;
+import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -183,7 +185,8 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
         String addCommandName = ActionUtils.findCommandName(DashboardUIConstants.CMD_ADD_DASHBOARD);
         UIUtils.createLink(intro,
             "<a>" + addCommandName + "</a> to this dashboard by drag-n-drop or double-click from the <a>catalog</a> or another dashboard.\n" +
-                "You can also create new charts in the <a>Configuration</a> dialog",
+                "You can also create new charts in the <a>Configuration</a> dialog.\n" +
+                "For further information, please refer to the <a>documentation</a>",
             new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -191,7 +194,9 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
                         ActionUtils.runCommand(DashboardUIConstants.CMD_ADD_DASHBOARD, site);
                     } else if (CommonUtils.equalObjects("catalog", e.text)) {
                         viewContainer.showChartCatalog();
-                    } else {
+                    }  else if (CommonUtils.equalObjects("documentation", e.text)) {
+                        ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(DashboardUIConstants.DASHBOARD_DOCUMENTATION_URL_SUFFIX));
+                    }else {
                         new DashboardManagerDialog(UIUtils.getActiveWorkbenchShell()).open();
                     }
                 }
