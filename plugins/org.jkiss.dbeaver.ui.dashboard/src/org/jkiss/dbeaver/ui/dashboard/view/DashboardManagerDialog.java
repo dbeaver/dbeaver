@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.dashboard.DashboardConstants;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardProviderDescriptor;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistry;
@@ -59,8 +58,7 @@ public class DashboardManagerDialog extends BaseDialog {
 
     private DashboardItemConfiguration selectedDashboard;
 
-    private Button newDatabaseChartButton;
-    private Button newWebChartButton;
+    private final List<Button> newChartButtons;
     private Button copyButton;
     private Button editButton;
     private Button deleteButton;
@@ -68,6 +66,7 @@ public class DashboardManagerDialog extends BaseDialog {
 
     public DashboardManagerDialog(Shell shell) {
         super(shell, UIDashboardMessages.dialog_dashboard_manager_title, null);
+        newChartButtons = new ArrayList<>();
     }
 
     @Override
@@ -198,22 +197,20 @@ public class DashboardManagerDialog extends BaseDialog {
             GridData gd = new GridData(GridData.FILL_VERTICAL);
             buttonBar.setLayoutData(gd);
 
-            newDatabaseChartButton = UIUtils.createPushButton(buttonBar, UIDashboardMessages.dialog_dashboard_manager_button_database_new, null, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    createDashboard(DashboardRegistry.getInstance().getDashboardProvider(
-                        DashboardConstants.DEF_DASHBOARD_PROVIDER));
-                }
-            });
-            newDatabaseChartButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            newWebChartButton = UIUtils.createPushButton(buttonBar, UIDashboardMessages.dialog_dashboard_manager_button_web_new, null, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    createDashboard(DashboardRegistry.getInstance().getDashboardProvider(
-                        DashboardConstants.WEB_DASHBOARD_PROVIDER));
-                }
-            });
-            newWebChartButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            List<DashboardProviderDescriptor> dashboardProviderDescriptors = DashboardRegistry.getInstance()
+                .getDashboardProvidersWithSupportCustomDashboards();
+            for (DashboardProviderDescriptor dashboardProvider : dashboardProviderDescriptors) {
+                Button newChartButton = UIUtils.createPushButton(buttonBar,
+                    NLS.bind(UIDashboardMessages.dialog_dashboard_manager_button_new, dashboardProvider.getLabel()),
+                    null, new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        createDashboard(dashboardProvider);
+                    }
+                });
+                newChartButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                newChartButtons.add(newChartButton);
+            }
 
             copyButton = UIUtils.createPushButton(buttonBar, UIDashboardMessages.dialog_dashboard_manager_button_copy, null, new SelectionAdapter() {
                 @Override
@@ -280,8 +277,7 @@ public class DashboardManagerDialog extends BaseDialog {
     }
 
     private void updateButtons() {
-        newDatabaseChartButton.setEnabled(true);
-        newWebChartButton.setEnabled(true);
+        newChartButtons.forEach(button -> button.setEnabled(true));
         copyButton.setEnabled(selectedDashboard != null);
         editButton.setEnabled(selectedDashboard != null);
         deleteButton.setEnabled(selectedDashboard != null && selectedDashboard.isCustom());
