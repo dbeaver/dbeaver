@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -661,9 +662,21 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             newContainerNode = schemaNode;
         } else {
             try {
+                boolean found = false;
                 for (DBNNode child : schemaNode.getChildren(new VoidProgressMonitor())) {
-                    if (child instanceof DBNDatabaseNode dbNode && dbNode.getMeta() == tableContainerMeta) {
-                        newContainerNode = dbNode;
+                    if (child instanceof DBNDatabaseFolder dbNode) {
+                        for (DBXTreeNode childItem : dbNode.getMeta().getChildren(child)) {
+                            if (childItem instanceof DBXTreeItem dbxItem) {
+                                Class<?> childrenClass = schemaNode.getChildrenClass(dbxItem);
+                                if (childrenClass != null && DBSEntity.class.isAssignableFrom(childrenClass)) {
+                                    newContainerNode = dbNode;
+                                    found = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (found) {
                         break;
                     }
                 }
@@ -712,7 +725,8 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                     setContainerInfo(null);
                 } else {
                     setContainerInfo(node);
-                    loadTableList(getTablesNode(ownerContainerNode));
+                    DBNDatabaseNode tablesNode = getTablesNode(ownerContainerNode);
+                    loadTableList(tablesNode);
                 }
             }
         };
