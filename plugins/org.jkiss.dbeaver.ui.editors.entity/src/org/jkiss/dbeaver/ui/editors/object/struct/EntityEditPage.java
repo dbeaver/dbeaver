@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
+import org.jkiss.dbeaver.ui.editors.object.internal.ObjectEditorMessages;
 import org.jkiss.utils.CommonUtils;
 
 public class EntityEditPage extends BaseObjectEditPage {
@@ -37,7 +37,7 @@ public class EntityEditPage extends BaseObjectEditPage {
 
     public EntityEditPage(DBPDataSource dataSource, DBSEntityType entityType)
     {
-        super(EditorsMessages.dialog_struct_create_entity_title + " " + entityType.getName());
+        super(ObjectEditorMessages.dialog_struct_create_entity_title + " " + entityType.getName());
         this.dataSource = dataSource;
     }
 
@@ -48,7 +48,7 @@ public class EntityEditPage extends BaseObjectEditPage {
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         propsGroup.setLayoutData(gd);
 
-        final Text nameText = UIUtils.createLabelText(propsGroup, EditorsMessages.dialog_struct_create_entity_group_name, null); //$NON-NLS-2$
+        final Text nameText = UIUtils.createLabelText(propsGroup, ObjectEditorMessages.dialog_struct_create_entity_group_name, null); //$NON-NLS-2$
         nameText.addModifyListener(e -> {
             name = nameText.getText().trim();
             updatePageState();

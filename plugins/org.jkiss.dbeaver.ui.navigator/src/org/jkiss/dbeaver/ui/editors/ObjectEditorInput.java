@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.object;
+package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.jkiss.code.NotNull;
@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseObject;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeObject;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 
 /**
  * ObjectEditorInput

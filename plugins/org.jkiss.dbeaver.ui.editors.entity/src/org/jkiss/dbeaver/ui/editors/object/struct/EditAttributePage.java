@@ -43,7 +43,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt2;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
+import org.jkiss.dbeaver.ui.editors.object.internal.ObjectEditorMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -74,7 +74,7 @@ public class EditAttributePage extends PropertyObjectEditPage<DBSTableColumn> {
     ) {
         super(commandContext, object);
         setTitle(NLS.bind(
-            EditorsMessages.dialog_struct_attribute_edit_page_header_edit_attribute,
+            ObjectEditorMessages.dialog_struct_attribute_edit_page_header_edit_attribute,
             DBUtils.getObjectFullName(object, DBPEvaluationContext.UI)
         ));
         this.options = options;
@@ -83,7 +83,7 @@ public class EditAttributePage extends PropertyObjectEditPage<DBSTableColumn> {
 
     @Override
     protected String getPropertiesGroupTitle() {
-        return EditorsMessages.dialog_struct_label_text_properties;
+        return ObjectEditorMessages.dialog_struct_label_text_properties;
     }
 
     @Override
