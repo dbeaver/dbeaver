@@ -55,7 +55,9 @@ public class SSHJSessionController extends AbstractSessionController<SSHJSession
         @NotNull DBWHandlerConfiguration configuration,
         @NotNull SSHHostConfiguration host
     ) throws DBException {
-        final int connectTimeout = configuration.getIntProperty(SSHConstants.PROP_CONNECT_TIMEOUT);
+        final int connectTimeout = configuration.getIntProperty(
+            SSHConstants.PROP_CONNECT_TIMEOUT,
+            SSHConstants.DEFAULT_CONNECT_TIMEOUT);
         final int keepAliveInterval = configuration.getIntProperty(SSHConstants.PROP_ALIVE_INTERVAL) / 1000; // sshj uses seconds for keep-alive interval
 
         final SSHAuthConfiguration auth = host.auth();
@@ -64,6 +66,7 @@ public class SSHJSessionController extends AbstractSessionController<SSHJSession
         client.setConnectTimeout(connectTimeout);
         client.getConnection().getKeepAlive().setKeepAliveInterval(keepAliveInterval);
         client.getTransport().getConfig().setLoggerFactory(new FilterLoggerFactory());
+        client.getTransport().setTimeoutMs(10000);
 
         try {
             setupHostKeyVerification(client, configuration, host);

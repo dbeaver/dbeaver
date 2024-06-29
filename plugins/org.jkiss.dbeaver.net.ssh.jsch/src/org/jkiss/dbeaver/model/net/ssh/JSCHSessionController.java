@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.net.ssh;
 
-import com.jcraft.jsch.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -106,7 +105,9 @@ public class JSCHSessionController extends AbstractSessionController<JSCHSession
             session.setUserInfo(userInfo);
             session.setHostKeyAlias(destination.hostname());
             session.setServerAliveInterval(configuration.getIntProperty(SSHConstants.PROP_ALIVE_INTERVAL));
-            session.setTimeout(configuration.getIntProperty(SSHConstants.PROP_CONNECT_TIMEOUT));
+            session.setTimeout(configuration.getIntProperty(
+                SSHConstants.PROP_CONNECT_TIMEOUT,
+                SSHConstants.DEFAULT_CONNECT_TIMEOUT));
             setupHostKeyVerification(jsch, session, configuration);
 
             if (auth instanceof SSHAuthConfiguration.Password) {
