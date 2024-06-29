@@ -108,7 +108,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
     private final Composite filterComposite;
 
-    private final Color hoverBgColor;
     private final Color shadowColor;
 
     private String activeDisplayName = ResultSetViewer.DEFAULT_QUERY_TEXT;
@@ -130,7 +129,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         this.setLayout(gl);
 
         boolean isDark = UIStyles.isDarkTheme();
-        this.hoverBgColor = getDisplay().getSystemColor(isDark ? SWT.COLOR_WIDGET_NORMAL_SHADOW : SWT.COLOR_WIDGET_LIGHT_SHADOW);
         this.shadowColor = getDisplay().getSystemColor(isDark ? SWT.COLOR_WIDGET_LIGHT_SHADOW : SWT.COLOR_WIDGET_NORMAL_SHADOW);
 
         {
@@ -803,6 +801,12 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             int panelHeight = hintSize.y;
             e.gc.setForeground(shadowColor);
             if (hover) {
+                Color background = e.gc.getBackground();
+                boolean isDarkBG = UIUtils.isDark(background.getRGB());
+                RGB blendRGB = isDarkBG ? new RGB(255, 255, 255) : new RGB(0, 0, 0);
+                RGB hoverRgb = UIUtils.blend(background.getRGB(), blendRGB, 90);
+                Color hoverBgColor = UIUtils.getSharedTextColors().getColor(hoverRgb);
+
                 e.gc.setBackground(hoverBgColor);
                 e.gc.fillRectangle(e.x, e.y, e.width - 3, panelHeight);
                 e.gc.drawLine(
