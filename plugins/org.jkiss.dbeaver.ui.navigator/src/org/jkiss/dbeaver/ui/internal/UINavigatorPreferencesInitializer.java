@@ -37,7 +37,7 @@ public class UINavigatorPreferencesInitializer extends AbstractPreferenceInitial
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         // Navigator
-        PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_EXPAND_ON_CONNECT, false);
+        PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_EXPAND_ON_CONNECT, true);
         PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_RESTORE_FILTER, false);
         PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_RESTORE_STATE_DEPTH, 0);
         PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_COLOR_ALL_NODES, false);

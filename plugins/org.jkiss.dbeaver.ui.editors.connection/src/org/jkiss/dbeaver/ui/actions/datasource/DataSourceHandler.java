@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -38,6 +39,8 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceTask;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -52,6 +55,8 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandlerUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.entity.handlers.SaveChangesHandler;
+import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 
@@ -102,6 +107,9 @@ public class DataSourceHandler {
                 @Override
                 public void done(IJobChangeEvent event) {
                     IStatus result = connectJob.getConnectStatus();
+//                    if (result.isOK()) {
+//                        expandConnectionInNavigator(dataSourceContainer, false);
+//                    }
                     if (onFinish != null) {
                         onFinish.onTaskFinished(result);
                     } else if (!result.isOK()) {
@@ -109,6 +117,9 @@ public class DataSourceHandler {
                     }
                 }
             };
+
+            expandConnectionInNavigator(dataSourceContainer, true);
+
             if (monitor != null) {
                 connectJob.runSync(monitor);
                 jobChangeAdapter.done(new IJobChangeEvent() {
@@ -137,6 +148,34 @@ public class DataSourceHandler {
                 // and UI is still not initiated. In this case no progress dialog will appear
                 // to be sure run in UI async
                 UIUtils.asyncExec(connectJob::schedule);
+            }
+        }
+    }
+
+    private static void expandConnectionInNavigator(@NotNull DBPDataSourceContainer dataSourceContainer, boolean expand) {
+        if (!dataSourceContainer.getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_EXPAND_ON_CONNECT)) {
+            return;
+        }
+        DatabaseNavigatorView view = UIUtils.findView(
+            UIUtils.getActiveWorkbenchWindow(),
+            DatabaseNavigatorView.class);
+        if (view != null) {
+            DBNProject projectNode = dataSourceContainer.getProject().getNavigatorModel()
+                .getRoot().getProjectNode(dataSourceContainer.getProject());
+            if (projectNode != null) {
+                DBNDataSource dsNode = projectNode.getDatabases().getDataSource(dataSourceContainer);
+                if (dsNode != null) {
+                    UIUtils.asyncExec(() -> {
+                        TreeViewer navViewer = view.getNavigatorTree().getViewer();
+                        if (navViewer.getExpandedState(dsNode) != expand) {
+                            if (expand) {
+                                navViewer.expandToLevel(dsNode, 1);
+                            } else {
+                                navViewer.collapseToLevel(dsNode, 1);
+                            }
+                        }
+                    });
+                }
             }
         }
     }
