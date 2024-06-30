@@ -71,16 +71,16 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
     public String getNodeName() {
         return this.getNameOrTotal(true);
     }
-    
+
     @NotNull
     @Property(order = 2, viewable = true)
-    public String getIndex(){
+    public String getIndex() {
         return index;
     }
-    
+
     @NotNull
     @Property(order = 3, viewable = true)
-    public String getTerms(){
+    public String getTerms() {
         return getTermExtra(true);
     }
 
@@ -95,16 +95,16 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
     public Long getCardinality() {
         return row;
     }
-    
+
     @NotNull
     @Property(order = 6, viewable = true)
-    public String getTotal(){
+    public String getTotal() {
         return this.getNameOrTotal(false);
     }
 
     @NotNull
     @Property(order = 7, viewable = true)
-    public String getExtra(){
+    public String getExtra() {
         return getTermExtra(false);
     }
 
@@ -113,13 +113,13 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
     public String getFullText() {
         return fullText;
     }
-    
+
     @Nullable
     @Override
     public CubridPlanNode getParent() {
         return parent;
     }
-    
+
     @Nullable
     @Override
     public Collection<CubridPlanNode> getNested() {
@@ -165,10 +165,10 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
         for (String key : nodeProps.keySet()) {
             if (key.contains(CLASS)) {
                 this.nodeName = nodeProps.get(CLASS).split(" ")[1];
-            } else if(key.equals("index")) {
+            } else if (key.equals("index")) {
                 this.index = nodeProps.get(key).split(" ")[0];
                 this.term = nodeProps.get(key).split(" ")[1];
-            } else if(key.equals("sargs")) {
+            } else if (key.equals("sargs")) {
                 this.term = nodeProps.get(key);
             } else if (key.equals(COST)) {
                 String[] values = nodeProps.get(key).split(" card ");
@@ -199,11 +199,11 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
             }
         }
     }
-    
+
     @Nullable
     private String getTermExtra(boolean isTerm) {
         String[] values = terms.get(term).split(" \\(sel");
-        if(isTerm)
+        if (isTerm)
             return values[0].trim();
         else
             return "(sel" + values[1].trim();
@@ -212,13 +212,13 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
     @Nullable
     private String getNameOrTotal(boolean isName) {
         Pattern p;
-        if(isName) {
+        if (isName) {
             p = Pattern.compile("\\w+ \\w+");
         } else {
             p = Pattern.compile("\\w+\\/\\w+");
         }
         Matcher m = p.matcher(classNode.get(nodeName));
-        if(m.find()) {
+        if (m.find()) {
             return m.group(0);
         }
         return null;
@@ -236,7 +236,7 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
             if (segment.startsWith("node")) {
                 String[] values = segment.split(OPTIONS_SEPARATOR);
                 classNode.put(values[0], values[1]);
-            } else if(segment.startsWith("term")) {
+            } else if (segment.startsWith("term")) {
                 String[] values = segment.split(OPTIONS_SEPARATOR);
                 terms.put(values[0], values[1]);
             } else {
