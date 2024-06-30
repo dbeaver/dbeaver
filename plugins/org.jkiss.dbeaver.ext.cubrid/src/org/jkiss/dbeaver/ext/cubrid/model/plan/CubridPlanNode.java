@@ -39,8 +39,8 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
     private String name;
     private String index;
     private String term;
-    private Long cost;
-    private Long row;
+    private long cost;
+    private long row;
     private Map<String, String> nodeProps = new HashMap<>();
     private CubridPlanNode parent;
     private List<CubridPlanNode> nested;
@@ -84,15 +84,13 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
         return getTermExtra(true);
     }
 
-    @NotNull
     @Property(order = 4, viewable = true)
-    public Long getCost() {
+    public long getCost() {
         return cost;
     }
 
-    @NotNull
     @Property(order = 5, viewable = true)
-    public Long getCardinality() {
+    public long getCardinality() {
         return row;
     }
 
