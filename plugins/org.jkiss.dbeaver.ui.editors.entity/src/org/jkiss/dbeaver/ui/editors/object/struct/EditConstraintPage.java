@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
+import org.jkiss.dbeaver.ui.editors.object.internal.ObjectEditorMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -75,7 +75,7 @@ public class EditConstraintPage extends AttributesSelectorPage {
         try {
             this.attributes = constraint.getAttributeReferences(new VoidProgressMonitor());
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError(EditorsMessages.edit_constraints_error_title, EditorsMessages.edit_constraints_error_message, e);
+            DBWorkbench.getPlatformUI().showError(ObjectEditorMessages.edit_constraints_error_title, ObjectEditorMessages.edit_constraints_error_message, e);
         }
         this.nameGenerator = new ConstraintNameGenerator(
             constraint.getParentObject(),
@@ -114,7 +114,7 @@ public class EditConstraintPage extends AttributesSelectorPage {
     protected void createContentsBeforeColumns(Composite panel) {
         final Text nameText = entity != null ? UIUtils.createLabelText(
             panel,
-            EditorsMessages.dialog_struct_edit_constrain_label_name,
+            ObjectEditorMessages.dialog_struct_edit_constrain_label_name,
             nameGenerator.getConstraintName()) : null;
         if (nameText != null) {
             nameText.selectAll();
@@ -125,7 +125,7 @@ public class EditConstraintPage extends AttributesSelectorPage {
             });
         }
 
-        UIUtils.createControlLabel(panel, EditorsMessages.dialog_struct_edit_constrain_label_type);
+        UIUtils.createControlLabel(panel, ObjectEditorMessages.dialog_struct_edit_constrain_label_type);
         final Combo typeCombo = new Combo(panel, SWT.DROP_DOWN | SWT.READ_ONLY);
         typeCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
@@ -154,7 +154,7 @@ public class EditConstraintPage extends AttributesSelectorPage {
         });
 
         if (showEnable) {
-            final Button enableConstraintButton = UIUtils.createCheckbox(panel, EditorsMessages.edit_constraints_enable_constraint_text, EditorsMessages.edit_constraints_enable_constraint_tip, true, 2);
+            final Button enableConstraintButton = UIUtils.createCheckbox(panel, ObjectEditorMessages.edit_constraints_enable_constraint_text, ObjectEditorMessages.edit_constraints_enable_constraint_tip, true, 2);
             enableConstraintButton.setVisible(showEnable);
             enableConstraintButton.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -165,7 +165,7 @@ public class EditConstraintPage extends AttributesSelectorPage {
         }
 
         if (isUniqueVirtualKeyEdit()) {
-            final Button useAllColumnsCheck = UIUtils.createCheckbox(panel, EditorsMessages.edit_constraints_use_all_columns_text, EditorsMessages.edit_constraints_use_all_columns_tip, useAllColumns, 2);
+            final Button useAllColumnsCheck = UIUtils.createCheckbox(panel, ObjectEditorMessages.edit_constraints_use_all_columns_text, ObjectEditorMessages.edit_constraints_use_all_columns_tip, useAllColumns, 2);
             useAllColumnsCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -181,7 +181,7 @@ public class EditConstraintPage extends AttributesSelectorPage {
 
     @Override
     protected void createContentsAfterColumns(Composite panel) {
-        expressionGroup = UIUtils.createControlGroup(panel, EditorsMessages.edit_constraints_expression_text, 1, GridData.FILL_BOTH, 0);
+        expressionGroup = UIUtils.createControlGroup(panel, ObjectEditorMessages.edit_constraints_expression_text, 1, GridData.FILL_BOTH, 0);
         expressionText = new Text(expressionGroup, SWT.BORDER | SWT.MULTI);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = expressionText.getLineHeight() * 3;

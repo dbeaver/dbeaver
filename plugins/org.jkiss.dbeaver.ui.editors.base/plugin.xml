@@ -42,10 +42,4 @@
         </factory>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.databaseEditor">
-        <configurator class="org.jkiss.dbeaver.ui.editors.object.config.EntityAttributeConfigurator">
-            <objectType name="org.jkiss.dbeaver.model.struct.DBSEntityAttribute"/>
-        </configurator>
-    </extension>
-
 </plugin>

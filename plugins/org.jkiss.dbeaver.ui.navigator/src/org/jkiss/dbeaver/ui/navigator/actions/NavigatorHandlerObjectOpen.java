@@ -50,7 +50,6 @@ import org.jkiss.dbeaver.ui.editors.*;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorDescriptor;
 import org.jkiss.dbeaver.ui.editors.entity.FolderEditor;
-import org.jkiss.dbeaver.ui.editors.object.ObjectEditorInput;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;

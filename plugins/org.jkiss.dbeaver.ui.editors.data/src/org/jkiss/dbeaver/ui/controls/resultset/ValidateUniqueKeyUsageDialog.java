@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -131,7 +130,7 @@ final class ValidateUniqueKeyUsageDialog extends MessageDialog {
             // No key
             return false;
         }
-        if (!CommonUtils.isEmpty(identifier.getAttributes())) {
+        if (!identifier.isIncomplete()) {
             // Key already defined
             return true;
         }

@@ -16,11 +16,16 @@
  */
 package org.jkiss.dbeaver.ext.mssql.ui.views;
 
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
+import org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelNTLM;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurator;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * SQL Server auth model config
@@ -28,24 +33,52 @@ import org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurat
 public class SQLServerAuthConfigurator extends DatabaseNativeAuthModelConfigurator {
 
 
+    private Button isCheck;
+
     @Override
     public void createControl(@NotNull Composite parent, DBAAuthModel<?> object, @NotNull Runnable propertyChangeListener) {
         super.createControl(parent, object, propertyChangeListener);
+        if (object instanceof SQLServerAuthModelNTLM) {
+            isCheck = UIUtils.createCheckbox(
+                parent,
+                "Use integrated security",
+                "Enable integrated security (by default it is required for NTLM)",
+                true,
+                2);
+        }
     }
 
     @Override
     public void loadSettings(@NotNull DBPDataSourceContainer dataSource) {
         super.loadSettings(dataSource);
+
+        if (isCheck != null) {
+            isCheck.setSelection(
+                CommonUtils.getBoolean(
+                    dataSource.getConnectionConfiguration().getProperty(SQLServerConstants.PROP_CONNECTION_INTEGRATED_SECURITY),
+                    true));
+        }
     }
 
     @Override
     public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         super.saveSettings(dataSource);
+
+        if (isCheck != null) {
+            dataSource.getConnectionConfiguration().setProperty(
+                SQLServerConstants.PROP_CONNECTION_INTEGRATED_SECURITY,
+                String.valueOf(isCheck.getSelection()));
+        }
     }
 
     @Override
     public void resetSettings(@NotNull DBPDataSourceContainer dataSource) {
         super.resetSettings(dataSource);
+
+        if (isCheck != null) {
+            dataSource.getConnectionConfiguration().removeProperty(
+                SQLServerConstants.PROP_CONNECTION_INTEGRATED_SECURITY);
+        }
     }
 
 }

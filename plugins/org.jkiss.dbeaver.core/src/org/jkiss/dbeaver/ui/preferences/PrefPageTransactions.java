@@ -94,7 +94,7 @@ public class PrefPageTransactions extends TargetPrefPage
             smartCommitCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    updateButtons();
+                    updateCommitRecoverCheckBox();
                 }
             });
             smartCommitRecoverCheck = UIUtils.createCheckbox(
@@ -155,7 +155,7 @@ public class PrefPageTransactions extends TargetPrefPage
         return composite;
     }
 
-    private void updateButtons() {
+    private void updateCommitRecoverCheckBox() {
         if (!smartCommitCheck.getSelection()) {
             // Works only with the smart commit mode
             smartCommitRecoverCheck.setEnabled(false);
@@ -184,7 +184,7 @@ public class PrefPageTransactions extends TargetPrefPage
                     store.contains(ModelPreferences.TRANSACTIONS_SMART_COMMIT_RECOVER) || connectionType == null ?
                         store.getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT_RECOVER) : connectionType.isSmartCommitRecover());
                 if (smartCommitCheck != null) {
-                    updateButtons();
+                    updateCommitRecoverCheckBox();
                 }
             }
             if (autoCloseTransactionsCheck != null) {
