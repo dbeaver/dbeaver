@@ -48,7 +48,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
 import org.jkiss.dbeaver.ui.controls.TableColumnSortListener;
-import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
+import org.jkiss.dbeaver.ui.editors.object.internal.ObjectEditorMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -112,7 +112,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
         String title,
         DBSEntity entity)
     {
-        super(NLS.bind(EditorsMessages.dialog_struct_columns_select_title, title, entity.getName()));
+        super(NLS.bind(ObjectEditorMessages.dialog_struct_columns_select_title, title, entity.getName()));
         this.entity = entity;
     }
 
@@ -162,7 +162,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
         columnsGroup.setLayout(new GridLayout(1, false));
         columnsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        UIUtils.createControlLabel(columnsGroup, EditorsMessages.dialog_struct_columns_select_group_columns);
+        UIUtils.createControlLabel(columnsGroup, ObjectEditorMessages.dialog_struct_columns_select_group_columns);
 
         //columnsViewer = new TableViewer(columnsGroup, SWT.BORDER | SWT.SINGLE | SWT.CHECK);
         columnsTable = new Table(columnsGroup, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION | SWT.CHECK);
@@ -194,7 +194,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
         };
 
         toggleButton = new Button(columnsGroup, SWT.PUSH);
-        toggleButton.setText(EditorsMessages.selector_select_all_text);
+        toggleButton.setText(ObjectEditorMessages.selector_select_all_text);
         gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         gd.widthHint = 120;
         toggleButton.setLayoutData(gd);
@@ -226,13 +226,13 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
     }
 
     protected void createAttributeColumns(Table columnsTable) {
-        TableColumn colName = UIUtils.createTableColumn(columnsTable, SWT.NONE, EditorsMessages.dialog_struct_columns_select_column);
+        TableColumn colName = UIUtils.createTableColumn(columnsTable, SWT.NONE, ObjectEditorMessages.dialog_struct_columns_select_column);
         colName.addListener(SWT.Selection, new TableColumnSortListener(columnsTable, 0));
 
         TableColumn colPosition = UIUtils.createTableColumn(columnsTable, SWT.CENTER, "#"); //$NON-NLS-1$
         colPosition.addListener(SWT.Selection, new TableColumnSortListener(columnsTable, 1));
 
-        TableColumn colType = UIUtils.createTableColumn(columnsTable, SWT.RIGHT, EditorsMessages.dialog_struct_columns_type); //$NON-NLS-1$
+        TableColumn colType = UIUtils.createTableColumn(columnsTable, SWT.RIGHT, ObjectEditorMessages.dialog_struct_columns_type); //$NON-NLS-1$
         colType.addListener(SWT.Selection, new TableColumnSortListener(columnsTable, 2));
     }
 
@@ -375,7 +375,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
         tableGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         UIUtils.createLabelText(
             tableGroup,
-            EditorsMessages.dialog_struct_columns_select_label_table,
+            ObjectEditorMessages.dialog_struct_columns_select_label_table,
             DBUtils.getObjectFullName(entity, DBPEvaluationContext.UI), SWT.BORDER | SWT.READ_ONLY, new GridData(GridData.FILL_HORIZONTAL));
         return tableGroup;
     }
@@ -430,9 +430,9 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
     private void updateToggleButton()
     {
         if (hasCheckedColumns()) {
-            toggleButton.setText(EditorsMessages.selector_clear_all_text);
+            toggleButton.setText(ObjectEditorMessages.selector_clear_all_text);
         } else {
-            toggleButton.setText(EditorsMessages.selector_select_all_text);
+            toggleButton.setText(ObjectEditorMessages.selector_select_all_text);
         }
     }
 
