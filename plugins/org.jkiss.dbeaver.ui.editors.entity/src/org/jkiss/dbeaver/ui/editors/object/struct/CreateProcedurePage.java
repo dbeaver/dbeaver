@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
+import org.jkiss.dbeaver.ui.editors.object.internal.ObjectEditorMessages;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -41,7 +41,7 @@ public class CreateProcedurePage extends BaseObjectEditPage {
     private DBSProcedureType type;
 
     public CreateProcedurePage(DBSProcedure procedure) {
-        super(EditorsMessages.dialog_struct_create_procedure_title);
+        super(ObjectEditorMessages.dialog_struct_create_procedure_title);
         this.procedure = procedure;
     }
 
@@ -52,16 +52,16 @@ public class CreateProcedurePage extends BaseObjectEditPage {
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         propsGroup.setLayoutData(gd);
 
-        final Text containerText = UIUtils.createLabelText(propsGroup, EditorsMessages.dialog_struct_create_procedure_container, DBUtils.getObjectFullName(this.procedure.getParentObject(), DBPEvaluationContext.UI));
+        final Text containerText = UIUtils.createLabelText(propsGroup, ObjectEditorMessages.dialog_struct_create_procedure_container, DBUtils.getObjectFullName(this.procedure.getParentObject(), DBPEvaluationContext.UI));
         containerText.setEditable(false);
-        final Text nameText = UIUtils.createLabelText(propsGroup, EditorsMessages.dialog_struct_create_procedure_label_name, null);
+        final Text nameText = UIUtils.createLabelText(propsGroup, ObjectEditorMessages.dialog_struct_create_procedure_label_name, null);
         nameText.addModifyListener(e -> {
             name = nameText.getText().trim();
             updatePageState();
         });
         Combo typeCombo;
         if (getPredefinedProcedureType() == null) {
-            typeCombo = UIUtils.createLabelCombo(propsGroup, EditorsMessages.dialog_struct_create_procedure_combo_type, SWT.DROP_DOWN | SWT.READ_ONLY);
+            typeCombo = UIUtils.createLabelCombo(propsGroup, ObjectEditorMessages.dialog_struct_create_procedure_combo_type, SWT.DROP_DOWN | SWT.READ_ONLY);
             typeCombo.add(DBSProcedureType.PROCEDURE.name());
             typeCombo.add(DBSProcedureType.FUNCTION.name());
             typeCombo.addModifyListener(e -> {

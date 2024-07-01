@@ -20,6 +20,7 @@ Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.tasks.ui,
  org.jkiss.dbeaver.ui.editors.base,
  org.jkiss.dbeaver.ui.editors.connection,
+ org.jkiss.dbeaver.ui.editors.entity,
  org.jkiss.dbeaver.ui.editors.sql,
  org.jkiss.dbeaver.ui.editors.session
 Bundle-ActivationPolicy: lazy
