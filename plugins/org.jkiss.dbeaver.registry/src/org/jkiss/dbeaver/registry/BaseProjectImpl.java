@@ -389,6 +389,15 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     }
 
     @Override
+    public void setResourceProperties(@NotNull String resourcePath, @NotNull Map<String, Object> newProps) {
+        loadMetadata();
+        resourcePath = CommonUtils.normalizeResourcePath(resourcePath);
+        synchronized (resourcesSync) {
+            this.resourceProperties.put(resourcePath, new HashMap<>(newProps));
+        }
+    }
+
+    @Override
     public void setResourceProperty(@NotNull String resourcePath, @NotNull String propName, @Nullable Object propValue) {
         loadMetadata();
         resourcePath = CommonUtils.normalizeResourcePath(resourcePath);
