@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
+import org.jkiss.dbeaver.ui.editors.object.internal.ObjectEditorMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -83,13 +83,13 @@ public class EditIndexPage extends AttributesSelectorPage {
     {
         // Usually index name is auto-generated from column names
 /*
-        final Text nameText = entity != null ? UIUtils.createLabelText(panel, EditorsMessages.dialog_struct_edit_constrain_label_name, indexName) : null;
+        final Text nameText = entity != null ? UIUtils.createLabelText(panel, ObjectEditorMessages.dialog_struct_edit_constrain_label_name, indexName) : null;
         if (nameText != null) {
             nameText.addModifyListener(e -> indexName = nameText.getText().trim());
         }
 */
 
-        UIUtils.createControlLabel(panel, EditorsMessages.dialog_struct_edit_index_label_type);
+        UIUtils.createControlLabel(panel, ObjectEditorMessages.dialog_struct_edit_index_label_type);
         final Combo typeCombo = new Combo(panel, SWT.DROP_DOWN | SWT.READ_ONLY);
         typeCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
@@ -110,7 +110,7 @@ public class EditIndexPage extends AttributesSelectorPage {
         });
 
         if (supportUniqueIndexes) {
-            final Button uniqueButton = UIUtils.createLabelCheckbox(panel, EditorsMessages.dialog_struct_unique, false);
+            final Button uniqueButton = UIUtils.createLabelCheckbox(panel, ObjectEditorMessages.dialog_struct_unique, false);
             uniqueButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -138,8 +138,8 @@ public class EditIndexPage extends AttributesSelectorPage {
         super.createAttributeColumns(columnsTable);
 
         TableColumn colDesc = UIUtils.createTableColumn(columnsTable, SWT.NONE,
-            EditorsMessages.dialog_struct_create_column_order);
-        colDesc.setToolTipText(EditorsMessages.dialog_struct_create_column_order_tooltip);
+            ObjectEditorMessages.dialog_struct_create_column_order);
+        colDesc.setToolTipText(ObjectEditorMessages.dialog_struct_create_column_order_tooltip);
     }
 
     @Override
