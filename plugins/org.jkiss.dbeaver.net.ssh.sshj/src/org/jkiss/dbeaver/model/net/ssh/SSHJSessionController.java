@@ -66,7 +66,6 @@ public class SSHJSessionController extends AbstractSessionController<SSHJSession
         client.setConnectTimeout(connectTimeout);
         client.getConnection().getKeepAlive().setKeepAliveInterval(keepAliveInterval);
         client.getTransport().getConfig().setLoggerFactory(new FilterLoggerFactory());
-        client.getTransport().setTimeoutMs(10000);
 
         try {
             setupHostKeyVerification(client, configuration, host);
