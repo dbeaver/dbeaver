@@ -37,9 +37,9 @@ import org.jkiss.utils.IOUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class LocalProjectImpl extends BaseProjectImpl {
 
@@ -269,7 +269,7 @@ public class LocalProjectImpl extends BaseProjectImpl {
     public Map<String, Map<String, Object>> getAllResourceProperties() {
         this.loadMetadata();
         synchronized (resourcesSync) {
-            return new HashMap<>(this.resourceProperties);
+            return new TreeMap<>(this.resourceProperties);
         }
     }
 }
