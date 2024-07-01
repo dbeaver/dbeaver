@@ -120,15 +120,52 @@ public final class ModelPreferences
 
         @NotNull
         public static SQLScriptStatementDelimiterMode fromPreferences(@NotNull DBPPreferenceStore preferenceStore) {
-            return valueByName(preferenceStore.getString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK));            
+            return valueByName(preferenceStore.getString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK));
         }
     }
-    
+
+    public enum IPType {
+        IPV4("IPv4"),
+        IPV6("IPv6"),
+        AUTO("Auto");
+
+        private final String title;
+
+        IPType(@NotNull String title) {
+            this.title = title;
+        }
+
+        @NotNull
+        public static IPType getPreferredStack() {
+            return CommonUtils.valueOf(
+                IPType.class,
+                preferences.getString(PROP_PREFERRED_IP_STACK),
+                AUTO
+            );
+        }
+
+        @NotNull
+        public static IPType getPreferredAddresses() {
+            return CommonUtils.valueOf(
+                IPType.class,
+                preferences.getString(PROP_PREFERRED_IP_ADDRESSES),
+                AUTO
+            );
+        }
+
+        @Override
+        public String toString() {
+            return title;
+        }
+    }
+
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.model";
     public static final String CLIENT_TIMEZONE = "java.client.timezone";
     public static final String CLIENT_BROWSER = "swt.client.browser";
 
     public static final String PROP_USE_WIN_TRUST_STORE_TYPE = "connections.useWinTrustStoreType"; //$NON-NLS-1$
+    public static final String PROP_PREFERRED_IP_STACK = "connections.preferredIPType"; //$NON-NLS-1$
+    public static final String PROP_PREFERRED_IP_ADDRESSES = "connections.preferredIPAddresses"; //$NON-NLS-1$
 
     public static final String NOTIFICATIONS_ENABLED = "notifications.enabled"; //$NON-NLS-1$
     public static final String NOTIFICATIONS_CLOSE_DELAY_TIMEOUT = "notifications.closeDelay"; //$NON-NLS-1$
@@ -375,5 +412,9 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.DICTIONARY_COLUMN_DIVIDER, " ");
         // Data formats
         DataFormatterProfile.initDefaultPreferences(store, Locale.getDefault());
+
+        // Network expert settings
+        PrefUtils.setDefaultPreferenceValue(store, PROP_PREFERRED_IP_STACK, IPType.AUTO.name());
+        PrefUtils.setDefaultPreferenceValue(store, PROP_PREFERRED_IP_ADDRESSES, IPType.AUTO.name());
     }
 }

@@ -69,6 +69,10 @@ public class DBDRowIdentifier implements DBPObject {
         return entityIdentifier.getConstraintType().getName();
     }
 
+    public boolean isIncomplete() {
+        return attributes.isEmpty();
+    }
+
     @NotNull
     public List<DBDAttributeBinding> getAttributes() {
         return attributes;
