@@ -44,8 +44,8 @@ public class UIStatisticsActivator extends AbstractUIPlugin {
     }
 
     public static boolean isTrackingEnabled() {
-        return getDefault().getPreferences().getBoolean(PREF_FEATURE_TRACKING_ENABLED)
-            || DBWorkbench.getPlatform().getApplication().isStatisticsCollectionRequired();
+        return DBWorkbench.getPlatform().getApplication().isStatisticsCollectionRequired()
+            || getDefault().getPreferences().getBoolean(PREF_FEATURE_TRACKING_ENABLED);
     }
 
     public static void setTrackingEnabled(boolean enabled) {
