@@ -63,12 +63,8 @@ public class DataSourceConfigurationManagerNIO implements DataSourceConfiguratio
 
     @Override
     public List<DBPDataSourceConfigurationStorage> getConfigurationStorages() {
+        List<DBPDataSourceConfigurationStorage> storages = new ArrayList<>();
         Path metadataFolder = project.getMetadataFolder(false);
-        return (List<DBPDataSourceConfigurationStorage>)(List<?>)resolveDataSourceConfigurationStorages(metadataFolder, project.getAbsolutePath());
-    }
-
-    public static List<DataSourceFileStorage> resolveDataSourceConfigurationStorages(Path metadataFolder, Path projectAbsolutePath) {
-        List<DataSourceFileStorage> storages = new ArrayList<>();
         boolean modernFormat = false;
         if (Files.exists(metadataFolder)) {
             try {
@@ -89,10 +85,10 @@ public class DataSourceConfigurationManagerNIO implements DataSourceConfiguratio
             }
         }
         if (!modernFormat) {
-            if (Files.exists(projectAbsolutePath)) {
+            if (Files.exists(project.getAbsolutePath())) {
                 try {
                     // Logacy way (search config.xml in project folder)
-                    List<Path> mdFiles = Files.list(projectAbsolutePath)
+                    List<Path> mdFiles = Files.list(project.getAbsolutePath())
                         .filter(path -> !Files.isDirectory(path) && Files.exists(path))
                         .collect(Collectors.toList());
                     for (Path res : mdFiles) {
