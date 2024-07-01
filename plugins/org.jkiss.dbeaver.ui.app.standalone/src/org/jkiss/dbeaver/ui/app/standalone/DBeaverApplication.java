@@ -71,8 +71,10 @@ import org.osgi.framework.Version;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.net.URL;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -535,7 +537,14 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     // Called
     protected void initializeConfiguration() {
-
+        ModelPreferences.IPType stack = ModelPreferences.IPType.getPreferredStack();
+        if (stack != ModelPreferences.IPType.AUTO) {
+            System.setProperty("java.net.preferIPv4Stack", String.valueOf(stack == ModelPreferences.IPType.IPV4));
+        }
+        ModelPreferences.IPType address = ModelPreferences.IPType.getPreferredAddresses();
+        if (address != ModelPreferences.IPType.AUTO) {
+            System.setProperty("java.net.preferIPv6Addresses", String.valueOf(address == ModelPreferences.IPType.IPV6));
+        }
     }
 
     /**

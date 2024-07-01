@@ -10,6 +10,8 @@ Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ext.bigquery
+Export-Package: org.jkiss.dbeaver.ext.bigquery.ui.config,
+ org.jkiss.dbeaver.ext.bigquery.ui.views
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp
