@@ -31,7 +31,6 @@ buildNumber.properties
 
 *.iml
 /idea/
-.idea/
 
 ## Eclipse configs
 
