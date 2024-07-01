@@ -358,7 +358,7 @@
                     id="oracle_thin"
                     label="Oracle"
                     class="oracle.jdbc.OracleDriver"
-                    sampleURL="jdbc:oracle:thin:@{host}[:{port}]/{database}"
+                    sampleURL="jdbc:oracle:thin:@{host}[:{port}][:][/]{database}"
                     useURL="false"
                     defaultPort="1521"
                     defaultDatabase="ORCL"

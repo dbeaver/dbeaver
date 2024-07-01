@@ -76,6 +76,20 @@ public class DatabaseURLTest {
             });
     }
 
+    @Test
+    public void test_whenColonAfterPort_thenSuccess() {
+        assertMatches(
+                "jdbc:oracle:thin:@{host}[:{port}][:][/]{database}",
+                "jdbc:oracle:thin:@localhost:1521:orcl",
+                new String[][]{
+                        {"host", "localhost"},
+                        {"port", "1521"},
+                        {"database", "orcl"}
+                });
+
+    }
+
+
     private void assertMatches(@NotNull String sampleUrl, @NotNull String targetUrl, @NotNull String[][] properties) {
         final Matcher matcher = DatabaseURL.getPattern(sampleUrl).matcher(targetUrl);
         Assert.assertTrue(sampleUrl, matcher.matches());
