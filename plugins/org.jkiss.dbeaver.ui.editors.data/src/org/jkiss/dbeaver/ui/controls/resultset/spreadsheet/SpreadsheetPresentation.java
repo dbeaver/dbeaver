@@ -2111,7 +2111,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                                     .map(DBDAttributeBinding::getName).collect(Collectors.joining(","));
                         } else {
                             DBSDataContainer dataContainer = getController().getDataContainer();
-                            if (dataContainer != null && !dataContainer.isFeatureSupported(DBSDataManipulator.FEATURE_DATA_UPDATE)) {
+                            if (dataContainer instanceof DBSEntity && !dataContainer.isFeatureSupported(DBSDataManipulator.FEATURE_DATA_UPDATE)) {
                                 return "Data modification is not supported by database.";
                             }
                             if (rowIdentifier == null) {
