@@ -220,39 +220,6 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
         return context;
     }
 
-    private static List<DBPDataSourceContainer> getDataSourceContainers(ExecutionEvent event) {
-        List<DBPDataSourceContainer> containers = new ArrayList<>();
-        ISelection selection = HandlerUtil.getCurrentSelection(event);
-        if (selection instanceof IStructuredSelection) {
-            for (Object obj : ((IStructuredSelection) selection).toArray()) {
-                if (obj instanceof DBNLocalFolder) {
-                    for (DBNDataSource ds : ((DBNLocalFolder) obj).getDataSources()) {
-                        containers.add(ds.getDataSourceContainer());
-                    }
-                } else {
-                    DBSObject selectedObject = DBUtils.getFromObject(obj);
-                    if (selectedObject != null) {
-                        if (selectedObject instanceof DBPDataSourceContainer) {
-                            containers.add((DBPDataSourceContainer) selectedObject);
-                        } else {
-                            containers.add(selectedObject.getDataSource().getContainer());
-                        }
-                    }
-                }
-            }
-        }
-
-        if (containers.isEmpty()) {
-            IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
-            DBPDataSourceContainer partContainer = getDataSourceContainers(activePart);
-            if (partContainer != null) {
-                containers.add(partContainer);
-            }
-        }
-
-        return containers;
-    }
-
     private static DBPDataSourceContainer getDataSourceContainers(IWorkbenchPart activePart) {
         if (activePart instanceof DBPDataSourceContainerProvider) {
             return ((DBPDataSourceContainerProvider) activePart).getDataSourceContainer();

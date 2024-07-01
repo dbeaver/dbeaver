@@ -497,13 +497,20 @@ public class GeneralUtils {
         return text.toString();
     }
 
+    /**
+     * recursively iterates through all variables and returns root
+     **/
     @Nullable
-    public static String extractVariableName(@NotNull String string) {
-        Matcher matcher = VAR_PATTERN.matcher(string);
-        if (matcher.find()) {
-            return matcher.group(2);
+    public static String extractVariableName(@NotNull String variablePattern) {
+        Matcher matcher = VAR_PATTERN.matcher(variablePattern);
+        String name = null;
+        String s = variablePattern;
+        while (matcher.find()) {
+            name = matcher.group(2);
+            s = substituteVariable(s, matcher, "");
+            matcher = VAR_PATTERN.matcher(s);
         }
-        return null;
+        return name;
     }
 
     @NotNull
@@ -577,6 +584,36 @@ public class GeneralUtils {
 
     public static IStatus makeExceptionStatus(int severity, Throwable ex) {
         return makeExceptionStatus(severity, ex, false);
+    }
+
+    public static IStatus transformExceptionsToStatus(@NotNull List<Throwable> exceptions) {
+
+        if (exceptions.isEmpty()) {
+            return new Status(IStatus.ERROR, (Class<?>) null, "Empty exceptions list");
+        }
+        Set<String> exceptionMessageSet = new HashSet<>();
+        IStatus prev = null;
+        for (Throwable exception : exceptions) {
+            String message = exception.getMessage();
+            if (prev == null) {
+                exceptionMessageSet.add(message);
+                prev = new Status(
+                    IStatus.ERROR,
+                    ModelPreferences.PLUGIN_ID,
+                    message,
+                    null);
+            } else {
+                if (exceptionMessageSet.contains(message)) {
+                    continue;
+                }
+                prev = new MultiStatus(ModelPreferences.PLUGIN_ID,
+                    0,
+                    new IStatus[]{prev},
+                    message,
+                    null);
+            }
+        }
+        return prev;
     }
 
     private static IStatus makeExceptionStatus(int severity, Throwable ex, boolean nested) {

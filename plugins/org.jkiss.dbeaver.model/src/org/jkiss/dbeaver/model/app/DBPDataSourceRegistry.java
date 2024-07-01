@@ -36,13 +36,9 @@ import java.util.Set;
 
 /**
  * Datasource registry.
- * Extends DBPObject to support datasources ObjectManager
+ * Keeps all database connection information in a project
  */
 public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
-
-    String LEGACY_CONFIG_FILE_PREFIX = ".dbeaver-data-sources"; //$NON-NLS-1$
-    String LEGACY_CONFIG_FILE_EXT = ".xml"; //$NON-NLS-1$
-    String LEGACY_CONFIG_FILE_NAME = LEGACY_CONFIG_FILE_PREFIX + LEGACY_CONFIG_FILE_EXT;
 
     String MODERN_CONFIG_FILE_PREFIX = "data-sources"; //$NON-NLS-1$
     String MODERN_CONFIG_FILE_EXT = ".json"; //$NON-NLS-1$
@@ -50,6 +46,11 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
     String CREDENTIALS_CONFIG_FILE_PREFIX = "credentials-config"; //$NON-NLS-1$
     String CREDENTIALS_CONFIG_FILE_EXT = ".json"; //$NON-NLS-1$
     String CREDENTIALS_CONFIG_FILE_NAME = CREDENTIALS_CONFIG_FILE_PREFIX + CREDENTIALS_CONFIG_FILE_EXT;
+
+    String LEGACY_CONFIG_FILE_PREFIX = ".dbeaver-data-sources"; //$NON-NLS-1$
+    String LEGACY_CONFIG_FILE_EXT = ".xml"; //$NON-NLS-1$
+    String LEGACY_CONFIG_FILE_NAME = LEGACY_CONFIG_FILE_PREFIX + LEGACY_CONFIG_FILE_EXT;
+    String LEGACY2_CONFIG_FILE_NAME = "data-sources.xml"; //$NON-NLS-1$
 
     /**
      * Owner project.
@@ -146,7 +147,7 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
     void refreshConfig();
 
     /**
-     * Refreshes configuration of specified datasources
+     * Refreshes configuration of specified data sources
      */
     void refreshConfig(@Nullable Collection<String> dataSourceIds);
 
@@ -159,7 +160,7 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
     boolean hasError();
 
     /**
-     * Throws lasty occured load/save error
+     * Throws last occurred load/save error
      */
     void checkForErrors() throws DBException;
 
