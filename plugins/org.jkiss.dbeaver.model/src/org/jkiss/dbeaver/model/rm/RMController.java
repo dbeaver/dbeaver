@@ -221,6 +221,11 @@ public interface RMController extends DBPObjectController, DBPPingController {
         @NotNull String propertyName,
         @Nullable Object propertyValue) throws DBException;
 
+
+    /**
+     * Sets all resource properties
+     */
+    @NotNull
     String setResourceProperties(
         @NotNull String projectId,
         @NotNull String resourcePath,
