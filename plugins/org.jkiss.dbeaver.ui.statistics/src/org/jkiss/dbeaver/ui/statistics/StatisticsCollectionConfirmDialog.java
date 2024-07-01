@@ -26,11 +26,9 @@ import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.internal.statistics.StatisticCollectionMessages;
-import org.jkiss.dbeaver.utils.HelpUtils;
 
 /**
  * StatisticsCollectionConfirmDialog
@@ -55,7 +53,7 @@ public class StatisticsCollectionConfirmDialog extends BaseDialog {
 
         PrefPageUsageStatistics.createDataShareComposite(composite);
 
-        if (!DBWorkbench.getPlatform().getApplication().isEarlyAccessProgramActive()) {
+        if (!DBWorkbench.getPlatform().getApplication().isStatisticsCollectionRequired()) {
             UIUtils.createEmptyLabel(composite, 1, 1);
             UIUtils.createLink(
                 composite,
@@ -71,13 +69,9 @@ public class StatisticsCollectionConfirmDialog extends BaseDialog {
         UIUtils.createEmptyLabel(composite, 1, 1);
         doNotShareDataButton = UIUtils.createCheckbox(composite, StatisticCollectionMessages.statistic_collection_dont_share_lbl, false);
 
-        if (DBWorkbench.getPlatform().getApplication().isEarlyAccessProgramActive()) {
+        if (DBWorkbench.getPlatform().getApplication().isStatisticsCollectionRequired()) {
             doNotShareDataButton.setEnabled(false);
-            UIUtils.createInfoLink(
-                composite,
-                "You cannot opt-out from data sharing when participating in <a>early access program</a>.",
-                () -> ShellUtils.launchProgram(HelpUtils.getHelpExternalReference("Early-access-program"))
-            );
+            UIUtils.createInfoLabel(composite, "You cannot opt-out from data sharing in this version of DBeaver.");
         }
 
         return composite;

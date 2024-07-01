@@ -137,23 +137,16 @@ public interface DBPApplication {
     }
 
     /**
-     * Whether this product can participate in the Early Access Program but no license is present
-     */
-    default boolean isEarlyAccessProgramCandidate() {
-        return false;
-    }
-
-    /**
-     * Whether this product is part of the Early Access Program
-     */
-    default boolean isEarlyAccessProgramActive() {
-        return false;
-    }
-
-    /**
      * Whether the user is allowed to switch workspaces or the default workspace is enforced
      */
     default boolean isWorkspaceSwitchingAllowed() {
         return true;
+    }
+
+    /**
+     * Whether the statistics collection is enforced or can be disabled by the user
+     */
+    default boolean isStatisticsCollectionRequired() {
+        return false;
     }
 }

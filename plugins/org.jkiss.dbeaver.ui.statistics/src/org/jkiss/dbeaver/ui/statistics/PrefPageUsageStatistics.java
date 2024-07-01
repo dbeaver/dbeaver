@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.statistics.StatisticCollectionMessages;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
-import org.jkiss.dbeaver.utils.HelpUtils;
 
 /**
  * PrefPageUsageStatistics
@@ -78,14 +77,10 @@ public class PrefPageUsageStatistics extends AbstractPrefPage implements IWorkbe
             NLS.bind(StatisticCollectionMessages.statistic_collection_pref_content_opensource_link, LINK_GIHUB_REPO),
             SelectionListener.widgetSelectedAdapter(selectionEvent -> ShellUtils.launchProgram(LINK_GIHUB_REPO)));
 
-        if (DBWorkbench.getPlatform().getApplication().isEarlyAccessProgramActive()) {
+        if (DBWorkbench.getPlatform().getApplication().isStatisticsCollectionRequired()) {
             checkSendUsageStatistics.setEnabled(false);
             UIUtils.createEmptyLabel(composite, 1, 1);
-            UIUtils.createInfoLink(
-                composite,
-                "You cannot opt-out from data sharing when participating in <a>early access program</a>.",
-                () -> ShellUtils.launchProgram(HelpUtils.getHelpExternalReference("Early-access-program"))
-            );
+            UIUtils.createInfoLabel(composite, "You cannot opt-out from data sharing in this version of DBeaver.");
         }
 
         performDefaults();
