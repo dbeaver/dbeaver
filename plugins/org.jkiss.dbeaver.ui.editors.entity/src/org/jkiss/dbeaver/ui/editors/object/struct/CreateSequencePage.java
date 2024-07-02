@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
+import org.jkiss.dbeaver.ui.editors.object.internal.ObjectEditorMessages;
 
 public class CreateSequencePage extends BaseObjectEditPage {
 
@@ -36,7 +36,7 @@ public class CreateSequencePage extends BaseObjectEditPage {
     private String name;
 
     public CreateSequencePage(DBSSequence sequence) {
-        super(EditorsMessages.dialog_struct_create_sequence_title);
+        super(ObjectEditorMessages.dialog_struct_create_sequence_title);
         this.sequence = sequence;
     }
 
@@ -52,8 +52,8 @@ public class CreateSequencePage extends BaseObjectEditPage {
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         propsGroup.setLayoutData(gd);
 
-        UIUtils.createLabelText(propsGroup, EditorsMessages.dialog_struct_create_sequence_container, DBUtils.getObjectFullName(sequence.getParentObject(), DBPEvaluationContext.UI)).setEditable(false);
-        final Text nameText = UIUtils.createLabelText(propsGroup, EditorsMessages.dialog_struct_create_sequence_name, null);
+        UIUtils.createLabelText(propsGroup, ObjectEditorMessages.dialog_struct_create_sequence_container, DBUtils.getObjectFullName(sequence.getParentObject(), DBPEvaluationContext.UI)).setEditable(false);
+        final Text nameText = UIUtils.createLabelText(propsGroup, ObjectEditorMessages.dialog_struct_create_sequence_name, null);
         nameText.addModifyListener(e -> name = nameText.getText());
         nameText.setFocus();
         return propsGroup;

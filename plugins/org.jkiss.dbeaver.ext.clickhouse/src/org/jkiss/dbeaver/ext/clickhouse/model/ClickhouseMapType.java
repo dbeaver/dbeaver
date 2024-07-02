@@ -18,9 +18,16 @@ package org.jkiss.dbeaver.ext.clickhouse.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.utils.Pair;
+
+import java.util.List;
 
 public class ClickhouseMapType extends ClickhouseTupleType {
-    public ClickhouseMapType(@NotNull ClickhouseDataSource dataSource, @NotNull DBSDataType keyType, @NotNull DBSDataType valueType) {
-        super(dataSource, new DBSDataType[]{keyType, valueType}, new String[]{"Key", "Value"});
+    public ClickhouseMapType(
+        @NotNull ClickhouseDataSource dataSource,
+        @NotNull DBSDataType keyType,
+        @NotNull DBSDataType valueType
+    ) {
+        super(dataSource, "Map", List.of(new Pair<>("Key", keyType), new Pair<>("Value", valueType)));
     }
 }

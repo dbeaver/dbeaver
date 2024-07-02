@@ -202,6 +202,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private final List<DriverFileSource> fileSources = new ArrayList<>();
     private final List<DBPDriverLibrary> libraries = new ArrayList<>();
     private final List<DBPDriverLibrary> origFiles = new ArrayList<>();
+    private final List<ProviderPropertyDescriptor> mainPropertyDescriptors = new ArrayList<>();
     private final List<ProviderPropertyDescriptor> providerPropertyDescriptors = new ArrayList<>();
     private final List<OSDescriptor> supportedSystems = new ArrayList<>();
 
@@ -321,6 +322,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                     this.libraries.add(library);
                 }
             }
+            this.mainPropertyDescriptors.addAll(copyFrom.mainPropertyDescriptors);
             this.providerPropertyDescriptors.addAll(copyFrom.providerPropertyDescriptors);
 
             this.defaultParameters.putAll(copyFrom.defaultParameters);
@@ -425,6 +427,26 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                         os.getAttribute(RegistryConstants.ATTR_NAME),
                         os.getAttribute(RegistryConstants.ATTR_ARCH)
                 ));
+            }
+        }
+
+        {
+            IConfigurationElement[] pp = config.getChildren(RegistryConstants.TAG_MAIN_PROPERTIES);
+            if (!ArrayUtils.isEmpty(pp)) {
+                String copyFromDriverId = pp[0].getAttribute("copyFrom");
+                if (!CommonUtils.isEmpty(copyFromDriverId)) {
+                    DriverDescriptor copyFromDriver = providerDescriptor.getDriver(copyFromDriverId);
+                    if (copyFromDriver == null) {
+                        log.debug("Driver '" + copyFromDriverId + "' not found. Cannot copy main properties into '" + getId() + "'");
+                    } else {
+                        this.mainPropertyDescriptors.addAll(copyFromDriver.mainPropertyDescriptors);
+                    }
+                }
+                this.mainPropertyDescriptors.addAll(
+                    Arrays.stream(pp[0].getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP))
+                        .map(ProviderPropertyDescriptor::extractProviderProperties)
+                        .flatMap(List<ProviderPropertyDescriptor>::stream)
+                        .toList());
             }
         }
 
@@ -1107,6 +1129,16 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     @NotNull
     public List<DriverFileSource> getDriverFileSources() {
         return fileSources;
+    }
+
+    @NotNull
+    @Override
+    public DBPPropertyDescriptor[] getMainPropertyDescriptors() {
+        return mainPropertyDescriptors.toArray(new DBPPropertyDescriptor[0]);
+    }
+
+    public void addMainPropertyDescriptors(Collection<ProviderPropertyDescriptor> props) {
+        mainPropertyDescriptors.addAll(props);
     }
 
     @NotNull

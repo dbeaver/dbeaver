@@ -56,6 +56,13 @@
                     <parameter name="omit-schema" value="true"/>
                     <file type="jar" path="maven:/nl.topicus:spanner-jdbc:RELEASE"/>
                 </driver>
+                <main-properties drivers="*">
+                    <propertyGroup label="Connection">
+                        <property id="server" label="Project" type="string" required="true"/>
+                        <property id="host" label="Instance" type="string" required="true"/>
+                        <property id="database" label="Database" type="string" required="true"/>
+                    </propertyGroup>
+                </main-properties>
 
             </drivers>
 
