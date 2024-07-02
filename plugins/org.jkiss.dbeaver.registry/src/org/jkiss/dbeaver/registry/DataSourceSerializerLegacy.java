@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -93,6 +94,19 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
             throw new DBException("Datasource config parse error", ex);
         }
         return false;
+    }
+
+    @Nullable
+    private static String decryptPassword(String encPassword) {
+        if (!CommonUtils.isEmpty(encPassword)) {
+            try {
+                encPassword = SimpleStringEncrypter.INSTANCE.decrypt(encPassword);
+            } catch (Throwable e) {
+                // could not decrypt - use as is
+                encPassword = null;
+            }
+        }
+        return encPassword;
     }
 
     private static class DataSourcesParser implements SAXListener {
@@ -468,17 +482,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
             }
             if (CommonUtils.isEmpty(creds[1])) {
                 final String encPassword = xmlAttrs.getValue(RegistryConstants.ATTR_PASSWORD);
-                if (CommonUtils.isNotEmpty(encPassword)) {
-                    try {
-                        // Backward compatibility
-                        creds[1] = SimpleStringEncrypter.INSTANCE.decrypt(creds[1]);
-                    } catch (Throwable e) {
-                        // could not decrypt - use as is
-                        creds[1] = null;
-                    }
-                } else {
-                    creds[1] = null;
-                }
+                creds[1] = CommonUtils.isEmpty(encPassword) ? null : decryptPassword(encPassword);
             }
             return creds;
         }
