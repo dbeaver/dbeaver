@@ -29,12 +29,11 @@ import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.runtime.encode.EncryptionException;
-import org.jkiss.dbeaver.runtime.encode.SecuredPasswordEncrypter;
 import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractNativeToolWizard;
 import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractNativeToolWizardPage;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseAuthDialog;
+import org.jkiss.utils.CommonUtils;
 
 
 public abstract class PostgreToolWizardPageSettings<WIZARD extends AbstractNativeToolWizard> extends AbstractNativeToolWizardPage<WIZARD>
@@ -45,68 +44,48 @@ public abstract class PostgreToolWizardPageSettings<WIZARD extends AbstractNativ
         super(wizard, title);
     }
 
-    public void createSecurityGroup(Composite parent)
-    {
-        try {
-            final SecuredPasswordEncrypter encrypter = new SecuredPasswordEncrypter();
-            final DBPConnectionConfiguration connectionInfo = wizard.getSettings().getDataSourceContainer().getActualConnectionConfiguration();
-            final String authProperty = DBConstants.INTERNAL_PROP_PREFIX + "-auth-" + wizard.getObjectsName() + "@";
-            String authUser = null;
-            String authPassword = null;
+    public void createSecurityGroup(Composite parent) {
+        final DBPConnectionConfiguration connectionInfo = wizard.getSettings().getDataSourceContainer().getActualConnectionConfiguration();
+        final String authProperty = DBConstants.INTERNAL_PROP_PREFIX + "-auth-" + wizard.getObjectsName() + "@";
+
+        Group securityGroup = UIUtils.createControlGroup(
+            parent, PostgreMessages.wizard_backup_page_setting_group_security, 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+        Label infoLabel = new Label(securityGroup, SWT.NONE);
+        infoLabel.setText(NLS.bind(PostgreMessages.wizard_backup_page_setting_group_security_label_info, connectionInfo.getUserName(),
+             wizard.getObjectsName()));
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 2;
+        infoLabel.setLayoutData(gd);
+        Button authButton = new Button(securityGroup, SWT.PUSH);
+        authButton.setText(PostgreMessages.wizard_backup_page_setting_group_security_btn_authentication);
+        authButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
             {
-                String authValue = connectionInfo.getProviderProperty(authProperty);
-                if (authValue != null) {
-                    String authCredentials = encrypter.decrypt(authValue);
-                    int divPos = authCredentials.indexOf(':');
-                    if (divPos != -1) {
-                        authUser = authCredentials.substring(0, divPos);
-                        authPassword = authCredentials.substring(divPos + 1);
-                    }
+                BaseAuthDialog authDialog = new BaseAuthDialog(getShell(), PostgreMessages.wizard_backup_page_setting_group_security_btn_authentication, false, true);
+                authDialog.setUserName(wizard.getSettings().getToolUserName());
+                authDialog.setUserPassword(wizard.getSettings().getToolUserPassword());
+                authDialog.setSavePassword(CommonUtils.isNotEmpty(wizard.getSettings().getToolUserPassword()));
+                authDialog.setSavePasswordText(PostgreMessages.wizard_backup_page_setting_authentication_save_password);
+                authDialog.setSavePasswordToolTipText(PostgreMessages.wizard_backup_page_setting_authentication_save_password_tip);
+                if (authDialog.open() == IDialogConstants.OK_ID) {
+                    wizard.getSettings().setToolUserName(authDialog.getUserName());
+                    wizard.getSettings().setToolUserPassword(authDialog.getUserPassword());
                 }
             }
+        });
 
-            final boolean savePassword = authUser != null;
-            Group securityGroup = UIUtils.createControlGroup(
-                parent, PostgreMessages.wizard_backup_page_setting_group_security, 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
-            Label infoLabel = new Label(securityGroup, SWT.NONE);
-            infoLabel.setText(NLS.bind(PostgreMessages.wizard_backup_page_setting_group_security_label_info, connectionInfo.getUserName(),
-           		 wizard.getObjectsName()));
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 2;
-            infoLabel.setLayoutData(gd);
-            Button authButton = new Button(securityGroup, SWT.PUSH);
-            authButton.setText(PostgreMessages.wizard_backup_page_setting_group_security_btn_authentication);
-            authButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    BaseAuthDialog authDialog = new BaseAuthDialog(getShell(), PostgreMessages.wizard_backup_page_setting_group_security_btn_authentication, false, true);
-                    authDialog.setUserName(wizard.getSettings().getToolUserName());
-                    authDialog.setUserPassword(wizard.getSettings().getToolUserPassword());
-                    authDialog.setSavePassword(savePassword);
-                    authDialog.setSavePasswordText(PostgreMessages.wizard_backup_page_setting_authentication_save_password);
-                    authDialog.setSavePasswordToolTipText(PostgreMessages.wizard_backup_page_setting_authentication_save_password_tip);
-                    if (authDialog.open() == IDialogConstants.OK_ID) {
-                        wizard.getSettings().setToolUserName(authDialog.getUserName());
-                        wizard.getSettings().setToolUserPassword(authDialog.getUserPassword());
-                    }
-                }
-            });
-
-            Button resetButton = new Button(securityGroup, SWT.PUSH);
-            resetButton.setText(PostgreMessages.wizard_backup_page_setting_group_security_btn_reset_default);
-            resetButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    connectionInfo.getProviderProperties().remove(authProperty);
-                    wizard.getSettings().setToolUserName(null);
-                    wizard.getSettings().setToolUserPassword(null);
-                }
-            });
-        } catch (EncryptionException e) {
-            // Never be here
-        }
+        Button resetButton = new Button(securityGroup, SWT.PUSH);
+        resetButton.setText(PostgreMessages.wizard_backup_page_setting_group_security_btn_reset_default);
+        resetButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                connectionInfo.getProviderProperties().remove(authProperty);
+                wizard.getSettings().setToolUserName(null);
+                wizard.getSettings().setToolUserPassword(null);
+            }
+        });
     }
 
 }
