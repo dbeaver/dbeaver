@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceMap;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.secret.DBSValueEncryptor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTaskSettings;
 import org.jkiss.dbeaver.model.task.DBTTaskSettingsInput;
@@ -229,11 +230,14 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject>
             toolUserPassword = preferenceStore.getString("tool.password");
 
             try {
+                // Backward compatibility
                 final SecuredPasswordEncrypter encrypter = new SecuredPasswordEncrypter();
                 if (!CommonUtils.isEmpty(toolUserName)) toolUserName = encrypter.decrypt(toolUserName);
                 if (!CommonUtils.isEmpty(toolUserPassword)) toolUserPassword = encrypter.decrypt(toolUserPassword);
-            } catch (Exception e) {
-                throw new DBException("Error decrypting user credentials", e);
+            } catch (Exception ignored) {
+                DBSValueEncryptor encryptor = getProject().getValueEncryptor();
+                if (!CommonUtils.isEmpty(toolUserName)) toolUserName = encryptor.decryptString(toolUserName);
+                if (!CommonUtils.isEmpty(toolUserPassword)) toolUserPassword = encryptor.decryptString(toolUserPassword);
             }
         }
     }
@@ -255,15 +259,14 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject>
             propertyMap.put("databaseObjects", objectList);
 
             try {
-                final SecuredPasswordEncrypter encrypter = new SecuredPasswordEncrypter();
-
+                DBSValueEncryptor encryptor = getProject().getValueEncryptor();
                 if (!CommonUtils.isEmpty(toolUserName)) {
-                    propertyMap.put("tool.user", encrypter.encrypt(toolUserName));
+                    propertyMap.put("tool.user", encryptor.encryptString(toolUserName));
                 } else {
                     propertyMap.put("tool.user", "");
                 }
                 if (!CommonUtils.isEmpty(toolUserPassword)) {
-                    propertyMap.put("tool.password", encrypter.encrypt(toolUserPassword));
+                    propertyMap.put("tool.password", encryptor.encryptString(toolUserPassword));
                 } else {
                     propertyMap.put("tool.password", "");
                 }

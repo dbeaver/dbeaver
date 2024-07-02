@@ -25,6 +25,6 @@ public class NIOUtils {
         if (basePath == null) {
             return path;
         }
-        return path + separator + path;
+        return basePath + separator + path;
     }
 }
