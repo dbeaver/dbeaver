@@ -759,7 +759,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     @Override
     public boolean isPrimaryInstance() {
-        return primaryInstance;
+        return primaryInstance && !isHeadlessMode();
     }
 
     @Override
