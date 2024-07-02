@@ -104,13 +104,13 @@ class GridRowRenderer extends AbstractRenderer {
 
         if (CommonUtils.isNotEmpty(desc)) {
             final String shortDesc = UITextUtils.getShortString(grid.fontMetrics, " - " + desc, bounds.width - x - RIGHT_MARGIN);
-            x += grid.sizingGC.stringExtent(shortText).x;
+            x += gc.stringExtent(shortText).x;
             gc.setFont(grid.italicFont);
             gc.drawString(shortDesc, bounds.x + x, bounds.y + (bounds.height - gc.stringExtent(text).y) / 2, isTransparent);
         }
     }
 
-    public int computeHeaderWidth(IGridRow element, int level) {
+    public int computeHeaderWidth(GC gc, IGridRow element, int level) {
         int width = GridRowRenderer.LEFT_MARGIN + GridRowRenderer.RIGHT_MARGIN;
         if (grid.getContentProvider().isElementExpandable(element)) {
             width += GridRowRenderer.EXPANDED_BOUNDS.width + EXPANDER_SPACING;
@@ -122,7 +122,7 @@ class GridRowRenderer extends AbstractRenderer {
         }
         final String rowText = grid.getLabelProvider().getText(element);
         final String rowDesc = grid.getLabelProvider().getDescription(element);
-        width += grid.sizingGC.stringExtent(CommonUtils.isNotEmpty(rowDesc) ? rowText + " - " + rowDesc : rowText).x;
+        width += gc.stringExtent(CommonUtils.isNotEmpty(rowDesc) ? rowText + " - " + rowDesc : rowText).x;
         width += level * GridRowRenderer.LEVEL_SPACING;
         return width;
     }

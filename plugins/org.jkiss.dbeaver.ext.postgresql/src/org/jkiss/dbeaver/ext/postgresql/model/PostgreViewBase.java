@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
@@ -45,11 +46,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+
 /**
  * PostgreViewBase
  */
-public abstract class PostgreViewBase extends PostgreTableReal implements DBSView
-{
+public abstract class PostgreViewBase extends PostgreTableReal implements DBSView {
+
     private String source;
 
     public PostgreViewBase(PostgreSchema catalog)
@@ -79,8 +81,7 @@ public abstract class PostgreViewBase extends PostgreTableReal implements DBSVie
     }
 
     @Override
-    public Collection<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException
-    {
+    public Collection<? extends DBSTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
@@ -92,17 +93,19 @@ public abstract class PostgreViewBase extends PostgreTableReal implements DBSVie
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
-        if (source == null) {
+        boolean needRefresh = false;
+        if (options != null) {
+            needRefresh = CommonUtils.toBoolean(options.get(DBPScriptObject.OPTION_REFRESH));
+        }
+
+        if (source == null || needRefresh) {
             if (isPersisted()) {
                 source = getDataSource().getServerType().readViewDDL(monitor, this);
                 if (source == null) {
                     try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read view definition")) {
-                        // Do not use view id as a parameter. For some reason it doesn't work for Redshift
-                        String definition = JDBCUtils.queryString(session, "SELECT pg_get_viewdef(" + getObjectId() + ", true)");
-                        if (definition == null) {
-                            throw new DBException("View '" + getName() + "' doesn't exist");
-                        }
-                        this.source = PostgreUtils.getViewDDL(monitor, this, definition);
+
+                        String definition = fetchViewQueryResultIfItNull(session);
+                        source = PostgreUtils.getViewDDL(monitor, this, definition, options);
                         String extDefinition = readExtraDefinition(session, options);
                         if (extDefinition != null) {
                             this.source += "\n" + extDefinition;
@@ -153,6 +156,15 @@ public abstract class PostgreViewBase extends PostgreTableReal implements DBSVie
         }
 
         return ddl.toString();
+    }
+
+    private String fetchViewQueryResultIfItNull(JDBCSession session) throws SQLException, DBException {
+        // Do not use view id as a parameter. For some reason it doesn't work for Redshift
+        String definition = JDBCUtils.queryString(session, "SELECT pg_get_viewdef(" + getObjectId() + ", true)");
+        if (definition == null) {
+            throw new DBException("View '" + getName() + "' doesn't exist");
+        }
+        return definition;
     }
 
     protected String readExtraDefinition(JDBCSession session, Map<String, Object> options) throws DBException {

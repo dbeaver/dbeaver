@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.altibase.model.session;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -64,7 +65,7 @@ public class AltibaseServerSessionManager implements DBAServerSessionManager<Alt
                 }
             }
         } catch (SQLException e) {
-            throw new DBException(e, session.getDataSource());
+            throw new DBDatabaseException(e, session.getDataSource());
         }
     }
 
@@ -80,7 +81,7 @@ public class AltibaseServerSessionManager implements DBAServerSessionManager<Alt
                 dbStat.execute();
             }
         } catch (SQLException e) {
-            throw new DBException(e, session.getDataSource());
+            throw new DBDatabaseException(e, session.getDataSource());
         }
     }
 

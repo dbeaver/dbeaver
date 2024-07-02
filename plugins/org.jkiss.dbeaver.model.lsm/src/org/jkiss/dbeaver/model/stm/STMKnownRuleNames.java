@@ -64,6 +64,7 @@ public class STMKnownRuleNames {
     // column definition
     public static final String columnDefinition = SQLStandardParser.ruleNames[SQLStandardParser.RULE_columnDefinition];
     public static final String columnName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_columnName];
+    public static final String columnIndex = SQLStandardParser.ruleNames[SQLStandardParser.RULE_columnIndex];
 
     // default
     public static final String defaultClause = SQLStandardParser.ruleNames[SQLStandardParser.RULE_defaultClause];
@@ -127,7 +128,7 @@ public class STMKnownRuleNames {
     public static final String dynamicParameterSpecification = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dynamicParameterSpecification];
     public static final String columnReference = SQLStandardParser.ruleNames[SQLStandardParser.RULE_columnReference];
     public static final String valueReference = SQLStandardParser.ruleNames[SQLStandardParser.RULE_valueReference];
-    public static final String valueExpressionCast = SQLStandardParser.ruleNames[SQLStandardParser.RULE_valueExpressionCast];
+    public static final String valueExpressionCastSpec = SQLStandardParser.ruleNames[SQLStandardParser.RULE_valueExpressionCastSpec];
     public static final String variableExpression = SQLStandardParser.ruleNames[SQLStandardParser.RULE_variableExpression];
 
     public static final String qualifier = SQLStandardParser.ruleNames[SQLStandardParser.RULE_qualifier];
@@ -264,7 +265,6 @@ public class STMKnownRuleNames {
 
     // schema definition
     public static final String sqlSchemaStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_sqlSchemaStatement];
-    public static final String sqlSchemaDefinitionStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_sqlSchemaDefinitionStatement];
     public static final String schemaDefinition = SQLStandardParser.ruleNames[SQLStandardParser.RULE_schemaDefinition];
     public static final String schemaNameClause = SQLStandardParser.ruleNames[SQLStandardParser.RULE_schemaNameClause];
     public static final String schemaAuthorizationIdentifier = SQLStandardParser.ruleNames[SQLStandardParser.RULE_schemaAuthorizationIdentifier];
@@ -273,15 +273,14 @@ public class STMKnownRuleNames {
     public static final String schemaElement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_schemaElement];
 
     // table definition
-    public static final String tableDefinition = SQLStandardParser.ruleNames[SQLStandardParser.RULE_tableDefinition];
-    public static final String viewDefinition = SQLStandardParser.ruleNames[SQLStandardParser.RULE_viewDefinition];
+    public static final String createTableStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_createTableStatement];
+    public static final String createViewStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_createViewStatement];
     public static final String viewColumnList = SQLStandardParser.ruleNames[SQLStandardParser.RULE_viewColumnList];
     public static final String levelsClause = SQLStandardParser.ruleNames[SQLStandardParser.RULE_levelsClause];
     public static final String tableElementList = SQLStandardParser.ruleNames[SQLStandardParser.RULE_tableElementList];
     public static final String tableElement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_tableElement];
 
     // schema ddl
-    public static final String sqlSchemaManipulationStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_sqlSchemaManipulationStatement];
     public static final String dropSchemaStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dropSchemaStatement];
     public static final String dropBehaviour = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dropBehaviour];
     public static final String alterTableStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_alterTableStatement];
@@ -297,6 +296,7 @@ public class STMKnownRuleNames {
     public static final String dropTableStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dropTableStatement];
     public static final String dropViewStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dropViewStatement];
     public static final String dropCharacterSetStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dropCharacterSetStatement];
+    public static final String ifExistsSpec = SQLStandardParser.ruleNames[SQLStandardParser.RULE_ifExistsSpec];
 
     // data statements
     public static final String selectStatementSingleRow = SQLStandardParser.ruleNames[SQLStandardParser.RULE_selectStatementSingleRow];

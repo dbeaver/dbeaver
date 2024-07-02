@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.sql.backup.JDBCDatabaseBackupHandler;
 import org.jkiss.dbeaver.model.sql.backup.SQLBackupConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -34,14 +35,14 @@ public class JDBCDatabaseH2BackupHandler implements JDBCDatabaseBackupHandler {
 
     @Override
     public void doBackup(
-            @NotNull Connection connection,
-            int currentSchemaVersion,
-            @NotNull InternalDatabaseConfig databaseConfig
-    ) throws DBException {
+        @NotNull Connection connection,
+        int currentSchemaVersion,
+        @NotNull InternalDatabaseConfig databaseConfig
+    ) throws DBException, IOException {
+        Path workspace = DBWorkbench.getPlatform().getWorkspace().getAbsolutePath().resolve(SQLBackupConstants.BACKUP_FOLDER);
+        Path backupFile = workspace.resolve(SQLBackupConstants.BACKUP_FILE_NAME + currentSchemaVersion
+            + SQLBackupConstants.BACKUP_FILE_TYPE);
         try (Statement statement = connection.createStatement()) {
-            Path workspace = DBWorkbench.getPlatform().getWorkspace().getAbsolutePath().resolve(SQLBackupConstants.BACKUP_FOLDER);
-            Path backupFile = workspace.resolve(SQLBackupConstants.BACKUP_FILE_NAME + currentSchemaVersion
-                    + SQLBackupConstants.BACKUP_FILE_TYPE);
             if (Files.notExists(backupFile)) {
                 Files.createDirectories(workspace);
 
@@ -51,6 +52,7 @@ public class JDBCDatabaseH2BackupHandler implements JDBCDatabaseBackupHandler {
                 log.info("Reserve backup created to path: " + workspace + "backup");
             }
         } catch (Exception e) {
+            Files.deleteIfExists(backupFile);
             log.error("Create backup is failed: " + e.getMessage());
             throw new DBException("Backup is failed: " + e.getMessage());
         }

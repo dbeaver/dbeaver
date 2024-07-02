@@ -171,6 +171,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     private String webURL;
     private String propertiesWebURL;
+    private String databaseDocumentationSuffixURL;
     private DBPImage iconPlain;
     private DBPImage iconNormal;
     private DBPImage iconError;
@@ -201,6 +202,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private final List<DriverFileSource> fileSources = new ArrayList<>();
     private final List<DBPDriverLibrary> libraries = new ArrayList<>();
     private final List<DBPDriverLibrary> origFiles = new ArrayList<>();
+    private final List<ProviderPropertyDescriptor> mainPropertyDescriptors = new ArrayList<>();
     private final List<ProviderPropertyDescriptor> providerPropertyDescriptors = new ArrayList<>();
     private final List<OSDescriptor> supportedSystems = new ArrayList<>();
 
@@ -295,6 +297,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
             this.webURL = copyFrom.webURL;
             this.propertiesWebURL = copyFrom.webURL;
+            this.databaseDocumentationSuffixURL = copyFrom.databaseDocumentationSuffixURL;
             this.embedded = copyFrom.embedded;
             this.propagateDriverProperties = copyFrom.propagateDriverProperties;
             this.singleConnection = copyFrom.singleConnection;
@@ -319,6 +322,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                     this.libraries.add(library);
                 }
             }
+            this.mainPropertyDescriptors.addAll(copyFrom.mainPropertyDescriptors);
             this.providerPropertyDescriptors.addAll(copyFrom.providerPropertyDescriptors);
 
             this.defaultParameters.putAll(copyFrom.defaultParameters);
@@ -357,6 +361,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.origSampleURL = this.sampleURL = config.getAttribute(RegistryConstants.ATTR_SAMPLE_URL);
         this.origDialectId = this.dialectId = config.getAttribute(RegistryConstants.ATTR_DIALECT);
         this.webURL = config.getAttribute(RegistryConstants.ATTR_WEB_URL);
+        this.databaseDocumentationSuffixURL = config.getAttribute(RegistryConstants.ATTR_DATABASE_DOCUMENTATION_SUFFIX_URL);
         this.propertiesWebURL = config.getAttribute(RegistryConstants.ATTR_PROPERTIES_WEB_URL);
         this.clientRequired = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_CLIENT_REQUIRED), false);
         this.customDriverLoader = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER), false);
@@ -422,6 +427,26 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                         os.getAttribute(RegistryConstants.ATTR_NAME),
                         os.getAttribute(RegistryConstants.ATTR_ARCH)
                 ));
+            }
+        }
+
+        {
+            IConfigurationElement[] pp = config.getChildren(RegistryConstants.TAG_MAIN_PROPERTIES);
+            if (!ArrayUtils.isEmpty(pp)) {
+                String copyFromDriverId = pp[0].getAttribute("copyFrom");
+                if (!CommonUtils.isEmpty(copyFromDriverId)) {
+                    DriverDescriptor copyFromDriver = providerDescriptor.getDriver(copyFromDriverId);
+                    if (copyFromDriver == null) {
+                        log.debug("Driver '" + copyFromDriverId + "' not found. Cannot copy main properties into '" + getId() + "'");
+                    } else {
+                        this.mainPropertyDescriptors.addAll(copyFromDriver.mainPropertyDescriptors);
+                    }
+                }
+                this.mainPropertyDescriptors.addAll(
+                    Arrays.stream(pp[0].getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP))
+                        .map(ProviderPropertyDescriptor::extractProviderProperties)
+                        .flatMap(List<ProviderPropertyDescriptor>::stream)
+                        .toList());
             }
         }
 
@@ -858,6 +883,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return propertiesWebURL;
     }
 
+    @Nullable
+    @Override
+    public String getDatabaseDocumentationSuffixURL() {
+        return databaseDocumentationSuffixURL;
+    }
+
     @NotNull
     @Override
     public SQLDialectMetadata getScriptDialect() {
@@ -1098,6 +1129,16 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     @NotNull
     public List<DriverFileSource> getDriverFileSources() {
         return fileSources;
+    }
+
+    @NotNull
+    @Override
+    public DBPPropertyDescriptor[] getMainPropertyDescriptors() {
+        return mainPropertyDescriptors.toArray(new DBPPropertyDescriptor[0]);
+    }
+
+    public void addMainPropertyDescriptors(Collection<ProviderPropertyDescriptor> props) {
+        mainPropertyDescriptors.addAll(props);
     }
 
     @NotNull

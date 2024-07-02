@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.css;
 public class DBStyles {
 
     public static final String COLORED_BY_CONNECTION_TYPE = "coloredByConnectionType";
+    public static final String ATTR_MIMIC_CONTROL = "mimicControl";
 
     public static final String DATABASE_EDITOR_COMPOSITE_DATASOURCE = "databaseEditorCompositeBackground";
 

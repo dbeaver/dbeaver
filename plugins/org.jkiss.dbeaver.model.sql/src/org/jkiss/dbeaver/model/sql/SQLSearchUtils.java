@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.LocalCacheProgressMonitor;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -96,13 +97,15 @@ public class SQLSearchUtils
         if (dataSource == null) {
             return null;
         }
-        {
+        DBRProgressMonitor mdMonitor = dataSource.getContainer().isExtraMetadataReadEnabled() ?
+            monitor : new LocalCacheProgressMonitor(monitor);
+        if (!mdMonitor.isForceCacheUsage()) {
             List<String> unquotedNames = new ArrayList<>(nameList.size());
             for (String name : nameList) {
                 unquotedNames.add(DBUtils.getUnQuotedIdentifier(dataSource, name));
             }
 
-            DBSObject result = findObjectByPath(monitor, executionContext, objectContainer, unquotedNames, identifierDetector, useAssistant, isGlobalSearch);
+            DBSObject result = findObjectByPath(mdMonitor, executionContext, objectContainer, unquotedNames, identifierDetector, useAssistant, isGlobalSearch);
             if (result != null) {
                 return result;
             }
@@ -119,7 +122,7 @@ public class SQLSearchUtils
                 }
                 nameList.set(i, name);
             }
-            return findObjectByPath(monitor, executionContext, objectContainer, nameList, identifierDetector, useAssistant, isGlobalSearch);
+            return findObjectByPath(mdMonitor, executionContext, objectContainer, nameList, identifierDetector, useAssistant, isGlobalSearch);
         }
     }
 
@@ -137,7 +140,7 @@ public class SQLSearchUtils
 
     @Nullable
     public static DBSObject findObjectByPath(
-        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext executionContext,
         @NotNull DBSObjectContainer sc,
         @NotNull List<String> nameList,
@@ -158,7 +161,7 @@ public class SQLSearchUtils
                 }
             }
             if (childObject == null && nameList.size() <= 1) {
-                if (useAssistant) {
+                if (useAssistant && monitor != null) {
                     // No such object found - may be it's start of table name
                     DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, sc);
                     if (structureAssistant != null) {

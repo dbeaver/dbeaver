@@ -105,6 +105,9 @@ public interface DBPDriver extends DBPNamedObject
     @Nullable
     String getPropertiesWebURL();
 
+    @Nullable
+    String getDatabaseDocumentationSuffixURL();
+
     @NotNull
     SQLDialectMetadata getScriptDialect();
 
@@ -156,6 +159,9 @@ public interface DBPDriver extends DBPNamedObject
 
     @Nullable
     DBXTreeNode getNavigatorRoot();
+
+    @NotNull
+    DBPPropertyDescriptor[] getMainPropertyDescriptors();
 
     @NotNull
     DBPPropertyDescriptor[] getProviderPropertyDescriptors();

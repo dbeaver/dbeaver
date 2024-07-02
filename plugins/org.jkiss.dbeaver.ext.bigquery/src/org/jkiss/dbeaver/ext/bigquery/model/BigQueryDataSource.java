@@ -25,12 +25,12 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class BigQueryDataSource extends GenericDataSource {
@@ -56,9 +56,16 @@ public class BigQueryDataSource extends GenericDataSource {
         return connectionURL;
     }
 
+    @NotNull
     @Override
-    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
-        Map<String, String> props = new HashMap<>();
+    protected Map<String, String> getInternalConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDriver driver,
+        @NotNull JDBCExecutionContext context,
+        @NotNull String purpose,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBCException {
+        Map<String, String> props = new LinkedHashMap<>();
         props.put(BigQueryConstants.DRIVER_PROP_PROJECT_ID, connectionInfo.getDatabaseName());
         if (connectionInfo.getUserName() != null) {
             props.put(BigQueryConstants.DRIVER_PROP_ACCOUNT, connectionInfo.getUserName());
@@ -81,13 +88,14 @@ public class BigQueryDataSource extends GenericDataSource {
     }
 
     @Override
-    protected BigQuerySession createConnection(
-        @NotNull DBRProgressMonitor monitor, 
-        @NotNull JDBCExecutionContext context, 
-        DBCExecutionPurpose purpose,
-        String taskTitle
-    ) {
-        return new BigQuerySession(context, monitor, purpose, taskTitle);
+    public String getDefaultDataTypeName(DBPDataKind dataKind) {
+        switch (dataKind) {
+            case STRING:
+                return "STRING";
+            default:
+                return super.getDefaultDataTypeName(dataKind);
+        }
     }
+
 
 }

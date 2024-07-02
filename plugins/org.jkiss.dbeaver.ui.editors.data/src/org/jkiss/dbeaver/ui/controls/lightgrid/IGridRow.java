@@ -28,6 +28,6 @@ public interface IGridRow extends IGridItem {
 
     int getRelativeIndex();
 
-    int getRowDepth();
+    int getLevel();
 
 }

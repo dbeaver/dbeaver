@@ -86,6 +86,7 @@ public class RegistryConstants {
     public static final String ATTR_SAMPLE_URL = "sampleURL"; //$NON-NLS-1$
     public static final String ATTR_WEB_URL = "webURL"; //$NON-NLS-1$
     public static final String ATTR_PROPERTIES_WEB_URL = "propertiesURL"; //$NON-NLS-1$
+    public static final String ATTR_DATABASE_DOCUMENTATION_SUFFIX_URL = "databaseDocumentationSuffixURL"; //$NON-NLS-1$
     public static final String ATTR_SUPPORTS_DRIVER_PROPERTIES = "supportsDriverProperties"; //$NON-NLS-1$
     public static final String ATTR_CLIENT_REQUIRED = "clientRequired"; //$NON-NLS-1$
     public static final String ATTR_ANONYMOUS = "anonymous"; //$NON-NLS-1$
@@ -179,6 +180,7 @@ public class RegistryConstants {
     public static final String TAG_EVENT = "event"; //$NON-NLS-1$
     public static final String TAG_EVENTS = "events"; //$NON-NLS-1$
     public static final String TAG_AUTH_PROPERTIES = "auth-properties"; //$NON-NLS-1$
+    public static final String TAG_MAIN_PROPERTIES = "main-properties"; //$NON-NLS-1$
     public static final String TAG_PROVIDER_PROPERTIES = "provider-properties"; //$NON-NLS-1$
     public static final String TAG_PROVIDER_PROPERTY = "provider-property"; //$NON-NLS-1$
     public static final String TAG_CUSTOM_PROPERTY = "custom-property"; //$NON-NLS-1$

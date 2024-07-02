@@ -36,6 +36,7 @@ public enum SQLTokenType implements TPTokenType {
     T_SCHEMA(509),
     T_COMPOSITE_FIELD(510),
     T_SQL_VARIABLE(511),
+    T_FUNCTION(512),
     T_SEMANTIC_ERROR(900),
     
     T_UNKNOWN(1000),

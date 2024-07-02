@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -38,27 +39,25 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.util.*;
 
 /**
-*  This is basically cropped copy of JDBCCompositeCache, but without object children. Created specially for triggers.
+ *  This is basically cropped copy of JDBCCompositeCache, but without object children. Created specially for triggers.
  */
 
 public abstract class JDBCObjectWithParentCache<OWNER extends DBSObject, PARENT extends DBSObject, OBJECT extends DBSObject> extends AbstractObjectCache<OWNER, OBJECT>
-        implements DBSCompositeCache<PARENT, OBJECT>
-{
+    implements DBSCompositeCache<PARENT, OBJECT> {
     protected static final Log log = Log.getLog(JDBCObjectWithParentCache.class);
 
-    private final JDBCStructCache<OWNER,?,?> parentCache;
+    private final JDBCStructCache<OWNER, ?, ?> parentCache;
     private final Class<PARENT> parentType;
-    private Object parentColumnName;
-    private Object objectColumnName;
+    private final Object parentColumnName;
+    private final Object objectColumnName;
 
     private final Map<PARENT, List<OBJECT>> objectCache = new IdentityHashMap<>();
 
     protected JDBCObjectWithParentCache(
-            JDBCStructCache<OWNER,?,?> parentCache,
-            Class<PARENT> parentType,
-            Object parentColumnName,
-            Object objectColumnName)
-    {
+        JDBCStructCache<OWNER, ?, ?> parentCache,
+        Class<PARENT> parentType,
+        Object parentColumnName,
+        Object objectColumnName) {
         this.parentCache = parentCache;
         this.parentType = parentType;
         this.parentColumnName = parentColumnName;
@@ -67,35 +66,33 @@ public abstract class JDBCObjectWithParentCache<OWNER extends DBSObject, PARENT 
 
     @NotNull
     abstract protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OWNER owner, @Nullable PARENT forParent)
-            throws SQLException;
+        throws SQLException;
 
     @Nullable
     abstract protected OBJECT fetchObject(@NotNull JDBCSession session, @NotNull OWNER owner, @NotNull PARENT parent, String childName, @NotNull JDBCResultSet resultSet)
-            throws SQLException, DBException;
+        throws SQLException, DBException;
 
-    protected PARENT getParent(OBJECT object)
-    {
+    protected PARENT getParent(OBJECT object) {
         return (PARENT) object.getParentObject();
     }
 
     @NotNull
     @Override
     public List<OBJECT> getAllObjects(@NotNull DBRProgressMonitor monitor, @Nullable OWNER owner)
-            throws DBException
-    {
+        throws DBException {
         return getObjects(monitor, owner, null);
     }
 
-    public List<OBJECT> getObjects(DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
-            throws DBException
-    {
-        loadObjects(monitor, owner, forParent);
+    public List<OBJECT> getObjects(@NotNull DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
+        throws DBException {
+        if (!monitor.isCanceled() && !monitor.isForceCacheUsage()) {
+            loadObjects(monitor, owner, forParent);
+        }
         return getCachedObjects(forParent);
     }
 
     @Override
-    public List<OBJECT> getCachedObjects(PARENT forParent)
-    {
+    public List<OBJECT> getCachedObjects(@Nullable PARENT forParent) {
         if (forParent == null) {
             return getCachedObjects();
         } else {
@@ -106,17 +103,15 @@ public abstract class JDBCObjectWithParentCache<OWNER extends DBSObject, PARENT 
     }
 
     @Override
-    public OBJECT getObject(@NotNull DBRProgressMonitor monitor, @Nullable OWNER owner, @NotNull String objectName)
-            throws DBException
-    {
+    public OBJECT getObject(@NotNull DBRProgressMonitor monitor, @NotNull OWNER owner, @NotNull String objectName)
+        throws DBException {
         loadObjects(monitor, owner, null);
 
         return getCachedObject(objectName);
     }
 
     public OBJECT getObject(DBRProgressMonitor monitor, OWNER owner, PARENT forParent, String objectName)
-            throws DBException
-    {
+        throws DBException {
         loadObjects(monitor, owner, forParent);
         if (forParent == null) {
             return getCachedObject(objectName);
@@ -128,8 +123,7 @@ public abstract class JDBCObjectWithParentCache<OWNER extends DBSObject, PARENT 
     }
 
     @Override
-    public void cacheObject(@NotNull OBJECT object)
-    {
+    public void cacheObject(@NotNull OBJECT object) {
         super.cacheObject(object);
         synchronized (objectCache) {
             PARENT parent = getParent(object);
@@ -139,8 +133,7 @@ public abstract class JDBCObjectWithParentCache<OWNER extends DBSObject, PARENT 
     }
 
     @Override
-    public void removeObject(@NotNull OBJECT object, boolean resetFullCache)
-    {
+    public void removeObject(@NotNull OBJECT object, boolean resetFullCache) {
         super.removeObject(object, resetFullCache);
         synchronized (objectCache) {
             PARENT parent = getParent(object);
@@ -156,8 +149,7 @@ public abstract class JDBCObjectWithParentCache<OWNER extends DBSObject, PARENT 
     }
 
     @Override
-    public void clearObjectCache(PARENT forParent)
-    {
+    public void clearObjectCache(@NotNull PARENT forParent) {
         if (forParent == null) {
             super.clearCache();
             objectCache.clear();
@@ -172,8 +164,7 @@ public abstract class JDBCObjectWithParentCache<OWNER extends DBSObject, PARENT 
     }
 
     @Override
-    public void clearCache()
-    {
+    public void clearCache() {
         synchronized (objectCache) {
             this.objectCache.clear();
         }
@@ -181,7 +172,7 @@ public abstract class JDBCObjectWithParentCache<OWNER extends DBSObject, PARENT 
     }
 
     @Override
-    public void setCache(List<OBJECT> objects) {
+    public void setCache(@NotNull List<OBJECT> objects) {
         super.setCache(objects);
         synchronized (objectCache) {
             objectCache.clear();
@@ -193,13 +184,12 @@ public abstract class JDBCObjectWithParentCache<OWNER extends DBSObject, PARENT 
         }
     }
 
-    protected void loadObjects(DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
-            throws DBException
-    {
+    protected void loadObjects(@NotNull DBRProgressMonitor monitor, OWNER owner, @Nullable PARENT forParent)
+        throws DBException {
         synchronized (objectCache) {
-            if ((forParent == null && isFullyCached()) ||
-                    (forParent != null && (!forParent.isPersisted() || objectCache.containsKey(forParent))))
-            {
+            if (monitor.isForceCacheUsage() ||
+                (forParent == null && isFullyCached()) ||
+                (forParent != null && (!forParent.isPersisted() || objectCache.containsKey(forParent)))) {
                 return;
             }
         }
@@ -225,13 +215,13 @@ public abstract class JDBCObjectWithParentCache<OWNER extends DBSObject, PARENT 
                             return;
                         }
                         String parentName = forParent != null ?
-                                forParent.getName() :
-                                (parentColumnName instanceof Number ?
-                                        JDBCUtils.safeGetString(dbResult, ((Number) parentColumnName).intValue()) :
-                                        JDBCUtils.safeGetStringTrimmed(dbResult, parentColumnName.toString()));
+                            forParent.getName() :
+                            (parentColumnName instanceof Number ?
+                                JDBCUtils.safeGetString(dbResult, ((Number) parentColumnName).intValue()) :
+                                JDBCUtils.safeGetStringTrimmed(dbResult, parentColumnName.toString()));
                         String objectName = objectColumnName instanceof Number ?
-                                JDBCUtils.safeGetString(dbResult, ((Number) objectColumnName).intValue()) :
-                                JDBCUtils.safeGetStringTrimmed(dbResult, objectColumnName.toString());
+                            JDBCUtils.safeGetString(dbResult, ((Number) objectColumnName).intValue()) :
+                            JDBCUtils.safeGetStringTrimmed(dbResult, objectColumnName.toString());
 
                         if (forParent == null && CommonUtils.isEmpty(parentName)) {
                             // No parent - can't evaluate it
@@ -268,24 +258,20 @@ public abstract class JDBCObjectWithParentCache<OWNER extends DBSObject, PARENT 
                             objectMap.put(objectName, objectInfo);
                         }
                     }
-                }
-                finally {
+                } finally {
                     dbResult.close();
                 }
-            }
-            finally {
+            } finally {
                 dbStat.close();
             }
-        }
-        catch (SQLException ex) {
+        } catch (SQLException ex) {
             if (ex instanceof SQLFeatureNotSupportedException) {
                 log.debug("Error reading cache " + getClass().getSimpleName() + ", feature not supported: " + ex.getMessage());
             } else {
                 DBPDataSource dataSource = owner.getDataSource();
-                throw new DBException(ex, dataSource);
+                throw new DBDatabaseException(ex, dataSource);
             }
-        }
-        finally {
+        } finally {
             monitor.done();
         }
 

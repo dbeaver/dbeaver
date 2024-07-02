@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.navigator;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -144,9 +145,9 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     }
 
     @Override
-    public DBNNode[] getChildren(DBRProgressMonitor monitor)
+    public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor)
     {
-        if (children == null) {
+        if (children == null && !monitor.isForceCacheUsage()) {
             List<DBNNode> childNodes = new ArrayList<>();
             // Add root folders
             for (DBPDataSourceFolder folder : dataSourceRegistry.getAllFolders()) {

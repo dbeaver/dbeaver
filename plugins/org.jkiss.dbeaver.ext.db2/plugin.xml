@@ -457,6 +457,7 @@
                     defaultPort="50000"
                     webURL="https://www-01.ibm.com/support/docview.wss?uid=swg21363866"
                     propertiesURL="https://www.ibm.com/docs/en/db2/latest?topic=pdsdjs-common-data-server-driver-jdbc-sqlj-properties-all-database-products"
+                    databaseDocumentationSuffixURL="Database-driver-IBM-Db2"
                     description="IBM Db2 for Linux/Unix/Windows driver"
                     promoted="1"
                     categories="sql">

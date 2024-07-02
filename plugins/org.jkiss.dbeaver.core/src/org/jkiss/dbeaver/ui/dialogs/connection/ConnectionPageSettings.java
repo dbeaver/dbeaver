@@ -26,10 +26,7 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.custom.CTabFolder2Adapter;
-import org.eclipse.swt.custom.CTabFolderEvent;
-import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.custom.*;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -37,7 +34,6 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
@@ -425,13 +421,10 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         item.setToolTipText(page.getDescription());
 
         if (page.getControl() == null) {
-            final Composite placeholder = new Composite(tabFolder, SWT.NONE);
-            placeholder.setLayout(new FillLayout());
-            item.setControl(placeholder);
+            // TODO: We should respect pages that might not want to be scrollable (e.g. if they have their own scrollable controls)
+            item.setControl(UIUtils.createScrolledComposite(tabFolder, SWT.H_SCROLL | SWT.V_SCROLL));
         } else {
-            final Control control = page.getControl();
-            control.setParent(tabFolder);
-            item.setControl(control);
+            item.setControl(page.getControl().getParent());
         }
 
         return item;
@@ -444,11 +437,12 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 IDialogPage page = (IDialogPage) selection.getData();
                 if (page.getControl() == null) {
                     // Create page
-                    Composite panel = (Composite) selection.getControl();
+                    ScrolledComposite panel = (ScrolledComposite) selection.getControl();
                     panel.setRedraw(false);
                     try {
                         page.createControl(panel);
                         Dialog.applyDialogFont(panel);
+                        UIUtils.configureScrolledComposite(panel, page.getControl());
                         panel.layout(true, true);
                     } catch (Throwable e) {
                         DBWorkbench.getPlatformUI().showError("Error creating configuration page", null, e);

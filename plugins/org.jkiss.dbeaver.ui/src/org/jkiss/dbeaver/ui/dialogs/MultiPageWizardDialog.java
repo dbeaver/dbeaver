@@ -27,7 +27,6 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
@@ -194,9 +193,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         // Vertical separator
         new Label(pageContainer, SWT.SEPARATOR | SWT.VERTICAL)
             .setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, true));
-        ScrolledComposite scrolledComposite = UIUtils.createScrolledComposite(pageContainer);
-        pageArea = UIUtils.createPlaceholder(scrolledComposite, 1);
-        UIUtils.configureScrolledComposite(scrolledComposite, pageArea);
+        pageArea = UIUtils.createPlaceholder(pageContainer, 1);
         GridData gd = new GridData(GridData.FILL_BOTH);
         pageArea.setLayoutData(gd);
         pageArea.setLayout(new GridLayout(1, true));
@@ -323,13 +320,6 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             pageArea.layout();
             if (prevPage.getControl() != null) {
                 prevPage.getControl().setFocus();
-            }
-            if (pageCreated && isAutoLayoutAvailable()) {
-                UIUtils.asyncExec(() -> {
-                    if (wizard.getContainer().getShell() != null) {
-                        UIUtils.resizeShell(wizard.getContainer().getShell());
-                    }
-                });
             }
 
             if (page instanceof ActiveWizardPage<?> awp) {
@@ -697,6 +687,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                 }
             });
         }
+        updateSize();
     }
 
     @Override
@@ -718,14 +709,24 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
      * @param page the wizard page
      */
     private void updateSizeForPage(IWizardPage page) {
-        // ensure the page container is large enough
-        Point delta = calculatePageSizeDelta(page);
-        if (delta.x > 0 || delta.y > 0) {
-            // increase the size of the shell
-            Shell shell = getShell();
-            Point shellSize = shell.getSize();
-            setShellSize(shellSize.x + delta.x, shellSize.y + delta.y);
-            constrainShellSize();
+        if (isAutoLayoutAvailable() &&
+            (!(page instanceof  ActiveWizardPage<?> awp) || awp.isAutoResizeEnabled())) {
+            UIUtils.asyncExec(() -> {
+                Point pageCompSize = page.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT);
+                for (Control parent = page.getControl().getParent(); parent != null; parent = parent.getParent()) {
+                    if (parent instanceof SashForm) {
+                        pageCompSize = parent.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+                        break;
+                    }
+                }
+                Point shellCompSize = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT);
+                if (shellCompSize.y > pageCompSize.y) {
+                    pageCompSize.y = shellCompSize.y;
+                }
+                UIUtils.resizeShell(
+                    getShell(),
+                    pageCompSize);
+            });
         }
     }
 
