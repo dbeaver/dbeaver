@@ -248,7 +248,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
 
     @Override
     public boolean isReadOnly() {
-        return controller.getAttributeReadOnlyStatus(getBinding()) != null;
+        return controller.getAttributeReadOnlyStatus(getBinding(), true, false) != null;
     }
 
     @Override

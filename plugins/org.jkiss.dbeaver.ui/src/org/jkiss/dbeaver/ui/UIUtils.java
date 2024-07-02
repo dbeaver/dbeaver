@@ -110,7 +110,7 @@ public class UIUtils {
     public static final Color COLOR_GREEN_CONTRAST = new Color(null, 23, 135, 58);
     public static final Color COLOR_VALIDATION_ERROR = new Color(255, 220, 220);
     
-    private static final Color COLOR_WHITE_DARK = new Color(null, 208, 208, 208);
+    private static final Color COLOR_WHITE_DARK = new Color(null, 192, 192, 192);
     private static final SharedTextColors SHARED_TEXT_COLORS = new SharedTextColors();
     private static final SharedFonts SHARED_FONTS = new SharedFonts();
     private static final String MAX_LONG_STRING = String.valueOf(Long.MAX_VALUE);
@@ -263,7 +263,7 @@ public class UIUtils {
             if (fit && totalWidth < clientArea.width) {
                 int sbWidth = table.getBorderWidth() * 2;
                 if (table.getVerticalBar() != null) {
-                    sbWidth = table.getVerticalBar().getSize().x;
+                    sbWidth = sbWidth + table.getVerticalBar().getSize().x;
                 }
                 if (columns.length > 0) {
                     float extraSpace = (clientArea.width - totalWidth - sbWidth) / columns.length - 1;
@@ -2140,10 +2140,14 @@ public class UIUtils {
     }
 
     public static void resizeShell(@NotNull Shell shell) {
+        final Point compSize = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
+        resizeShell(shell, compSize);
+    }
+
+    public static void resizeShell(@NotNull Shell shell, Point compSize) {
         final Rectangle displayArea = shell.getDisplay().getClientArea();
         final Point shellLocation = shell.getLocation();
         final Point shellSize = shell.getSize();
-        final Point compSize = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
         boolean needsLayout = false;
 
         if (shellSize.x < compSize.x || shellSize.y < compSize.y) {
@@ -2171,7 +2175,7 @@ public class UIUtils {
     public static void waitJobCompletion(@NotNull AbstractJob job, @Nullable IProgressMonitor monitor) {
         // Wait until job finished
         Display display = Display.getCurrent();
-        while (!job.isFinished()) {
+        while (!job.isFinished() && !DBWorkbench.getPlatform().isShuttingDown()) {
             if (monitor != null && monitor.isCanceled()) {
                 job.cancel();
             }

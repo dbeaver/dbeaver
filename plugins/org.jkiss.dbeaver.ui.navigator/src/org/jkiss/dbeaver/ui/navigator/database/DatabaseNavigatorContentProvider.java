@@ -36,7 +36,7 @@ import java.util.List;
 /**
  * DatabaseNavigatorContentProvider
 */
-class DatabaseNavigatorContentProvider implements IStructuredContentProvider, ITreeContentProvider {
+public class DatabaseNavigatorContentProvider implements IStructuredContentProvider, ITreeContentProvider {
     private static final Log log = Log.getLog(DatabaseNavigatorContentProvider.class);
 
     private static final Object[] EMPTY_CHILDREN = new Object[0];
@@ -44,7 +44,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
     private DatabaseNavigatorTree navigatorTree;
     private boolean showRoot;
 
-    DatabaseNavigatorContentProvider(DatabaseNavigatorTree navigatorTree, boolean showRoot)
+    public DatabaseNavigatorContentProvider(DatabaseNavigatorTree navigatorTree, boolean showRoot)
     {
         this.navigatorTree = navigatorTree;
         this.showRoot = showRoot;
