@@ -17,12 +17,19 @@
 
 package org.jkiss.dbeaver.runtime.encode;
 
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
+
 /**
  * Password encoder
+ *
+ * @see DBPProject#getValueEncryptor()
+ * @see DBSSecretController#getGlobalSecretController()
+ * @see DBSSecretController#getProjectSecretController(DBPProject)
+ * @deprecated this interface does not provide a strong encryption
+ * mechanism and its usage is discouraged. It is kept for backward compatibility only.
  */
 public interface PasswordEncrypter {
-
-    String encrypt(String password) throws EncryptionException;
 
     String decrypt(String password) throws EncryptionException;
 
