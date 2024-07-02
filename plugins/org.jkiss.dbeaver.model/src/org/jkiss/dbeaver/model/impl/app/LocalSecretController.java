@@ -19,12 +19,12 @@ package org.jkiss.dbeaver.model.impl.app;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.secret.DBSSecretObject;
 import org.jkiss.dbeaver.model.secret.DBSSecretValue;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -38,12 +38,12 @@ import java.util.List;
 public class LocalSecretController implements DBSSecretController {
     public static final LocalSecretController INSTANCE = new LocalSecretController();
 
-    private final DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
+    private final DBPPreferenceStore preferences = ModelPreferences.getPreferences();
 
     @Nullable
     @Override
     public String getPrivateSecretValue(@NotNull String secretId) {
-        String value = preferenceStore.getString(makeKey(secretId));
+        String value = preferences.getString(makeKey(secretId));
         if (CommonUtils.isEmpty(value)) {
             return null;
         }
@@ -54,9 +54,9 @@ public class LocalSecretController implements DBSSecretController {
     public void setPrivateSecretValue(@NotNull String secretId, @Nullable String secretValue) throws DBException {
         String key = makeKey(secretId);
         if (secretValue != null) {
-            preferenceStore.setValue(key, secretValue);
+            preferences.setValue(key, secretValue);
         } else {
-            preferenceStore.setToDefault(key);
+            preferences.setToDefault(key);
         }
     }
 
@@ -69,7 +69,7 @@ public class LocalSecretController implements DBSSecretController {
     @Override
     public void flushChanges() throws DBException {
         try {
-            preferenceStore.save();
+            preferences.save();
         } catch (IOException e) {
             throw new DBException("Error flushing secure preferences", e);
         }
