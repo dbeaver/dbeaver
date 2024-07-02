@@ -43,13 +43,18 @@ import java.util.List;
  */
 public class ProjectSelectorPanel {
 
+    private Label headerLabel;
     private DBPProject selectedProject;
 
     public ProjectSelectorPanel(@NotNull Composite parent, @Nullable DBPProject activeProject, int style) {
-        this(parent, activeProject, style, false);
+        this(parent, activeProject, style, false, true);
     }
 
     public ProjectSelectorPanel(@NotNull Composite parent, @Nullable DBPProject activeProject, int style, boolean showOnlyEditable) {
+        this(parent, activeProject, style, showOnlyEditable, true);
+    }
+
+    public ProjectSelectorPanel(@NotNull Composite parent, @Nullable DBPProject activeProject, int style, boolean showOnlyEditable, boolean alignRight) {
         final List<? extends DBPProject> projects = DBWorkbench.getPlatform().getWorkspace().getProjects();
         if (showOnlyEditable) {
             projects.removeIf(p -> !p.hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT));
@@ -60,11 +65,11 @@ public class ProjectSelectorPanel {
 
             boolean showIcon = (style & SWT.ICON) != 0;
             Composite projectGroup = UIUtils.createComposite(parent, showIcon ? 3 : 2);
-            projectGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            projectGroup.setLayoutData(new GridData(alignRight ? GridData.HORIZONTAL_ALIGN_END : GridData.HORIZONTAL_ALIGN_BEGINNING));
             if (showIcon) {
                 new Label(projectGroup, SWT.NONE).setImage(DBeaverIcons.getImage(DBIcon.PROJECT));
             }
-            UIUtils.createControlLabel(projectGroup, UIConnectionMessages.dialog_connection_driver_project);
+            this.headerLabel = UIUtils.createControlLabel(projectGroup, UIConnectionMessages.dialog_connection_driver_project);
 
             final Combo projectCombo = new Combo(projectGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
             projectCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
@@ -100,6 +105,10 @@ public class ProjectSelectorPanel {
 
     public DBPProject getSelectedProject() {
         return selectedProject;
+    }
+
+    public void setLabel(String text) {
+        this.headerLabel.setText(text);
     }
 
 }

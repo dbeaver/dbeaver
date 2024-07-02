@@ -170,7 +170,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         if (processor instanceof IDocumentDataExporter) {
             columnBindings = DBUtils.injectAndFilterAttributeBindings(session.getDataSource(), dataContainer, columnMetas, true);
         } else {
-            columnBindings = DBUtils.makeLeafAttributeBindings(session, dataContainer, resultSet);
+            columnBindings = DTUtils.makeLeafAttributeBindings(session, dataContainer, resultSet);
         }
 
         final StreamMappingContainer mapping = settings.getDataMapping(dataContainer);
