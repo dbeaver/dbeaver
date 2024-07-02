@@ -87,7 +87,7 @@
             <tool
                   description="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseToolTruncateTable.label"
                   group="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance"
-                  icon="#delete"
+                  icon="#clean"
                   id="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseToolTableTruncate"
                   label="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseToolTruncateTable.label"
                   singleton="false">
