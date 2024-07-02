@@ -28,15 +28,15 @@
             <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseSynonym"/>
             <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseTableIndex"/>
         </editor>
-	    <configurator class="org.jkiss.dbeaver.ext.altibase.ui.config.AltibaseProcedureConfigurator">
-	        <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseProcedureStandAlone"/>
-	    </configurator>
-	    	    <configurator class="org.jkiss.dbeaver.ext.altibase.ui.config.AltibaseTypesetConfigurator">
-	        <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseTypeset"/>
-	    </configurator>
-	    <configurator class="org.jkiss.dbeaver.ext.altibase.ui.config.AltibaseSequenceConfigurator">
-	        <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseSequence"/>
-	    </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.altibase.ui.config.AltibaseProcedureConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseProcedureStandAlone"/>
+        </configurator>
+                <configurator class="org.jkiss.dbeaver.ext.altibase.ui.config.AltibaseTypesetConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseTypeset"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.altibase.ui.config.AltibaseSequenceConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseSequence"/>
+        </configurator>
     </extension>
 
     <extension point="org.eclipse.ui.preferencePages">

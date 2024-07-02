@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
@@ -232,7 +233,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     }
 
     @Override
-    public Collection<? extends GenericTableIndex> getIndexes(DBRProgressMonitor monitor)
+    public Collection<? extends GenericTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor)
         throws DBException {
         if (getDataSource().getInfo().supportsIndexes()) {
             // Read indexes using cache
@@ -399,7 +400,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
     private List<GenericTableForeignKey> loadReferences(DBRProgressMonitor monitor)
         throws DBException {
-        if (!isPersisted() || !getDataSource().getInfo().supportsReferentialIntegrity()) {
+        if (!isPersisted() || !getDataSource().getInfo().supportsReferentialIntegrity() || monitor == null) {
             return new ArrayList<>();
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table relations")) {
@@ -515,7 +516,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
                 log.debug("Error reading references: " + ex.getMessage());
                 return Collections.emptyList();
             } else {
-                throw new DBException(ex, getDataSource());
+                throw new DBDatabaseException(ex, getDataSource());
             }
         }
     }

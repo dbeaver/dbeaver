@@ -296,6 +296,9 @@ public class CoreMessages extends NLS {
 
     public static String pref_page_database_general_separate_meta_connection;
     public static String pref_page_database_general_checkbox_case_sensitive_names;
+    public static String pref_page_database_general_group_performance;
+    public static String pref_page_database_general_checkbox_disable_extra_metadata;
+    public static String pref_page_database_general_checkbox_disable_extra_metadata_tip;
     public static String pref_page_database_general_checkbox_rollback_on_error;
     public static String pref_page_database_general_checkbox_show_row_count;
     public static String pref_page_database_general_group_metadata;
@@ -518,6 +521,13 @@ public class CoreMessages extends NLS {
     public static String pref_page_connection_label_default_connection_template_variables;
     public static String pref_page_connection_label_default_connection_template_variables_tip;
 
+    public static String pref_page_network_expert_label;
+    public static String pref_page_network_expert_preferred_ip_stack_label;
+    public static String pref_page_network_expert_preferred_ip_stack_tip;
+    public static String pref_page_network_expert_preferred_ip_addresses_label;
+    public static String pref_page_network_expert_preferred_ip_addresses_tip;
+    public static String pref_page_network_expert_restart_prompt_title;
+    public static String pref_page_network_expert_restart_prompt_message;
 
     public static String pref_page_connection_label_default_settings;
 

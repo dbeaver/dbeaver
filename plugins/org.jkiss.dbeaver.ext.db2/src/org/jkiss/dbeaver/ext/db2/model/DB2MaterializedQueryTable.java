@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.db2.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.editors.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableRefreshMode;
@@ -30,6 +31,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.List;
 
 /**
  * DB2 MQT
@@ -72,6 +74,16 @@ public class DB2MaterializedQueryTable extends DB2ViewBase implements DB2SourceO
         super.refreshObject(monitor);
 
         return getContainer().getMaterializedQueryTableCache().refreshObject(monitor, getContainer(), this);
+    }
+
+    @Override
+    public DB2TableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException {
+        return getContainer().getMaterializedQueryTableCache().getChild(monitor, getContainer(), this, attributeName);
+    }
+
+    @Override
+    public List<DB2TableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return getContainer().getMaterializedQueryTableCache().getChildren(monitor, getContainer(), this);
     }
 
     @Override

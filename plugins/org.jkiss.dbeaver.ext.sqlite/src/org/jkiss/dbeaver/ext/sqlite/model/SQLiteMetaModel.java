@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.sqlite.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.*;
@@ -60,12 +61,12 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
         super();
     }
 
-    public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
+    public String getViewDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericView sourceObject, @NotNull Map<String, Object> options) throws DBException {
         return SQLiteUtils.readMasterDefinition(monitor, sourceObject, SQLiteObjectType.view, sourceObject.getName(), sourceObject);
     }
 
     @Override
-    public String getTableDDL(DBRProgressMonitor monitor, GenericTableBase sourceObject, Map<String, Object> options) throws DBException {
+    public String getTableDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTableBase sourceObject, @NotNull Map<String, Object> options) throws DBException {
         String tableDDL = SQLiteUtils.readMasterDefinition(monitor, sourceObject, SQLiteObjectType.table, sourceObject.getName(), sourceObject);
         String indexesDDL = SQLiteUtils.readMasterDefinition(monitor, sourceObject, SQLiteObjectType.index, null, sourceObject);
         if (CommonUtils.isEmpty(indexesDDL)) {
@@ -135,7 +136,7 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
                 return result;
             }
         } catch (SQLException e) {
-            throw new DBException(e, container.getDataSource());
+            throw new DBDatabaseException(e, container.getDataSource());
         }
     }
 

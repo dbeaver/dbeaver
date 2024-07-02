@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.exasol.tools;
 
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
@@ -160,7 +161,7 @@ public class ExasolUtils {
             return ddlOutput.toString();
 
         } catch (SQLException e) {
-            throw new DBException(e, dataSource);
+            throw new DBDatabaseException(e, dataSource);
         } finally {
             monitor.done();
         }

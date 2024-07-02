@@ -123,7 +123,7 @@ public class TiDBMySQLDataSource extends MySQLDataSource {
 
     @NotNull
     @Override
-    public Class<? extends MySQLCatalog> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) {
+    public Class<? extends MySQLCatalog> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) {
         return MySQLCatalog.class;
     }
 
@@ -155,8 +155,13 @@ public class TiDBMySQLDataSource extends MySQLDataSource {
     }
     
     @Override
-    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, 
-            JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
+    protected Map<String, String> getInternalConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDriver driver,
+        @NotNull JDBCExecutionContext context,
+        @NotNull String purpose,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBCException {
         Map<String, String> props = super.getInternalConnectionProperties(monitor, driver, context, purpose, connectionInfo);
         // build application name
         String appName = DBUtils.getClientApplicationName(getContainer(), context, purpose);

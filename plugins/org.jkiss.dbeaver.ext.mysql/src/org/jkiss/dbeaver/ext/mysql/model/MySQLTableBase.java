@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -161,7 +162,7 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
                 }
             }
         } catch (SQLException ex) {
-            throw new DBException(ex, getDataSource());
+            throw new DBDatabaseException(ex, getDataSource());
         }
     }
 

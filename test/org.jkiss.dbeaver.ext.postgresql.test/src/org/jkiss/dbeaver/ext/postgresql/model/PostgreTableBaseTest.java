@@ -38,6 +38,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -233,7 +234,7 @@ public class PostgreTableBaseTest {
     @Test
     public void generateChangeOwnerQuery_whenProvidedView_thenShouldGenerateQuerySuccessfully() {
         Assert.assertEquals("ALTER TABLE " + testSchema.getName() + ".\"" + testView.getName() + "\" OWNER TO someOwner",
-            testView.generateChangeOwnerQuery("someOwner"));
+            testView.generateChangeOwnerQuery("someOwner", new HashMap<>()));
     }
 
     @Test

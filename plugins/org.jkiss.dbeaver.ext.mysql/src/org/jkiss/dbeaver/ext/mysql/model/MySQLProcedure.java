@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
@@ -144,42 +145,9 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
                     }
                 } catch (SQLException e) {
                     clientBody = e.getMessage();
-                    throw new DBException(e, getDataSource());
+                    throw new DBDatabaseException(e, getDataSource());
                 }
             }
-/*
-            StringBuilder cb = new StringBuilder(getBody().length() + 100);
-            cb.append("CREATE ").append(procedureType).append(' ').append(getFullyQualifiedName()).append(" (");
-
-            int colIndex = 0;
-            for (MySQLProcedureParameter column : CommonUtils.safeCollection(getParameters(monitor))) {
-                if (column.getParameterKind() == DBSProcedureParameterKind.RETURN) {
-                    continue;
-                }
-                if (colIndex > 0) {
-                    cb.append(", ");
-                }
-                if (getProcedureType() == DBSProcedureType.PROCEDURE) {
-                    cb.append(column.getParameterKind()).append(' ');
-                }
-                cb.append(column.getName()).append(' ');
-                appendParameterType(cb, column);
-                colIndex++;
-            }
-            cb.append(")").append(GeneralUtils.getDefaultLineSeparator());
-            for (MySQLProcedureParameter column : CommonUtils.safeCollection(getParameters(monitor))) {
-                if (column.getParameterKind() == DBSProcedureParameterKind.RETURN) {
-                    cb.append("RETURNS ");
-                    appendParameterType(cb, column);
-                    cb.append(GeneralUtils.getDefaultLineSeparator());
-                }
-            }
-            if (deterministic) {
-                cb.append("DETERMINISTIC").append(GeneralUtils.getDefaultLineSeparator());
-            }
-            cb.append(getBody());
-            clientBody = cb.toString();
-*/
         }
         return clientBody;
     }

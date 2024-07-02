@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.dameng.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.dameng.DamengConstants;
 import org.jkiss.dbeaver.model.DBPObjectStatistics;
@@ -142,7 +143,7 @@ public class DamengTablespace implements DBPRefreshableObject, DBPObjectStatisti
     }
 
     @Override
-    public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         fileCache.clearCache();
         return this;
     }
@@ -225,8 +226,9 @@ public class DamengTablespace implements DBPRefreshableObject, DBPObjectStatisti
 
     static class FileCache extends JDBCObjectCache<DamengTablespace, DamengDataFile> {
 
+        @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, DamengTablespace damengTablespace) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DamengTablespace damengTablespace) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement("SELECT df.* " +
                     "FROM V$TABLESPACE AS ts, V$DATAFILE AS df " +
                     "WHERE ts.ID = df.GROUP_ID AND ts.NAME = ?");
@@ -235,7 +237,7 @@ public class DamengTablespace implements DBPRefreshableObject, DBPObjectStatisti
         }
 
         @Override
-        protected DamengDataFile fetchObject(JDBCSession session, DamengTablespace damengTablespace, JDBCResultSet resultSet) throws SQLException, DBException {
+        protected DamengDataFile fetchObject(@NotNull JDBCSession session, @NotNull DamengTablespace damengTablespace, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new DamengDataFile(damengTablespace, resultSet);
         }
     }

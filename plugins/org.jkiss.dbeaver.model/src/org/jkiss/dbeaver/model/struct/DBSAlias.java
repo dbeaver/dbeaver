@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.model.struct;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -33,7 +32,7 @@ public interface DBSAlias extends DBPObject, DBSObject
      * Returns target object or null if alias is broken or target object is unavailable.
      */
     @Nullable
-    DBSObject getTargetObject(@NotNull DBRProgressMonitor monitor)
+    DBSObject getTargetObject(@Nullable DBRProgressMonitor monitor)
         throws DBException;
 
 }

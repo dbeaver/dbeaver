@@ -251,7 +251,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
     }
 
     @Override
-    public Collection<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
@@ -269,14 +269,14 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         StringBuilder sql = new StringBuilder()
-            .append("-- DROP SEQUENCE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(";\n\n")
-            .append("CREATE SEQUENCE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL));
+            .append("-- DROP SEQUENCE ").append(DBUtils.getEntityScriptName(this, options)).append(";\n\n")
+            .append("CREATE SEQUENCE ").append(DBUtils.getEntityScriptName(this, options));
 
         getSequenceBody(monitor, sql, true);
         sql.append(';');
 
 		if (!CommonUtils.isEmpty(getDescription())) {
-			sql.append("\nCOMMENT ON SEQUENCE ").append(DBUtils.getQuotedIdentifier(this)).append(" IS ")
+			sql.append("\nCOMMENT ON SEQUENCE ").append(DBUtils.getEntityScriptName(this, options)).append(" IS ")
 					.append(SQLUtils.quoteString(this, getDescription())).append(";");
 		}
         
@@ -339,8 +339,8 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
         }
     }
 
-    public String generateChangeOwnerQuery(String owner) {
-        return "ALTER SEQUENCE " + DBUtils.getObjectFullName(this, DBPEvaluationContext.DDL) + " OWNER TO " + owner;
+    public String generateChangeOwnerQuery(@NotNull String owner, @NotNull Map<String, Object> options) {
+        return "ALTER SEQUENCE " + DBUtils.getEntityScriptName(this, options) + " OWNER TO " + owner;
     }
 
     @Override
