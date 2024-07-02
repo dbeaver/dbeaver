@@ -149,6 +149,8 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
     @Nullable
     Map<String, Object> getResourceProperties(@NotNull String resourcePath);
 
+    void setResourceProperties(@NotNull String resourcePath, @NotNull Map<String, Object> newProps);
+
     @Nullable
     Object getResourceProperty(@NotNull String resourcePath, @NotNull String propName);
 
