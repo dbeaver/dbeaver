@@ -69,7 +69,6 @@ import java.util.*;
 public final class DBUtils {
 
     private static final Log log = Log.getLog(DBUtils.class);
-    private static final int MAX_SAMPLE_ROWS = 1000;
 
     @NotNull
     public static String getQuotedIdentifier(@NotNull DBPNamedObject object) {
@@ -719,79 +718,6 @@ public final class DBUtils {
             return attributeFilter.filterAttributeBindings(bindings);
         } else {
             return bindings;
-        }
-    }
-
-    /**
-     * Returns "bottom" level attributes out of resultset.
-     * For regular resultsets it is the same as getAttributeBindings, for compelx types it returns only leaf attributes.
-     */
-    @NotNull
-    public static DBDAttributeBinding[] makeLeafAttributeBindings(@NotNull DBCSession session, @NotNull DBSDataContainer dataContainer, @NotNull DBCResultSet resultSet) throws DBCException {
-        List<DBDAttributeBinding> metaColumns = new ArrayList<>();
-        List<? extends DBCAttributeMetaData> attributes = resultSet.getMeta().getAttributes();
-        boolean isDocumentAttribute = attributes.size() == 1 && attributes.get(0).getDataKind() == DBPDataKind.DOCUMENT;
-        if (isDocumentAttribute) {
-            DBCAttributeMetaData attributeMeta = attributes.get(0);
-            DBDAttributeBindingMeta docBinding = DBUtils.getAttributeBinding(dataContainer, session, attributeMeta);
-            try {
-                List<Object[]> sampleRows = Collections.emptyList();
-                if (resultSet instanceof DBCResultSetSampleProvider rssp) {
-                    session.getProgressMonitor().subTask("Read sample rows");
-                    sampleRows = rssp.getSampleRows(session, MAX_SAMPLE_ROWS);
-                }
-                session.getProgressMonitor().subTask("Discover attribute structure");
-                docBinding.lateBinding(session, sampleRows);
-            } catch (Exception e) {
-                log.error("Document attribute '" + docBinding.getName() + "' binding error", e);
-            }
-            List<DBDAttributeBinding> nested = docBinding.getNestedBindings();
-            if (!CommonUtils.isEmpty(nested)) {
-                metaColumns.addAll(nested);
-            } else {
-                // No nested bindings. Try to get entity attributes
-                try {
-                    DBSEntity docEntity = getEntityFromMetaData(session.getProgressMonitor(), session.getExecutionContext(), attributeMeta.getEntityMetaData());
-                    if (docEntity != null) {
-                        Collection<? extends DBSEntityAttribute> entityAttrs = docEntity.getAttributes(session.getProgressMonitor());
-                        if (!CommonUtils.isEmpty(entityAttrs)) {
-                            for (DBSEntityAttribute ea : entityAttrs) {
-                                metaColumns.add(new DBDAttributeBindingType(docBinding, ea, metaColumns.size()));
-                            }
-                        }
-                    }
-                } catch (DBException e) {
-                    log.debug("Error getting attributes from document entity", e);
-                }
-            }
-        }
-        if (metaColumns.isEmpty()) {
-            for (DBCAttributeMetaData attribute : attributes) {
-                DBDAttributeBinding columnBinding = DBUtils.getAttributeBinding(dataContainer, session, attribute);
-                metaColumns.add(columnBinding);
-            }
-        }
-
-        List<DBDAttributeBinding> result = new ArrayList<>(metaColumns.size());
-        for (DBDAttributeBinding binding : metaColumns) {
-            addLeafBindings(result, binding);
-        }
-
-        return injectAndFilterAttributeBindings(
-            session.getDataSource(),
-            dataContainer,
-            result.toArray(new DBDAttributeBinding[0]),
-            true);
-    }
-
-    private static void addLeafBindings(List<DBDAttributeBinding> result, DBDAttributeBinding binding) {
-        List<DBDAttributeBinding> nestedBindings = binding.getNestedBindings();
-        if (CommonUtils.isEmpty(nestedBindings)) {
-            result.add(binding);
-        } else {
-            for (DBDAttributeBinding nested : nestedBindings) {
-                addLeafBindings(result, nested);
-            }
         }
     }
 
