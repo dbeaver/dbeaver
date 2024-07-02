@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
-import org.jkiss.dbeaver.runtime.encode.PasswordEncrypter;
 import org.jkiss.dbeaver.runtime.encode.SimpleStringEncrypter;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
@@ -57,8 +56,6 @@ import java.util.List;
 class DataSourceSerializerLegacy implements DataSourceSerializer
 {
     private static final Log log = Log.getLog(DataSourceSerializerLegacy.class);
-
-    private static final PasswordEncrypter ENCRYPTOR = new SimpleStringEncrypter();
 
     private final DataSourceRegistry registry;
 
@@ -103,7 +100,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
     private static String decryptPassword(String encPassword) {
         if (!CommonUtils.isEmpty(encPassword)) {
             try {
-                encPassword = ENCRYPTOR.decrypt(encPassword);
+                encPassword = SimpleStringEncrypter.INSTANCE.decrypt(encPassword);
             } catch (Throwable e) {
                 // could not decrypt - use as is
                 encPassword = null;
