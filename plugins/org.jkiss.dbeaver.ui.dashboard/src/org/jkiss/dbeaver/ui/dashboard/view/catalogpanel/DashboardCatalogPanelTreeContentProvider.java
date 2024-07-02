@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.view.catalogpanel;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -44,9 +43,9 @@ public class DashboardCatalogPanelTreeContentProvider extends TreeContentProvide
     private final DBPProject project;
 
     public DashboardCatalogPanelTreeContentProvider(
-        DBPDataSourceContainer dataSourceContainer,
-        DBPProject project,
-        Function<DashboardItemConfiguration, Boolean> itemFilter
+            DBPDataSourceContainer dataSourceContainer,
+            DBPProject project,
+            Function<DashboardItemConfiguration, Boolean> itemFilter
     ) {
         this.dataSourceContainer = dataSourceContainer;
         this.itemFilter = itemFilter;
@@ -56,11 +55,13 @@ public class DashboardCatalogPanelTreeContentProvider extends TreeContentProvide
     @Override
     public Object[] getElements(Object inputElement) {
         Object[] elements = super.getElements(inputElement);
+        if (elements == null) {
+            return new Object[]{};
+        }
         List<Object> result = new ArrayList<>();
         for (Object element : elements) {
-            List<DashboardItemConfiguration> dashboards =
-                getDashboardItemConfigurations((DashboardProviderDescriptor) element);
-            if (!dashboards.isEmpty()) {
+            Object[] children = getChildren(element);
+            if (children.length > 0) {
                 result.add(element);
             }
         }
@@ -92,9 +93,16 @@ public class DashboardCatalogPanelTreeContentProvider extends TreeContentProvide
                     }
                     return children.toArray();
                 }
-                List<DashboardItemConfiguration> dashboards = getDashboardItemConfigurations(dpd);
-                dashboards.sort(Comparator.comparing(DashboardItemConfiguration::getTitle));
-                return dashboards.toArray();
+                List<DashboardItemConfiguration> predefineDashboardItemConfigurations =
+                        new ArrayList<>(DashboardRegistry.getInstance().getDashboardItems(
+                                dpd,
+                                dataSourceContainer,
+                                false));
+                if (itemFilter != null) {
+                    predefineDashboardItemConfigurations.removeIf(itemFilter::apply);
+                }
+                predefineDashboardItemConfigurations.sort(Comparator.comparing(DashboardItemConfiguration::getTitle));
+                return predefineDashboardItemConfigurations.toArray();
             }
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Error reading dashboard info", null, e);
@@ -105,16 +113,5 @@ public class DashboardCatalogPanelTreeContentProvider extends TreeContentProvide
     @Override
     public boolean hasChildren(Object element) {
         return element instanceof DashboardProviderDescriptor || element instanceof DBDashboardFolder;
-    }
-
-    private @NotNull List<DashboardItemConfiguration> getDashboardItemConfigurations(DashboardProviderDescriptor dpd) {
-        List<DashboardItemConfiguration> dashboards = new ArrayList<>(DashboardRegistry.getInstance().getDashboardItems(
-            dpd,
-            dataSourceContainer,
-            false));
-        if (itemFilter != null) {
-            dashboards.removeIf(itemFilter::apply);
-        }
-        return dashboards;
     }
 }
