@@ -1559,14 +1559,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     private Collection<? extends Path> readJarsFromDir(Path localFile) {
-        try {
-            List<Path> folderFiles = Files.list(localFile)
+        try (Stream<Path> list = Files.list(localFile)) {
+            return list
                 .filter(p -> {
                     String fileName = p.getFileName().toString();
                     return fileName.endsWith(".jar") || fileName.endsWith(".zip");
                 })
                 .collect(Collectors.toList());
-            return folderFiles;
         } catch (IOException e) {
             log.error("Error reading driver directory '" + localFile + "'", e);
             return Collections.emptyList();
@@ -1919,20 +1918,22 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     private void resolveDirectories(Path targetFileLocation, DBPDriverLibrary library, Path srcLocalFile, Path trgLocalFile, List<DriverFileInfo> libraryFiles) throws IOException {
         // Resolve directory contents
-        List<Path> srcDirFiles = Files.list(srcLocalFile).collect(Collectors.toList());
-        for (Path dirFile : srcDirFiles) {
-            String fileName = dirFile.getFileName().toString();
-            // Skip non-libraries
-            if (fileName.endsWith(".txt")) {
-                continue;
-            }
-            Path trgDirFile = trgLocalFile.resolve(dirFile.getFileName());
-            if (Files.isDirectory(dirFile)) {
-                resolveDirectories(targetFileLocation, library, dirFile, trgDirFile, libraryFiles);
-            } else {
-                DriverFileInfo fileInfo = resolveFile(targetFileLocation, library, dirFile, trgDirFile);
-                if (fileInfo != null) {
-                    libraryFiles.add(fileInfo);
+        try (Stream<Path> list = Files.list(srcLocalFile)) {
+            List<Path> srcDirFiles = list.toList();
+            for (Path dirFile : srcDirFiles) {
+                String fileName = dirFile.getFileName().toString();
+                // Skip non-libraries
+                if (fileName.endsWith(".txt")) {
+                    continue;
+                }
+                Path trgDirFile = trgLocalFile.resolve(dirFile.getFileName());
+                if (Files.isDirectory(dirFile)) {
+                    resolveDirectories(targetFileLocation, library, dirFile, trgDirFile, libraryFiles);
+                } else {
+                    DriverFileInfo fileInfo = resolveFile(targetFileLocation, library, dirFile, trgDirFile);
+                    if (fileInfo != null) {
+                        libraryFiles.add(fileInfo);
+                    }
                 }
             }
         }
