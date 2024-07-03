@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.altibase.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.model.GenericObjectContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -35,7 +34,7 @@ import java.util.Map;
 
 public class AltibaseDirectory extends AltibaseObject<GenericStructContainer> implements DBPScriptObject, DBPRefreshableObject {
 
-    protected String ddl;
+    private String ddl;
     
     private String dirPath;
     private Timestamp created;
@@ -47,16 +46,11 @@ public class AltibaseDirectory extends AltibaseObject<GenericStructContainer> im
                 JDBCUtils.safeGetLong(resultSet, "DIRECTORY_ID"),
                 true);
 
-        updateState(resultSet);
-    }
-    
-    private void updateState(JDBCResultSet resultSet) {
         dirPath = JDBCUtils.safeGetString(resultSet, "DIRECTORY_PATH");
         created = JDBCUtils.safeGetTimestamp(resultSet, "CREATED");
         lastDdlTime = JDBCUtils.safeGetTimestamp(resultSet, "LAST_DDL_TIME");
     }
 
-    @NotNull
     @Property(viewable = true, order = 2)
     public long getDirId() {
         return getObjectId();

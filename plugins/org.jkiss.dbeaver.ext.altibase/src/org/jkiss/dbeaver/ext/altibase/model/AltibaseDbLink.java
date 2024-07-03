@@ -34,7 +34,7 @@ import java.util.Map;
 
 public class AltibaseDbLink extends AltibaseObject<GenericStructContainer> implements DBPScriptObject, DBPRefreshableObject {
 
-    protected String ddl;
+    private String ddl;
 
     private String userName; // null for public, user_id for private
     private int linkId;
@@ -61,18 +61,17 @@ public class AltibaseDbLink extends AltibaseObject<GenericStructContainer> imple
         lastDdlTime = JDBCUtils.safeGetTimestamp(resultSet, "LAST_DDL_TIME");
     }
 
-    @NotNull
     @Property(viewable = true, order = 2)
     public int getLinkId() {
         return linkId;
     }
 
-    @NotNull
     @Property(viewable = true, order = 3)
     public long getLinkOid() {
         return getObjectId();
     }
 
+    /* null in case of public DbLink */
     @Nullable
     @Property(viewable = true, order = 4)
     public String getUserName() {
@@ -84,7 +83,6 @@ public class AltibaseDbLink extends AltibaseObject<GenericStructContainer> imple
     public String getRemoteUserId() {
         return remoteUserId;
     }
-
 
     @NotNull
     @Property(viewable = true, order = 6)

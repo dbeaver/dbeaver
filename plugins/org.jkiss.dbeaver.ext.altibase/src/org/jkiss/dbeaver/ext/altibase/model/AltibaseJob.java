@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ext.altibase.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.model.GenericObjectContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -34,7 +33,7 @@ import java.util.Map;
 
 public class AltibaseJob extends AltibaseGlobalObject implements DBPScriptObject, DBPRefreshableObject {
 
-    protected String ddl;
+    private String ddl;
     
     private int jobId;
     private String jobName;
@@ -76,7 +75,6 @@ public class AltibaseJob extends AltibaseGlobalObject implements DBPScriptObject
         return jobName;
     }
 
-    @NotNull
     @Property(viewable = true, order = 2)
     public int getJobId() {
         return jobId;
@@ -94,7 +92,6 @@ public class AltibaseJob extends AltibaseGlobalObject implements DBPScriptObject
         return interval + " " + intervalType;
     }
 
-    @NotNull
     @Property(viewable = true, order = 5)
     public boolean getActivated() {
         return activated;
@@ -112,13 +109,11 @@ public class AltibaseJob extends AltibaseGlobalObject implements DBPScriptObject
         return errorCode;
     }
 
-    @NotNull
     @Property(viewable = true, order = 8)
     public int getExecCount() {
         return execCount;
     }
 
-    @NotNull
     @Property(viewable = true, order = 8)
     public boolean getIsEnable() {
         return isEnable;

@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.altibase.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.model.GenericObjectContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -35,7 +34,7 @@ import java.util.Map;
 
 public class AltibaseLibrary extends AltibaseObject<GenericStructContainer> implements DBPScriptObject, DBPRefreshableObject {
 
-    protected String ddl;
+    private String ddl;
     
     private String fileSpec;
     private String status;
@@ -54,7 +53,6 @@ public class AltibaseLibrary extends AltibaseObject<GenericStructContainer> impl
         lastDdlTime = JDBCUtils.safeGetTimestamp(resultSet, "LAST_DDL_TIME");
     }
 
-    @NotNull
     @Property(viewable = true, order = 2)
     public long getLibraryId() {
         return getObjectId();
