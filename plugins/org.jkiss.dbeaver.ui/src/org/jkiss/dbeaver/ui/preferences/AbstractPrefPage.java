@@ -121,6 +121,7 @@ public abstract class AbstractPrefPage extends PreferencePage {
             extConfigurator.createControl(composite, getConfiguratorObject(), () -> {
 
             });
+            extConfigurator.loadSettings(getConfiguratorObject());
         }
     }
 
