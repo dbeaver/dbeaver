@@ -445,32 +445,32 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             }
             case UPDATE:
                 if (!treeViewer.getControl().isDisposed() && !treeViewer.isBusy()) {
-                    if (event.getNode() != null) {
-                        switch (event.getNodeChange()) {
-                            case LOAD:
-                                treeViewer.refresh(getViewerObject(event.getNode()));
-                                expandNodeOnLoad(event.getNode());
-                                break;
-                            case UNLOAD:
-                                treeViewer.collapseToLevel(event.getNode(), -1);
-                                treeViewer.update(getViewerObject(event.getNode()), null);
-                                treeViewer.collapseToLevel(event.getNode(), -1);
-                                break;
-                            case REFRESH:
+                    switch (event.getNodeChange()) {
+                        case BEFORE_LOAD:
+                            break;
+                        case AFTER_LOAD:
+                            break;
+                        case LOAD:
+                            treeViewer.refresh(getViewerObject(event.getNode()));
+                            expandNodeOnLoad(event.getNode());
+                            break;
+                        case UNLOAD:
+                            treeViewer.collapseToLevel(event.getNode(), -1);
+                            treeViewer.update(getViewerObject(event.getNode()), null);
+                            treeViewer.collapseToLevel(event.getNode(), -1);
+                            break;
+                        case REFRESH:
 //                                Widget item = treeViewer.testFindItem(event.getNode());
 //                                if (item != null) {
 //                                    item.setData(TREE_DATA_STAT_MAX_SIZE, null);
 //                                }
-                                treeViewer.refresh(getViewerObject(event.getNode()), true);
-                                break;
-                            case LOCK:
-                            case UNLOCK:
-                            case STRUCT_REFRESH:
-                                treeViewer.refresh(getViewerObject(event.getNode()));
-                                break;
-                        }
-                    } else {
-                        log.warn("Null node object");
+                            treeViewer.refresh(getViewerObject(event.getNode()), true);
+                            break;
+                        case LOCK:
+                        case UNLOCK:
+                        case STRUCT_REFRESH:
+                            treeViewer.refresh(getViewerObject(event.getNode()));
+                            break;
                     }
                 }
                 break;
