@@ -55,6 +55,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * General non-ui utility methods
@@ -70,7 +71,7 @@ public class GeneralUtils {
 
     public static final String DEFAULT_TIMESTAMP_PATTERN = "yyyyMMddHHmm";
     public static final String DEFAULT_DATE_PATTERN = "yyyyMMdd";
-    public static final String RESOURCE_NAME_FORBIDDEN_SYMBOLS_REGEX = "(?U)[^/:'\"\\\\]+";
+    public static final String RESOURCE_NAME_FORBIDDEN_SYMBOLS_REGEX = "(?U)[^/:'\"\\\\<>|?*]+";
 
     public static final String[] byteToHex = new String[256];
     public static final char[] nibbleToHex = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
@@ -891,8 +892,13 @@ public class GeneralUtils {
         if (name.startsWith(".")) {
             throw new DBException("Resource name '" + name + "' can't start with dot");
         }
-        if (!name.matches(GeneralUtils.RESOURCE_NAME_FORBIDDEN_SYMBOLS_REGEX)) {
-            throw new DBException("Resource name '" + name + "' contains illegal characters:  / : ' \" \\");
+
+        String forbiddenSymbols = name.replaceAll(RESOURCE_NAME_FORBIDDEN_SYMBOLS_REGEX, "");
+        if (CommonUtils.isNotEmpty(forbiddenSymbols)) {
+            String forbiddenExplain = forbiddenSymbols.chars()
+                .mapToObj(c -> Character.toString((char) c))
+                .collect(Collectors.joining(" "));
+            throw new DBException("Resource name '" + name + "' contains illegal characters:  " + forbiddenExplain);
         }
     }
 }
