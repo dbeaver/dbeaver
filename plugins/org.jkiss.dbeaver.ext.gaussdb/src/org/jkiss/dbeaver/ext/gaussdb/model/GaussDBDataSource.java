@@ -72,6 +72,7 @@ public class GaussDBDataSource extends PostgreDataSource {
 
     @Override
     public boolean isServerVersionAtLeast(int major, int minor) {
-        return true;
+        // Reserved: Modify the logic for determining the PG version.
+        return super.isServerVersionAtLeast(major, minor);
     }
 }
