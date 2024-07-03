@@ -25,10 +25,7 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TreeEditor;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -39,6 +36,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.eclipse.ui.menus.IMenuService;
+import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.progress.WorkbenchJob;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -56,10 +54,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructContainer;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.AbstractUIJob;
-import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.LinuxKeyboardArrowsListener;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressPainter;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
@@ -72,29 +67,34 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
-public class DatabaseNavigatorTree extends Composite implements INavigatorListener
-{
+public class DatabaseNavigatorTree extends Composite implements INavigatorListener {
 
     private static final Log log = Log.getLog(DatabaseNavigatorTree.class);
 
     static final String TREE_DATA_STAT_MAX_SIZE = "nav.stat.maxSize";
     private static final String FILTER_TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.navigator.filter.toolbar"; //$NON-NLS-1$
     private static final String DATA_TREE_CONTROL = DatabaseNavigatorTree.class.getSimpleName();
+    private static final boolean INLINE_RENAME_ENABLED = false;
 
-    private TreeViewer treeViewer;
+    private final TreeViewer treeViewer;
     private DBNModel model;
     private TreeEditor treeEditor;
     private boolean checkEnabled;
     private INavigatorFilter navigatorFilter;
     private Text filterControl;
-    private boolean inlineRenameEnabled = false;
     private INavigatorItemRenderer itemRenderer;
 
     private boolean filterShowConnected = false;
     private String filterPlaceholderText = UINavigatorMessages.actions_navigator_search_tip;
     private DatabaseNavigatorTreeFilterObjectType filterObjectType = DatabaseNavigatorTreeFilterObjectType.table;
     private volatile ProgressPainter treeLoadingListener;
+    private volatile NodeLoadersPainter nodeLoadersPainter = new NodeLoadersPainter();;
+
+    // It is static to share loading nodes between all tree controls
+    private static final Set<DBNNode> nodeInLoadingProcess = new HashSet<>();
 
     public static DatabaseNavigatorTree getFromShell(Display display) {
         if (display == null) {
@@ -136,6 +136,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             this.filterPlaceholderText = filterPlaceholderText;
         }
         this.model = DBWorkbench.getPlatform().getNavigatorModel();
+        assert this.model != null;
         this.model.addListener(this);
         addDisposeListener(e -> {
             if (model != null) {
@@ -145,12 +146,6 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         });
 
         treeViewer = doCreateTreeViewer(this, style);
-//        treeViewer.getTree().addFocusListener(new FocusAdapter() {
-//            @Override
-//            public void focusGained(FocusEvent e) {
-//                super.focusGained(e);
-//            }
-//        });
 
         Tree tree = treeViewer.getTree();
         tree.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
@@ -212,6 +207,8 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             tree.addListener(SWT.MouseDoubleClick, event -> onItemMouseDown(tree, event, true));
             LinuxKeyboardArrowsListener.installOn(tree);
         }
+
+        nodeLoadersPainter.schedule();
     }
 
     @NotNull
@@ -395,7 +392,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
     private void initEditor()
     {
-        if (inlineRenameEnabled) {
+        if (INLINE_RENAME_ENABLED) {
             Tree treeControl = this.treeViewer.getTree();
 
             treeEditor = new TreeEditor(treeControl);
@@ -447,14 +444,17 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 if (!treeViewer.getControl().isDisposed() && !treeViewer.isBusy()) {
                     switch (event.getNodeChange()) {
                         case BEFORE_LOAD:
+                            startNodeLoadingVisualization(event.getNode());
                             break;
                         case AFTER_LOAD:
+                            stopNodeLoadingVisualization(event.getNode());
                             break;
                         case LOAD:
                             treeViewer.refresh(getViewerObject(event.getNode()));
                             expandNodeOnLoad(event.getNode());
                             break;
                         case UNLOAD:
+                            stopNodeLoadingVisualization(event.getNode());
                             treeViewer.collapseToLevel(event.getNode(), -1);
                             treeViewer.update(getViewerObject(event.getNode()), null);
                             treeViewer.collapseToLevel(event.getNode(), -1);
@@ -479,10 +479,21 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         }
     }
 
-    private void expandNodeOnLoad(final DBNNode node)
-    {
+    private void startNodeLoadingVisualization(DBNNode node) {
+        synchronized (nodeInLoadingProcess) {
+            nodeInLoadingProcess.add(node);
+        }
+    }
+
+    private void stopNodeLoadingVisualization(DBNNode node) {
+        synchronized (nodeInLoadingProcess) {
+            nodeInLoadingProcess.remove(node);
+        }
+    }
+
+    private void expandNodeOnLoad(final DBNNode node) {
         if (node instanceof DBNDataSource && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_EXPAND_ON_CONNECT)) {
-            DBRRunnableWithResult<DBNNode> runnable = new DBRRunnableWithResult<DBNNode>() {
+            DBRRunnableWithResult<DBNNode> runnable = new DBRRunnableWithResult<>() {
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException {
                     try {
@@ -576,6 +587,55 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 gc.setForeground(oldBackground);
             }
         }
+    }
+
+    private class NodeLoadersPainter extends UIJob {
+        private static final long REPAINT_DELAY = 100;
+        public static final Image[] IMG_LOADING = new Image[] {
+            DBeaverIcons.getImage(UIIcon.LOADING0),
+            DBeaverIcons.getImage(UIIcon.LOADING1),
+            DBeaverIcons.getImage(UIIcon.LOADING2),
+            DBeaverIcons.getImage(UIIcon.LOADING3),
+            DBeaverIcons.getImage(UIIcon.LOADING4),
+            DBeaverIcons.getImage(UIIcon.LOADING5),
+            DBeaverIcons.getImage(UIIcon.LOADING6),
+            DBeaverIcons.getImage(UIIcon.LOADING7)
+        };
+        private static final Image[] LOADING_ICONS = IMG_LOADING;
+
+        private int ticksCount = 0;
+
+        public NodeLoadersPainter() {
+            super("NavigatorTreeLoadersPainterJob");
+            setSystem(true);
+        }
+
+        @Override
+        public IStatus runInUIThread(IProgressMonitor monitor) {
+            synchronized (nodeInLoadingProcess) {
+                if (!nodeInLoadingProcess.isEmpty()) {
+                    ticksCount++;
+                    for (DBNNode node : nodeInLoadingProcess) {
+                        Widget widget = treeViewer.testFindItem(node);
+                        if (widget instanceof TreeItem treeItem) {
+                            treeItem.setImage(getCurrentImage());
+                        }
+                    }
+                } else {
+                    ticksCount = 0;
+                }
+                if (!treeViewer.getTree().isDisposed()) {
+                    schedule(REPAINT_DELAY);
+                }
+            }
+            return Status.OK_STATUS;
+        }
+
+        private Image getCurrentImage() {
+            int imgIndex = (ticksCount % LOADING_ICONS.length);
+            return LOADING_ICONS[imgIndex];
+        }
+
     }
 
     private class TreeSelectionAdapter implements MouseListener {
@@ -851,7 +911,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                         } else if (item instanceof DBNDatabaseItem) {
                             DBSObject obj = ((DBNDatabaseItem) item).getObject();
                             if (obj instanceof DBSStructContainer) {
-                                String name = ((DBSStructContainer) obj).getName();
+                                String name = obj.getName();
                                 if (name != null) {
                                     schemaMatched = name.equalsIgnoreCase(dotPattern[0]);
                                 }
@@ -868,9 +928,9 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 }
             }
             if (!patternMatched) { // Analyze description too
-                if (element instanceof DBNDatabaseItem) {
-                    DBSObject obj = ((DBNDatabaseItem) element).getObject();                    
-                    labelText = ((DBSObject) obj).getDescription();
+                if (element instanceof DBNDatabaseItem item) {
+                    DBSObject obj = item.getObject();
+                    labelText = obj == null ? null : obj.getDescription();
                     patternMatched = wordMatches(labelText);
                 }
             }
@@ -980,7 +1040,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                         redrawFalseControl.setRedraw(false);
                         treeViewer.refresh(true);
 
-                        if (text.length() > 0 && !initial) {
+                        if (!text.isEmpty() && !initial) {
                             // enabled toolbar - there is text to clear
                             // and the list is currently being filtered
                             updateToolbar(true);
