@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBPObjectStatistics;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -42,11 +43,12 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * Oracle tablespace
  */
-public class OracleTablespace extends OracleGlobalObject implements DBPRefreshableObject, DBPObjectStatistics
+public class OracleTablespace extends OracleGlobalObject implements DBPRefreshableObject, DBPObjectStatistics, DBPScriptObject
 {
 
     public enum Status {
@@ -412,6 +414,85 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
                 object.getDataSource().tablespaceCache.isFullyCached() ||
                 !object.getDataSource().isAdmin();
         }
+    }
+
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+
+        StringBuilder ddl = new StringBuilder("CREATE ");
+
+        if (isBigFile()) {
+            ddl.append("BIGFILE ");
+        }
+
+        if (contents != null) {
+            ddl.append(contents.name());
+        }
+
+        ddl.append(" TABLESPACE ").append(name);
+
+        if (blockSize > 0) {
+            ddl.append(" BLOCKSIZE ").append(blockSize);
+        }
+
+        if (initialExtent > 0) {
+            ddl.append(" INITIAL ").append(initialExtent).append("K");
+        }
+
+        if (nextExtent > 0) {
+            ddl.append(" NEXT ").append(nextExtent).append("K");
+        }
+
+        if (minExtents > 0) {
+            ddl.append(" MINEXTENTS ").append(minExtents);
+        }
+
+        if (maxExtents > 0) {
+            ddl.append(" MAXEXTENTS ").append(maxExtents);
+        }
+
+        if (pctIncrease > 0) {
+            ddl.append(" PCTINCREASE ").append(pctIncrease);
+        }
+
+        if (minExtLen > 0) {
+            ddl.append(" MINEXTLEN ").append(minExtLen).append("K");
+        }
+
+        if (status != null) {
+            ddl.append(" STATUS ").append(status.name());
+        }
+
+        if (logging != null) {
+            ddl.append(" LOGGING ").append(logging.name());
+        }
+
+        ddl.append(" FORCE LOGGING ").append(forceLogging ? "YES" : "NO");
+
+        if (extentManagement != null) {
+            ddl.append(" EXTENT MANAGEMENT ").append(extentManagement.name());
+        }
+
+        if (allocationType != null) {
+            ddl.append(" ALLOCATION TYPE ").append(allocationType.name());
+        }
+
+        ddl.append(" PLUGGED IN ").append(pluggedIn ? "YES" : "NO");
+
+        if (segmentSpaceManagement != null) {
+            ddl.append(" SEGMENT SPACE MANAGEMENT ").append(segmentSpaceManagement.name());
+        }
+
+        ddl.append(" DEFAULT TABLE COMPRESSION ").append(defTableCompression ? "ENABLED" : "DISABLED");
+
+        if (retention != null) {
+            ddl.append(" RETENTION ").append(retention.name());
+        }
+
+        // ddl.append(" BIGFILE ").append(bigFile ? "YES" : "NO");
+
+        return ddl.toString();
+
     }
 
 }
