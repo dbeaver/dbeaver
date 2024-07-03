@@ -30,6 +30,8 @@
     <includes id="org.jkiss.dbeaver.db.feature" version="0.0.0"/>
     <includes id="org.jkiss.dbeaver.db.ui.feature" version="0.0.0"/>
 
+    <plugin id="org.jkiss.dbeaver.ui.macos" os="macosx" version="0.0.0" />
+
     <!-- Logging -->
 
     <plugin id="org.jkiss.dbeaver.slf4j" version="0.0.0" />
