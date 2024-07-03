@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
 import org.antlr.v4.runtime.misc.Interval;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
@@ -49,7 +48,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.utils.ListNode;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.ArrayDeque;
 import java.util.Comparator;
@@ -383,14 +381,14 @@ public class SQLBackgroundParsingJob {
         }
     }
 
-    private void doWork(DBRProgressMonitor jobMonitor) throws BadLocationException {
+    private void doWork(DBRProgressMonitor monitor) throws BadLocationException {
         TextViewer viewer = editor.getTextViewer();
         if (viewer == null || this.editor.getRuleManager() == null) {
             return;
         }
         Interval visibleFragment = UIUtils.syncExec(new RunnableWithResult<>() {
             public Interval runWithResult() {
-                if (viewer == null || viewer.getDocument() == null) {
+                if (viewer.getDocument() == null) {
                     return null;
                 }
                 int startOffset = viewer.getTopIndexStartOffset();
@@ -465,7 +463,6 @@ public class SQLBackgroundParsingJob {
             return;
         }
 
-        IProgressMonitor monitor = jobMonitor.getNestedMonitor(); //Job.getJobManager().createProgressGroup();
         try {
             if (workLength == 0) {
                 return;
@@ -506,7 +503,7 @@ public class SQLBackgroundParsingJob {
 
             boolean useRealMetadata = this.editor.isReadMetadataForQueryAnalysisEnabled();
             DBCExecutionContext executionContext = this.editor.getExecutionContext();
-            
+
             monitor.beginTask("Background query analysis for " + editor.getTitle(), 1 + elements.size());
             monitor.worked(1);
 
@@ -518,10 +515,10 @@ public class SQLBackgroundParsingJob {
                     break;
                 }
                 try {
-                    SQLQueryModelRecognizer recognizer = new SQLQueryModelRecognizer(executionContext, useRealMetadata, syntaxManager);
+                    SQLQueryModelContext recognizer = new SQLQueryModelContext(executionContext, useRealMetadata, syntaxManager);
                     SQLQueryModel queryModel = recognizer.recognizeQuery(
                         element.getOriginalText(),
-                        RuntimeUtils.makeMonitor(monitor)
+                        monitor
                     );
                 
                     if (queryModel != null) {
@@ -544,7 +541,7 @@ public class SQLBackgroundParsingJob {
                     log.debug("Error while analyzing query text: " + element.getOriginalText(), ex);
                 }
                 monitor.worked(1);
-                monitor.setTaskName("Background query analysis: subtask #" + (i++));
+                monitor.subTask("Background query analysis: subtask #" + (i++));
             }
             this.context.resetLastAccessCache();
         } catch (Throwable ex) {

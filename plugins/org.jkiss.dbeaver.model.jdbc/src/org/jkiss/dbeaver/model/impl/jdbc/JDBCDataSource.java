@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -497,7 +498,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
                 log.error("Error obtaining database info", e);
             }
         } catch (SQLException ex) {
-            throw new DBException("Error getting JDBC meta data", ex, this);
+            throw new DBDatabaseException("Error getting JDBC meta data", ex, this);
         } finally {
             if (dataSourceInfo == null) {
                 log.warn("NULL datasource info was created");
@@ -728,9 +729,13 @@ public abstract class JDBCDataSource extends AbstractDataSource
      * @return predefined connection properties
      */
     @Nullable
-    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo)
-        throws DBCException
-    {
+    protected Map<String, String> getInternalConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDriver driver,
+        @NotNull JDBCExecutionContext context,
+        @NotNull String purpose,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBCException {
         return null;
     }
 
@@ -807,7 +812,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
             statement.cancel();
         }
         catch (SQLException e) {
-            throw new DBException(e, this);
+            throw new DBDatabaseException(e, this);
         }
     }
 

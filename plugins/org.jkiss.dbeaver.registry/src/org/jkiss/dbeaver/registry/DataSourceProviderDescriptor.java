@@ -51,6 +51,11 @@ import java.util.stream.Collectors;
  * DataSourceProviderDescriptor
  */
 public class DataSourceProviderDescriptor extends AbstractDescriptor implements DBPDataSourceProviderDescriptor {
+    private static final String ATTRIBUTE_CHANGE_FOLDER_LABEL = "changeFolderLabel"; //$NON-NLS-1$
+    private static final String ATTRIBUTE_CHANGE_FOLDER_TYPE = "changeFolderType"; //$NON-NLS-1$
+    private static final String ATTRIBUTE_REMOVE = "remove"; //$NON-NLS-1$
+    private static final String ATTRIBUTE_REPLACE_CHILDREN = "replaceChildren"; //$NON-NLS-1$
+
     private static final Log log = Log.getLog(DataSourceProviderDescriptor.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataSourceProvider"; //$NON-NLS-1$
@@ -164,6 +169,26 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
                         this.drivers.add(loadDriver(driverElement));
                     } catch (Exception e) {
                         log.error("Error loading driver", e);
+                    }
+                }
+
+                // Load main properties
+                {
+                    for (IConfigurationElement propsElement : driversElement.getChildren(RegistryConstants.TAG_MAIN_PROPERTIES)) {
+                        String driversSpec = propsElement.getAttribute("drivers");
+                        List<ProviderPropertyDescriptor> mainProperties = new ArrayList<>();
+                        for (IConfigurationElement prop : propsElement.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP)) {
+                            mainProperties.addAll(ProviderPropertyDescriptor.extractProviderProperties(prop));
+                        }
+                        List<DriverDescriptor> appDrivers;
+                        if (CommonUtils.isEmpty(driversSpec) || driversSpec.equals("*")) {
+                            appDrivers = drivers;
+                        } else {
+                            String[] driverIds = driversSpec.split(",");
+                            appDrivers = drivers.stream()
+                                .filter(d -> ArrayUtils.contains(driverIds, d.getId())).collect(Collectors.toList());
+                        }
+                        appDrivers.forEach(d -> d.addMainPropertyDescriptors(mainProperties));
                     }
                 }
 
@@ -475,19 +500,27 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         }
         DBXTreeNode parentNode = baseItem;
 
-        if (CommonUtils.getBoolean(config.getAttribute("replaceChildren"))) {
+        if (CommonUtils.getBoolean(config.getAttribute(ATTRIBUTE_REPLACE_CHILDREN))) {
             baseItem.clearChildren();
         }
 
-        String changeFolderType = config.getAttribute("changeFolderType");
+        if (CommonUtils.getBoolean(config.getAttribute(ATTRIBUTE_REMOVE))) {
+            baseItem.clearChildren();
+            DBXTreeNode folderNode = baseItem.getParent();
+            if (folderNode != null) {
+                folderNode.removeChild(baseItem);
+            }
+        }
+
+        String changeFolderType = config.getAttribute(ATTRIBUTE_CHANGE_FOLDER_TYPE);
         if (changeFolderType != null) {
             DBXTreeNode folderNode = baseItem.getParent();
             if (folderNode instanceof DBXTreeFolder folder) {
                 folder.setType(changeFolderType);
-                String changeFolderLabel = config.getAttribute("changeFolderLabel");
+                String changeFolderLabel = config.getAttribute(ATTRIBUTE_CHANGE_FOLDER_LABEL);
                 if (CommonUtils.isNotEmpty(changeFolderLabel)) {
-                   folder.setLabel(changeFolderLabel);
-                   folder.setDescription(changeFolderLabel);
+                    folder.setLabel(changeFolderLabel);
+                    folder.setDescription(changeFolderLabel);
                 }
             } else {
                 log.error("Can't update folder type to " + changeFolderType);

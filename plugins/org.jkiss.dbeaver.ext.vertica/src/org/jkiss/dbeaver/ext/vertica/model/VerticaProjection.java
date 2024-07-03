@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.vertica.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericScriptObject;
@@ -193,6 +192,7 @@ public class VerticaProjection extends JDBCTable<VerticaDataSource, VerticaSchem
         return null;
     }
 
+    @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(

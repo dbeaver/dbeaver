@@ -525,4 +525,9 @@ public interface SQLDialect {
 
     default void afterDataSourceInitialization(@NotNull DBPDataSource dataSource) {
     }
+
+    default boolean useEmptyStringForNulls() {
+        return false;
+    }
+
 }

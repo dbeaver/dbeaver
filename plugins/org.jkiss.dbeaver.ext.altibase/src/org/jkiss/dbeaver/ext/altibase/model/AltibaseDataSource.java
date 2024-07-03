@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.altibase.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
@@ -56,7 +57,9 @@ import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 public class AltibaseDataSource extends GenericDataSource implements DBPObjectStatisticsCollector {
     
@@ -127,7 +130,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
                     dbName = JDBCUtils.safeGetStringTrimmed(resultSet, 1);
                 }
             } catch (SQLException e) {
-                throw new DBException(e, this);
+                throw new DBDatabaseException(e, this);
             }
         }
         
@@ -229,28 +232,28 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         
         if (refSchema != null)
         {
-        	// No object type from database metadata, so need to find it one by one.
-        	if (refObj == null) {
-        		refObj = refSchema.getTable(monitor, refObjName);
-        	} 
-        	if (refObj == null) {
-        		refObj = refSchema.getSequence(monitor, refObjName);
-        	}
-        	if (refObj == null) {
-        		refObj = refSchema.getSynonym(monitor, refObjName);
-        	}
-        	if (refObj == null) {
-        		refObj = refSchema.getProcedureByName(monitor, refObjName);
-        	}
-        	if (refObj == null) {
-        		refObj = refSchema.getPackage(monitor, refObjName);
-        	}
-        	if (refObj == null) {
-        		refObj = refSchema.getIndex(monitor, refObjName);
-        	}
-        	if (refObj == null) {
-        		refObj = refSchema.getTableTrigger(monitor, refObjName);
-        	}
+            // No object type from database metadata, so need to find it one by one.
+            if (refObj == null) {
+                refObj = refSchema.getTable(monitor, refObjName);
+            } 
+            if (refObj == null) {
+                refObj = refSchema.getSequence(monitor, refObjName);
+            }
+            if (refObj == null) {
+                refObj = refSchema.getSynonym(monitor, refObjName);
+            }
+            if (refObj == null) {
+                refObj = refSchema.getProcedureByName(monitor, refObjName);
+            }
+            if (refObj == null) {
+                refObj = refSchema.getPackage(monitor, refObjName);
+            }
+            if (refObj == null) {
+                refObj = refSchema.getIndex(monitor, refObjName);
+            }
+            if (refObj == null) {
+                refObj = refSchema.getTableTrigger(monitor, refObjName);
+            }
         } else {
             /**
              *  Though Public synonym does not have its own schema, but SYSTEM_.SYS_SYONYMS_.OBJECT_OWNER_NAME returns 
@@ -549,9 +552,35 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
                 }
             }
         } catch (DBException e) {
-            throw new DBException("Can't read tablespace statistics", e, getDataSource());
+            throw new DBDatabaseException("Can't read tablespace statistics", e, getDataSource());
         } finally {
             hasStatistics = true;
+        }
+    }
+    
+    ///////////////////////////////////////////////
+    // Altibase Properties
+    @NotNull
+    public List<AltibaseProperty> getProperties(DBRProgressMonitor monitor)
+            throws DBException {
+        return loadPropertyList(monitor);
+    }
+
+    @NotNull
+    private List<AltibaseProperty> loadPropertyList(@NotNull DBRProgressMonitor monitor) throws DBException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load properties")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM V$PROPERTY ORDER BY NAME ASC" )) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    List<AltibaseProperty> propertyList = new ArrayList<>();
+                    while (dbResult.next()) {
+                        AltibaseProperty parameter = new AltibaseProperty(this, dbResult);
+                        propertyList.add(parameter);
+                    }
+                    return propertyList;
+                }
+            }
+        } catch (SQLException ex) {
+            throw new DBException("Failed to load database properties", ex);
         }
     }
     

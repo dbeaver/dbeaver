@@ -46,7 +46,7 @@ import java.util.Map;
 public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServerTableColumn, SQLServerTableBase> implements DBEStructEditor<SQLServerTableColumn>, DBEObjectRenamer<SQLServerTableColumn> {
 
     protected final ColumnModifier<SQLServerTableColumn> IdentityModifier = (monitor, column, sql, command) -> {
-        if (column.isIdentity()) {
+        if (column.isIdentity() && !column.isTimestamp()) {
             try {
                 SQLServerTableColumn.IdentityInfo identityInfo = column.getIdentityInfo(monitor);
                 long incrementValue = identityInfo.getIncrementValue();

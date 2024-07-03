@@ -532,6 +532,11 @@ public class DataSourceDescriptor
         this.secretsContainsDatabaseCreds = false;
         this.availableSharedCredentials = null;
         this.selectedSharedCredentials = null;
+        if (sharedCredentials) {
+            // For shared credentials reset cache also
+            connectionInfo.setUserName(null);
+            connectionInfo.setUserPassword(null);
+        }
     }
 
     @Nullable
@@ -900,6 +905,7 @@ public class DataSourceDescriptor
         persistSecrets(secretController, false);
     }
 
+    //TODO move secret management logic to separate service
     void persistSecrets(DBSSecretController secretController, boolean isNewDataSource) throws DBException {
         if (!CommonUtils.isBitSet(
             secretController.getSupportedFeatures(),
@@ -921,11 +927,15 @@ public class DataSourceDescriptor
         } else {
             if (selectedSharedCredentials != null) {
                 String subjectId = DataSourceUtils.getSubjectFromSecret(selectedSharedCredentials);
+                var selectedSharedCredentialsCopy = selectedSharedCredentials;
+                selectedSharedCredentialsCopy.setValue(secret);
                 try {
                     secretController.setSubjectSecretValue(subjectId, this,
                         new DBSSecretValue(subjectId, getSecretValueId(), "", secret));
                     //the list of available secrets has changed, force update
                     resetAllSecrets();
+                    // to resave current secret without additional click in UI
+                    setSelectedSharedCredentials(selectedSharedCredentialsCopy);
                 } catch (DBException e) {
                     throw new DBException("Cannot set team '" + subjectId + "' credentials: " + e.getMessage(), e);
                 }
@@ -1354,12 +1364,6 @@ public class DataSourceDescriptor
         }
         var secretController = DBSSecretController.getProjectSecretController(getProject());
         resolveSecrets(secretController);
-    }
-
-    public void refreshSecretFromConfiguration() {
-        if (selectedSharedCredentials != null) {
-            selectedSharedCredentials.setValue(saveToSecret());
-        }
     }
 
     public void openDataSource(DBRProgressMonitor monitor, boolean initialize) throws DBException {

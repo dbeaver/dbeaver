@@ -231,6 +231,10 @@ public class H2Migrator {
         return databaseConfiguration.getUrl().startsWith("jdbc:h2");
     }
 
+    public static boolean isDefaultH2Database(InternalDatabaseConfig databaseConfiguration) {
+        return databaseConfiguration.getUrl().startsWith("jdbc:h2");
+    }
+
 
     private static class WorkspacePaths {
 
