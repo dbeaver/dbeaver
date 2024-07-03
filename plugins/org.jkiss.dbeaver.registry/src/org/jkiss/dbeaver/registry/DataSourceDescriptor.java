@@ -1020,6 +1020,11 @@ public class DataSourceDescriptor
         return dataSource != null && !connecting;
     }
 
+    @Override
+    public boolean isConnecting() {
+        return connecting;
+    }
+
     @Nullable
     @Override
     public String getConnectionError() {
