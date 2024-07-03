@@ -38,7 +38,7 @@ public abstract class AbstractPrefPage extends PreferencePage {
 
     private static final Log log = Log.getLog(AbstractPrefPage.class);
 
-    private IObjectPropertyConfigurator<AbstractPrefPage, AbstractPrefPage> extConfigurator;
+    private IObjectPropertyConfigurator<Object, Object> extConfigurator;
 
     @Override
     protected Control createContents(Composite parent) {
@@ -77,7 +77,7 @@ public abstract class AbstractPrefPage extends PreferencePage {
     @Override
     protected void performApply() {
         if (extConfigurator != null) {
-            extConfigurator.saveSettings(this);
+            extConfigurator.saveSettings(getConfiguratorObject());
         }
         super.performApply();
     }
@@ -90,7 +90,7 @@ public abstract class AbstractPrefPage extends PreferencePage {
     @Override
     protected void performDefaults() {
         if (extConfigurator != null) {
-            extConfigurator.resetSettings(this);
+            extConfigurator.resetSettings(getConfiguratorObject());
         }
         super.performDefaults();
     }
@@ -98,13 +98,18 @@ public abstract class AbstractPrefPage extends PreferencePage {
     @Override
     public boolean performOk() {
         if (extConfigurator != null) {
-            extConfigurator.saveSettings(this);
+            extConfigurator.saveSettings(getConfiguratorObject());
         }
         return super.performOk();
     }
 
+    protected Object getConfiguratorObject() {
+        return this;
+    }
+
     protected void injectConfigurators(Composite composite) {
-        UIPropertyConfiguratorDescriptor configDesc = UIPropertyConfiguratorRegistry.getInstance().getDescriptor(this);
+        UIPropertyConfiguratorDescriptor configDesc = UIPropertyConfiguratorRegistry.getInstance().getDescriptor(
+            getConfiguratorObject());
         if (configDesc != null) {
             try {
                 extConfigurator = configDesc.createConfigurator();
@@ -113,7 +118,7 @@ public abstract class AbstractPrefPage extends PreferencePage {
             }
         }
         if (extConfigurator != null) {
-            extConfigurator.createControl(composite, this, () -> {
+            extConfigurator.createControl(composite, getConfiguratorObject(), () -> {
 
             });
         }

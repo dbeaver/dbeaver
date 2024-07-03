@@ -52,7 +52,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class PrefPageMiscellaneous extends AbstractPrefPage implements IWorkbenchPreferencePage {
+public class PrefPageMiscellaneous extends PrefPageMiscellaneousAbstract implements IWorkbenchPreferencePage {
     private Button holidayDecorationsCheck;
     private final List<Consumer<BooleanStyleSet>> booleanStylesChangeListeners = new ArrayList<>();
     private BooleanPanel booleanCheckedPanel;
@@ -62,6 +62,11 @@ public class PrefPageMiscellaneous extends AbstractPrefPage implements IWorkbenc
 
     public PrefPageMiscellaneous() {
         setPreferenceStore(new PreferenceStoreDelegate(DBWorkbench.getPlatform().getPreferenceStore()));
+    }
+
+    @Override
+    protected Object getConfiguratorObject() {
+        return super.getConfiguratorObject();
     }
 
     @Override
