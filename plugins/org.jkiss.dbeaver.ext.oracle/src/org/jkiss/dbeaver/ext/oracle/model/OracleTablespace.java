@@ -425,74 +425,61 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
             ddl.append("BIGFILE ");
         }
 
-        if (contents != null) {
-            ddl.append(contents.name());
-        }
+        appendEnumField(ddl, " CONTENTS ", contents);
 
         ddl.append(" TABLESPACE ").append(name);
 
-        if (blockSize > 0) {
-            ddl.append(" BLOCKSIZE ").append(blockSize);
-        }
+        appendField(ddl, " BLOCKSIZE ", blockSize, true);
+        appendField(ddl, " INITIAL ", initialExtent, "K");
+        appendField(ddl, " NEXT ", nextExtent, "K");
+        appendField(ddl, " MINEXTENTS ", minExtents);
+        appendField(ddl, " MAXEXTENTS ", maxExtents);
+        appendField(ddl, " PCTINCREASE ", pctIncrease);
+        appendField(ddl, " MINEXTLEN ", minExtLen, "K");
 
-        if (initialExtent > 0) {
-            ddl.append(" INITIAL ").append(initialExtent).append("K");
-        }
+        appendEnumField(ddl, " STATUS ", status);
+        appendEnumField(ddl, " LOGGING ", logging);
 
-        if (nextExtent > 0) {
-            ddl.append(" NEXT ").append(nextExtent).append("K");
-        }
-
-        if (minExtents > 0) {
-            ddl.append(" MINEXTENTS ").append(minExtents);
-        }
-
-        if (maxExtents > 0) {
-            ddl.append(" MAXEXTENTS ").append(maxExtents);
-        }
-
-        if (pctIncrease > 0) {
-            ddl.append(" PCTINCREASE ").append(pctIncrease);
-        }
-
-        if (minExtLen > 0) {
-            ddl.append(" MINEXTLEN ").append(minExtLen).append("K");
-        }
-
-        if (status != null) {
-            ddl.append(" STATUS ").append(status.name());
-        }
-
-        if (logging != null) {
-            ddl.append(" LOGGING ").append(logging.name());
-        }
-
-        ddl.append(" FORCE LOGGING ").append(forceLogging ? "YES" : "NO");
-
-        if (extentManagement != null) {
-            ddl.append(" EXTENT MANAGEMENT ").append(extentManagement.name());
-        }
-
-        if (allocationType != null) {
-            ddl.append(" ALLOCATION TYPE ").append(allocationType.name());
-        }
-
-        ddl.append(" PLUGGED IN ").append(pluggedIn ? "YES" : "NO");
-
-        if (segmentSpaceManagement != null) {
-            ddl.append(" SEGMENT SPACE MANAGEMENT ").append(segmentSpaceManagement.name());
-        }
+        appendBooleanField(ddl, " FORCE LOGGING ", forceLogging);
+        appendEnumField(ddl, " EXTENT MANAGEMENT ", extentManagement);
+        appendEnumField(ddl, " ALLOCATION TYPE ", allocationType);
+        appendBooleanField(ddl, " PLUGGED IN ", pluggedIn);
+        appendEnumField(ddl, " SEGMENT SPACE MANAGEMENT ", segmentSpaceManagement);
 
         ddl.append(" DEFAULT TABLE COMPRESSION ").append(defTableCompression ? "ENABLED" : "DISABLED");
 
-        if (retention != null) {
-            ddl.append(" RETENTION ").append(retention.name());
-        }
-
-        // ddl.append(" BIGFILE ").append(bigFile ? "YES" : "NO");
+        appendEnumField(ddl, " RETENTION ", retention);
 
         return ddl.toString();
 
+    }
+
+    private void appendField(StringBuilder ddl, String label, long value, boolean condition) {
+        if (condition && value > 0) {
+            ddl.append(label).append(value);
+        }
+    }
+
+    private void appendField(StringBuilder ddl, String label, long value, String suffix) {
+        if (value > 0) {
+            ddl.append(label).append(value).append(suffix);
+        }
+    }
+
+    private void appendField(StringBuilder ddl, String label, long value) {
+        if (value > 0) {
+            ddl.append(label).append(value);
+        }
+    }
+
+    private void appendEnumField(StringBuilder ddl, String label, Enum<?> enumValue) {
+        if (enumValue != null) {
+            ddl.append(label).append(enumValue.name());
+        }
+    }
+
+    private void appendBooleanField(StringBuilder ddl, String label, boolean condition) {
+        ddl.append(label).append(condition ? "YES" : "NO");
     }
 
 }
