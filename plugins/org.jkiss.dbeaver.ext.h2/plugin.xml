@@ -40,11 +40,11 @@
                         dialect="h2">
                     <replace provider="generic" driver="h2_server"/>
 
-                    <file type="jar" path="maven:/com.h2database:h2:RELEASE[1.4.199]" bundle="!drivers.h2"/>
-                    <file type="license" path="https://raw.githubusercontent.com/h2database/h2database/master/LICENSE.txt" bundle="!drivers.h2"/>
+                    <file type="jar" path="maven:/com.h2database:h2:RELEASE[2.1.210]" bundle="!drivers.h2_v2"/>
+                    <file type="license" path="https://raw.githubusercontent.com/h2database/h2database/master/LICENSE.txt" bundle="!drivers.h2_v2"/>
 
-                    <file type="jar" path="drivers/h2" bundle="drivers.h2"/>
-                    <file type="license" path="drivers/h2/LICENSE.txt" bundle="drivers.h2"/>
+                    <file type="jar" path="drivers/h2_v2" bundle="drivers.h2_v2"/>
+                    <file type="license" path="drivers/h2_v2/LICENSE.txt" bundle="drivers.h2_v2"/>
 
                     <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
