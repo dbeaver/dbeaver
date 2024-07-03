@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -45,8 +44,6 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class GaussDBDatabase extends PostgreDatabase {
-
-    private static final Log log = Log.getLog(GaussDBDatabase.class);
 
     private DBRProgressMonitor monitor;
 
@@ -197,17 +194,7 @@ public class GaussDBDatabase extends PostgreDatabase {
     public GaussDBSchema createSchemaImpl(@NotNull PostgreDatabase owner, @NotNull String name, @Nullable PostgreRole postgreRole) {
         return new GaussDBSchema(owner, name, postgreRole);
     }
-
-    @Override
-    protected void loadInfo(ResultSet dbResult) {
-        super.loadInfo(dbResult);
-        reflectInitDataBase(dbResult);
-    }
-
-    private void reflectInitDataBase(ResultSet unusedDbResult) {
-        log.info("ReflectInitDataBase TODO");
-    }
-
+    
     /**
      * set package supported
      * 
