@@ -588,6 +588,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
     private class NodeLoadersPainter extends UIJob {
         private static final long REPAINT_DELAY = 100;
+        private static final long WAIT_DELAY = 500;
         public static final Image[] IMG_LOADING = new Image[]{
             DBeaverIcons.getImage(UIIcon.LOADING0),
             DBeaverIcons.getImage(UIIcon.LOADING1),
@@ -610,19 +611,21 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         @Override
         public IStatus runInUIThread(IProgressMonitor monitor) {
             synchronized (nodeInLoadingProcess) {
+                long nextDelay = WAIT_DELAY;
                 if (!nodeInLoadingProcess.isEmpty()) {
                     ticksCount++;
                     for (DBNNode node : nodeInLoadingProcess) {
                         Widget widget = treeViewer.testFindItem(node);
                         if (widget instanceof TreeItem treeItem) {
                             treeItem.setImage(getCurrentImage());
+                            nextDelay = REPAINT_DELAY;
                         }
                     }
                 } else {
                     ticksCount = 0;
                 }
                 if (!treeViewer.getTree().isDisposed()) {
-                    schedule(REPAINT_DELAY);
+                    schedule(nextDelay);
                 }
             }
             return Status.OK_STATUS;
