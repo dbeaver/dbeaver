@@ -71,7 +71,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * DriverEditDialog
@@ -952,9 +952,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
     }
 
     private void synAddDriverLibDirectory(DBPDriverLibrary newLib, Path localFilePath, String shortFileName) throws DBException {
-        try {
-            List<Path> dirFiles = Files.list(localFilePath).collect(Collectors.toList());
-            for (Path file : dirFiles) {
+        try (Stream<Path> list = Files.list(localFilePath)) {
+            for (Path file : list.toList()) {
                 shortFileName = shortFileName + "/" + file.getFileName().toString();
                 if (Files.isDirectory(file)) {
                     synAddDriverLibDirectory(newLib, file, shortFileName + "/" + file.getFileName().toString());
