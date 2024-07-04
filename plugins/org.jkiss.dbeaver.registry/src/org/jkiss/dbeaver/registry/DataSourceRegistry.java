@@ -59,18 +59,9 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePersistentRegistry, DBPDataSourceRegistryCache {
-    @Deprecated
-    public static final String DEFAULT_AUTO_COMMIT = "default.autocommit"; //$NON-NLS-1$
-    @Deprecated
-    public static final String DEFAULT_ISOLATION = "default.isolation"; //$NON-NLS-1$
-    @Deprecated
-    public static final String DEFAULT_ACTIVE_OBJECT = "default.activeObject"; //$NON-NLS-1$
-
-    private static final long DISCONNECT_ALL_TIMEOUT = 5000;
-
     private static final Log log = Log.getLog(DataSourceRegistry.class);
 
-    public static final String OLD_CONFIG_FILE_NAME = "data-sources.xml"; //$NON-NLS-1$
+    private static final long DISCONNECT_ALL_TIMEOUT = 5000;
 
     private final DBPProject project;
     private final DataSourceConfigurationManager configurationManager;
@@ -355,7 +346,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         return null;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public DBPDataSourceFolder getFolder(@NotNull String path) {
         return findFolderByPath(path, true, null);
@@ -603,7 +594,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         try {
             this.fireDataSourceEvent(DBPEvent.Action.OBJECT_REMOVE, dataSource);
         } finally {
-            ((DataSourceDescriptor) dataSource).dispose();
+            dataSource.dispose();
         }
     }
 
@@ -1067,7 +1058,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         boolean disconnected;
 
         @Override
-        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+        public void run(DBRProgressMonitor monitor) {
             monitor = new ProxyProgressMonitor(monitor) {
                 @Override
                 public boolean isCanceled() {

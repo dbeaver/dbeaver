@@ -50,7 +50,7 @@ public class DB2IDataSource extends GenericDataSource {
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDriver driver,
-        @Nullable JDBCExecutionContext context,
+        @NotNull JDBCExecutionContext context,
         @NotNull String purpose,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) {

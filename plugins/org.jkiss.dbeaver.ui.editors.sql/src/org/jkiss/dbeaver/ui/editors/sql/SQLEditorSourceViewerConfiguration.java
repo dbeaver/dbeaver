@@ -37,7 +37,6 @@ import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.RGB;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -405,7 +404,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
 
     @Override
     public IHyperlinkPresenter getHyperlinkPresenter(ISourceViewer sourceViewer) {
-        return new MultipleHyperlinkPresenter(new RGB(0, 0, 255)) {
+        return new MultipleHyperlinkPresenter(editor.getViewerConfiguration().getPreferenceStore()) {
 
         };
     }

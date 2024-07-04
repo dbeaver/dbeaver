@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.databricks.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.databricks.DatabricksDataSource;
@@ -165,7 +166,7 @@ public class DatabricksMetaModel extends GenericMetaModel implements DBCQueryTra
     }
 
     @Override
-    public String getTableDDL(DBRProgressMonitor monitor, GenericTableBase sourceObject, Map<String, Object> options) throws DBException {
+    public String getTableDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTableBase sourceObject, @NotNull Map<String, Object> options) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Databricks view/table source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -188,16 +189,16 @@ public class DatabricksMetaModel extends GenericMetaModel implements DBCQueryTra
                 }
             }
         } catch (SQLException e) {
-            throw new DBException(e, dataSource);
+            throw new DBDatabaseException(e, dataSource);
         }
     }
 
     @Override
-    public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
+    public String getViewDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericView sourceObject, @NotNull Map<String, Object> options) throws DBException {
         return getTableDDL(monitor, sourceObject, options);
     }
 
-    private class ViewInfo {
+    private static class ViewInfo {
         GenericStructContainer schema;
         String name;
 

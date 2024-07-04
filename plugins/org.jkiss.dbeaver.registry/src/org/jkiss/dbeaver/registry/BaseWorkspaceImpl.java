@@ -299,7 +299,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse {
         return workspaceId;
     }
 
-    private static String getLocalHostId() {
+    public static String getLocalHostId() {
         // Here we get local machine identifier. It is hashed and thus depersonalized
         try {
             InetAddress localHost = RuntimeUtils.getLocalHostOrLoopback();

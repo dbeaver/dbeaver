@@ -163,7 +163,7 @@ public class VerticaProjection extends JDBCTable<VerticaDataSource, VerticaSchem
     }
 
     @Override
-    public Collection<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
@@ -192,6 +192,7 @@ public class VerticaProjection extends JDBCTable<VerticaDataSource, VerticaSchem
         return null;
     }
 
+    @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(

@@ -34,7 +34,7 @@ public class AltibaseProcedureConfigurator implements DBEObjectConfigurator<Alti
 
     @Override
     public AltibaseProcedureStandAlone configureObject(DBRProgressMonitor monitor, DBECommandContext commandContext,
-    		Object container, AltibaseProcedureStandAlone procedure, Map<String, Object> options) {
+            Object container, AltibaseProcedureStandAlone procedure, Map<String, Object> options) {
         return new UITask<AltibaseProcedureStandAlone>() {
             @Override
             protected AltibaseProcedureStandAlone runTask() {

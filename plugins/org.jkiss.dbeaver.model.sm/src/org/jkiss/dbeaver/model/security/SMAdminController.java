@@ -21,6 +21,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.security.user.*;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -66,6 +68,10 @@ public interface SMAdminController extends SMController {
     void invalidateAllTokens() throws DBException;
 
     void setUserTeams(String userId, String[] teamIds, String grantorId) throws DBException;
+
+    void addUserTeams(@NotNull String userId, @NotNull String[] teamIds, @NotNull String grantorId) throws DBException;
+
+    void deleteUserTeams(@NotNull String userId, @NotNull String[] teamIds) throws DBException;
 
     void setUserTeamRole(@NotNull String userId, @NotNull String teamId, @Nullable String teamRole) throws DBException;
 

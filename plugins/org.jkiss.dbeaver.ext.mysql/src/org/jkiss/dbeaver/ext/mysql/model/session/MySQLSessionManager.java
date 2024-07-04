@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mysql.model.session;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -78,7 +79,7 @@ public class MySQLSessionManager implements DBAServerSessionManager<MySQLSession
                 }
             }
         } catch (SQLException e) {
-            throw new DBException(e, session.getDataSource());
+            throw new DBDatabaseException(e, session.getDataSource());
         }
     }
 
@@ -94,7 +95,7 @@ public class MySQLSessionManager implements DBAServerSessionManager<MySQLSession
             }
         }
         catch (SQLException e) {
-            throw new DBException(e, session.getDataSource());
+            throw new DBDatabaseException(e, session.getDataSource());
         }
     }
 

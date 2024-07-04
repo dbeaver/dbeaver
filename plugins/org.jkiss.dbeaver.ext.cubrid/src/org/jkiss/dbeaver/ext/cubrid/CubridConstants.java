@@ -18,7 +18,15 @@ package org.jkiss.dbeaver.ext.cubrid;
 
 public class CubridConstants
 {
-
     public static final String OWNER_NAME = "owner_name";
     public static final String IS_SYSTEM_CLASS = "is_system_class";
+    public static final String TERM_FUNCTION = "FUNCTION";
+    public static final String TERM_PROCEDURE = "PROCEDURE";
+    public static final String AUTO_INCREMENT_VAL = "current_val";
+    public static final String COLLATION = "collation";
+    public static final String DEFAULT_COLLATION = "utf8_bin";
+    public static final String REUSE_OID = "is_reuse_oid_class";
+    public static final String NAME = "name";
+    public static final String COMMENT = "comment";
+    public static final String DBA = "dba";
 }

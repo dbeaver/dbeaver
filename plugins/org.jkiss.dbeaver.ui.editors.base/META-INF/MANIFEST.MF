@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver UI Editors - Base
 Bundle-SymbolicName: org.jkiss.dbeaver.ui.editors.base;singleton:=true
-Bundle-Version: 1.0.132.qualifier
-Bundle-Release-Date: 20240603
+Bundle-Version: 1.0.135.qualifier
+Bundle-Release-Date: 20240722
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime,
@@ -24,9 +24,6 @@ Bundle-ClassPath: .
 Export-Package: org.jkiss.dbeaver.ui.actions,
  org.jkiss.dbeaver.ui.controls,
  org.jkiss.dbeaver.ui.editors,
- org.jkiss.dbeaver.ui.editors.object,
- org.jkiss.dbeaver.ui.editors.object.config,
- org.jkiss.dbeaver.ui.editors.object.struct,
  org.jkiss.dbeaver.ui.editors.text,
  org.jkiss.dbeaver.ui.editors.text.handlers
 Automatic-Module-Name: org.jkiss.dbeaver.ui.editors.base

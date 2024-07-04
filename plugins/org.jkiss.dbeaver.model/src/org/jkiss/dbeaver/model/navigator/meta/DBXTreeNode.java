@@ -359,4 +359,14 @@ public abstract class DBXTreeNode
         }
     }
 
+    /**
+     * Remove node item from the node list
+     *
+     * @param item - node for remove
+     */
+    public void removeChild(DBXTreeItem item) {
+        if (children != null && children.contains(item)) {
+            children.remove(item);
+        }
+    }
 }

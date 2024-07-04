@@ -152,7 +152,7 @@ public class MySQLView extends MySQLTableBase implements DBSView
     }
 
     @Override
-    public List<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException
+    public List<? extends DBSTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }

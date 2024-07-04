@@ -81,7 +81,7 @@ public final class DB2MaterializedQueryTableCache
     @NotNull
     @Override
     public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema,
-        DB2MaterializedQueryTable db2MaterializedQueryTable, String db2MaterializedQueryTableName) throws SQLException
+                                                @Nullable DB2MaterializedQueryTable db2MaterializedQueryTable, @Nullable String db2MaterializedQueryTableName) throws SQLException
     {
         if (db2MaterializedQueryTable != null || db2MaterializedQueryTableName != null) {
             final JDBCPreparedStatement dbStat = session.prepareStatement(SQL_MQT);

@@ -17,7 +17,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <dbeaver-version>24.1.0</dbeaver-version>
+        <dbeaver-version>24.1.3</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
 
         <local-p2-repo.version>${dbeaver-version}</local-p2-repo.version>
@@ -166,6 +166,11 @@
                                     <os>win32</os>
                                     <ws>win32</ws>
                                     <arch>x86_64</arch>
+                                </environment>
+                                <environment>
+                                    <os>win32</os>
+                                    <ws>win32</ws>
+                                    <arch>aarch64</arch>
                                 </environment>
                                 <environment>
                                     <os>linux</os>

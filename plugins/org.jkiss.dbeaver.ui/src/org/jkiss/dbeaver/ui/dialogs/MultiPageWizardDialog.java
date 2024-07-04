@@ -321,13 +321,6 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             if (prevPage.getControl() != null) {
                 prevPage.getControl().setFocus();
             }
-            if (pageCreated && isAutoLayoutAvailable()) {
-                UIUtils.asyncExec(() -> {
-                    if (wizard.getContainer().getShell() != null) {
-                        UIUtils.resizeShell(wizard.getContainer().getShell());
-                    }
-                });
-            }
 
             if (page instanceof ActiveWizardPage<?> awp) {
                 awp.updatePageCompletion();
@@ -694,6 +687,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                 }
             });
         }
+        updateSize();
     }
 
     @Override
@@ -715,14 +709,24 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
      * @param page the wizard page
      */
     private void updateSizeForPage(IWizardPage page) {
-        // ensure the page container is large enough
-        Point delta = calculatePageSizeDelta(page);
-        if (delta.x > 0 || delta.y > 0) {
-            // increase the size of the shell
-            Shell shell = getShell();
-            Point shellSize = shell.getSize();
-            setShellSize(shellSize.x + delta.x, shellSize.y + delta.y);
-            constrainShellSize();
+        if (isAutoLayoutAvailable() &&
+            (!(page instanceof  ActiveWizardPage<?> awp) || awp.isAutoResizeEnabled())) {
+            UIUtils.asyncExec(() -> {
+                Point pageCompSize = page.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT);
+                for (Control parent = page.getControl().getParent(); parent != null; parent = parent.getParent()) {
+                    if (parent instanceof SashForm) {
+                        pageCompSize = parent.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+                        break;
+                    }
+                }
+                Point shellCompSize = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT);
+                if (shellCompSize.y > pageCompSize.y) {
+                    pageCompSize.y = shellCompSize.y;
+                }
+                UIUtils.resizeShell(
+                    getShell(),
+                    pageCompSize);
+            });
         }
     }
 

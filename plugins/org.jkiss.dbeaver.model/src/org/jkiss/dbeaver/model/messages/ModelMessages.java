@@ -206,6 +206,8 @@ public class ModelMessages extends NLS {
     public static String controls_querylog_column_time_tooltip;
     public static String controls_querylog_column_type_name;
     public static String controls_querylog_column_type_tooltip;
+    public static String controls_querylog_column_schema_name;
+    public static String controls_querylog_column_catalog_name;
     public static String controls_querylog_column_connection_name;
     public static String controls_querylog_column_connection_tooltip;
     public static String controls_querylog_column_context_name;
@@ -241,7 +243,6 @@ public class ModelMessages extends NLS {
 
     public static String no_corresponding_table_column_text;
     public static String cannot_determine_unique_row_identifier_text;
-    public static String all_columns_read_only;
 
     public static String dialog_user_password_change_label;
     public static String dialog_user_password_change_question_label;

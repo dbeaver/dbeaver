@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.struct.cache;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -28,17 +29,16 @@ import java.util.Collection;
  * Structure objects cache
  */
 public interface DBSStructCache<OWNER extends DBSObject, OBJECT extends DBSObject, CHILD extends DBSObject>
-    extends DBSObjectCache<OWNER, OBJECT>
-{
+    extends DBSObjectCache<OWNER, OBJECT> {
 
-    DBSObjectCache<OBJECT, CHILD> getChildrenCache(final OBJECT forObject);
+    DBSObjectCache<OBJECT, CHILD> getChildrenCache(@NotNull OBJECT forObject);
 
     @Nullable
-    Collection<CHILD> getChildren(DBRProgressMonitor monitor, OWNER owner, final OBJECT forObject)
+    Collection<CHILD> getChildren(@Nullable DBRProgressMonitor monitor, @NotNull OWNER owner, OBJECT forObject)
         throws DBException;
 
     @Nullable
-    CHILD getChild(DBRProgressMonitor monitor, OWNER owner, final OBJECT forObject, String objectName)
+    CHILD getChild(@NotNull DBRProgressMonitor monitor, @NotNull OWNER owner, OBJECT forObject, @NotNull String objectName)
         throws DBException;
 
     void clearChildrenCache(OBJECT forParent);
