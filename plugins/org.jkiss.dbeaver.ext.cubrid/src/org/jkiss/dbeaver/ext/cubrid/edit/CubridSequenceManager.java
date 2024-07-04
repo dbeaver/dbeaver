@@ -67,12 +67,17 @@ public class CubridSequenceManager extends GenericSequenceManager {
     public String buildStatement(@NotNull CubridSequence sequence, @NotNull boolean forUpdate) {
         StringBuilder sb = new StringBuilder();
         if (forUpdate) {
-            sb.append("ALTER");
+            sb.append("ALTER SERIAL ");
         } else {
-            sb.append("CREATE");
+            sb.append("CREATE SERIAL ");
         }
-        sb.append(" SERIAL ");
         sb.append(sequence.getFullyQualifiedName(DBPEvaluationContext.DDL));
+        buildBody(sequence, sb);
+        buildOtherValue(sequence, sb);
+        return sb.toString();
+    }
+
+    public void buildBody(@NotNull CubridSequence sequence, @NotNull StringBuilder sb) {
         if (sequence.getIncrementBy() != null) {
             sb.append(" INCREMENT BY ").append(sequence.getIncrementBy());
         }
@@ -85,6 +90,9 @@ public class CubridSequenceManager extends GenericSequenceManager {
         if (sequence.getMinValue() != null) {
             sb.append(" MINVALUE ").append(sequence.getMinValue());
         }
+    }
+
+    public void buildOtherValue(@NotNull CubridSequence sequence, @NotNull StringBuilder sb) {
         if (sequence.getCycle()) {
             sb.append(" CYCLE");
         }
@@ -97,7 +105,6 @@ public class CubridSequenceManager extends GenericSequenceManager {
         if (sequence.getDescription() != null) {
             sb.append(" COMMENT ").append(SQLUtils.quoteString(sequence, CommonUtils.notEmpty(sequence.getDescription())));
         }
-        return sb.toString();
     }
 
     @Override
@@ -140,5 +147,6 @@ public class CubridSequenceManager extends GenericSequenceManager {
             @NotNull List<DBEPersistAction> actions,
             @NotNull NestedObjectCommand<GenericSequence, SQLObjectEditor<GenericSequence, GenericStructContainer>.PropertyHandler> command,
             @NotNull Map<String, Object> options) {
+        /* This body intentionally empty. */
     }
 }
