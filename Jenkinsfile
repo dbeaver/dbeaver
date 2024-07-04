@@ -3,7 +3,11 @@ String date = params.DATE ?: new Date().format('yyyyMMddHHmmss')
 
 pipeline{
     agent {
-        label "dbeaver-package"
+        kubernetes {
+            cloud 'kubernetes-new'
+            yamlFile 'env.yaml'
+            workspaceVolume dynamicPVC(accessModes: 'ReadWriteMany', storageClassName: 'centos-test-storage')
+        }
     }
     triggers {
         cron(str)
