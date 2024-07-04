@@ -85,10 +85,10 @@ public class AltibaseLibrary extends AltibaseObject<GenericStructContainer> impl
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         if (CommonUtils.isEmpty(ddl)) {
-            ddl = ((AltibaseMetaModel) getDataSource().getMetaModel()).getLibraryDDL(monitor, this, options);
+            ddl = ((AltibaseMetaModel) getDataSource().getMetaModel()).getLibraryDDL(monitor, this, options) + ";";
         }
         
-        return (CommonUtils.isEmpty(ddl)) ? "" : ddl + ";";
+        return ddl;
     }
 
     @Override

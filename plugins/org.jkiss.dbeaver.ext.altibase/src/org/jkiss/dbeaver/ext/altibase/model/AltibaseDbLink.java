@@ -122,10 +122,10 @@ public class AltibaseDbLink extends AltibaseObject<GenericStructContainer> imple
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         if (CommonUtils.isEmpty(ddl)) {
             options.put("SCHEMA", isPublic() ? "PUBLIC" : this.getParentObject().getName());
-            ddl = ((AltibaseMetaModel) getDataSource().getMetaModel()).getDbLinkDDL(monitor, this, options);
+            ddl = ((AltibaseMetaModel) getDataSource().getMetaModel()).getDbLinkDDL(monitor, this, options) + ";";
         }
 
-        return (CommonUtils.isEmpty(ddl)) ? "" : ddl + ";";
+        return ddl;
     }
 
     @Override
