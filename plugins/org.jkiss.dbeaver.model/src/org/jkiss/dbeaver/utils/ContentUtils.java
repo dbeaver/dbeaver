@@ -39,6 +39,7 @@ import java.text.NumberFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Stream;
 
 /**
  * Content manipulation utilities
@@ -335,8 +336,8 @@ public class ContentUtils {
 
     public static boolean deleteFileRecursive(Path file) {
         if (Files.isDirectory(file)) {
-            try {
-                List<Path> files = Files.list(file).toList();
+            try (Stream<Path> list = Files.list(file)) {
+                List<Path> files = list.toList();
                 for (Path ch : files) {
                     if (!deleteFileRecursive(ch)) {
                         return false;

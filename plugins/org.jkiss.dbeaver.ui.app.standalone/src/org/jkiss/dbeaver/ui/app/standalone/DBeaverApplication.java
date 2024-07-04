@@ -581,7 +581,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         String defaultHomePath = WORKSPACE_DIR_CURRENT;
         final Path homeDir = Path.of(defaultHomePath);
         try {
-            if (!Files.exists(homeDir) || Files.list(homeDir).count() == 0) {
+            if (!Files.exists(homeDir) || isEmptyFolder(homeDir)) {
                 if (!tryMigrateFromPreviousVersion(homeDir)) {
                     return false;
                 }
@@ -635,6 +635,12 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         }
 
         return true;
+    }
+
+    private static boolean isEmptyFolder(Path path) throws IOException {
+        try (Stream<Path> list = Files.list(path)) {
+            return list.findAny().isEmpty();
+        }
     }
 
     protected boolean tryMigrateFromPreviousVersion(Path homeDir) {
