@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.databend.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -48,11 +49,6 @@ public class DatabendDataSource extends GenericDataSource {
         super(monitor, container, metaModel, new DatabendSQLDialect());
     }
 
-
-    @Override
-    public boolean isOmitCatalog() {
-        return true;
-    }
 
     @Override
     protected boolean isPopulateClientAppName() {

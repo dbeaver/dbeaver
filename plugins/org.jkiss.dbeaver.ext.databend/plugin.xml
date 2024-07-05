@@ -30,9 +30,9 @@
                     iconBig="icons/databend_icon_big.png"
                     description="Databend driver (server version 1.0.0+)"
                     supportedConfigurationTypes="MANUAL,URL"
-                    webURL="https://github.com/databendcloud/databend-jdbc"
+                    webURL="https://github.com/datafuselabs/databend-jdbc"
                     categories="sql,analytic,columns">
-                    <file type="jar" path="maven:/com.databend:databend-jdbc:RELEASE[0.0.7]" load-optional-dependencies="true" bundle="!drivers.databend" />
+                    <file type="jar" path="maven:/com.databend:databend-jdbc:RELEASE[0.3.1]" load-optional-dependencies="true" bundle="!drivers.databend" />
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.databend"/>
                     <file type="jar" path="drivers/databend" bundle="drivers.databend"/>
                     <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.databend"/>
@@ -41,10 +41,15 @@
                     <property name="use_server_time_zone" value="false"/>
                     <property name="use_time_zone" value="false"/>
 
+                    <parameter name="supports-indexes" value="false"/>
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="alter-table-add-column" value="true"/>
                     <parameter name="supports-multi-insert" value="true"/>
+                    <parameter name="omit-catalog" value="false"/>
+                    <parameter name="omit-schema" value="false"/>
+                    <parameter name="query-get-active-db" value="SELECT CURRENT_DATABASE()"/>
+                    <parameter name="query-set-active-db" value="USE ?"/>
                 </driver>
             </drivers>
 
