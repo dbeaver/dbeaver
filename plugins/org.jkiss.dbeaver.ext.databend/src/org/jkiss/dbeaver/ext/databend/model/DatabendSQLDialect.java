@@ -16,13 +16,17 @@
  */
 package org.jkiss.dbeaver.ext.databend.model;
 
-import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 
 /**
  * Databend SQL dialect
  */
-public class DatabendSQLDialect extends GenericSQLDialect {
+public class DatabendSQLDialect extends JDBCSQLDialect {
+
+    private boolean isCatalogAtStart;
+
     public DatabendSQLDialect() {
         super("Databend SQL", "databend");
+        this.isCatalogAtStart = true;
     }
 }

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.databend.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericView;
@@ -33,6 +34,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -62,7 +64,7 @@ public class DatabendMetaModel extends GenericMetaModel implements DBCQueryTrans
     }
 
     @Override
-    public String getTableDDL(DBRProgressMonitor monitor, GenericTableBase sourceObject, Map<String, Object> options) throws DBException {
+    public String getTableDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTableBase sourceObject, @NotNull Map<String, Object> options) throws DBException {
         return getObjectDDL(monitor, sourceObject, options, TABLE_DDL);
     }
 
@@ -72,8 +74,8 @@ public class DatabendMetaModel extends GenericMetaModel implements DBCQueryTrans
     }
 
     @Override
-    public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
-        return getObjectDDL(monitor, sourceObject, options, VIEW_DDL);
+    public String getViewDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericView sourceObject, @NotNull Map<String, Object> options) throws DBException {
+        return getObjectDDL(monitor, sourceObject, options, TABLE_DDL);
     }
 
     @Override
@@ -96,7 +98,7 @@ public class DatabendMetaModel extends GenericMetaModel implements DBCQueryTrans
         return false;
     }
 
-    private String getObjectDDL(DBRProgressMonitor monitor, GenericTableBase sourceObject, Map<String, Object> options, String ddlStatement)
+    private String getObjectDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTableBase sourceObject, @NotNull Map<String, Object> options, String ddlStatement)
             throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Databend object DDL")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -104,13 +106,13 @@ public class DatabendMetaModel extends GenericMetaModel implements DBCQueryTrans
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     StringBuilder sql = new StringBuilder();
                     while (dbResult.nextRow()) {
-                        sql.append(dbResult.getString(1)).append("\n");
+                        sql.append(dbResult.getString(2)).append("\n");
                     }
                     return sql.toString();
                 }
             }
         } catch (SQLException e) {
-            throw new DBException(e, sourceObject.getDataSource());
+            throw new DBDatabaseException(e, sourceObject.getDataSource());
         }
     }
 }
