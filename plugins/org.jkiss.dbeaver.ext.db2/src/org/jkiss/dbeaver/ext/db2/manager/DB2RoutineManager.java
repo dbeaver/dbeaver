@@ -46,7 +46,7 @@ public class DB2RoutineManager extends DB2AbstractDropOnlyManager<DB2Routine, DB
         case P:
             return String.format(SQL_DROP_PROCEDURE, fullyQualifiedName);
         default:
-            throw new IllegalStateException(db2Routine.getType() + " not suppoted");
+            throw new IllegalStateException(db2Routine.getType() + " not supported");
         }
     }
 

@@ -189,7 +189,7 @@ public class BaseBrowserView extends ViewPart {
         });
 */
 
-        // Hook the navigation actons as handlers for the retargetable actions
+        // Hook the navigation actions as handlers for the retargetable actions
         // defined in BrowserActionBuilder.
         actionBars.setGlobalActionHandler("back", backAction); //$NON-NLS-1$
         actionBars.setGlobalActionHandler("forward", forwardAction); //$NON-NLS-1$

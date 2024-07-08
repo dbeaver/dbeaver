@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Scheduled task configration
+ * Scheduled task configuration
  */
 public class DBTTaskScheduleConfiguration {
 

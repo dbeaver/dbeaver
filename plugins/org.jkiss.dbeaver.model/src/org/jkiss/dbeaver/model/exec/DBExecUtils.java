@@ -107,7 +107,7 @@ public class DBExecUtils {
             ACTIVE_CONTEXTS.add(context);
         }
         // Set proxy auth (if required)
-        // Note: authenticator may be changed by Eclipse frameword on startup or later.
+        // Note: authenticator may be changed by Eclipse framework on startup or later.
         // That's why we set new default authenticator on connection initiation
         boolean hasProxy = false;
         for (DBWHandlerConfiguration handler : context.getConnectionConfiguration().getHandlers()) {
