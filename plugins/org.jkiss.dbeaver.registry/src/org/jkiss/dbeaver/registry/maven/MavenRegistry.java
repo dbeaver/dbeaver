@@ -20,12 +20,13 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.encode.PasswordEncrypter;
 import org.jkiss.dbeaver.runtime.encode.SimpleStringEncrypter;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -63,8 +64,6 @@ public class MavenRegistry {
     private MavenRepository localRepository;
     // Cache for not found artifact ids. Avoid multiple remote metadata reading
     private final Set<String> notFoundArtifacts = new HashSet<>();
-
-    private static final PasswordEncrypter ENCRYPTOR = new SimpleStringEncrypter();
 
     private MavenRegistry() {
     }
@@ -157,12 +156,23 @@ public class MavenRegistry {
                 repo.setOrder(CommonUtils.toInt(repoElement.getAttribute("order")));
                 repo.setEnabled(CommonUtils.toBoolean(repoElement.getAttribute("enabled")));
 
-                final String authUser = repoElement.getAttribute("auth-user");
-                if (!CommonUtils.isEmpty(authUser)) {
-                    repo.getAuthInfo().setUserName(authUser);
-                    String authPassword = repoElement.getAttribute("auth-password");
+                DBSSecretController secrets = DBSSecretController.getGlobalSecretController();
+                String authUser = secrets.getPrivateSecretValue("maven/" + repoID + "/auth-user");
+                String authPassword = secrets.getPrivateSecretValue("maven/" + repoID + "/auth-password");
+
+                // Backward compatibility
+                if (CommonUtils.isEmpty(authUser)) {
+                    authUser = repoElement.getAttribute("auth-user");
+                    authPassword = repoElement.getAttribute("auth-password");
                     if (!CommonUtils.isEmpty(authPassword)) {
-                        repo.getAuthInfo().setUserPassword(ENCRYPTOR.decrypt(authPassword));
+                        authPassword = SimpleStringEncrypter.INSTANCE.decrypt(authPassword);
+                    }
+                }
+
+                if (CommonUtils.isNotEmpty(authUser)) {
+                    repo.getAuthInfo().setUserName(authUser);
+                    if (CommonUtils.isNotEmpty(authPassword)) {
+                        repo.getAuthInfo().setUserPassword(authPassword);
                     }
                 }
             }
@@ -262,51 +272,48 @@ public class MavenRegistry {
         return null;
     }
 
-    public void saveConfiguration() {
+    public void saveConfiguration() throws DBException, IOException {
         sortRepositories();
 
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            XMLBuilder xml = new XMLBuilder(baos, GeneralUtils.UTF8_ENCODING);
-            xml.setButify(true);
-            try (final XMLBuilder.Element e1 = xml.startElement("maven")) {
-                for (MavenRepository repository : repositories) {
-                    try (final XMLBuilder.Element e2 = xml.startElement("repository")) {
-                        xml.addAttribute("id", repository.getId());
-                        xml.addAttribute("order", repository.getOrder());
-                        xml.addAttribute("enabled", repository.isEnabled());
-                        if (repository.getType() != MavenRepository.RepositoryType.GLOBAL) {
-                            xml.addAttribute("url", repository.getUrl());
-                            xml.addAttribute("name", repository.getName());
-                            if (!CommonUtils.isEmpty(repository.getDescription())) {
-                                xml.addAttribute("description", repository.getDescription());
-                            }
-                            for (String scope : repository.getScopes()) {
-                                try (final XMLBuilder.Element e3 = xml.startElement("scope")) {
-                                    xml.addAttribute("group", scope);
-                                }
-                            }
-                            xml.addAttribute(RegistryConstants.ATTR_SNAPSHOT, repository.isSnapshot());
-                            final DBPAuthInfo authInfo = repository.getAuthInfo();
-                            if (!CommonUtils.isEmpty(authInfo.getUserName())) {
-                                xml.addAttribute("auth-user", authInfo.getUserName());
-                                if (!CommonUtils.isEmpty(authInfo.getUserPassword())) {
-                                    xml.addAttribute("auth-password", ENCRYPTOR.encrypt(authInfo.getUserPassword()));
-                                }
-                            }
+        DBSSecretController secrets = DBSSecretController.getGlobalSecretController();
 
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        XMLBuilder xml = new XMLBuilder(baos, GeneralUtils.UTF8_ENCODING);
+        xml.setButify(true);
+        try (final XMLBuilder.Element e1 = xml.startElement("maven")) {
+            for (MavenRepository repository : repositories) {
+                try (final XMLBuilder.Element e2 = xml.startElement("repository")) {
+                    xml.addAttribute("id", repository.getId());
+                    xml.addAttribute("order", repository.getOrder());
+                    xml.addAttribute("enabled", repository.isEnabled());
+                    if (repository.getType() != MavenRepository.RepositoryType.GLOBAL) {
+                        xml.addAttribute("url", repository.getUrl());
+                        xml.addAttribute("name", repository.getName());
+                        if (!CommonUtils.isEmpty(repository.getDescription())) {
+                            xml.addAttribute("description", repository.getDescription());
+                        }
+                        for (String scope : repository.getScopes()) {
+                            try (final XMLBuilder.Element e3 = xml.startElement("scope")) {
+                                xml.addAttribute("group", scope);
+                            }
+                        }
+                        xml.addAttribute(RegistryConstants.ATTR_SNAPSHOT, repository.isSnapshot());
+                        final DBPAuthInfo authInfo = repository.getAuthInfo();
+                        if (!CommonUtils.isEmpty(authInfo.getUserName())) {
+                            secrets.setPrivateSecretValue("maven/" + repository.getId() + "/auth-user", authInfo.getUserName());
+                            if (!CommonUtils.isEmpty(authInfo.getUserPassword())) {
+                                secrets.setPrivateSecretValue("maven/" + repository.getId() + "/auth-password", authInfo.getUserPassword());
+                            }
                         }
                     }
                 }
             }
-            xml.flush();
-
-            DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(
-                MAVEN_REPOSITORIES_CONFIG,
-                baos.toString(StandardCharsets.UTF_8));
-        } catch (Exception e) {
-            log.error("Error saving Maven registry", e);
         }
+        xml.flush();
+
+        DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(
+            MAVEN_REPOSITORIES_CONFIG,
+            baos.toString(StandardCharsets.UTF_8));
     }
 
     private void sortRepositories() {

@@ -34,7 +34,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
-import org.eclipse.ui.services.IDisposable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
@@ -75,7 +74,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -89,21 +87,15 @@ public class DesktopUI implements DBPPlatformUI {
 
     private static final Log log = Log.getLog(DesktopUI.class);
 
-    private static DesktopUI instance;
-
     private TrayIconHandler trayItem;
-    private final List<IDisposable> globalDisposables = new ArrayList<>();
     private WorkbenchContextListener contextListener;
 
     public static DesktopUI getInstance() {
-        if (instance == null) {
-            instance = new DesktopUI();
-            instance.initialize();
-        }
-        return instance;
+        return (DesktopUI) DBWorkbench.getPlatformUI();
     }
 
     static void disposeUI() {
+        DesktopUI instance = getInstance();
         if (instance != null) {
             try {
                 instance.dispose();
@@ -117,20 +109,10 @@ public class DesktopUI implements DBPPlatformUI {
         if (trayItem != null) {
             trayItem.hide();
         }
-
-        List<IDisposable> dispList = new ArrayList<>(globalDisposables);
-        Collections.reverse(dispList);
-        for (IDisposable disp : dispList) {
-            try {
-                disp.dispose();
-            } catch (Exception e) {
-                log.error(e);
-            }
-            globalDisposables.remove(disp);
-        }
     }
 
-    private void initialize() {
+    // This method is called during startup thru @ComponentReference in workbench
+    public void initialize() {
         this.trayItem = new TrayIconHandler();
 
         new AbstractJob("Workbench listener") {
