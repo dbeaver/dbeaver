@@ -42,7 +42,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class StatisticsTransmitter {
 
@@ -77,29 +77,31 @@ public class StatisticsTransmitter {
         try {
             String appSessionId = DBWorkbench.getPlatform().getApplication().getApplicationRunId();
             Path logsFolder = FeatureStatisticsCollector.getLogsFolder();
-            List<Path> logFiles = Files.list(logsFolder)
-                .filter(path -> path.getFileName().toString().endsWith(".log"))
-                .collect(Collectors.toList());
-            for (Path logFile : logFiles) {
-                String fileName = logFile.getFileName().toString();
-                fileName = fileName.substring(0, fileName.length() - 4);
-                String[] parts = fileName.split("_");
-                if (parts.length != 2) {
-                    continue;
-                }
-                String timestamp = parts[0];
-                String sessionId = parts[1];
-                if (sendActiveSession) {
-                    if (sessionId.equals(appSessionId)) {
-                        sendLogFile(logFile, timestamp, sessionId);
-                        break;
-                    }
-                } else {
-                    if (sessionId.equals(appSessionId)) {
-                        // This is active session
+            try (Stream<Path> list = Files.list(logsFolder)) {
+                List<Path> logFiles = list
+                    .filter(path -> path.getFileName().toString().endsWith(".log"))
+                    .toList();
+                for (Path logFile : logFiles) {
+                    String fileName = logFile.getFileName().toString();
+                    fileName = fileName.substring(0, fileName.length() - 4);
+                    String[] parts = fileName.split("_");
+                    if (parts.length != 2) {
                         continue;
                     }
-                    sendLogFile(logFile, timestamp, sessionId);
+                    String timestamp = parts[0];
+                    String sessionId = parts[1];
+                    if (sendActiveSession) {
+                        if (sessionId.equals(appSessionId)) {
+                            sendLogFile(logFile, timestamp, sessionId);
+                            break;
+                        }
+                    } else {
+                        if (sessionId.equals(appSessionId)) {
+                            // This is active session
+                            continue;
+                        }
+                        sendLogFile(logFile, timestamp, sessionId);
+                    }
                 }
             }
         } catch (Exception e) {
