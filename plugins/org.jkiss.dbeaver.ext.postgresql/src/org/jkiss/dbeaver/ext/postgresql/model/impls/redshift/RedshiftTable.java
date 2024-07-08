@@ -19,7 +19,10 @@ package org.jkiss.dbeaver.ext.postgresql.model.impls.redshift;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableRegular;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -30,7 +33,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
 
 /**
  * RedshiftTable base
@@ -82,11 +84,6 @@ public class RedshiftTable extends PostgreTableRegular
     protected void fetchStatistics(JDBCResultSet dbResult) throws SQLException {
         diskSpace = dbResult.getLong("size") * 1024 * 1024;
         rowCountEstimate = rowCount = dbResult.getLong("tbl_rows");
-    }
-
-    @Override
-    public Collection<PostgreTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return null;
     }
 
     // Not supported
