@@ -60,7 +60,7 @@ public class SQLQueryLexicalScope {
         return this.interval;
     }
 
-    public void setInterval(Interval interval) {
+    public void setInterval(@NotNull Interval interval) {
         this.interval = interval;
     }
 

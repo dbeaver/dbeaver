@@ -39,11 +39,11 @@ public abstract class SQLQueryCompletionItem {
         return null;
     }
 
-    public final <R> R apply(@NotNull SQLQueryCompletionItemVisitor<R> visitor) {
+    public final <R> R apply(SQLQueryCompletionItemVisitor<R> visitor) {
         return this.applyImpl(visitor);
     }
 
-    protected abstract <R> R applyImpl(@NotNull SQLQueryCompletionItemVisitor<R> visitor);
+    protected abstract <R> R applyImpl(SQLQueryCompletionItemVisitor<R> visitor);
 
     /**
      * Pepare completion item for reserved word
@@ -80,9 +80,10 @@ public abstract class SQLQueryCompletionItem {
     public static class SQLSubqueryAliasCompletionItem extends SQLQueryCompletionItem {
         @NotNull
         public final SQLQuerySymbol symbol;
+        @NotNull
         public final SQLQueryRowsSourceModel source;
 
-        SQLSubqueryAliasCompletionItem(@NotNull SQLQuerySymbol symbol, SQLQueryRowsSourceModel source) {
+        SQLSubqueryAliasCompletionItem(@NotNull SQLQuerySymbol symbol, @NotNull SQLQueryRowsSourceModel source) {
             this.symbol = symbol;
             this.source = source;
         }
@@ -112,10 +113,12 @@ public abstract class SQLQueryCompletionItem {
             @NotNull SourceResolutionResult sourceInfo,
             boolean absolute
         ) {
-            if (sourceInfo == null)
+            if (sourceInfo == null) {
                 throw new IllegalArgumentException("sourceInfo should not be null");
-            if (columnInfo == null)
+            }
+            if (columnInfo == null) {
                 throw new IllegalArgumentException("columnInfo should not be null");
+            }
 
             this.columnInfo = columnInfo;
             this.sourceInfo = sourceInfo;
@@ -126,8 +129,8 @@ public abstract class SQLQueryCompletionItem {
         @Override
         public SQLQueryCompletionItemKind getKind() {
             return this.columnInfo.symbol.getSymbolClass() == SQLQuerySymbolClass.COLUMN_DERIVED 
-                    ? SQLQueryCompletionItemKind.DERIVED_COLUMN_NAME
-                    : SQLQueryCompletionItemKind.TABLE_COLUMN_NAME;
+                ? SQLQueryCompletionItemKind.DERIVED_COLUMN_NAME
+                : SQLQueryCompletionItemKind.TABLE_COLUMN_NAME;
         }
 
         @Nullable
@@ -190,6 +193,8 @@ public abstract class SQLQueryCompletionItem {
     }
 
     public static class SQLDbNamedObjectCompletionItem extends SQLQueryCompletionItem {
+
+        @NotNull
         public final DBSObject object;
 
         SQLDbNamedObjectCompletionItem(@NotNull DBSObject object) {
@@ -201,7 +206,8 @@ public abstract class SQLQueryCompletionItem {
         public SQLQueryCompletionItemKind getKind() {
             return SQLQueryCompletionItemKind.UNKNOWN;
         }
-        
+
+        @NotNull
         @Override
         public DBSObject getObject() {
             return this.object;

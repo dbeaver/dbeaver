@@ -107,8 +107,10 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
             // It is table name completion after FROM. Auto-generate table alias
             SQLDialect sqlDialect = SQLUtils.getDialectFromObject(object);
             String alias = SQLUtils.generateEntityAlias(object,
-                s -> sqlDialect.getKeywordType(s) != null || this.queryCompletionContext.getAliasesInUse().contains(s) ||
-                        this.queryCompletionContext.getDataContext().resolveSource(monitor, List.of(s)) != null
+                s -> sqlDialect.getKeywordType(s) != null ||
+                    this.queryCompletionContext.getAliasesInUse().contains(s) ||
+                    (this.queryCompletionContext.getDataContext() != null
+                        && this.queryCompletionContext.getDataContext().resolveSource(monitor, List.of(s)) != null)
             );
             suffix = this.prepareAliasPrefix() + this.convertCaseIfNeeded(alias);
         } else {
@@ -121,14 +123,17 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
 
     @NotNull
     private String prepareAliasPrefix() {
-        return this.aliasMode == SQLTableAliasInsertMode.EXTENDED ? (" " + SQLCompletionAnalyzer.convertKeywordCase(this.request, "as", false) + " "): " ";
+        return this.aliasMode == SQLTableAliasInsertMode.EXTENDED
+            ? (" " + SQLCompletionAnalyzer.convertKeywordCase(this.request, "as", false) + " ") : " ";
     }
 
+    @NotNull
     @Override
     public String visitReservedWord(@NotNull SQLReservedWordCompletionItem reservedWord) {
         return SQLCompletionAnalyzer.convertKeywordCase(this.request, reservedWord.text, false);
     }
 
+    @NotNull
     @Override
     public String visitNamedObject(@NotNull SQLDbNamedObjectCompletionItem namedObject) {
         return this.prepareObjectName(namedObject.object);

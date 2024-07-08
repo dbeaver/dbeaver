@@ -72,7 +72,11 @@ public abstract class SQLQueryCompletionContext {
 
         @NotNull
         @Override
-        public SQLQueryCompletionSet prepareProposal(@NotNull DBRProgressMonitor monitor, int position, SQLCompletionRequest request) {
+        public SQLQueryCompletionSet prepareProposal(
+            @NotNull DBRProgressMonitor monitor,
+            int position,
+            @NotNull SQLCompletionRequest request
+        ) {
             return new SQLQueryCompletionSet(position, 0, Collections.emptyList());
         }
     };
@@ -101,7 +105,11 @@ public abstract class SQLQueryCompletionContext {
 
             @NotNull
             @Override
-            public SQLQueryCompletionSet prepareProposal(@NotNull DBRProgressMonitor monitor, int position, SQLCompletionRequest request) {
+            public SQLQueryCompletionSet prepareProposal(
+                @NotNull DBRProgressMonitor monitor,
+                int position,
+                @NotNull SQLCompletionRequest request
+            ) {
                 return new SQLQueryCompletionSet(position, 0, keywords);
             }
         };
@@ -120,7 +128,7 @@ public abstract class SQLQueryCompletionContext {
     @Nullable
     public abstract SQLQueryDataContext getDataContext();
 
-    @Nullable
+    @NotNull
     public abstract LSMInspections.SyntaxInspectionResult getInspectionResult();
 
     @NotNull
@@ -132,7 +140,11 @@ public abstract class SQLQueryCompletionContext {
      * Prepare a set of completion proposal items for a given position in the text of the script item
      */
     @NotNull
-    public abstract SQLQueryCompletionSet prepareProposal(@NotNull DBRProgressMonitor monitor, int position, SQLCompletionRequest request);
+    public abstract SQLQueryCompletionSet prepareProposal(
+        @NotNull DBRProgressMonitor monitor,
+        int position,
+        @NotNull SQLCompletionRequest request
+    );
 
     /**
      * Prepare completion context for the script item in the given contexts (execution, syntax and semantics)
@@ -168,8 +180,8 @@ public abstract class SQLQueryCompletionContext {
                 if (this.aliasesInUse == null) {
                     this.aliasesInUse = this.referencedSources.values().stream()
                         .map(srr -> srr.aliasOrNull)
-                        .filter(s -> s != null)
-                        .map(s -> s.getName())
+                        .filter(Objects::nonNull)
+                        .map(SQLQuerySymbol::getName)
                         .collect(Collectors.toSet());
                 }
                 return this.aliasesInUse;
@@ -252,7 +264,13 @@ public abstract class SQLQueryCompletionContext {
                 return result;
             }
 
-            private @NotNull List<SQLQueryCompletionItem> accomplishTableReference(@NotNull DBRProgressMonitor monitor, Class<?> componentType, List<String> prefix, String tail) {
+            @NotNull
+            private List<SQLQueryCompletionItem> accomplishTableReference(
+                @NotNull DBRProgressMonitor monitor,
+                @NotNull Class<?> componentType,
+                @NotNull List<String> prefix,
+                @NotNull String tail
+            ) {
                 if (dbcExecutionContext == null || dbcExecutionContext.getDataSource() == null) {
                     return Collections.emptyList();
                 } else {
@@ -272,7 +290,8 @@ public abstract class SQLQueryCompletionContext {
                 }
             }
 
-            private @Nullable List<SQLQueryCompletionItem> accomplishColumnReference(List<String> prefix, String tail) {
+            @NotNull
+            private List<SQLQueryCompletionItem> accomplishColumnReference(@NotNull List<String> prefix, @NotNull String tail) {
                 if (prefix.size() == 1) { // table-ref-prefixed column
                     String mayBeAliasName = prefix.get(0).toLowerCase();
                     SourceResolutionResult srr = this.referencedSources.values().stream()
@@ -439,7 +458,10 @@ public abstract class SQLQueryCompletionContext {
             }
 
             @NotNull
-            private List<SQLQueryCompletionItem> prepareTableCompletions(@NotNull DBRProgressMonitor monitor, SQLCompletionRequest request) {
+            private List<SQLQueryCompletionItem> prepareTableCompletions(
+                @NotNull DBRProgressMonitor monitor,
+                @NotNull SQLCompletionRequest request
+            ) {
                 Set<DBSObject> alreadyReferencedObjects = new HashSet<>();
                 
                 LinkedList<SQLQueryCompletionItem> completions = new LinkedList<>();
@@ -516,6 +538,7 @@ public abstract class SQLQueryCompletionContext {
                 );
             }
 
+            @NotNull
             private <T extends DBSObject> void collectObjectsRecursively(
                 @NotNull DBRProgressMonitor monitor,
                 @NotNull DBSObjectContainer container,
@@ -528,7 +551,7 @@ public abstract class SQLQueryCompletionContext {
                 for (DBSObject child : children) {
                     if (!DBUtils.isHiddenObject(child)) {
                         if (types.stream().anyMatch(t -> t.isInstance(child)) && !alreadyReferencedObjects.contains(child)) {
-                            accumulator.add(completionItemFabric.apply((T)child));
+                            accumulator.add(completionItemFabric.apply((T) child));
                         } else if (child instanceof DBSObjectContainer sc) {
                             collectObjectsRecursively(monitor, sc, alreadyReferencedObjects, accumulator, types, completionItemFabric);
                         }
