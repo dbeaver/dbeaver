@@ -333,7 +333,14 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
         }
         final MavenRegistry registry = MavenRegistry.getInstance();
         registry.setCustomRepositories(customRepos);
-        registry.saveConfiguration();
+
+        try {
+            registry.saveConfiguration();
+        } catch (Exception e) {
+            DBWorkbench.getPlatformUI().showError("Unable to save Maven repositories", e.getMessage(), e);
+            return false;
+        }
+
         return super.performOk();
     }
 
