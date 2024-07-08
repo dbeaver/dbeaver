@@ -228,6 +228,7 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_completion_label_replace_word_after;
     public static String pref_page_sql_completion_label_replace_word_after_tip;
     public static String pref_page_sql_completion_label_hide_duplicate_names;
+    public static String pref_page_sql_completion_label_object_names_form;
     public static String pref_page_sql_completion_label_use_short_names;
     public static String pref_page_sql_completion_label_use_long_names;
     public static String pref_page_sql_completion_label_insert_space;
@@ -314,7 +315,7 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_label_clear_output_before_execute;
     public static String pref_page_sql_editor_label_clear_output_before_execute_tip;
 
-	public static String pref_page_sql_insert_case_default;
+	public static String pref_page_sql_default;
 	public static String pref_page_sql_insert_case_lower_case;
 	public static String pref_page_sql_insert_case_upper_case;
 

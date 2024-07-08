@@ -24,6 +24,7 @@ import org.antlr.v4.runtime.tree.Trees;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzerParameters;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser.SqlQueriesContext;
+import org.jkiss.dbeaver.model.stm.LSMInspections;
 import org.jkiss.dbeaver.model.stm.STMErrorListener;
 
 import javax.xml.stream.FactoryConfigurationError;
@@ -94,7 +95,7 @@ public class SyntaxParserTest {
 
         inputText = "SELECT * FROM EMPLOYEES e WHERE e.EMPLOYEE_ID > :xl ";
 
-        inputText = "DROP PROCEDURE IF EXISTS sdgfsadgf";
+        inputText = "select * from x where  ";
 
         var input = CharStreams.fromString(inputText);
         var params = new LSMAnalyzerParameters(
@@ -158,7 +159,9 @@ public class SyntaxParserTest {
             collect(tree, pp, sb, "");
             System.out.println(sb.toString());
         }
-        
+
+        System.out.println(LSMInspections.prepareTerms(tree));
+        System.out.println(LSMInspections.prepareAbstractSyntaxInspection(tree, inputText.length() - 1).getReachabilityByName());
     }
     
     private static void collect(Tree ctx, Parser pp, StringBuilder sb, String indent) {        

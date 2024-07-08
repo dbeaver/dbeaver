@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCompletionProposal;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 
@@ -54,7 +55,7 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
     @NotNull
     private final SQLCompletionRequest request;
     @NotNull
-    private volatile List<ICompletionProposal> proposals = Collections.emptyList();
+    private volatile List<SQLCompletionProposal> proposals = Collections.emptyList();
 
     public SQLQueryCompletionAnalyzer(@NotNull SQLEditorBase editor, @NotNull SQLCompletionRequest request) {
         this.editor = editor;
@@ -66,8 +67,11 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
         int position = this.request.getDocumentOffset();
         SQLQueryCompletionContext completionContext = this.editor.obtainCompletionContext(position);
         if (completionContext != null) {
-            SQLQueryCompletionSet completionSet = completionContext.prepareProposal(monitor, position);
-            
+            SQLQueryCompletionSet completionSet = completionContext.prepareProposal(monitor, position, this.request);
+            SQLQueryCompletionTextProvider formatter = new SQLQueryCompletionTextProvider(this.request, completionContext, monitor);
+            SQLQueryCompletionExtraTextProvider extraFormatter = new SQLQueryCompletionExtraTextProvider();
+            SQLQueryCompletionDescriptionProvider descriptionProvider = new SQLQueryCompletionDescriptionProvider();
+
             this.proposals = new ArrayList<>(completionSet.getItems().size()); 
             for (SQLQueryCompletionItem item : completionSet.getItems()) {
                 DBPNamedObject object = SQLQueryDummyDataSourceContext.isDummyObject(item.getObject()) ? null : item.getObject();
@@ -82,8 +86,9 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
                     default -> throw new IllegalStateException("Unexpected completion item kind " + item.getKind());
                 };
                 DBPKeywordType kwType = item.getKind() == SQLQueryCompletionItemKind.RESERVED ? DBPKeywordType.KEYWORD : DBPKeywordType.OTHER;
-                // TODO wtf resulting cursor position
-                this.proposals.add(new SQLCompletionProposal(this.request, item.getText(), item.getText(), item.getText().length(), image, kwType, item.getDescription(), object, Collections.emptyMap()) {
+                String text = item.apply(formatter);
+                String description = item.apply(descriptionProvider); // TODO maybe move to the getAdditionalInfo(..) ?
+                this.proposals.add(new SQLCompletionProposal(this.request, text, text, text.length(), image, kwType, description, object, Collections.emptyMap()) {
                     @Override
                     public Object getAdditionalInfo(DBRProgressMonitor monitor) {
                         if (object instanceof DBSObject o) {
@@ -98,7 +103,7 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
                     @Override
                     public StyledString getStyledDisplayString() {
                         StyledString result = super.getStyledDisplayString();
-                        String extra = item.getExtraText();
+                        String extra = item.apply(extraFormatter);
                         if (extra != null) {
                             int oldLength = result.length();
                             result.append(" " + extra);
@@ -123,11 +128,15 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
 //                        item.getDescription()
 //                ));
             }
+
+            if (this.request.getContext().isSortAlphabetically()) {
+                this.proposals.sort(Comparator.comparing(SQLCompletionProposal::getReplacementString, String::compareToIgnoreCase));
+            }
         }
     }
 
     @NotNull
-    public List<ICompletionProposal> getProposals() {
+    public List<? extends ICompletionProposal> getProposals() {
         return this.proposals;
     }
 }

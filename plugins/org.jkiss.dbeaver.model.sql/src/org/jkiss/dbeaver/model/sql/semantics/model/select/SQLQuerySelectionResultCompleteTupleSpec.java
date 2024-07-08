@@ -41,7 +41,7 @@ public class SQLQuerySelectionResultCompleteTupleSpec extends SQLQuerySelectionR
         @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
-        return context.getColumnsList().stream();
+        return context.getColumnsList().stream().map(c -> new SQLQueryResultColumn(c.symbol, rowsSourceModel, c.realSource, c.realAttr, c.type));
     }
 
     @Override

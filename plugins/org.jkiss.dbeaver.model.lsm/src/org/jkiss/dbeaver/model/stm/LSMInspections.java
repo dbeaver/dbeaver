@@ -29,7 +29,6 @@ import org.jkiss.utils.Pair;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 public class LSMInspections {
@@ -41,8 +40,12 @@ public class LSMInspections {
     private static final Set<Integer> reachabilityTestRules = Set.of(
         SQLStandardParser.RULE_tableName,
         SQLStandardParser.RULE_columnReference,
-        //SQLStandardParser.RULE_identifier,
-        SQLStandardParser.RULE_columnName
+        SQLStandardParser.RULE_identifier,
+        SQLStandardParser.RULE_columnName,
+        SQLStandardParser.RULE_deleteStatement,
+        SQLStandardParser.RULE_nonjoinedTableReference,
+        SQLStandardParser.RULE_derivedColumn,
+        SQLStandardParser.RULE_pattern
     );
 
     private static final Map<Integer, List<Integer>> subtreeTests = Map.ofEntries(
@@ -50,14 +53,19 @@ public class LSMInspections {
     );
 
     @NotNull
-    private static final Set<Integer> knownReservedWordsExcludeRules = Stream.of(reachabilityTestRules, Set.of(
+    private static final Set<Integer> knownReservedWordsExcludeRules = Set.of(
+        SQLStandardParser.RULE_tableName,
+        SQLStandardParser.RULE_columnReference,
+        SQLStandardParser.RULE_identifier,
+        SQLStandardParser.RULE_columnName,
+
         SQLStandardParser.RULE_nonReserved,
         SQLStandardParser.RULE_anyUnexpected,
         SQLStandardParser.RULE_aggregateExprParam,
         SQLStandardParser.RULE_anyWord,
         SQLStandardParser.RULE_correlationName,
         SQLStandardParser.RULE_tableHintKeywords
-    )).flatMap(Set::stream).collect(Collectors.toUnmodifiableSet());
+    );
 
     @NotNull
     private static Pair<STMTreeNode, Boolean> findChildBeforeOrAtPosition(@NotNull STMTreeNode node, int position) {
@@ -95,11 +103,16 @@ public class LSMInspections {
         if (position < range.a) {
             return prepareOffquerySyntaxInspection();
         } else {
-            // TODO collect position-prepending identifier based on subtree path and get rid of prepareTerms()
-            // position >= range.a && position <= range.b
-            Pair<STMTreeNode, Boolean> p = Pair.of(subroot, true);
-            while (!(p.getFirst() instanceof STMTreeTermNode term) && p.getFirst() != null) {
-                p = findChildBeforeOrAtPosition(subroot = p.getFirst(), position);
+            Pair<STMTreeNode, Boolean> p;
+            if (position > range.b) {
+                p = Pair.of(null, false);
+            } else {
+                // TODO collect position-prepending identifier based on subtree path and get rid of prepareTerms()
+                // position >= range.a && position <= range.b
+                p = Pair.of(subroot, true);
+                while (!(p.getFirst() instanceof STMTreeTermNode term) && p.getFirst() != null) {
+                    p = findChildBeforeOrAtPosition(subroot = p.getFirst(), position);
+                }
             }
 
             ATNState initialState;
@@ -193,6 +206,19 @@ public class LSMInspections {
     }
 
     public static class SyntaxInspectionResult {
+
+        public static final SyntaxInspectionResult EMPTY = new SyntaxInspectionResult(
+            Collections.emptySet(),
+            Collections.emptySet(),
+            Collections.emptyMap(),
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+        );
+
         @NotNull
         public final Set<Integer> predictedTokensIds;
         @NotNull
@@ -204,13 +230,20 @@ public class LSMInspections {
         public final boolean expectingColumnReference;
         public final boolean expectingIdentifier;
 
+        public final boolean expectingTableSourceIntroduction;
+        public final boolean expectingColumnIntroduction;
+        public final boolean expectingValue;
+
         public SyntaxInspectionResult(
             @NotNull Set<Integer> predictedTokenIds,
             @NotNull Set<String> predictedWords,
             @NotNull Map<Integer, Boolean> reachabilityTests,
             boolean expectingTableReference,
             boolean expectingColumnReference,
-            boolean expectingIdentifier
+            boolean expectingIdentifier,
+            boolean expectingTableSourceIntroduction,
+            boolean expectingColumnIntroduction,
+            boolean expectingValue
         ) {
             this.predictedTokensIds = predictedTokenIds;
             this.predictedWords = predictedWords;
@@ -218,6 +251,9 @@ public class LSMInspections {
             this.expectingTableReference = expectingTableReference;
             this.expectingColumnReference = expectingColumnReference;
             this.expectingIdentifier = expectingIdentifier;
+            this.expectingTableSourceIntroduction = expectingTableSourceIntroduction;
+            this.expectingColumnIntroduction = expectingColumnIntroduction;
+            this.expectingValue = expectingValue;
         }
 
         @NotNull
@@ -250,13 +286,20 @@ public class LSMInspections {
             }
         }
 
+        boolean expectingTableName = reachabilityTests.get(SQLStandardParser.RULE_tableName);
+        boolean expectingColumnReference = reachabilityTests.get(SQLStandardParser.RULE_columnReference) || reachabilityTests.get(SQLStandardParser.RULE_columnName);
         return new SyntaxInspectionResult(
             predictedTokenIds,
             predictedWords,
             reachabilityTests,
-            reachabilityTests.get(SQLStandardParser.RULE_tableName),
-            reachabilityTests.get(SQLStandardParser.RULE_columnReference) || reachabilityTests.get(SQLStandardParser.RULE_columnName),
-            false // reachabilityTests.get(SQLStandardParser.RULE_identifier)
+            expectingTableName,
+            expectingColumnReference,
+            reachabilityTests.get(SQLStandardParser.RULE_identifier),
+            expectingTableName && (
+                reachabilityTests.get(SQLStandardParser.RULE_nonjoinedTableReference) || reachabilityTests.get(SQLStandardParser.RULE_deleteStatement)
+            ),
+            expectingColumnReference && reachabilityTests.get(SQLStandardParser.RULE_derivedColumn),
+            reachabilityTests.get(SQLStandardParser.RULE_pattern)
         );
     }
 
@@ -295,12 +338,20 @@ public class LSMInspections {
         return tokens;
     }
 
+    private static String collectStack(ListNode<Integer> stack) {
+        return StreamSupport.stream(stack.spliterator(), false)
+            .map(ss -> ss == null ? "<NULL>" : SQLStandardParser.ruleNames[ss])
+            .collect(Collectors.joining(", "));
+    }
+
     @NotNull
     private static Collection<Transition> collectFollowingTerms(
         @NotNull ListNode<Integer> stateStack,
         @NotNull ATNState initialState, Set<Integer> exceptRules,
-        @NotNull Map<Integer, Boolean> reachabilityTest
+        @NotNull Map<Integer, Boolean> reachabilityTests
     ) {
+        performSubtreeTests(reachabilityTests, stateStack);
+
         HashSet<ATNState> visited = new HashSet<>();
         HashSet<Transition> results = new HashSet<>();
         LinkedList<Pair<ATNState, ListNode<Integer>>> q = new LinkedList<>();
@@ -334,34 +385,12 @@ public class LSMInspections {
                                 }
                             }
                             case ATNState.RULE_START -> {
-                                reachabilityTest.computeIfPresent(state.ruleIndex, (k, v) -> true);
-                                if (reachabilityTest.containsKey(state.ruleIndex)) {
-                                    String s = StreamSupport.stream(stateStack.spliterator(), false)
-                                                            .map(ss -> ss == null ? "<NULL>" : SQLStandardParser.ruleNames[ss])
-                                                            .collect(Collectors.joining(", "));
-                                    System.out.println(s);
-                                }
-                                {
-                                    subtreeTests:
-                                    for (Map.Entry<Integer, List<Integer>> subtreeTest: subtreeTests.entrySet()) {
-                                        ListNode<Integer> stackItem = stateStack;
-                                        Iterator<Integer> subtreeTestPath = subtreeTest.getValue().iterator();
-                                        if (subtreeTestPath.hasNext() && subtreeTestPath.next().equals(state.ruleIndex)) {
-                                            while (subtreeTestPath.hasNext()) {
-                                                if (subtreeTestPath.next().equals(stackItem.data)) {
-                                                    stackItem = stackItem.next;
-                                                } else {
-                                                    continue subtreeTests;
-                                                }
-                                            }
-                                        }
-                                        reachabilityTest.computeIfPresent(subtreeTest.getKey(), (k, v) -> true);
-                                    }
-                                }
+                                reachabilityTests.computeIfPresent(state.ruleIndex, (k, v) -> true);
+
+                                transitionStack = ListNode.push(stack, state.ruleIndex);
+                                performSubtreeTests(reachabilityTests, transitionStack);
                                 if (exceptRules.contains(state.ruleIndex)) {
                                     continue;
-                                } else {
-                                    transitionStack = ListNode.push(stack, state.ruleIndex);
                                 }
                             }
                             default -> transitionStack = stack;
@@ -376,5 +405,22 @@ public class LSMInspections {
             }
         }
         return results;
+    }
+
+    private static void performSubtreeTests(@NotNull Map<Integer, Boolean> reachabilityTest, ListNode<Integer> stack) {
+        subtreeTests:
+        for (Map.Entry<Integer, List<Integer>> subtreeTest: subtreeTests.entrySet()) {
+            ListNode<Integer> stackItem = stack;
+            Iterator<Integer> subtreeTestPath = subtreeTest.getValue().iterator();
+
+            while (subtreeTestPath.hasNext()) {
+                if (subtreeTestPath.next().equals(stackItem.data)) {
+                    stackItem = stackItem.next;
+                } else {
+                    continue subtreeTests;
+                }
+            }
+            reachabilityTest.computeIfPresent(subtreeTest.getKey(), (k, v) -> true);
+        }
     }
 }

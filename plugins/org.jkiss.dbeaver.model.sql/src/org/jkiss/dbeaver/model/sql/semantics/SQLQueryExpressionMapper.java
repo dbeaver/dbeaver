@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceModel, SQLQueryModelContext> {
     public SQLQueryExpressionMapper(@Nullable SQLQueryModelContext recognizer) {
@@ -236,7 +237,8 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
             STMTreeNode tableExpr = n.findChildOfName(STMKnownRuleNames.tableExpression);
             SQLQueryRowsProjectionModel projectionModel;
             if (tableExpr != null) {
-                selectListScope.registerSyntaxNode(tableExpr.getStmChild(0)); // FROM keyword
+                STMTreeNode fromKeywordNode = tableExpr.getStmChild(0);
+                selectListScope.registerSyntaxNode(fromKeywordNode); // FROM keyword
                 SQLQueryValueExpression whereExpr = Optional.ofNullable(tableExpr.findChildOfName(STMKnownRuleNames.whereClause))
                     .map(r::collectValueExpression).orElse(null);
                 SQLQueryValueExpression havingClause = Optional.ofNullable(tableExpr.findChildOfName(STMKnownRuleNames.havingClause))
@@ -245,6 +247,11 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
                     .map(r::collectValueExpression).orElse(null);
                 SQLQueryValueExpression orderByClause = Optional.ofNullable(tableExpr.findChildOfName(STMKnownRuleNames.orderByClause))
                     .map(r::collectValueExpression).orElse(null);
+
+                int end = Stream.of(whereExpr, havingClause, groupByClause, orderByClause).filter(t -> t != null).findFirst()
+                    .map(t -> t.getSyntaxNode().getRealInterval().a).orElse(Integer.MAX_VALUE);
+                selectListScope.setInterval(Interval.of(fromKeywordNode.getRealInterval().a, end));
+
                 projectionModel = new SQLQueryRowsProjectionModel(r, n, selectListScope, source, resultModel, whereExpr, havingClause, groupByClause, orderByClause);
             } else {
                 projectionModel = new SQLQueryRowsProjectionModel(r, n, selectListScope, source, resultModel);

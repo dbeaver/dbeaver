@@ -147,7 +147,6 @@ public class SQLBackgroundParsingJob {
     }
     
     private final Set<Integer> knownIdentifierPartTerms = Set.of(
-        SQLStandardLexer.Period,
         SQLStandardLexer.Identifier,
         SQLStandardLexer.DelimitedIdentifier,
         SQLStandardLexer.Quotted
@@ -213,15 +212,23 @@ public class SQLBackgroundParsingJob {
             if (index < 0) {
                 index = ~index - 1;
             }
-            if (allTerms.get(index).getRealInterval().b == position  - 1) {
+            if (index >= 0) {
+                STMTreeTermNode immTerm = allTerms.get(index);
+                if (immTerm.symbol.getType() == SQLStandardLexer.Period) {
+                    index--; // skip identifier separator immediately before the cursor
+                }
                 for (int i = index; i >= 0; i--) {
                     STMTreeTermNode term = allTerms.get(i);
                     if (knownIdentifierPartTerms.contains(term.symbol.getType())
                         || (term.getStmParent() != null && term.getStmParent().getNodeKindId() == SQLStandardParser.RULE_nonReserved)
                     ) {
                         nameNodes.addFirst(term);
+                        i--;
+                        if (i < 0 || allTerms.get(i).symbol.getType() != SQLStandardLexer.Period) {
+                            break; // not followed by an identifier separator part
+                        }
                     } else {
-                        break;
+                        break; // not an identifier part
                     }
                 }
             }

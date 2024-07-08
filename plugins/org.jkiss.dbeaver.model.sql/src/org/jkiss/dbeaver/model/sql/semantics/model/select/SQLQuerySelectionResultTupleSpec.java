@@ -65,7 +65,8 @@ public class SQLQuerySelectionResultTupleSpec extends SQLQuerySelectionResultSub
 
         SQLQueryRowsSourceModel tupleSource = this.tupleReference.getTupleSource();
         if (tupleSource != null) {
-            return tupleSource.getResultDataContext().getColumnsList().stream();
+            return tupleSource.getResultDataContext().getColumnsList().stream()
+                .map(c -> new SQLQueryResultColumn(c.symbol, rowsSourceModel, c.realSource, c.realAttr, c.type));
         } else {
             return Stream.empty();
         }
