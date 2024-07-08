@@ -15,7 +15,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.navigator
-Export-Package: org.jkiss.dbeaver.ui.editors.object.config,
+Export-Package: org.jkiss.dbeaver.ui.editors.object,
+ org.jkiss.dbeaver.ui.editors.object.config,
  org.jkiss.dbeaver.ui.editors.object.struct
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ui.editors.entity
