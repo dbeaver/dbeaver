@@ -202,6 +202,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private final List<DriverFileSource> fileSources = new ArrayList<>();
     private final List<DBPDriverLibrary> libraries = new ArrayList<>();
     private final List<DBPDriverLibrary> origFiles = new ArrayList<>();
+    private final List<ProviderPropertyDescriptor> mainPropertyDescriptors = new ArrayList<>();
     private final List<ProviderPropertyDescriptor> providerPropertyDescriptors = new ArrayList<>();
     private final List<OSDescriptor> supportedSystems = new ArrayList<>();
 
@@ -321,6 +322,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                     this.libraries.add(library);
                 }
             }
+            this.mainPropertyDescriptors.addAll(copyFrom.mainPropertyDescriptors);
             this.providerPropertyDescriptors.addAll(copyFrom.providerPropertyDescriptors);
 
             this.defaultParameters.putAll(copyFrom.defaultParameters);
@@ -425,6 +427,26 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                         os.getAttribute(RegistryConstants.ATTR_NAME),
                         os.getAttribute(RegistryConstants.ATTR_ARCH)
                 ));
+            }
+        }
+
+        {
+            IConfigurationElement[] pp = config.getChildren(RegistryConstants.TAG_MAIN_PROPERTIES);
+            if (!ArrayUtils.isEmpty(pp)) {
+                String copyFromDriverId = pp[0].getAttribute("copyFrom");
+                if (!CommonUtils.isEmpty(copyFromDriverId)) {
+                    DriverDescriptor copyFromDriver = providerDescriptor.getDriver(copyFromDriverId);
+                    if (copyFromDriver == null) {
+                        log.debug("Driver '" + copyFromDriverId + "' not found. Cannot copy main properties into '" + getId() + "'");
+                    } else {
+                        this.mainPropertyDescriptors.addAll(copyFromDriver.mainPropertyDescriptors);
+                    }
+                }
+                this.mainPropertyDescriptors.addAll(
+                    Arrays.stream(pp[0].getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP))
+                        .map(ProviderPropertyDescriptor::extractProviderProperties)
+                        .flatMap(List<ProviderPropertyDescriptor>::stream)
+                        .toList());
             }
         }
 
@@ -1111,6 +1133,16 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @NotNull
     @Override
+    public DBPPropertyDescriptor[] getMainPropertyDescriptors() {
+        return mainPropertyDescriptors.toArray(new DBPPropertyDescriptor[0]);
+    }
+
+    public void addMainPropertyDescriptors(Collection<ProviderPropertyDescriptor> props) {
+        mainPropertyDescriptors.addAll(props);
+    }
+
+    @NotNull
+    @Override
     public ProviderPropertyDescriptor[] getProviderPropertyDescriptors() {
         return providerPropertyDescriptors.toArray(new ProviderPropertyDescriptor[0]);
     }
@@ -1527,14 +1559,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     private Collection<? extends Path> readJarsFromDir(Path localFile) {
-        try {
-            List<Path> folderFiles = Files.list(localFile)
+        try (Stream<Path> list = Files.list(localFile)) {
+            return list
                 .filter(p -> {
                     String fileName = p.getFileName().toString();
                     return fileName.endsWith(".jar") || fileName.endsWith(".zip");
                 })
                 .collect(Collectors.toList());
-            return folderFiles;
         } catch (IOException e) {
             log.error("Error reading driver directory '" + localFile + "'", e);
             return Collections.emptyList();
@@ -1887,20 +1918,22 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     private void resolveDirectories(Path targetFileLocation, DBPDriverLibrary library, Path srcLocalFile, Path trgLocalFile, List<DriverFileInfo> libraryFiles) throws IOException {
         // Resolve directory contents
-        List<Path> srcDirFiles = Files.list(srcLocalFile).collect(Collectors.toList());
-        for (Path dirFile : srcDirFiles) {
-            String fileName = dirFile.getFileName().toString();
-            // Skip non-libraries
-            if (fileName.endsWith(".txt")) {
-                continue;
-            }
-            Path trgDirFile = trgLocalFile.resolve(dirFile.getFileName());
-            if (Files.isDirectory(dirFile)) {
-                resolveDirectories(targetFileLocation, library, dirFile, trgDirFile, libraryFiles);
-            } else {
-                DriverFileInfo fileInfo = resolveFile(targetFileLocation, library, dirFile, trgDirFile);
-                if (fileInfo != null) {
-                    libraryFiles.add(fileInfo);
+        try (Stream<Path> list = Files.list(srcLocalFile)) {
+            List<Path> srcDirFiles = list.toList();
+            for (Path dirFile : srcDirFiles) {
+                String fileName = dirFile.getFileName().toString();
+                // Skip non-libraries
+                if (fileName.endsWith(".txt")) {
+                    continue;
+                }
+                Path trgDirFile = trgLocalFile.resolve(dirFile.getFileName());
+                if (Files.isDirectory(dirFile)) {
+                    resolveDirectories(targetFileLocation, library, dirFile, trgDirFile, libraryFiles);
+                } else {
+                    DriverFileInfo fileInfo = resolveFile(targetFileLocation, library, dirFile, trgDirFile);
+                    if (fileInfo != null) {
+                        libraryFiles.add(fileInfo);
+                    }
                 }
             }
         }

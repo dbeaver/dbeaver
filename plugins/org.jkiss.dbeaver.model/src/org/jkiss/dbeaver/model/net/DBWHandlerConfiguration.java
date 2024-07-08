@@ -174,6 +174,10 @@ public class DBWHandlerConfiguration {
         return CommonUtils.toInt(this.properties.get(name));
     }
 
+    public int getIntProperty(@NotNull String name, int defValue) {
+        return CommonUtils.toInt(this.properties.get(name), defValue);
+    }
+
     public boolean getBooleanProperty(@NotNull String name) {
         return this.getBooleanProperty(name, false);
     }

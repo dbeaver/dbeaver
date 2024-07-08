@@ -35,6 +35,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -622,7 +623,7 @@ public class GreenplumExternalTableTest {
     public void generateChangeOwnerQuery_whenProvidedAValidOwner_thenShouldGenerateQuerySuccessfully() {
         GreenplumExternalTable table = new GreenplumExternalTable(mockSchema, mockResults);
         Assert.assertEquals("ALTER EXTERNAL TABLE \"sampleSchema\".\"sampleTable\" OWNER TO someOwner",
-                table.generateChangeOwnerQuery("someOwner"));
+                table.generateChangeOwnerQuery("someOwner", new HashMap<>()));
     }
 
     private PostgreTableColumn mockDbColumn(String columnName, String columnType, int ordinalPosition) {

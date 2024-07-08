@@ -148,7 +148,7 @@ public class SQLQuerySymbolEntry extends SQLQueryLexicalScopeItem implements SQL
 
     @Override
     public String toString() {
-        return super.toString() + "[" + this.name + ", " + this.getSymbolClass() + "]";
+        return this.name + " (" + this.getSymbolClass() + ")";
     }
 
     public boolean isNotClassified() {

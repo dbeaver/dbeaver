@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.datavirtuality.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -34,13 +35,6 @@ public class DataVirtualityDataSource extends GenericDataSource {
         throws DBException
     {
         super(monitor, container, metaModel, new DataVirtualitySQLDialect());
-    }
-
-    @Override
-    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
-        Map<String, String> props = new HashMap<>();
-
-        return props;
     }
 
     @Override
