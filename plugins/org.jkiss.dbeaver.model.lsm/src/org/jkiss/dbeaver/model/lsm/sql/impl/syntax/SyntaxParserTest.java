@@ -95,7 +95,7 @@ public class SyntaxParserTest {
 
         inputText = "SELECT * FROM EMPLOYEES e WHERE e.EMPLOYEE_ID > :xl ";
 
-        inputText = "select * from x where  ";
+        inputText = "select * from x join y on  ";
 
         var input = CharStreams.fromString(inputText);
         var params = new LSMAnalyzerParameters(
@@ -152,7 +152,7 @@ public class SyntaxParserTest {
         String str = tree.getTextContent();
 
         System.out.println(str);
-        
+
         { // print simple parse tree view
             var sb = new StringBuilder();
             sb.append("\n");

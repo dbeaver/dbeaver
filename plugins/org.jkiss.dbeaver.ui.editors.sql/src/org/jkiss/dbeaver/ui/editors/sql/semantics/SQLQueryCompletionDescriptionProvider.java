@@ -39,7 +39,7 @@ public class SQLQueryCompletionDescriptionProvider implements SQLQueryCompletion
                 : DBUtils.getObjectFullName(columnName.columnInfo.realAttr, DBPEvaluationContext.DML);
 
         if (columnName.columnInfo.symbol.getSymbolClass() == SQLQuerySymbolClass.COLUMN_DERIVED) {
-            return "Derived column name " + (originalColumnName != null ? "for real column " + originalColumnName : "") +
+            return "Derived column #" + columnName.columnInfo.index + " " + (originalColumnName != null ? "for real column " + originalColumnName : "") +
                     " from the subquery \n" + columnName.columnInfo.source.getSyntaxNode().getTextContent();
         } else {
             if (columnName.columnInfo.realAttr != null) {

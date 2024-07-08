@@ -204,11 +204,11 @@ public abstract class SQLQueryCompletionContext {
                         : prepareKeywordCompletions(syntaxInspectionResult.predictedWords, currentWord);
                 
                 List<SQLQueryCompletionItem> columnRefCompletions = 
-                    syntaxInspectionResult.expectingColumnReference
+                    syntaxInspectionResult.expectingColumnReference && nameNodes.length == 0
                         ? this.prepareColumnCompletions(null) : Collections.emptyList();
                 
                 List<SQLQueryCompletionItem> tableRefCompletions = 
-                    syntaxInspectionResult.expectingTableReference
+                    syntaxInspectionResult.expectingTableReference && nameNodes.length == 0
                             ? this.prepareTableCompletions(monitor, request) : Collections.emptyList();
                 
                 List<SQLQueryCompletionItem> lexicalItemCompletions = 

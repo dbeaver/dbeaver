@@ -37,19 +37,28 @@ public class LSMInspections {
     private static final Set<String> knownReservedWords = new HashSet<>(BasicSQLDialect.INSTANCE.getReservedWords());
 
     @NotNull
+    private static final Set<Integer> presenceTestRules = Set.of(
+        SQLStandardParser.RULE_tableName,
+        SQLStandardParser.RULE_columnReference,
+        SQLStandardParser.RULE_identifier
+    );
+
+    @NotNull
     private static final Set<Integer> reachabilityTestRules = Set.of(
         SQLStandardParser.RULE_tableName,
         SQLStandardParser.RULE_columnReference,
         SQLStandardParser.RULE_identifier,
         SQLStandardParser.RULE_columnName,
-        SQLStandardParser.RULE_deleteStatement,
         SQLStandardParser.RULE_nonjoinedTableReference,
         SQLStandardParser.RULE_derivedColumn,
         SQLStandardParser.RULE_pattern
     );
 
-    private static final Map<Integer, List<Integer>> subtreeTests = Map.ofEntries(
-        Map.entry(SQLStandardParser.RULE_columnName, List.of(SQLStandardParser.RULE_anyUnexpected, SQLStandardParser.RULE_searchCondition))
+    private static final Map<Integer, List<List<Integer>>> subtreeTests = Map.ofEntries(
+        Map.entry(SQLStandardParser.RULE_columnReference, List.of(
+            List.of(SQLStandardParser.RULE_anyUnexpected, SQLStandardParser.RULE_searchCondition),
+            List.of(SQLStandardParser.RULE_anyUnexpected, SQLStandardParser.RULE_selectSublist)
+        ))
     );
 
     @NotNull
@@ -135,7 +144,7 @@ public class LSMInspections {
                         subroot = tn;
                         initialState = atn.states.get(tn.getAtnState()).getTransitions()[0].target;
                     } else {
-                        throw new IllegalStateException("TODO/WTF");
+                        throw new IllegalStateException("Ivalid ATN state");
                     }
                 }
                 // TODO watch for state context rule  
@@ -263,10 +272,26 @@ public class LSMInspections {
         }
     }
 
+    private static Map<Integer, Boolean> performPresenceTests(ListNode<Integer> stateStack) {
+        Map<Integer, Boolean> presenceTests = new HashMap<>(presenceTestRules.size());
+        presenceTestRules.forEach(n -> presenceTests.put(n, false));
+
+        for (Integer s : stateStack) {
+            presenceTests.computeIfPresent(s, (k, v) -> true);
+        }
+
+        performSubtreeTests(presenceTests, stateStack);
+
+        return presenceTests;
+    }
+
+
     @NotNull
     private static SyntaxInspectionResult inspectAbstractSyntaxAtState(@NotNull ListNode<Integer> stack, @NotNull ATNState initialState) {
         Set<String> predictedWords = new HashSet<>();
         Set<Integer> predictedTokenIds = new HashSet<>();
+
+        Map<Integer, Boolean> presenceTests = performPresenceTests(stack);
 
         Map<Integer, Boolean> reachabilityTests = new HashMap<>(reachabilityTestRules.size());
         reachabilityTestRules.forEach(n -> reachabilityTests.put(n, false));
@@ -286,18 +311,16 @@ public class LSMInspections {
             }
         }
 
-        boolean expectingTableName = reachabilityTests.get(SQLStandardParser.RULE_tableName);
-        boolean expectingColumnReference = reachabilityTests.get(SQLStandardParser.RULE_columnReference) || reachabilityTests.get(SQLStandardParser.RULE_columnName);
+        boolean expectingTableName = reachabilityTests.get(SQLStandardParser.RULE_tableName) || presenceTests.get(SQLStandardParser.RULE_tableName);
+        boolean expectingColumnReference = reachabilityTests.get(SQLStandardParser.RULE_columnReference) || reachabilityTests.get(SQLStandardParser.RULE_columnName) || presenceTests.get(SQLStandardParser.RULE_columnReference);
         return new SyntaxInspectionResult(
             predictedTokenIds,
             predictedWords,
             reachabilityTests,
             expectingTableName,
             expectingColumnReference,
-            reachabilityTests.get(SQLStandardParser.RULE_identifier),
-            expectingTableName && (
-                reachabilityTests.get(SQLStandardParser.RULE_nonjoinedTableReference) || reachabilityTests.get(SQLStandardParser.RULE_deleteStatement)
-            ),
+            reachabilityTests.get(SQLStandardParser.RULE_identifier) || presenceTests.get(SQLStandardParser.RULE_identifier),
+            expectingTableName && reachabilityTests.get(SQLStandardParser.RULE_nonjoinedTableReference),
             expectingColumnReference && reachabilityTests.get(SQLStandardParser.RULE_derivedColumn),
             reachabilityTests.get(SQLStandardParser.RULE_pattern)
         );
@@ -350,8 +373,6 @@ public class LSMInspections {
         @NotNull ATNState initialState, Set<Integer> exceptRules,
         @NotNull Map<Integer, Boolean> reachabilityTests
     ) {
-        performSubtreeTests(reachabilityTests, stateStack);
-
         HashSet<ATNState> visited = new HashSet<>();
         HashSet<Transition> results = new HashSet<>();
         LinkedList<Pair<ATNState, ListNode<Integer>>> q = new LinkedList<>();
@@ -408,19 +429,22 @@ public class LSMInspections {
     }
 
     private static void performSubtreeTests(@NotNull Map<Integer, Boolean> reachabilityTest, ListNode<Integer> stack) {
-        subtreeTests:
-        for (Map.Entry<Integer, List<Integer>> subtreeTest: subtreeTests.entrySet()) {
-            ListNode<Integer> stackItem = stack;
-            Iterator<Integer> subtreeTestPath = subtreeTest.getValue().iterator();
+        for (Map.Entry<Integer, List<List<Integer>>> subtreeTest : subtreeTests.entrySet()) {
+            subtreeTests:
+            for (List<Integer> subpath : subtreeTest.getValue()) {
+                ListNode<Integer> stackItem = stack;
 
-            while (subtreeTestPath.hasNext()) {
-                if (subtreeTestPath.next().equals(stackItem.data)) {
-                    stackItem = stackItem.next;
-                } else {
-                    continue subtreeTests;
+                for (Integer subpathNode : subpath) {
+                    if (subpathNode.equals(stackItem.data)) {
+                        stackItem = stackItem.next;
+                    } else {
+                        continue subtreeTests;
+                    }
                 }
+
+                reachabilityTest.computeIfPresent(subtreeTest.getKey(), (k, v) -> true);
+                break;
             }
-            reachabilityTest.computeIfPresent(subtreeTest.getKey(), (k, v) -> true);
         }
     }
 }

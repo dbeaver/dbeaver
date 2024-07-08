@@ -54,7 +54,7 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
     ) {
         this.request = request;
         this.queryCompletionContext = queryCompletionContext;
-        this.aliasMode = SQLTableAliasInsertMode.fromPreferences(request.getContext().getDataSource().getContainer().getPreferenceStore());
+        this.aliasMode = SQLTableAliasInsertMode.fromPreferences(request.getContext().getSyntaxManager().getPreferenceStore());
         this.structSeparator = request.getContext().getDataSource().getSQLDialect().getStructSeparator();
         this.localKnownColumnNames = queryCompletionContext.getDataContext() == null
             ? Collections.emptySet()

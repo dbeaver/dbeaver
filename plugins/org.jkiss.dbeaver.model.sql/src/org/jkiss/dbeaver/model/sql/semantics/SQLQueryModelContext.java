@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDummyDataSourceCont
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryObjectDropModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryTableDropModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryDeleteModel;
@@ -154,6 +155,17 @@ public class SQLQueryModelContext {
                 SQLQueryModel model = new SQLQueryModel(tree, contents, symbolEntries);
 
                 model.propagateContext(this.queryDataContext, new RecognitionContext(monitor));
+
+                int actualTailPosition = model.getSyntaxNode().getRealInterval().b;
+                SQLQueryNodeModel tailNode = model.findNodeContaining(actualTailPosition);
+                if (tailNode != model) {
+                    SQLQueryLexicalScope nodeScope = tailNode.findLexicalScope(actualTailPosition);
+                    SQLQueryLexicalScope tailScope = new SQLQueryLexicalScope();
+                    tailScope.setInterval(Interval.of(actualTailPosition, Integer.MAX_VALUE));
+                    tailScope.setContext(nodeScope != null && nodeScope.getContext() != null ? nodeScope.getContext() : tailNode.getGivenDataContext());
+                    model.registerLexicalScope(tailScope);
+                }
+
 
                 // var tt = new DebugGraphBuilder();
                 // tt.traverseObjs(model);
