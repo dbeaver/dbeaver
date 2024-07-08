@@ -139,7 +139,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
     }
 
     @Override
-    public DBNNode[] getChildren(DBRProgressMonitor monitor) {
+    public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor) {
         if (extraNodes.isEmpty()) {
             return projects;
         } else if (projects.length == 0) {

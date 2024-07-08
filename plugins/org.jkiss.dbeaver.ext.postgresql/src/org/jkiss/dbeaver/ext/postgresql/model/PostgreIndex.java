@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -240,7 +241,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
     }
 
     @Override
-    public List<PostgreIndexColumn> getAttributeReferences(DBRProgressMonitor monitor) {
+    public List<PostgreIndexColumn> getAttributeReferences(@NotNull DBRProgressMonitor monitor) {
         return columns;
     }
 
@@ -278,7 +279,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read index definition")) {
                 indexDDL = JDBCUtils.queryString(session, "SELECT pg_catalog.pg_get_indexdef(?)", indexId);
             } catch (SQLException e) {
-                throw new DBException(e, getDataSource());
+                throw new DBDatabaseException(e, getDataSource());
             }
         }
         return indexDDL;

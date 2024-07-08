@@ -51,5 +51,6 @@ public class VirtualUniqueKeyEditAction extends Action {
         } else {
             resultSetViewer.clearEntityIdentifier();
         }
+        resultSetViewer.getActivePresentation().refreshData(false, false, true);
     }
 }

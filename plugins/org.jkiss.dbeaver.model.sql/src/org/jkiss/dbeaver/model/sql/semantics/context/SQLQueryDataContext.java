@@ -21,10 +21,12 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryRowsCorrelatedSourceModel;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryRowsSourceModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsCorrelatedSourceModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -127,10 +129,14 @@ public abstract class SQLQueryDataContext {
     @NotNull
     public abstract SQLQueryRowsSourceModel getDefaultTable(@NotNull STMTreeNode syntaxNode);
 
+    public DBSObject findRealObject(DBRProgressMonitor monitor, DBSObjectType objectType, List<String> name) {
+        return null;
+    }
+
     /**
      * Representation of the information about rows sources involved in semantic model
      */
-    public class KnownSourcesInfo {
+    public static class KnownSourcesInfo {
         @NotNull
         private final Map<SQLQueryRowsSourceModel, SourceResolutionResult> sources = new HashMap<>();
 

@@ -156,7 +156,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                 activeDatabaseName = url.substring(divPos + 1, lastPos);
             }
         }
-        if (CommonUtils.isEmpty(activeDatabaseName)) {
+        if (CommonUtils.isEmpty(activeDatabaseName) && CommonUtils.isEmpty(configuration.getUserName())) {
             activeDatabaseName = PostgreConstants.DEFAULT_DATABASE;
         }
 
@@ -281,11 +281,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     @Override
     protected Map<String, String> getInternalConnectionProperties(
-        DBRProgressMonitor monitor,
-        DBPDriver driver,
-        JDBCExecutionContext context,
-        String purpose,
-        DBPConnectionConfiguration connectionInfo
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDriver driver,
+        @NotNull JDBCExecutionContext context,
+        @NotNull String purpose,
+        @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBCException {
         Map<String, String> props = new LinkedHashMap<>(PostgreDataSourceProvider.getConnectionsProps());
         final DBWHandlerConfiguration sslConfig = getContainer().getActualConnectionConfiguration().getHandler(PostgreConstants.HANDLER_SSL);
@@ -495,7 +495,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     @NotNull
     @Override
-    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) {
+    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) {
         return PostgreDatabase.class;
     }
 

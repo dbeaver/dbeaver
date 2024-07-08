@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.altibase.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObjectStatistics;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
@@ -55,9 +56,9 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
         VOLATILE_USER_DATA(8),
         UNKNOWN(-1);
         
-        private int stateIdx;
+        private final int stateIdx;
         
-        private TbsType(int stateIdx) {
+        TbsType(int stateIdx) {
             this.stateIdx = stateIdx;
         }
         
@@ -85,9 +86,9 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
         BACKUP_DISCARDED(1028),
         UNKNOWN(-1);
         
-        private int stateIdx;
+        private final int stateIdx;
         
-        private State(int stateIdx) {
+        State(int stateIdx) {
             this.stateIdx = stateIdx;
         }
         
@@ -105,16 +106,16 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
         }
     }
     
-    private int id;
-    private String name;
-    private String extentManagement;
-    private String segmentManagement;
-    private int dataFileCount;
-    private boolean isLogCompression;
-    private int pageSizeInBytes;
+    private final int id;
+    private final String name;
+    private final String extentManagement;
+    private final String segmentManagement;
+    private final int dataFileCount;
+    private final boolean isLogCompression;
+    private final int pageSizeInBytes;
     
-    private TbsType tbsType;
-    private State state;
+    private final TbsType tbsType;
+    private final State state;
     
     private volatile Long availableSize;
     private volatile Long usedSize;
@@ -228,7 +229,6 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
         return name;
     }
     
-    @NotNull
     @Property(viewable = true, order = 2)
     public int getId() {
         return id;
@@ -352,7 +352,7 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
     }
     
     @Override
-    public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         usedSize = null;
         availableSize = null;
         
@@ -404,7 +404,7 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
                 }
             }
         } catch (SQLException e) {
-            throw new DBException("Can't read tablespace statistics", e, getDataSource());
+            throw new DBDatabaseException("Can't read tablespace statistics", e, getDataSource());
         }
     }
 

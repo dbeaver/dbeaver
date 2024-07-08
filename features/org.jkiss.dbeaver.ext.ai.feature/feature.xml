@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.ext.ai.feature"
       label="%featureName"
-      version="1.0.34.qualifier"
+      version="1.0.37.qualifier"
       provider-name="%providerName"
       plugin="org.jkiss.dbeaver.ui.editors.sql.ai">
 
@@ -25,5 +25,6 @@
    <plugin id="org.jkiss.dbeaver.model.ai" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ui.editors.sql.ai" version="0.0.0" />
    <plugin id="org.jkiss.bundle.jackson" version="0.0.0" />
+   <plugin id="org.jkiss.bundle.okhttp" version="0.0.0" />
    <plugin id="org.jkiss.bundle.gpt3" version="0.0.0" />
 </feature>

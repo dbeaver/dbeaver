@@ -25,9 +25,9 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIElementFontStyle;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomToolTipHandler;
 import org.jkiss.dbeaver.ui.dnd.LocalObjectTransfer;
@@ -4227,9 +4227,20 @@ public abstract class LightGrid extends Canvas {
                 }
             } else if (rowHeaderVisible && hoveringItem >= 0 && x <= rowHeaderWidth) {
                 newTip = getLabelProvider().getToolTipText(getRow(hoveringItem));
-            } else {
-                // Top-left cell?
-                newTip = getLabelProvider().getToolTipText(null);
+            } else if (rowHeaderVisible && x <= rowHeaderWidth && columnHeadersVisible && y <= headerHeight) {
+                // Top-left cell
+                StringBuilder status = new StringBuilder();
+                for (IGridStatusColumn gsc : getContentProvider().getStatusColumns()) {
+                    String statusText = gsc.getStatusText();
+                    if (!CommonUtils.isEmpty(statusText)) {
+                        if (!status.isEmpty()) {
+                            status.append("\n");
+                        }
+                        status.append(gsc.getDisplayName())
+                            .append(": ").append(statusText);
+                    }
+                }
+                newTip = status.toString();
             }
 
             //Avoid unnecessarily resetting tooltip - this will cause the tooltip to jump around
@@ -4866,14 +4877,23 @@ public abstract class LightGrid extends Canvas {
 
         paintTopLeftCellCustom(gc, y);
 
-        if (getContentProvider().isGridReadOnly()) {
-            Image roIcon = DBeaverIcons.getImage(UIIcon.BUTTON_READ_ONLY);
-            Rectangle iconBounds = roIcon.getBounds();
-            int xPos = x + width - GridColumnRenderer.ARROW_MARGIN - iconBounds.width;
+        {
+            int xPos = x + width - GridColumnRenderer.ARROW_MARGIN;
             if (sortOrder != SWT.NONE) {
                 xPos -= GridColumnRenderer.SORT_WIDTH + GridColumnRenderer.IMAGE_SPACING;
             }
-            gc.drawImage(roIcon, xPos, y + (height - iconBounds.height) / 2);
+            IGridStatusColumn[] statusColumns = getContentProvider().getStatusColumns();
+            ArrayUtils.reverse(statusColumns);
+            for (IGridStatusColumn gsc : statusColumns) {
+                DBPImage statusIcon = gsc.getStatusIcon();
+                if (statusIcon != null) {
+                    Image statusImage = DBeaverIcons.getImage(statusIcon);
+                    Rectangle iconBounds = statusImage.getBounds();
+                    xPos -= iconBounds.width;
+                    gc.drawImage(statusImage, xPos, y + (height - iconBounds.height) / 2);
+                    xPos -= 1;
+                }
+            }
         }
 
         if (sortOrder != SWT.NONE) {

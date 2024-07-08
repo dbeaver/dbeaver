@@ -96,6 +96,7 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
         return """
             You are SQL assistant. You must produce SQL code for given prompt.
             You must produce valid SQL statement enclosed with Markdown code block and terminated with semicolon.
+            All database object names should be properly escaped according to the SQL dialect.
             All comments MUST be placed before query outside markdown code block.
             Be polite.
             """;

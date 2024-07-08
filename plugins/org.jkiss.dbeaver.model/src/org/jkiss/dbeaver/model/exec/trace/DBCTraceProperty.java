@@ -16,8 +16,29 @@
  */
 package org.jkiss.dbeaver.model.exec.trace;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPObject;
+
 /**
- * DBC Trace property
+ * DBC Trace property object
  */
-public interface DBCTraceProperty {
+public interface DBCTraceProperty extends DBPObject {
+
+    /**
+     * Property name.
+     */
+    @NotNull
+    String getName();
+
+    /**
+     * Property value.
+     */
+    @NotNull
+    String getValue();
+
+    /**
+     * Property description.
+     */
+    @NotNull
+    String getDescription();
 }

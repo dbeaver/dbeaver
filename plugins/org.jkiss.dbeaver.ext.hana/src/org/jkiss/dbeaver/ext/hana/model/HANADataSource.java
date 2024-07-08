@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.hana.model.plan.HANAPlanAnalyser;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -72,6 +73,14 @@ public class HANADataSource extends GenericDataSource implements DBCQueryPlanner
         return info;
     }
     
+    @Override
+    public DBPDataKind resolveDataKind(String typeName, int valueType) {
+        if (HANAConstants.DATA_TYPE_NAME_REAL_VECTOR.equalsIgnoreCase(typeName)) {
+            return DBPDataKind.ARRAY;
+        }
+        return super.resolveDataKind(typeName, valueType);
+    }
+
     /*
      * search
      */
@@ -109,7 +118,13 @@ public class HANADataSource extends GenericDataSource implements DBCQueryPlanner
     } 
 
     @Override
-    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
+    protected Map<String, String> getInternalConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDriver driver,
+        @NotNull JDBCExecutionContext context,
+        @NotNull String purpose,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBCException {
         Map<String, String> props = new HashMap<>();
         if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
             String appName = DBUtils.getClientApplicationName(getContainer(), context, purpose);

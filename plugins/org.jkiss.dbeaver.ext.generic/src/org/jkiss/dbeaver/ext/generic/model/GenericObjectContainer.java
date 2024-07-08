@@ -155,14 +155,12 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     }
 
     @Override
-    public List<? extends GenericTableBase> getTables(DBRProgressMonitor monitor)
-        throws DBException {
+    public List<? extends GenericTableBase> getTables(@NotNull DBRProgressMonitor monitor) throws DBException {
         return tableCache.getAllObjects(monitor, this);
     }
 
     @Override
-    public GenericTableBase getTable(DBRProgressMonitor monitor, String name)
-        throws DBException {
+    public GenericTableBase getTable(DBRProgressMonitor monitor, String name) throws DBException {
         return tableCache.getObject(monitor, this, name);
     }
 
@@ -366,7 +364,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
 
     @Override
     public Collection<? extends GenericSequence> getSequences(DBRProgressMonitor monitor) throws DBException {
-        return sequenceCache.getAllObjects(monitor, this);
+        return monitor == null ? sequenceCache.getCachedObjects() : sequenceCache.getAllObjects(monitor, this);
     }
 
     public GenericSequence getSequence(DBRProgressMonitor monitor, String name) throws DBException {
@@ -374,7 +372,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     }
 
     @Override
-    public Collection<? extends GenericSynonym> getSynonyms(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends GenericSynonym> getSynonyms(@NotNull DBRProgressMonitor monitor) throws DBException {
         return synonymCache.getAllObjects(monitor, this);
     }
 
@@ -383,7 +381,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     }
 
     @Override
-    public Collection<? extends GenericTrigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends GenericTrigger> getTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getDataSource().getMetaModel().supportsDatabaseTriggers(getDataSource()) ? containerTriggerCache.getAllObjects(monitor, this) : Collections.emptyList();
     }
 

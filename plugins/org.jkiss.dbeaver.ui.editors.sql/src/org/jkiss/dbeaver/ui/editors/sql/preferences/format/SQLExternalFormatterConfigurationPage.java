@@ -65,11 +65,20 @@ public class SQLExternalFormatterConfigurationPage extends BaseFormatterConfigur
     }
 
     @Override
-    public void loadSettings(DBPPreferenceStore store) {
-        super.loadSettings(store);
-        externalCmdText.setText(store.getString(ModelPreferences.SQL_FORMAT_EXTERNAL_CMD));
-        externalUseFile.setSelection(store.getBoolean(ModelPreferences.SQL_FORMAT_EXTERNAL_FILE));
-        externalTimeout.setSelection(store.getInt(ModelPreferences.SQL_FORMAT_EXTERNAL_TIMEOUT));
+    public void loadSettings(DBPPreferenceStore store, boolean useDefaults) {
+        super.loadSettings(store, useDefaults);
+        externalCmdText.setText(useDefaults
+            ? store.getDefaultString(ModelPreferences.SQL_FORMAT_EXTERNAL_CMD)
+            : store.getString(ModelPreferences.SQL_FORMAT_EXTERNAL_CMD)
+        );
+        externalUseFile.setSelection(useDefaults
+            ? store.getDefaultBoolean(ModelPreferences.SQL_FORMAT_EXTERNAL_FILE)
+            : store.getBoolean(ModelPreferences.SQL_FORMAT_EXTERNAL_FILE)
+        );
+        externalTimeout.setSelection(useDefaults
+            ? store.getDefaultInt(ModelPreferences.SQL_FORMAT_EXTERNAL_TIMEOUT)
+            : store.getInt(ModelPreferences.SQL_FORMAT_EXTERNAL_TIMEOUT)
+        );
     }
 
     @Override
@@ -78,7 +87,6 @@ public class SQLExternalFormatterConfigurationPage extends BaseFormatterConfigur
         store.setValue(ModelPreferences.SQL_FORMAT_EXTERNAL_CMD, externalCmdText.getText());
         store.setValue(ModelPreferences.SQL_FORMAT_EXTERNAL_FILE, externalUseFile.getSelection());
         store.setValue(ModelPreferences.SQL_FORMAT_EXTERNAL_TIMEOUT, externalTimeout.getSelection());
-
     }
 
 }

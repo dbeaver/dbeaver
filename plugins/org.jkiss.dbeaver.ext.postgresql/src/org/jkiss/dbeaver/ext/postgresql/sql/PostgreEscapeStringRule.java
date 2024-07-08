@@ -65,15 +65,13 @@ public class PostgreEscapeStringRule implements TPPredicateRule {
             if (ch == '\\') {
                 ch = scanner.read();
                 chRead++;
-
-                if (ch == '\'') {
-                    // Don't care about other escape sequences
-                    continue;
+            } else if (ch == '\'') {
+                ch = scanner.read();
+                chRead++;
+                if (ch != '\'' && ch != TPCharacterScanner.EOF) {
+                    scanner.unread();
+                    return stringToken;
                 }
-            }
-
-            if (ch == '\'') {
-                return stringToken;
             }
         } while (ch != TPCharacterScanner.EOF);
 

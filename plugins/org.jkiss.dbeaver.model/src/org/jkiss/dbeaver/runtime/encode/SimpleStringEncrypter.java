@@ -20,12 +20,15 @@ import org.jkiss.utils.Base64;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
-import java.util.Arrays;
 
 /**
  * Encryption util
+ * <p>
+ * <b>Note:</b> This class does not provide a strong encryption mechanism and its usage is discouraged. It is kept for backward compatibility only.
  */
 public class SimpleStringEncrypter implements PasswordEncrypter {
+
+    public static final SimpleStringEncrypter INSTANCE = new SimpleStringEncrypter();
 
     //public static final String SCHEME_DES = "DES";
     private static final byte[] PASSWORD_ENCRYPTION_KEY = "sdf@!#$verf^wv%6Fwe%$$#FFGwfsdefwfe135s$^H)dg".getBytes(Charset.defaultCharset());
@@ -36,7 +39,7 @@ public class SimpleStringEncrypter implements PasswordEncrypter {
     //private DESKeySpec keySpec;
     //private Cipher cipher;
 
-    public SimpleStringEncrypter()
+    private SimpleStringEncrypter()
     {
 /*
         try {
@@ -58,33 +61,6 @@ public class SimpleStringEncrypter implements PasswordEncrypter {
         }
 */
 
-    }
-
-    @Override
-    public String encrypt(String unencryptedString) throws EncryptionException
-    {
-        if (unencryptedString == null) {
-            throw new IllegalArgumentException("Empty string");
-        }
-
-        try {
-            byte[] stringBytes = unencryptedString.getBytes(CHARSET);
-            byte[] plainBytes = Arrays.copyOf(stringBytes, stringBytes.length + 2);
-            plainBytes[plainBytes.length - 2] = 0;
-            plainBytes[plainBytes.length - 1] = -127;
-            xorStringByKey(plainBytes);
-            return Base64.encode(plainBytes);
-/*
-            SecretKey key = makeSecretKey();//keyFactory.generateSecret(keySpec);
-            cipher.init(Cipher.ENCRYPT_MODE, key);
-            byte[] cleartext = unencryptedString.getBytes(CHARSET);
-            byte[] ciphertext = cipher.doFinal(cleartext);
-
-            return Base64.encode(ciphertext);
-*/
-        } catch (Exception e) {
-            throw new EncryptionException(e);
-        }
     }
 
     private void xorStringByKey(byte[] plainBytes) throws UnsupportedEncodingException

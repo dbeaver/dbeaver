@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObjectStatistics;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
@@ -342,7 +343,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
                 }
             }
         } catch (SQLException e) {
-            throw new DBException("Can't read tablespace statistics", e, getDataSource());
+            throw new DBDatabaseException("Can't read tablespace statistics", e, getDataSource());
         }
     }
 

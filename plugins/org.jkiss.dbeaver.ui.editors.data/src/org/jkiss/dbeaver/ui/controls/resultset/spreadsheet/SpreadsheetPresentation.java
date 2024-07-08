@@ -59,13 +59,13 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.data.DBDValueError;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.*;
@@ -508,7 +508,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 if (copyHTML) html.append("<th>#</th>");
             }
             for (IGridColumn column : selectedColumns) {
-                if (tdt.length() > 0) {
+                if (!tdt.isEmpty()) {
                     tdt.append(columnDelimiter);
                 }
                 String columnText = labelProvider.getText(column);
@@ -679,7 +679,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
                             IGridColumn colElement = spreadsheet.getColumn(colNum);
                             final DBDAttributeBinding attr = getAttributeFromGrid(colElement, gridRow);
                             final ResultSetRow row = getResultRowFromGrid(colElement, gridRow);
-                            if (attr == null || row == null || controller.getAttributeReadOnlyStatus(attr) != null) {
+                            if (attr == null || row == null ||
+                                controller.getAttributeReadOnlyStatus(attr, true, true) != null
+                            ) {
                                 continue;
                             }
                             final Object newValue;
@@ -729,7 +731,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     if (attr == null || row == null) {
                         continue;
                     }
-                    if (controller.getAttributeReadOnlyStatus(attr) != null) {
+                    if (controller.getAttributeReadOnlyStatus(attr, true, true) != null) {
                         // No inline editors for readonly columns
                         continue;
                     }
@@ -850,7 +852,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                                 inQuote = false;
                                 continue;
                             }
-                        } else if (cellValue.length() == 0) {
+                        } else if (cellValue.isEmpty()) {
                             // Search for end quote
                             for (int k = i + 1; k < length; k++) {
                                 if (strValue.charAt(k) == quote &&
@@ -872,7 +874,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
             }
         }
-        if (cellValue.length() > 0) {
+        if (!cellValue.isEmpty()) {
             curLine.add(cellValue.toString());
         }
         if (!curLine.isEmpty()) {
@@ -1194,7 +1196,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         Composite placeholder = null;
         if (inline) {
-            String readOnlyStatus = controller.getAttributeReadOnlyStatus(attr);
+            String readOnlyStatus = controller.getAttributeReadOnlyStatus(attr, true, true);
             if (readOnlyStatus != null) {
                 controller.setStatus(
                     NLS.bind(ResultSetMessages.controls_resultset_viewer_action_open_value_editor_column_readonly,
@@ -1491,11 +1493,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
     // Filtering
 
     void handleColumnIconClick(Object columnElement) {
-        if (!(columnElement instanceof DBDAttributeBinding)) {
+        if (!(columnElement instanceof DBDAttributeBinding attributeBinding)) {
             log.debug("Unable to show distinct filter for columnElement" + columnElement);
             return;
         }
-        DBDAttributeBinding attributeBinding = (DBDAttributeBinding) columnElement;
         controller.showColumnMenu(attributeBinding);
     }
 
@@ -1512,8 +1513,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             // Show cell properties
             PropertyPageStandard page = new PropertyPageStandard();
             page.setPropertySourceProvider(object -> {
-                if (object instanceof GridCell) {
-                    GridCell cell = (GridCell) object;
+                if (object instanceof GridCell cell) {
                     final DBDAttributeBinding attr = getAttributeFromGrid(cell.col, cell.row);
                     final ResultSetRow row = getResultRowFromGrid(cell.col, cell.row);
                     final SpreadsheetValueController valueController = new SpreadsheetValueController(
@@ -1579,8 +1579,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         spreadsheet.deselectAll();
         if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
             List<GridPos> cellSelection = new ArrayList<>();
-            for (Iterator<?> iter = ((IStructuredSelection) selection).iterator(); iter.hasNext(); ) {
-                Object cell = iter.next();
+            for (Object cell : (IStructuredSelection) selection) {
                 if (cell instanceof GridPos) {
                     cellSelection.add((GridPos) cell);
                 } else {
@@ -1981,15 +1980,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         @Override
         public boolean hasChildren(@NotNull IGridItem item) {
-            if (item.getElement() instanceof DBDAttributeBinding) {
-                final DBDAttributeBinding attr = (DBDAttributeBinding) item.getElement();
-                switch (attr.getDataKind()) {
-                    case DOCUMENT:
-                    case ANY:
-                        return !controller.isRecordMode();
-                    default:
-                        return isAttributeExpandable(null, attr);
-                }
+            if (item.getElement() instanceof DBDAttributeBinding attr) {
+                return switch (attr.getDataKind()) {
+                    case DOCUMENT, ANY -> !controller.isRecordMode();
+                    default -> isAttributeExpandable(null, attr);
+                };
             }
             return false;
         }
@@ -1997,8 +1992,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         @Nullable
         @Override
         public Object[] getChildren(@NotNull IGridItem item) {
-            if (item.getElement() instanceof DBDAttributeBinding) {
-                DBDAttributeBinding binding = (DBDAttributeBinding) item.getElement();
+            if (item.getElement() instanceof DBDAttributeBinding binding) {
                 switch (binding.getDataKind()) {
                     case ARRAY:
                     case STRUCT:
@@ -2034,8 +2028,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         @Override
         public int getSortOrder(@Nullable IGridColumn column) {
-            if (column != null && column.getElement() instanceof DBDAttributeBinding) {
-                DBDAttributeBinding binding = (DBDAttributeBinding) column.getElement();
+            if (column != null && column.getElement() instanceof DBDAttributeBinding binding) {
                 if (!binding.hasNestedBindings()) {
                     DBDAttributeConstraint co = controller.getModel().getDataFilter().getConstraint(binding);
                     if (co != null && co.getOrderPosition() > 0) {
@@ -2052,8 +2045,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         @Override
         public ElementState getDefaultState(@NotNull IGridColumn element) {
-            if (element.getElement() instanceof DBDAttributeBinding) {
-                DBDAttributeBinding binding = (DBDAttributeBinding) element.getElement();
+            if (element.getElement() instanceof DBDAttributeBinding binding) {
                 switch (binding.getAttribute().getDataKind()) {
                     case STRUCT:
                     case DOCUMENT:
@@ -2079,6 +2071,74 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
             }
             return ElementState.NONE;
+        }
+
+        @Override
+        public IGridStatusColumn[] getStatusColumns() {
+            return new IGridStatusColumn[] {
+                new IGridStatusColumn() {
+                    @Override
+                    public String getDisplayName() {
+                        return ResultSetMessages.controls_resultset_results_read_only_status;
+                    }
+
+                    @Override
+                    public String getStatusText() {
+                        return getController().getReadOnlyStatus();
+                    }
+
+                    @Override
+                    public DBPImage getStatusIcon() {
+                        if (getController().getReadOnlyStatus() != null) {
+                            return UIIcon.BUTTON_READ_ONLY;
+                        }
+                        return null;
+                    }
+                },
+                new IGridStatusColumn() {
+                    @Override
+                    public String getDisplayName() {
+                        return ResultSetMessages.controls_resultset_results_edit_key;
+                    }
+
+                    @Override
+                    public String getStatusText() {
+                        DBDRowIdentifier rowIdentifier = getController().getModel().getDefaultRowIdentifier();
+                        if (rowIdentifier != null && !rowIdentifier.isIncomplete()) {
+                            return
+                                rowIdentifier.getUniqueKey().getConstraintType().getName() + " " +
+                                rowIdentifier.getAttributes().stream()
+                                    .map(DBDAttributeBinding::getName).collect(Collectors.joining(","));
+                        } else {
+                            DBSDataContainer dataContainer = getController().getDataContainer();
+                            if (dataContainer instanceof DBSEntity && !dataContainer.isFeatureSupported(DBSDataManipulator.FEATURE_DATA_UPDATE)) {
+                                return "Data modification is not supported by database.";
+                            }
+                            if (rowIdentifier == null) {
+                                return "Table metadata not found. Data edit is not possible.";
+                            }
+                            if (rowIdentifier.isIncomplete()) {
+                                return "No unique key was found. Data modification is not possible.";
+                            }
+                            return "Virtual key is used";
+                        }
+                    }
+
+                    @Override
+                    public DBPImage getStatusIcon() {
+                        DBDRowIdentifier rowIdentifier = getController().getModel().getDefaultRowIdentifier();
+                        if (rowIdentifier == null) {
+                            return ResultSetIcons.META_TABLE_NA;
+                        } else if (rowIdentifier.isIncomplete()) {
+                            return ResultSetIcons.META_KEY_NA;
+                        } else if (rowIdentifier.getUniqueKey() instanceof DBVEntityConstraint) {
+                            return ResultSetIcons.META_KEY_VIRTUAL;
+                        } else {
+                            return ResultSetIcons.META_KEY_OK;
+                        }
+                    }
+                },
+            };
         }
 
         @Override
@@ -2118,7 +2178,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
         @Override
         public boolean isElementReadOnly(IGridColumn element) {
             if (element.getElement() instanceof DBDAttributeBinding) {
-                return controller.getAttributeReadOnlyStatus((DBDAttributeBinding) element.getElement()) != null;
+                return controller.getAttributeReadOnlyStatus(
+                    (DBDAttributeBinding) element.getElement(),
+                    true, true) != null;
             }
             return false;
         }
@@ -2342,7 +2404,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         count++;
                     }
                 }
-                return formatValue(gridColumn, gridRow, getCellValue(gridColumn, gridRow, new int[count]));
+                Object child = getCellValue(gridColumn, gridRow, new int[count]);
+                if (child == value) {
+                    return value;
+                }
+                return formatValue(gridColumn, gridRow, child);
             } else if (attr.getDataKind() == DBPDataKind.STRUCT && value instanceof DBDComposite && !DBUtils.isNullValue(value)) {
                 return "[" + ((DBDComposite) value).getDataType().getName() + "]";
             }
@@ -2597,7 +2663,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     if (ref instanceof DBSEntityAssociation) {
                         DBSEntity associatedEntity = ResultSetUtils.getAssociatedEntity(ref);
                         if (associatedEntity != null) {
-                            if (text.length() > 0) text.append("\n");
+                            if (!text.isEmpty()) text.append("\n");
                             text.append(DBUtils.getObjectFullName(associatedEntity, DBPEvaluationContext.UI));
                         }
                     }
@@ -2687,8 +2753,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         attr = bindings.get(index);
                     }
                 }
-            } else if (item.getElement() instanceof DBDAttributeBinding) {
-                attr = ((DBDAttributeBinding) item.getElement());
+            } else if (item.getElement() instanceof DBDAttributeBinding ab) {
+                attr = ab;
             }
 
             if (attr != null) {
@@ -2705,9 +2771,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
         }
 
         private boolean isAttributeReadOnly(@NotNull DBDAttributeBinding attr) {
-            return !controller.getModel().isUpdateInProgress()
-                && CommonUtils.isBitSet(controller.getDecorator().getDecoratorFeatures(), IResultSetDecorator.FEATURE_EDIT)
-                && controller.getAttributeReadOnlyStatus(attr) != null
+            return
+                CommonUtils.isBitSet(controller.getDecorator().getDecoratorFeatures(), IResultSetDecorator.FEATURE_EDIT)
+                && controller.getAttributeReadOnlyStatus(attr, true, true) != null
                 && !controller.isAllAttributesReadOnly();
         }
 
@@ -2803,8 +2869,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
             if (!showAttributeDescription || element.getParent() != null) {
                 return null;
             }
-            if (element.getElement() instanceof DBDAttributeBinding) {
-                return ((DBDAttributeBinding) element.getElement()).getDescription();
+            if (element.getElement() instanceof DBDAttributeBinding attributeBinding) {
+                return attributeBinding.getDescription();
             } else {
                 return null;
             }
@@ -2813,8 +2879,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         @Nullable
         @Override
         public Font getFont(IGridItem element) {
-            if (element.getElement() instanceof DBDAttributeBinding) {
-                DBDAttributeBinding attributeBinding = (DBDAttributeBinding) element.getElement();
+            if (element.getElement() instanceof DBDAttributeBinding attributeBinding) {
                 DBDAttributeConstraint constraint = controller.getModel().getDataFilter().getConstraint(attributeBinding);
                 if (constraint != null && constraint.hasCondition()) {
                     return spreadsheet.getFont(UIElementFontStyle.BOLD);
@@ -2829,27 +2894,36 @@ public class SpreadsheetPresentation extends AbstractPresentation
         @Nullable
         @Override
         public String getToolTipText(IGridItem element) {
-            if (element == null) {
-                String readOnlyStatus = getController().getReadOnlyStatus();
-                if (readOnlyStatus == null && controller.isAllAttributesReadOnly()) {
-                    readOnlyStatus = ModelMessages.all_columns_read_only;
-                }
-                if (readOnlyStatus != null) {
-                    return readOnlyStatus;
-                }
-            } else if (element.getElement() instanceof DBDAttributeBinding) {
-                DBDAttributeBinding attributeBinding = (DBDAttributeBinding) element.getElement();
+            if (element.getElement() instanceof DBDAttributeBinding attributeBinding) {
                 final String name = attributeBinding.getName();
                 final String typeName = attributeBinding.getFullTypeName();
                 final String description = attributeBinding.getDescription();
-                String tip = CommonUtils.isEmpty(description) ?
-                    name + ": " + typeName :
-                    name + ": " + typeName + "\n" + description;
-                String readOnlyStatus = controller.getAttributeReadOnlyStatus(attributeBinding);
-                if (readOnlyStatus != null) {
-                    tip += " (Read-only: " + readOnlyStatus + ")";
+                StringBuilder tip = new StringBuilder();
+                tip.append("Column: ");
+                tip.append(name).append(": ").append(typeName);
+                if (!CommonUtils.isEmpty(description)) {
+                    tip.append("\nDescription: ").append(description);
                 }
-                return tip;
+                DBDRowIdentifier rowIdentifier = attributeBinding.getRowIdentifier();
+                if (rowIdentifier != null) {
+                    tip.append("\nTable: ").append(DBUtils.getObjectFullName(rowIdentifier.getEntity(), DBPEvaluationContext.UI));
+                }
+                if (rowIdentifier != null &&
+                    !rowIdentifier.isIncomplete() &&
+                    rowIdentifier != getController().getModel().getDefaultRowIdentifier()
+                ) {
+                    tip.append("\n").append(ResultSetMessages.controls_resultset_results_edit_key).append(": ")
+                        .append(rowIdentifier.getEntity().getName())
+                        .append("(")
+                        .append(rowIdentifier.getAttributes().stream().map(DBDAttributeBinding::getName).collect(Collectors.joining(",")))
+                        .append(")");
+                }
+                String readOnlyStatus = controller.getAttributeReadOnlyStatus(attributeBinding, true, true);
+                if (readOnlyStatus != null) {
+                    tip.append("\n").append(ResultSetMessages.controls_resultset_results_read_only_status)
+                        .append(": ").append(readOnlyStatus);
+                }
+                return tip.toString();
             }
             return null;
         }
@@ -2932,7 +3006,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     if (attr.getValueHandler() != origAttr.getValueHandler()) {
                         continue;
                     }
-                    if (controller.getAttributeReadOnlyStatus(attr) != null) {
+                    if (controller.getAttributeReadOnlyStatus(attr, true, false) != null) {
                         // No inline editors for readonly columns
                         continue;
                     }

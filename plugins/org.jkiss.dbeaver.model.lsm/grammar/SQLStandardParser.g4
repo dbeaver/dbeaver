@@ -40,6 +40,19 @@ options {
      * limitations under the License.
      */
     package org.jkiss.dbeaver.model.lsm.sql.impl.syntax;
+
+    import org.jkiss.dbeaver.model.lsm.*;
+}
+
+@parser::members {
+    private boolean isAnonymousParametersEnabled;
+    private boolean isNamedParametersEnabled;
+
+    public SQLStandardParser(TokenStream input, LSMAnalyzerParameters parameters) {
+        this(input);
+        this.isAnonymousParametersEnabled = parameters.isAnonymousSqlParametersEnabled();
+        this.isNamedParametersEnabled = parameters.isSqlParametersEnabled();
+    }
 }
 
 // root rule for script
@@ -132,7 +145,7 @@ compOp: (EqualsOperator|NotEqualsOperator|LessThanOperator|GreaterThanOperator|L
 quantifier: (ALL|SOME|ANY);
 truthValue: (TRUE|FALSE|UNKNOWN);
 existsPredicate: EXISTS tableSubquery;
-likePredicate: matchValue (NOT)? LIKE pattern (ESCAPE escapeCharacter)?;
+likePredicate: matchValue (NOT)? (LIKE|ILIKE) pattern (ESCAPE escapeCharacter)?;
 matchValue: characterValueExpression;
 pattern: characterValueExpression;
 escapeCharacter: characterValueExpression;
@@ -211,7 +224,7 @@ joinColumnList: columnNameList;
 whereClause: WHERE searchCondition;
 groupByClause: GROUP BY groupingColumnReferenceList;
 groupingColumnReferenceList: groupingColumnReference (Comma groupingColumnReference)*;
-groupingColumnReference: valueReference | anyWordsWithProperty;
+groupingColumnReference: columnIndex | valueReference | anyWordsWithProperty;
 havingClause: HAVING searchCondition;
 tableValueConstructor: VALUES (rowValueConstructor (Comma rowValueConstructor)*);
 explicitTable: TABLE tableName;
@@ -221,7 +234,7 @@ caseExpression: (caseAbbreviation|simpleCase|searchedCase);
 caseAbbreviation: (NULLIF LeftParen valueExpression Comma valueExpression RightParen|COALESCE LeftParen valueExpression (Comma valueExpression)+ RightParen);
 simpleCase: CASE (valueExpression|searchCondition) (simpleWhenClause)+ (elseClause)? END;
 simpleWhenClause: WHEN (valueExpression|searchCondition) THEN result;
-result: valueExpression;
+result: valueExpression|searchCondition;
 elseClause: ELSE result;
 searchedCase: CASE (searchedWhenClause)+ (elseClause)? END;
 searchedWhenClause: WHEN searchCondition THEN result;
@@ -251,13 +264,16 @@ numericOperation:                           (((Asterisk|Solidus) factor)+ (sign 
 intervalOperation:       intervalQualifier?((((Asterisk|Solidus) factor)+ (sign intervalTerm)*)|((sign intervalTerm)+));
 intervalOperation2: Asterisk intervalFactor((((Asterisk|Solidus) factor)+ (sign intervalTerm)*)|((sign intervalTerm)+));
 
-valueExpressionPrimary: valueExpressionCast|valueExpressionAtom;
-valueExpressionCast: valueExpressionAtom TypeCast dataType;
-valueExpressionAtom: unsignedNumericLiteral|generalLiteral|generalValueSpecification|countAllExpression
+valueExpressionPrimary: valueExpressionAtom valueExpressionAttributeSpec? valueExpressionCastSpec?;
+valueExpressionAttributeSpec: Colon Identifier; // https://docs.snowflake.com/en/user-guide/tutorials/json-basics-tutorial
+valueExpressionCastSpec: TypeCast dataType;
+valueExpressionAtom: unsignedNumericLiteral|generalLiteral|countAllExpression
     |scalarSubquery|caseExpression|LeftParen valueExpression anyUnexpected?? RightParen|castSpecification
-    |aggregateExpression|nullSpecification|truthValue|variableExpression|anyWordsWithProperty2|valueReference|anyWordsWithProperty;
+    |aggregateExpression|nullSpecification|truthValue|variableExpression|generalValueSpecification|anyWordsWithProperty2|valueReference|anyWordsWithProperty;
 
-variableExpression: BatchVariableName|ClientVariableName|ClientParameterName;
+variableExpression: BatchVariableName|ClientVariableName|namedParameter|anonymouseParameter;
+namedParameter: {isNamedParametersEnabled}? (Colon|CustomNamedParameterPrefix) Identifier;
+anonymouseParameter: {isAnonymousParametersEnabled}? (QuestionMark|CustomAnonymousParameterMark);
 
 numericPrimary: (valueExpressionPrimary|extractExpression);
 factor: sign? numericPrimary;
@@ -296,29 +312,31 @@ orderByClause: ORDER BY sortSpecificationList;
 limitClause: LIMIT valueExpression (OFFSET valueExpression)? (Comma valueExpression)?;
 sortSpecificationList: sortSpecification (Comma sortSpecification)*;
 sortSpecification: sortKey (orderingSpecification)?;
-sortKey: valueReference | UnsignedInteger | anyWordsWithProperty;
+sortKey: valueReference | columnIndex | anyWordsWithProperty;
+columnIndex: UnsignedInteger;
 orderingSpecification: (ASC|DESC);
 
 // schema definition
-sqlSchemaStatement: (sqlSchemaDefinitionStatement|sqlSchemaManipulationStatement);
-sqlSchemaDefinitionStatement: (schemaDefinition|tableDefinition|viewDefinition);
+sqlSchemaStatement: (schemaDefinition|
+    createTableStatement|createViewStatement
+    alterTableStatement|
+    dropSchemaStatement|dropTableStatement|dropViewStatement|dropProcedureStatement|dropCharacterSetStatement);
 schemaDefinition: CREATE SCHEMA schemaNameClause (schemaCharacterSetSpecification)? (schemaElement)*;
 schemaNameClause: (schemaName|AUTHORIZATION schemaAuthorizationIdentifier|schemaName AUTHORIZATION schemaAuthorizationIdentifier);
 schemaAuthorizationIdentifier: authorizationIdentifier;
 authorizationIdentifier: identifier;
 schemaCharacterSetSpecification: DEFAULT CHARACTER SET characterSetSpecification;
-schemaElement: (tableDefinition|viewDefinition);
+schemaElement: (createTableStatement|createViewStatement);
 
 // table definition
-tableDefinition: CREATE ((GLOBAL|LOCAL) TEMPORARY)? TABLE tableName tableElementList (ON COMMIT (DELETE|PRESERVE) ROWS)?;
-viewDefinition: CREATE VIEW tableName (LeftParen viewColumnList RightParen)? AS queryExpression (WITH (levelsClause)? CHECK OPTION)?;
+createTableStatement: CREATE ((GLOBAL|LOCAL) TEMPORARY)? TABLE tableName tableElementList (ON COMMIT (DELETE|PRESERVE) ROWS)?;
+createViewStatement: CREATE VIEW tableName (LeftParen viewColumnList RightParen)? AS queryExpression (WITH (levelsClause)? CHECK OPTION)?;
 viewColumnList: columnNameList;
 levelsClause: (CASCADED|LOCAL);
 tableElementList: LeftParen tableElement (Comma tableElement)* RightParen;
 tableElement: (columnDefinition|tableConstraintDefinition);
 
 // schema ddl
-sqlSchemaManipulationStatement: (dropSchemaStatement|alterTableStatement|dropTableStatement|dropViewStatement|dropCharacterSetStatement);
 dropSchemaStatement: DROP SCHEMA schemaName dropBehaviour;
 dropBehaviour: (CASCADE|RESTRICT);
 alterTableStatement: ALTER TABLE tableName alterTableAction;
@@ -331,9 +349,11 @@ dropColumnDefaultClause: DROP DEFAULT;
 dropColumnDefinition: DROP (COLUMN)? columnName dropBehaviour;
 addTableConstraintDefinition: ADD tableConstraintDefinition;
 dropTableConstraintDefinition: DROP CONSTRAINT constraintName dropBehaviour;
-dropTableStatement: DROP TABLE tableName dropBehaviour;
-dropViewStatement: DROP VIEW tableName dropBehaviour;
+dropTableStatement: DROP TABLE ifExistsSpec? (tableName (Comma tableName)*)? dropBehaviour?;
+dropViewStatement: DROP VIEW ifExistsSpec?  (tableName (Comma tableName)*)? dropBehaviour?;
+dropProcedureStatement: DROP PROCEDURE ifExistsSpec? qualifiedName dropBehaviour?;
 dropCharacterSetStatement: DROP CHARACTER SET characterSetName;
+ifExistsSpec: IF EXISTS ;
 
 // data statements
 selectStatementSingleRow: SELECT (setQuantifier)? selectList INTO selectTargetList tableExpression;
@@ -397,7 +417,7 @@ THEN|GROUP|HAVING|UNION|EXCEPT|WITH|INTERSECT|ORDER|ON|USING|WHERE|INTO|FROM
 tableHintKeywords: WITH | UPDATE | IN | KEY | JOIN | ORDER BY | GROUP BY;
 
 nonReserved: COMMITTED | REPEATABLE | SERIALIZABLE | TYPE | UNCOMMITTED |
-    CURRENT_USER | SESSION_USER | SYSTEM_USER | USER | VALUE |
+    CURRENT_USER | SESSION_USER | SYSTEM_USER | USER | VALUE | RIGHT | LEFT |
     DATE | YEAR | MONTH | DAY | HOUR | MINUTE | SECOND | ZONE |
     ACTION | ADD | AUTHORIZATION | BY | CASCADE | CASCADED | CATALOG | COALESCE | COMMIT |
     CONSTRAINT | CONSTRAINTS | CORRESPONDING | COUNT | DEFERRABLE | DEFERRED | IMMEDIATE |

@@ -161,6 +161,9 @@ public interface DBPDriver extends DBPNamedObject
     DBXTreeNode getNavigatorRoot();
 
     @NotNull
+    DBPPropertyDescriptor[] getMainPropertyDescriptors();
+
+    @NotNull
     DBPPropertyDescriptor[] getProviderPropertyDescriptors();
 
     @NotNull
