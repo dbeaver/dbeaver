@@ -66,6 +66,7 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
 
     private Button keepEditorsOnRestart;
     private Button keepEditorsOnDisconnect;
+    private Button disconnectOnEditorsClose;
     private Button refreshEditorOnOpen;
     private Button editorFullName;
     private Button showTableGrid;
@@ -110,6 +111,14 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
                 CoreMessages.pref_page_ui_general_keep_database_editors_on_disconnect,
                 CoreMessages.pref_page_ui_general_keep_database_editors_on_disconnect_tip,
                 store.getBoolean(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS_ON_DISCONNECT),
+                1
+            );
+
+            disconnectOnEditorsClose = UIUtils.createCheckbox(
+                groupEditors,
+                CoreMessages.pref_page_ui_general_disconnect_on_editors_close,
+                CoreMessages.pref_page_ui_general_disconnect_on_editors_close_tip,
+                store.getBoolean(DBeaverPreferences.UI_DISCONNECT_ON_EDITORS_CLOSE),
                 1
             );
 
@@ -196,6 +205,7 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         keepEditorsOnRestart.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS));
         keepEditorsOnDisconnect.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS_ON_DISCONNECT));
+        disconnectOnEditorsClose.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_DISCONNECT_ON_EDITORS_CLOSE));
         refreshEditorOnOpen.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN));
         editorFullName.setSelection(store.getDefaultBoolean(DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME));
         showTableGrid.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_EDITOR_SHOW_TABLE_GRID));
@@ -212,6 +222,7 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
 
         store.setValue(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS, keepEditorsOnRestart.getSelection());
         store.setValue(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS_ON_DISCONNECT, keepEditorsOnDisconnect.getSelection());
+        store.setValue(DBeaverPreferences.UI_DISCONNECT_ON_EDITORS_CLOSE, disconnectOnEditorsClose.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN, refreshEditorOnOpen.getSelection());
         store.setValue(DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME, editorFullName.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_EDITOR_SHOW_TABLE_GRID, showTableGrid.getSelection());
