@@ -9,7 +9,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.data.gis,
  org.jkiss.dbeaver.model.sql,
- com.google.gson
+ com.google.gson,
+ org.jkiss.dbeaver.tasks.native
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: %Bundle-Vendor

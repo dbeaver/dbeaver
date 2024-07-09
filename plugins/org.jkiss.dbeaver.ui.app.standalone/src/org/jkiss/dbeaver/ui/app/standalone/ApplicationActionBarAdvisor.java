@@ -176,9 +176,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         newWindowAction = ActionFactory.OPEN_NEW_WINDOW.create(window);
         register(newWindowAction);
 
-        openWorkspaceAction = IDEActionFactory.OPEN_WORKSPACE.create(window);
-        register(openWorkspaceAction);
-
+        if (DBWorkbench.getPlatform().getApplication().isWorkspaceSwitchingAllowed()) {
+            openWorkspaceAction = IDEActionFactory.OPEN_WORKSPACE.create(window);
+            register(openWorkspaceAction);
+        }
 
 //        historyBackAction = ActionFactory.BACKWARD_HISTORY.create(window);
 //        register(historyBackAction);
@@ -264,7 +265,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             }
             fileMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
 
-            fileMenu.add(openWorkspaceAction);
+            if (openWorkspaceAction != null) {
+                fileMenu.add(openWorkspaceAction);
+            }
 
             fileMenu.add(new Separator());
             fileMenu.add(new EmergentExitAction(workbenchWindow));

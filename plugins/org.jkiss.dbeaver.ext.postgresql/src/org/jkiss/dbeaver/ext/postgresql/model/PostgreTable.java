@@ -45,10 +45,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -216,6 +213,9 @@ public abstract class PostgreTable extends PostgreTableReal
 
     @Override
     public Collection<PostgreIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (!getDataSource().getServerType().supportsIndexes()) {
+            return Collections.emptyList();
+        }
         return getSchema().getIndexCache().getObjects(monitor, getSchema(), this);
     }
 

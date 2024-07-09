@@ -82,7 +82,7 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem {
     }
 
     /**
-     * Set the class to the qaulified name components
+     * Set the class to the qualified name components
      */
     public void setSymbolClass(@NotNull SQLQuerySymbolClass symbolClass) {
         if (this.entityName != null) {
@@ -97,7 +97,7 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem {
     }
 
     /**
-     * Set the definition to the qaulified name components based on the database metadata
+     * Set the definition to the qualified name components based on the database metadata
      */
     public void setDefinition(@NotNull DBSObject realTable) {
         if (this.entityName != null) {
@@ -122,7 +122,7 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem {
     }
 
     /**
-     * Set the definition to the qaulified name components based on the query structure
+     * Set the definition to the qualified name components based on the query structure
      */
     public void setDefinition(@NotNull SourceResolutionResult rr) {
         if (rr.aliasOrNull != null) {

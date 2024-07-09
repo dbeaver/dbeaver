@@ -224,6 +224,10 @@ public interface PostgreServerExtension {
     /** Necessary for the "Truncate table" tool */
     int getTruncateToolModes();
 
+    boolean supportsAcl();
+
+    boolean supportsCustomDataTypes();
+
     boolean supportsDistinctForStatementsWithAcl();
 
     /** True if supports operator families as access methods (System Info) */
@@ -246,4 +250,5 @@ public interface PostgreServerExtension {
      * True if database can use pg_dump and pg_restore clients without errors.
      */
     boolean supportsNativeClient();
+
 }

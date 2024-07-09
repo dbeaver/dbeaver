@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -83,6 +82,30 @@ public class AltibaseSchema extends GenericSchema implements DBPObjectStatistics
     
     public DirectoryCache getDirectoryCache() {
         return directoryCache;
+    }
+
+    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
+        
+        DBSObject object = null;
+        
+        object = getTable(monitor, childName);
+        if (object != null) {
+            return object;
+        }
+        
+        object = getProcedure(monitor, childName);
+        if (object != null) {
+            return object;
+        }
+        
+        object = getPackage(monitor, childName);
+        if (object != null) {
+            return object;
+        }
+        
+        object = getSynonym(monitor, childName);
+
+        return object;
     }
     
     @Override

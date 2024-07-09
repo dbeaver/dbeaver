@@ -38,7 +38,7 @@ public abstract class SQLQueryNodeModel {
     @NotNull
     private final STMTreeNode syntaxNode;
     @Nullable
-    private List<SQLQueryNodeModel> subnodes; // TODO validate that subnodes are being registeger correctly for all nodes
+    private List<SQLQueryNodeModel> subnodes; // TODO validate that subnodes are being registered correctly for all nodes
     @Nullable
     private List<SQLQueryLexicalScope> lexicalScopes  = null;
 

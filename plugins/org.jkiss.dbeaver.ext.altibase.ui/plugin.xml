@@ -77,5 +77,55 @@
             <supports dataSource="altibase"/>
         </editorContribution>
     </extension>
+    
+    <extension point="org.jkiss.dbeaver.tools">
+        <tools>
+            <tool
+                  description="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseToolMViewRefresh.label"
+                  group="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance"
+                  icon="#refresh"
+                  id="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseToolMViewRefresh"
+                  label="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseToolMViewRefresh.label"
+                  singleton="false">
+                <task id="altibaseToolMViewRefresh"/>
+            </tool>
+            <tool
+                  description="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseToolTruncateTable.label"
+                  group="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance"
+                  icon="#clean"
+                  id="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseToolTableTruncate"
+                  label="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseToolTruncateTable.label"
+                  singleton="false">
+                <task id="altibaseToolTableTruncate"/>
+            </tool>
+            <tool
+                  description="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseViewCompile.label"
+                  group="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance"
+                  icon="icons/compile.png"
+                  id="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseToolViewCompile"
+                  label="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseViewCompile.label"
+                  singleton="false">
+                <task id="altibaseToolViewCompile"/>
+            </tool>
+            <tool
+                  description="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseProcedureCompile.label"
+                  group="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance"
+                  icon="icons/compile.png"
+                  id="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseToolProcedureCompile"
+                  label="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseProcedureCompile.label"
+                  singleton="false">
+                <task id="altibaseToolProcedureCompile"/>
+            </tool>
+            <tool
+                  description="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibasePackageCompile.label"
+                  group="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance"
+                  icon="icons/compile.png"
+                  id="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseToolPackageCompile"
+                  label="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibasePackageCompile.label"
+                  singleton="false">
+                <task id="altibaseToolPackageCompile"/>
+            </tool>
+        </tools>
+    </extension>
         
 </plugin>

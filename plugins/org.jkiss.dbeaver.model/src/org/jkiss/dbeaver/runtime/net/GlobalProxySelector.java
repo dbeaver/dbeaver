@@ -105,7 +105,7 @@ public class GlobalProxySelector extends ProxySelector {
             return null;
         }
 
-        // Skip localhosts. In fact it is a bad idea (see #3592)
+        // Skip localhosts. In fact, it is a bad idea (see #3592)
 //        if (ArrayUtils.contains(LOCAL_HOSTS, host)) {
 //            return parent.select(uri);
 //        }

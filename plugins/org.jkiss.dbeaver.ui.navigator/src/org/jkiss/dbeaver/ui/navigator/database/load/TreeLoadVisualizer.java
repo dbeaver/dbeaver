@@ -35,38 +35,33 @@ public class TreeLoadVisualizer implements ILoadVisualizer<Object[]> {
 
     public static final Object[] EMPTY_ELEMENT_ARRAY = new Object[0];
 
-    private DBNNode parent;
-    private TreeNodeSpecial placeHolder;
-    private AbstractTreeViewer viewer;
+    private final DBNNode parent;
+    private final TreeNodeSpecial placeHolder;
+    private final AbstractTreeViewer viewer;
 
-    public TreeLoadVisualizer(AbstractTreeViewer viewer, TreeNodeSpecial placeHolder, DBNNode parent)
-    {
+    public TreeLoadVisualizer(AbstractTreeViewer viewer, TreeNodeSpecial placeHolder, DBNNode parent) {
         this.viewer = viewer;
         this.placeHolder = placeHolder;
         this.parent = parent;
     }
 
     @Override
-    public DBRProgressMonitor overwriteMonitor(DBRProgressMonitor monitor)
-    {
+    public DBRProgressMonitor overwriteMonitor(DBRProgressMonitor monitor) {
         return monitor;
     }
 
     @Override
-    public boolean isCompleted()
-    {
+    public boolean isCompleted() {
         return placeHolder.isDisposed() || viewer.testFindItem(parent) == null;
     }
 
     @Override
-    public void visualizeLoading()
-    {
+    public void visualizeLoading() {
         viewer.refresh(placeHolder, true);
     }
 
     @Override
-    public void completeLoading(Object[] children)
-    {
+    public void completeLoading(Object[] children) {
         final Control viewerControl = viewer.getControl();
         if (viewerControl.isDisposed()) {
             return;
@@ -101,8 +96,7 @@ public class TreeLoadVisualizer implements ILoadVisualizer<Object[]> {
                     }
                 }
             }
-        }
-        finally {
+        } finally {
             placeHolder.dispose(parent);
             if (!viewerControl.isDisposed()) {
                 viewerControl.setRedraw(true);
@@ -110,11 +104,10 @@ public class TreeLoadVisualizer implements ILoadVisualizer<Object[]> {
         }
     }
 
-    public static Object[] expandChildren(AbstractTreeViewer viewer, TreeLoadService service)
-    {
+    public static Object[] expandChildren(AbstractTreeViewer viewer, TreeLoadService service) {
         DBNNode parent = service.getParentNode();
         TreeNodeSpecial placeHolder = TreeNodeChildrenLoading.createLoadingPlaceHolder(parent);
-        if (placeHolder != null && TreeNodeChildrenLoading.canBeginLoading(parent)) {
+        if (TreeNodeChildrenLoading.canBeginLoading(parent)) {
             TreeLoadVisualizer visualizer = new TreeLoadVisualizer(viewer, placeHolder, parent);
             LoadingJob.createService(service, visualizer).schedule();
             return new Object[]{placeHolder};
