@@ -418,6 +418,11 @@ public class GeneralUtils {
         return null;
     }
 
+    @NotNull
+    public static String getProductEarlyAccessURL() {
+        return Platform.getProduct().getProperty("earlyAccessURL");
+    }
+
     public static String getExpressionParseMessage(Exception e) {
         String message = e.getMessage();
         if (message == null) {

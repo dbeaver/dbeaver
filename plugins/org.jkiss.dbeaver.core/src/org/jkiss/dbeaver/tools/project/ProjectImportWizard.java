@@ -82,6 +82,11 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
 
 	@Override
 	public boolean performFinish() {
+        if (!DBWorkbench.getPlatform().getWorkspace().canManageProjects()) {
+            DBWorkbench.getPlatformUI().showError("Import error", "You can't import projects");
+            return false;
+        }
+
         try {
             UIUtils.run(getContainer(), true, true, new DBRRunnableWithProgress() {
                 @Override
