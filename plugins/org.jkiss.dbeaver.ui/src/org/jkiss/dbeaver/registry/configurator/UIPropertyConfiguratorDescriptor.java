@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
-import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 
 /**
@@ -38,8 +37,8 @@ public class UIPropertyConfiguratorDescriptor extends AbstractContextDescriptor
     {
         super(config);
 
-        this.objectType = config.getAttribute(RegistryConstants.ATTR_CLASS);
-        this.uiConfigType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_UI_CLASS));
+        this.objectType = config.getAttribute("class");
+        this.uiConfigType = new ObjectType(config.getAttribute("uiClass"));
     }
 
     public String getObjectType() {
