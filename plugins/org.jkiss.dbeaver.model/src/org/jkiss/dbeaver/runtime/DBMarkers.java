@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.runtime;
 
 /**
- * MArkers
+ * Markers
  */
 public class DBMarkers
 {

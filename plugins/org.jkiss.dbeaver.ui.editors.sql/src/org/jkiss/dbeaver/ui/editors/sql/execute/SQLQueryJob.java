@@ -305,7 +305,7 @@ public class SQLQueryJob extends DataSourceJob
                         monitor.done();
                     } else {
                         // Just ignore error
-                        log.info("Script executed with errors. Changes were not commmitted.");
+                        log.info("Script executed with errors. Changes were not committed.");
                     }
                 }
 

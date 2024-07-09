@@ -39,7 +39,7 @@ import java.util.Properties;
 import java.util.concurrent.Executor;
 
 /**
- * Managable connection
+ * Manageable connection
  */
 public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, DBRBlockingObject {
 

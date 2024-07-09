@@ -87,7 +87,7 @@ public interface DBSObjectContainer extends DBSObject
     /**
      * Caches all underlying structure contents.
      * Reads tables, columns, foreign keys and other RDB information.
-     * This method is invoked when view want to draw something like ER diagramm which
+     * This method is invoked when view want to draw something like ER diagram which
      * includes all container entities.
      * @throws DBException on any DB error
      * @param monitor progress monitor
