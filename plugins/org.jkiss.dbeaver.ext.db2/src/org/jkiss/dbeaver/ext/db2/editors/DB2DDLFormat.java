@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.utils.CommonUtils;
 
 /**
- * DDL format coantants
+ * DDL format constants
  * 
  * @author Denis Forveille
  * 

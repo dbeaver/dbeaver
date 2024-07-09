@@ -265,7 +265,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
     void addChildItem(DBSObject object) {
         DBXTreeNode metaChildren = getItemsMeta();
         if (metaChildren == null) {
-            // There is no item meta. Maybe we are udner some folder structure
+            // There is no item meta. Maybe we are under some folder structure
             // Let's find a folder with right type
             metaChildren = getFolderMeta(object.getClass());
         }

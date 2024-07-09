@@ -219,7 +219,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
             if (number != null) {
                 value = number;
             } else if (!strValue.isEmpty()) {
-                // String was't empty but it can't be p[arsed as number
+                // String wasn't empty, but it can't be p[arsed as number
                 // Let's save as string then
                 statement.setString(paramIndex, strValue);
                 return;
