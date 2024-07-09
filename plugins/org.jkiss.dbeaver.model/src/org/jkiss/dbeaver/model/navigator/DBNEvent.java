@@ -35,6 +35,8 @@ public class DBNEvent {
     }
 
     public enum NodeChange {
+        BEFORE_LOAD,
+        AFTER_LOAD,
         LOAD,
         UNLOAD,
         REFRESH,
