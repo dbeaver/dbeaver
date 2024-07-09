@@ -605,7 +605,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
     }
 
     protected String getDataSourcePassword(DBRProgressMonitor monitor, SETTINGS settings) {
-        // Try to obtain password thru auth model (mnakes sense for IAM-like models)
+        // Try to obtain password through auth model (makes sense for IAM-like models)
         String userPassword = null;
         DBPDataSourceContainer dataSourceContainer = settings.getDataSourceContainer();
         DBPConnectionConfiguration cfg = new DBPConnectionConfiguration(dataSourceContainer.getActualConnectionConfiguration());

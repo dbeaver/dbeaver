@@ -178,6 +178,11 @@ public interface DBPDataSourceContainer extends
     boolean isConnected();
 
     /**
+     * Checks that this data source is in the connecting process
+     */
+    boolean isConnecting();
+
+    /**
      * Returns last connection instantiation error if any
      */
     @Nullable
