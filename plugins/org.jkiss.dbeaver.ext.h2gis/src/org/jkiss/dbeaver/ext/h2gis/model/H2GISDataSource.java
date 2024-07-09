@@ -1,5 +1,5 @@
 /*
- * H2GIS ecplise plugin to register a H2GIS spatial database to 
+ * H2GIS eclipse plugin to register a H2GIS spatial database to
  * DBeaver, the  Universal Database Manager
  *
  * For more information, please consult: <http://www.h2gis.org/>

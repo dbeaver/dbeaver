@@ -57,7 +57,8 @@ public class AltibaseTypesetManager extends GenericProcedureManager {
             Object from, Map<String, Object> options) {
         return new AltibaseTypeset(
                 (GenericStructContainer) container,
-                "NEW_TYPESET");
+                "NEW_TYPESET",
+                true);
     }
 
     @Override

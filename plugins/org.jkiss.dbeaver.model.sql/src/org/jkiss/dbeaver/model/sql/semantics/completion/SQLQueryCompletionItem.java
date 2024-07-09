@@ -55,7 +55,7 @@ public abstract class SQLQueryCompletionItem {
     }
 
     /**
-     * Pepare completion item for reserved word
+     * Prepare completion item for reserved word
      */
     @NotNull
     public static SQLQueryCompletionItem forReservedWord(@NotNull String text) {
