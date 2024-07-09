@@ -90,10 +90,14 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
             if (!CommonUtils.isEmpty(driver.getCategory())) {
                 xml.addAttribute(RegistryConstants.ATTR_CATEGORY, driver.getCategory());
             }
-            xml.addAttribute(RegistryConstants.ATTR_CATEGORIES, String.join(",", driver.getCategories()));
+            if (!CommonUtils.isEmpty(driver.getCategories())) {
+                xml.addAttribute(RegistryConstants.ATTR_CATEGORIES, String.join(",", driver.getCategories()));
+            }
 
             xml.addAttribute(RegistryConstants.ATTR_NAME, driver.getName());
-            xml.addAttribute(RegistryConstants.ATTR_CLASS, driver.getDriverClassName());
+            if (!CommonUtils.isEmpty(driver.getDriverClassName())) {
+                xml.addAttribute(RegistryConstants.ATTR_CLASS, driver.getDriverClassName());
+            }
             if (!CommonUtils.isEmpty(driver.getSampleURL())) {
                 xml.addAttribute(RegistryConstants.ATTR_URL, driver.getSampleURL());
             }
@@ -109,7 +113,9 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
             if (!CommonUtils.isEmpty(driver.getDefaultUser())) {
                 xml.addAttribute(RegistryConstants.ATTR_DEFAULT_USER, driver.getDefaultUser());
             }
-            xml.addAttribute(RegistryConstants.ATTR_DESCRIPTION, CommonUtils.notEmpty(driver.getDescription()));
+            if (!CommonUtils.isEmpty(driver.getDescription())) {
+                xml.addAttribute(RegistryConstants.ATTR_DESCRIPTION, driver.getDescription());
+            }
             if (driver.isCustomDriverLoader()) {
                 xml.addAttribute(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER, driver.isCustomDriverLoader());
             }

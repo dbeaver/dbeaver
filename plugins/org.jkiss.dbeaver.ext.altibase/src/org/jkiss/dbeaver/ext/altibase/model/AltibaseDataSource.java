@@ -230,8 +230,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         DBSObject refObj = null;
         AltibaseSchema refSchema = (AltibaseSchema) this.getSchema(refSchemaName);
 
-        if (refSchema != null)
-        {
+        if (refSchema != null) {
             // No object type from database metadata, so need to find it one by one.
             if (refObj == null) {
                 refObj = refSchema.getTable(monitor, refObjName);
@@ -255,7 +254,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
                 refObj = refSchema.getTableTrigger(monitor, refObjName);
             }
         } else {
-            /**
+            /*
              *  Though Public synonym does not have its own schema, but SYSTEM_.SYS_SYONYMS_.OBJECT_OWNER_NAME returns 
              *  the object creator as owner like Oracle.
              *  So, first look for it in the owner's private schema, and if it is not found, then try to find it at public schema.

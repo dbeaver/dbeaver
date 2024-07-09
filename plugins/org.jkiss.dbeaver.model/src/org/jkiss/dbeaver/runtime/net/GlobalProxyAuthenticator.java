@@ -18,7 +18,10 @@ package org.jkiss.dbeaver.runtime.net;
 
 import org.eclipse.core.net.proxy.IProxyData;
 import org.eclipse.core.net.proxy.IProxyService;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.bundle.ModelActivator;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -28,6 +31,7 @@ import org.jkiss.dbeaver.model.impl.net.SocksConstants;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerType;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.encode.EncryptionException;
 import org.jkiss.dbeaver.runtime.encode.SecuredPasswordEncrypter;
@@ -42,8 +46,7 @@ import java.net.PasswordAuthentication;
  * Global authenticator
  */
 public class GlobalProxyAuthenticator extends Authenticator {
-
-    private SecuredPasswordEncrypter encrypter;
+    private static final Log log = Log.getLog(GlobalProxyAuthenticator.class);
 
     private final IProxyService proxyService;
 
@@ -67,22 +70,24 @@ public class GlobalProxyAuthenticator extends Authenticator {
             final String proxyHost = store.getString(ModelPreferences.UI_PROXY_HOST);
             if (!CommonUtils.isEmpty(proxyHost) && proxyHost.equalsIgnoreCase(getRequestingHost()) &&
                 store.getInt(ModelPreferences.UI_PROXY_PORT) == getRequestingPort()) {
-                String userName = store.getString(ModelPreferences.UI_PROXY_USER);
-                String userPassword = decryptPassword(store.getString(ModelPreferences.UI_PROXY_PASSWORD));
-                if (CommonUtils.isEmpty(userName) || CommonUtils.isEmpty(userPassword)) {
-                    DBPAuthInfo authInfo = readCredentialsInUI("Auth proxy '" + proxyHost + "'", userName, userPassword);
-                    if (authInfo != null) {
-                        userName = authInfo.getUserName();
-                        userPassword = authInfo.getUserPassword();
-                        if (authInfo.isSavePassword()) {
-                            // Save in preferences
-                            store.setValue(ModelPreferences.UI_PROXY_USER, userName);
-                            store.setValue(ModelPreferences.UI_PROXY_PASSWORD, encryptPassword(userPassword));
+                DBPAuthInfo credentials = null;
+                try {
+                    credentials = readCredentials();
+                } catch (DBException e) {
+                    log.error("Error reading proxy credentials", e);
+                }
+                if (credentials == null) {
+                    credentials = readCredentialsInUI("Auth proxy '" + proxyHost + "'", null, null);
+                }
+                if (credentials != null) {
+                    if (credentials.isSavePassword()) {
+                        try {
+                            saveCredentials(credentials.getUserName(), credentials.getUserPassword());
+                        } catch (DBException e) {
+                            log.error("Error saving proxy credentials", e);
                         }
                     }
-                }
-                if (!CommonUtils.isEmpty(userName) && !CommonUtils.isEmpty(userPassword)) {
-                    return new PasswordAuthentication(userName, userPassword.toCharArray());
+                    return new PasswordAuthentication(credentials.getUserName(), credentials.getUserPassword().toCharArray());
                 }
             }
         }
@@ -121,7 +126,7 @@ public class GlobalProxyAuthenticator extends Authenticator {
         }
 
         if (proxyService != null) {
-            // Try to use Eclispe proxy config for global proxies
+            // Try to use Eclipse proxy config for global proxies
             IProxyData[] proxyData = proxyService.getProxyData();
             if (proxyData != null) {
                 for (IProxyData pd : proxyData) {
@@ -136,33 +141,49 @@ public class GlobalProxyAuthenticator extends Authenticator {
         return null;
     }
 
-    private String encryptPassword(String password) {
-        try {
-            if (encrypter == null) {
-                encrypter = new SecuredPasswordEncrypter();
-            }
-            return encrypter.encrypt(password);
-        } catch (EncryptionException e) {
-            return password;
-        }
-    }
-
-    private String decryptPassword(String password) {
-        if (CommonUtils.isEmpty(password)) {
-            return password;
-        }
-        try {
-            if (encrypter == null) {
-                encrypter = new SecuredPasswordEncrypter();
-            }
-            return encrypter.decrypt(password);
-        } catch (EncryptionException e) {
-            return password;
-        }
-    }
-
     private DBPAuthInfo readCredentialsInUI(String prompt, String userName, String userPassword) {
         return DBWorkbench.getPlatformUI().promptUserCredentials(prompt, userName, userPassword, false, true);
+    }
+
+    @Nullable
+    public static DBPAuthInfo readCredentials() throws DBException {
+        // Modern storage
+        DBSSecretController secrets = DBSSecretController.getGlobalSecretController();
+        String userName = secrets.getPrivateSecretValue(ModelPreferences.UI_PROXY_USER);
+        String password = secrets.getPrivateSecretValue(ModelPreferences.UI_PROXY_PASSWORD);
+
+        if (CommonUtils.isNotEmpty(userName)) {
+            return new DBPAuthInfo(userName, CommonUtils.notEmpty(password), true);
+        }
+
+        // Backward compatibility
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        userName = store.getString(ModelPreferences.UI_PROXY_USER);
+        password = store.getString(ModelPreferences.UI_PROXY_PASSWORD);
+
+        if (CommonUtils.isNotEmpty(userName)) {
+            if (CommonUtils.isNotEmpty(password)) {
+                try {
+                    password = new SecuredPasswordEncrypter().decrypt(password);
+                } catch (EncryptionException e) {
+                    throw new DBException("Can't decrypt legacy password", e);
+                }
+            }
+
+            return new DBPAuthInfo(userName, CommonUtils.notEmpty(password), true);
+        }
+
+        return null;
+    }
+
+    public static void saveCredentials(@NotNull String username, @NotNull String password) throws DBException {
+        if (CommonUtils.isNotEmpty(username)) {
+            DBSSecretController secrets = DBSSecretController.getGlobalSecretController();
+            secrets.setPrivateSecretValue(ModelPreferences.UI_PROXY_USER, username);
+            if (CommonUtils.isNotEmpty(password)) {
+                secrets.setPrivateSecretValue(ModelPreferences.UI_PROXY_PASSWORD, password);
+            }
+        }
     }
 
 }

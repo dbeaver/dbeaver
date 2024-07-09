@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.navigator;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -398,6 +397,18 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                     }
                 }
                 break;
+            case BEFORE_CONNECT:
+            case AFTER_CONNECT: {
+                DBNDatabaseNode dbmNode = model.getNodeByObject(event.getObject());
+                if (dbmNode != null) {
+                    model.fireNodeUpdate(
+                        event,
+                        dbmNode,
+                        event.getAction() == DBPEvent.Action.BEFORE_CONNECT ?
+                            DBNEvent.NodeChange.BEFORE_LOAD : DBNEvent.NodeChange.AFTER_LOAD);
+                }
+                break;
+                }
             case OBJECT_UPDATE:
             case OBJECT_SELECT:
             {

@@ -218,7 +218,7 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends AbstractTableCons
                         return refKeyClass.cast(entityConstraint);
                     }
                 } catch (DBException e) {
-                    log.debug("Error searchign constraint by attributes", e);
+                    log.debug("Error searching constraint by attributes", e);
                 }
             }
         }

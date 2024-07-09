@@ -31,7 +31,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Configuration files manager on FS
@@ -67,10 +67,10 @@ public class DataSourceConfigurationManagerNIO implements DataSourceConfiguratio
         Path metadataFolder = project.getMetadataFolder(false);
         boolean modernFormat = false;
         if (Files.exists(metadataFolder)) {
-            try {
-                List<Path> mdFiles = Files.list(metadataFolder)
+            try (Stream<Path> list = Files.list(metadataFolder)) {
+                List<Path> mdFiles = list
                     .filter(path -> !Files.isDirectory(path) && Files.exists(path))
-                    .collect(Collectors.toList());
+                    .toList();
                 for (Path res : mdFiles) {
                     String fileName = res.getFileName().toString();
                     if (fileName.startsWith(DataSourceRegistry.MODERN_CONFIG_FILE_PREFIX) &&
@@ -86,11 +86,11 @@ public class DataSourceConfigurationManagerNIO implements DataSourceConfiguratio
         }
         if (!modernFormat) {
             if (Files.exists(project.getAbsolutePath())) {
-                try {
-                    // Logacy way (search config.xml in project folder)
-                    List<Path> mdFiles = Files.list(project.getAbsolutePath())
+                try (Stream<Path> list = Files.list(project.getAbsolutePath())) {
+                    // Legacy way (search config.xml in project folder)
+                    List<Path> mdFiles = list
                         .filter(path -> !Files.isDirectory(path) && Files.exists(path))
-                        .collect(Collectors.toList());
+                        .toList();
                     for (Path res : mdFiles) {
                         String fileName = res.getFileName().toString();
                         if (fileName.startsWith(DBPDataSourceRegistry.LEGACY_CONFIG_FILE_PREFIX) && fileName.endsWith(DBPDataSourceRegistry.LEGACY_CONFIG_FILE_EXT)) {

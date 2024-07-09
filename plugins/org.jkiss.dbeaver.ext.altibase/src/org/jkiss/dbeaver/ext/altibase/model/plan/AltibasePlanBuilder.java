@@ -26,6 +26,7 @@ import java.util.List;
 public class AltibasePlanBuilder {
 
     private static final Log log = Log.getLog(AltibasePlanBuilder.class);
+
     private static final String pattern4TrcLogSkipLine = "[\\s*|\\s*|]*-{3,}+";
 
     /**

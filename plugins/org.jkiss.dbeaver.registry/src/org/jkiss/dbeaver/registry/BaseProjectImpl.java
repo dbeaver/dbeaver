@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretSubject;
+import org.jkiss.dbeaver.model.secret.DBSValueEncryptor;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.registry.task.TaskConstants;
 import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
@@ -238,7 +239,16 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
 
     @NotNull
     @Override
-    public SecretKey getLocalSecretKey() {
+    public DBSValueEncryptor getValueEncryptor() throws DBException {
+        SecretKey key = getLocalSecretKey();
+        if (key == null) {
+            throw new IllegalStateException("Can't obtain secret key");
+        }
+        return new DefaultValueEncryptor(key);
+    }
+
+    @Nullable
+    protected SecretKey getLocalSecretKey() {
         return new SecretKeySpec(LOCAL_KEY_CACHE, DefaultValueEncryptor.KEY_ALGORITHM);
     }
 
@@ -385,6 +395,15 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
         resourcePath = CommonUtils.normalizeResourcePath(resourcePath);
         synchronized (resourcesSync) {
             return resourceProperties.get(resourcePath);
+        }
+    }
+
+    @Override
+    public void setResourceProperties(@NotNull String resourcePath, @NotNull Map<String, Object> newProps) {
+        loadMetadata();
+        resourcePath = CommonUtils.normalizeResourcePath(resourcePath);
+        synchronized (resourcesSync) {
+            this.resourceProperties.put(resourcePath, new HashMap<>(newProps));
         }
     }
 
