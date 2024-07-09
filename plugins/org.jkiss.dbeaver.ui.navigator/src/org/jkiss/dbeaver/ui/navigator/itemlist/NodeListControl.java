@@ -26,22 +26,19 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSWrapper;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceAbstract;
@@ -89,10 +86,10 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         setDoubleClickHandler(event -> {
             // Run default node action
             ISelection selection = getItemsViewer().getSelection();
-            if (selection instanceof IStructuredSelection) {
-                for (Object obj : ((IStructuredSelection) selection).toList()) {
-                    if (obj instanceof DBNNode && ((DBNNode) obj).allowsOpen()) {
-                        openNodeEditor((DBNNode) obj);
+            if (selection instanceof IStructuredSelection ss) {
+                for (Object obj : ss.toList()) {
+                    if (obj instanceof DBNNode node && node.allowsOpen()) {
+                        openNodeEditor(node);
                     }
                 }
             }
@@ -139,8 +136,8 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
 
     @Override
     public DBPDataSourceContainer getDataSourceContainer() {
-        if (rootNode instanceof DBNDatabaseNode) {
-            return ((DBNDatabaseNode) rootNode).getDataSourceContainer();
+        if (rootNode instanceof DBNDatabaseNode node) {
+            return node.getDataSourceContainer();
         }
         return null;
     }
@@ -167,29 +164,30 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
 
     private static IContentProvider createContentProvider(DBNNode node, DBXTreeNode metaNode)
     {
-        if (node instanceof DBNDatabaseNode) {
-            final DBNDatabaseNode dbNode = (DBNDatabaseNode) node;
+        if (node instanceof DBNDatabaseNode dbNode) {
             if (metaNode == null) {
                 metaNode = dbNode.getMeta();
             }
             final List<DBXTreeNode> inlineMetas = collectInlineMetas(dbNode, metaNode);
 
-            if (!inlineMetas.isEmpty()) {
+            boolean dynamicStructObject = isDynamicStructObject(dbNode, metaNode);
+            if (!inlineMetas.isEmpty() || dynamicStructObject) {
                 return new TreeContentProvider() {
                     @Override
-                    public boolean hasChildren(Object parentElement)
-                    {
-                        return parentElement instanceof DBNDatabaseNode &&
-                            ((DBNDatabaseNode) parentElement).hasChildren(false);
+                    public boolean hasChildren(Object parentElement) {
+                        return parentElement instanceof DBNDatabaseNode node &&
+                           dynamicStructObject ? hasDynamicStructChildren(node) : node.hasChildren(false);
                     }
 
                     @Override
-                    public Object[] getChildren(Object parentElement)
-                    {
-                        if (parentElement instanceof DBNDatabaseNode) {
+                    public Object[] getChildren(Object parentElement) {
+                        if (parentElement instanceof DBNDatabaseNode node) {
+                            if (dynamicStructObject) {
+                                return getDynamicStructChildren(node);
+                            }
                             try {
                                 // Read children with void progress monitor because inline children SHOULD be already cached
-                                DBNNode[] children = DBNUtils.getNodeChildrenFiltered(new VoidProgressMonitor(), (DBNDatabaseNode)parentElement, false);
+                                DBNNode[] children = DBNUtils.getNodeChildrenFiltered(new VoidProgressMonitor(), node, false);
                                 if (ArrayUtils.isEmpty(children)) {
                                     return null;
                                 } else {
@@ -205,6 +203,49 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
             }
         }
         return new ListContentProvider();
+    }
+
+    @Override
+    protected boolean isDynamicObject(DBNNode object) {
+        return object instanceof DBNDatabaseDynamicItem;
+    }
+
+    private static DBNDatabaseDynamicItem[] getDynamicStructChildren(DBNDatabaseNode dbNode) {
+        if (dbNode.getObject() instanceof DBSTypedObject typedObject) {
+            DBSDataType dataType = DBUtils.getDataType(dbNode.getDataSource(), typedObject);
+            if (dataType instanceof DBSEntity dtEntity) {
+                try {
+                    List<? extends DBSEntityAttribute> attributes = dtEntity.getAttributes(new VoidProgressMonitor());
+                    if (attributes == null) {
+                        return null;
+                    }
+                    return attributes.stream().map(o -> new DBNDatabaseDynamicItem(dbNode, o))
+                        .toArray(DBNDatabaseDynamicItem[]::new);
+                } catch (DBException e) {
+                    log.error(e);
+                }
+            }
+        }
+        return new DBNDatabaseDynamicItem[0];
+    }
+
+    private static boolean hasDynamicStructChildren(@NotNull DBNDatabaseNode dbNode) {
+        if (dbNode.getObject() instanceof DBSTypedObject typedObject) {
+            DBSDataType dataType = DBUtils.getDataType(dbNode.getDataSource(), typedObject);
+            return dataType instanceof DBSEntity && dataType.getDataKind() == DBPDataKind.STRUCT;
+        }
+        return false;
+    }
+
+    private static boolean isDynamicStructObject(@NotNull DBNDatabaseNode dbNode, @NotNull DBXTreeNode metaNode) {
+        List<DBXTreeNode> childMetas = metaNode.getChildren(dbNode);
+        if (childMetas.size() == 1) {
+            if (childMetas.get(0) instanceof DBXTreeItem item) {
+                Class<?> childrenClass = dbNode.getChildrenClass(item);
+                return childrenClass != null && DBSTypedObject.class.isAssignableFrom(childrenClass);
+            }
+        }
+        return false;
     }
 
     protected static List<DBXTreeNode> collectInlineMetas(DBNDatabaseNode node, DBXTreeNode meta)
@@ -241,11 +282,10 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     protected Class<?>[] getListBaseTypes(Collection<DBNNode> items)
     {
         // Collect base types for root node
-        if (getRootNode() instanceof DBNDatabaseNode) {
-            DBNDatabaseNode dbNode = (DBNDatabaseNode) getRootNode();
+        if (getRootNode() instanceof DBNDatabaseNode dbNode) {
             List<Class<?>> baseTypes = dbNode.getChildrenTypes(nodeMeta);
-            if (CommonUtils.isEmpty(baseTypes) && dbNode instanceof DBNDatabaseFolder) {
-                Class<? extends DBSObject> childrenClass = ((DBNDatabaseFolder) dbNode).getChildrenClass();
+            if (CommonUtils.isEmpty(baseTypes) && dbNode instanceof DBNDatabaseFolder folder) {
+                Class<? extends DBSObject> childrenClass = folder.getChildrenClass();
                 if (childrenClass != null) {
                     return new Class[] { childrenClass };
                 }
@@ -281,10 +321,10 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     @Override
     protected Object getObjectValue(DBNNode item)
     {
-        if (item instanceof DBSWrapper) {
-            return ((DBSWrapper)item).getObject();
-        } else if (item instanceof DBNObjectNode) {
-            return ((DBNObjectNode) item).getNodeObject();
+        if (item instanceof DBSWrapper wrapper) {
+            return wrapper.getObject();
+        } else if (item instanceof DBNObjectNode node) {
+            return node.getNodeObject();
         }
         return item;
     }
@@ -320,10 +360,10 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     @Override
     protected PropertySourceAbstract createListPropertySource()
     {
-        if (workbenchSite instanceof IWorkbenchPartSite && ((IWorkbenchPartSite) workbenchSite).getPart() instanceof IDatabaseEditor) {
-            IEditorInput editorInput = ((IDatabaseEditor) ((IWorkbenchPartSite) workbenchSite).getPart()).getEditorInput();
-            if (editorInput instanceof IDatabaseEditorInput) {
-                return new NodeListPropertySource(((IDatabaseEditorInput) editorInput).getCommandContext());
+        if (workbenchSite instanceof IWorkbenchPartSite partSite && partSite.getPart() instanceof IDatabaseEditor de) {
+            IEditorInput editorInput = de.getEditorInput();
+            if (editorInput instanceof IDatabaseEditorInput dei) {
+                return new NodeListPropertySource(dei.getCommandContext());
             }
         }
         return super.createListPropertySource();
@@ -359,8 +399,8 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         public boolean isHyperlink(Object element, Object cellValue)
         {
             Object ownerObject = null;
-            if (rootNode instanceof DBNDatabaseNode) {
-                ownerObject = ((DBNDatabaseNode) rootNode).getValueObject();
+            if (rootNode instanceof DBNDatabaseNode node) {
+                ownerObject = node.getValueObject();
             }
             return cellValue instanceof DBSObject && cellValue != ownerObject;
         }
@@ -368,8 +408,8 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         @Override
         public void navigateHyperlink(Object cellValue)
         {
-            if (cellValue instanceof DBSObject) {
-                NavigatorHandlerObjectOpen.openEntityEditor((DBSObject) cellValue);
+            if (cellValue instanceof DBSObject object) {
+                NavigatorHandlerObjectOpen.openEntityEditor(object);
             }
         }
 
@@ -401,16 +441,16 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
                 return false;
             }
             final DBNNode rootNode = getRootNode();
-            if (!(rootNode instanceof DBNDatabaseNode)) {
+            if (!(rootNode instanceof DBNDatabaseNode databaseNode)) {
                 return false;
             }
             final Class<?> curClass = editableValue.getClass();
-            final Object valueObject = ((DBNDatabaseNode) rootNode).getValueObject();
+            final Object valueObject = databaseNode.getValueObject();
             if (valueObject == null) {
                 return false;
             }
             DBEObjectEditor objectEditor = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(curClass, DBEObjectEditor.class);
-            return objectEditor != null && editableValue instanceof DBPObject && objectEditor.canEditObject((DBPObject) editableValue)
+            return objectEditor != null && editableValue instanceof DBPObject object && objectEditor.canEditObject(object)
                 && DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR);
         }
 
