@@ -186,7 +186,7 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
         UIUtils.createLink(intro,
             "<a>" + addCommandName + "</a> to this dashboard by drag-n-drop or double-click from the <a>catalog</a> or another dashboard.\n" +
                 "You can also create new charts in the <a>Configuration</a> dialog.\n" +
-                "For further information, please refer to the <a>documentation</a>",
+                "For further information, please refer to the <a>documentation</a>.",
             new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -285,7 +285,8 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
     private void registerContextMenu() {
         MenuManager menuMgr = new MenuManager();
         menuMgr.add(ActionUtils.makeCommandContribution(site, DashboardUIConstants.CMD_ADD_DASHBOARD));
-        menuMgr.add(ActionUtils.makeCommandContribution(site, DashboardUIConstants.CMD_RESET_DASHBOARD));
+        menuMgr.add(ActionUtils.makeCommandContribution(site, DashboardUIConstants.CMD_REFRESH_CHART));
+        menuMgr.add(ActionUtils.makeCommandContribution(site, DashboardUIConstants.CMD_CATALOG_SHOW_DASHBOARD));
         setMenu(menuMgr.createContextMenu(this));
 
         addDisposeListener(e -> menuMgr.dispose());

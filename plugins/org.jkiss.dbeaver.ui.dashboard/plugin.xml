@@ -33,7 +33,7 @@
     <extension point="org.eclipse.ui.commands">
         <command id="org.jkiss.dbeaver.ui.dashboard.open" name="%command.org.jkiss.dbeaver.ui.dashboard.open.name" description="%command.org.jkiss.dbeaver.ui.dashboard.open.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.ui.dashboard.configure" name="%command.org.jkiss.dbeaver.ui.dashboard.configure.name" description="%command.org.jkiss.dbeaver.ui.dashboard.configure.description" categoryId="org.jkiss.dbeaver.core.database"/>
-        <command id="org.jkiss.dbeaver.ui.dashboard.reset" name="%command.org.jkiss.dbeaver.ui.dashboard.reset.name" description="%command.org.jkiss.dbeaver.ui.dashboard.reset.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.ui.chart.refresh" name="%command.org.jkiss.dbeaver.ui.chart.refresh.name" description="%command.org.jkiss.dbeaver.ui.chart.refresh.description" categoryId="org.jkiss.dbeaver.core.database"/>
 
         <command id="org.jkiss.dbeaver.ui.dashboard.create" name="%command.org.jkiss.dbeaver.ui.dashboard.create.name" description="%command.org.jkiss.dbeaver.ui.dashboard.create.description" categoryId="org.jkiss.dbeaver.core.database">
             <commandParameter id="datasource" name="Create dashboard for active datasource" optional="true"/>
@@ -76,7 +76,7 @@
                 <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.ui.dashboard.reset" class="org.jkiss.dbeaver.ui.dashboard.navigator.HandlerDashboardResetItem">
+        <handler commandId="org.jkiss.dbeaver.ui.chart.refresh" class="org.jkiss.dbeaver.ui.dashboard.navigator.HandlerDashboardResetItem">
             <enabledWhen>
                 <test property="org.jkiss.dbeaver.core.global.hasPermission" value="configuration-manager"/>
             </enabledWhen>

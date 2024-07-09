@@ -231,7 +231,7 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
             dashDivider.setWeights(650, 350);
         }
         catalogPanel.setFocus();
-        isCatalogPanelVisible = true;
+         isCatalogPanelVisible = true;
     }
 
     @Override

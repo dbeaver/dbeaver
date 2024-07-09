@@ -56,7 +56,7 @@ public abstract class DashboardRendererAbstract implements DashboardItemRenderer
                 public void run() {
                     itemContainer.getGroup().selectItem(itemContainer);
                     ActionUtils.runCommand(
-                        DashboardUIConstants.CMD_RESET_DASHBOARD,
+                        DashboardUIConstants.CMD_REFRESH_CHART,
                         itemContainer.getGroup().getView().getWorkbenchSite());
                 }
             });
