@@ -211,20 +211,17 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
 
     @Override
     public boolean canFinish() {
-        if (isCurrentTaskSaved()) {
-            return true;
-        }
+        return isCurrentTaskSaved() || allPagesComplete();
+    }
+
+    protected boolean allPagesComplete() {
         for (IWizardPage page : getPages()) {
             if (isPageNeedsCompletion(page) && isPageValid(page) && !page.isPageComplete()) {
                 return false;
             }
         }
         TaskConfigurationWizardPageTask taskPage = getContainer().getTaskPage();
-        if (taskPage != null && !taskPage.isPageComplete()) {
-            return false;
-        }
-
-        return true;
+        return taskPage == null || taskPage.isPageComplete();
     }
 
     protected boolean isPageNeedsCompletion(IWizardPage page) {
