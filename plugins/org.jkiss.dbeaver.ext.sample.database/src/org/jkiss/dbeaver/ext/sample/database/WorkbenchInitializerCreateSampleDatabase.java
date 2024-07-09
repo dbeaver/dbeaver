@@ -56,7 +56,7 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
             return;
         }
         if (DataSourceRegistry.getAllDataSources().size() > 1) {
-            // Seems to be experienced user - no need in sampel db
+            // Seems to be experienced user - no need in sample db
             return;
         }
         DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();

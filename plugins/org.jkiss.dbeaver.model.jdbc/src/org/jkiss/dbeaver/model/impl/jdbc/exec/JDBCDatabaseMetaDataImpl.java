@@ -27,7 +27,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 
 /**
- * JDBC database metadata managable
+ * JDBC database metadata manageable
  */
 public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
 

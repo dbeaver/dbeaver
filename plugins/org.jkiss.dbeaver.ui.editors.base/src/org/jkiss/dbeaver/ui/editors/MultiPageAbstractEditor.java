@@ -55,8 +55,7 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart {
         if (getEditorInput() == null) {
             super.init(site, input);
         } else {
-            // Pages re-initialization. Do not call init bcause it recreates selection
-            // provider
+            // Pages re-initialization. Do not call init because it recreates selection provider
             setSite(site);
             setInput(input);
         }

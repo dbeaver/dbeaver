@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.struct;
 
 /**
  * DBSStructContainer
- * Contains entities or another structure containers (e.g. ctalogs, schemas)
+ * Contains entities or another structure containers (e.g. catalogs, schemas)
  */
 public interface DBSStructContainer extends DBSObjectContainer {
 
