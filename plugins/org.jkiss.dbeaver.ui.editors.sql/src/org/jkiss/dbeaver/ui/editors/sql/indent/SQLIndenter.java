@@ -35,7 +35,7 @@ public class SQLIndenter {
      */
     private int indent;
     /**
-     * The stateful scanposition for the indentation methods.
+     * The stateful scan position for the indentation methods.
      */
     private int position;
     /**

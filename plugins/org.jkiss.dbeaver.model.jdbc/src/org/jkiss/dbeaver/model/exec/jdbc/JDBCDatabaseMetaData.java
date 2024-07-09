@@ -22,7 +22,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
 /**
- * Managable connection metadata
+ * Manageable connection metadata
  */
 public interface JDBCDatabaseMetaData extends DatabaseMetaData {
 

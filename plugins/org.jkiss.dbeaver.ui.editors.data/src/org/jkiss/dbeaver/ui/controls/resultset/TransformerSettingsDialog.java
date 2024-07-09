@@ -233,7 +233,7 @@ class TransformerSettingsDialog extends BaseDialog {
     private void saveTransformerSettings() {
         propertiesEditor.saveEditorValues();
         if (currentAttribute == null) {
-            // Nothign to save - just ignore
+            // Nothing to save - just ignore
             return;
         }
         DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(currentAttribute, true);

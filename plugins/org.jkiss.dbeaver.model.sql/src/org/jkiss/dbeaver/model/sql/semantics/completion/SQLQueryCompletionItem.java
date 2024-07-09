@@ -46,7 +46,7 @@ public abstract class SQLQueryCompletionItem {
     protected abstract <R> R applyImpl(SQLQueryCompletionItemVisitor<R> visitor);
 
     /**
-     * Pepare completion item for reserved word
+     * Prepare completion item for reserved word
      */
     @NotNull
     public static SQLQueryCompletionItem forReservedWord(@NotNull String text) {
