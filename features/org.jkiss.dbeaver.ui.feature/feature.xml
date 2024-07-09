@@ -15,6 +15,9 @@
 
    <includes id="org.jkiss.dbeaver.runtime.feature" version="0.0.0"/>
 
+   <!-- Uncomment this feature to include tools for testing UI -->
+   <!--<includes id="org.jkiss.dbeaver.ui.test.feature" version="0.0.0"/>-->
+
    <requires>
       <import plugin="org.eclipse.gef" version="0.0.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.draw2d" version="0.0.0" match="greaterOrEqual"/>
@@ -51,8 +54,5 @@
    <plugin id="org.jkiss.dbeaver.data.gis.view" version="0.0.0" />
    <plugin id="org.jkiss.bundle.jfreechart" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ui.charts" version="0.0.0" />
-
-   <!-- TODO: Should only be included in the build via flag -->
-   <plugin id="org.jkiss.dbeaver.ext.test" version="0.0.0" />
 
 </feature>

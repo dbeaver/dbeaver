@@ -61,11 +61,16 @@
             </command>
             <command commandId="org.jkiss.dbeaver.test.connection.validate"/>
         </menuContribution>
-       <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
+       <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=help">
             <menu id="test" label="&amp;Test">
                 <command commandId="org.jkiss.dbeaver.test.dialog"/>
                 <command commandId="org.jkiss.dbeaver.test.showNotification"/>
                 <command commandId="org.jkiss.dbeaver.test.showIcons"/>
+
+                <separator visible="true"/>
+                <command commandId="org.eclipse.ui.views.showView">
+                    <parameter name="org.eclipse.ui.views.showView.viewId" value="org.eclipse.swt.tools.views.SpyView"/>
+                </command>
             </menu>
        </menuContribution>
    </extension>
