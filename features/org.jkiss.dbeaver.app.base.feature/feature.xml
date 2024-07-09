@@ -3,7 +3,7 @@
 <feature
         id="org.jkiss.dbeaver.app.base.feature"
         label="%featureName"
-        version="24.1.2.qualifier"
+        version="24.1.3.qualifier"
         provider-name="%providerName"
         plugin="org.jkiss.dbeaver.ui.app.standalone">
 
@@ -29,6 +29,8 @@
     <includes id="org.jkiss.dbeaver.ui.feature" version="0.0.0"/>
     <includes id="org.jkiss.dbeaver.db.feature" version="0.0.0"/>
     <includes id="org.jkiss.dbeaver.db.ui.feature" version="0.0.0"/>
+
+    <plugin id="org.jkiss.dbeaver.ui.macos" os="macosx" version="0.0.0" />
 
     <!-- Logging -->
 

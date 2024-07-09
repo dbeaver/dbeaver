@@ -45,6 +45,31 @@ public class AltibaseSchema extends GenericSchema implements DBPObjectStatistics
     }
 
     @Override
+    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
+        
+        DBSObject object = null;
+        
+        object = getTable(monitor, childName);
+        if (object != null) {
+            return object;
+        }
+        
+        object = getProcedure(monitor, childName);
+        if (object != null) {
+            return object;
+        }
+        
+        object = getPackage(monitor, childName);
+        if (object != null) {
+            return object;
+        }
+        
+        object = getSynonym(monitor, childName);
+
+        return object;
+    }
+    
+    @Override
     public List<AltibaseTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException {
         List<? extends GenericTableBase> tables = getTables(monitor);
         if (tables != null) {

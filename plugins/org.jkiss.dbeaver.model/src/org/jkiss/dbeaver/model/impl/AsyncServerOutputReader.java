@@ -47,7 +47,7 @@ public class AsyncServerOutputReader extends DefaultServerOutputReader {
         if (statement == null) {
             super.readServerOutput(monitor, context, executionResult, null, output);
         } else {
-            // Do not read from connection warnings as it blocks statements cancelation and other connection-level stuff.
+            // Do not read from connection warnings as it blocks statements cancellation and other connection-level stuff.
             // See #7885
 /*
                 try {

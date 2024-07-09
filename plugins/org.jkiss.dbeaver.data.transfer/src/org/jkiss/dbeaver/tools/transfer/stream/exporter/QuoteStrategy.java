@@ -40,7 +40,7 @@ public enum QuoteStrategy {
                 return s;
             }
         }
-        // backward compability
+        // backward compatibility
         if ("true".equalsIgnoreCase(v)) {
             return ALL;
         } else if ("false".equalsIgnoreCase(v)) {

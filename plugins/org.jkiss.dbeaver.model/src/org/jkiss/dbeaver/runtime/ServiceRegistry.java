@@ -38,7 +38,7 @@ public class ServiceRegistry {
 
     private static ServiceRegistry instance = null;
 
-    private class ServiceDescriptor extends AbstractDescriptor {
+    private static class ServiceDescriptor extends AbstractDescriptor {
 
         private final ObjectType type;
         private final ObjectType impl;

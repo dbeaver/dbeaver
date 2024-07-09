@@ -83,7 +83,7 @@ public class ExclusivePositionUpdater implements IPositionUpdater
                 {
                     // event extends from before position into it - adjust offset
                     // and length
-                    // offset becomes end of event, length ajusted acordingly
+                    // offset becomes end of event, length adjusted accordingly
                     int newOffset = eventOffset + eventNewLength;
                     position.setOffset(newOffset);
                     position.setLength(end - newOffset);

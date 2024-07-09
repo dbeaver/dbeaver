@@ -139,7 +139,7 @@ public class DataTransferJob extends AbstractJob {
             return true;
         } catch (Exception e) {
             consumer.finishTransfer(monitor, e, task, false);
-            log.error("Error transfering data from " + producer.getObjectName() + " to " + consumer.getObjectName(), e);
+            log.error("Error transferring data from " + producer.getObjectName() + " to " + consumer.getObjectName(), e);
             throw e;
         } finally {
             monitor.done();

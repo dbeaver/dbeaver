@@ -35,7 +35,7 @@ class ScrollBarAdapter implements IGridScrollBar
     private boolean vertical;
 
     /**
-     * Contructs this adapter by delegating to the given scroll bar.
+     * Constructs this adapter by delegating to the given scroll bar.
      * 
      * @param scrollBar delegate
      */
