@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.altibase.model;
+package org.jkiss.dbeaver.ext.altibase.tasks;
 
-import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.ext.altibase.model.AltibasePackage;
+import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteSettings;
 
-public class AltibaseMaterializedView extends AltibaseViewAbs {
-
-    public AltibaseMaterializedView(JDBCSession session, GenericStructContainer container, String tableName, String tableType, 
-            JDBCResultSet dbResult) {
-        super(session, container, tableName, tableType, dbResult);
-    }
+public class AltibaseToolPackageCompileSettings extends SQLToolExecuteSettings<AltibasePackage> {
 }

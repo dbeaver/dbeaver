@@ -14,16 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.altibase.model;
+package org.jkiss.dbeaver.ext.altibase.tasks;
 
-import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.ext.altibase.model.AltibaseView;
+import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteSettings;
 
-public class AltibaseMaterializedView extends AltibaseViewAbs {
-
-    public AltibaseMaterializedView(JDBCSession session, GenericStructContainer container, String tableName, String tableType, 
-            JDBCResultSet dbResult) {
-        super(session, container, tableName, tableType, dbResult);
-    }
+public class AltibaseToolViewCompileSettings extends SQLToolExecuteSettings<AltibaseView> {
 }
