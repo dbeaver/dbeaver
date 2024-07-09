@@ -389,7 +389,7 @@ public abstract class DBVUtils {
             try {
                 return ((DBVEntity) entity).getRealEntity(new VoidProgressMonitor());
             } catch (DBException e) {
-                log.error("Can't get real entity fro mvirtual entity", e);
+                log.error("Can't get real entity from virtual entity", e);
             }
         }
         return entity;
