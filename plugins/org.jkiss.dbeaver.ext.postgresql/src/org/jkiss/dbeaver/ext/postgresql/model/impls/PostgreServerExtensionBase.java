@@ -590,6 +590,16 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public boolean supportsAcl() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsCustomDataTypes() {
+        return true;
+    }
+
+    @Override
     public boolean supportsDistinctForStatementsWithAcl() {
         return true;
     }

@@ -116,14 +116,19 @@ public class SQLQueryModelContext {
             .createAnalyzer(LSMAnalyzerParameters.forDialect(this.dialect, this.syntaxManager));
         STMTreeRuleNode tree = analyzer.parseSqlQueryTree(querySource, new STMSkippingErrorListener());
 
-        if (tree != null) {
-            this.queryDataContext = this.prepareDataContext(tree);
-            STMTreeNode queryNode = tree.getFirstStmChild();
-            SQLQueryModelContent contents = switch (queryNode.getNodeKindId()) {
-                case SQLStandardParser.RULE_directSqlDataStatement -> {
-                    STMTreeNode stmtBodyNode = queryNode.getLastStmtChild();
-                    // TODO collect CTE for insert-update-delete as well as recursive CTE
-                    yield switch (stmtBodyNode.getNodeKindId()) {
+        if (tree == null) {
+            return null;
+        }
+        this.queryDataContext = this.prepareDataContext(tree);
+        STMTreeNode queryNode = tree.getFirstStmChild();
+        if (queryNode == null) {
+            return null;
+        }
+        SQLQueryModelContent contents = switch (queryNode.getNodeKindId()) {
+            case SQLStandardParser.RULE_directSqlDataStatement -> {
+                STMTreeNode stmtBodyNode = queryNode.getLastStmtChild();
+                // TODO collect CTE for insert-update-delete as well as recursive CTE
+                yield switch (stmtBodyNode.getNodeKindId()) {
                         case SQLStandardParser.RULE_deleteStatement ->
                             SQLQueryDeleteModel.createModel(this, stmtBodyNode);
                         case SQLStandardParser.RULE_insertStatement ->
@@ -132,10 +137,10 @@ public class SQLQueryModelContext {
                             SQLQueryUpdateModel.createModel(this, stmtBodyNode);
                         default -> this.collectQueryExpression(tree);
                     };
-                }
-                case SQLStandardParser.RULE_sqlSchemaStatement -> {
-                    STMTreeNode stmtBodyNode = queryNode.getFirstStmChild();
-                    yield switch (stmtBodyNode.getNodeKindId()) {
+            }
+            case SQLStandardParser.RULE_sqlSchemaStatement -> {
+                STMTreeNode stmtBodyNode = queryNode.getFirstStmChild();
+                yield switch (stmtBodyNode.getNodeKindId()) {
                         case SQLStandardParser.RULE_createTableStatement -> null;
                         case SQLStandardParser.RULE_createViewStatement -> null;
                         case SQLStandardParser.RULE_dropTableStatement ->
@@ -146,63 +151,60 @@ public class SQLQueryModelContext {
                             SQLQueryObjectDropModel.createModel(this, stmtBodyNode, RelationalObjectType.TYPE_PROCEDURE);
                         default -> null;
                     };
-                }
-                default -> null;
-            };
-
-            if (contents != null) {
-                SQLQueryModel model = new SQLQueryModel(tree, contents, symbolEntries);
-
-                model.propagateContext(this.queryDataContext, new RecognitionContext(monitor));
-
-                // var tt = new DebugGraphBuilder();
-                // tt.traverseObjs(model);
-                // tt.graph.saveToFile("c:/temp/outx.dgml");
-
-                return model;
             }
+            default -> null;
+        };
 
-            // TODO log query model collection error
-            Predicate<SQLQuerySymbolEntry> tryFallbackForStringLiteral = s -> {
-                String rawString = s.getRawName();
-                SQLQuerySymbolClass forcedClass;
-                if (this.dialect.isQuotedString(rawString)) {
-                    forcedClass = SQLQuerySymbolClass.STRING;
-                } else {
-                    forcedClass = tryFallbackSymbolForStringLiteral(this.dialect, s, false);
-                }
-                boolean forced = forcedClass != null;
-                if (forced) {
-                    s.getSymbol().setSymbolClass(forcedClass);
-                }
-                return forced;
-            };
+        if (contents != null) {
+            SQLQueryModel model = new SQLQueryModel(tree, contents, symbolEntries);
 
-            this.traverseForIdentifiers(tree,
-                (e, c) -> {
-                    if (c.isNotClassified() && (e != null || !tryFallbackForStringLiteral.test(c))) {
-                        c.getSymbol().setSymbolClass(SQLQuerySymbolClass.COLUMN);
-                    }
-                },
-                e -> {
-                    if (e.isNotClassified() && (e.catalogName != null || e.schemaName != null ||
-                        !tryFallbackForStringLiteral.test(e.entityName))
-                    ) {
-                        e.entityName.getSymbol().setSymbolClass(SQLQuerySymbolClass.TABLE);
-                        if (e.schemaName != null) {
-                            e.schemaName.getSymbol().setSymbolClass(SQLQuerySymbolClass.SCHEMA);
-                            if (e.catalogName != null) {
-                                e.catalogName.getSymbol().setSymbolClass(SQLQuerySymbolClass.CATALOG);
-                            }
+            model.propagateContext(this.queryDataContext, new RecognitionContext(monitor));
+
+            // var tt = new DebugGraphBuilder();
+            // tt.traverseObjs(model);
+            // tt.graph.saveToFile("c:/temp/outx.dgml");
+
+            return model;
+        }
+
+        // TODO log query model collection error
+        Predicate<SQLQuerySymbolEntry> tryFallbackForStringLiteral = s -> {
+            String rawString = s.getRawName();
+            SQLQuerySymbolClass forcedClass;
+            if (this.dialect.isQuotedString(rawString)) {
+                forcedClass = SQLQuerySymbolClass.STRING;
+            } else {
+                forcedClass = tryFallbackSymbolForStringLiteral(this.dialect, s, false);
+            }
+            boolean forced = forcedClass != null;
+            if (forced) {
+                s.getSymbol().setSymbolClass(forcedClass);
+            }
+            return forced;
+        };
+
+        this.traverseForIdentifiers(tree,
+            (e, c) -> {
+                if (c.isNotClassified() && (e != null || !tryFallbackForStringLiteral.test(c))) {
+                    c.getSymbol().setSymbolClass(SQLQuerySymbolClass.COLUMN);
+                }
+            },
+            e -> {
+                if (e.isNotClassified() && (e.catalogName != null || e.schemaName != null ||
+                    !tryFallbackForStringLiteral.test(e.entityName))
+                ) {
+                    e.entityName.getSymbol().setSymbolClass(SQLQuerySymbolClass.TABLE);
+                    if (e.schemaName != null) {
+                        e.schemaName.getSymbol().setSymbolClass(SQLQuerySymbolClass.SCHEMA);
+                        if (e.catalogName != null) {
+                            e.catalogName.getSymbol().setSymbolClass(SQLQuerySymbolClass.CATALOG);
                         }
                     }
-                },
-                false
-            );
-            return new SQLQueryModel(tree, null, symbolEntries);
-        } else {
-            return null;
-        }
+                }
+            },
+            false
+        );
+        return new SQLQueryModel(tree, null, symbolEntries);
     }
 
     private void traverseForIdentifiers(

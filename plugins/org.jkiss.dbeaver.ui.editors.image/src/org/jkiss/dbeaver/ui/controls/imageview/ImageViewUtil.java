@@ -76,7 +76,7 @@ class ImageViewUtil {
      *
      * @param af affine transform
      * @param pt point to be transformed
-     * @return point after tranform
+     * @return point after transform
      */
     public static Point transformPoint(AffineTransform af, Point pt) {
         Point2D src = new Point2D.Float(pt.x, pt.y);

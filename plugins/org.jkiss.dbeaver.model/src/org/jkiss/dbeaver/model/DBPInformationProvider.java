@@ -21,7 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 /**
- * iNFORMATION provider
+ * Information provider
  */
 public interface DBPInformationProvider {
 

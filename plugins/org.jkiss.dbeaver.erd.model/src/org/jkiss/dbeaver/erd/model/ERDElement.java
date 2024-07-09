@@ -40,7 +40,7 @@ public abstract class ERDElement<OBJECT> extends ERDObject<OBJECT> {
     private List<ERDAssociation> associations;
 
     /**
-     * Special constructore for creating lazy entities.
+     * Special constructor for creating lazy entities.
      * This entity will be initialized at the moment of creation within diagram.
      */
     public ERDElement() {

@@ -193,7 +193,9 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
             this.collationId = JDBCUtils.safeGetLong(dbResult, "attcollation");
         }
 
-        this.acl = JDBCUtils.safeGetObject(dbResult, "attacl");
+        if (serverType.supportsAcl()) {
+            this.acl = JDBCUtils.safeGetObject(dbResult, "attacl");
+        }
 
         if (getTable() instanceof PostgreTableForeign) {
             foreignTableColumnOptions = PostgreUtils.safeGetStringArray(dbResult, "attfdwoptions");
@@ -201,7 +203,9 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 
         setPersisted(true);
 
-        this.depObjectId = JDBCUtils.safeGetLong(dbResult, "objid"); // ID of object which has dependency with this column
+        if (serverType.supportsSequences()) {
+            this.depObjectId = JDBCUtils.safeGetLong(dbResult, "objid"); // ID of object which has dependency with this column
+        }
     }
 
     @NotNull
