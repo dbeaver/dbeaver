@@ -476,7 +476,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         return behavior;
     }
     
-    private void openOutputStreams(DBRProgressMonitor monitor) throws IOException {
+    private void openOutputStreams(DBRProgressMonitor monitor) throws IOException, DBCException {
         final boolean truncate;
 
         boolean fileExists = Files.exists(outputFile);
@@ -571,7 +571,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
     }
 
-    private void createNewOutFile(DBRProgressMonitor monitor) throws IOException {
+    private void createNewOutFile(DBRProgressMonitor monitor) throws IOException, DBCException {
         closeOutputStreams();
 
         bytesWritten = 0;
@@ -747,12 +747,12 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @NotNull
-    public Path makeOutputFile(@NotNull DBRProgressMonitor monitor) {
+    public Path makeOutputFile(@NotNull DBRProgressMonitor monitor) throws DBCException {
         return makeOutputFile(monitor, null);
     }
     
     @NotNull
-    private Path makeOutputFile(@NotNull DBRProgressMonitor monitor, @Nullable String suffix) {
+    private Path makeOutputFile(@NotNull DBRProgressMonitor monitor, @Nullable String suffix) throws DBCException {
         final Path file = makeOutputFile(monitor, suffix, getOutputFolder());
 
         if (!Files.exists(file)) {
@@ -772,19 +772,20 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @NotNull
-    private Path makeOutputFile(@NotNull DBRProgressMonitor monitor, @Nullable String suffix, @NotNull String outputFolder) {
+    private Path makeOutputFile(@NotNull DBRProgressMonitor monitor, @Nullable String suffix, @NotNull String outputFolder) throws DBCException {
         Path dir;
         try {
             dir = DBFUtils.resolvePathFromString(monitor, getProject(), outputFolder);
         } catch (Exception e) {
             log.error("Error resolving output folder", e);
-            dir = Path.of(outputFolder);
+            throw new DBCException(e.getMessage(), e);
         }
         if (!Files.exists(dir)) {
             try {
                 Files.createDirectories(dir);
             } catch (IOException e) {
                 log.error("Error creating output folder", e);
+                throw new DBCException(e.getMessage(), e);
             }
         }
         String fileName = getOutputFileName(suffix);
