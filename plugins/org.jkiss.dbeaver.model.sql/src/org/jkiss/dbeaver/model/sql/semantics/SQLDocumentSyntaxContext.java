@@ -177,7 +177,8 @@ public class SQLDocumentSyntaxContext {
         int length,
         boolean hasContextBoundaryAtLength
     ) {
-        SQLDocumentScriptItemSyntaxContext scriptItem = new SQLDocumentScriptItemSyntaxContext(elementOriginalText, queryModel, length, hasContextBoundaryAtLength);
+        SQLDocumentScriptItemSyntaxContext scriptItem = new SQLDocumentScriptItemSyntaxContext(elementOriginalText, queryModel, length);
+        scriptItem.setHasContextBoundaryAtLength(hasContextBoundaryAtLength);
         this.scriptItems.put(offset, scriptItem);
         this.forEachListener(l -> l.onScriptItemIntroduced(scriptItem));
         return scriptItem;
