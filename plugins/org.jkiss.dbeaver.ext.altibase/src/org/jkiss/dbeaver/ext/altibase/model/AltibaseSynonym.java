@@ -52,8 +52,7 @@ public class AltibaseSynonym extends GenericSynonym implements DBPScriptObject {
     }
 
     @Property(viewable = true, linkPossible = true, order = 4)
-    public DBSObject getObject(DBRProgressMonitor monitor) throws DBException
-    {
+    public DBSObject getObject(DBRProgressMonitor monitor) throws DBException {
         if (refObj == null) {
             refObj = getTargetObject(monitor);
         }
@@ -71,7 +70,7 @@ public class AltibaseSynonym extends GenericSynonym implements DBPScriptObject {
     public DBSObject getTargetObject(DBRProgressMonitor monitor) {
         if (refObj == null) {
             try {
-                refObj = ((AltibaseDataSource)getDataSource()).findSynonymTargetObject(monitor, refObjectSchema, refObjectName);
+                refObj = ((AltibaseDataSource) getDataSource()).findSynonymTargetObject(monitor, refObjectSchema, refObjectName);
             } catch (DBException e) {
                 log.warn("Failed to get a synonym's target object: " 
                         + getFullyQualifiedName(DBPEvaluationContext.DDL)

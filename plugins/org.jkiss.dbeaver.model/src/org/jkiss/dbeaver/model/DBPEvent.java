@@ -35,16 +35,18 @@ public class DBPEvent
         OBJECT_UPDATE,
         OBJECT_REMOVE,
         OBJECT_SELECT,
+        BEFORE_CONNECT,
+        AFTER_CONNECT,
     }
 
     public static final Object REORDER = new Object();
     public static final Object RENAME = new Object();
 
-    private Action action;
+    private final Action action;
 
-    private DBSObject object;
+    private final DBSObject object;
     private Boolean enabled;
-    private Object data;
+    private final Object data;
     private Map<String, Object> options;
 
     public DBPEvent(Action action, DBSObject object) {

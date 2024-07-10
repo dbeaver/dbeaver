@@ -44,7 +44,7 @@ public class OCIClassLoader extends ClassLoader
                 @Override
                 public boolean accept(File dir, String name)
                 {
-                    return name.toLowerCase().endsWith(System.mapLibraryName("")); // OS depenent library extension
+                    return name.toLowerCase().endsWith(System.mapLibraryName("")); // OS dependent library extension
                 }
             });
 /*

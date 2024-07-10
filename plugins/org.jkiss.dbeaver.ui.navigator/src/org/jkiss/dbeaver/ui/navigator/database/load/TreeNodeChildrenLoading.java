@@ -18,8 +18,6 @@ package org.jkiss.dbeaver.ui.navigator.database.load;
 
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 
 import java.util.HashMap;
@@ -31,23 +29,7 @@ public class TreeNodeChildrenLoading extends TreeNodeSpecial {
     private static final Map<Object, Object> loadingFiles = new HashMap<>();
     private static final Map<DBNNode, TreeNodeChildrenLoading> placeHolders = new HashMap<>();
 
-    public static final Object LOADING_FAMILY = new Object();
-
-    private static final Image[] IMG_LOADING = new Image[] {
-        DBeaverIcons.getImage(UIIcon.LOADING0),
-        DBeaverIcons.getImage(UIIcon.LOADING1),
-        DBeaverIcons.getImage(UIIcon.LOADING2),
-        DBeaverIcons.getImage(UIIcon.LOADING3),
-        DBeaverIcons.getImage(UIIcon.LOADING4),
-        DBeaverIcons.getImage(UIIcon.LOADING5),
-        DBeaverIcons.getImage(UIIcon.LOADING6),
-        DBeaverIcons.getImage(UIIcon.LOADING7)
-    };
-
     private static final String loadingText = UINavigatorMessages.ui_navigator_loading_text_loading;
-    private static final String text1 = loadingText + ".."; //$NON-NLS-1$;
-    private static final String text2 = loadingText + ".."; //$NON-NLS-1$;
-    private static final String text3 = loadingText + "..."; //$NON-NLS-1$;
 
     private int viewCount = 0;
 
@@ -66,26 +48,16 @@ public class TreeNodeChildrenLoading extends TreeNodeSpecial {
 
     @Override
     public String getText(Object element) {
-        return text3;
-/*
-        switch (viewCount % 4) {
-            case 0:
-                return loadingText;
-            case 1:
-                return text1;
-            case 2:
-                return text2;
-            case 3:
-            default:
-                return text3;
-        }
-*/
+        viewCount++;
+        int dotCount = (viewCount % 10);
+        return loadingText + ".".repeat(dotCount);
     }
 
     @Override
     public Image getImage(Object element) {
-        int imgIndex = (++viewCount % IMG_LOADING.length);
-        return IMG_LOADING[imgIndex];
+        //int imgIndex = (++viewCount % IMG_LOADING.length);
+        //return IMG_LOADING[imgIndex];
+        return null;
     }
 
     public void dispose(DBNNode parent) {

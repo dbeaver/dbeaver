@@ -162,7 +162,7 @@ public class SQLScriptParser {
                     // This is a tricky thing.
                     // In some dialects block end looks like END CASE, END LOOP. It is parsed as
                     // Block end followed by block begin (as CASE and LOOP are block begin tokens)
-                    // So let's ignore block begin if previos token was block end and there were no delimiters.
+                    // So let's ignore block begin if previous token was block end and there were no delimiters.
                     tokenType = SQLTokenType.T_UNKNOWN;
                 }
                 if (tokenType == SQLTokenType.T_DELIMITER && prevNotEmptyTokenType == SQLTokenType.T_BLOCK_BEGIN) {

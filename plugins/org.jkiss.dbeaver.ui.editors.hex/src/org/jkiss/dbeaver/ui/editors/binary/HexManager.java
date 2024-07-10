@@ -69,7 +69,7 @@ public class HexManager {
     /**
      * Blocks the caller until the task is finished. Does not block the user interface thread.
      *
-     * @param task independent of the user inteface thread (no widgets used)
+     * @param task independent of the user interface thread (no widgets used)
      */
     public static void blockUntilFinished(Runnable task)
     {

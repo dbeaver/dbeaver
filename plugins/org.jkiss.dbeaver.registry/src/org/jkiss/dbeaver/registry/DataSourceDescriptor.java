@@ -1020,6 +1020,11 @@ public class DataSourceDescriptor
         return dataSource != null && !connecting;
     }
 
+    @Override
+    public boolean isConnecting() {
+        return connecting;
+    }
+
     @Nullable
     @Override
     public String getConnectionError() {
@@ -1046,8 +1051,18 @@ public class DataSourceDescriptor
                 succeeded = openDetachedConnection(monitor);
             }
             if (!succeeded) {
-                // Open local connection
-                succeeded = connect0(monitor, initialize, reflect);
+                if (!detachedProcess) {
+                    updateDataSourceObject(succeeded, DBPEvent.Action.BEFORE_CONNECT);
+                }
+
+                try {
+                    // Open local connection
+                    succeeded = connect0(monitor, initialize, reflect);
+                } finally {
+                    if (!detachedProcess) {
+                        updateDataSourceObject(succeeded, DBPEvent.Action.AFTER_CONNECT);
+                    }
+                }
             }
 
             return succeeded;
@@ -1056,7 +1071,7 @@ public class DataSourceDescriptor
             connecting = false;
 
             if (!detachedProcess) {
-                updateDataSourceObject(this, succeeded);
+                updateDataSourceObject(succeeded, DBPEvent.Action.OBJECT_UPDATE);
             }
         }
     }
@@ -1554,10 +1569,7 @@ public class DataSourceDescriptor
 
             if (reflect) {
                 // Reflect UI
-                getRegistry().notifyDataSourceListeners(new DBPEvent(
-                    DBPEvent.Action.OBJECT_UPDATE,
-                    this,
-                    false));
+                updateDataSourceObject(false, DBPEvent.Action.OBJECT_UPDATE);
             }
 
             connecting = false;
@@ -2132,10 +2144,10 @@ public class DataSourceDescriptor
         return authInfo;
     }
 
-    public void updateDataSourceObject(DataSourceDescriptor dataSourceDescriptor, boolean succeeded) {
+    private void updateDataSourceObject(boolean succeeded, DBPEvent.Action action) {
         getRegistry().notifyDataSourceListeners(new DBPEvent(
-            DBPEvent.Action.OBJECT_UPDATE,
-            dataSourceDescriptor,
+            action,
+            this,
             succeeded));
     }
 

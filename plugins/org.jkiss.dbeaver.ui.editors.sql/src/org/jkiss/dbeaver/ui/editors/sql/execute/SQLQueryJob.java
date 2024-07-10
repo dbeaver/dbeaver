@@ -305,7 +305,7 @@ public class SQLQueryJob extends DataSourceJob
                         monitor.done();
                     } else {
                         // Just ignore error
-                        log.info("Script executed with errors. Changes were not commmitted.");
+                        log.info("Script executed with errors. Changes were not committed.");
                     }
                 }
 
@@ -548,7 +548,7 @@ public class SQLQueryJob extends DataSourceJob
             curResult.setQueryTime(System.currentTimeMillis() - startTime);
 
             if (fireEvents && listener != null && startQueryAlerted) {
-                notifyQueryExecutionEnd(curResult);
+                notifyQueryExecutionEnd(session, curResult);
             }
 
             monitor.done();
@@ -576,10 +576,10 @@ public class SQLQueryJob extends DataSourceJob
         return true;
     }
 
-    public void notifyQueryExecutionEnd(SQLQueryResult curResult) {
+    public void notifyQueryExecutionEnd(DBCSession session, SQLQueryResult curResult) {
         // Notify query end
         try {
-            listener.onEndQuery(null, curResult, statistics);
+            listener.onEndQuery(session, curResult, statistics);
         } catch (Exception e) {
             log.error(e);
         }

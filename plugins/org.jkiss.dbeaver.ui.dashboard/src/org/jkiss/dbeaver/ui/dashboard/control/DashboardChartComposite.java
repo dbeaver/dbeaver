@@ -54,8 +54,8 @@ public class DashboardChartComposite extends BaseChartComposite implements Dashb
         return viewContainer;
     }
 
-    // It is a hack. As context menu create is called from base lcass constructor we can't use any constructor parameters in fillContextMenu.
-    // Lets give caller a chance to use them in overloaded member
+    // It is a hack. As context menu create is called from base class constructor we can't use any constructor parameters in fillContextMenu.
+    // Let's give caller a chance to use them in overloaded member
     protected boolean isSingleChartMode() {
         return viewContainer.isSingleChartMode();
     }
