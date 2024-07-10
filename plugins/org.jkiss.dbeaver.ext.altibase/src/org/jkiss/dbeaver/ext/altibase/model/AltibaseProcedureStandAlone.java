@@ -24,14 +24,19 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
 public class AltibaseProcedureStandAlone extends AltibaseProcedureBase {
 
+    // Create a new procedure
     public AltibaseProcedureStandAlone(GenericStructContainer container, String procedureName, 
             DBSProcedureType procedureType) {
-        super(container, procedureName, "", "", procedureType, GenericFunctionResultType.UNKNOWN);
+        super(container, procedureName, true, procedureType, GenericFunctionResultType.UNKNOWN);
     }
             
-    public AltibaseProcedureStandAlone(GenericStructContainer container, String procedureName, String specificName,
-            String description, DBSProcedureType procedureType, GenericFunctionResultType functionResultType) {
-        super(container, procedureName, specificName, description, procedureType, functionResultType);
+    public AltibaseProcedureStandAlone(
+            GenericStructContainer container,
+            String procedureName, 
+            boolean valid,
+            DBSProcedureType procedureType, 
+            GenericFunctionResultType functionResultType) {
+        super(container, procedureName, valid, procedureType, functionResultType);
     }
     
     @Property(viewable = false, hidden = true, order = 5)

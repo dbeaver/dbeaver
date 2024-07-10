@@ -43,7 +43,7 @@ public interface DBSDictionary
      *
      * @param monitor               session
      * @param keyColumn             enumeration column.
-     * @param keyPattern            pattern for enumeration values. If null or empty then returns full enumration set
+     * @param keyPattern            pattern for enumeration values. If null or empty then returns full enumeration set
      * @param searchText
      * @param preceedingKeys        other constrain key values. May be null.
      * @param caseInsensitiveSearch use case-insensitive search for {@code keyPattern}

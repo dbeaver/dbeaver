@@ -78,7 +78,7 @@ public class DB2Tablespace extends DB2GlobalObject implements DBPNamedObject, DB
     // Constructors
     // -----------------------
 
-    // Constructeur for lazy loading, acts as a placeholder.
+    // Constructor for lazy loading, acts as a placeholder.
     public DB2Tablespace(DB2DataSource db2DataSource, String db2TablespaceName) throws DBException
     {
         super(db2DataSource, false);

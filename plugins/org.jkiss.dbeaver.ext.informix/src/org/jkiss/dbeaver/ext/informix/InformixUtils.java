@@ -66,7 +66,7 @@ public class InformixUtils {
     public static String listToString(List<String> value, String delimiter) {
         StringBuilder sbResult = new StringBuilder();
         for (String o : value) {
-            //NOT APPLY .TRIM IN 'O' VARIABLE, PROBLEM TO RENDERIZE PROCEDURE BECAUSE LINE DELIMITED CRLF and LF generate  'Sintax error'
+            //NOT APPLY .TRIM IN 'O' VARIABLE, PROBLEM TO RENDERIZE PROCEDURE BECAUSE LINE DELIMITED CRLF and LF generate  'Syntax error'
             sbResult.append(o);
             if (delimiter != null && !delimiter.isEmpty())
                 sbResult.append(delimiter);

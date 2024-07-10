@@ -230,7 +230,7 @@ public class PatternRule implements TPPredicateRule {
 
     /**
      * Evaluates this rules without considering any column constraints. Resumes
-     * detection, i.e. look sonly for the end sequence required by this rule if the
+     * detection, i.e. looks only for the end sequence required by this rule if the
      * <code>resume</code> flag is set.
      *
      * @param scanner the character scanner to be used
