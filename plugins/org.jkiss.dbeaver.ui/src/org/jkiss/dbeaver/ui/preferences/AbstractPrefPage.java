@@ -24,6 +24,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
+import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
+import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 
@@ -31,6 +35,11 @@ import org.jkiss.dbeaver.ui.internal.UIMessages;
  * AbstractPrefPage
  */
 public abstract class AbstractPrefPage extends PreferencePage {
+
+    private static final Log log = Log.getLog(AbstractPrefPage.class);
+
+    private IObjectPropertyConfigurator<Object, Object> extConfigurator;
+
     @Override
     protected Control createContents(Composite parent) {
         if (!hasAccessToPage()) {
@@ -64,4 +73,56 @@ public abstract class AbstractPrefPage extends PreferencePage {
             restarter.run();
         }
     }
+
+    @Override
+    protected void performApply() {
+        if (extConfigurator != null) {
+            extConfigurator.saveSettings(getConfiguratorObject());
+        }
+        super.performApply();
+    }
+
+    @Override
+    public boolean performCancel() {
+        return super.performCancel();
+    }
+
+    @Override
+    protected void performDefaults() {
+        if (extConfigurator != null) {
+            extConfigurator.resetSettings(getConfiguratorObject());
+        }
+        super.performDefaults();
+    }
+
+    @Override
+    public boolean performOk() {
+        if (extConfigurator != null) {
+            extConfigurator.saveSettings(getConfiguratorObject());
+        }
+        return super.performOk();
+    }
+
+    protected Object getConfiguratorObject() {
+        return this;
+    }
+
+    protected void injectConfigurators(Composite composite) {
+        UIPropertyConfiguratorDescriptor configDesc = UIPropertyConfiguratorRegistry.getInstance().getDescriptor(
+            getConfiguratorObject());
+        if (configDesc != null) {
+            try {
+                extConfigurator = configDesc.createConfigurator();
+            } catch (Exception e) {
+                log.error(e);
+            }
+        }
+        if (extConfigurator != null) {
+            extConfigurator.createControl(composite, getConfiguratorObject(), () -> {
+
+            });
+            extConfigurator.loadSettings(getConfiguratorObject());
+        }
+    }
+
 }

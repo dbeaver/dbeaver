@@ -42,7 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Managable statement.
+ * Manageable statement.
  * Stores information about execution in query manager and operated progress monitor.
  */
 public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStatement<JDBCSession> implements JDBCStatement {

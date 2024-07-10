@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.text;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.GroupMarker;
@@ -270,7 +269,7 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
 
     public void saveToExternalFile(@Nullable String currentDirectory) {
         IEditorInput editorInput = getEditorInput();
-        IFile curFile = EditorUtils.getFileFromInput(editorInput);
+        File curFile = EditorUtils.getLocalFileFromInput(editorInput);
         String fileName = curFile == null ? null : curFile.getName();
 
         if (CommonUtils.isNotEmpty(currentDirectory)) {

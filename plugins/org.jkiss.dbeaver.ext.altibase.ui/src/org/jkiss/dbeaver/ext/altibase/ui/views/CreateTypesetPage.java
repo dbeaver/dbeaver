@@ -62,7 +62,7 @@ public class CreateTypesetPage extends BaseObjectEditPage {
             name = nameText.getText().trim();
             updatePageState();
         });
-        
+
         propsGroup.setTabList(ArrayUtils.remove(Control.class, propsGroup.getTabList(), containerText));
 
         return propsGroup;

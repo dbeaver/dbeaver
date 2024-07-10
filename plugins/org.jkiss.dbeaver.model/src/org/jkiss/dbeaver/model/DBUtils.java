@@ -300,7 +300,7 @@ public final class DBUtils {
             if (!(sc instanceof DBSObjectContainer)) {
                 // Not found - try to find in selected object
                 DBSObject selectedObject = getSelectedObject(executionContext);
-                if (selectedObject instanceof DBSObjectContainer objectContainer) {
+                if (selectedObject instanceof DBSObjectContainer) {
                     if (selectedObject instanceof DBSSchema && selectedObject.getParentObject() instanceof DBSCatalog && CommonUtils.isEmpty(catalogName) &&
                         !CommonUtils.equalObjects(schemaName, selectedObject.getName())) {
                         // We search for schema and active object is schema. Let's search our schema in catalog
@@ -310,7 +310,8 @@ public final class DBUtils {
                         selectedObject instanceof DBSCatalog && CommonUtils.equalObjects(catalogName, selectedObject.getName())) {
                         // Selected object is a catalog or schema which is also specified as catalogName/schemaName -
                         sc = selectedObject;
-                    } else {
+                    } else if (selectedObject instanceof DBSObjectContainer objectContainer) {
+                        // Get schema in catalog
                         sc = objectContainer.getChild(monitor, containerName);
                     }
                 }
@@ -2119,7 +2120,7 @@ public final class DBUtils {
 
     /**
      * Compares two values read from database.
-     * Main difference with regular compare is that all numbers are compared as doubles (i.e. data type oesn't matter).
+     * Main difference with regular compare is that all numbers are compared as doubles (i.e. data type doesn't matter).
      * Also checks DBValue for nullability
      */
     public static int compareDataValues(Object cell1, Object cell2) {
@@ -2185,7 +2186,7 @@ public final class DBUtils {
             return null;
         }
         DBSObject entityObject = getObjectByPath(monitor, executionContext, objectContainer, catalogName, schemaName, entityName);
-        if (entityObject instanceof DBSAlias alias && !(entityObject instanceof DBSEntity) && !monitor.isForceCacheUsage()) {
+        if (entityObject instanceof DBSAlias alias && !(entityObject instanceof DBSEntity)) {
             entityObject = alias.getTargetObject(monitor);
         }
         if (entityObject == null) {
