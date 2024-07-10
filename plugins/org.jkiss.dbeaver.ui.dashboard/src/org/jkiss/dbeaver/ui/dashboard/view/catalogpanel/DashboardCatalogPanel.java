@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.dashboard.view;
+package org.jkiss.dbeaver.ui.dashboard.view.catalogpanel;
 
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
@@ -32,32 +32,24 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.dashboard.DBDashboardContext;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardFolder;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardProviderDescriptor;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistryListener;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRendererDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardUIRegistry;
-import org.jkiss.utils.ArrayUtils;
+import org.jkiss.dbeaver.ui.dashboard.view.DashboardItemConfigurationTransfer;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
 
@@ -175,52 +167,8 @@ public abstract class DashboardCatalogPanel extends Composite implements Dashboa
                 UIUtils.drawMessageOverControl(table, e, msg, 0);
             }
         });
-        dashboardTable.setContentProvider(new TreeContentProvider() {
-            @Override
-            public Object[] getChildren(Object parentElement) {
-                try {
-                    DBDashboardContext context;
-                    if (dataSourceContainer != null) {
-                        context = new DBDashboardContext(dataSourceContainer);
-                    } else {
-                        context = new DBDashboardContext(project);
-                    }
-                    if (parentElement instanceof DBDashboardFolder df) {
-                        List<DBDashboardFolder> subFolders = df.loadSubFolders(new VoidProgressMonitor(), context);
-                        List<DashboardItemConfiguration> dashboards = new ArrayList<>(df.loadDashboards(new VoidProgressMonitor(), context));
-                        dashboards.sort(Comparator.comparing(DashboardItemConfiguration::getTitle));
-                        return ArrayUtils.concatArrays(subFolders.toArray(), dashboards.toArray());
-                    } else if (parentElement instanceof DashboardProviderDescriptor dpd) {
-                        List<Object> children = new ArrayList<>();
-                        if (dpd.isSupportsFolders()) {
-                            try {
-                                UIUtils.runInProgressDialog(monitor -> children.addAll(dpd.getInstance().loadRootFolders(monitor, dpd, context)));
-                            } catch (InvocationTargetException e) {
-                                DBWorkbench.getPlatformUI().showError("Folders load error", null, e.getTargetException());
-                            }
-                            return children.toArray();
-                        }
-                        List<DashboardItemConfiguration> dashboards = new ArrayList<>(DashboardRegistry.getInstance().getDashboardItems(
-                            dpd,
-                            dataSourceContainer,
-                            false));
-                        if (itemFilter != null) {
-                            dashboards.removeIf(itemFilter::apply);
-                        }
-                        dashboards.sort(Comparator.comparing(DashboardItemConfiguration::getTitle));
-                        return dashboards.toArray();
-                    }
-                } catch (DBException e) {
-                    DBWorkbench.getPlatformUI().showError("Error reading dashboard info", null, e);
-                }
-                return new Object[0];
-            }
-
-            @Override
-            public boolean hasChildren(Object element) {
-                return element instanceof DashboardProviderDescriptor || element instanceof DBDashboardFolder;
-            }
-        });
+        dashboardTable.setContentProvider(new DashboardCatalogPanelTreeContentProvider(dataSourceContainer, project,
+            itemFilter));
 
         refreshInput();
 
