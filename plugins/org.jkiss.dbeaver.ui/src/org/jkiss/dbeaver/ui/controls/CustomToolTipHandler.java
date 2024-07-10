@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.progress.UIJob;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -62,6 +63,7 @@ public class CustomToolTipHandler {
         if (text != null) {
             // Escape ampersands (#7101)
             text = text.replace("&", "&&");
+            text = GeneralUtils.normalizeLineEndings(text);
         }
         ToolTipHandler curHandler = this.toolTipHandler;
         if (!CommonUtils.equalObjects(prevToolTip, text)) {
