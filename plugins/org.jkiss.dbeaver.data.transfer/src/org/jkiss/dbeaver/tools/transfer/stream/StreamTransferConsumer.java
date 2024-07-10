@@ -363,19 +363,18 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         if (settings.getFormatterProfile() != null && session instanceof DBDFormatSettingsExt) {
             ((DBDFormatSettingsExt)session).setDataFormatterProfile(settings.getFormatterProfile());
         }
-
-        exportSite = new StreamExportSite();
-
-        // Open output streams
-        boolean outputClipboard = settings.isOutputClipboard();
-        if (parameters.isBinary || !outputClipboard) {
-            outputFile = makeOutputFile(session.getProgressMonitor());
-            outputFiles.add(outputFile);
-        } else {
-            outputFile = null;
-        }
-
         try {
+            exportSite = new StreamExportSite();
+
+            // Open output streams
+            boolean outputClipboard = settings.isOutputClipboard();
+            if (parameters.isBinary || !outputClipboard) {
+                outputFile = makeOutputFile(session.getProgressMonitor());
+                outputFiles.add(outputFile);
+            } else {
+                outputFile = null;
+            }
+
             if (outputClipboard) {
                 this.outputBuffer = new StringWriter(2048);
                 this.writer = new PrintWriter(this.outputBuffer, true);
@@ -476,7 +475,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         return behavior;
     }
     
-    private void openOutputStreams(DBRProgressMonitor monitor) throws IOException, DBCException {
+    private void openOutputStreams(DBRProgressMonitor monitor) throws IOException {
         final boolean truncate;
 
         boolean fileExists = Files.exists(outputFile);
@@ -747,12 +746,12 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @NotNull
-    public Path makeOutputFile(@NotNull DBRProgressMonitor monitor) throws DBCException {
+    public Path makeOutputFile(@NotNull DBRProgressMonitor monitor) throws IOException {
         return makeOutputFile(monitor, null);
     }
     
     @NotNull
-    private Path makeOutputFile(@NotNull DBRProgressMonitor monitor, @Nullable String suffix) throws DBCException {
+    private Path makeOutputFile(@NotNull DBRProgressMonitor monitor, @Nullable String suffix) throws IOException {
         final Path file = makeOutputFile(monitor, suffix, getOutputFolder());
 
         if (!Files.exists(file)) {
@@ -772,20 +771,20 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @NotNull
-    private Path makeOutputFile(@NotNull DBRProgressMonitor monitor, @Nullable String suffix, @NotNull String outputFolder) throws DBCException {
+    private Path makeOutputFile(@NotNull DBRProgressMonitor monitor, @Nullable String suffix, @NotNull String outputFolder) throws IOException {
         Path dir;
         try {
             dir = DBFUtils.resolvePathFromString(monitor, getProject(), outputFolder);
         } catch (Exception e) {
             log.error("Error resolving output folder", e);
-            throw new DBCException(e.getMessage(), e);
+            throw new IOException(e.getMessage(), e);
         }
         if (!Files.exists(dir)) {
             try {
                 Files.createDirectories(dir);
             } catch (IOException e) {
                 log.error("Error creating output folder", e);
-                throw new DBCException(e.getMessage(), e);
+                throw new IOException(e.getMessage(), e);
             }
         }
         String fileName = getOutputFileName(suffix);
