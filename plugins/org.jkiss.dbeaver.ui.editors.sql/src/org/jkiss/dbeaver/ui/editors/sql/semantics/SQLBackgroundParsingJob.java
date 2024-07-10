@@ -542,7 +542,7 @@ public class SQLBackgroundParsingJob {
                             queryModel,
                             element.getOffset(),
                             element.getLength(),
-                            element instanceof SQLQuery queryElement && queryElement.isEndsWithDelimiter()
+                            element instanceof SQLQuery queryElement && Boolean.TRUE.equals(queryElement.isEndsWithDelimiter())
                         );
                         itemContext.clear();
                         for (SQLQuerySymbolEntry entry : queryModel.getAllSymbols()) {
