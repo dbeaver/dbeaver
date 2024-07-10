@@ -705,4 +705,5 @@ public class SQLConstants {
     public final static char[] BRACKETS = {'{', '}', '(', ')', '[', ']', '<', '>'};
     public static final String COLUMN_ASTERISK = "*";
 
+    public static final String CONNECT_RETRY_COUNT = "connectRetryCount";
 }
