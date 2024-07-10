@@ -61,10 +61,8 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
     public static final String PROP_SSL_SELF_SIGNED_CERT = "ssl.self-signed-cert";
     public static final String PROP_SSL_METHOD = "ssl.method";
     public static final String PROP_SSL_FORCE_TLS12 = "ssl.forceTls12";
-    public static final String CERT_TYPE = "ssl";
 
     public static final String TLS_PROTOCOL_VAR_NAME = "jdk.tls.client.protocols";
-    public static final String TLS_1_2_VERSION = "TLSv1.2";
 
     /**
      * Creates certificates and adds them into trust store
@@ -89,18 +87,18 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
                     sslConfig.getPassword();
                 char[] keyStorePasswordData = CommonUtils.isEmpty(password) ? new char[0] : password.toCharArray();
                 if (keyStore != null) {
-                    securityManager.addCertificate(dataSource.getContainer(), CERT_TYPE, keyStore, keyStorePasswordData);
+                    securityManager.addCertificate(dataSource.getContainer(), SSLConstants.SSL_CERT_TYPE, keyStore, keyStorePasswordData);
                 } else if (keyStoreData != null) {
                     securityManager.addCertificate(
                         dataSource.getContainer(),
-                        CERT_TYPE,
+                        SSLConstants.SSL_CERT_TYPE,
                         Base64.getDecoder().decode(keyStoreData),
                         keyStorePasswordData
                     );
                 }
             } else if (CommonUtils.toBoolean(selfSignedCert)) {
                 monitor.subTask("Generate self-signed certificate");
-                securityManager.addSelfSignedCertificate(dataSource.getContainer(), CERT_TYPE, "CN=" + dataSource.getContainer().getActualConnectionConfiguration().getHostName());
+                securityManager.addSelfSignedCertificate(dataSource.getContainer(), SSLConstants.SSL_CERT_TYPE, "CN=" + dataSource.getContainer().getActualConnectionConfiguration().getHostName());
             } else {
                 byte[] caCertData = SSLHandlerTrustStoreImpl.readCertificate(sslConfig, SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT);
                 byte[] clientCertData = SSLHandlerTrustStoreImpl.readCertificate(sslConfig, SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT);
@@ -108,9 +106,9 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
 
                 if (caCertData != null || clientCertData != null) {
                     monitor.subTask("Load certificates");
-                    securityManager.addCertificate(dataSource.getContainer(), CERT_TYPE, caCertData, clientCertData, keyData);
+                    securityManager.addCertificate(dataSource.getContainer(), SSLConstants.SSL_CERT_TYPE, caCertData, clientCertData, keyData);
                 } else {
-                    securityManager.deleteCertificate(dataSource.getContainer(), CERT_TYPE);
+                    securityManager.deleteCertificate(dataSource.getContainer(), SSLConstants.SSL_CERT_TYPE);
                 }
             }
         }
@@ -138,9 +136,9 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
     public static Map<String, String> setGlobalTrustStore(DBPDataSource dataSource) {
         final DBACertificateStorage securityManager = DBWorkbench.getPlatform().getCertificateStorage();
 
-        String keyStorePath = securityManager.getKeyStorePath(dataSource.getContainer(), CERT_TYPE).toAbsolutePath().toString();
+        String keyStorePath = securityManager.getKeyStorePath(dataSource.getContainer(), SSLConstants.SSL_CERT_TYPE).toAbsolutePath().toString();
         String keyStoreType = securityManager.getKeyStoreType(dataSource.getContainer());
-        char[] keyStorePass = securityManager.getKeyStorePassword(dataSource.getContainer(), CERT_TYPE);
+        char[] keyStorePass = securityManager.getKeyStorePassword(dataSource.getContainer(), SSLConstants.SSL_CERT_TYPE);
 
         Map<String, String> oldProps = new LinkedHashMap<>();
         setSystemProperty("javax.net.ssl.trustStore", keyStorePath, oldProps);
@@ -170,8 +168,8 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
 
     public static SSLContext createTrustStoreSslContext(DBPDataSource dataSource, DBWHandlerConfiguration sslConfig) throws Exception {
         final DBACertificateStorage securityManager = DBWorkbench.getPlatform().getCertificateStorage();
-        KeyStore trustStore = securityManager.getKeyStore(dataSource.getContainer(), CERT_TYPE);
-        char[] keyStorePass = securityManager.getKeyStorePassword(dataSource.getContainer(), CERT_TYPE);
+        KeyStore trustStore = securityManager.getKeyStore(dataSource.getContainer(), SSLConstants.SSL_CERT_TYPE);
+        char[] keyStorePass = securityManager.getKeyStorePassword(dataSource.getContainer(), SSLConstants.SSL_CERT_TYPE);
 
         KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
         keyManagerFactory.init(trustStore, keyStorePass);
@@ -189,7 +187,7 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
         final boolean forceTLS12 = sslConfig.getBooleanProperty(PROP_SSL_FORCE_TLS12);
 
 
-        SSLContext sslContext = forceTLS12 ? SSLContext.getInstance(TLS_1_2_VERSION) : SSLContext.getInstance("SSL");
+        SSLContext sslContext = forceTLS12 ? SSLContext.getInstance(SSLConstants.TLS_1_2_VERSION) : SSLContext.getInstance("SSL");
         sslContext.init(keyManagers, trustManagers, new SecureRandom());
         return sslContext;
     }

@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
@@ -126,7 +127,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
         }
 
         this.certificateStorage = new DefaultCertificateStorage(
-            DBeaverActivator.getInstance().getStateLocation().toFile().toPath().resolve("security"));
+            DBeaverActivator.getInstance().getStateLocation().toFile().toPath().resolve(DBConstants.CERTIFICATE_STORAGE_FOLDER));
 
         // Create workspace
         getApplication().beforeWorkspaceInitialization();
