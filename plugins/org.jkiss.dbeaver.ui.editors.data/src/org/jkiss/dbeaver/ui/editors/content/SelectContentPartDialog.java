@@ -59,7 +59,7 @@ class SelectContentPartDialog extends Dialog {
         group.setLayoutData(gd);
 
         Label infoLabel = new Label(group, SWT.NONE);
-        infoLabel.setText("Content was modified in mutliple editors. Choose correct one:");
+        infoLabel.setText("Content was modified in multiple editors. Choose correct one:");
         gd = new GridData(GridData.FILL_HORIZONTAL);
         infoLabel.setLayoutData(gd);
 

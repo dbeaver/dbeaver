@@ -187,7 +187,7 @@ public class JDBCDataSourceInfo extends AbstractDataSourceInfo
         // to be overrided in implementors
     }
 
-    // Says to ignore DatabaseMetaData.isReadonly() results. It is broken in some drivers (always true), e.g. in Reshift.
+    // Says to ignore DatabaseMetaData.isReadonly() results. It is broken in some drivers (always true), e.g. in Redshift.
     protected boolean isIgnoreReadOnlyFlag() {
         return true;
     }

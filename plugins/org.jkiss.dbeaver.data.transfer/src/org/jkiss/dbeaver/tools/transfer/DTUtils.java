@@ -286,7 +286,7 @@ public class DTUtils {
 
     /**
      * Returns "bottom" level attributes out of resultset.
-     * For regular resultsets it is the same as getAttributeBindings, for compelx types it returns only leaf attributes.
+     * For regular resultsets it is the same as getAttributeBindings, for complex types it returns only leaf attributes.
      */
     @NotNull
     public static DBDAttributeBinding[] makeLeafAttributeBindings(@NotNull DBCSession session, @NotNull DBSDataContainer dataContainer, @NotNull DBCResultSet resultSet) throws DBCException {

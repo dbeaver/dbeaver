@@ -194,7 +194,7 @@ public class ExasolImportTableToolDialog extends ExasolBaseTableToolDialog {
 			}
 		});
 		
-		//  row seperator
+		//  row separator
 		cbRowSep = UIUtils.createLabelCombo(composite, ExasolMessages.dialog_table_tools_row_sep_mode, SWT.DROP_DOWN | SWT.READ_ONLY);
 		for (String mode: ExasolUIConstants.rowSeparators)
 		{

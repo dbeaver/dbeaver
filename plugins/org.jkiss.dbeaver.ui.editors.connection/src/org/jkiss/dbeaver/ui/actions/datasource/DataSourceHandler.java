@@ -109,6 +109,7 @@ public class DataSourceHandler {
                     }
                 }
             };
+
             if (monitor != null) {
                 connectJob.runSync(monitor);
                 jobChangeAdapter.done(new IJobChangeEvent() {

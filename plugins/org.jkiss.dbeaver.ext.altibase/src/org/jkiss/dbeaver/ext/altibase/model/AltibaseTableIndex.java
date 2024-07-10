@@ -50,8 +50,7 @@ public class AltibaseTableIndex extends GenericTableIndex implements DBPScriptOb
     
     @Override
     @Property(hidden = true)
-    public String getQualifier()
-    {
+    public String getQualifier() {
         return "";
     }
 }

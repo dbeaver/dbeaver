@@ -50,7 +50,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Managable base statement.
+ * Manageable base statement.
  * Stores information about execution in query manager and operated progress monitor.
  */
 public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl implements JDBCCallableStatement {
