@@ -570,7 +570,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
     }
 
-    private void createNewOutFile(DBRProgressMonitor monitor) throws IOException, DBCException {
+    private void createNewOutFile(DBRProgressMonitor monitor) throws IOException {
         closeOutputStreams();
 
         bytesWritten = 0;
