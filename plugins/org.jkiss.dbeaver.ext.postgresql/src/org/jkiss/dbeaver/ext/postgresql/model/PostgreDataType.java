@@ -171,10 +171,12 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
         this.arrayDelimiter = JDBCUtils.safeGetString(dbResult, "typdelim"); //$NON-NLS-1$
         this.classId = JDBCUtils.safeGetLong(dbResult, "typrelid"); //$NON-NLS-1$
         this.elementTypeId = JDBCUtils.safeGetLong(dbResult, "typelem"); //$NON-NLS-1$
-        this.inputFunc = JDBCUtils.safeGetString(dbResult, "typinput"); //$NON-NLS-1$
-        this.outputFunc = JDBCUtils.safeGetString(dbResult, "typoutput"); //$NON-NLS-1$
-        this.receiveFunc = JDBCUtils.safeGetString(dbResult, "typreceive"); //$NON-NLS-1$
-        this.sendFunc = JDBCUtils.safeGetString(dbResult, "typsend"); //$NON-NLS-1$
+        if (getDataSource().getServerType().supportsCustomDataTypes()) {
+            this.inputFunc = JDBCUtils.safeGetString(dbResult, "typinput"); //$NON-NLS-1$
+            this.outputFunc = JDBCUtils.safeGetString(dbResult, "typoutput"); //$NON-NLS-1$
+            this.receiveFunc = JDBCUtils.safeGetString(dbResult, "typreceive"); //$NON-NLS-1$
+            this.sendFunc = JDBCUtils.safeGetString(dbResult, "typsend"); //$NON-NLS-1$
+        }
         if (getDataSource().isServerVersionAtLeast(8, 3)) {
             this.arrayItemTypeId = JDBCUtils.safeGetLong(dbResult, "typarray"); //$NON-NLS-1$
             this.modInFunc = JDBCUtils.safeGetString(dbResult, "typmodin"); //$NON-NLS-1$
