@@ -79,7 +79,7 @@ public class DatabaseURLTest {
     @Test
     public void test_whenColonAfterPort_thenSuccess() {
         assertMatches(
-                "jdbc:oracle:thin:@{host}[:{port}][:][/]{database}",
+                "jdbc:oracle:thin:@{host}[:{port}][/]{database}",
                 "jdbc:oracle:thin:@localhost:1521:orcl",
                 new String[][]{
                         {"host", "localhost"},
