@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreCharset;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreServerExtension;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -34,6 +35,8 @@ import org.jkiss.utils.CommonUtils;
 
 public class GaussDBDataSource extends PostgreDataSource {
 
+    private PostgreServerExtension serverExtension;
+    
     public GaussDBDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
         super(monitor, container, new GaussDBDialect());
     }
@@ -74,5 +77,13 @@ public class GaussDBDataSource extends PostgreDataSource {
     public boolean isServerVersionAtLeast(int major, int minor) {
         // Reserved: Modify the logic for determining the PG version.
         return super.isServerVersionAtLeast(major, minor);
+    }
+    
+    @Override
+    public PostgreServerExtension getServerType() {
+        if (serverExtension == null) {
+            serverExtension = new PostgreServerGaussDB(this);
+        }
+        return serverExtension;
     }
 }

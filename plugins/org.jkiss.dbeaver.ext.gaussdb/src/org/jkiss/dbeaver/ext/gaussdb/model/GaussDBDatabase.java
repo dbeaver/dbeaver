@@ -77,7 +77,6 @@ public class GaussDBDatabase extends PostgreDatabase {
         super(monitor, dataSource, dbResult);
         this.monitor = monitor;
         init(dbResult);
-        checkInstanceConnection(monitor);
         checkPackageSupport(monitor);
     }
 
