@@ -419,7 +419,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         directoryText.setEnabled(!clipboard);
         fileNameText.setEnabled(!clipboard);
         compressCheckbox.setEnabled(!clipboard && !singleFileCheck.getSelection());
-        if (compressCheckbox.getSelection()) {
+        if (compressCheckbox.getSelection() && dataFileConflictBehaviorSelector.getValue().equals(DataFileConflictBehavior.APPEND)) {
             dataFileConflictBehaviorSelector.setValue(DataFileConflictBehavior.PATCHNAME);
         }
         splitFilesCheckbox.setEnabled(!clipboard);
