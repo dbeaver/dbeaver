@@ -16,10 +16,12 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**
  * DBNDatabaseDynamicItem.
@@ -46,9 +48,25 @@ public class DBNDatabaseDynamicItem extends DBNDatabaseNode {
         super.dispose(reflect);
     }
 
+    @NotNull
     @Override
     public DBXTreeNode getMeta() {
-        return ((DBNDatabaseNode)getParentNode()).getMeta();
+        for (DBNNode node = getParentNode(); node != null; node = node.getParentNode()) {
+            if (node instanceof DBNDatabaseItem item) {
+                return item.getMeta();
+            }
+        }
+        throw new IllegalStateException("Dynamic node without parent item node (" + this + ")");
+    }
+
+    @Override
+    public boolean allowsChildren() {
+        return !isDisposed() && hasDynamicStructChildren();
+    }
+
+    @Override
+    public boolean isDynamicStructObject() {
+        return getObject() instanceof DBSTypedObject;
     }
 
     @Override

@@ -197,7 +197,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
 
     @Override
     public boolean allowsNavigableChildren() {
-        return !isDisposed() && this.getMeta() != null && this.getMeta().hasChildren(this, true);
+        return !isDisposed() && this.getMeta().hasChildren(this, true);
     }
 
     public boolean hasChildren(DBRProgressMonitor monitor, DBXTreeNode childType)
@@ -560,7 +560,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         return false;
     }
 
-    private DBNDatabaseDynamicItem[] getDynamicStructChildren() {
+    protected DBNDatabaseDynamicItem[] getDynamicStructChildren() {
         if (getObject() instanceof DBSTypedObject typedObject) {
             DBSDataType dataType = DBUtils.getDataType(getDataSource(), typedObject);
             if (dataType instanceof DBSEntity dtEntity) {
@@ -579,12 +579,28 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         return new DBNDatabaseDynamicItem[0];
     }
 
-    private boolean hasDynamicStructChildren() {
+    protected boolean hasDynamicStructChildren() {
         if (getObject() instanceof DBSTypedObject typedObject) {
             DBSDataType dataType = DBUtils.getDataType(getDataSource(), typedObject);
-            return dataType instanceof DBSEntity && dataType.getDataKind() == DBPDataKind.STRUCT;
+            return isStructDataType(dataType);
         }
         return false;
+    }
+
+    private static boolean isStructDataType(DBSDataType dataType) {
+        if (dataType == null) {
+            return false;
+        }
+        try {
+            return switch (dataType.getDataKind()) {
+                case ARRAY -> isStructDataType(dataType.getComponentType(new VoidProgressMonitor()));
+                case STRUCT -> dataType instanceof DBSEntity;
+                default -> false;
+            };
+        } catch (Exception e) {
+            log.debug(e);
+            return false;
+        }
     }
 
     private boolean isEntityMeta(DBXTreeNode node) {
@@ -924,6 +940,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
 
     public abstract Object getValueObject();
 
+    @NotNull
     public abstract DBXTreeNode getMeta();
 
     public DBXTreeItem getItemsMeta() {

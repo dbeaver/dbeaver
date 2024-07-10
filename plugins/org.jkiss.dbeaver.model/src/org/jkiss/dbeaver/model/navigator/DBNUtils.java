@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourcePermission;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
+import org.jkiss.dbeaver.model.DBPObjectWithOrdinalPosition;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -214,9 +215,16 @@ public class DBNUtils {
         static NodeFolderComparator INSTANCE = new NodeFolderComparator();
         @Override
         public int compare(DBNNode node1, DBNNode node2) {
-            int first = node1 instanceof DBNContainer || (node1.allowsChildren() && !(node1 instanceof DBNDatabaseItem)) ? -1 : 1;
-            int second = node2 instanceof DBNContainer || (node2.allowsChildren() && !(node2 instanceof DBNDatabaseItem)) ? -1 : 1;
+            int first = isFolderNode(node1) ? -1 : 1;
+            int second = isFolderNode(node2) ? -1 : 1;
             return first - second;
+        }
+
+        private static boolean isFolderNode(DBNNode node) {
+            if (node instanceof DBNDatabaseNode dbn && dbn.getObject() instanceof DBPObjectWithOrdinalPosition) {
+                return false;
+            }
+            return node instanceof DBNContainer || node.allowsChildren();
         }
     }
 
