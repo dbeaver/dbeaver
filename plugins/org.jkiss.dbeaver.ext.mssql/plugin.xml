@@ -230,7 +230,7 @@
                 <driver
                         id="babelfish"
                         label="Babelfish via TDS (beta)"
-                        icon="icons/bbf?sh_icon.png"
+                        icon="icons/bbfsh_icon.png"
                         iconBig="icons/bbfsh_icon_big.png"
                         class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
                         sampleURL="jdbc:sqlserver://{host};databaseName={database}"
