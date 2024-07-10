@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.DBPObject;
 public interface DBSTypedObjectEx2 extends DBPObject {
 
     /**
-     * Returs type description
+     * Returns type description
      */
     @Nullable
     DBSTypeDescriptor getTypeDescriptor();

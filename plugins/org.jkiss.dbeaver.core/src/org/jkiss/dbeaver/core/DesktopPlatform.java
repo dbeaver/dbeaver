@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.qm.QMRegistry;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
 import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
@@ -118,6 +119,8 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
             }
         }
 
+        DBRFeatureRegistry.getInstance().startTracking();
+
         if (getPreferenceStore().getBoolean(DBeaverPreferences.SECURITY_USE_BOUNCY_CASTLE)) {
             // Register BC security provider
             SecurityProviderUtils.registerSecurityProvider();
@@ -153,6 +156,8 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
             // Shutdown in headless mode
             ((DBPApplicationController) application).setHeadlessMode(true);
         }
+
+        DBRFeatureRegistry.getInstance().endTracking();
 
         super.dispose();
 

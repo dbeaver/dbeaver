@@ -305,7 +305,7 @@ public class SQLCommentAutoIndentStrategy extends DefaultIndentLineAutoEditStrat
         String prefix = commentExtractLinePrefix(document, line);
         boolean wrapAlways = command.offset >= lineOffset && command.offset <= lineOffset + prefix.length();
 
-        // must insert the text now because it may include whitepace
+        // must insert the text now because it may include whitespace
         flushCommand(document, command);
 
         if (wrapAlways || calculateDisplayedWidth(buffer.toString()) > getMargin() || isLineTooShort(document, line)) {

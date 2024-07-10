@@ -199,7 +199,16 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
 
     @NotNull
     public Connection getConnection(DBRProgressMonitor monitor) throws SQLException {
-        if (connection == null) {
+        Connection result = getConnection(monitor, true);
+        if (result == null) {
+            throw new SQLException("Null connection returned");
+        }
+        return result;
+    }
+
+    @Nullable
+    public Connection getConnection(DBRProgressMonitor monitor, boolean openIfNeeded) throws SQLException {
+        if (connection == null && openIfNeeded) {
             try {
                 connect(monitor);
             } catch (DBCException e) {

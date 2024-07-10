@@ -173,7 +173,6 @@ public class RegistryConstants {
 
     public static final String ATTR_CONFIRMATION_MESSAGE = "confirmationMessage"; //$NON-NLS-1$
     public static final String ATTR_HANDLER_CLASS = "handlerClass"; //$NON-NLS-1$
-    public static final String ATTR_UI_CLASS = "uiClass"; //$NON-NLS-1$
     public static final String ATTR_SECURED = "secured"; //$NON-NLS-1$
 
     public static final String TAG_DATA_SOURCE = "data-source"; //$NON-NLS-1$

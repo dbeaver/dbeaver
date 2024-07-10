@@ -696,7 +696,7 @@ public class ReferenceValueEditor {
                 monitor));
             if (allColumns.size() > 1 && allColumns.get(0) != fkColumn) {
                 // Our column is not a first on in foreign key.
-                // So, fill uo preceeding keys
+                // So, fill uo preceding keys
                 List<DBDAttributeBinding> rowAttributes = attributeController.getRowController().getRowAttributes();
                 precedingKeys = new ArrayList<>();
                 for (DBSEntityAttributeRef precColumn : allColumns) {
