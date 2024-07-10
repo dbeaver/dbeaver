@@ -55,18 +55,6 @@ public class DashboardRendererBrowser extends DashboardRendererAbstract {
         @NotNull Composite chartComposite,
         @NotNull DashboardItemViewSettings dashboardConfig
     ) {
-        manager.add(new Action("Refresh", DBeaverIcons.getImageDescriptor(UIIcon.REFRESH)) {
-            @Override
-            public void run() {
-                if (chartComposite instanceof DashboardBrowserComposite bc) {
-                    DashboardItemConfiguration dashboard = dashboardConfig.getItemConfiguration();
-                    if (dashboard != null) {
-                        bc.getBrowser().setUrl(dashboard.evaluateURL(dashboard.getDashboardURL(), itemContainer.getProject(), itemContainer.getDataSourceContainer()));
-                        itemContainer.refreshInfo();
-                    }
-                }
-            }
-        });
         manager.add(new Action("Open in external browser", DBeaverIcons.getImageDescriptor(UIIcon.LINK)) {
             @Override
             public void run() {
@@ -116,4 +104,15 @@ public class DashboardRendererBrowser extends DashboardRendererAbstract {
         return (DashboardBrowserComposite) container.getDashboardControl();
     }
 
+    @Override
+    protected void refreshChart(DashboardItemContainer itemContainer, Composite chartComposite, DashboardItemViewSettings dashboardConfig) {
+        if (chartComposite instanceof DashboardBrowserComposite bc) {
+            DashboardItemConfiguration dashboard = dashboardConfig.getItemConfiguration();
+            if (dashboard != null) {
+                bc.getBrowser().setUrl(dashboard.evaluateURL(dashboard.getDashboardURL(), itemContainer.getProject(),
+                    itemContainer.getDataSourceContainer()));
+                itemContainer.refreshInfo();
+            }
+        }
+    }
 }

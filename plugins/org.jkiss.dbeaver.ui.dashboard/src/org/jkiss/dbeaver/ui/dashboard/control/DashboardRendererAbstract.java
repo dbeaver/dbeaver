@@ -51,6 +51,12 @@ public abstract class DashboardRendererAbstract implements DashboardItemRenderer
                     HandlerDashboardViewItem.openDashboardViewDialog(itemContainer);
                 }
             });
+            manager.add(new Action("Refresh chart", DBeaverIcons.getImageDescriptor(UIIcon.REFRESH)) {
+                @Override
+                public void run() {
+                    refreshChart(itemContainer, chartComposite, dashboardConfig);
+                }
+            });
             manager.add(new Action("Settings", DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION)) {
                 @Override
                 public void run() {
@@ -70,6 +76,13 @@ public abstract class DashboardRendererAbstract implements DashboardItemRenderer
                 }
             });
         }
+    }
+
+    protected void refreshChart(DashboardItemContainer itemContainer, Composite chartComposite, DashboardItemViewSettings dashboardConfig){
+        itemContainer.getGroup().selectItem(itemContainer);
+        ActionUtils.runCommand(
+            DashboardUIConstants.CMD_REFRESH_CHART,
+            itemContainer.getGroup().getView().getWorkbenchSite());
     }
 
 }
