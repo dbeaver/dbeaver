@@ -102,7 +102,10 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.epp.mpc.projectnatures",
         "org.eclipse.ui.internal.console.ansi.preferences.AnsiConsolePreferencePage",
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.browser.preferencePage",
-        "org.eclipse.jsch.ui.SSHPreferences"
+        "org.eclipse.jsch.ui.SSHPreferences",
+
+        WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID,
+        WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.AutoSave",
 
         // Team preferences - not needed in CE
         //"org.eclipse.team.ui.TeamPreferences",
@@ -115,8 +118,6 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.browser.preferencePage",
             WORKBENCH_PREF_PAGE_ID + "/org.eclipse.search.preferences.SearchPreferencePage",
             WORKBENCH_PREF_PAGE_ID + "/org.eclipse.text.quicksearch.PreferencesPage",
-            WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID,
-            WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.AutoSave",
             WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.FileEditors" //"File Associations"
     };
 
@@ -267,13 +268,14 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         
         FontPreferenceOverrides.hideFontPrefs(pm, fontPrefIdsToHide);
         
-        for (String epp : getExcludedPreferencePageIds()) {
-            pm.remove(epp);
-        }
         patchPreferencePages(pm, EDITORS_PREF_PAGES, PrefPageDatabaseEditors.PAGE_ID);
         patchPreferencePages(pm, UI_PREF_PAGES, PrefPageDatabaseUserInterface.PAGE_ID);
         patchPreferencePages(pm, GENERAL_PREF_PAGES, WORKBENCH_PREF_PAGE_ID);
         patchPreferencePages(pm, NETWORK_PREF_PAGES, PrefPageConnectionsGeneral.PAGE_ID);
+
+        for (String epp : getExcludedPreferencePageIds()) {
+            pm.remove(epp);
+        }
     }
 
     @NotNull

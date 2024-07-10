@@ -463,7 +463,7 @@
                     icon="icons/teradata_icon.png"
                     iconBig="icons/teradata_icon_big.png"
                     class="com.teradata.jdbc.TeraDriver"
-                    sampleURL="jdbc:teradata://{host}/DATABASE={database},DBS_PORT={port}"
+                    sampleURL="jdbc:teradata://{host}/[DATABASE={database},]DBS_PORT={port}"
                     defaultPort="1025"
                     webURL="https://downloads.teradata.com/download/connectivity/jdbc-driver"
                     databaseDocumentationSuffixURL="Database-driver-Teradata"
@@ -1243,6 +1243,39 @@
                 <!-- Legacy drivers -->
 
                 <driver
+                        id="db2_luw_old"
+                        label="Db2 for LUW (Old 8.x)"
+                        icon="icons/db2_icon.png"
+                        iconBig="icons/db2_icon_big.png"
+                        category="Db2"
+                        class="com.ibm.db2.jcc.DB2Driver"
+                        sampleURL="jdbc:db2://{host}[:{port}]/{database}"
+                        supportedConfigurationTypes="MANUAL,URL"
+                        defaultPort="50000"
+                        webURL="https://www.ibm.com/software/data/db2/express/download.html"
+                        databaseDocumentationSuffixURL="Database-driver-IBM-Db2"
+                        description="DB2 LUW driver for older DB2 versions (8.x)">
+                    <replace provider="generic" driver="db2"/>
+
+                    <property name="loginTimeout" value="20"/>
+                    <property name="connectionTimeout" value="20"/>
+                    <property name="fullyMaterializeLobData" value="true"/>
+                    <property name="fullyMaterializeInputStreams" value="true"/>
+                    <property name="progressiveStreaming" value="2"/>
+                    <property name="retrieveMessagesFromServerOnGetMessage" value="true"/>
+
+                    <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
+                    <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
+
+                    <fileSource url="https://www-304.ibm.com/support/docview.wss?rs=4020&amp;uid=swg21385217"
+                                name="DB2 drivers"
+                                instruction="Download JDBC (JCC) client driver. Extract downloaded archive and copy db2jcc4.jar in some directory. Then add db2jcc4.jar as a library in DBeaver driver editor dialog.">
+                        <file name="db2jcc4.jar" description="JDBC driver"/>
+                    </fileSource>
+                    <file type="license" path="drivers/db2/LICENSE.txt" bundle="drivers.db2"/>
+                    <file type="jar" path="drivers/db2" bundle="drivers.db2"/>
+                </driver>
+                <driver
                         id="mysql3"
                         label="MySQL (Old)"
                         icon="platform:/plugin/org.jkiss.dbeaver.ext.mysql/icons/mysql_icon.png"
@@ -1335,7 +1368,6 @@
                 <driver id="aws_redshift_42"/>
                 <driver id="azure_databricks"/>
                 <driver id="db2"/>
-                <driver id="db2_luw_old"/>
                 <driver id="db2_iseries"/>
                 <driver id="db2_zos"/>
                 <driver id="exasol"/>

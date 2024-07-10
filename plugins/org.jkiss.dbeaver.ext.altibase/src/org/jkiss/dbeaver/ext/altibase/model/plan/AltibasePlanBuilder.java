@@ -26,7 +26,7 @@ import java.util.List;
 public class AltibasePlanBuilder {
 
     private static final Log log = Log.getLog(AltibasePlanBuilder.class);
-    /**
+    /*
      * Return plans tree structure based on the result from Altibase.
      */
     public static List<AltibasePlanNode> build(AltibaseDataSource dataSource, String planStr) throws IllegalStateException {

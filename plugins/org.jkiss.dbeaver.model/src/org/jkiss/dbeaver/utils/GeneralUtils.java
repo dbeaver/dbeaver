@@ -418,6 +418,11 @@ public class GeneralUtils {
         return null;
     }
 
+    @NotNull
+    public static String getProductEarlyAccessURL() {
+        return Platform.getProduct().getProperty("earlyAccessURL");
+    }
+
     public static String getExpressionParseMessage(Exception e) {
         String message = e.getMessage();
         if (message == null) {
@@ -900,5 +905,17 @@ public class GeneralUtils {
                 .collect(Collectors.joining(" "));
             throw new DBException("Resource name '" + name + "' contains illegal characters:  " + forbiddenExplain);
         }
+    }
+
+    /**
+     * Normalizes line endings by converting Windows ({@code \\r\n}) and
+     * macOS ({@code \r}) line endings to Unix ({@code \n}) line endings.
+     *
+     * @param text the text to normalize
+     * @return the normalized text
+     */
+    @NotNull
+    public static String normalizeLineEndings(@NotNull String text) {
+        return text.replaceAll("(\r\n)|\r", "\n");
     }
 }

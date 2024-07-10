@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 
 /**
- * Managable result set
+ * Manageable result set
  */
 public abstract class AbstractStatement<SESSION extends DBCSession> implements DBCStatement {
 

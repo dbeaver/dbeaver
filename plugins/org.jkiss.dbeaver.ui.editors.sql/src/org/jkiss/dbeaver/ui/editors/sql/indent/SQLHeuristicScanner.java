@@ -185,7 +185,7 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
         lastPos++;
 
         if (Character.isJavaIdentifierPart(lastChar)) {
-            // assume an ident or keyword
+            // assume an indent or keyword
             int from = pos, to;
             pos = scanForward(pos + 1, bound, _nonIdent);
             if (pos == NOT_FOUND) {
@@ -228,7 +228,7 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
         lastPos--;
 
         if (Character.isJavaIdentifierPart(lastChar)) {
-            // assume an ident or keyword
+            // assume an indent or keyword
             int from, to = pos + 1;
             pos = scanBackward(pos - 1, bound, _nonIdent);
             if (pos == NOT_FOUND) {

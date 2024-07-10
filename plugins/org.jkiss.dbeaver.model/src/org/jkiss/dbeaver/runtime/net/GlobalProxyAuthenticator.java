@@ -126,7 +126,7 @@ public class GlobalProxyAuthenticator extends Authenticator {
         }
 
         if (proxyService != null) {
-            // Try to use Eclispe proxy config for global proxies
+            // Try to use Eclipse proxy config for global proxies
             IProxyData[] proxyData = proxyService.getProxyData();
             if (proxyData != null) {
                 for (IProxyData pd : proxyData) {

@@ -469,6 +469,16 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     }
 
     @Override
+    public boolean supportsAcl() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsCustomDataTypes() {
+        return false;
+    }
+
+    @Override
     public boolean supportsAlterTableColumnWithUSING() {
         return false;
     }

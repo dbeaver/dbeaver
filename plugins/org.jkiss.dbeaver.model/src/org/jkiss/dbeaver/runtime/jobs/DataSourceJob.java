@@ -35,7 +35,7 @@ public abstract class DataSourceJob extends AbstractJob implements DBPDataSource
 
     protected DataSourceJob(String name, @NotNull DBCExecutionContext executionContext)
     {
-        super(CommonUtils.truncateString(name, 1000)); // Trunkate just in case
+        super(CommonUtils.truncateString(name, 1000)); // Truncate just in case
         this.executionContext = executionContext;
         final DBPDataSourceContainer dataSourceContainer = executionContext.getDataSource().getContainer();
 
