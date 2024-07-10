@@ -45,7 +45,11 @@ import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static org.jkiss.dbeaver.ui.dashboard.DashboardUIConstants.PARAM_CATALOG_PANEL_TOGGLE;
 
 public class DashboardListControl extends Composite implements DashboardGroupContainer {
 
@@ -286,7 +290,9 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
         MenuManager menuMgr = new MenuManager();
         menuMgr.add(ActionUtils.makeCommandContribution(site, DashboardUIConstants.CMD_ADD_DASHBOARD));
         menuMgr.add(ActionUtils.makeCommandContribution(site, DashboardUIConstants.CMD_REFRESH_CHART));
-        menuMgr.add(ActionUtils.makeCommandContribution(site, DashboardUIConstants.CMD_CATALOG_SHOW_DASHBOARD));
+        Map<String, Object> params = new HashMap<>();
+        params.put(PARAM_CATALOG_PANEL_TOGGLE, "true");
+        menuMgr.add(ActionUtils.makeCommandContribution(site, DashboardUIConstants.CMD_CATALOG_SHOW_DASHBOARD, params));
         setMenu(menuMgr.createContextMenu(this));
 
         addDisposeListener(e -> menuMgr.dispose());
