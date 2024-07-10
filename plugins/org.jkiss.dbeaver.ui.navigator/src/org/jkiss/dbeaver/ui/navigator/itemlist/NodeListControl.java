@@ -26,19 +26,22 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
-import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceAbstract;
@@ -170,21 +173,16 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
             }
             final List<DBXTreeNode> inlineMetas = collectInlineMetas(dbNode, metaNode);
 
-            boolean dynamicStructObject = isDynamicStructObject(dbNode, metaNode);
-            if (!inlineMetas.isEmpty() || dynamicStructObject) {
+            if (!inlineMetas.isEmpty() || dbNode.isDynamicStructObject()) {
                 return new TreeContentProvider() {
                     @Override
                     public boolean hasChildren(Object parentElement) {
-                        return parentElement instanceof DBNDatabaseNode node &&
-                           dynamicStructObject ? hasDynamicStructChildren(node) : node.hasChildren(false);
+                        return parentElement instanceof DBNDatabaseNode node && node.hasChildren(false);
                     }
 
                     @Override
                     public Object[] getChildren(Object parentElement) {
                         if (parentElement instanceof DBNDatabaseNode node) {
-                            if (dynamicStructObject) {
-                                return getDynamicStructChildren(node);
-                            }
                             try {
                                 // Read children with void progress monitor because inline children SHOULD be already cached
                                 DBNNode[] children = DBNUtils.getNodeChildrenFiltered(new VoidProgressMonitor(), node, false);
@@ -208,44 +206,6 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     @Override
     protected boolean isDynamicObject(DBNNode object) {
         return object instanceof DBNDatabaseDynamicItem;
-    }
-
-    private static DBNDatabaseDynamicItem[] getDynamicStructChildren(DBNDatabaseNode dbNode) {
-        if (dbNode.getObject() instanceof DBSTypedObject typedObject) {
-            DBSDataType dataType = DBUtils.getDataType(dbNode.getDataSource(), typedObject);
-            if (dataType instanceof DBSEntity dtEntity) {
-                try {
-                    List<? extends DBSEntityAttribute> attributes = dtEntity.getAttributes(new VoidProgressMonitor());
-                    if (attributes == null) {
-                        return null;
-                    }
-                    return attributes.stream().map(o -> new DBNDatabaseDynamicItem(dbNode, o))
-                        .toArray(DBNDatabaseDynamicItem[]::new);
-                } catch (DBException e) {
-                    log.error(e);
-                }
-            }
-        }
-        return new DBNDatabaseDynamicItem[0];
-    }
-
-    private static boolean hasDynamicStructChildren(@NotNull DBNDatabaseNode dbNode) {
-        if (dbNode.getObject() instanceof DBSTypedObject typedObject) {
-            DBSDataType dataType = DBUtils.getDataType(dbNode.getDataSource(), typedObject);
-            return dataType instanceof DBSEntity && dataType.getDataKind() == DBPDataKind.STRUCT;
-        }
-        return false;
-    }
-
-    private static boolean isDynamicStructObject(@NotNull DBNDatabaseNode dbNode, @NotNull DBXTreeNode metaNode) {
-        List<DBXTreeNode> childMetas = metaNode.getChildren(dbNode);
-        if (childMetas.size() == 1) {
-            if (childMetas.get(0) instanceof DBXTreeItem item) {
-                Class<?> childrenClass = dbNode.getChildrenClass(item);
-                return childrenClass != null && DBSTypedObject.class.isAssignableFrom(childrenClass);
-            }
-        }
-        return false;
     }
 
     protected static List<DBXTreeNode> collectInlineMetas(DBNDatabaseNode node, DBXTreeNode meta)
@@ -351,7 +311,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     @Override
     protected String getListConfigId(List<Class<?>> classList) {
         StringBuilder sb = new StringBuilder("NodeList");
-        for (Class theClass : classList) {
+        for (Class<?> theClass : classList) {
             sb.append("/").append(theClass.getSimpleName());
         }
         return sb.toString();

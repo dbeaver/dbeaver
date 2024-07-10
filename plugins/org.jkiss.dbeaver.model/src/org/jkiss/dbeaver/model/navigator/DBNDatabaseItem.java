@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  * DBNDatabaseItem
  */
 public class DBNDatabaseItem extends DBNDatabaseNode {
-    private DBXTreeNode meta;
+    private final DBXTreeNode meta;
     private DBSObject object;
 
     DBNDatabaseItem(DBNNode parent, DBXTreeNode meta, DBSObject object, boolean reflect) {
@@ -45,6 +45,11 @@ public class DBNDatabaseItem extends DBNDatabaseNode {
         unregisterNode(reflect);
         this.object = null;
         super.dispose(reflect);
+    }
+
+    @Override
+    public boolean isDynamicStructObject() {
+        return parentNode instanceof DBNDatabaseFolder folder && folder.isDynamicStructObject();
     }
 
     @Override

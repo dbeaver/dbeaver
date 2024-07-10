@@ -103,13 +103,11 @@ public class DBNUtils {
         DBNNode[] result;
         if (forTree) {
             List<DBNNode> filtered = new ArrayList<>();
-            for (int i = 0; i < children.length; i++) {
-                DBNNode node = children[i];
-                if (node instanceof DBPHiddenObject && ((DBPHiddenObject) node).isHidden()) {
+            for (DBNNode node : children) {
+                if (node instanceof DBPHiddenObject hiddenObject && hiddenObject.isHidden()) {
                     continue;
                 }
-                if (node instanceof DBNDatabaseNode) {
-                    DBNDatabaseNode dbNode = (DBNDatabaseNode) node;
+                if (node instanceof DBNDatabaseNode dbNode) {
                     if (dbNode.getMeta() != null && !dbNode.getMeta().isNavigable()) {
                         continue;
                     }
@@ -169,8 +167,8 @@ public class DBNUtils {
                     }
                 }
             }
-        } else if (element instanceof DBNProject) {
-            if (((DBNProject)element).getProject() == DBWorkbench.getPlatform().getWorkspace().getActiveProject()) {
+        } else if (element instanceof DBNProject nodeProject) {
+            if (nodeProject.getProject() == DBWorkbench.getPlatform().getWorkspace().getActiveProject()) {
                 return true;
             }
         }
@@ -216,8 +214,8 @@ public class DBNUtils {
         static NodeFolderComparator INSTANCE = new NodeFolderComparator();
         @Override
         public int compare(DBNNode node1, DBNNode node2) {
-            int first = node1 instanceof DBNContainer || node1.allowsChildren() ? -1 : 1;
-            int second = node2 instanceof DBNContainer || node2.allowsChildren() ? -1 : 1;
+            int first = node1 instanceof DBNContainer || (node1.allowsChildren() && !(node1 instanceof DBNDatabaseItem)) ? -1 : 1;
+            int second = node2 instanceof DBNContainer || (node2.allowsChildren() && !(node2 instanceof DBNDatabaseItem)) ? -1 : 1;
             return first - second;
         }
     }
