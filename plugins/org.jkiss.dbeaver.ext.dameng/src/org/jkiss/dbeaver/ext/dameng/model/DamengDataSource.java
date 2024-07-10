@@ -82,7 +82,7 @@ public class DamengDataSource extends GenericDataSource {
     }
 
     @Override
-    public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         super.refreshObject(monitor);
         tablespaceCache.clearCache();
         return this;

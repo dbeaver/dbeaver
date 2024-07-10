@@ -264,6 +264,11 @@
                 <folder label="%tree.administer.node.name"  id="maintenanceSettings" icon="#folder_admin" description="Maintenance/Settings">
                     <treeContribution category="connectionEditor"/>
                 </folder>
+                <folder label="%tree.system_info.node.name" icon="#folder_info" id="folderInfo" description="%tree.system_info.node.tip">
+                    <folder label="%tree.properties.node.name" icon="#info" description="%tree.properties.node.description">
+                        <items label="%tree.property.node.name" path="altibaseProperties" property="properties" icon="#info" navigable="false" virtual="true"/>
+                    </folder>
+                </folder>
              </tree>
         </datasource>
     </extension>
@@ -312,6 +317,41 @@
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="altibase" parent="basic" class="org.jkiss.dbeaver.ext.altibase.model.AltibaseSQLDialect" label="Altibase" description="Altibase SQL dialect." icon="icons/altibase_icon.png">
         </dialect>
+    </extension>
+    
+    <extension point="org.jkiss.dbeaver.task">
+        <category id="altibase" name="Altibase" description="%org.jkiss.dbeaver.task.category.altibase.description" icon="icons/altibase_icon.png"/>
+        <category id="altibaseTool" parent="altibase"
+              name="Tools" 
+              description="%org.jkiss.dbeaver.task.category.altibaseTool.description"
+              icon="icons/altibase_icon.png"/>
+
+        <!-- SQL tools -->
+        <task id="altibaseToolTableTruncate" name="%tasks.table.truncate.node.name" description="%tasks.table.truncate.node.description" 
+        type="altibaseTool" handler="org.jkiss.dbeaver.ext.altibase.tasks.AltibaseToolTableTruncate">
+            <datasource id="altibase"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseTable"/>
+        </task>
+        <task id="altibaseToolMViewRefresh" name="%tasks.mview.refresh.node.name" description="%tasks.mview.refresh.node.description" 
+        type="altibaseTool" handler="org.jkiss.dbeaver.ext.altibase.tasks.AltibaseToolMViewRefresh">
+            <datasource id="altibase"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseMaterializedView"/>
+        </task>
+        <task id="altibaseToolViewCompile" name="%tasks.view.compile.node.name" description="%tasks.view.compile.node.description" 
+        type="altibaseTool" handler="org.jkiss.dbeaver.ext.altibase.tasks.AltibaseToolViewCompile">
+            <datasource id="altibase"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseView"/>
+        </task>
+        <task id="altibaseToolProcedureCompile" name="%tasks.procedure.compile.node.name" description="%tasks.procedure.compile.node.description" 
+        type="altibaseTool" handler="org.jkiss.dbeaver.ext.altibase.tasks.AltibaseToolProcedureCompile">
+            <datasource id="altibase"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseProcedureStandAlone"/>
+        </task>
+        <task id="altibaseToolPackageCompile" name="%tasks.package.compile.node.name" description="%tasks.package.compile.node.description" 
+        type="altibaseTool" handler="org.jkiss.dbeaver.ext.altibase.tasks.AltibaseToolPackageCompile">
+            <datasource id="altibase"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibasePackage"/>
+        </task>
     </extension>
 
 </plugin>

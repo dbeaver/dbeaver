@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mssql.model.session;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerDataSource;
@@ -72,7 +73,7 @@ public class SQLServerSessionManager implements DBAServerSessionManager<SQLServe
                 }
             }
         } catch (SQLException e) {
-            throw new DBException(e, session.getDataSource());
+            throw new DBDatabaseException(e, session.getDataSource());
         }
     }
 
@@ -85,7 +86,7 @@ public class SQLServerSessionManager implements DBAServerSessionManager<SQLServe
             }
         }
         catch (SQLException e) {
-            throw new DBException(e, session.getDataSource());
+            throw new DBDatabaseException(e, session.getDataSource());
         }
     }
 

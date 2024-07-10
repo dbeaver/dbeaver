@@ -202,7 +202,9 @@ public class QMMConnectionInfo extends QMMObject {
                 return stat;
             }
         }
-        log.warn("Statement " + statement + " meta info not found");
+        if (statementStack != null) {
+            log.warn("Closed statement " + statement + " meta info not found");
+        }
         return null;
     }
 

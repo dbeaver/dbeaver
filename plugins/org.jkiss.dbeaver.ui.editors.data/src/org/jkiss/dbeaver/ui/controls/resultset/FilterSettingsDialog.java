@@ -77,7 +77,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
     private ToolItem moveUpButton;
     private ToolItem moveDownButton;
     private ToolItem moveBottomButton;
-    private Comparator<DBDAttributeBinding> activeSorter = POSITION_SORTER;
+    private final Comparator<DBDAttributeBinding> activeSorter = POSITION_SORTER;
     private FilterSettingsTreeEditor treeEditor;
 
     FilterSettingsDialog(ResultSetViewer resultSetViewer)
@@ -108,7 +108,10 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         Composite composite = super.createDialogArea(parent);
 
         TabFolder tabFolder = new TabFolder(composite, SWT.NONE);
-        tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.minimumWidth = 200;
+        gd.widthHint = 400;
+        tabFolder.setLayoutData(gd);
 
         {
             Composite columnsGroup = UIUtils.createPlaceholder(tabFolder, 1);
@@ -117,7 +120,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                 @Override
                 protected TreeViewer doCreateTreeViewer(Composite parent, int style) {
                     columnsViewer = new TreeViewer(parent, style);
-                    columnsController = new ViewerColumnController<>(getClass().getSimpleName(), columnsViewer);
+                    columnsController = new ViewerColumnController<>(FilterSettingsDialog.class.getSimpleName(), columnsViewer);
                     return columnsViewer;
                 }
             };
@@ -259,7 +262,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
             });
 
             final Tree columnsTree = columnsViewer.getTree();
-            GridData gd = new GridData(GridData.FILL_BOTH);
+            gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 300;
             columnsTree.setLayoutData(gd);
             columnsTree.setHeaderVisible(true);
@@ -337,7 +340,10 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         refreshData();
 
         // Pack UI
-        UIUtils.asyncExec(() -> UIUtils.packColumns(columnsViewer.getTree(), true, new float[] { 0.45f, 0.05f, 0.05f, 0.05f, 0.05f, 0.35f}));
+        UIUtils.asyncExec(() -> {
+            UIUtils.resizeShell(getShell());
+            UIUtils.packColumns(columnsViewer.getTree(), true, new float[] { 0.45f, 0.05f, 0.05f, 0.05f, 0.05f, 0.35f});
+        });
         //UIUtils.packColumns(filterViewer.getTable());
 
         if (!resultSetViewer.supportsDataFilter()) {

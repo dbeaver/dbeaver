@@ -21,6 +21,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Plugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
@@ -90,7 +91,7 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
         log.debug("Initialize Test Platform...");
 
         this.defaultCertificateStorage = new DefaultCertificateStorage(
-            DBeaverTestActivator.getConfigurationFile("cert-storage").toPath());
+            DBeaverTestActivator.getConfigurationFile(DBConstants.CERTIFICATE_STORAGE_FOLDER).toPath());
 
         // Register properties adapter
         this.workspace = new DBeaverTestWorkspace(this, ResourcesPlugin.getWorkspace());

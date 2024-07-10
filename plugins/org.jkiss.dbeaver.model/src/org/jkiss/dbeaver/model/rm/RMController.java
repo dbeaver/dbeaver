@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBPObjectController;
 import org.jkiss.dbeaver.model.app.DBPPingController;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Resource manager API.
@@ -220,4 +221,14 @@ public interface RMController extends DBPObjectController, DBPPingController {
         @NotNull String propertyName,
         @Nullable Object propertyValue) throws DBException;
 
+
+    /**
+     * Sets all resource properties
+     */
+    @NotNull
+    String setResourceProperties(
+        @NotNull String projectId,
+        @NotNull String resourcePath,
+        @NotNull Map<String, Object> properties
+    ) throws DBException;
 }

@@ -55,6 +55,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * General non-ui utility methods
@@ -70,7 +71,7 @@ public class GeneralUtils {
 
     public static final String DEFAULT_TIMESTAMP_PATTERN = "yyyyMMddHHmm";
     public static final String DEFAULT_DATE_PATTERN = "yyyyMMdd";
-    public static final String RESOURCE_NAME_FORBIDDEN_SYMBOLS_REGEX = "(?U)[^/:'\"\\\\]+";
+    public static final String RESOURCE_NAME_FORBIDDEN_SYMBOLS_REGEX = "(?U)[^/:'\"\\\\<>|?*]+";
 
     public static final String[] byteToHex = new String[256];
     public static final char[] nibbleToHex = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
@@ -417,6 +418,11 @@ public class GeneralUtils {
         return null;
     }
 
+    @NotNull
+    public static String getProductEarlyAccessURL() {
+        return Platform.getProduct().getProperty("earlyAccessURL");
+    }
+
     public static String getExpressionParseMessage(Exception e) {
         String message = e.getMessage();
         if (message == null) {
@@ -497,13 +503,20 @@ public class GeneralUtils {
         return text.toString();
     }
 
+    /**
+     * recursively iterates through all variables and returns root
+     **/
     @Nullable
-    public static String extractVariableName(@NotNull String string) {
-        Matcher matcher = VAR_PATTERN.matcher(string);
-        if (matcher.find()) {
-            return matcher.group(2);
+    public static String extractVariableName(@NotNull String variablePattern) {
+        Matcher matcher = VAR_PATTERN.matcher(variablePattern);
+        String name = null;
+        String s = variablePattern;
+        while (matcher.find()) {
+            name = matcher.group(2);
+            s = substituteVariable(s, matcher, "");
+            matcher = VAR_PATTERN.matcher(s);
         }
-        return null;
+        return name;
     }
 
     @NotNull
@@ -577,6 +590,36 @@ public class GeneralUtils {
 
     public static IStatus makeExceptionStatus(int severity, Throwable ex) {
         return makeExceptionStatus(severity, ex, false);
+    }
+
+    public static IStatus transformExceptionsToStatus(@NotNull List<Throwable> exceptions) {
+
+        if (exceptions.isEmpty()) {
+            return new Status(IStatus.ERROR, (Class<?>) null, "Empty exceptions list");
+        }
+        Set<String> exceptionMessageSet = new HashSet<>();
+        IStatus prev = null;
+        for (Throwable exception : exceptions) {
+            String message = exception.getMessage();
+            if (prev == null) {
+                exceptionMessageSet.add(message);
+                prev = new Status(
+                    IStatus.ERROR,
+                    ModelPreferences.PLUGIN_ID,
+                    message,
+                    null);
+            } else {
+                if (exceptionMessageSet.contains(message)) {
+                    continue;
+                }
+                prev = new MultiStatus(ModelPreferences.PLUGIN_ID,
+                    0,
+                    new IStatus[]{prev},
+                    message,
+                    null);
+            }
+        }
+        return prev;
     }
 
     private static IStatus makeExceptionStatus(int severity, Throwable ex, boolean nested) {
@@ -854,8 +897,25 @@ public class GeneralUtils {
         if (name.startsWith(".")) {
             throw new DBException("Resource name '" + name + "' can't start with dot");
         }
-        if (!name.matches(GeneralUtils.RESOURCE_NAME_FORBIDDEN_SYMBOLS_REGEX)) {
-            throw new DBException("Resource name '" + name + "' contains illegal characters:  / : ' \" \\");
+
+        String forbiddenSymbols = name.replaceAll(RESOURCE_NAME_FORBIDDEN_SYMBOLS_REGEX, "");
+        if (CommonUtils.isNotEmpty(forbiddenSymbols)) {
+            String forbiddenExplain = forbiddenSymbols.chars()
+                .mapToObj(c -> Character.toString((char) c))
+                .collect(Collectors.joining(" "));
+            throw new DBException("Resource name '" + name + "' contains illegal characters:  " + forbiddenExplain);
         }
+    }
+
+    /**
+     * Normalizes line endings by converting Windows ({@code \\r\n}) and
+     * macOS ({@code \r}) line endings to Unix ({@code \n}) line endings.
+     *
+     * @param text the text to normalize
+     * @return the normalized text
+     */
+    @NotNull
+    public static String normalizeLineEndings(@NotNull String text) {
+        return text.replaceAll("(\r\n)|\r", "\n");
     }
 }

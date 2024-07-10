@@ -59,7 +59,7 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
         dateFormat = new ExtendedDateFormat(
             sdfPattern,
             locale);
-        // We shouldn't use lanient formatter (#7244)
+        // We shouldn't use lenient formatter (#7244)
         dateFormat.setLenient(false);
         buffer = new StringBuffer();
         position = new FieldPosition(0);

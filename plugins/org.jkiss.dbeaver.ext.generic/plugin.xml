@@ -192,34 +192,6 @@
                 <!-- Real drivers -->
 
                 <driver
-                        id="db2_iseries"
-                        label="Db2 for IBM i"
-                        icon="icons/db2_icon.png"
-                        iconBig="icons/db2_icon_big.png"
-                        category="Db2"
-                        class="com.ibm.as400.access.AS400JDBCDriver"
-                        sampleURL="jdbc:as400://{host};[libraries={database};]"
-                        defaultPort="446"
-                        description="IBM Db2 driver for IBM i (replacement for iSeries and AS/400)"
-                        supportedConfigurationTypes="MANUAL,URL"
-                        categories="sql">
-
-                    <file type="jar" path="maven:/net.sf.jt400:jt400:RELEASE" bundle="!drivers.jt400"/>
-
-                    <file type="license" path="drivers/db2-jt400/LICENSE.txt" bundle="drivers.jt400"/>
-                    <file type="jar" path="drivers/db2-jt400" bundle="drivers.jt400"/>
-
-                    <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
-                    <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
-                    <parameter name="omit-catalog" value="true"/>
-                    <parameter name="schema-filters-enabled" value="false"/>
-
-                    <!-- Enable table/column descriptions -->
-                    <property name="translate binary" value="true"/>
-                    <property name="metadata source" value="0"/>
-                </driver>
-
-                <driver
                     id="sap_maxdb"
                     category="SAP"
                     label="MaxDB"
@@ -283,68 +255,6 @@
                     <parameter name="ddl-drop-column-short" value="true"/>
 
                     <property name="@dbeaver-default-resultset.column.label.ignore" value="true"/>
-                </driver>
-                <driver
-                    id="h2_server"
-                    label="H2 Server"
-                    icon="icons/h2_icon.png"
-                    iconBig="icons/h2_icon_big.png"
-                    category="H2"
-                    class="org.h2.Driver"
-                    sampleURL="jdbc:h2:tcp://{host}[:{port}]/{database}"
-                    defaultPort="9092"
-                    webURL="https://www.h2database.com/"
-                    description="H2 Server"
-                    supportedConfigurationTypes="MANUAL,URL"
-                    categories="sql"
-                    dialect="h2">
-
-                    <file type="jar" path="maven:/com.h2database:h2:RELEASE[1.4.199]" bundle="!drivers.h2"/>
-
-                    <file type="jar" path="drivers/h2" bundle="drivers.h2"/>
-
-                    <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
-                    <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
-                    <parameter name="omit-catalog" value="true"/>
-                </driver>
-                <driver
-                    id="h2_embedded"
-                    label="H2 Embedded"
-                    icon="icons/h2_icon.png"
-                    iconBig="icons/h2_icon_big.png"
-                    category="H2"
-                    class="org.h2.Driver"
-                    sampleURL="jdbc:h2:{file}"
-                    webURL="https://www.h2database.com/"
-                    embedded="true"
-                    description="H2 Embedded"
-                    supportedConfigurationTypes="MANUAL,URL"
-                    categories="sql,embedded"
-                    dialect="h2">
-
-                    <file type="jar" path="maven:/com.h2database:h2:RELEASE[1.4.199]" bundle="!drivers.h2"/>
-
-                    <file type="jar" path="drivers/h2" bundle="drivers.h2"/>
-
-                    <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
-                    <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
-                    <parameter name="query-shutdown" value="shutdown"/>
-                    <parameter name="omit-catalog" value="true"/>
-                </driver>
-                <driver
-                    id="odbc"
-                    label="ODBC - Legacy"
-                    icon="icons/odbc_icon.png"
-                    iconBig="icons/odbc_icon_big.png"
-                    class="sun.jdbc.odbc.JdbcOdbcDriver"
-                    sampleURL="jdbc:odbc:{database}"
-                    webURL="https://sun.com"
-                    description="ODBC bridge driver"
-                    supportedConfigurationTypes="MANUAL,URL"
-                    supportsDistributedMode="false"
-                    categories="sql">
-                    <os name="win32"/>
-                    <notAvailableDriver title="%deprecated.title" description="%deprecated.description" message="%driver.odbc.deprecation.reason"/>
                 </driver>
                 <driver
                     id="derby"
@@ -525,34 +435,6 @@
 
                     <parameter name="supports-truncate" value="false"/>
                 </driver>
-                <!-- SQLite -->
-                <driver
-                    id="sqlite_jdbc"
-                    label="SQLite"
-                    icon="icons/sqlite_icon.png"
-                    iconBig="icons/sqlite_icon_big.png"
-                    class="org.sqlite.JDBC"
-                    sampleURL="jdbc:sqlite:{file}"
-                    defaultPort=""
-                    webURL="https://github.com/xerial/sqlite-jdbc"
-                    propertiesURL="https://www.sqlite.org/pragma.html"
-                    embedded="true"
-                    anonymous="true"
-                    description="SQLite JDBC driver"
-                    supportedConfigurationTypes="MANUAL,URL"
-                    promoted="1"
-                    categories="sql,embedded">
-
-                    <file type="jar" path="maven:/org.xerial:sqlite-jdbc:RELEASE" bundle="!drivers.sqlite.xerial"/>
-                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.sqlite.xerial"/>
-                    <file type="jar" path="drivers/sqlite/xerial" bundle="drivers.sqlite.xerial"/>
-
-                    <parameter name="supports-references" value="true"/>
-                    <parameter name="supports-struct-cache" value="false"/>
-                    <parameter name="supports-indexes" value="true"/>
-                    <parameter name="supports-stored-code" value="false"/>
-                    <parameter name="supports-truncate" value="false"/>
-                </driver>
 
                 <!-- DuckDB -->
                 <driver
@@ -581,7 +463,7 @@
                     icon="icons/teradata_icon.png"
                     iconBig="icons/teradata_icon_big.png"
                     class="com.teradata.jdbc.TeraDriver"
-                    sampleURL="jdbc:teradata://{host}/DATABASE={database},DBS_PORT={port}"
+                    sampleURL="jdbc:teradata://{host}/[DATABASE={database},]DBS_PORT={port}"
                     defaultPort="1025"
                     webURL="https://downloads.teradata.com/download/connectivity/jdbc-driver"
                     databaseDocumentationSuffixURL="Database-driver-Teradata"
@@ -741,23 +623,6 @@
                     categories="sql,cloud">
                     <file type="jar" path="maven:/com.nuodb.jdbc:nuodb-jdbc:RELEASE"/>
                     <file type="license" path="https://raw.githubusercontent.com/nuodb/nuodb-odbc/main/LICENSE"/>
-                </driver>
-                <driver
-                    id="sap_hana"
-                    category="SAP"
-                    label="HANA (Old)"
-                    icon="platform:/plugin/org.jkiss.dbeaver.ext.hana/icons/sap_hana_icon.png"
-                    iconBig="platform:/plugin/org.jkiss.dbeaver.ext.hana/icons/sap_hana_icon_big.png"
-                    class="com.sap.db.jdbc.Driver"
-                    sampleURL="jdbc:sap://{host}[:{port}]"
-                    defaultPort="30015"
-                    description=""
-                    webURL="http://scn.sap.com/community/developer-center/hana"
-                    categories="sql">
-                    <file type="jar" path="maven:/com.sap.cloud.db.jdbc:ngdbc:RELEASE"/>
-                    <parameter name="split-procedures-and-functions" value="true"/>
-                    <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM DUMMY"/>
-                    <parameter name="query-set-active-db" value="SET SCHEMA &quot;?&quot;"/>
                 </driver>
 
                 <!-- Hadoop -->
@@ -923,24 +788,6 @@
                     <parameter name="supports-references" value="false"/>
                 </driver>
 
-                <driver
-                    id="aws_athena_42"
-                    label="Athena"
-                    category="AWS"
-                    class="com.simba.athena.jdbc.Driver"
-                    sampleURL="jdbc:awsathena://AwsRegion=us-east-1;"
-                    defaultPort="5439"
-                    description="AWS Athena JDBC driver"
-                    webURL="https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html"
-                    categories="bigdata,cloud">
-                    <file type="jar" path="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC_2.0.5/AthenaJDBC42_2.0.5.jar"/>
-
-                    <parameter name="supports-references" value="false"/>
-                    <parameter name="supports-indexes" value="false"/>
-                    <parameter name="read-only-data" value="true"/>
-                    <parameter name="read-only-meta-data" value="true"/>
-                </driver>
-
                 <!-- Virtuoso  -->
                 <driver
                     id="virtuoso_opensource"
@@ -1010,29 +857,6 @@
                     <parameter name="stored-quoted-case" value="lower"/>
                     <parameter name="stored-unquoted-case" value="lower"/>
                     <parameter name="identifier-quotes" value="`:`"/>
-                </driver>
-
-                <!-- Yandex ClickHouse -->
-                <driver
-                    id="yandex_clickhouse"
-                    label="ClickHouse"
-                    class="ru.yandex.clickhouse.ClickHouseDriver"
-                    sampleURL="jdbc:clickhouse://{host}:{port}[/{database}]"
-                    defaultPort="8123"
-                    icon="icons/clickhouse_icon.png"
-                    iconBig="icons/clickhouse_icon_big.png"
-                    description="Yandex ClickHouse"
-                    supportedConfigurationTypes="MANUAL,URL"
-                    webURL="https://github.com/yandex/clickhouse-jdbc"
-                    databaseDocumentationSuffixURL="Clickhouse"
-                    categories="sql,analytic,columns">
-                    <file type="jar" path="maven:/ru.yandex.clickhouse:clickhouse-jdbc:RELEASE[0.2.6]" bundle="!drivers.clickhouse"/>
-                    <file type="jar" path="drivers/clickhouse" bundle="drivers.clickhouse"/>
-
-                    <parameter name="supports-references" value="false"/>
-                    <parameter name="supports-truncate" value="false"/>
-                    <parameter name="omit-catalog" value="true"/>
-                    <parameter name="alter-table-add-column" value="true"/>
                 </driver>
 
                 <!-- OrientDB -->
@@ -1416,9 +1240,41 @@
                     <parameter name="read-only-meta-data" value="true"/>
                 </driver>
 
-
                 <!-- Legacy drivers -->
 
+                <driver
+                        id="db2_luw_old"
+                        label="Db2 for LUW (Old 8.x)"
+                        icon="icons/db2_icon.png"
+                        iconBig="icons/db2_icon_big.png"
+                        category="Db2"
+                        class="com.ibm.db2.jcc.DB2Driver"
+                        sampleURL="jdbc:db2://{host}[:{port}]/{database}"
+                        supportedConfigurationTypes="MANUAL,URL"
+                        defaultPort="50000"
+                        webURL="https://www.ibm.com/software/data/db2/express/download.html"
+                        databaseDocumentationSuffixURL="Database-driver-IBM-Db2"
+                        description="DB2 LUW driver for older DB2 versions (8.x)">
+                    <replace provider="generic" driver="db2"/>
+
+                    <property name="loginTimeout" value="20"/>
+                    <property name="connectionTimeout" value="20"/>
+                    <property name="fullyMaterializeLobData" value="true"/>
+                    <property name="fullyMaterializeInputStreams" value="true"/>
+                    <property name="progressiveStreaming" value="2"/>
+                    <property name="retrieveMessagesFromServerOnGetMessage" value="true"/>
+
+                    <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
+                    <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
+
+                    <fileSource url="https://www-304.ibm.com/support/docview.wss?rs=4020&amp;uid=swg21385217"
+                                name="DB2 drivers"
+                                instruction="Download JDBC (JCC) client driver. Extract downloaded archive and copy db2jcc4.jar in some directory. Then add db2jcc4.jar as a library in DBeaver driver editor dialog.">
+                        <file name="db2jcc4.jar" description="JDBC driver"/>
+                    </fileSource>
+                    <file type="license" path="drivers/db2/LICENSE.txt" bundle="drivers.db2"/>
+                    <file type="jar" path="drivers/db2" bundle="drivers.db2"/>
+                </driver>
                 <driver
                         id="mysql3"
                         label="MySQL (Old)"
@@ -1462,218 +1318,6 @@
                     <parameter name="omit-single-catalog" value="true"/>
                 </driver>
 
-                <!-- Deprecated drivers -->
-
-                <driver
-                        id="postgresql"
-                        label="PostgreSQL (Old)"
-                        class="org.postgresql.Driver"
-                        sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
-                        defaultPort="5432"
-                        webURL="https://jdbc.postgresql.org/"
-                        description="PostgreSQL standard JDBC driver. Replaced by PostgreSQL extension driver.">
-                </driver>
-
-                <driver
-                        id="oracle"
-                        label="Oracle"
-                        class="oracle.jdbc.OracleDriver"
-                        sampleURL="jdbc:oracle:thin:@{host}[:{port}]/{database}"
-                        defaultPort="1521"
-                        webURL="https://www.oracle.com/technetwork/database/features/jdbc/"
-                        description="Oracle thin driver">
-
-                    <parameter name="query-get-active-db" value="select sys_context( 'userenv', 'current_schema' ) from dual"/>
-                    <parameter name="query-set-active-db" value="alter session set current_schema=?"/>
-
-                    <fileSource url="https://www.oracle.com/technetwork/apps-tech/jdbc-112010-090769.html" name="Oracle 11g drivers">
-                        <file name="ojdbc6.jar" description="JDBC driver"/>
-                        <file name="orai18n.jar" description="NLS classes"/>
-                        <file name="xdb6.jar" description="SQLXML support"/>
-                    </fileSource>
-                </driver>
-                <driver
-                        id="db2"
-                        label="Db2 for LUW"
-                        icon="icons/db2_icon.png"
-                        iconBig="icons/db2_icon_big.png"
-                        category="Db2"
-                        class="com.ibm.db2.jcc.DB2Driver"
-                        sampleURL="jdbc:db2://{host}[:{port}]/{database}"
-                        defaultPort="50000"
-                        webURL="https://www.ibm.com/software/data/db2/express/download.html"
-                        description="IBM Db2 JCC driver">
-
-                    <property name="loginTimeout" value="20"/>
-                    <property name="connectionTimeout" value="20"/>
-                    <property name="fullyMaterializeLobData" value="true"/>
-                    <property name="fullyMaterializeInputStreams" value="true"/>
-                    <property name="progressiveStreaming" value="2"/>
-                    <property name="retrieveMessagesFromServerOnGetMessage" value="true"/>
-
-                    <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
-                    <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
-
-                    <fileSource url="https://www-304.ibm.com/support/docview.wss?rs=4020&amp;uid=swg21385217"
-                                name="DB2 10.5 GA drivers"
-                                instruction="Download JDBC (JCC) client driver. Extract downloaded archive and copy db2jcc4.jar in some directory. Then add db2jcc4.jar as a library in DBeaver driver editor dialog.">
-                        <file name="db2jcc4.jar" description="JDBC driver"/>
-                    </fileSource>
-                </driver>
-
-                <driver
-                        id="db2_luw_old"
-                        label="Db2 for LUW (Old 8.x)"
-                        icon="icons/db2_icon.png"
-                        iconBig="icons/db2_icon_big.png"
-                        category="Db2"
-                        class="com.ibm.db2.jcc.DB2Driver"
-                        sampleURL="jdbc:db2://{host}[:{port}]/{database}"
-                        supportedConfigurationTypes="MANUAL,URL"
-                        defaultPort="50000"
-                        webURL="https://www.ibm.com/software/data/db2/express/download.html"
-                        databaseDocumentationSuffixURL="Database-driver-IBM-Db2"
-                        description="DB2 LUW driver for older DB2 versions (8.x)">
-                    <replace provider="generic" driver="db2"/>
-
-                    <property name="loginTimeout" value="20"/>
-                    <property name="connectionTimeout" value="20"/>
-                    <property name="fullyMaterializeLobData" value="true"/>
-                    <property name="fullyMaterializeInputStreams" value="true"/>
-                    <property name="progressiveStreaming" value="2"/>
-                    <property name="retrieveMessagesFromServerOnGetMessage" value="true"/>
-
-                    <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
-                    <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
-
-                    <fileSource url="https://www-304.ibm.com/support/docview.wss?rs=4020&amp;uid=swg21385217"
-                                name="DB2 drivers"
-                                instruction="Download JDBC (JCC) client driver. Extract downloaded archive and copy db2jcc4.jar in some directory. Then add db2jcc4.jar as a library in DBeaver driver editor dialog.">
-                        <file name="db2jcc4.jar" description="JDBC driver"/>
-                    </fileSource>
-                    <file type="license" path="drivers/db2/LICENSE.txt" bundle="drivers.db2"/>
-                    <file type="jar" path="drivers/db2" bundle="drivers.db2"/>
-
-                </driver>
-                <driver
-                        id="db2_zos"
-                        label="Db2 for z/OS"
-                        category="Db2"
-                        class="com.ibm.db2.jcc.DB2Driver"
-                        sampleURL="jdbc:db2://{host}[:{port}]/{database}"
-                        defaultPort="50000"
-                        description="IBM Db2 driver for z/OS"
-                        note="Deprecated.">
-                </driver>
-
-                <driver
-                        id="mssql"
-                        label="jTDS driver"
-                        category="MS SQL Server"
-                        class="net.sourceforge.jtds.jdbc.Driver"
-                        sampleURL="jdbc:jtds:sqlserver://{host}[:{port}][/{database}]"
-                        defaultPort="1433"
-                        webURL="http://jtds.sourceforge.net/"
-                        description="jTDS SQL Server driver">
-                    <!-- Replaced by SQL Server extension. We keep it for backward compatibility (driver id reference).  -->
-                </driver>
-
-                <driver
-                        id="mssql_ms"
-                        label="SQL Server"
-                        category="MS SQL Server"
-                        class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
-                        sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
-                        defaultPort="1433"
-                        webURL="http://msdn.microsoft.com/en-us/sqlserver/aa937724"
-                        description="Microsoft JDBC Driver for SQL Server ">
-                    <!-- Replaced by SQL Server extension. We keep it for backward compatibility (driver id reference).  -->
-                </driver>
-
-                <driver
-                        id="sybase"
-                        label="Sybase"
-                        class="net.sourceforge.jtds.jdbc.Driver"
-                        sampleURL="jdbc:jtds:sybase://{host}[:{port}][/{database}]"
-                        defaultPort="5000"
-                        webURL="http://jtds.sourceforge.net/"
-                        description="Sybase jTDS driver">
-                    <!-- Replaced by SQL Server extension. We keep it for backward compatibility (driver id reference).  -->
-                </driver>
-
-                <driver
-                        id="azure_databricks"
-                        label="Azure Databricks"
-                        icon="icons/databricks_icon.png"
-                        iconBig="icons/databricks_icon_big.png"
-                        class="com.simba.spark.jdbc.Driver"
-                        webURL="https://databricks.com/"
-                        description="Azure Databricks driver"
-                        categories="sql,analytic,cloud">
-                </driver>
-
-                <!--driver
-                    id="linter"
-                    label="Linter"
-                    class="com.relx.jdbc.LinterDriver"
-                    sampleURL="jdbc:linter:linapid:{host}:{port}:{database}"
-                    defaultPort="1070"
-                    webURL="http://linter.ru/"
-                    description="Linter Database">
-                </driver-->
-                <driver
-                        id="firebird_jaybird"
-                        label="Firebird 2.x"
-                        class="org.firebirdsql.jdbc.FBDriver"
-                        sampleURL="jdbc:firebirdsql://{host}:{port}/{file}"
-                        defaultPort="3050"
-                        webURL=""
-                        description="Firebird 2.x Jaybird driver">
-                </driver>
-                <driver
-                        id="firebird_jaybird3"
-                        label="Firebird"
-                        class="org.firebirdsql.jdbc.FBDriver"
-                        sampleURL="jdbc:firebirdsql://{host}:{port}/{file}"
-                        defaultPort="3050"
-                        webURL=""
-                        description="Firebird Jaybird driver">
-                    <replace provider="generic" driver="firebird_jaybird"/>
-                </driver>
-
-                <driver
-                        id="vertica"
-                        label="Vertica"
-                        class="com.vertica.jdbc.Driver"
-                        sampleURL="jdbc:vertica://{host}:{port}/[{database}]"
-                        defaultPort="5433"
-                        webURL="http://www.vertica.com/"
-                        propertiesURL="https://my.vertica.com/docs/9.0.x/HTML/index.htm#Authoring/ConnectingToVertica/ClientJDBC/JDBCConnectionProperties.htm"
-                        description="Driver for Vertica Database">
-                </driver>
-
-                <driver
-                        id="exasol"
-                        label="ExaSol"
-                        class="com.exasol.jdbc.EXADriver"
-                        sampleURL="jdbc:exa:{host}[:{port}][;schema={database}]"
-                        defaultPort="8563"
-                        description="ExaSol"
-                        webURL="http://www.exasol.com/en/">
-                    <!--<library path="C:\Program Files\Java\lib\jdbc\exajdbc.jar"/>-->
-                </driver>
-
-                <!-- SnowFlake -->
-                <driver
-                        id="snowflake_generic"
-                        label="Snowflake"
-                        class="net.snowflake.client.jdbc.SnowflakeDriver"
-                        sampleURL="jdbc:snowflake://{host}/?[db={database}]"
-                        defaultPort=""
-                        description="Snowflake JDBC driver"
-                        webURL="https://docs.snowflake.net/manuals/user-guide/jdbc-configure.html">
-                </driver>
-
                 <!-- Jennifer -->
                 <driver
                         id="jennifer_jdbc"
@@ -1694,7 +1338,6 @@
                 </driver>
 
                 <!-- Salesforce CDP-->
-                <driver id="salesforce_jdbc"/>
                 <driver
                         id="salesforce_datacloud_jdbc"
                         label="Salesforce Data Cloud"
@@ -1714,29 +1357,52 @@
                     <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.salesforce"/>
                 </driver>
 
-                <!-- AWS -->
-                <driver
-                        id="aws_redshift"
-                        label="Redshift (JDBC 4.1)"
-                        category="AWS"
-                        class="com.amazon.redshift.jdbc41.Driver"
-                        sampleURL="jdbc:redshift://{host}:{port}/{database}"
-                        defaultPort="5439"
-                        description="%driver.redshift.description"
-                        webURL="http://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
-                        databaseDocumentationSuffixURL="Database-driver-Amazon-Redshift"
-                        categories="sql,analytic,cloud"/>
-                <driver
-                        id="aws_redshift_42"
-                        label="Redshift"
-                        category="AWS"
-                        class="com.amazon.redshift.jdbc42.Driver"
-                        sampleURL="jdbc:redshift://{host}:{port}/{database}"
-                        defaultPort="5439"
-                        description="%driver.redshift.description"
-                        webURL="http://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
-                        categories="sql,analytic,cloud"/>
+                <!--
+                Deprecated drivers.
+                These drivers are replaced in specific extensions.
+                We leave just IDs to allow correct driver migration.
+                -->
+
+                <driver id="aws_athena_42"/>
+                <driver id="aws_redshift"/>
+                <driver id="aws_redshift_42"/>
+                <driver id="azure_databricks"/>
+                <driver id="db2"/>
+                <driver id="db2_iseries"/>
+                <driver id="db2_zos"/>
+                <driver id="exasol"/>
+                <driver id="firebird_jaybird"/>
+                <driver id="firebird_jaybird3"/>
+                <driver id="h2_server"/>
+                <driver id="h2_embedded"/>
+                <driver id="mssql"/>
+                <driver id="mssql_ms"/>
+                <driver id="postgresql"/>
+                <driver id="oracle"/>
+                <driver id="snowflake_generic"/>
+                <driver id="salesforce_jdbc"/>
+                <driver id="sap_hana"/>
+                <driver id="sqlite_jdbc"/>
+                <driver id="sybase"/>
+                <driver id="vertica"/>
+                <driver id="yandex_clickhouse"/>
+
                 <!-- Drivers Teasers -->
+                <driver
+                        id="odbc"
+                        label="ODBC - Legacy"
+                        icon="icons/odbc_icon.png"
+                        iconBig="icons/odbc_icon_big.png"
+                        class="sun.jdbc.odbc.JdbcOdbcDriver"
+                        sampleURL="jdbc:odbc:{database}"
+                        webURL="https://sun.com"
+                        description="ODBC bridge driver"
+                        supportedConfigurationTypes="MANUAL,URL"
+                        supportsDistributedMode="false"
+                        categories="sql">
+                    <os name="win32"/>
+                    <notAvailableDriver title="%deprecated.title" description="%deprecated.description" message="%driver.odbc.deprecation.reason"/>
+                </driver>
                 <driver
                         id="mongo-ce"
                         label="MongoDB"

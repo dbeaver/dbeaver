@@ -1047,7 +1047,7 @@ public class ResultSetModel {
                 // Also check that original visual pos is the same as current position.
                 // Otherwise this means that column was reordered visually and we must respect this change
 
-                // We check order position only when forceUpdate=true (otherwise all previosu filters will be reset, see #6311)
+                // We check order position only when forceUpdate=true (otherwise all previous filters will be reset, see #6311)
                 continue;
             }
             if (constraint.getOperator() != null) {

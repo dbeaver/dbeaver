@@ -29,7 +29,7 @@ public interface ITabbedFolderContainer
     ITabbedFolder getActiveFolder();
 
     /**
-     * Switch to specified folder ID. If folderId isnull then switches to default (fuirst) folder
+     * Switch to specified folder ID. If folderId isnull then switches to default (first) folder
      */
     boolean switchFolder(@Nullable String folderId);
 

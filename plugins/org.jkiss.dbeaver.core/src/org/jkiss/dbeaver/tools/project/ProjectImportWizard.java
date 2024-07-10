@@ -82,6 +82,11 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
 
 	@Override
 	public boolean performFinish() {
+        if (!DBWorkbench.getPlatform().getWorkspace().canManageProjects()) {
+            DBWorkbench.getPlatformUI().showError("Import error", "You can't import projects");
+            return false;
+        }
+
         try {
             UIUtils.run(getContainer(), true, true, new DBRRunnableWithProgress() {
                 @Override
@@ -463,7 +468,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
     {
         IFile configFile = project.getFile(DataSourceRegistry.LEGACY_CONFIG_FILE_NAME);
         if (configFile == null || !configFile.exists()) {
-            configFile = project.getFile(DataSourceRegistry.OLD_CONFIG_FILE_NAME);
+            configFile = project.getFile(DataSourceRegistry.LEGACY2_CONFIG_FILE_NAME);
         }
         if (configFile == null || !configFile.exists()) {
             return;
