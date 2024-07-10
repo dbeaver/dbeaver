@@ -57,7 +57,7 @@ public class ERDEntity extends ERDElement<DBSEntity> {
     private ERDAttributeVisibility attributeVisibility;
 
     /**
-     * Special constructore for creating lazy entities.
+     * Special constructor for creating lazy entities.
      * This entity will be initialized at the moment of creation within diagram.
      */
     public ERDEntity(DBPDataSource dataSource) {

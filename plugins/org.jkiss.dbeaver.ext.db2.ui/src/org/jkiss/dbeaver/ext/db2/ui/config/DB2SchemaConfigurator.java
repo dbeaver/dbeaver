@@ -72,7 +72,7 @@ public class DB2SchemaConfigurator implements DBEObjectConfigurator<DB2Schema> {
             return schemaName;
         }
 
-        // Dialog managment
+        // Dialog management
         private Text nameText;
 
         public NewSchemaDialog(Shell parentShell)

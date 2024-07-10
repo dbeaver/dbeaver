@@ -22,31 +22,47 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.ext.generic.model.*;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.DBPStatefulObject;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public abstract class AltibaseProcedureBase extends GenericProcedure implements DBSObjectWithScript {
+public abstract class AltibaseProcedureBase extends GenericProcedure 
+implements DBSObjectWithScript, DBPStatefulObject, DBPRefreshableObject {
 
     protected static final Log log = Log.getLog(AltibaseProcedureBase.class);
     
+    protected String schemaName = null;
+    protected boolean valid = false;    
     protected List<GenericProcedureParameter> columns;
-    private DBSProcedureType procedureType;
+    protected DBSProcedureType procedureType;
 
     /**
      * Constructor
      */
-    public AltibaseProcedureBase(GenericStructContainer container, String procedureName, String specificName,
-            String description, DBSProcedureType procedureType, GenericFunctionResultType functionResultType) {
-        super(container, procedureName, specificName, description, procedureType, functionResultType);
+    public AltibaseProcedureBase(GenericStructContainer container, String procedureName, boolean valid,
+            DBSProcedureType procedureType, GenericFunctionResultType functionResultType) {
+        super(container, procedureName, procedureName, "", procedureType, functionResultType);
+        schemaName = container.getName();
         this.procedureType = procedureType;
+        this.valid = valid;
     }
 
     @Override
@@ -113,4 +129,51 @@ public abstract class AltibaseProcedureBase extends GenericProcedure implements 
         super.setSource(source);
     }
     
+    public String getSchemaName() {
+        return schemaName;
+    }
+    
+    protected void refreshState(JDBCSession session) throws DBCException {
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT status FROM system_.sys_users_ u, system_.sys_procedures_ p"
+                        + " WHERE u.user_id = p.user_id AND u.user_name = ? AND proc_name = ?")) {
+            dbStat.setString(1, schemaName);
+            dbStat.setString(2, getName());
+
+            dbStat.executeStatement();
+
+            try (JDBCResultSet dbResult = dbStat.getResultSet()) {
+                if (dbResult != null && dbResult.next()) {
+                    valid = JDBCUtils.safeGetBoolean(dbResult, 1, "0"); // 0 is Valid, 1 is invalid
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBCException(e, session.getExecutionContext());
+        }
+    }
+
+    @Override
+    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, 
+                "Refresh state of " + getProcedureTypeName() + " '" + this.getName() + "'")) {
+            refreshState(session);
+        }
+    }
+
+    @Nullable
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, 
+                "Refresh state of " + getProcedureTypeName() + " '" + this.getName() + "'")) {
+            refreshState(session);
+        }
+        
+        return this;
+    }
+    
+    @NotNull
+    @Override
+    public DBSObjectState getObjectState() {
+        return valid ? DBSObjectState.NORMAL : DBSObjectState.INVALID;
+    }
 }

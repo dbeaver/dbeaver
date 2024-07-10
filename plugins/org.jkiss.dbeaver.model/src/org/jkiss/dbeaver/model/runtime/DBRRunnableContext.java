@@ -26,7 +26,7 @@ public interface DBRRunnableContext
 {
     /**
      * Runs blocking process.
-     * If any exception will occure when running this process then it'll written in log
+     * If any exception occur when running this process then it'll be written in log
      * @param runnable runnable implementation
      */
     void run(
