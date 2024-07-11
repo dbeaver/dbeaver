@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.access.DBAPermissionRealm;
 import org.jkiss.dbeaver.model.auth.SMAuthSpace;
 import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -72,6 +73,10 @@ public interface DBPWorkspace extends SMAuthSpace, DBAPermissionRealm
     @Nullable
     default SMSession getWorkspaceSession() {
         return getAuthContext().findSpaceSession(this);
+    }
+
+    default boolean canManageProjects() {
+        return hasRealmPermission(RMConstants.PERMISSION_PROJECT_ADMIN);
     }
 
 }

@@ -41,9 +41,15 @@ import java.io.PrintStream;
 import java.io.Reader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.nio.file.*;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.*;
+import java.util.MissingResourceException;
+import java.util.Properties;
+import java.util.ResourceBundle;
+import java.util.Set;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -153,8 +159,6 @@ public class DBeaverActivator extends AbstractUIPlugin {
         throws Exception {
         this.shutdownUI();
         this.shutdownCore();
-
-        DBRFeatureRegistry.getInstance().endTracking();
 
         if (debugWriter != null) {
             debugWriter.close();

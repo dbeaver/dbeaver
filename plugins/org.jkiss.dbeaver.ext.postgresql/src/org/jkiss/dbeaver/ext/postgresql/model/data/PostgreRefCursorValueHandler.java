@@ -49,7 +49,7 @@ public class PostgreRefCursorValueHandler extends JDBCStructValueHandler {
                 type.getTypeName());
             // Set cursor name
             cursor.setCursorName(cursorName);
-            // Disable resulset close on cursor release. Otherwise cusor can't be referred by other queries (#6074)
+            // Disable resulset close on cursor release. Otherwise, cursor can't be referred by other queries (#6074)
             cursor.setCloseResultsOnRelease(false);
             return cursor;
         }

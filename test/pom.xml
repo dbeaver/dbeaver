@@ -15,6 +15,7 @@
 
     <modules>
         <module>org.jkiss.dbeaver.test.platform</module>
+        <module>org.jkiss.dbeaver.ext.altibase.test</module>
         <module>org.jkiss.dbeaver.ext.clickhouse.test</module>
         <module>org.jkiss.dbeaver.ext.generic.test</module>
         <module>org.jkiss.dbeaver.ext.greenplum.test</module>

@@ -78,7 +78,7 @@ public class DBNLegacyUtils {
                 }
             }
             if (hasLazyProjects) {
-                // No try to search in uninitialized proejcts
+                // No try to search in uninitialized projects
                 for (DBNProject projectNode : model.getRoot().getProjects()) {
                     if (!projectNode.getProject().isRegistryLoaded()) {
                         DBNDataSource curNode = projectNode.getDatabases().getDataSource(nodePath.first());
