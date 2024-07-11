@@ -175,27 +175,27 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             ));
 
         }
-        Group groupObjects = UIUtils.createControlGroup(
-            composite,
-            CoreMessages.pref_page_ui_general_group_browser, 2,
-            GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0
-        );
-        if (isWindowsDesktopClient()) {
-            browserCombo = UIUtils.createLabelCombo(groupObjects, CoreMessages.pref_page_ui_general_combo_browser,
-                SWT.READ_ONLY
-            );
-            browserCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-            for (SWTBrowserRegistry.BrowserSelection value : SWTBrowserRegistry.BrowserSelection.values()) {
-                browserCombo.add(value.getFullName(), value.ordinal());
-            }
-            Control tipLabel =
-                UIUtils.createInfoLabel(groupObjects, CoreMessages.pref_page_ui_general_combo_browser_tip);
-            tipLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING,
-                GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1
-            ));
-        }
-
         if (isStandalone && !RuntimeUtils.isLinux()) {
+            Group groupObjects = UIUtils.createControlGroup(
+                composite,
+                CoreMessages.pref_page_ui_general_group_browser, 2,
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0
+            );
+            if (RuntimeUtils.isWindows()) {
+                browserCombo = UIUtils.createLabelCombo(groupObjects, CoreMessages.pref_page_ui_general_combo_browser,
+                    SWT.READ_ONLY
+                );
+                browserCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+                for (SWTBrowserRegistry.BrowserSelection value : SWTBrowserRegistry.BrowserSelection.values()) {
+                    browserCombo.add(value.getFullName(), value.ordinal());
+                }
+                Control tipLabel =
+                    UIUtils.createInfoLabel(groupObjects, CoreMessages.pref_page_ui_general_combo_browser_tip);
+                tipLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING,
+                    GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1
+                ));
+            }
+
             useEmbeddedBrowserAuth = UIUtils.createCheckbox(groupObjects,
                 CoreMessages.pref_page_ui_general_check_browser_auth,
                 CoreMessages.pref_page_ui_general_check_browser_auth_tip,
