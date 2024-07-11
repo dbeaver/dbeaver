@@ -102,8 +102,8 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
                     int connectedNum = 0;
                     for (InvalidateJob.ContextInvalidateResult result : invalidateJob.getInvalidateResults()) {
                         totalNum++;
-                        if (result instanceof InvalidateJob.ContextInvalidateResult.Error e) {
-                            error = e.exception();
+                        if (result.isError()) {
+                            error = result.getException();
                         } else {
                             connectedNum++;
                         }

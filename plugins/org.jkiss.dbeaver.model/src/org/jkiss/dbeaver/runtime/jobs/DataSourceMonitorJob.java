@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -42,8 +43,10 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
+import org.jkiss.dbeaver.runtime.OperationSystemState;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * DataSourceMonitorJob.
@@ -53,17 +56,21 @@ import java.util.*;
  */
 public class DataSourceMonitorJob extends AbstractJob {
     private static final int MONITOR_INTERVAL = 3000; // once per 3 seconds
-    private static final long SYSTEM_SUSPEND_INTERVAL = 30000; // 30 seconds of inactivity - most likely a system suspend
+    private static final long SYSTEM_SUSPEND_INTERVAL = 20000; // 20 seconds of inactivity - most likely a system suspend
 
     private static final Log log = Log.getLog(DataSourceMonitorJob.class);
 
     private static final int MAX_FAILED_ATTEMPTS_BEFORE_DISCONNECT = 5;
     private static final int MAX_FAILED_ATTEMPTS_BEFORE_IGNORE = 10;
+    // Triggers datasources invalidate after sleep
+    // Disabled because we use different approach - close connections on sleep
+    private static final boolean INVALIDATE_AFTER_SLEEP = false;
 
     private final DBPPlatform platform;
     private final Map<String, Long> checkCache = new HashMap<>();
     private final Set<String> pingCache = new HashSet<>();
     private long lastPingTime = -1;
+    private boolean isSleeping = false;
 
     public DataSourceMonitorJob(DBPPlatform platform) {
         super("Keep-Alive monitor");
@@ -77,17 +84,76 @@ public class DataSourceMonitorJob extends AbstractJob {
         if (platform.isShuttingDown()) {
             return Status.OK_STATUS;
         }
-        if (lastPingTime > 0 && System.currentTimeMillis() - lastPingTime > SYSTEM_SUSPEND_INTERVAL) {
-            log.debug("System suspend detected! Reinitialize all remote connections.");
+        boolean wasSleeping = isSleeping;
+        isSleeping = OperationSystemState.isInSleepMode();
+
+        if (!isSleeping) {
+            if (wasSleeping && lastPingTime > 0 && System.currentTimeMillis() - lastPingTime > SYSTEM_SUSPEND_INTERVAL) {
+                if (INVALIDATE_AFTER_SLEEP) {
+                    invalidateSleptConnections(monitor);
+                }
+            }
+
+            doJob();
+        } else if (!wasSleeping) {
+            // Sleep mode triggered
+            // Disconnect all datasources
+            closeAllConnections(monitor);
         }
         lastPingTime = System.currentTimeMillis();
-
-        doJob();
-
         if (!platform.isShuttingDown()) {
             scheduleMonitor();
         }
         return Status.OK_STATUS;
+    }
+
+    private void closeAllConnections(DBRProgressMonitor monitor) {
+        final DBPWorkspace workspace = platform.getWorkspace();
+        for (DBPProject project : new ArrayList<>(workspace.getProjects())) {
+            if (project.isOpen() && project.isRegistryLoaded()) {
+                for (DBPDataSourceContainer ds : project.getDataSourceRegistry().getDataSources()) {
+                    if (ds.isConnected() && !ds.getDriver().isEmbedded()) {
+                        try {
+                            ds.disconnect(monitor);
+                        } catch (Exception e) {
+                            log.debug("Error closing connection in sleep mode");
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void invalidateSleptConnections(DBRProgressMonitor monitor) {
+        log.debug("System suspend detected! Reinitialize all remote connections.");
+
+        Set<DBPDataSource> invalidated = new HashSet<>();
+
+        final DBPWorkspace workspace = platform.getWorkspace();
+        for (DBPProject project : new ArrayList<>(workspace.getProjects())) {
+            if (project.isOpen() && project.isRegistryLoaded()) {
+                DBPDataSourceRegistry dataSourceRegistry = project.getDataSourceRegistry();
+                List<DBPDataSourceContainer> dataSources = new ArrayList<>(dataSourceRegistry.getDataSources());
+                for (DBPDataSourceContainer ds : dataSources) {
+                    if (ds.isConnected() && !ds.getDriver().isEmbedded()) {
+                        DBPDataSource dataSource = ds.getDataSource();
+                        if (dataSource != null && !invalidated.contains(dataSource)) {
+                            log.debug("Invalidate connection '" + ds.getName() + "'");
+                            List<InvalidateJob.ContextInvalidateResult> results = InvalidateJob.invalidateDataSource(
+                                monitor,
+                                dataSource,
+                                true,
+                                true,
+                                null);
+                            for (InvalidateJob.ContextInvalidateResult result : results) {
+                                invalidated.add(result.getDataSource());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
     }
 
     protected void doJob() {

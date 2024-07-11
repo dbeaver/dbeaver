@@ -56,6 +56,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.runtime.OperationSystemState;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIFonts;
@@ -180,12 +181,12 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     private final SystemEventListener systemSleepListener = new SystemSleepListener() {
         @Override
         public void systemAboutToSleep(SystemSleepEvent e) {
-            System.out.println("SLEEP! " + new Date());
+            OperationSystemState.toggleSleepMode(true);
         }
 
         @Override
         public void systemAwoke(SystemSleepEvent e) {
-            System.out.println("AWAKE! " + new Date());
+            OperationSystemState.toggleSleepMode(false);
         }
     };
 
