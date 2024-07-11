@@ -113,7 +113,12 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.debug.ui.command.debugConfigurationMenu" class="org.jkiss.dbeaver.debug.ui.actions.OpenDebugConfigurationHandler">
             <enabledWhen>
-                <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                <and>
+                    <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                    <with variable="activePart">
+                        <adapt type="org.jkiss.dbeaver.debug.DBGDebugObject"/>
+                    </with>
+                </and>
             </enabledWhen>
         </handler>
     </extension>
@@ -125,17 +130,21 @@
             </command>
         </menuContribution>
 
+        <menuContribution allPopups="false" locationURI="menu:dataSourceMenu?after=tools">
+            <separator name="debug" visible="false"/>
+            <command commandId="org.jkiss.dbeaver.debug.ui.command.debugConfigurationMenu" id="org.jkiss.dbeaver.debug.ui.menu.pulldown"
+                     label="%commands.command.debugConfigurations.name"
+                     tooltip="%commands.command.debugConfigurations.description" style="pulldown">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+        </menuContribution>
+
         <menuContribution allPopups="false" locationURI="toolbar:dbeaver-tools?after=additions">
             <separator name="debug" visible="false"/>
             <command commandId="org.jkiss.dbeaver.debug.ui.command.debugConfigurationMenu" id="org.jkiss.dbeaver.debug.ui.menu.pulldown"
                      label="%commands.command.debugConfigurations.name"
                      tooltip="%commands.command.debugConfigurations.description" style="pulldown">
-                <visibleWhen>
-                    <and>
-                        <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
-                        <reference definitionId="DBeaverPerspectiveActive"/>
-                    </and>
-                </visibleWhen>
+                <visibleWhen checkEnabled="true"/>
             </command>
         </menuContribution>
 

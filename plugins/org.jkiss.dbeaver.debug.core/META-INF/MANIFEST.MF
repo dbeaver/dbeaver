@@ -11,8 +11,7 @@ Require-Bundle: org.eclipse.e4.core.services,
  org.eclipse.core.runtime,
  org.eclipse.debug.core;visibility:=reexport,
  org.jkiss.dbeaver.model;visibility:=reexport,
- org.jkiss.dbeaver.model.jdbc,
- org.jkiss.dbeaver.core
+ org.jkiss.dbeaver.model.jdbc
 Export-Package: org.jkiss.dbeaver.debug,
  org.jkiss.dbeaver.debug.core,
  org.jkiss.dbeaver.debug.core.breakpoints,
