@@ -19,10 +19,6 @@ package org.jkiss.dbeaver.ext.gaussdb.model;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
-import java.util.stream.Collectors;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -39,7 +35,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
-import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -161,26 +156,6 @@ public class GaussDBDatabase extends PostgreDatabase {
             }
             return owner.createSchemaImpl(owner, name, resultSet);
         }
-    }
-
-    @Association
-    public Collection<PostgreSchema> getSysSchemas(DBRProgressMonitor monitor) throws DBException {
-        checkInstanceConnection(monitor);
-        // Get System schemas
-        List<PostgreSchema> list = super.schemaCache.getAllObjects(monitor, this).stream()
-            .filter(e -> e.getObjectId() < 16384 && !e.getName().toLowerCase(Locale.ENGLISH).contains("public"))
-            .collect(Collectors.toList());
-        return list;
-    }
-
-    @Association
-    public Collection<PostgreSchema> getUserSchemas(DBRProgressMonitor monitor) throws DBException {
-        checkInstanceConnection(monitor);
-        // Get User schemas
-        List<PostgreSchema> list = super.schemaCache.getAllObjects(monitor, this).stream().filter(
-            e -> e.getObjectId() >= 16384 && !e.getName().contains("pg_") || e.getName().toLowerCase(Locale.ENGLISH).contains("public"))
-            .collect(Collectors.toList());
-        return list;
     }
 
     @Override
