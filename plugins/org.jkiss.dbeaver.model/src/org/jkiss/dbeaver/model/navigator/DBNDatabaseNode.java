@@ -192,12 +192,12 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
 
     @Override
     public boolean allowsChildren() {
-        return !isDisposed() && this.getMeta().hasChildren(this);
+        return !isDisposed() && (this.getMeta().hasChildren(this) || hasDynamicStructChildren());
     }
 
     @Override
     public boolean allowsNavigableChildren() {
-        return !isDisposed() && this.getMeta() != null && this.getMeta().hasChildren(this, true);
+        return !isDisposed() && this.getMeta().hasChildren(this, true);
     }
 
     public boolean hasChildren(DBRProgressMonitor monitor, DBXTreeNode childType)
@@ -421,8 +421,8 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         final DBNDatabaseNode[] oldList,
         final List<DBNDatabaseNode> toList,
         Object source,
-        boolean reflect)
-        throws DBException {
+        boolean reflect
+    ) throws DBException {
         if (monitor.isCanceled()) {
             return;
         }
@@ -430,6 +430,15 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
 
         List<DBXTreeNode> childMetas = meta.getChildren(this);
         if (CommonUtils.isEmpty(childMetas)) {
+            // Get top-most parent node
+            if (!isDynamicStructObject()) {
+                return;
+            }
+            DBNDatabaseDynamicItem[] dsc = getDynamicStructChildren();
+            if (dsc == null) {
+                return;
+            }
+            Collections.addAll(toList, dsc);
             return;
         }
         DBSObject object = getObject();
@@ -459,8 +468,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                 continue;
             }
 
-            if (child instanceof DBXTreeItem) {
-                final DBXTreeItem item = (DBXTreeItem) child;
+            if (child instanceof DBXTreeItem item) {
                 /*if (hideSchemas && isSchemaItem(item)) {
                     // Merge
                 } else */{
@@ -479,9 +487,9 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                     // Fall down
                     loadChildren(monitor, child, oldList, toList, source, reflect);
                 } else {
-                    String optionalPath = ((DBXTreeFolder) child).getOptionalItem();
+                    String optionalPath = treeFolder.getOptionalItem();
                     if (optionalPath != null) {
-                        DBXTreeItem optionalItem = ((DBXTreeFolder) child).getChildByPath(optionalPath);
+                        DBXTreeItem optionalItem = treeFolder.getChildByPath(optionalPath);
                         if (optionalItem == null) {
                             log.error("Optional item '" + optionalPath + "' not found in folder " + child.getId());
                         } else {
@@ -537,6 +545,64 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         }
     }
 
+    public boolean isDynamicStructObject() {
+        DBXTreeNode meta = getMeta();
+        if (meta instanceof DBXTreeFolder folder) {
+            List<DBXTreeNode> children = folder.getChildren(this);
+            if (children.size() == 1) {
+                meta = children.get(0);
+            }
+        }
+        if (meta instanceof DBXTreeItem item) {
+            Class<?> childrenClass = getChildrenClass(item);
+            return childrenClass != null && DBSTypedObject.class.isAssignableFrom(childrenClass);
+        }
+        return false;
+    }
+
+    protected DBNDatabaseDynamicItem[] getDynamicStructChildren() {
+        if (getObject() instanceof DBSTypedObject typedObject) {
+            DBSDataType dataType = DBUtils.getDataType(getDataSource(), typedObject);
+            if (dataType instanceof DBSEntity dtEntity) {
+                try {
+                    List<? extends DBSEntityAttribute> attributes = dtEntity.getAttributes(new VoidProgressMonitor());
+                    if (attributes == null) {
+                        return null;
+                    }
+                    return attributes.stream().map(o -> new DBNDatabaseDynamicItem(this, o))
+                        .toArray(DBNDatabaseDynamicItem[]::new);
+                } catch (DBException e) {
+                    log.error(e);
+                }
+            }
+        }
+        return new DBNDatabaseDynamicItem[0];
+    }
+
+    protected boolean hasDynamicStructChildren() {
+        if (getObject() instanceof DBSTypedObject typedObject) {
+            DBSDataType dataType = DBUtils.getDataType(getDataSource(), typedObject);
+            return isStructDataType(dataType);
+        }
+        return false;
+    }
+
+    private static boolean isStructDataType(DBSDataType dataType) {
+        if (dataType == null) {
+            return false;
+        }
+        try {
+            return switch (dataType.getDataKind()) {
+                case ARRAY -> isStructDataType(dataType.getComponentType(new VoidProgressMonitor()));
+                case STRUCT -> dataType instanceof DBSEntity;
+                default -> false;
+            };
+        } catch (Exception e) {
+            log.debug(e);
+            return false;
+        }
+    }
+
     private boolean isEntityMeta(DBXTreeNode node) {
         Class<?> nodeChildClass = null;
         if (node instanceof DBXTreeItem) {
@@ -564,7 +630,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
      *
      * @param monitor progress monitor
      * @param meta    items meta info
-     * @param oldList previous child items
+     * @param toList previous child items
      * @param toList  list ot add new items   @return true on success
      * @param showSystem include system objects
      * @param reflect @return true on success
@@ -874,6 +940,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
 
     public abstract Object getValueObject();
 
+    @NotNull
     public abstract DBXTreeNode getMeta();
 
     public DBXTreeItem getItemsMeta() {

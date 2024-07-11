@@ -32,7 +32,6 @@
                 <module>org.jkiss.dbeaver.git.feature</module>
                 <module>org.jkiss.dbeaver.ext.ai.feature</module>
                 <module>org.jkiss.dbeaver.ext.office.feature</module>
-                <module>org.jkiss.dbeaver.ext.ui.svg.feature</module>
 
                 <module>org.jkiss.dbeaver.ide.feature</module>
                 <module>org.jkiss.dbeaver.app.base.feature</module>

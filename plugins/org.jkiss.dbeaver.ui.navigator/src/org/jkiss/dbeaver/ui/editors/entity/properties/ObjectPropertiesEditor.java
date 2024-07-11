@@ -690,8 +690,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                 log.error("Error initializing property tabs", e); //$NON-NLS-1$
             }
             // Add itself as tab (if it has child items)
-            if (node instanceof DBNDatabaseNode) {
-                DBNDatabaseNode databaseNode = (DBNDatabaseNode)node;
+            if (node instanceof DBNDatabaseNode databaseNode) {
                 List<DBXTreeNode> subNodes = databaseNode.getMeta().getChildren(databaseNode);
                 if (subNodes != null) {
                     for (DBXTreeNode child : subNodes) {

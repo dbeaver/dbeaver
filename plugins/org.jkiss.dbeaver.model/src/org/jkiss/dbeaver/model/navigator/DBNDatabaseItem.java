@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -25,7 +26,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  * DBNDatabaseItem
  */
 public class DBNDatabaseItem extends DBNDatabaseNode {
-    private DBXTreeNode meta;
+    private final DBXTreeNode meta;
     private DBSObject object;
 
     DBNDatabaseItem(DBNNode parent, DBXTreeNode meta, DBSObject object, boolean reflect) {
@@ -47,6 +48,12 @@ public class DBNDatabaseItem extends DBNDatabaseNode {
         super.dispose(reflect);
     }
 
+    @Override
+    public boolean isDynamicStructObject() {
+        return parentNode instanceof DBNDatabaseFolder folder && folder.isDynamicStructObject();
+    }
+
+    @NotNull
     @Override
     public DBXTreeNode getMeta() {
         return meta;
