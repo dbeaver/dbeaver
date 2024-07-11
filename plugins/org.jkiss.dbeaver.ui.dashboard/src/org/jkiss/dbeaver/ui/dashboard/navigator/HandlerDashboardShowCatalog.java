@@ -21,15 +21,16 @@ import org.eclipse.core.commands.ExecutionException;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardListViewer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewer;
 
+import static org.jkiss.dbeaver.ui.dashboard.DashboardUIConstants.PARAM_CATALOG_PANEL_TOGGLE;
+
 public class HandlerDashboardShowCatalog extends HandlerDashboardAbstract {
-    private static final String PARAM_TOGGLE = "toggleCatalogPanel"; //$NON-NLS-1$
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         DashboardViewer view = getActiveDashboardView(event);
         if (view != null) {
             DashboardListViewer listViewer = view.getDashboardListViewer();
-            if (event.getParameter(PARAM_TOGGLE) != null) {
+            if (event.getParameter(PARAM_CATALOG_PANEL_TOGGLE) != null) {
                 if (listViewer.isVisible()) {
                     listViewer.hideChartCatalog();
                 } else {

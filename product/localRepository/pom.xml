@@ -2,6 +2,14 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
 		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.dbeaver.common</groupId>
+		<artifactId>com.dbeaver.common.main</artifactId>
+		<version>2.2.0-SNAPSHOT</version>
+		<relativePath>../../../dbeaver-common</relativePath>
+	</parent>
+
 	<groupId>org.jkiss.dbeaver</groupId>
 	<artifactId>contrib</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
@@ -9,7 +17,6 @@
 	<name>DBeaver - 3rd party dependencies</name>
 
 	<properties>
-		<tycho-version>4.0.4</tycho-version>
 		<reficio-p2-version>2.1.0</reficio-p2-version>
 		<repo-name>DBeaver CE Update</repo-name>
 	</properties>
