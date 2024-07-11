@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.gaussdb.model;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 import org.jkiss.code.NotNull;
@@ -60,9 +61,9 @@ public class GaussDBSchema extends PostgreSchema {
 
     @Override
     public boolean isSystem() {
-        return false;
+        return this.oid < 16384 && !this.name.toLowerCase(Locale.ENGLISH).contains("public");
     }
-
+    
     public boolean isUtility() {
         return false;
     }
