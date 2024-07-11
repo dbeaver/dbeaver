@@ -354,49 +354,6 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static DBSObject findNestedObject(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull DBSObjectContainer parent,
-        @NotNull List<String> names)
-        throws DBException {
-        for (int i = 0; i < names.size(); i++) {
-            String childName = names.get(i);
-            DBSObject child = parent.getChild(monitor, childName);
-            if (!DBStructUtils.isConnectedContainer(child)) {
-                child = null;
-            }
-            if (child == null && i == 0) {
-                DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
-                if (contextDefaults != null) {
-                    DBSObjectContainer container = contextDefaults.getDefaultSchema();
-                    if (container != null) {
-                        child = container.getChild(monitor, childName);
-                    }
-                    if (child == null) {
-                        container = contextDefaults.getDefaultCatalog();
-                        if (container != null) {
-                            child = container.getChild(monitor, childName);
-                        }
-                    }
-                }
-            }
-            if (child == null) {
-                break;
-            }
-            if (i == names.size() - 1) {
-                return child;
-            }
-            if (child instanceof DBSObjectContainer oc) {
-                parent = oc;
-            } else {
-                break;
-            }
-        }
-        return null;
-    }
-
-    @Nullable
     public static <T extends DBPNamedObject> T findObject(@Nullable Collection<T> theList, String objectName) {
         return findObject(theList, objectName, false);
     }
