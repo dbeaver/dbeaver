@@ -52,6 +52,8 @@ public class ClickhouseValueHandlerProvider implements DBDValueHandlerProvider {
             }
         } else if (ClickhouseConstants.DATA_TYPE_IPV4.equals(lowerTypeName)) {
             return ClikhouseInetTypeValueHandler.INSTANCE;
+        } else if (dataKind == DBPDataKind.DATETIME) {
+            return new ClickHouseDateTimeValueHandler(preferences);
         }
         return null;
     }
