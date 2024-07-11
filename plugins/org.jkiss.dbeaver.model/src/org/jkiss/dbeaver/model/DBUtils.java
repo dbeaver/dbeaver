@@ -2286,6 +2286,18 @@ public final class DBUtils {
         return null;
     }
 
+    @Nullable
+    public static DBSDataType getDataType(@Nullable DBPDataSource dataSource, @NotNull DBSTypedObject typedObject) {
+        DBSDataType dataType = getDataType(typedObject);
+        if (dataType != null) {
+            return dataType;
+        }
+        if (dataSource instanceof DBPDataTypeProvider dtp) {
+            return dtp.getLocalDataType(typedObject.getFullTypeName());
+        }
+        return null;
+    }
+
     /**
      * Extracts modifiers from a given type.
      * <p>
