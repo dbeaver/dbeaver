@@ -861,6 +861,9 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 request.getWordDetector().isQuoted(token) ? request.getWordDetector().removeQuotes(token) :
                 DBObjectNameCaseTransformer.transformName(dataSource, token);
             childObject = objectName == null ? null : sc.getChild(monitor, objectName);
+            if (!DBStructUtils.isConnectedContainer(childObject)) {
+                childObject = null;
+            }
             if (childObject == null && i == 0 && objectName != null) {
                 for (DBSObjectContainer selectedContainer : selectedContainers) {
                     if (selectedContainer != null) {
@@ -1040,7 +1043,9 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         DBPDataSource dataSource = request.getContext().getDataSource();
         Collection<? extends DBSObject> children = null;
         if (parent instanceof DBSObjectContainer objectContainer) {
-            children = objectContainer.getChildren(mdMonitor);
+            if (DBStructUtils.isConnectedContainer(parent)) {
+                children = objectContainer.getChildren(mdMonitor);
+            }
         } else if (parent instanceof DBSEntity entity) {
             children = entity.getAttributes(mdMonitor);
         }

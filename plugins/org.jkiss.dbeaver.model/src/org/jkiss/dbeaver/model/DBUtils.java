@@ -297,6 +297,9 @@ public final class DBUtils {
             // One container name
             String containerName = !CommonUtils.isEmpty(catalogName) ? catalogName : schemaName;
             DBSObject sc = rootSC.getChild(monitor, containerName);
+            if (!DBStructUtils.isConnectedContainer(sc)) {
+                sc = null;
+            }
             if (!(sc instanceof DBSObjectContainer)) {
                 // Not found - try to find in selected object
                 DBSObject selectedObject = getSelectedObject(executionContext);
@@ -323,7 +326,7 @@ public final class DBUtils {
                 // Probably on this step we found a catalog, but not a schema.
                 Class<? extends DBSObject> childType = catalog.getPrimaryChildType(monitor);
                 if (DBSSchema.class.isAssignableFrom(childType)) {
-                    DBSObject child = ((DBSCatalog) sc).getChild(monitor, schemaName);
+                    DBSObject child = catalog.getChild(monitor, schemaName);
                     if (child instanceof DBSSchema) {
                         sc = child;
                     }
@@ -360,6 +363,9 @@ public final class DBUtils {
         for (int i = 0; i < names.size(); i++) {
             String childName = names.get(i);
             DBSObject child = parent.getChild(monitor, childName);
+            if (!DBStructUtils.isConnectedContainer(child)) {
+                child = null;
+            }
             if (child == null && i == 0) {
                 DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
                 if (contextDefaults != null) {
