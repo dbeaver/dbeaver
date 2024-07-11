@@ -16,128 +16,19 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model.plan;
 
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
-import org.jkiss.dbeaver.ext.altibase.model.AltibaseDataSource;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.ArrayList;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.List;
 
-public class AltibasePlanBuilder {
-
-    private static final Log log = Log.getLog(AltibasePlanBuilder.class);
-
-    private static final String pattern4TrcLogSkipLine = "[\\s*|\\s*|]*-{3,}+";
-
-    /**
-     * Return plans tree structure based on the result from Altibase.
-     */
-    public static List<AltibasePlanNode> build(AltibaseDataSource dataSource, String planStr) throws IllegalStateException {
-        List<AltibasePlanNode> rootNodes = new ArrayList<>();
-        AltibasePlanNode node = null;
-
-        String [] plans = planStr.split("\\n");
-        int idIdx = 0;
-        int lineIdx = 0;
-        int depth;
-        int prevDepth = 0;
-        String plan = null;
-        StringBuilder nodeStr = null;
-
-        // Altibase plan string is a depth-first traversal
-        for (lineIdx = 0; lineIdx < plans.length; lineIdx++) {
-
-            plan = plans[lineIdx];
-
-            // Skip lines
-            if (plan == null || plan.matches(pattern4TrcLogSkipLine)) {
-                continue;
-            }
-
-            // No need line that starts with "* SIMPLE QUERY PLAN"
-            if (plan.trim().startsWith("* SIMPLE")) {
-                break;
-            }
-
-            // reset depth between trclog and plan
-            if (plan.trim().length() < 1) {
-                depth = 0;
-                continue;
-            }
-
-            // Remove "|" in trcLog
-            if (plan.startsWith("|")) {
-                plan = plan.substring(1);
-            }
-
-            // Count leading space to determine tree depth
-            depth = plan.indexOf(plan.trim());
-            plan = plan.trim();
-
-            // Remove "|" in trcLog
-            if (plan.startsWith("|")) {
-                depth = depth / 2; // two spaces for a depth in case of trclog
-                plan = plan.substring(1);
-            }
-
-            // New node required
-            if (prevDepth != depth) {
-                node = createNode(dataSource, rootNodes, prevDepth, node, idIdx++, nodeStr);
-                nodeStr = null;
-            } 
-
-            if (nodeStr == null)
-                nodeStr = new StringBuilder();
-
-            if (nodeStr.length() > 0)
-                nodeStr.append("\n");
-
-            nodeStr.append(plan);
-
-            prevDepth = depth;
-        }
-        // last one
-        node = createNode(dataSource, rootNodes, prevDepth, node, idIdx++, nodeStr);
-
-        return rootNodes;
-    }
-
-    private static AltibasePlanNode createNode(AltibaseDataSource dataSource, List<AltibasePlanNode> rootNodes, 
-            int depth, AltibasePlanNode node, int idIdx, StringBuilder nodeStr) {
-        AltibasePlanNode parentNode = null;
-        AltibasePlanNode newNode = null;
-
-        // root node
-        if (depth == 0) {
-            parentNode = null;
-            // not root-node
-        } else if (depth > 0 && node != null) {
-            // sibling
-            if (node.getDepth() == depth) {
-                parentNode = (AltibasePlanNode) node.getParent();
-                // prevNode is parent
-            } else if (node.getDepth() < depth) {
-                parentNode = node;
-                // prevNode.getDepth() > depth
-            } else {
-                parentNode = node.getParentNodeAtDepth(depth);
-            }
-        } else { 
-            throw new IllegalStateException("Plan parsing error [depth: " + depth + "]: " + nodeStr );
-        }
-
-        newNode = new AltibasePlanNode(dataSource, idIdx, depth, nodeStr.toString(), parentNode);
-        if (depth == 0) {
-            rootNodes.add(newNode);
-        }
-
-        return newNode;
-    }
-
-    /**
-     * Test code
-     */
-    public static void main(String[] args) {
+@RunWith(MockitoJUnitRunner.class)
+public class AltibaseExplainPlanTest {
+    @Test
+    public void trcLogDetailMtrNode_1_Test() {
         String plan =
                 "||----------------------------------------------------------" + "\n"
                         + "||-------------------------------------------------" + "\n"
@@ -259,18 +150,12 @@ public class AltibasePlanBuilder {
                         + "  T50764.I3" + "\n"
                         + "-----------------------------------------------------------" + "\n"
                         + "* SIMPLE QUERY PLAN";
-
+        
         try {
-
-            if (!AltibaseConstants.DEBUG) {
-                return;
-            }
-            
-            for(AltibasePlanNode node:AltibasePlanBuilder.build(null, plan)) {
-                log.debug(node.toString4Debug());
-            }
+            List<AltibasePlanNode> planNodeList = AltibasePlanBuilder.build(null, plan);
+            assertTrue(planNodeList.size() > 0);
         } catch (Exception e) {
-            log.warn(e.getMessage());
+            fail(e.getMessage());
         }
     }
 }
