@@ -779,14 +779,6 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                 if (saveConfiguration) {
                     dataSource.persistConfiguration();
                 }
-            } else if (this instanceof DBNDataSource) {
-                dataSource.setObjectFilter(
-                    DBSCatalog.class,
-                    null,
-                    filter);
-                if (saveConfiguration) {
-                    dataSource.persistConfiguration();
-                }
             } else {
                 log.error("Cannot detect child node type - can't save filter configuration");
             }
