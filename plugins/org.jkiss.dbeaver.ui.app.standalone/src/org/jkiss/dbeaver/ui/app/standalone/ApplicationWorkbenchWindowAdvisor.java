@@ -395,16 +395,6 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
     }
 
     @Override
-    public void handleProjectAdd(@NotNull DBPProject project) {
-
-    }
-
-    @Override
-    public void handleProjectRemove(@NotNull DBPProject project) {
-
-    }
-
-    @Override
     public void handleActiveProjectChange(@NotNull DBPProject oldValue, @NotNull DBPProject newValue) {
         UIUtils.asyncExec(this::recomputeTitle);
     }

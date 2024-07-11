@@ -74,6 +74,11 @@ import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseEditors;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseUserInterface;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
+import java.awt.*;
+import java.awt.desktop.SystemEventListener;
+import java.awt.desktop.SystemSleepEvent;
+import java.awt.desktop.SystemSleepListener;
+import java.util.List;
 import java.util.*;
 
 /**
@@ -181,6 +186,18 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     protected final DBPApplication application;
     private final DelayedEventsProcessor processor;
 
+    private final SystemEventListener systemSleepListener = new SystemSleepListener() {
+        @Override
+        public void systemAboutToSleep(SystemSleepEvent e) {
+            System.out.println("SLEEP! " + new Date());
+        }
+
+        @Override
+        public void systemAwoke(SystemSleepEvent e) {
+            System.out.println("AWAKE! " + new Date());
+        }
+    };
+
     protected ApplicationWorkbenchAdvisor(DBPApplication application) {
         this.application = application;
         this.processor = new DelayedEventsProcessor(Display.getCurrent());
@@ -255,6 +272,12 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         if (!application.isDistributed() &&
             !ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
             startVersionChecker();
+        }
+
+        // System events
+        Desktop desktop = Desktop.getDesktop();
+        if (desktop.isSupported(Desktop.Action.APP_EVENT_SYSTEM_SLEEP)) {
+            desktop.addAppEventListener(systemSleepListener);
         }
     }
 
@@ -344,6 +367,9 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         checker.schedule(3000);
     }
 
+    ///////////////////////
+    // Shutdown
+
     @Override
     public boolean preShutdown() {
         //DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(settingsChangeListener);
@@ -360,6 +386,12 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     @Override
     public void postShutdown() {
         super.postShutdown();
+
+        // System events
+        Desktop desktop = Desktop.getDesktop();
+        if (desktop.isSupported(Desktop.Action.APP_EVENT_SYSTEM_SLEEP)) {
+            desktop.removeAppEventListener(systemSleepListener);
+        }
     }
 
     private boolean saveAndCleanup() {
