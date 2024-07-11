@@ -56,7 +56,6 @@ import java.util.stream.Collectors;
  */
 public class DataSourceMonitorJob extends AbstractJob {
     private static final int MONITOR_INTERVAL = 3000; // once per 3 seconds
-    private static final long SYSTEM_SUSPEND_INTERVAL = 20000; // 20 seconds of inactivity - most likely a system suspend
 
     private static final Log log = Log.getLog(DataSourceMonitorJob.class);
 
@@ -64,7 +63,8 @@ public class DataSourceMonitorJob extends AbstractJob {
     private static final int MAX_FAILED_ATTEMPTS_BEFORE_IGNORE = 10;
     // Triggers datasources invalidate after sleep
     // Disabled because we use different approach - close connections on sleep
-    private static final boolean INVALIDATE_AFTER_SLEEP = false;
+    private static final boolean INVALIDATE_AFTER_SLEEP = true;
+    private static final long SYSTEM_SUSPEND_INTERVAL = 20000; // 20 seconds of inactivity - most likely a system suspend
 
     private final DBPPlatform platform;
     private final Map<String, Long> checkCache = new HashMap<>();
@@ -88,7 +88,7 @@ public class DataSourceMonitorJob extends AbstractJob {
         isSleeping = OperationSystemState.isInSleepMode();
 
         if (!isSleeping) {
-            if (wasSleeping && lastPingTime > 0 && System.currentTimeMillis() - lastPingTime > SYSTEM_SUSPEND_INTERVAL) {
+            if (lastPingTime > 0 && System.currentTimeMillis() - lastPingTime > SYSTEM_SUSPEND_INTERVAL) {
                 if (INVALIDATE_AFTER_SLEEP) {
                     invalidateSleptConnections(monitor);
                 }
@@ -108,6 +108,7 @@ public class DataSourceMonitorJob extends AbstractJob {
     }
 
     private void closeAllConnections(DBRProgressMonitor monitor) {
+        log.debug("System suspend detected. Close all remote connections.");
         final DBPWorkspace workspace = platform.getWorkspace();
         for (DBPProject project : new ArrayList<>(workspace.getProjects())) {
             if (project.isOpen() && project.isRegistryLoaded()) {
@@ -125,7 +126,7 @@ public class DataSourceMonitorJob extends AbstractJob {
     }
 
     private void invalidateSleptConnections(DBRProgressMonitor monitor) {
-        log.debug("System suspend detected! Reinitialize all remote connections.");
+        log.debug("System awake detected. Reinitialize all remote connections.");
 
         Set<DBPDataSource> invalidated = new HashSet<>();
 
