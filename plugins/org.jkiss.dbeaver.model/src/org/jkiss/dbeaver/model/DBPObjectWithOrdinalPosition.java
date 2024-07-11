@@ -18,11 +18,9 @@
 package org.jkiss.dbeaver.model;
 
 /**
- * Object with order.
- * Supports reordering
+ * Object with ordered position.
  */
-public interface DBPOrderedObject extends DBPObjectWithOrdinalPosition {
-
-    void setOrdinalPosition(int position);
+public interface DBPObjectWithOrdinalPosition {
+    int getOrdinalPosition();
 
 }
