@@ -775,7 +775,8 @@ public final class DBUtils {
                     curValue = parent.extractNestedValue(curValue, nestedIndexes[curNestedIndex]);
                     curNestedIndex++;
                 } else {
-                    return DBDVoid.INSTANCE;
+                    curValue = parent.extractNestedValue(curValue, 0);
+                    continue;
                 }
             } catch (Throwable e) {
                 return new DBDValueError(e);
