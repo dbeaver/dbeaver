@@ -49,7 +49,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreFeatures;
 import org.jkiss.dbeaver.core.ui.services.ApplicationPolicyService;
-import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPApplication;
@@ -64,7 +63,6 @@ import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
 import org.jkiss.dbeaver.ui.app.standalone.update.DBeaverVersionChecker;
-import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
@@ -140,13 +138,6 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     };
 
 
-    /**
-     * Diagram font
-     */
-    public static String DIAGRAM_FONT = ERDUIConstants.PROP_DIAGRAM_FONT;
-
-    public static String RESULTS_GRID_FONT = ThemeConstants.FONT_SQL_RESULT_SET;
-    
     private static final Set<String> fontPrefIdsToHide = Set.of(
         ApplicationWorkbenchWindowAdvisor.TEXT_EDITOR_BLOCK_SELECTION_FONT,
         ApplicationWorkbenchWindowAdvisor.TEXT_FONT,
