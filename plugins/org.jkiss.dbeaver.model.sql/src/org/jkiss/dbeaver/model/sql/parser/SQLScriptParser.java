@@ -1140,19 +1140,19 @@ public class SQLScriptParser {
         private SQLQuery findSmartStatementBegginning(@NotNull SQLQuery element) {
             SQLQuery lastElement = element;
             SQLScriptElement prevElement = extractNextQueryImpl(this.context, element, false);
-            boolean delimiterFound = false;
+            boolean takePrev = true;
             while (
-                prevElement instanceof SQLQuery prevQueryFragment && (
-                    !(delimiterFound = Boolean.TRUE.equals(prevQueryFragment.isEndsWithDelimiter())) ||
+                prevElement instanceof SQLQuery prevQueryFragment && (takePrev = (
+                    !Boolean.TRUE.equals(prevQueryFragment.isEndsWithDelimiter()) ||
                     prevElement.getOffset() + prevElement.getLength() >= lastElement.getOffset() + lastElement.getLength()
-                ) &&
+                )) &&
                 !elementStartsProperly(prevElement) &&
                 prevElement.getOffset() < lastElement.getOffset()
             ) {
                 lastElement = prevQueryFragment;
                 prevElement = extractNextQueryImpl(this.context, lastElement, false);
             }
-            SQLQuery boundaryElement = prevElement instanceof SQLQuery prevQueryElement &&  !prevQueryElement.isEndsWithDelimiter() ? prevQueryElement : lastElement;
+            SQLQuery boundaryElement = prevElement instanceof SQLQuery prevQueryElement && takePrev ? prevQueryElement : lastElement;
             return boundaryElement;
         }
 
