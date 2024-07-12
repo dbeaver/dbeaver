@@ -243,7 +243,11 @@ public class JDBCRemoteInstance implements DBSInstance {
 
     void addContext(JDBCExecutionContext context) {
         synchronized (allContexts) {
-            allContexts.add(context);
+            if (allContexts.contains(context)) {
+                log.debug("Duplicate execution context add");
+            } else {
+                allContexts.add(context);
+            }
         }
     }
 

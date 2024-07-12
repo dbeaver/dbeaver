@@ -297,6 +297,9 @@ public final class DBUtils {
             // One container name
             String containerName = !CommonUtils.isEmpty(catalogName) ? catalogName : schemaName;
             DBSObject sc = rootSC.getChild(monitor, containerName);
+            if (!DBStructUtils.isConnectedContainer(sc)) {
+                sc = null;
+            }
             if (!(sc instanceof DBSObjectContainer)) {
                 // Not found - try to find in selected object
                 DBSObject selectedObject = getSelectedObject(executionContext);
@@ -323,7 +326,7 @@ public final class DBUtils {
                 // Probably on this step we found a catalog, but not a schema.
                 Class<? extends DBSObject> childType = catalog.getPrimaryChildType(monitor);
                 if (DBSSchema.class.isAssignableFrom(childType)) {
-                    DBSObject child = ((DBSCatalog) sc).getChild(monitor, schemaName);
+                    DBSObject child = catalog.getChild(monitor, schemaName);
                     if (child instanceof DBSSchema) {
                         sc = child;
                     }
@@ -348,46 +351,6 @@ public final class DBUtils {
             // Table container not found
             return object;
         }
-    }
-
-    @Nullable
-    public static DBSObject findNestedObject(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull DBSObjectContainer parent,
-        @NotNull List<String> names)
-        throws DBException {
-        for (int i = 0; i < names.size(); i++) {
-            String childName = names.get(i);
-            DBSObject child = parent.getChild(monitor, childName);
-            if (child == null && i == 0) {
-                DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
-                if (contextDefaults != null) {
-                    DBSObjectContainer container = contextDefaults.getDefaultSchema();
-                    if (container != null) {
-                        child = container.getChild(monitor, childName);
-                    }
-                    if (child == null) {
-                        container = contextDefaults.getDefaultCatalog();
-                        if (container != null) {
-                            child = container.getChild(monitor, childName);
-                        }
-                    }
-                }
-            }
-            if (child == null) {
-                break;
-            }
-            if (i == names.size() - 1) {
-                return child;
-            }
-            if (child instanceof DBSObjectContainer oc) {
-                parent = oc;
-            } else {
-                break;
-            }
-        }
-        return null;
     }
 
     @Nullable
@@ -775,7 +738,8 @@ public final class DBUtils {
                     curValue = parent.extractNestedValue(curValue, nestedIndexes[curNestedIndex]);
                     curNestedIndex++;
                 } else {
-                    return DBDVoid.INSTANCE;
+                    curValue = parent.extractNestedValue(curValue, 0);
+                    continue;
                 }
             } catch (Throwable e) {
                 return new DBDValueError(e);
@@ -2282,6 +2246,18 @@ public final class DBUtils {
             return dt;
         } else if (typedObject instanceof DBSTypedObjectEx dte) {
             return dte.getDataType();
+        }
+        return null;
+    }
+
+    @Nullable
+    public static DBSDataType getDataType(@Nullable DBPDataSource dataSource, @NotNull DBSTypedObject typedObject) {
+        DBSDataType dataType = getDataType(typedObject);
+        if (dataType != null) {
+            return dataType;
+        }
+        if (dataSource instanceof DBPDataTypeProvider dtp) {
+            return dtp.getLocalDataType(typedObject.getFullTypeName());
         }
         return null;
     }

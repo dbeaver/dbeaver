@@ -28,6 +28,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.statistics.StatisticCollectionMessages;
@@ -75,6 +76,12 @@ public class PrefPageUsageStatistics extends AbstractPrefPage implements IWorkbe
         UIUtils.createLink(group,
             NLS.bind(StatisticCollectionMessages.statistic_collection_pref_content_opensource_link, LINK_GIHUB_REPO),
             SelectionListener.widgetSelectedAdapter(selectionEvent -> ShellUtils.launchProgram(LINK_GIHUB_REPO)));
+
+        if (DBWorkbench.getPlatform().getApplication().isStatisticsCollectionRequired()) {
+            checkSendUsageStatistics.setEnabled(false);
+            UIUtils.createEmptyLabel(composite, 1, 1);
+            UIUtils.createInfoLabel(composite, "You cannot opt-out from data sharing in this version of DBeaver.");
+        }
 
         performDefaults();
         return composite;

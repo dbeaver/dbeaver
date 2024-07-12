@@ -107,7 +107,7 @@ public class GlobalPropertyTester extends PropertyTester {
     }
 
     public static boolean canManageProjects() {
-        return !DBWorkbench.isDistributed() || DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_PROJECT_ADMIN);
+        return DBWorkbench.getPlatform().getWorkspace().canManageProjects();
     }
 
     public static void firePropertyChange(String propName)
