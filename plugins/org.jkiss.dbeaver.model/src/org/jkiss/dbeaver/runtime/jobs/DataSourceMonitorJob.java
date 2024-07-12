@@ -73,7 +73,7 @@ public class DataSourceMonitorJob extends AbstractJob {
     private boolean isSleeping = false;
 
     public DataSourceMonitorJob(DBPPlatform platform) {
-        super("Keep-Alive monitor");
+        super("Connections monitoring");
         setUser(false);
         setSystem(true);
         this.platform = platform;
@@ -84,11 +84,12 @@ public class DataSourceMonitorJob extends AbstractJob {
         if (platform.isShuttingDown()) {
             return Status.OK_STATUS;
         }
+        boolean invalidateOnSleep = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.CONNECTION_CLOSE_ON_SLEEP);
         boolean wasSleeping = isSleeping;
         isSleeping = OperationSystemState.isInSleepMode();
 
         if (!isSleeping) {
-            if (lastPingTime > 0 && System.currentTimeMillis() - lastPingTime > SYSTEM_SUSPEND_INTERVAL) {
+            if (invalidateOnSleep && lastPingTime > 0 && System.currentTimeMillis() - lastPingTime > SYSTEM_SUSPEND_INTERVAL) {
                 if (INVALIDATE_AFTER_SLEEP) {
                     invalidateSleptConnections(monitor);
                 }
@@ -97,8 +98,10 @@ public class DataSourceMonitorJob extends AbstractJob {
             doJob();
         } else if (!wasSleeping) {
             // Sleep mode triggered
-            // Disconnect all datasources
-            closeAllConnections(monitor);
+            if (invalidateOnSleep) {
+                // Disconnect all datasources
+                closeAllConnections(monitor);
+            }
         }
         lastPingTime = System.currentTimeMillis();
         if (!platform.isShuttingDown()) {

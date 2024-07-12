@@ -73,6 +73,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
     private Text sampleConnectionName;
     private ConnectionNameResolver fakeConnectionNameResolver;
     private Button useWinTrustStoreCheck;
+    private Button closeConnectionOnOsSleepCheck;
 
     public PrefPageConnectionsGeneral() {
         super();
@@ -120,6 +121,16 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
                     ConnectionNameResolver.getConnectionVariablesInfo(),
                     false
             );
+        }
+
+        {
+            Group groupBehavior = UIUtils.createControlGroup(composite, CoreMessages.pref_page_connection_label_general, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            closeConnectionOnOsSleepCheck = UIUtils.createCheckbox(
+                groupBehavior,
+                CoreMessages.pref_page_connection_label_close_connection_on_sleep,
+                CoreMessages.pref_page_connection_label_close_connection_on_sleep_tip,
+                true,
+                1);
         }
 
         if (DBWorkbench.getPlatform().getApplication().hasProductFeature(DBConnectionConstants.PRODUCT_FEATURE_SIMPLE_TRUSTSTORE)) {
@@ -187,29 +198,6 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
         }
     }
 
-    protected void createWinstoreSettings(Group settings) {
-        if (CommonUtils.isNotEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE))
-            || (CommonUtils.isNotEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE_TYPE))
-            && !System.getProperty(GeneralUtils.PROP_TRUST_STORE_TYPE).equalsIgnoreCase(VALUE_TRUST_STRORE_TYPE_WINDOWS))
-        ) {
-            Composite winTrustStoreComposite = UIUtils.createComposite(settings, 1);
-            useWinTrustStoreCheck = UIUtils.createCheckbox(
-                winTrustStoreComposite,
-                CoreMessages.pref_page_connections_use_win_cert_label,
-                DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
-            );
-            winTrustStoreComposite.setToolTipText(CoreMessages.pref_page_connections_use_win_cert_disabled_tip);
-            useWinTrustStoreCheck.setEnabled(false);
-        } else {
-            useWinTrustStoreCheck = UIUtils.createCheckbox(
-                settings,
-                CoreMessages.pref_page_connections_use_win_cert_label,
-                DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
-            );
-            useWinTrustStoreCheck.setToolTipText(CoreMessages.pref_page_connections_use_win_cert_tip);
-        }
-    }
-
     @Override
     public void init(IWorkbench iWorkbench) {
 
@@ -266,6 +254,9 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
         connectionDefaultNamePatternText.setText(preferences.getDefaultString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN));
         sampleConnectionName.setText(GeneralUtils.replaceVariables(connectionDefaultNamePatternText.getText(), fakeConnectionNameResolver));
         connectionNamePattern = preferences.getDefaultString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN);
+
+        closeConnectionOnOsSleepCheck.setSelection(preferences.getDefaultBoolean(ModelPreferences.CONNECTION_CLOSE_ON_SLEEP));
+
         if (RuntimeUtils.isWindows() && useWinTrustStoreCheck != null) {
             useWinTrustStoreCheck.setSelection(
                 preferences.getDefaultBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE));
@@ -296,6 +287,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
         }
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         store.setValue(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN, connectionDefaultNamePatternText.getText());
+        store.setValue(ModelPreferences.CONNECTION_CLOSE_ON_SLEEP, closeConnectionOnOsSleepCheck.getSelection());
         if (RuntimeUtils.isWindows() && useWinTrustStoreCheck != null) {
             store.setValue(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE, useWinTrustStoreCheck.getSelection());
         }
