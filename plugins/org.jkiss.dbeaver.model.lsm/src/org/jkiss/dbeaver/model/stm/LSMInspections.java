@@ -58,6 +58,9 @@ public class LSMInspections {
         Map.entry(SQLStandardParser.RULE_columnReference, List.of(
             List.of(SQLStandardParser.RULE_anyUnexpected, SQLStandardParser.RULE_searchCondition),
             List.of(SQLStandardParser.RULE_anyUnexpected, SQLStandardParser.RULE_selectSublist)
+        )),
+        Map.entry(SQLStandardParser.RULE_tableName, List.of(
+            List.of(SQLStandardParser.RULE_anyUnexpected, SQLStandardParser.RULE_tableReference)
         ))
     );
 
@@ -95,8 +98,14 @@ public class LSMInspections {
         return Pair.of(nodeBefore, false);
     }
 
+    private static SyntaxInspectionResult offqueryInspectionResult = prepareOffquerySyntaxInspectionInternal();
+
     @NotNull
     public static SyntaxInspectionResult prepareOffquerySyntaxInspection() {
+        return offqueryInspectionResult;
+    }
+
+    public static SyntaxInspectionResult prepareOffquerySyntaxInspectionInternal() {
         ATN atn = SQLStandardParser._ATN;
         ListNode<Integer> emptyStack = ListNode.of(null);
         ATNState initialState = atn.states.get(atn.ruleToStartState[SQLStandardParser.RULE_sqlQueries].stateNumber);

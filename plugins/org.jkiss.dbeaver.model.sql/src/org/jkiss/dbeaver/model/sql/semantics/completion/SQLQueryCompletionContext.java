@@ -35,10 +35,7 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SourceResolutionResult;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.stm.LSMInspections;
 import org.jkiss.dbeaver.model.stm.STMTreeTermNode;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
@@ -219,13 +216,13 @@ public abstract class SQLQueryCompletionContext {
                 
                 List<SQLQueryCompletionItem> tableRefCompletions = 
                     syntaxInspectionResult.expectingTableReference && nameNodes.length == 0
-                            ? this.prepareTableCompletions(monitor, request) : Collections.emptyList();
+                        ? this.prepareTableCompletions(monitor, request) : Collections.emptyList();
                 
                 List<SQLQueryCompletionItem> lexicalItemCompletions = 
-                        lexicalItem != null ? this.prepareLexicalItemCompletions(monitor, lexicalItem, position) :
-                        syntaxInspectionResult.expectingIdentifier || nameNodes.length > 0
-                            ? this.prepareIdentifierCompletions(monitor, position)
-                            : Collections.emptyList();
+                    lexicalItem != null ? this.prepareLexicalItemCompletions(monitor, lexicalItem, position) :
+                    syntaxInspectionResult.expectingIdentifier || nameNodes.length > 0
+                        ? this.prepareIdentifierCompletions(monitor, position)
+                        : Collections.emptyList();
                 
                 List<SQLQueryCompletionItem> completionItems = Stream.of(
                         columnRefCompletions, tableRefCompletions, lexicalItemCompletions, keywordCompletions
@@ -281,7 +278,7 @@ public abstract class SQLQueryCompletionContext {
                 @NotNull List<String> prefix,
                 @NotNull String tail
             ) {
-                if (dbcExecutionContext == null || dbcExecutionContext.getDataSource() == null) {
+                if (dbcExecutionContext == null || dbcExecutionContext.getDataSource() == null || !DBStructUtils.isConnectedContainer(dbcExecutionContext.getDataSource())) {
                     return Collections.emptyList();
                 } else {
                     DBSObject prefixContext = prefix.size() == 0
@@ -329,11 +326,13 @@ public abstract class SQLQueryCompletionContext {
                     Stream<? extends DBSObject> components;
                     if (object instanceof DBSEntity entity) {
                         List<? extends DBSEntityAttribute> attrs = entity.getAttributes(monitor);
-                        components = attrs == null ? Stream.empty() : attrs.stream();
-                    } else if (object instanceof DBSObjectContainer container) {
-                        components = container.getChildren(monitor).stream()
-                            .filter(c -> c instanceof DBSObject)
-                            .map(c -> (DBSObject) c);
+                        if (attrs != null) {
+                            components = attrs.stream();
+                        } else {
+                            components = Stream.empty();
+                        }
+                    } else if (object instanceof DBSObjectContainer container && DBStructUtils.isConnectedContainer(container)) {
+                        components = container.getChildren(monitor).stream();
                     } else {
                         components = Stream.empty();
                     }
@@ -486,7 +485,7 @@ public abstract class SQLQueryCompletionContext {
 
                 if (dbcExecutionContext != null && dbcExecutionContext.getDataSource() != null) {
                     try {
-                        DBCExecutionContextDefaults defaults = dbcExecutionContext.getDataSource().getDefaultInstance().getDefaultContext(monitor, true).getContextDefaults();
+                        DBCExecutionContextDefaults<?,?> defaults = dbcExecutionContext.getContextDefaults();
                         if (defaults != null) {
                             DBSSchema defaultSchema = defaults.getDefaultSchema();
                             DBSCatalog defaultCatalog = defaults.getDefaultCatalog();
@@ -533,7 +532,7 @@ public abstract class SQLQueryCompletionContext {
             ) throws DBException {
                 this.collectObjectsRecursively(
                     monitor, container, new HashSet<>(), accumulator,
-                    List.of(DBSSchema.class), o -> SQLQueryCompletionItem.forDbObject(o)
+                    List.of(DBSSchema.class), SQLQueryCompletionItem::forDbObject
                 );
             }
 
@@ -544,7 +543,7 @@ public abstract class SQLQueryCompletionContext {
             ) throws DBException {
                 this.collectObjectsRecursively(
                     monitor, container, new HashSet<>(), accumulator,
-                    List.of(DBSCatalog.class), o -> SQLQueryCompletionItem.forDbObject(o)
+                    List.of(DBSCatalog.class), SQLQueryCompletionItem::forDbObject
                 );
             }
 
@@ -562,7 +561,7 @@ public abstract class SQLQueryCompletionContext {
                     if (!DBUtils.isHiddenObject(child)) {
                         if (types.stream().anyMatch(t -> t.isInstance(child)) && !alreadyReferencedObjects.contains(child)) {
                             accumulator.add(completionItemFabric.apply((T) child));
-                        } else if (child instanceof DBSObjectContainer sc) {
+                        } else if (child instanceof DBSObjectContainer sc && DBStructUtils.isConnectedContainer(child)) {
                             collectObjectsRecursively(monitor, sc, alreadyReferencedObjects, accumulator, types, completionItemFabric);
                         }
                     }

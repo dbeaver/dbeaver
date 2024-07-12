@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfiguration;
+import org.jkiss.dbeaver.ui.dashboard.view.catalogpanel.DashboardCatalogPanel;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
 /**

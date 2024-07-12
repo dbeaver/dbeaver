@@ -95,7 +95,7 @@ public class SyntaxParserTest {
 
         inputText = "SELECT * FROM EMPLOYEES e WHERE e.EMPLOYEE_ID > :xl ";
 
-        inputText = "select * from x join y on  ";
+        inputText = "select * from test. ";
 
         var input = CharStreams.fromString(inputText);
         var params = new LSMAnalyzerParameters(
