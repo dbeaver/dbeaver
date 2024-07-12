@@ -298,6 +298,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             navigatorSettings = new DataSourceNavigatorSettings(getWizard().getSelectedNavigatorSettings());
         }
 
+        initializeDialogUnits(parent);
         Composite group = UIUtils.createComposite(parent, 1);
 
         {
