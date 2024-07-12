@@ -87,8 +87,8 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             store.contains(SQLPreferenceConstants.PROPOSAL_INSERT_CASE) ||
             store.contains(SQLPreferenceConstants.PROPOSAL_REPLACE_WORD) ||
             store.contains(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS) ||
-                store.contains(SQLModelPreferences.SQL_EDITOR_PROPOSAL_SHORT_NAME) ||
-                store.contains(SQLModelPreferences.SQL_EDITOR_PROPOSAL_ALWAYS_FQ) ||
+            store.contains(SQLModelPreferences.SQL_EDITOR_PROPOSAL_SHORT_NAME) ||
+            store.contains(SQLModelPreferences.SQL_EDITOR_PROPOSAL_ALWAYS_FQ) ||
             store.contains(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS) ||
             store.contains(SQLPreferenceConstants.PROPOSAL_SORT_ALPHABETICALLY) ||
             store.contains(SQLModelPreferences.SQL_PROPOSAL_INSERT_TABLE_ALIAS) ||
@@ -226,7 +226,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
 
             csReplaceWordAfter.setSelection(store.getBoolean(SQLPreferenceConstants.PROPOSAL_REPLACE_WORD));
             csHideDuplicates.setSelection(store.getBoolean(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS));
-            csObjectNameForm.select(SQLExperimentalAutocompletionMode.fromPreferences(store).ordinal());
+            csObjectNameForm.select(SQLCompletionObjectNameFormKind.getFromPreferences(store).ordinal());
             csInsertSpace.setSelection(store.getBoolean(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS));
             csSortAlphabetically.setSelection(store.getBoolean(SQLPreferenceConstants.PROPOSAL_SORT_ALPHABETICALLY));
             csShowServerHelpTopics.setSelection(store.getBoolean(SQLPreferenceConstants.SHOW_SERVER_HELP_TOPICS));
