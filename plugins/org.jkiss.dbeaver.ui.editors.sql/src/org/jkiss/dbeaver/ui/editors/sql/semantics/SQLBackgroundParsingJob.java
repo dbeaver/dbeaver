@@ -54,6 +54,7 @@ import java.util.ArrayDeque;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 public class SQLBackgroundParsingJob {
 
@@ -98,6 +99,9 @@ public class SQLBackgroundParsingJob {
     private volatile boolean isRunning = false;
     private volatile int knownRegionStart = 0;
     private volatile int knownRegionEnd = 0;
+
+    private static final Pattern anyWordPattern = Pattern.compile("^\\w+$");
+
     @NotNull
     private final DocumentLifecycleListener documentListener = new DocumentLifecycleListener();
 
@@ -195,6 +199,12 @@ public class SQLBackgroundParsingJob {
                 return SQLQueryCompletionContext.prepareOffquery(scriptItem.offset);
             } else {
                 STMTreeNode syntaxNode = model.getSyntaxNode();
+                Interval realInterval = syntaxNode.getRealInterval();
+                if (scriptItem.item.getOriginalText().length() <= SQLQueryCompletionContext.getMaxKeywordLength()
+                    && anyWordPattern.matcher(scriptItem.item.getOriginalText()).matches()
+                ) {
+                    return SQLQueryCompletionContext.prepareOffquery(scriptItem.offset);
+                }
                 LSMInspections.SyntaxInspectionResult syntaxInspectionResult = LSMInspections.prepareAbstractSyntaxInspection(syntaxNode, position);
                 SQLQueryDataContext context = null;
                 SQLQueryNodeModel node = model.findNodeContaining(position);

@@ -53,6 +53,17 @@ public abstract class SQLQueryCompletionContext {
 
     private static final Log log = Log.getLog(SQLQueryCompletionContext.class);
 
+    private static final Set<String> statementStartKeywords = LSMInspections.prepareOffquerySyntaxInspection().predictedWords;
+    private static final Collection<SQLQueryCompletionItem> statementStartKeywordCompletions = statementStartKeywords.stream().sorted().map(SQLQueryCompletionItem::forReservedWord).toList();
+    private static final int statementStartKeywordMaxLength = statementStartKeywords.stream().mapToInt(String::length).max().orElse(0);
+
+    /**
+     * Returns maximum length of all keywords
+     */
+    public static int getMaxKeywordLength() {
+        return statementStartKeywordMaxLength;
+    }
+
     /**
      * Empty completion context which always provides no completion items
      */
@@ -88,8 +99,7 @@ public abstract class SQLQueryCompletionContext {
     public static SQLQueryCompletionContext prepareOffquery(int scriptItemOffset) {
         return new SQLQueryCompletionContext(scriptItemOffset) {
             private static final LSMInspections.SyntaxInspectionResult syntaxInspectionResult = LSMInspections.prepareOffquerySyntaxInspection();
-            private static final Collection<SQLQueryCompletionItem> keywords = syntaxInspectionResult.predictedWords.stream()
-                    .sorted().map(SQLQueryCompletionItem::forReservedWord).collect(Collectors.toList());
+
 
             @Nullable
             @Override
@@ -110,7 +120,7 @@ public abstract class SQLQueryCompletionContext {
                 int position,
                 @NotNull SQLCompletionRequest request
             ) {
-                return new SQLQueryCompletionSet(position, 0, keywords);
+                return new SQLQueryCompletionSet(position, 0, statementStartKeywordCompletions);
             }
         };
     }

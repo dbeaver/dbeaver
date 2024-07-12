@@ -144,7 +144,7 @@ public class LSMInspections {
                         subroot = tn;
                         initialState = atn.states.get(tn.getAtnState()).getTransitions()[0].target;
                     } else {
-                        throw new IllegalStateException("Ivalid ATN state");
+                        return SyntaxInspectionResult.EMPTY;
                     }
                 }
                 // TODO watch for state context rule  
