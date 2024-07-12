@@ -476,7 +476,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                     if (!isLoaded && item.isOptional() && item.getRecursiveLink() == null) {
                         // This may occur only if no child nodes was read
                         // Then we try to go on next DBX level
-                        if (this instanceof DBNDataSource) {
+                        if (this instanceof DBNDataSource || this instanceof DBNDatabaseItem) {
                             return;
                         }
                         loadChildren(monitor, item, oldList, toList, source, reflect);
