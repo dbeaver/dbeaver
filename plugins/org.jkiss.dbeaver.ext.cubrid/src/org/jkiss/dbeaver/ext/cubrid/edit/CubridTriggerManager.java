@@ -51,6 +51,32 @@ public class CubridTriggerManager extends GenericTriggerManager {
         return new CubridTrigger((GenericTableBase) container, BASE_TRIGGER_NAME, monitor);
     }
 
+    public void createTrigger(CubridTrigger trigger, StringBuilder sb) {
+        sb.append("\n" + trigger.getActionTime() + " ");
+        if (trigger.getEvent().equals("COMMIT") || trigger.getEvent().equals("ROLLBACK")) {
+            sb.append(trigger.getEvent());
+        } else {
+            sb.append(trigger.getEvent());
+            sb.append(" ON ").append(trigger.getTable().getUniqueName());
+            if (trigger.getEvent().contains("UPDATE") && trigger.getTargetColumn() != null) {
+                sb.append("(" + trigger.getTargetColumn() + ")");
+            }
+            if (trigger.getCondition() != null) {
+                sb.append("\nIF ").append(trigger.getCondition());
+            }
+        }
+        sb.append("\nEXECUTE ");
+        if (trigger.getActionType().equals("REJECT") || trigger.getActionType().equals("INVALIDATE_TRANSACTION")) {
+            sb.append(trigger.getActionType());
+        } else if (trigger.getActionType().equals("PRINT")) {
+            sb.append(trigger.getActionType() + " ");
+            sb.append(trigger.getActionDefinition() == null ? "" : SQLUtils.quoteString(trigger, trigger.getActionDefinition()));
+        }
+        else {
+            sb.append(trigger.getActionDefinition() == null ? "" : trigger.getActionDefinition());
+        }
+    }
+
     @Override
     protected void createOrReplaceTriggerQuery(
             DBRProgressMonitor monitor,
@@ -60,43 +86,12 @@ public class CubridTriggerManager extends GenericTriggerManager {
             boolean create) {
     	CubridTrigger trigger = (CubridTrigger) genericTrigger;
         StringBuilder sb = new StringBuilder();
+        sb.append(create ? "CREATE TRIGGER" : "ALTER TRIGGER ");
+        sb.append(trigger.getFullyQualifiedName(DBPEvaluationContext.DDL));
+        sb.append(trigger.getActive() ? "\nSTATUS ACTIVE": "\nSTATUS INACTIVE");
+        sb.append("\nPRIORITY ").append(trigger.getPriority());
         if (create) {
-            sb.append("CREATE TRIGGER ");
-            sb.append(trigger.getFullyQualifiedName(DBPEvaluationContext.DDL));
-            sb.append(trigger.getActive() ? "" : "\nSTATUS INACTIVE");
-            if (trigger.getPriority() != 0.0) {
-                sb.append("\nPRIORITY ").append(trigger.getPriority());
-            }
-            sb.append("\n" + trigger.getActionTime() + " ");
-            if (trigger.getEvent().equals("COMMIT") || trigger.getEvent().equals("ROLLBACK")) {
-                sb.append(trigger.getEvent());
-            } else {
-                sb.append(trigger.getEvent());
-                sb.append(" ON ").append(trigger.getTable().getUniqueName());
-                if (trigger.getEvent().equals("UPDATE") || trigger.getEvent().equals("UPDATE STATEMENT")) {
-                    if (trigger.getTargetColumn() != null) {
-                        sb.append("(" + trigger.getTargetColumn() + ")");
-                    }
-                }
-                if (trigger.getCondition() != null) {
-                    sb.append("\nIF ").append(trigger.getCondition());
-                }
-            }
-            sb.append("\nEXECUTE ");
-            if (trigger.getActionType().equals("REJECT") || trigger.getActionType().equals("INVALIDATE_TRANSACTION")) {
-                sb.append(trigger.getActionType());
-            } else if (trigger.getActionType().equals("PRINT")) {
-                sb.append(trigger.getActionType() + " ");
-                sb.append(trigger.getActionDefinition() == null ? "" : SQLUtils.quoteString(trigger, trigger.getActionDefinition()));
-            }
-            else {
-                sb.append(trigger.getActionDefinition() == null ? "" : trigger.getActionDefinition());
-            }
-        } else {
-            sb.append("ALTER TRIGGER ");
-            sb.append(trigger.getFullyQualifiedName(DBPEvaluationContext.DDL));
-            sb.append(trigger.getActive() == true ? "\nSTATUS ACTIVE": "\nSTATUS INACTIVE");
-            sb.append("\nPRIORITY ").append(trigger.getPriority());
+            createTrigger(trigger, sb);
         }
         if (trigger.getDescription() != null) {
             sb.append("\nCOMMENT ").append(SQLUtils.quoteString(trigger, trigger.getDescription()));

@@ -226,10 +226,8 @@ public class CubridTrigger extends GenericTableTrigger {
             } else {
                 ddl.append(getEvent());
                 ddl.append(" ON ").append(getTable().getUniqueName());
-                if (getEvent().equals("UPDATE") || getEvent().equals("UPDATE STATEMENT")) {
-                    if (getTargetColumn() != null) {
-                        ddl.append("(" + getTargetColumn() + ")");
-                    }
+                if (getEvent().contains("UPDATE") && getTargetColumn() != null) {
+                    ddl.append("(" + getTargetColumn() + ")");
                 }
                 if (getCondition() != null) {
                     ddl.append("\nIF ").append(getCondition());
