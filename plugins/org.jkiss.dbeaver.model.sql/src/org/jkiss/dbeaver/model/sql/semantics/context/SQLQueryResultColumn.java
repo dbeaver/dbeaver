@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
 public class SQLQueryResultColumn {
+    public final int index;
     @NotNull
     public final SQLQuerySymbol symbol;
     @NotNull
@@ -37,12 +38,14 @@ public class SQLQueryResultColumn {
     public final SQLQueryExprType type;
 
     public SQLQueryResultColumn(
+        int index,
         @NotNull SQLQuerySymbol symbol,
         @NotNull SQLQueryRowsSourceModel source,
         @Nullable DBSEntity realSource,
         @Nullable DBSEntityAttribute realAttr,
         @NotNull SQLQueryExprType type
     ) {
+        this.index = index;
         this.symbol = symbol;
         this.source = source;
         this.realSource = realSource;
