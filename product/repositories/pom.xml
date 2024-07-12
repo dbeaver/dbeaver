@@ -19,7 +19,6 @@
         <module>org.jkiss.dbeaver.ai.repository</module>
         <module>org.jkiss.dbeaver.debug.repository</module>
         <module>org.jkiss.dbeaver.office.repository</module>
-        <module>org.jkiss.dbeaver.svg.repository</module>
         <module>org.jkiss.dbeaver.git.repository</module>
     </modules>
 
