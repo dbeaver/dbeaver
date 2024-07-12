@@ -196,7 +196,12 @@ public class InvalidateJob extends DataSourceJob
                     continue;
                 }
 
-                var results = invalidateNetworkHandlers(monitor, container.getDataSource(), phase);
+                DBPDataSource dataSource = container.getDataSource();
+                if (dataSource == null) {
+                    continue;
+                }
+
+                var results = invalidateNetworkHandlers(monitor, dataSource, phase);
 
                 if (anyFailed(results)) {
                     failed.put(container, Severity.SEVERE);
