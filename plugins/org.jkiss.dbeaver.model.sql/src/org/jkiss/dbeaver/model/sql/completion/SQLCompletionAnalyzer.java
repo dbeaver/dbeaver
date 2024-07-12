@@ -1427,7 +1427,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             params);
     }
 
-    private static String convertKeywordCase(SQLCompletionRequest request, String replaceString, boolean isObject) {
+    public static String convertKeywordCase(SQLCompletionRequest request, String replaceString, boolean isObject) {
         final int proposalCase = request.getContext().getInsertCase();
         switch (proposalCase) {
             case SQLCompletionContext.PROPOSAL_CASE_UPPER:
