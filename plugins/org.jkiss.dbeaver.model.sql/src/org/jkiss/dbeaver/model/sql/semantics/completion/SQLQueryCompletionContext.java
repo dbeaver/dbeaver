@@ -34,10 +34,7 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SourceResolutionResult;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.stm.LSMInspections;
 import org.jkiss.dbeaver.model.stm.STMTreeTermNode;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
@@ -216,16 +213,16 @@ public abstract class SQLQueryCompletionContext {
                 @NotNull String componentNamePart, Class<?> componentType
             ) {
                 try {
-                    Stream<? extends DBPNamedObject> components;
+                    Stream<? extends DBPNamedObject> components = Stream.empty();
                     if (object instanceof DBSEntity entity) {
                         List<? extends DBSEntityAttribute> attrs = entity.getAttributes(monitor);
-                        components = attrs == null ? Stream.empty() : attrs.stream();
+                        if (attrs != null) {
+                            components = attrs.stream();
+                        }
                     } else if (object instanceof DBSObjectContainer container) {
-                        components = container.getChildren(monitor).stream()
-                            .filter(c -> c instanceof DBPNamedObject)
-                            .map(c -> (DBPNamedObject) c);
-                    } else {
-                        components = Stream.empty();
+                        if (DBStructUtils.isConnectedContainer(container)) {
+                            components = container.getChildren(monitor).stream();
+                        }
                     }
                     
                     return components.filter(a -> (componentType == null || componentType.isInstance(a)) && a.getName().toLowerCase().contains(componentNamePart))
@@ -388,6 +385,9 @@ public abstract class SQLQueryCompletionContext {
                 @NotNull Set<DBSEntity> alreadyReferencedTables,
                 @NotNull LinkedList<SQLQueryCompletionItem> tableRefs
             ) throws DBException {
+                if (!DBStructUtils.isConnectedContainer(container)) {
+                    return;
+                }
                 Collection<? extends DBSObject> children = container.getChildren(monitor);
                 for (DBSObject child : children) {
                     if (!DBUtils.isHiddenObject(child)) {

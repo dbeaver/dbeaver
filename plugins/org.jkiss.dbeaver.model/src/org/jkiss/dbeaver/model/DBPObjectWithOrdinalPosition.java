@@ -14,16 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.duckdb.model;
 
-import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
+package org.jkiss.dbeaver.model;
 
-public class DuckDBSQLDialect extends GenericSQLDialect {
+/**
+ * Object with ordered position.
+ */
+public interface DBPObjectWithOrdinalPosition {
+    int getOrdinalPosition();
 
-    public static final DuckDBSQLDialect INSTANCE = new DuckDBSQLDialect();
-
-    @Override
-    public boolean supportsAliasInSelect() {
-        return true;
-    }
 }

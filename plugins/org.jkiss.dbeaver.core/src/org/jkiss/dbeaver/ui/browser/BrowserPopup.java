@@ -36,21 +36,23 @@ import java.util.Map;
 
 public class BrowserPopup extends AbstractPopupPanel {
     private static final Log log = Log.getLog(BrowserPopup.class);
-    private static final Map<String, Browser> browserRegistry = new HashMap<>();
+    private static final Map<String, BrowserPopup> browserRegistry = new HashMap<>();
 
     private final String id;
     private final URL url;
+    private Browser browser;
 
-    public static void openBrowser(@NotNull String id, @NotNull URL url) {
-        Browser browser = browserRegistry.get(id);
-        if (browser != null && !browser.isDisposed()) {
-            browser.setUrl(url.toString());
+    public static BrowserPopup openBrowser(@NotNull String id, @NotNull URL url) {
+        BrowserPopup browser = browserRegistry.get(id);
+        if (browser != null && !browser.getContents().isDisposed()) {
+            browser.browser.setUrl(url.toString());
+            return browser;
         } else {
             BrowserPopup browserPopup = new BrowserPopup(UIUtils.getActiveShell(), id, url);
             browserPopup.open();
+            return browserPopup;
         }
     }
-
     @Override
     protected Composite createDialogArea(Composite parent) {
         Composite composite = UIUtils.createComposite(parent, 1);
@@ -59,12 +61,12 @@ public class BrowserPopup extends AbstractPopupPanel {
         gd.widthHint = 800;
         composite.setLayoutData(gd);
         try {
-            Browser browser = new Browser(composite, SWT.NONE);
+            browser = new Browser(composite, SWT.NONE);
             gd = new GridData(GridData.FILL_BOTH);
             gd.widthHint = 600;
             gd.heightHint = 500;
             browser.setLayoutData(gd);
-            browserRegistry.put(id, browser);
+            browserRegistry.put(id, this);
             browser.setUrl(url.toString());
         } catch (SWTError e) {
             log.error("Could not instantiate Browser", e);

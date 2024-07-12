@@ -512,4 +512,8 @@ public final class DBStructUtils {
             ? attribute.getName()
             : DBUtils.getObjectFullName(attribute, DBPEvaluationContext.DML);
     }
+
+    public static boolean isConnectedContainer(DBPObject parent) {
+        return !(parent instanceof DBSInstanceLazy il) || il.isInstanceConnected();
+    }
 }
