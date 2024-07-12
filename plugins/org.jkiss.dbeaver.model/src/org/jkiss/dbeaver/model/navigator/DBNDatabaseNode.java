@@ -818,54 +818,35 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
 
     public DBSObjectFilter getNodeFilter(DBXTreeItem meta, boolean firstMatch) {
         DBPDataSourceContainer dataSource = getDataSourceContainer();
-        if (this instanceof DBNContainer) {
-            Class<?> childrenClass = this.getChildrenOrFolderClass(meta);
-            if (childrenClass != null) {
-                Object valueObject = getValueObject();
-                DBSObject parentObject = null;
-                if (valueObject instanceof DBSObject && !(valueObject instanceof DBPDataSource)) {
-                    parentObject = (DBSObject) valueObject;
-                }
-                return dataSource.getObjectFilter(childrenClass, parentObject, firstMatch);
+        Class<?> childrenClass = this.getChildrenOrFolderClass(meta);
+        if (childrenClass != null) {
+            Object valueObject = getValueObject();
+            DBSObject parentObject = null;
+            if (valueObject instanceof DBSObject && !(valueObject instanceof DBPDataSource)) {
+                parentObject = (DBSObject) valueObject;
             }
+            return dataSource.getObjectFilter(childrenClass, parentObject, firstMatch);
         }
         return null;
     }
 
     public void setNodeFilter(DBXTreeItem meta, DBSObjectFilter filter, boolean saveConfiguration) {
         DBPDataSourceContainer dataSource = getDataSourceContainer();
-        if (this instanceof DBNContainer) {
-            Class<?> childrenClass = this.getChildrenOrFolderClass(meta);
-            if (childrenClass != null) {
-                Object parentObject = getValueObject();
-                if (parentObject instanceof DBPDataSource) {
-                    parentObject = null;
-                }
-                dataSource.setObjectFilter(
-                    childrenClass,
-                    (DBSObject) parentObject,
-                    filter);
-                if (saveConfiguration) {
-                    dataSource.persistConfiguration();
-                }
-            } else {
-                log.error("Cannot detect child node type - can't save filter configuration");
+        Class<?> childrenClass = this.getChildrenOrFolderClass(meta);
+        if (childrenClass != null) {
+            Object parentObject = getValueObject();
+            if (parentObject instanceof DBPDataSource) {
+                parentObject = null;
             }
-        } else if (this.getParentNode() instanceof DBNDataSource) {
-            Class<?> childrenClass = this.getChildrenOrFolderClass(meta);
-            if (childrenClass != null) {
-                dataSource.setObjectFilter(
-                    childrenClass,
-                    null,
-                    filter);
-                if (saveConfiguration) {
-                    dataSource.persistConfiguration();
-                }
-            } else {
-                log.error("Cannot detect child node type - can't save filter configuration");
+            dataSource.setObjectFilter(
+                childrenClass,
+                (DBSObject) parentObject,
+                filter);
+            if (saveConfiguration) {
+                dataSource.persistConfiguration();
             }
         } else {
-            log.error("No active datasource - can't save filter configuration");
+            log.error("Cannot detect child node type - can't save filter configuration");
         }
     }
 
