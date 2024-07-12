@@ -117,6 +117,7 @@ public class DataSourceMonitorJob extends AbstractJob {
             if (project.isOpen() && project.isRegistryLoaded()) {
                 for (DBPDataSourceContainer ds : project.getDataSourceRegistry().getDataSources()) {
                     if (ds.isConnected() && !ds.getDriver().isEmbedded()) {
+                        log.debug("Close connection '" + ds.getName() + "' for sleep mode");
                         try {
                             ds.disconnect(monitor);
                         } catch (Exception e) {
