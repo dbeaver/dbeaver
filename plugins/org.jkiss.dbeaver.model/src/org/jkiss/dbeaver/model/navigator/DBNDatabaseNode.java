@@ -476,6 +476,9 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                     if (!isLoaded && item.isOptional() && item.getRecursiveLink() == null) {
                         // This may occur only if no child nodes was read
                         // Then we try to go on next DBX level
+                        if (this instanceof DBNDataSource) {
+                            return;
+                        }
                         loadChildren(monitor, item, oldList, toList, source, reflect);
                     }
                 }
@@ -841,6 +844,19 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                 dataSource.setObjectFilter(
                     childrenClass,
                     (DBSObject) parentObject,
+                    filter);
+                if (saveConfiguration) {
+                    dataSource.persistConfiguration();
+                }
+            } else {
+                log.error("Cannot detect child node type - can't save filter configuration");
+            }
+        } else if (this.getParentNode() instanceof DBNDataSource) {
+            Class<?> childrenClass = this.getChildrenOrFolderClass(meta);
+            if (childrenClass != null) {
+                dataSource.setObjectFilter(
+                    childrenClass,
+                    null,
                     filter);
                 if (saveConfiguration) {
                     dataSource.persistConfiguration();
