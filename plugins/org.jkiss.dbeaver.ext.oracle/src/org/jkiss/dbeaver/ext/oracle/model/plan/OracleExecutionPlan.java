@@ -115,22 +115,8 @@ public class OracleExecutionPlan extends AbstractExecutionPlan {
     public void explain() throws DBException {
         String planQuery = getPlanQueryString();
         try {
-
-            // Delete previous statement rows
-            // (actually there should be no statement with this id -
-            // but let's do it, just in case)
-            JDBCPreparedStatement dbStat = session.prepareStatement(
-                "DELETE FROM " + planTableName +
-                    " WHERE STATEMENT_ID=? ");
-            try {
-                dbStat.setString(1, planStmtId);
-                dbStat.execute();
-            } finally {
-                dbStat.close();
-            }
-
             // Explain plan
-            dbStat = session.prepareStatement(planQuery);
+            JDBCPreparedStatement dbStat = session.prepareStatement(planQuery);
             try {
                 try {
                     // Bind parameters if any
