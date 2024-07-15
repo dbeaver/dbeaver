@@ -52,7 +52,7 @@ public class BigQueryMetaModel extends GenericMetaModel implements DBCQueryTrans
     }
 
     @Override
-    public JDBCBasicDataTypeCache<GenericStructContainer, ? extends JDBCDataType> createDataTypeCache(GenericStructContainer container) {
+    public JDBCBasicDataTypeCache<GenericStructContainer, ? extends JDBCDataType> createDataTypeCache(@NotNull GenericStructContainer container) {
         return new BigQueryDataTypeCache(container);
     }
 
@@ -66,7 +66,7 @@ public class BigQueryMetaModel extends GenericMetaModel implements DBCQueryTrans
     }
 
     @Override
-    public DBPErrorAssistant.ErrorPosition getErrorPosition(Throwable error) {
+    public DBPErrorAssistant.ErrorPosition getErrorPosition(@NotNull Throwable error) {
         String message = error.getMessage();
         if (!CommonUtils.isEmpty(message)) {
             Matcher matcher = ERROR_POSITION_PATTERN.matcher(message);

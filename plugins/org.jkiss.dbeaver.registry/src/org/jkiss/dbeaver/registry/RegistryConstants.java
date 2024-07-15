@@ -173,13 +173,13 @@ public class RegistryConstants {
 
     public static final String ATTR_CONFIRMATION_MESSAGE = "confirmationMessage"; //$NON-NLS-1$
     public static final String ATTR_HANDLER_CLASS = "handlerClass"; //$NON-NLS-1$
-    public static final String ATTR_UI_CLASS = "uiClass"; //$NON-NLS-1$
     public static final String ATTR_SECURED = "secured"; //$NON-NLS-1$
 
     public static final String TAG_DATA_SOURCE = "data-source"; //$NON-NLS-1$
     public static final String TAG_EVENT = "event"; //$NON-NLS-1$
     public static final String TAG_EVENTS = "events"; //$NON-NLS-1$
     public static final String TAG_AUTH_PROPERTIES = "auth-properties"; //$NON-NLS-1$
+    public static final String TAG_MAIN_PROPERTIES = "main-properties"; //$NON-NLS-1$
     public static final String TAG_PROVIDER_PROPERTIES = "provider-properties"; //$NON-NLS-1$
     public static final String TAG_PROVIDER_PROPERTY = "provider-property"; //$NON-NLS-1$
     public static final String TAG_CUSTOM_PROPERTY = "custom-property"; //$NON-NLS-1$

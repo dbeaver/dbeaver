@@ -29,14 +29,14 @@
                         defaultPort="8123"
                         icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/clickhouse_icon.png"
                         iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/clickhouse_icon_big.png"
-                        description="Yandex ClickHouse legacy driver (server version &lt; 21.3)"
+                        description="ClickHouse legacy driver (server version &lt; 21.3)"
                         supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://github.com/yandex/clickhouse-jdbc"
                         databaseDocumentationSuffixURL="Clickhouse"
                         categories="sql,analytic,columns"
                         singleConnection="true">
                     <replace provider="generic" driver="yandex_clickhouse"/>
-                    <file type="jar" path="maven:/ru.yandex.clickhouse:clickhouse-jdbc:RELEASE[0.2.6]"/>
+                    <file type="jar" path="maven:/ru.yandex.clickhouse:clickhouse-jdbc:RELEASE[0.3.2]"/>
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss[.fffffffff]"/>
                     <parameter name="supports-references" value="false"/>
@@ -127,6 +127,7 @@
             <type name="BOOL"/>
             <type name="UUID"/>
             <type name="IPV4"/>
+            <type name="IPV6"/>
         </provider>
     </extension>
 

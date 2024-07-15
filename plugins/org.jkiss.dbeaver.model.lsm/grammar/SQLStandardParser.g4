@@ -145,7 +145,7 @@ compOp: (EqualsOperator|NotEqualsOperator|LessThanOperator|GreaterThanOperator|L
 quantifier: (ALL|SOME|ANY);
 truthValue: (TRUE|FALSE|UNKNOWN);
 existsPredicate: EXISTS tableSubquery;
-likePredicate: matchValue (NOT)? (LIKE|ILIKE) pattern (ESCAPE escapeCharacter)?;
+likePredicate: matchValue (NOT)? (LIKE|ILIKE) pattern? (ESCAPE escapeCharacter)?;
 matchValue: characterValueExpression;
 pattern: characterValueExpression;
 escapeCharacter: characterValueExpression;
@@ -417,7 +417,7 @@ THEN|GROUP|HAVING|UNION|EXCEPT|WITH|INTERSECT|ORDER|ON|USING|WHERE|INTO|FROM
 tableHintKeywords: WITH | UPDATE | IN | KEY | JOIN | ORDER BY | GROUP BY;
 
 nonReserved: COMMITTED | REPEATABLE | SERIALIZABLE | TYPE | UNCOMMITTED |
-    CURRENT_USER | SESSION_USER | SYSTEM_USER | USER | VALUE |
+    CURRENT_USER | SESSION_USER | SYSTEM_USER | USER | VALUE | RIGHT | LEFT |
     DATE | YEAR | MONTH | DAY | HOUR | MINUTE | SECOND | ZONE |
     ACTION | ADD | AUTHORIZATION | BY | CASCADE | CASCADED | CATALOG | COALESCE | COMMIT |
     CONSTRAINT | CONSTRAINTS | CORRESPONDING | COUNT | DEFERRABLE | DEFERRED | IMMEDIATE |

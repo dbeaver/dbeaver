@@ -410,7 +410,7 @@ public abstract class LightGrid extends Canvas {
             | SWT.SINGLE | SWT.MULTI | SWT.NO_FOCUS | SWT.CHECK | SWT.VIRTUAL;
         int newStyle = style & mask;
         newStyle |= SWT.DOUBLE_BUFFERED;
-        // ? do we need it? It may improve performance a bit (as drawBackgraound is relatively slow.
+        // ? do we need it? It may improve performance a bit (as drawBackground is relatively slow.
         // https://www.eclipse.org/forums/index.php/t/146489/
         // | SWT.NO_BACKGROUND;
         return newStyle;
@@ -2724,8 +2724,8 @@ public abstract class LightGrid extends Canvas {
             int max = getItemCount() + 1;
             int thumb = (getVisibleGridHeight(clientArea) + 1) / (getItemHeight() + 1);
 
-            // if possible, remember selection, if selection is too large, just
-            // make it the max you can
+            // if possible, remember selection,
+            // if selection is too large, just make it the max you can
             int selection = Math.min(vScroll.getSelection(), max);
 
             vScroll.setValues(selection, 0, max, thumb, 1, thumb);
@@ -2739,10 +2739,8 @@ public abstract class LightGrid extends Canvas {
 
                 int hiddenArea = preferredSize.x - clientArea.width + 1 + (vScroll.getVisible() ? vScroll.getWidth() : 0);
 
-                // if possi
-                // ble, remember selection, if selection is too large,
-                // just
-                // make it the max you can
+                // if possible, remember selection,
+                // if selection is too large, just make it the max you can
                 int selection = Math.min(hScroll.getSelection(), hiddenArea - 1);
 
                 hScroll.setValues(
@@ -2775,9 +2773,8 @@ public abstract class LightGrid extends Canvas {
                 int visCols = columns.size();
                 max = Math.min(visCols, max);
 
-                // if possible, remember selection, if selection is too large,
-                // just
-                // make it the max you can
+                // if possible, remember selection,
+                // if selection is too large, just make it the max you can
                 int selection = Math.min(hScroll.getSelection(), max);
 
                 hScroll.setValues(selection, 0, max, 1, 1, 1);

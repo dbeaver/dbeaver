@@ -34,8 +34,8 @@ import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 /**
@@ -86,13 +86,17 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
         @NotNull SQLQueryRecognitionContext statistics,
         @NotNull List<? extends DBSEntityAttribute> attributes
     ) {
-        List<SQLQueryResultColumn> columns = attributes.stream()
-            .filter(a -> !DBUtils.isHiddenObject(a))
-            .map(a -> new SQLQueryResultColumn(
-                    this.prepareColumnSymbol(attrsContext, a), 
-                    this, this.table, a,
-                    obtainColumnType(cause, statistics, a)
-            )).collect(Collectors.toList());
+        List<SQLQueryResultColumn> columns = new ArrayList<>(attributes.size());
+        for (DBSEntityAttribute attr : attributes) {
+            if (!DBUtils.isHiddenObject(attr)) {
+                columns.add(new SQLQueryResultColumn(
+                    columns.size(),
+                    this.prepareColumnSymbol(attrsContext, attr),
+                    this, this.table, attr,
+                    obtainColumnType(cause, statistics, attr)
+                ));
+            }
+        }
         return columns;
     }
 

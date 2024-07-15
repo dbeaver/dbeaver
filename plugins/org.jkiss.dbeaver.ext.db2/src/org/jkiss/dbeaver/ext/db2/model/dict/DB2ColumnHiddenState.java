@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  * @author Denis Forveille
  */
 public enum DB2ColumnHiddenState implements DBPNamedObject {
-    I("Implicitely hidden", false),
+    I("Implicitly hidden", false),
 
     S("System managed hidden", true);
 

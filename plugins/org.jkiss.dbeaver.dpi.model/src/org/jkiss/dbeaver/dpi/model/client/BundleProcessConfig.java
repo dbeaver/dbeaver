@@ -228,8 +228,6 @@ class BundleProcessConfig {
         }
         cmd.add(launcherApp);
 
-        cmd.add("-launcher");
-        cmd.add(System.getProperty("eclipse.launcher"));
         cmd.add("-application");
         cmd.add("org.jkiss.dbeaver.dpi.app.application");
         cmd.add("-configuration");
