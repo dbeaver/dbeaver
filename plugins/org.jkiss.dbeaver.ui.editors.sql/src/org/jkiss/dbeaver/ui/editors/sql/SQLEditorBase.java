@@ -140,7 +140,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     private SQLEditorControl editorControl;
 
     private ICharacterPairMatcher characterPairMatcher;
-    private final SQLEditorCompletionContext completionContext;
+    private SQLCompletionContext completionContext;
     private SQLOccurrencesHighlighter occurrencesHighlighter;
     private SQLSymbolInserter sqlSymbolInserter;
 
@@ -910,6 +910,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     public SQLCompletionContext getCompletionContext() {
         return completionContext;
+    }
+
+    public void setCompletionContext(SQLCompletionContext completionContext) {
+        this.completionContext = completionContext;
     }
 
     List<SQLQueryParameter> parseQueryParameters(SQLQuery query) {

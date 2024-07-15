@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="org.jkiss.dbeaver.ui.test.feature"
+      label="%featureName"
+      version="1.0.239.qualifier"
+      provider-name="%providerName">
+
+   <description>
+      %description
+   </description>
+
+   <copyright>
+      %copyright
+   </copyright>
+
+   <plugin id="org.jkiss.dbeaver.ext.test" version="0.0.0" />
+
+</feature>

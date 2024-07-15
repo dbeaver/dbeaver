@@ -548,7 +548,7 @@ public class DesktopUI implements DBPPlatformUI {
     @Override
     public void executeWithProgress(@NotNull DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException {
         // FIXME: we need to run with progress service bu we can't change active control focus
-        // Otherwise it breaks soem functions (e.g. data editor value save as it handles focus events).
+        // Otherwise it breaks some functions (e.g. data editor value save as it handles focus events).
         // so we can use runInProgressServie function
         runnable.run(new VoidProgressMonitor());
     }

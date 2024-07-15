@@ -20,6 +20,8 @@ import org.eclipse.core.expressions.PropertyTester;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
+import java.util.Objects;
+
 /**
  * DatabaseEditorPropertyTester
  */
@@ -27,26 +29,23 @@ public class DataSourceContainerPropertyTester extends PropertyTester
 {
     static protected final Log log = Log.getLog(DataSourceContainerPropertyTester.class);
 
-    public static final String NAMESPACE = "org.jkiss.dbeaver.core.datasourceContainer";
     public static final String PROP_DRIVER_ID = "driverId";
     public static final String PROP_DRIVER_CLASS = "driverClass";
     public static final String PROP_CONNECTED = "connected";
+    public static final String PROP_CONNECTING = "connecting";
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-        if (!(receiver instanceof DBPDataSourceContainer)) {
+        if (!(receiver instanceof DBPDataSourceContainer container)) {
             return false;
         }
-        DBPDataSourceContainer container = (DBPDataSourceContainer)receiver;
-        switch (property) {
-            case PROP_DRIVER_ID:
-                return container.getDriver().getId().equals(expectedValue);
-            case PROP_DRIVER_CLASS:
-                return container.getDriver().getDriverClassName().equals(expectedValue);
-            case PROP_CONNECTED:
-                return container.isConnected();
-        }
-        return false;
+        return switch (property) {
+            case PROP_DRIVER_ID -> container.getDriver().getId().equals(expectedValue);
+            case PROP_DRIVER_CLASS -> Objects.equals(container.getDriver().getDriverClassName(), expectedValue);
+            case PROP_CONNECTED -> container.isConnected();
+            case PROP_CONNECTING -> container.isConnecting();
+            default -> false;
+        };
     }
 
 }

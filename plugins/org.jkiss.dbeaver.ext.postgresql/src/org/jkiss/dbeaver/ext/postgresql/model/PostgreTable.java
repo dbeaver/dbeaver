@@ -45,10 +45,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -108,12 +105,15 @@ public abstract class PostgreTable extends PostgreTableReal
 
         this.partitionKey = source.partitionKey;
 
-        for (PostgreIndex srcIndex : CommonUtils.safeCollection(source.getIndexes(monitor))) {
-            if (srcIndex.isPrimaryKeyIndex()) {
-                continue;
+        PostgreSchema.IndexCache indexCache = getSchema().getIndexCache();
+        if (indexCache != null) {
+            for (PostgreIndex srcIndex : CommonUtils.safeCollection(source.getIndexes(monitor))) {
+                if (srcIndex.isPrimaryKeyIndex()) {
+                    continue;
+                }
+                PostgreIndex constr = new PostgreIndex(monitor, this, srcIndex);
+                indexCache.cacheObject(constr);
             }
-            PostgreIndex constr = new PostgreIndex(monitor, this, srcIndex);
-            getSchema().getIndexCache().cacheObject(constr);
         }
 
 /*
@@ -216,7 +216,10 @@ public abstract class PostgreTable extends PostgreTableReal
 
     @Override
     public Collection<PostgreIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return getSchema().getIndexCache().getObjects(monitor, getSchema(), this);
+        if (!getDataSource().getServerType().supportsIndexes()) {
+            return Collections.emptyList();
+        }
+        return getSchema().getIndexes(monitor, this);
     }
 
     @Override

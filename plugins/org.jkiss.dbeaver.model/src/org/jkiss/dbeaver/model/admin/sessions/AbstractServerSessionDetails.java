@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.model.admin.sessions;
 import org.jkiss.dbeaver.model.DBPImage;
 
 /**
- * Server session additiona details provider
+ * Server session additional details provider
  */
 public abstract class AbstractServerSessionDetails implements DBAServerSessionDetails {
 

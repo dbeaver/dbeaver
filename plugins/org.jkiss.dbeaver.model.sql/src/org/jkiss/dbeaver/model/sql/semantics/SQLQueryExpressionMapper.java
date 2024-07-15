@@ -151,13 +151,21 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
                     STMTreeNode childNode = n.getStmChild(i);
                     Interval range = Interval.of(n.getRealInterval().a, childNode.getRealInterval().b);
                     source = switch (childNode.getNodeKindId()) {
-                        case SQLStandardParser.RULE_naturalJoinTerm ->
-                            Optional.ofNullable(childNode.findChildOfName(STMKnownRuleNames.joinSpecification))
-                                .map(cn -> cn.findChildOfName(STMKnownRuleNames.joinCondition))
-                                .map(cn -> cn.findChildOfName(STMKnownRuleNames.searchCondition))
-                                .map(r::collectValueExpression)
-                                .map(e -> new SQLQueryRowsNaturalJoinModel(r, range, childNode, currSource, nextSource, e))
-                                .orElseGet(() -> new SQLQueryRowsNaturalJoinModel(r, range, childNode, currSource, nextSource, r.collectColumnNameList(childNode)));
+                        case SQLStandardParser.RULE_naturalJoinTerm -> {
+                            Optional<STMTreeNode> joinConditionNode = Optional.ofNullable(childNode.findChildOfName(STMKnownRuleNames.joinSpecification))
+                                    .map(cn -> cn.findChildOfName(STMKnownRuleNames.joinCondition));
+                            if (joinConditionNode.isPresent()) {
+                                try (SQLQueryModelContext.LexicalScopeHolder condScope = r.openScope()) {
+                                    condScope.lexicalScope.registerSyntaxNode(joinConditionNode.get());
+                                    yield joinConditionNode.map(cn -> cn.findChildOfName(STMKnownRuleNames.searchCondition))
+                                            .map(r::collectValueExpression)
+                                            .map(e -> new SQLQueryRowsNaturalJoinModel(r, range, childNode, currSource, nextSource, e, condScope.lexicalScope))
+                                            .orElseGet(() -> new SQLQueryRowsNaturalJoinModel(r, range, childNode, currSource, nextSource, Collections.emptyList()));
+                                }
+                            } else {
+                                yield new SQLQueryRowsNaturalJoinModel(r, range, childNode, currSource, nextSource, r.collectColumnNameList(childNode));
+                            }
+                        }
                         case SQLStandardParser.RULE_crossJoinTerm ->
                             new SQLQueryRowsCrossJoinModel(r, range, childNode, currSource, nextSource);
                         default ->
@@ -192,9 +200,10 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
             );
 
             SQLQueryLexicalScope selectListScope;
+            STMTreeNode selectKeywordNode;
             try (SQLQueryModelContext.LexicalScopeHolder selectListScopeHolder = r.openScope()) {
                 selectListScope = selectListScopeHolder.lexicalScope;
-                selectListScope.registerSyntaxNode(n.getStmChild(0)); // SELECT keyword
+                selectKeywordNode = n.getStmChild(0); // SELECT keyword
 
                 for (int i = 0; i < selectListNode.getChildCount(); i += 2) {
                     STMTreeNode selectSublist = selectListNode.getStmChild(i);
@@ -236,16 +245,54 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
             STMTreeNode tableExpr = n.findChildOfName(STMKnownRuleNames.tableExpression);
             SQLQueryRowsProjectionModel projectionModel;
             if (tableExpr != null) {
-                selectListScope.registerSyntaxNode(tableExpr.getStmChild(0)); // FROM keyword
-                SQLQueryValueExpression whereExpr = Optional.ofNullable(tableExpr.findChildOfName(STMKnownRuleNames.whereClause))
-                    .map(r::collectValueExpression).orElse(null);
-                SQLQueryValueExpression havingClause = Optional.ofNullable(tableExpr.findChildOfName(STMKnownRuleNames.havingClause))
-                    .map(r::collectValueExpression).orElse(null);
-                SQLQueryValueExpression groupByClause = Optional.ofNullable(tableExpr.findChildOfName(STMKnownRuleNames.groupByClause))
-                    .map(r::collectValueExpression).orElse(null);
-                SQLQueryValueExpression orderByClause = Optional.ofNullable(tableExpr.findChildOfName(STMKnownRuleNames.orderByClause))
-                    .map(r::collectValueExpression).orElse(null);
-                projectionModel = new SQLQueryRowsProjectionModel(r, n, selectListScope, source, resultModel, whereExpr, havingClause, groupByClause, orderByClause);
+                STMTreeNode fromKeywordNode = tableExpr.getStmChild(0);
+                selectListScope.setInterval(Interval.of(selectKeywordNode.getRealInterval().a, fromKeywordNode.getRealInterval().b));
+
+                SQLQueryLexicalScope fromScope = new SQLQueryLexicalScope();
+
+                STMTreeNode[] filterNodes = new STMTreeNode[]{
+                    tableExpr.findChildOfName(STMKnownRuleNames.whereClause),
+                    tableExpr.findChildOfName(STMKnownRuleNames.groupByClause),
+                    tableExpr.findChildOfName(STMKnownRuleNames.havingClause),
+                    tableExpr.findChildOfName(STMKnownRuleNames.orderByClause)
+                };
+                SQLQueryValueExpression[] filterExprs = new SQLQueryValueExpression[filterNodes.length];
+                SQLQueryLexicalScope[] scopes = new SQLQueryLexicalScope[filterNodes.length + 1];
+                SQLQueryLexicalScope[] prevScopes = new SQLQueryLexicalScope[filterNodes.length + 1];
+                STMTreeNode[] nextScopeNodes = new STMTreeNode[filterNodes.length + 1];
+                {
+                    scopes[0] = fromScope;
+                    prevScopes[0] = selectListScope;
+                    int prevScopeIndex = 0;
+                    for (int i = 0; i < filterNodes.length; i++) {
+                        STMTreeNode filterNode = filterNodes[i];
+                        int scopeIndex = i + 1;
+                        if (filterNode != null) {
+                            try (SQLQueryModelContext.LexicalScopeHolder exprScope = r.openScope()) {
+                                filterExprs[i] = r.collectValueExpression(filterNode);
+                                nextScopeNodes[prevScopeIndex] = filterNode;
+                                scopes[scopeIndex] = exprScope.lexicalScope;
+                                prevScopes[scopeIndex] = scopes[prevScopeIndex];
+                                prevScopeIndex = scopeIndex;
+                            }
+                        }
+                    }
+                }
+                for (int i = 0; i < scopes.length; i++) {
+                    SQLQueryLexicalScope scope = scopes[i];
+                    if (scope != null) {
+                        int from = prevScopes[i].getInterval().b;
+                        int to = nextScopeNodes[i] != null ? nextScopeNodes[i].getRealInterval().a : Integer.MAX_VALUE;
+                        scope.setInterval(Interval.of(from, to));
+                    }
+                }
+
+                projectionModel = new SQLQueryRowsProjectionModel(
+                    r, n, selectListScope, source, fromScope,
+                    SQLQueryRowsProjectionModel.FiltersData.of(filterExprs[0], filterExprs[1], filterExprs[2], filterExprs[3]),
+                    SQLQueryRowsProjectionModel.FiltersData.of(scopes[1], scopes[2], scopes[3], scopes[4]),
+                    resultModel
+                );
             } else {
                 projectionModel = new SQLQueryRowsProjectionModel(r, n, selectListScope, source, resultModel);
             }

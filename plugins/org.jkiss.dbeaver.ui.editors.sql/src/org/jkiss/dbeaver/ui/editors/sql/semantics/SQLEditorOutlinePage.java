@@ -533,7 +533,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         @Override
         public Image getImage() {
             // separate image lifetime, because we don't have a guarantee that outline will be disposed earlier than editor
-            // the outline state changes to the response of the editor event asyncroniously, so their lifetimes are a little bit different
+            // the outline state changes to the response of the editor event asynchronously, so their lifetimes are a little bit different
             Image image = editor.getTitleImage();
             if (this.editorImage != image) {
                 if (this.outlineImage != null) {

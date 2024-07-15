@@ -133,6 +133,7 @@ import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationPanelDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationRegistry;
 import org.jkiss.dbeaver.ui.editors.sql.scripts.ScriptsHandlerImpl;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLEditorCompletionContext;
 import org.jkiss.dbeaver.ui.editors.sql.variables.AssignVariableAction;
 import org.jkiss.dbeaver.ui.editors.sql.variables.SQLVariablesPanel;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
@@ -3459,7 +3460,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
             this.updateMultipleResultsPerTabToolItem();
         });
-
+        this.setCompletionContext(new SQLEditorCompletionContext(this));
         fireDataSourceChanged(event);
         super.preferenceChange(event);
     }
@@ -4352,14 +4353,18 @@ public class SQLEditor extends SQLEditorBase implements
                         currentQueryResult = new SQLQueryResult(new SQLQuery(null, ""));
                     }
                     currentQueryResult.setError(error);
-                    job.notifyQueryExecutionEnd(currentQueryResult);
+                    job.notifyQueryExecutionEnd(null, currentQueryResult);
                 }
             }
         }
 
         @Override
         public void handleExecuteResult(DBCExecutionResult result) {
-            dumpQueryServerOutput(result);
+            // dump server output only once on one query execution
+            // even if it return multiple query results (resultSetNumber > 0)
+            if (this.resultSetNumber == 0) {
+                dumpQueryServerOutput(result);
+            }
         }
 
         @Override
@@ -4781,6 +4786,8 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public void onEndQuery(final DBCSession session, final SQLQueryResult result, DBCStatistics statistics) {
+            refreshContextDefaults(session, result);
+
             try {
                 synchronized (runningQueries) {
                     runningQueries.remove(result.getStatement());
@@ -4812,6 +4819,29 @@ public class SQLEditor extends SQLEditorBase implements
             } finally {
                 if (extListener != null) {
                     extListener.onEndQuery(session, result, statistics);
+                }
+            }
+        }
+
+        private void refreshContextDefaults(DBCSession session, SQLQueryResult result) {
+            final DBCExecutionContext executionContext = getExecutionContext();
+            if (executionContext != null && session != null) {
+                // Refresh active object
+                if ((result == null || !result.hasError()) &&
+                    executionContext.getDataSource().getContainer().isExtraMetadataReadEnabled() &&
+                    getActivePreferenceStore().getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)
+                ) {
+                    DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
+                    if (contextDefaults != null) {
+                        try {
+                            DBUtils.refreshContextDefaultsAndReflect(
+                                session.getProgressMonitor(),
+                                contextDefaults,
+                                executionContext);
+                        } catch (Exception e) {
+                            log.debug("Error refreshing context defaults", e);
+                        }
+                    }
                 }
             }
         }
@@ -5042,31 +5072,6 @@ public class SQLEditor extends SQLEditorBase implements
 
     private void runPostExecuteActions(@Nullable SQLQueryResult result) {
         showResultsPanel(true);
-
-        final DBCExecutionContext executionContext = getExecutionContext();
-        if (executionContext != null) {
-            // Refresh active object
-            if ((result == null || !result.hasError()) &&
-                executionContext.getDataSource().getContainer().isExtraMetadataReadEnabled() &&
-                getActivePreferenceStore().getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)
-            ) {
-                DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
-                if (contextDefaults != null) {
-                    new AbstractJob("Refresh default object") {
-                        @Override
-                        protected IStatus run(DBRProgressMonitor monitor) {
-                            monitor.beginTask("Refresh default objects", 1);
-                            try {
-                                DBUtils.refreshContextDefaultsAndReflect(monitor, contextDefaults, executionContext);
-                            } finally {
-                                monitor.done();
-                            }
-                            return Status.OK_STATUS;
-                        }
-                    }.schedule();
-                }
-            }
-        }
     }
 
     private void updateOutputViewerIcon(boolean alert) {

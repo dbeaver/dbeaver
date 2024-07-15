@@ -119,7 +119,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private boolean reuseWorkspace = false;
     private boolean primaryInstance = true;
     private boolean headlessMode = false;
-    private boolean ignoreRecentWorkspaces = false;
 
     private DBeaverInstanceServer instanceServer;
 
@@ -346,7 +345,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         if (instanceLoc.isSet()) {
             return false;
         }
-        if (ignoreRecentWorkspaces) {
+        if (!isWorkspaceSwitchingAllowed()) {
             return false;
         }
         Collection<String> recentWorkspaces = getRecentWorkspaces(instanceLoc);
@@ -582,7 +581,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         String defaultHomePath = WORKSPACE_DIR_CURRENT;
         final Path homeDir = Path.of(defaultHomePath);
         try {
-            if (!Files.exists(homeDir) || Files.list(homeDir).count() == 0) {
+            if (!Files.exists(homeDir) || isEmptyFolder(homeDir)) {
                 if (!tryMigrateFromPreviousVersion(homeDir)) {
                     return false;
                 }
@@ -636,6 +635,12 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         }
 
         return true;
+    }
+
+    private static boolean isEmptyFolder(Path path) throws IOException {
+        try (Stream<Path> list = Files.list(path)) {
+            return list.findAny().isEmpty();
+        }
     }
 
     protected boolean tryMigrateFromPreviousVersion(Path homeDir) {
@@ -759,7 +764,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     @Override
     public boolean isPrimaryInstance() {
-        return primaryInstance;
+        return primaryInstance && !isHeadlessMode();
     }
 
     @Override
@@ -826,10 +831,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     public void setResetWorkspaceConfigurationOnRestart(boolean resetWorkspaceConfigurationOnRestart) {
         this.resetWorkspaceConfigurationOnRestart = resetWorkspaceConfigurationOnRestart;
-    }
-
-    protected void setIgnoreRecentWorkspaces(boolean ignoreRecentWorkspaces) {
-        this.ignoreRecentWorkspaces = ignoreRecentWorkspaces;
     }
 
     private void saveStartupActions() {

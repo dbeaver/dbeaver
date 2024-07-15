@@ -193,6 +193,9 @@ class ResultSetDataReceiver implements DBDDataReceiver, DBDDataReceiverInteracti
 
         UIUtils.syncExec(() -> {
             // Push data into viewer
+            if (resultSetViewer.getControl().isDisposed()) {
+                return;
+            }
             if (!nextSegmentRead) {
                 boolean metadataChanged = resultSetViewer.getModel().isMetadataChanged();
                 resultSetViewer.updatePresentation(resultSet, metadataChanged);

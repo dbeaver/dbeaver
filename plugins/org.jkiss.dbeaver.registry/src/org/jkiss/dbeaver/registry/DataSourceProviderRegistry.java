@@ -22,10 +22,7 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBConfigurationController;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPDataSourceOriginProvider;
-import org.jkiss.dbeaver.model.DBPDataSourcePermission;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPRegistryListener;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
@@ -100,6 +97,13 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                 // do nothing
             }
         };
+        WorkspaceConfigEventManager.addConfigChangedListener(DriverDescriptorSerializerLegacy.DRIVERS_FILE_NAME, o -> {
+            // Delete custom drivers because they are removed from drivers.xml
+            for (DataSourceProviderDescriptor dataSourceProvider : dataSourceProviders) {
+                dataSourceProvider.removeCustomAndDisabledDrivers();
+            }
+            readDriversConfig();
+        });
     }
 
     private void loadExtensions(IExtensionRegistry registry) {
@@ -202,46 +206,8 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
 
         {
             // Try to load initial drivers config
-            String providedDriversConfig = System.getProperty("dbeaver.drivers.configuration-file");
-            if (!CommonUtils.isEmpty(providedDriversConfig)) {
-                Path configFile = Path.of(providedDriversConfig);
-                if (Files.exists(configFile)) {
-                    log.debug("Loading provided drivers configuration from '" + configFile.toAbsolutePath() + "'");
-                    loadDrivers(providedDriversConfig, true);
-                } else {
-                    log.debug("Provided drivers configuration file '" + configFile.toAbsolutePath() + "' doesn't exist");
-                }
-            }
-
-            // Load user drivers
-            loadDrivers(DriverDescriptorSerializerLegacy.DRIVERS_FILE_NAME, false);
+            readDriversConfig();
         }
-
-        // Resolve all driver replacements
-        {
-            List<DriverDescriptor> allDrivers = new ArrayList<>();
-            for (DataSourceProviderDescriptor provider : dataSourceProviders) {
-                allDrivers.addAll(provider.getDrivers());
-            }
-            for (DriverDescriptor driver1 : allDrivers) {
-                for (DriverDescriptor driver2 : allDrivers) {
-                    if (driver1 != driver2 && driver1.replaces(driver2)) {
-                        driver2.setReplacedBy(driver1);
-                    }
-                }
-            }
-        }
-
-        int driverCount = 0, customDriverCount = 0;
-        for (DataSourceProviderDescriptor pd : dataSourceProviders) {
-            for (DBPDriver dd : pd.getDrivers()) {
-                if (!dd.isDisabled() && dd.getReplacedBy() == null) {
-                    driverCount++;
-                    if (dd.isCustom()) customDriverCount++;
-                }
-            }
-        }
-        log.debug("Total database drivers: " + driverCount + " (" + (driverCount - customDriverCount) + ")");
 
         // Load connection types
         {
@@ -291,6 +257,51 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                 dataSourceConfigurationStorageDescriptors.add(descriptor);
             }
         }
+    }
+
+    private void readDriversConfig() {
+        String providedDriversConfig = System.getProperty("dbeaver.drivers.configuration-file");
+        if (!CommonUtils.isEmpty(providedDriversConfig)) {
+            Path configFile = Path.of(providedDriversConfig);
+            if (Files.exists(configFile)) {
+                log.debug("Loading provided drivers configuration from '" + configFile.toAbsolutePath() + "'");
+                loadDrivers(providedDriversConfig, true);
+            } else {
+                log.debug("Provided drivers configuration file '" + configFile.toAbsolutePath() + "' doesn't exist");
+            }
+        }
+
+        // Load user drivers
+        loadDrivers(DriverDescriptorSerializerLegacy.DRIVERS_FILE_NAME, false);
+
+        // Resolve all driver replacements
+        {
+            List<DriverDescriptor> allDrivers = new ArrayList<>();
+            for (DataSourceProviderDescriptor provider : dataSourceProviders) {
+                allDrivers.addAll(provider.getDrivers());
+            }
+            for (DriverDescriptor driver1 : allDrivers) {
+                for (DriverDescriptor driver2 : allDrivers) {
+                    if (driver1 != driver2 && driver1.replaces(driver2)) {
+                        driver2.setReplacedBy(driver1);
+                    }
+                }
+            }
+        }
+
+        int driverCount = 0;
+        int customDriverCount = 0;
+        for (DataSourceProviderDescriptor pd : dataSourceProviders) {
+            for (DBPDriver dd : pd.getDrivers()) {
+                if (!dd.isDisabled() && dd.getReplacedBy() == null) {
+                    driverCount++;
+                    if (dd.isCustom()) {
+                        customDriverCount++;
+                    }
+                }
+            }
+        }
+        log.debug("Total database drivers: " + driverCount + " (" + (driverCount - customDriverCount) + ")");
     }
 
     public static void dispose() {
