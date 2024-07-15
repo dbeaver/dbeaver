@@ -50,14 +50,18 @@ public class SQLQueryLexicalScope {
             ).mapToInt(x -> x).min().orElse(0);
 
             int b = Stream.concat(
-                items.stream().map(x -> x.getSyntaxNode().getRealInterval().a),
-                syntaxNodes.stream().map(x -> x.getRealInterval().a)
+                items.stream().map(x -> x.getSyntaxNode().getRealInterval().b),
+                syntaxNodes.stream().map(x -> x.getRealInterval().b)
             ).mapToInt(x -> x).max().orElse(Integer.MAX_VALUE);
 
             this.interval = Interval.of(a, b);
         }
         
         return this.interval;
+    }
+
+    public void setInterval(@NotNull Interval interval) {
+        this.interval = interval;
     }
 
     /**
