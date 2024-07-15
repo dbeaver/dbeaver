@@ -17,16 +17,12 @@
 package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBPObjectWithOrdinalPosition;
 
 /**
  * DBSColumnBase
  */
-public interface DBSAttributeBase extends DBSTypedObject, DBPNamedObject
-{
-    /**
-     * Attribute ordinal position (zero based).
-     */
-    int getOrdinalPosition();
+public interface DBSAttributeBase extends DBSTypedObject, DBPNamedObject, DBPObjectWithOrdinalPosition {
 
     boolean isRequired();
 

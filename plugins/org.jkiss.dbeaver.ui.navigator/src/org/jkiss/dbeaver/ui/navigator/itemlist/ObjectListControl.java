@@ -662,11 +662,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         if (lazyObjects == null) {
             lazyObjects = new LinkedHashMap<>();
         }
-        List<ObjectColumn> objectColumns = lazyObjects.get(object);
-        if (objectColumns == null) {
-            objectColumns = new ArrayList<>();
-            lazyObjects.put(object, objectColumns);
-        }
+        List<ObjectColumn> objectColumns = lazyObjects.computeIfAbsent(object, k -> new ArrayList<>());
         if (!objectColumns.contains(column)) {
             objectColumns.add(column);
         }
@@ -740,7 +736,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         // Non-editable properties are empty for new objects
         //return null;
         //}
-        if (prop.isLazy(objectValue, true)) {
+        if (!isDynamicObject(object) && prop.isLazy(objectValue, true)) {
             synchronized (lazyCache) {
                 final Map<String, Object> cache = lazyCache.get(object);
                 if (cache != null) {
@@ -817,6 +813,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
      */
     protected Object getObjectValue(OBJECT_TYPE item) {
         return item;
+    }
+
+    protected boolean isDynamicObject(OBJECT_TYPE object) {
+        return false;
     }
 
     /**

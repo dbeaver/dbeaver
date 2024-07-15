@@ -142,6 +142,17 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         }
     }
 
+    @Override
+    public boolean canFinish() {
+        if (settings.getProcessor() != null && CommonUtils.isEmpty(settings.getProcessorProperties())) {
+            // Assumes all processors have at least one property - which is true.
+            // When changing processors, the new one doesn't have any properties
+            // and must be configured by the user by going through the wizard once again.
+            return false;
+        }
+        return super.canFinish();
+    }
+
     void loadSettings() {
         // Load node settings
         Collection<DBSObject> objectTypes = settings.getSourceObjects();

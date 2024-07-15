@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
-import java.util.stream.Stream;
+import java.util.LinkedList;
 
 /**
  * Describes one column of a selection result
@@ -72,10 +72,11 @@ public class SQLQuerySelectionResultColumnSpec extends SQLQuerySelectionResultSu
 
     @NotNull
     @Override
-    protected Stream<SQLQueryResultColumn> expand(
+    protected void collectColumns(
         @NotNull SQLQueryDataContext context,
         @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
-        @NotNull SQLQueryRecognitionContext statistics
+        @NotNull SQLQueryRecognitionContext statistics,
+        @NotNull LinkedList<SQLQueryResultColumn> resultColumns
     ) {
         this.valueExpression.propagateContext(context, statistics);
 
@@ -87,7 +88,7 @@ public class SQLQuerySelectionResultColumnSpec extends SQLQuerySelectionResultSu
                 columnName.setDefinition(this.alias);
                 columnName.setSymbolClass(SQLQuerySymbolClass.COLUMN_DERIVED);
             } else {
-                return Stream.empty();
+                return;
             }
             underlyingColumn = null;
         } else {
@@ -99,9 +100,9 @@ public class SQLQuerySelectionResultColumnSpec extends SQLQuerySelectionResultSu
         }
 
         SQLQueryExprType type = valueExpression.getValueType();
-        return Stream.of(underlyingColumn == null
-            ? new SQLQueryResultColumn(columnName, rowsSourceModel, null, null, type)
-            : new SQLQueryResultColumn(columnName, rowsSourceModel, underlyingColumn.realSource, underlyingColumn.realAttr, type)
+        resultColumns.add(underlyingColumn == null
+            ? new SQLQueryResultColumn(resultColumns.size(), columnName, rowsSourceModel, null, null, type)
+            : new SQLQueryResultColumn(resultColumns.size(), columnName, rowsSourceModel, underlyingColumn.realSource, underlyingColumn.realAttr, type)
         );
     }
 
