@@ -390,6 +390,12 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
                     if (autocommit != null) {
                         autocommit.setSelection(type.isAutocommit());
                     }
+                    if (closeIdleConnectionsCheck != null) {
+                        closeIdleConnectionsCheck.setSelection(type.isAutoCloseConnections());
+                    }
+                    if (closeIdleConnectionsPeriod != null) {
+                        closeIdleConnectionsPeriod.setSelection(type.getCloseIdleConnectionPeriod());
+                    }
                 }
             });
         }

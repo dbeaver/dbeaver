@@ -61,6 +61,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * General connection page (common for all connection types)
@@ -643,7 +644,11 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         }
 
         if (connectionTypeCombo.getSelectionIndex() >= 0) {
-            confConfig.setConnectionType(connectionTypeCombo.getSelectedItem());
+            DBPConnectionType newConnectionType = connectionTypeCombo.getSelectedItem();
+            if (!Objects.equals(newConnectionType, confConfig.getConnectionType())) {
+                // Changing connection types also changes defaults
+                confConfig.setConnectionType(newConnectionType);
+            }
         }
 
         DataSourceDescriptor dsDescriptor = (DataSourceDescriptor) dataSource;
