@@ -87,5 +87,4 @@ public class DatabaseDashboardProvider implements DBDashboardProvider {
     public boolean appliesTo(@NotNull DBPDataSourceContainer dataSource) {
         return true;
     }
-
 }

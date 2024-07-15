@@ -76,4 +76,17 @@
         </authModel>
     </extension>
 
+
+    <extension point="org.jkiss.dbeaver.dashboard">
+        <dashboard id="bigquery-dash"
+                   label="API metrics"
+                   description="BigQuery API monitoring charts"
+                   defaultView="browser"
+                   url="https://console.cloud.google.com/apis/api/bigquery.googleapis.com/metrics?project=${database}"
+                   externalUrl="https://console.cloud.google.com/apis/api/bigquery.googleapis.com/metrics?project=${database}"
+                   resolveVariables="true">
+            <datasource id="bigquery"/>
+        </dashboard>
+    </extension>
+
 </plugin>

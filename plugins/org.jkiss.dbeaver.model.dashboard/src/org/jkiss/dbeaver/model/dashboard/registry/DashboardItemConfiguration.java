@@ -183,6 +183,9 @@ public class DashboardItemConfiguration extends AbstractContextDescriptor implem
         }
 
         this.isCustom = false;
+        this.dashboardURL = config.getAttribute("url");
+        this.dashboardExternalURL = config.getAttribute("externalUrl");
+        this.resolveVariables = CommonUtils.getBoolean(config.getAttribute("resolveVariables"), true);
     }
 
     DashboardItemConfiguration(DashboardRegistry registry, Element config) {
