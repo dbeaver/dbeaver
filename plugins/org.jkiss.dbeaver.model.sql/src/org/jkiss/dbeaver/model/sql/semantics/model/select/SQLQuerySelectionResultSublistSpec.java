@@ -24,7 +24,8 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
-import java.util.stream.Stream;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Describes a fragment of the selection result
@@ -52,9 +53,20 @@ public abstract class SQLQuerySelectionResultSublistSpec extends SQLQueryNodeMod
     }
 
     @NotNull
-    protected abstract Stream<SQLQueryResultColumn> expand(
+    protected abstract void collectColumns(
         @NotNull SQLQueryDataContext context,
         @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
-        @NotNull SQLQueryRecognitionContext statistics
+        @NotNull SQLQueryRecognitionContext statistics,
+        @NotNull LinkedList<SQLQueryResultColumn> resultColumns
     );
+
+    protected void collectForeignColumns(
+        @NotNull List<SQLQueryResultColumn> foreignColumns,
+        @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
+        @NotNull LinkedList<SQLQueryResultColumn> resultColumns
+    ) {
+        for (SQLQueryResultColumn c : foreignColumns) {
+            resultColumns.addLast(new SQLQueryResultColumn(resultColumns.size(), c.symbol, rowsSourceModel, c.realSource, c.realAttr, c.type));
+        }
+    }
 }
