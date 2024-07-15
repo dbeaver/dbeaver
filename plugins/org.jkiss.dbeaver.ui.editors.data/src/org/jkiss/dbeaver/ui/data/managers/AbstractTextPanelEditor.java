@@ -272,7 +272,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
                     }
 
                     if (getPanelSettings().getBoolean(PREF_TEXT_EDITOR_WORD_WRAP)) {
-                        UIUtils.asyncExec(() -> {
+                        UIUtils.syncExec(() -> {
                             textWidget.setWordWrap(true);
                         });
                     }
