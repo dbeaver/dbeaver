@@ -265,11 +265,11 @@ public class DataSourceMonitorJob extends AbstractJob {
     public static long getTransactionTimeoutSeconds(@NotNull DBPDataSourceContainer container) {
         final DBPPreferenceStore pref = container.getPreferenceStore();
         final DBPConnectionConfiguration config = container.getConnectionConfiguration();
-        long ttlSeconds = 0;
+        int ttlSeconds = 0;
 
         if (pref.contains(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED)) {
             // First check datasource settings from the "Transactions" preference page
-            ttlSeconds = pref.getLong(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL);
+            ttlSeconds = pref.getInt(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL);
         }
 
         if (ttlSeconds == 0) {

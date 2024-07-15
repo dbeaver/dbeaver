@@ -33,13 +33,11 @@ import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
-import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
+import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.ConnectionTestJob;
@@ -280,6 +278,8 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
 
     @NotNull
     protected DBPConnectionConfiguration getDefaultConnectionConfiguration() {
-        return new DBPConnectionConfiguration();
+        DBPConnectionConfiguration config = new DBPConnectionConfiguration();
+        config.setConnectionType(DBPConnectionType.getDefaultConnectionType());
+        return config;
     }
 }
