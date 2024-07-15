@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBACertificateStorage;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.Base64;
 
 import java.io.*;
@@ -58,11 +59,15 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
         this.userDefinedKeystores = new HashMap<>();
         if (Files.exists(localPath)) {
             // Cleanup old keystores
-            final File[] ksFiles = localPath.toFile().listFiles();
-            if (ksFiles != null) {
-                for (File ksFile : ksFiles) {
-                    if (!ksFile.delete()) {
-                        log.warn("Can't delete old keystore '" + ksFile.getAbsolutePath() + "'");
+            // We do not cleanup key stores in non-primary instances
+            // Because they may be used by another instances of the application (pro/#2998)
+            if (DBWorkbench.getPlatform().getApplication().isPrimaryInstance()) {
+                final File[] ksFiles = localPath.toFile().listFiles();
+                if (ksFiles != null) {
+                    for (File ksFile : ksFiles) {
+                        if (!ksFile.delete()) {
+                            log.warn("Can't delete old keystore '" + ksFile.getAbsolutePath() + "'");
+                        }
                     }
                 }
             }

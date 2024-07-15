@@ -37,7 +37,11 @@
                 </not>
             </activeWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.git.commands.projectFromGit" class="org.jkiss.dbeaver.team.git.ui.handlers.ProjectCloneHandler"/>
+        <handler commandId="org.jkiss.dbeaver.git.commands.projectFromGit" class="org.jkiss.dbeaver.team.git.ui.handlers.ProjectCloneHandler">
+            <enabledWhen>
+                <test property="org.jkiss.dbeaver.core.global.canCreateProject"/>
+            </enabledWhen>
+        </handler>
         <handler commandId="org.jkiss.dbeaver.git.commands.update" class="org.jkiss.dbeaver.team.git.ui.handlers.GITUpdateHandler">
             <activeWhen>
                 <test property="GitSelection.resourcesSingleRepository"/>
@@ -95,10 +99,14 @@
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.projectNavigator?before=additions">
-            <command commandId="org.jkiss.dbeaver.git.commands.projectFromGit"/>
+            <command commandId="org.jkiss.dbeaver.git.commands.projectFromGit">
+                <visibleWhen checkEnabled="true"/>
+            </command>
         </menuContribution>
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.projectNavigator?before=additions">
-            <command commandId="org.jkiss.dbeaver.git.commands.projectFromGit"/>
+            <command commandId="org.jkiss.dbeaver.git.commands.projectFromGit">
+                <visibleWhen checkEnabled="true"/>
+            </command>
         </menuContribution>
 
     </extension>

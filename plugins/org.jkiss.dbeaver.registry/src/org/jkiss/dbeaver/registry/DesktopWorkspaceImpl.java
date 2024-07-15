@@ -270,7 +270,7 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
             }
 
         } catch (Throwable e) {
-            log.error("Error refreshing workspce contents", e);
+            log.error("Error refreshing workspace contents", e);
         }
     }
 

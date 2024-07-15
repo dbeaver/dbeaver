@@ -94,9 +94,9 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
         if (correspondingColumnNames.isEmpty()) { // require left and right to have the same tuples
             List<SQLQueryResultColumn> leftColumns = left.getColumnsList();
             List<SQLQueryResultColumn> rightColumns = right.getColumnsList();
-            resultColumns = new ArrayList<>(Math.max(leftColumns.size(), rightColumns.size()));
-
-            for (int i = 0; i < resultColumns.size(); i++) {
+            int resultColumnsCount = Math.max(leftColumns.size(), rightColumns.size());
+            resultColumns = new ArrayList<>(resultColumnsCount);
+            for (int i = 0; i < resultColumnsCount; i++) {
                 if (i >= leftColumns.size()) {
                     resultColumns.add(rightColumns.get(i));
                     nonMatchingColumnSets = true;
@@ -106,12 +106,13 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
                 } else { // TODO validate corresponding names to be the same?
                     SQLQueryExprType type = this.obtainCommonType(leftColumns.get(i), rightColumns.get(i));
                     SQLQuerySymbol symbol = leftColumns.get(i).symbol.merge(rightColumns.get(i).symbol);
-                    resultColumns.add(new SQLQueryResultColumn(symbol, this, null, null, type));
+                    resultColumns.add(new SQLQueryResultColumn(i, symbol, this, null, null, type));
                 }
             }
         } else { // require left and right to have columns subset as given with correspondingColumnNames
-            resultColumns = new ArrayList<>(correspondingColumnNames.size());
-            for (int i = 0; i < resultColumns.size(); i++) {
+            int resultColumnsCount = correspondingColumnNames.size();
+            resultColumns = new ArrayList<>(resultColumnsCount);
+            for (int i = 0; i < resultColumnsCount; i++) {
                 SQLQuerySymbolEntry column = correspondingColumnNames.get(i);
                 if (column.isNotClassified()) {
                     SQLQueryResultColumn leftDef = left.resolveColumn(statistics.getMonitor(), column.getName());
@@ -123,7 +124,7 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
                     SQLQueryExprType type = this.obtainCommonType(leftDef, rightDef);
 
                     column.getSymbol().setDefinition(column); // TODO combine multiple definitions
-                    resultColumns.add(new SQLQueryResultColumn(column.getSymbol(), this, null, null, type));
+                    resultColumns.add(new SQLQueryResultColumn(i, column.getSymbol(), this, null, null, type));
                 }
             }
         }

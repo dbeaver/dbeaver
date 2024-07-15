@@ -122,7 +122,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
                     StringWriter buf = new StringWriter();
                     taskError.printStackTrace(new PrintWriter(buf, true));
                     taskRun.setErrorStackTrace(buf.toString());
-                    taskLog.info(String.format("Task '%s' (%s) finished with errros in %s ms", task.getName(), task.getId(), elapsedTime));
+                    taskLog.info(String.format("Task '%s' (%s) finished with errors in %s ms", task.getName(), task.getId(), elapsedTime));
                 } else {
                     taskLog.info(String.format("Task '%s' (%s) finished successfully in %s ms", task.getName(), task.getId(), elapsedTime));
                 }
@@ -131,7 +131,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
                 Log.setLogWriter(null);
             }
         } catch (IOException e) {
-            log.error("Error opning task run log file", e);
+            log.error("Error opening task run log file", e);
         }
         return Status.OK_STATUS;
     }

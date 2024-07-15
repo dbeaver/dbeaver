@@ -2019,7 +2019,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
             if (cellValue instanceof List<?>) {
                 return ((List<?>) cellValue).size();
-            } else if (cellValue instanceof DBDComposite) {
+            } else if (cellValue instanceof DBDComposite && controller.isRecordMode()) {
                 return ((DBDComposite) cellValue).getAttributeCount();
             } else {
                 return 0;

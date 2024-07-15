@@ -67,7 +67,7 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
     String getDisplayName();
 
     /**
-     * Proiject UUID was deprecated. Use getId instead.
+     * Project UUID was deprecated. Use getId instead.
      */
     @Deprecated
     @NotNull
@@ -148,6 +148,8 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
 
     @Nullable
     Map<String, Object> getResourceProperties(@NotNull String resourcePath);
+
+    void setResourceProperties(@NotNull String resourcePath, @NotNull Map<String, Object> newProps);
 
     @Nullable
     Object getResourceProperty(@NotNull String resourcePath, @NotNull String propName);

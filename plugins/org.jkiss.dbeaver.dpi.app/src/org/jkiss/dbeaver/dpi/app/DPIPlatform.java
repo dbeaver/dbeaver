@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBACertificateStorage;
 import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -90,7 +91,7 @@ public class DPIPlatform extends BasePlatformImpl {
             Path installPath = RuntimeUtils.getLocalPathFromURL(Platform.getInstallLocation().getURL());
 
             this.tempFolder = installPath.resolve("temp");
-            this.defaultCertificateStorage = new DefaultCertificateStorage(installPath.resolve("security"));
+            this.defaultCertificateStorage = new DefaultCertificateStorage(installPath.resolve(DBConstants.CERTIFICATE_STORAGE_FOLDER));
         } catch (IOException e) {
             log.debug(e);
         }

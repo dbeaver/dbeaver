@@ -751,21 +751,25 @@ public class PostgreDatabase extends JDBCRemoteInstance
     boolean supportsSysTypCategoryColumn(JDBCSession session) {
         if (supportTypColumn == null) {
             if (!dataSource.isServerVersionAtLeast(10, 0)) {
-                try {
-                    JDBCUtils.queryString(
-                        session,
-                        PostgreUtils.getQueryForSystemColumnChecking("pg_type", "typcategory"));
-                    supportTypColumn = true;
-                } catch (SQLException e) {
-                    log.debug("Error reading system information from the pg_type table: " + e.getMessage());
-                    try {
-                        if (!session.isClosed() && !session.getAutoCommit()) {
-                            session.rollback();
-                        }
-                    } catch (SQLException ex) {
-                        log.warn("Can't rollback transaction", e);
-                    }
+                if (!dataSource.isServerVersionAtLeast(8, 4)) {
                     supportTypColumn = false;
+                } else {
+                    try {
+                        JDBCUtils.queryString(
+                            session,
+                            PostgreUtils.getQueryForSystemColumnChecking("pg_type", "typcategory"));
+                        supportTypColumn = true;
+                    } catch (SQLException e) {
+                        log.debug("Error reading system information from the pg_type table: " + e.getMessage());
+                        try {
+                            if (!session.isClosed() && !session.getAutoCommit()) {
+                                session.rollback();
+                            }
+                        } catch (SQLException ex) {
+                            log.warn("Can't rollback transaction", e);
+                        }
+                        supportTypColumn = false;
+                    }
                 }
             } else {
                 supportTypColumn = true;
@@ -824,12 +828,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     @Override
     public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
-        PostgreSchema schema = getSchema(monitor, childName);
-        if (schema == null && getDataSource().getServerType().supportsEventTriggers()) {
-            // If not schema - can be event trigger
-            return getEventTrigger(monitor, childName);
-        }
-        return schema;
+        return getSchema(monitor, childName);
     }
 
     @NotNull

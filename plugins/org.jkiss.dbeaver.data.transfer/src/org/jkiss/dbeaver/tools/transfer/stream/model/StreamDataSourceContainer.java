@@ -235,6 +235,11 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
         return false;
     }
 
+    @Override
+    public boolean isConnecting() {
+        return false;
+    }
+
     @Nullable
     @Override
     public String getConnectionError() {
