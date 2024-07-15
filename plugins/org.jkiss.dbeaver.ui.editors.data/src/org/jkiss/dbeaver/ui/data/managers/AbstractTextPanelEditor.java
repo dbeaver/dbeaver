@@ -242,7 +242,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
     private void initEditorSettings(StyledText control) {
         boolean wwEnabled = getPanelSettings().getBoolean(PREF_TEXT_EDITOR_WORD_WRAP);
         if (wwEnabled != control.getWordWrap()) {
-            control.setWordWrap(wwEnabled);
+            //control.setWordWrap(wwEnabled);
         }
     }
 
@@ -255,18 +255,26 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
                 if (textWidget == null || textWidget.isDisposed()) {
                     return;
                 }
-                textWidget.setRedraw(false);
-
                 boolean oldEditable = textViewer.isEditable();
-                if (!oldEditable) {
-                    textViewer.setEditable(true);
-                }
                 try {
-                    if (textViewer.canDoOperation(ISourceViewer.FORMAT)) {
-                        textViewer.doOperation(ISourceViewer.FORMAT);
+                    textWidget.setRedraw(false);
+
+                    if (!oldEditable) {
+                        textViewer.setEditable(true);
                     }
-                } catch (Exception e) {
-                    log.debug("Error formatting text: " + e.getMessage());
+
+                    try {
+                        if (textViewer.canDoOperation(ISourceViewer.FORMAT)) {
+                            textViewer.doOperation(ISourceViewer.FORMAT);
+                        }
+                    } catch (Exception e) {
+                        log.debug("Error formatting text: " + e.getMessage());
+                    }
+
+                    UIUtils.asyncExec(() -> {
+                        textWidget.setWordWrap(getPanelSettings().getBoolean(PREF_TEXT_EDITOR_WORD_WRAP));
+                    });
+
                 } finally {
                     if (!oldEditable) {
                         textViewer.setEditable(false);
@@ -361,7 +369,9 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
                                 gc.dispose();
                             }
                         }
+                        editor.getEditorControl().setWordWrap(false);
                         editor.setInput(textInput);
+
                         messageBar.hideMessage();
                     } else {
                         editor.setInput(textInput);
@@ -379,9 +389,11 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
             final String content = new String(displayingContentBytes);
             UIUtils.syncExec(() -> {
                 if (editor != null) {
+                    editor.getEditorControl().setWordWrap(false);
                     editor.setInput(new StringEditorInput("Limited Content ", content, true, StandardCharsets.UTF_8.name()));
                     messageBar.showMessage(NLS.bind(ResultSetMessages.panel_editor_text_content_limitation_lbl, lengthInBytes / 1000));
                 }
+                applyEditorStyle();
             });
         }
     }
