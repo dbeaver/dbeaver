@@ -141,19 +141,17 @@ public abstract class SQLQueryDataContext {
         private final Map<SQLQueryRowsSourceModel, SourceResolutionResult> sources = new HashMap<>();
 
         public void registerTableReference(@NotNull SQLQueryRowsSourceModel source, @NotNull DBSEntity table) {
-            if (source instanceof SQLQueryRowsCorrelatedSourceModel cc && cc.getCorrelationColumNames().isEmpty()) {
-                source = cc.getSource();
-            }
-            SQLQueryRowsSourceModel ssource = source;
-            this.sources.compute(source, (k, v) -> v == null ? SourceResolutionResult.forRealTableByName(ssource, table) : SourceResolutionResult.withRealTable(v, table));
+            SQLQueryRowsSourceModel sourceModel = source instanceof SQLQueryRowsCorrelatedSourceModel cc && cc.getCorrelationColumNames().isEmpty()
+                ? cc.getSource() : source;
+            this.sources.compute(sourceModel, (k, v) -> v == null
+                ? SourceResolutionResult.forRealTableByName(sourceModel, table) : SourceResolutionResult.withRealTable(v, table));
         }
 
         public void registerAlias(@NotNull SQLQueryRowsSourceModel source, @NotNull SQLQuerySymbol alias) {
-            if (source instanceof SQLQueryRowsCorrelatedSourceModel cc && cc.getCorrelationColumNames().isEmpty()) {
-                source = cc.getSource();
-            }
-            SQLQueryRowsSourceModel ssource = source;
-            this.sources.compute(source, (k, v) -> v == null ? SourceResolutionResult.forSourceByAlias(ssource, alias) : SourceResolutionResult.withAlias(v, alias));
+            SQLQueryRowsSourceModel sourceModel = source instanceof SQLQueryRowsCorrelatedSourceModel cc && cc.getCorrelationColumNames().isEmpty()
+                ? cc.getSource() : source;
+            this.sources.compute(sourceModel, (k, v) -> v == null
+                ? SourceResolutionResult.forSourceByAlias(sourceModel, alias) : SourceResolutionResult.withAlias(v, alias));
         }
 
         @NotNull

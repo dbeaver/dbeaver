@@ -26,10 +26,4 @@ public class DuckDBSQLDialect extends GenericSQLDialect {
     public boolean supportsAliasInSelect() {
         return true;
     }
-
-    @Override
-    public boolean supportsAliasInUpdate() {
-        return true;
-    }
-
 }

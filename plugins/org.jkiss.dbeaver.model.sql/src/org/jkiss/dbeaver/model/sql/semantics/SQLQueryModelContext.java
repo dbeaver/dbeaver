@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDummyDataSourceCont
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryObjectDropModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryTableDropModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryDeleteModel;
@@ -129,28 +130,28 @@ public class SQLQueryModelContext {
                 STMTreeNode stmtBodyNode = queryNode.getLastStmtChild();
                 // TODO collect CTE for insert-update-delete as well as recursive CTE
                 yield switch (stmtBodyNode.getNodeKindId()) {
-                        case SQLStandardParser.RULE_deleteStatement ->
-                            SQLQueryDeleteModel.createModel(this, stmtBodyNode);
-                        case SQLStandardParser.RULE_insertStatement ->
-                            SQLQueryInsertModel.createModel(this, stmtBodyNode);
-                        case SQLStandardParser.RULE_updateStatement ->
-                            SQLQueryUpdateModel.createModel(this, stmtBodyNode);
-                        default -> this.collectQueryExpression(tree);
-                    };
+                    case SQLStandardParser.RULE_deleteStatement ->
+                        SQLQueryDeleteModel.createModel(this, stmtBodyNode);
+                    case SQLStandardParser.RULE_insertStatement ->
+                        SQLQueryInsertModel.createModel(this, stmtBodyNode);
+                    case SQLStandardParser.RULE_updateStatement ->
+                        SQLQueryUpdateModel.createModel(this, stmtBodyNode);
+                    default -> this.collectQueryExpression(tree);
+                };
             }
             case SQLStandardParser.RULE_sqlSchemaStatement -> {
                 STMTreeNode stmtBodyNode = queryNode.getFirstStmChild();
                 yield switch (stmtBodyNode.getNodeKindId()) {
-                        case SQLStandardParser.RULE_createTableStatement -> null;
-                        case SQLStandardParser.RULE_createViewStatement -> null;
-                        case SQLStandardParser.RULE_dropTableStatement ->
-                            SQLQueryTableDropModel.createModel(this, stmtBodyNode, false);
-                        case SQLStandardParser.RULE_dropViewStatement ->
-                            SQLQueryTableDropModel.createModel(this, stmtBodyNode, true);
-                        case SQLStandardParser.RULE_dropProcedureStatement ->
-                            SQLQueryObjectDropModel.createModel(this, stmtBodyNode, RelationalObjectType.TYPE_PROCEDURE);
-                        default -> null;
-                    };
+                    case SQLStandardParser.RULE_createTableStatement -> null;
+                    case SQLStandardParser.RULE_createViewStatement -> null;
+                    case SQLStandardParser.RULE_dropTableStatement ->
+                        SQLQueryTableDropModel.createModel(this, stmtBodyNode, false);
+                    case SQLStandardParser.RULE_dropViewStatement ->
+                        SQLQueryTableDropModel.createModel(this, stmtBodyNode, true);
+                    case SQLStandardParser.RULE_dropProcedureStatement ->
+                        SQLQueryObjectDropModel.createModel(this, stmtBodyNode, RelationalObjectType.TYPE_PROCEDURE);
+                    default -> null;
+                };
             }
             default -> null;
         };
@@ -159,6 +160,17 @@ public class SQLQueryModelContext {
             SQLQueryModel model = new SQLQueryModel(tree, contents, symbolEntries);
 
             model.propagateContext(this.queryDataContext, new RecognitionContext(monitor));
+
+            int actualTailPosition = model.getSyntaxNode().getRealInterval().b;
+            SQLQueryNodeModel tailNode = model.findNodeContaining(actualTailPosition);
+            if (tailNode != model) {
+                SQLQueryLexicalScope nodeScope = tailNode.findLexicalScope(actualTailPosition);
+                SQLQueryLexicalScope tailScope = new SQLQueryLexicalScope();
+                tailScope.setInterval(Interval.of(actualTailPosition, Integer.MAX_VALUE));
+                tailScope.setContext(nodeScope != null && nodeScope.getContext() != null ? nodeScope.getContext() : tailNode.getGivenDataContext());
+                model.registerLexicalScope(tailScope);
+            }
+
 
             // var tt = new DebugGraphBuilder();
             // tt.traverseObjs(model);
