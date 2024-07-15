@@ -949,6 +949,12 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     @NotNull
     @Override
     public TPRule[] extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull RulePosition position) {
+        return extendRules(dataSource, position, false);
+    }
+
+    @NotNull
+    @Override
+    public TPRule[] extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull RulePosition position, boolean forHighlighting) {
         if (position == RulePosition.INITIAL || position == RulePosition.PARTITION) {
             boolean ddTagDefault = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PostgreConstants.PROP_DD_TAG_STRING);
             boolean ddTagIsString = dataSource == null
@@ -961,7 +967,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
                 : CommonUtils.getBoolean(dataSource.getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_DD_PLAIN_STRING), ddPlainDefault);
 
             return new TPRule[] {
-                new SQLDollarQuoteRule(position == RulePosition.PARTITION, true, ddTagIsString, ddPlainIsString),
+                new SQLDollarQuoteRule(position == RulePosition.PARTITION, true, ddTagIsString, ddPlainIsString || !forHighlighting),
                 new PostgreEscapeStringRule()
             };
         }

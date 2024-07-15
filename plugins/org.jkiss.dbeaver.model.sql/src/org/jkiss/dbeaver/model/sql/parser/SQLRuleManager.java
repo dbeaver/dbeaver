@@ -86,10 +86,14 @@ public class SQLRuleManager {
     }
 
     public void loadRules() {
-        loadRules(null, false);
+        loadRules(null, false, false);
     }
 
     public void loadRules(@Nullable DBPDataSource dataSource, boolean minimalRules) {
+        loadRules(dataSource, minimalRules, false);
+    }
+
+    public void loadRules(@Nullable DBPDataSource dataSource, boolean minimalRules, boolean forHighlighting) {
         SQLDialect dialect = syntaxManager.getDialect();
         TPRuleProvider ruleProvider = GeneralUtils.adapt(dialect, TPRuleProvider.class);
         DBPDataSourceContainer dataSourceContainer = dataSource == null ? null : dataSource.getContainer();
@@ -113,11 +117,11 @@ public class SQLRuleManager {
         List<TPRule> rules = new ArrayList<>();
 
         if (ruleProvider != null) {
-            Collections.addAll(rules, ruleProvider.extendRules(dataSourceContainer, TPRuleProvider.RulePosition.INITIAL));
+            Collections.addAll(rules, ruleProvider.extendRules(dataSourceContainer, TPRuleProvider.RulePosition.INITIAL, forHighlighting));
         }
 
         if (ruleProvider != null) {
-            Collections.addAll(rules, ruleProvider.extendRules(dataSourceContainer, TPRuleProvider.RulePosition.CONTROL));
+            Collections.addAll(rules, ruleProvider.extendRules(dataSourceContainer, TPRuleProvider.RulePosition.CONTROL, forHighlighting));
         }
 
         if (!minimalRules) {
@@ -178,7 +182,7 @@ public class SQLRuleManager {
             }
         }
         if (ruleProvider != null) {
-            Collections.addAll(rules, ruleProvider.extendRules(dataSourceContainer, TPRuleProvider.RulePosition.QUOTES));
+            Collections.addAll(rules, ruleProvider.extendRules(dataSourceContainer, TPRuleProvider.RulePosition.QUOTES, forHighlighting));
         }
         
         // Add rule for single-line comments.
@@ -223,7 +227,7 @@ public class SQLRuleManager {
         }
 
         if (ruleProvider != null) {
-            Collections.addAll(rules, ruleProvider.extendRules(dataSourceContainer, TPRuleProvider.RulePosition.KEYWORDS));
+            Collections.addAll(rules, ruleProvider.extendRules(dataSourceContainer, TPRuleProvider.RulePosition.KEYWORDS, forHighlighting));
         }
 
         if (!minimalRules) {
@@ -266,7 +270,7 @@ public class SQLRuleManager {
         }
 
         if (ruleProvider != null) {
-            Collections.addAll(rules, ruleProvider.extendRules(dataSourceContainer, TPRuleProvider.RulePosition.FINAL));
+            Collections.addAll(rules, ruleProvider.extendRules(dataSourceContainer, TPRuleProvider.RulePosition.FINAL, forHighlighting));
         }
 
         allRules = rules.toArray(new TPRule[0]);
