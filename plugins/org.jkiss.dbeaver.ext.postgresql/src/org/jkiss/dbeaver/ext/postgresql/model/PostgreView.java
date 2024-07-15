@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
@@ -60,7 +61,7 @@ public class PostgreView extends PostgreViewBase
     }
 
     @Override
-    public List<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException
+    public List<? extends DBSTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }

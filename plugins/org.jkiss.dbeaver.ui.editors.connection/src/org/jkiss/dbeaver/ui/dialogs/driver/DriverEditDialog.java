@@ -31,6 +31,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -70,7 +71,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * DriverEditDialog
@@ -951,9 +952,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
     }
 
     private void synAddDriverLibDirectory(DBPDriverLibrary newLib, Path localFilePath, String shortFileName) throws DBException {
-        try {
-            List<Path> dirFiles = Files.list(localFilePath).collect(Collectors.toList());
-            for (Path file : dirFiles) {
+        try (Stream<Path> list = Files.list(localFilePath)) {
+            for (Path file : list.toList()) {
                 shortFileName = shortFileName + "/" + file.getFileName().toString();
                 if (Files.isDirectory(file)) {
                     synAddDriverLibDirectory(newLib, file, shortFileName + "/" + file.getFileName().toString());
@@ -1003,8 +1003,9 @@ public class DriverEditDialog extends HelpEnabledDialog {
     public static void showBadConfigDialog(final Shell shell, final String message, final DBException error) {
         //log.debug(message);
         Runnable runnable = () -> {
-            DBPDataSource dataSource = error.getDataSource();
-            String title = NLS.bind(UIConnectionMessages.dialog_edit_driver_dialog_bad_configuration, dataSource.getContainer().getDriver().getName());
+            DBPDataSource dataSource = error instanceof DBDatabaseException dbe ? dbe.getDataSource() : null;
+            String title = NLS.bind(UIConnectionMessages.dialog_edit_driver_dialog_bad_configuration,
+                dataSource == null ? "<unknown driver>" : dataSource.getContainer().getDriver().getName());
             new BadDriverConfigDialog(shell, title, message == null ? title : message, error).open();
         };
         UIUtils.syncExec(runnable);
@@ -1021,7 +1022,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 message,
                 RuntimeUtils.stripStack(GeneralUtils.makeExceptionStatus(error)),
                 IStatus.ERROR);
-            dataSource = error.getDataSource();
+            dataSource = error instanceof DBDatabaseException dbe ? dbe.getDataSource() : null;
         }
 
         @Override

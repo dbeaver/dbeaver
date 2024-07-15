@@ -17,106 +17,31 @@
 
 package org.jkiss.dbeaver;
 
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
-
-import java.sql.SQLException;
 
 /**
  * DBException
  */
-public class DBException extends Exception
-{
+public class DBException extends Exception {
     private static final long serialVersionUID = 1L;
 
     public static final int ERROR_CODE_NONE = -1;
 
-    private final DBPDataSource dataSource;
-    private final boolean hasMessage;
-
-    public DBException(String message)
-    {
+    public DBException(String message) {
         super(message);
-        this.dataSource = null;
-        this.hasMessage = true;
     }
 
-    public DBException(String message, Throwable cause)
-    {
+    public DBException(String message, Throwable cause) {
         super(message, cause);
-        this.dataSource = null;
-        this.hasMessage = message != null;
-    }
-
-    public DBException(Throwable cause, DBPDataSource dataSource)
-    {
-        super(cause instanceof SQLException ? makeMessage((SQLException) cause) : cause.getMessage(), cause);
-        this.dataSource = dataSource;
-        this.hasMessage = false;
-    }
-
-
-    public DBException(String message, Throwable cause, DBPDataSource dataSource)
-    {
-        super(message, cause);
-        this.dataSource = dataSource;
-        this.hasMessage = message != null;
-    }
-
-    public DBPDataSource getDataSource()
-    {
-        if (dataSource != null) {
-            return dataSource;
-        }
-        Throwable cause = getCause();
-        if (cause instanceof DBException) {
-            return ((DBException) cause).getDataSource();
-        }
-        return null;
-    }
-
-    public boolean hasMessage() {
-        return hasMessage;
-    }
-
-    public int getErrorCode()
-    {
-        Throwable cause = getCause();
-        if (cause instanceof SQLException) {
-            return ((SQLException) cause).getErrorCode();
-        } else if (cause instanceof DBException) {
-            return ((DBException) cause).getErrorCode();
-        } else {
-            return ERROR_CODE_NONE;
-        }
-    }
-
-    /**
-     * SQL state or other standard error code.
-     * For JDBC/SQL drivers it refers to SQL99 state or XOpen state
-     */
-    public String getDatabaseState()
-    {
-        Throwable cause = getCause();
-        if (cause instanceof SQLException) {
-            return ((SQLException) cause).getSQLState();
-        } else if (cause instanceof DBException) {
-            return ((DBException) cause).getDatabaseState();
-        } else {
-            return null;
-        }
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
-        if (obj instanceof DBException) {
+    public boolean equals(Object obj) {
+        if (obj instanceof DBException dbe) {
             if (obj == this) {
                 return true;
             }
-            Throwable ex1 = (Throwable)obj;
+            Throwable ex1 = dbe;
             Throwable ex2 = this;
             while (ex1 != null) {
                 if (!CommonUtils.equalObjects(ex1.getMessage(), ex2.getMessage())) {
@@ -132,21 +57,6 @@ public class DBException extends Exception
         } else {
             return false;
         }
-    }
-
-    private static String makeMessage(SQLException ex)
-    {
-        StringBuilder msg = new StringBuilder(ModelMessages.common_error_sql);
-        if (ex.getErrorCode() > 0) {
-            msg.append(" [").append(ex.getErrorCode()).append("]"); //$NON-NLS-1$ //$NON-NLS-2$
-        }
-        if (!CommonUtils.isEmpty(ex.getSQLState())) {
-            msg.append(" [").append(ex.getSQLState()).append("]"); //$NON-NLS-1$ //$NON-NLS-2$
-        }
-        if (!CommonUtils.isEmpty(ex.getMessage())) {
-            msg.append(": ").append(SQLUtils.stripTransformations(ex.getMessage())); //$NON-NLS-1$
-        }
-        return msg.toString();
     }
 
 }

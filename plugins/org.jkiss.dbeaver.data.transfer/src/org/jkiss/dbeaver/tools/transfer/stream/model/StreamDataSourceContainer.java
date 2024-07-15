@@ -198,6 +198,11 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
 
     }
 
+    @Override
+    public boolean isExtraMetadataReadEnabled() {
+        return false;
+    }
+
     @Nullable
     @Override
     public DBSObjectFilter getObjectFilter(Class<?> type, @Nullable DBSObject parentObject, boolean firstMatch) {
@@ -227,6 +232,11 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
 
     @Override
     public boolean isConnected() {
+        return false;
+    }
+
+    @Override
+    public boolean isConnecting() {
         return false;
     }
 

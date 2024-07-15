@@ -24,16 +24,17 @@ import org.antlr.v4.runtime.tree.Trees;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzerParameters;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser.SqlQueriesContext;
+import org.jkiss.dbeaver.model.stm.LSMInspections;
 import org.jkiss.dbeaver.model.stm.STMErrorListener;
 
+import javax.xml.stream.FactoryConfigurationError;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.xml.stream.FactoryConfigurationError;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.transform.TransformerException;
 
 public class SyntaxParserTest {
 
@@ -93,6 +94,9 @@ public class SyntaxParserTest {
                 + " GROUP BY City";
 
         inputText = "SELECT * FROM EMPLOYEES e WHERE e.EMPLOYEE_ID > :xl ";
+
+        inputText = "select * from test. ";
+
         var input = CharStreams.fromString(inputText);
         var params = new LSMAnalyzerParameters(
             Map.of("\"", "\""),
@@ -148,14 +152,16 @@ public class SyntaxParserTest {
         String str = tree.getTextContent();
 
         System.out.println(str);
-        
+
         { // print simple parse tree view
             var sb = new StringBuilder();
             sb.append("\n");
             collect(tree, pp, sb, "");
             System.out.println(sb.toString());
         }
-        
+
+        System.out.println(LSMInspections.prepareTerms(tree));
+        System.out.println(LSMInspections.prepareAbstractSyntaxInspection(tree, inputText.length() - 1).getReachabilityByName());
     }
     
     private static void collect(Tree ctx, Parser pp, StringBuilder sb, String indent) {        

@@ -50,7 +50,6 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -59,18 +58,9 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePersistentRegistry, DBPDataSourceRegistryCache {
-    @Deprecated
-    public static final String DEFAULT_AUTO_COMMIT = "default.autocommit"; //$NON-NLS-1$
-    @Deprecated
-    public static final String DEFAULT_ISOLATION = "default.isolation"; //$NON-NLS-1$
-    @Deprecated
-    public static final String DEFAULT_ACTIVE_OBJECT = "default.activeObject"; //$NON-NLS-1$
-
-    private static final long DISCONNECT_ALL_TIMEOUT = 5000;
-
     private static final Log log = Log.getLog(DataSourceRegistry.class);
 
-    public static final String OLD_CONFIG_FILE_NAME = "data-sources.xml"; //$NON-NLS-1$
+    private static final long DISCONNECT_ALL_TIMEOUT = 5000;
 
     private final DBPProject project;
     private final DataSourceConfigurationManager configurationManager;
@@ -355,7 +345,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         return null;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public DBPDataSourceFolder getFolder(@NotNull String path) {
         return findFolderByPath(path, true, null);
@@ -603,7 +593,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         try {
             this.fireDataSourceEvent(DBPEvent.Action.OBJECT_REMOVE, dataSource);
         } finally {
-            ((DataSourceDescriptor) dataSource).dispose();
+            dataSource.dispose();
         }
     }
 
@@ -795,7 +785,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         ParseResults parseResults = new ParseResults();
         // Modern way - search json configs in metadata folder
         for (DBPDataSourceConfigurationStorage cfgStorage : storages) {
-            if (loadDataSources(cfgStorage, manager, dataSourceIds, false, parseResults)) {
+            if (loadDataSources(cfgStorage, manager, dataSourceIds, parseResults)) {
                 configChanged = true;
             } else {
                 if (lastError != null) {
@@ -813,8 +803,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                 addDataSourceToList(ds);
                 fireDataSourceEvent(DBPEvent.Action.OBJECT_ADD, ds);
             }
-            for (DataSourceFolder folder : parseResults.addedFolders) {
-                addDataSourceFolder(folder);
+            for (DBPDataSourceFolder folder : parseResults.addedFolders) {
+                addDataSourceFolder((DataSourceFolder) folder);
             }
 
             if (purgeUntouched) {
@@ -854,11 +844,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         return configChanged;
     }
 
-    private boolean loadDataSources(
+    protected boolean loadDataSources(
         @NotNull DBPDataSourceConfigurationStorage storage,
         @NotNull DataSourceConfigurationManager manager,
         @Nullable Collection<String> dataSourceIds,
-        boolean refresh,
         @NotNull ParseResults parseResults
     ) {
         boolean configChanged = false;
@@ -869,7 +858,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
             } else {
                 serializer = new DataSourceSerializerModern(this);
             }
-            configChanged = serializer.parseDataSources(storage, manager, parseResults, dataSourceIds, refresh);
+            configChanged = serializer.parseDataSources(storage, manager, parseResults, dataSourceIds);
 
             lastError = null;
         } catch (Exception ex) {
@@ -1056,18 +1045,18 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         }
     }
 
-    static class ParseResults {
-        Set<DBPDataSourceContainer> updatedDataSources = new LinkedHashSet<>();
-        Set<DBPDataSourceContainer> addedDataSources = new LinkedHashSet<>();
-        Set<DataSourceFolder> addedFolders = new LinkedHashSet<>();
-        Set<DataSourceFolder> updatedFolders = new LinkedHashSet<>();
+    protected static class ParseResults {
+        public Set<DBPDataSourceContainer> updatedDataSources = new LinkedHashSet<>();
+        public Set<DBPDataSourceContainer> addedDataSources = new LinkedHashSet<>();
+        public Set<DBPDataSourceFolder> addedFolders = new LinkedHashSet<>();
+        public Set<DBPDataSourceFolder> updatedFolders = new LinkedHashSet<>();
     }
 
     private class DisconnectTask implements DBRRunnableWithProgress {
         boolean disconnected;
 
         @Override
-        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+        public void run(DBRProgressMonitor monitor) {
             monitor = new ProxyProgressMonitor(monitor) {
                 @Override
                 public boolean isCanceled() {

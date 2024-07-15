@@ -36,6 +36,7 @@ You can change default JDK version by replacing directory `jre` in dbeaver insta
 
 ## Documentation
 
+* <a href="https://dbeaver.com/docs/dbeaver/">Full product documentation</a>
 * <a href="https://github.com/dbeaver/dbeaver/wiki">WIKI</a>
 * <a href="https://github.com/dbeaver/dbeaver/issues">Issue tracker</a>
 
@@ -48,13 +49,13 @@ You can change default JDK version by replacing directory `jre` in dbeaver insta
 - For bug reports and feature requests - please <a href="https://github.com/dbeaver/dbeaver/issues">create a ticket</a>.
 - If you have any questions, ideas, etc - please <a href="https://github.com/dbeaver/dbeaver/discussions">start a discussion</a>.
 - Pull requests are welcome.
-- Visit https://dbeaver.io or https://dbeaver.com for more information.
-- Follow us on [Twitter](https://twitter.com/dbeaver_news/) and [Facebook](https://www.facebook.com/DBeaverCorporation)
+- Visit https://dbeaver.com for more information.
+- Follow us on [Twitter](https://twitter.com/dbeaver_news/) and watch educational video on [YouTube](https://www.youtube.com/@DBeaver_video)
 - Thanks for using DBeaver! Star if you like it.
 
 ## Contribution: help the Beaver!
 
-Hooray, we have reached 30k+ stars on GitHub and continue to grow!  
+Hooray, we have reached 35k+ stars on GitHub and continue to grow!  
 That's really cool, and we are glad that you like DBeaver.
 
 - We are actively looking for new source code contributors. We have added labels “Good first issue” and “Help wanted” to some tickets. If you want to be a part of our development team, just be brave and take a ticket.

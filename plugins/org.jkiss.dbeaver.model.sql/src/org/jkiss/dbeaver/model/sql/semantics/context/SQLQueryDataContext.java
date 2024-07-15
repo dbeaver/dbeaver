@@ -21,10 +21,12 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryRowsCorrelatedSourceModel;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryRowsSourceModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsCorrelatedSourceModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -127,27 +129,29 @@ public abstract class SQLQueryDataContext {
     @NotNull
     public abstract SQLQueryRowsSourceModel getDefaultTable(@NotNull STMTreeNode syntaxNode);
 
+    public DBSObject findRealObject(DBRProgressMonitor monitor, DBSObjectType objectType, List<String> name) {
+        return null;
+    }
+
     /**
      * Representation of the information about rows sources involved in semantic model
      */
-    public class KnownSourcesInfo {
+    public static class KnownSourcesInfo {
         @NotNull
         private final Map<SQLQueryRowsSourceModel, SourceResolutionResult> sources = new HashMap<>();
 
         public void registerTableReference(@NotNull SQLQueryRowsSourceModel source, @NotNull DBSEntity table) {
-            if (source instanceof SQLQueryRowsCorrelatedSourceModel cc && cc.getCorrelationColumNames().isEmpty()) {
-                source = cc.getSource();
-            }
-            SQLQueryRowsSourceModel ssource = source;
-            this.sources.compute(source, (k, v) -> v == null ? SourceResolutionResult.forRealTableByName(ssource, table) : SourceResolutionResult.withRealTable(v, table));
+            SQLQueryRowsSourceModel sourceModel = source instanceof SQLQueryRowsCorrelatedSourceModel cc && cc.getCorrelationColumNames().isEmpty()
+                ? cc.getSource() : source;
+            this.sources.compute(sourceModel, (k, v) -> v == null
+                ? SourceResolutionResult.forRealTableByName(sourceModel, table) : SourceResolutionResult.withRealTable(v, table));
         }
 
         public void registerAlias(@NotNull SQLQueryRowsSourceModel source, @NotNull SQLQuerySymbol alias) {
-            if (source instanceof SQLQueryRowsCorrelatedSourceModel cc && cc.getCorrelationColumNames().isEmpty()) {
-                source = cc.getSource();
-            }
-            SQLQueryRowsSourceModel ssource = source;
-            this.sources.compute(source, (k, v) -> v == null ? SourceResolutionResult.forSourceByAlias(ssource, alias) : SourceResolutionResult.withAlias(v, alias));
+            SQLQueryRowsSourceModel sourceModel = source instanceof SQLQueryRowsCorrelatedSourceModel cc && cc.getCorrelationColumNames().isEmpty()
+                ? cc.getSource() : source;
+            this.sources.compute(sourceModel, (k, v) -> v == null
+                ? SourceResolutionResult.forSourceByAlias(sourceModel, alias) : SourceResolutionResult.withAlias(v, alias));
         }
 
         @NotNull

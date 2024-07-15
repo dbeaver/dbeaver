@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.model.impls.redshift;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
@@ -305,7 +306,7 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
                 }
             }
         } catch (Exception e) {
-            throw new DBException(e, table.getDataSource());
+            throw new DBDatabaseException(e, table.getDataSource());
         }
     }
 
@@ -384,7 +385,7 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
 
         @NotNull
         @Override
-        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase database, PostgreSchema object, String objectName) throws SQLException {
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @Nullable PostgreSchema object, @Nullable String objectName) throws SQLException {
             // 1. Read all external schemas info
             esSchemaMap.clear();
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -465,6 +466,16 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     @Override
     public int getTruncateToolModes() {
         return 0;
+    }
+
+    @Override
+    public boolean supportsAcl() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsCustomDataTypes() {
+        return false;
     }
 
     @Override

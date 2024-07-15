@@ -205,14 +205,17 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         }
 
         long features = getWizard().getSelectedDriver().getDataSourceProvider().getFeatures();
+        boolean isFeatureCatalogOnlyNeedToApply = (features & DBPDataSourceProvider.FEATURE_CATALOGS_ONLY) != 0;
 
         for (FilterInfo filterInfo : filters) {
             if (DBSCatalog.class.isAssignableFrom(filterInfo.type)) {
-                enableFilter(filterInfo, (features & DBPDataSourceProvider.FEATURE_CATALOGS) != 0);
+                enableFilter(filterInfo,
+                    (features & DBPDataSourceProvider.FEATURE_CATALOGS) != 0 || isFeatureCatalogOnlyNeedToApply);
             } else if (DBSSchema.class.isAssignableFrom(filterInfo.type)) {
-                enableFilter(filterInfo, (features & DBPDataSourceProvider.FEATURE_SCHEMAS) != 0);
+                enableFilter(filterInfo,
+                    (features & DBPDataSourceProvider.FEATURE_SCHEMAS) != 0 && !isFeatureCatalogOnlyNeedToApply);
             } else {
-                enableFilter(filterInfo, true);
+                enableFilter(filterInfo, !isFeatureCatalogOnlyNeedToApply);
             }
         }
         filtersGroup.layout();

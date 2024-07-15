@@ -337,6 +337,9 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
                 return false;
             }
             for (String prop : metaURL.getRequiredProperties()) {
+                if (isConnectionPropertyOptional(prop)) {
+                    continue;
+                }
                 if (
                     (prop.equals(DBConstants.PROP_HOST) && CommonUtils.isEmptyTrimmed(hostText.getText())) ||
                     (prop.equals(DBConstants.PROP_PORT) && CommonUtils.isEmptyTrimmed(portText.getText())) ||
@@ -348,6 +351,12 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             }
             return true;
         }
+    }
+
+    // Needed to make some properties optional although they are specified as required in URL pattern
+    // DS provider may pre-populate default values for them
+    protected boolean isConnectionPropertyOptional(String property) {
+        return false;
     }
 
     @Override

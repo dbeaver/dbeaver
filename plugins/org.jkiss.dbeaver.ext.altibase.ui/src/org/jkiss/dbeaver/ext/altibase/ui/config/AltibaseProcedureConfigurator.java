@@ -34,7 +34,7 @@ public class AltibaseProcedureConfigurator implements DBEObjectConfigurator<Alti
 
     @Override
     public AltibaseProcedureStandAlone configureObject(DBRProgressMonitor monitor, DBECommandContext commandContext,
-    		Object container, AltibaseProcedureStandAlone procedure, Map<String, Object> options) {
+            Object container, AltibaseProcedureStandAlone procedure, Map<String, Object> options) {
         return new UITask<AltibaseProcedureStandAlone>() {
             @Override
             protected AltibaseProcedureStandAlone runTask() {
@@ -49,8 +49,8 @@ public class AltibaseProcedureConfigurator implements DBEObjectConfigurator<Alti
                 procedure.setProcedureType(procedureType);
 
                 procedure.setObjectDefinitionText(
-                    "CREATE OR REPLACE " + procedureType.name() + " " + procedureName +
-                    (procedureType == DBSProcedureType.FUNCTION ? "() RETURN NUMBER" : "") + GeneralUtils.getDefaultLineSeparator() +
+                        "CREATE OR REPLACE " + procedureType.name() + " " + procedureName +
+                        (procedureType == DBSProcedureType.FUNCTION ? "() RETURN NUMBER" : "") + GeneralUtils.getDefaultLineSeparator() +
                         "IS" + GeneralUtils.getDefaultLineSeparator() +
                         "BEGIN" + GeneralUtils.getDefaultLineSeparator() +
                         (procedureType == DBSProcedureType.FUNCTION ? "\tRETURN 1;" : "") +

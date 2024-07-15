@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.altibase.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
@@ -56,10 +57,12 @@ import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 public class AltibaseDataSource extends GenericDataSource implements DBPObjectStatisticsCollector {
-    
+
     private static final Log log = Log.getLog(AltibaseDataSource.class);
 
     final TablespaceCache tablespaceCache = new TablespaceCache();
@@ -67,22 +70,22 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     final RoleCache roleCache = new RoleCache();
     final ReplicationCache replCache;
     private boolean hasStatistics;
-    
+
     private GenericSchema publicSchema;
     private boolean isPasswordExpireWarningShown;
     private AltibaseOutputReader outputReader;
-    
+
     private String dbName;
     String queryGetActiveDB;
 
     public AltibaseDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, AltibaseMetaModel metaModel)
             throws DBException {
         super(monitor, container, metaModel, new AltibaseSQLDialect());
-        
+
         queryGetActiveDB = CommonUtils.toString(container.getDriver().getDriverParameter(GenericConstants.PARAM_QUERY_GET_ACTIVE_DB));
         replCache = new ReplicationCache(this);
     }
-    
+
     @Override
     public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
         super.initialize(monitor);
@@ -91,26 +94,26 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         publicSchema = new GenericSchema(this, null, AltibaseConstants.USER_PUBLIC);
         publicSchema.setVirtual(true);
     }
-    
+
     @Override
     protected void initializeContextState(
             @NotNull DBRProgressMonitor monitor, 
             @NotNull JDBCExecutionContext context, 
             JDBCExecutionContext initFrom) throws DBException {
-        
+
         super.initializeContextState(monitor, context, initFrom);
-        
+
         // Enable DBMS output
         if (outputReader == null) {
             outputReader = new AltibaseOutputReader();
         }
-        
+
         outputReader.enableServerOutput(
             monitor,
             context,
             outputReader.isServerOutputEnabled());
     }
-    
+
     @NotNull
     public AltibaseMetaModel getMetaModel() {
         return (AltibaseMetaModel) super.getMetaModel();
@@ -127,29 +130,29 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
                     dbName = JDBCUtils.safeGetStringTrimmed(resultSet, 1);
                 }
             } catch (SQLException e) {
-                throw new DBException(e, this);
+                throw new DBDatabaseException(e, this);
             }
         }
-        
+
         return dbName;
     }
-    
+
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         super.refreshObject(monitor);
-        
+
         this.tablespaceCache.clearCache();
         this.userCache.clearCache();
         this.roleCache.clearCache();
         this.replCache.clearCache();
-        
+
         hasStatistics = false;
-        
+
         this.initialize(monitor);
 
         return this;
     }
-    
+
     @Nullable
     @Override
     public <T> T getAdapter(Class<T> adapter) {
@@ -160,10 +163,10 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         } else if (adapter == DBAServerSessionManager.class) {
             return adapter.cast(new AltibaseServerSessionManager(this));
         }
-        
+
         return super.getAdapter(adapter);
     }
-    
+
     @Override
     protected Connection openConnection(
             @NotNull DBRProgressMonitor monitor, 
@@ -188,7 +191,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
             throw e;
         }
     }
-    
+
     private boolean checkForPasswordWillExpireWarning(@NotNull SQLWarning warning) {
         if ((warning != null) && (warning.getErrorCode() == AltibaseConstants.EC_PASSWORD_WILL_EXPIRE)) {
             DBWorkbench.getPlatformUI().showWarningMessageBox(
@@ -196,12 +199,12 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
                     warning.getMessage() + 
                     AltibaseConstants.NEW_LINE + 
                     AltibaseConstants.PASSWORD_WILL_EXPIRE_WARN_DESCRIPTION);
-            
+
             return true;
         }
         return false;
     }
-        
+
     @NotNull
     @Override
     public AltibaseDataSource getDataSource() {
@@ -212,10 +215,10 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     public boolean splitProceduresAndFunctions() {
         return true;
     }
-    
+
     @NotNull
     @Override
-    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
         return AltibaseSchema.class;
     }
 
@@ -226,33 +229,32 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
             throws DBException {
         DBSObject refObj = null;
         AltibaseSchema refSchema = (AltibaseSchema) this.getSchema(refSchemaName);
-        
-        if (refSchema != null)
-        {
-        	// No object type from database metadata, so need to find it one by one.
-        	if (refObj == null) {
-        		refObj = refSchema.getTable(monitor, refObjName);
-        	} 
-        	if (refObj == null) {
-        		refObj = refSchema.getSequence(monitor, refObjName);
-        	}
-        	if (refObj == null) {
-        		refObj = refSchema.getSynonym(monitor, refObjName);
-        	}
-        	if (refObj == null) {
-        		refObj = refSchema.getProcedureByName(monitor, refObjName);
-        	}
-        	if (refObj == null) {
-        		refObj = refSchema.getPackage(monitor, refObjName);
-        	}
-        	if (refObj == null) {
-        		refObj = refSchema.getIndex(monitor, refObjName);
-        	}
-        	if (refObj == null) {
-        		refObj = refSchema.getTableTrigger(monitor, refObjName);
-        	}
+
+        if (refSchema != null) {
+            // No object type from database metadata, so need to find it one by one.
+            if (refObj == null) {
+                refObj = refSchema.getTable(monitor, refObjName);
+            } 
+            if (refObj == null) {
+                refObj = refSchema.getSequence(monitor, refObjName);
+            }
+            if (refObj == null) {
+                refObj = refSchema.getSynonym(monitor, refObjName);
+            }
+            if (refObj == null) {
+                refObj = refSchema.getProcedureByName(monitor, refObjName);
+            }
+            if (refObj == null) {
+                refObj = refSchema.getPackage(monitor, refObjName);
+            }
+            if (refObj == null) {
+                refObj = refSchema.getIndex(monitor, refObjName);
+            }
+            if (refObj == null) {
+                refObj = refSchema.getTableTrigger(monitor, refObjName);
+            }
         } else {
-            /**
+            /*
              *  Though Public synonym does not have its own schema, but SYSTEM_.SYS_SYONYMS_.OBJECT_OWNER_NAME returns 
              *  the object creator as owner like Oracle.
              *  So, first look for it in the owner's private schema, and if it is not found, then try to find it at public schema.
@@ -265,20 +267,20 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
                 }
             }
         }
-        
+
         return refObj;
     }
-    
+
     /**
      * Returns public synonym as a collection.
      */
     public Collection<? extends GenericSynonym> getPublicSynonyms(DBRProgressMonitor monitor) throws DBException {
         return publicSchema.getSynonyms(monitor);
     }
-    
+
     ///////////////////////////////////////////////
     // Tablespace
-    
+
     /**
      * Get tablespace colection
      */
@@ -293,7 +295,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     public TablespaceCache getTablespaceCache() {
         return tablespaceCache;
     }
-    
+
     static class TablespaceCache extends JDBCObjectCache<AltibaseDataSource, AltibaseTablespace> {
         @NotNull
         @Override
@@ -310,7 +312,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
             return new AltibaseTablespace(owner, resultSet);
         }
     }
-    
+
     /**
      * Get User cache
      */
@@ -348,7 +350,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     public AltibaseUser getUser(DBRProgressMonitor monitor, String name) throws DBException {
         return userCache.getObject(monitor, this, name);
     }
-    
+
     /**
      * Altibase Roles
      */
@@ -370,7 +372,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
             return new AltibaseRole(owner, resultSet);
         }
     }
-    
+
     /**
      * Returns Altibase roles 
      */
@@ -386,7 +388,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     public AltibaseRole getRole(DBRProgressMonitor monitor, String name) throws DBException {
         return roleCache.getObject(monitor, this, name);
     }
-    
+
     /**
      * Returns Altibase grantee. 
      */
@@ -397,24 +399,24 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         }
         return roleCache.getObject(monitor, this, name);
     }
-    
-    
+
+
     ///////////////////////////////////////////////
     // Replications
     static class ReplicationCache extends JDBCStructLookupCache<GenericStructContainer, AltibaseReplication, AltibaseReplicationItem> {
-        
+
         final AltibaseDataSource dataSource;
-        
+
         protected ReplicationCache(AltibaseDataSource dataSource) {
             super("Replication");
             this.dataSource = dataSource;
             setListOrderComparator(DBUtils.<AltibaseReplication>nameComparatorIgnoreCase());
         }
-        
+
         public AltibaseDataSource getDataSource() {
             return dataSource;
         }
-        
+
         @NotNull
         @Override
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, 
@@ -465,20 +467,20 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
                             + (CommonUtils.isEmpty(replName) ? "" : " AND r.replication_name = ?")
                         + " ORDER BY r.replication_name"
                     );
-            
+
             if (CommonUtils.isNotEmpty(replName)) {
                 dbStat.setString(1, replName);
             }
             return dbStat;
         }
-        
+
         @Nullable
         @Override
         protected AltibaseReplication fetchObject(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, 
                 @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
             return new AltibaseReplication(owner, dbResult);
         }
-        
+
         @Override
         protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, 
                 @NotNull AltibaseReplication forTable) throws SQLException {
@@ -490,7 +492,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
             dbStat.setString(1, forTable.getName());
             return dbStat;
         }
-        
+
         @Override
         protected AltibaseReplicationItem fetchChild(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, 
                 @NotNull AltibaseReplication replication, @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
@@ -501,11 +503,11 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     /**
      * Get Replication Cache
      */
-    
+
     public ReplicationCache getReplicationCache() {
         return replCache;
     }
-    
+
     /**
      * Return all cached replications.
      */
@@ -521,8 +523,8 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     public AltibaseReplication getReplication(DBRProgressMonitor monitor, String name) throws DBException {
         return replCache.getObject(monitor, this, name);
     }
-    
-    
+
+
     ///////////////////////////////////////////////
     // Statistics
 
@@ -549,18 +551,44 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
                 }
             }
         } catch (DBException e) {
-            throw new DBException("Can't read tablespace statistics", e, getDataSource());
+            throw new DBDatabaseException("Can't read tablespace statistics", e, getDataSource());
         } finally {
             hasStatistics = true;
+        }
+    }
+
+    ///////////////////////////////////////////////
+    // Altibase Properties
+    @NotNull
+    public List<AltibaseProperty> getProperties(DBRProgressMonitor monitor)
+            throws DBException {
+        return loadPropertyList(monitor);
+    }
+
+    @NotNull
+    private List<AltibaseProperty> loadPropertyList(@NotNull DBRProgressMonitor monitor) throws DBException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load properties")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM V$PROPERTY ORDER BY NAME ASC" )) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    List<AltibaseProperty> propertyList = new ArrayList<>();
+                    while (dbResult.next()) {
+                        AltibaseProperty parameter = new AltibaseProperty(this, dbResult);
+                        propertyList.add(parameter);
+                    }
+                    return propertyList;
+                }
+            }
+        } catch (SQLException ex) {
+            throw new DBException("Failed to load database properties", ex);
         }
     }
     
     ///////////////////////////////////////////////
     // DBMS Procedure Output
     private class AltibaseOutputReader implements DBCServerOutputReader {
-        
+
         private StringBuilder callBackMsg = new StringBuilder();
-        
+
         @Override
         public boolean isServerOutputEnabled() {
             return getContainer().getPreferenceStore().getBoolean(AltibaseConstants.PREF_DBMS_OUTPUT);
@@ -575,18 +603,18 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
                 DBRProgressMonitor monitor, 
                 DBCExecutionContext context, 
                 boolean enable) throws DBCException {
-            
+
             Connection conn = null;
             ClassLoader classLoader = null;
             @SuppressWarnings("rawtypes")
             Class class4MsgCallback = null;
             Object instance4Callback = null;
             Method method2RegisterCallback = null;
-            
+
             String connClassNamePrefix = "Altibase";
             String className4Connection = "N/A";
             String className4MessageCallback = "N/A";
-            
+
             try (JDBCSession session = (JDBCSession) context.openSession(monitor, 
                     DBCExecutionPurpose.UTIL, (enable ? "Enable" : "Disable") + " DBMS output")) {
 
@@ -612,11 +640,11 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
                             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                                 if ("print".equals(method.getName())) {
                                     callBackMsg.append((String) args[0]);
-                                }
-        
-                                return null;
                         }
-                    });
+
+                        return null;
+                    }
+                });
 
                 if (instance4Callback == null) {
                     throw new InstantiationException("Failed to instantiate class: " + className4MessageCallback);

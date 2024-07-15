@@ -116,7 +116,7 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner implements TP
      * (that is, SQL code other than a string literal or delimited identifier).
      *
      * @param doc the document to parse into partitions
-     * @return an array containing the document partion regions
+     * @return an array containing the document partition regions
      */
     public static ITypedRegion[] getDocumentRegions(IDocument doc) {
         ITypedRegion[] regions = null;

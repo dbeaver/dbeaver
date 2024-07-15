@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -42,6 +43,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
+import org.jkiss.dbeaver.model.impl.net.SSLConstants;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -143,8 +145,13 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     }
 
     @Override
-    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo)
-        throws DBCException {
+    protected Map<String, String> getInternalConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDriver driver,
+        @NotNull JDBCExecutionContext context,
+        @NotNull String purpose,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBCException {
         Map<String, String> props = new LinkedHashMap<>(MySQLDataSourceProvider.getConnectionsProps());
         final DBWHandlerConfiguration sslConfig = getContainer().getActualConnectionConfiguration().getHandler(MySQLConstants.HANDLER_SSL);
         if (sslConfig != null && sslConfig.isEnabled()) {
@@ -211,12 +218,12 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             byte[] clientCertData = SSLHandlerTrustStoreImpl.readCertificate(sslConfig, SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT, MySQLConstants.PROP_SSL_CLIENT_CERT);
             byte[] keyData = SSLHandlerTrustStoreImpl.readCertificate(sslConfig, SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY, MySQLConstants.PROP_SSL_CLIENT_KEY);
             if (caCertData != null || clientCertData != null) {
-                securityManager.addCertificate(getContainer(), "ssl", caCertData, clientCertData, keyData);
+                securityManager.addCertificate(getContainer(), SSLConstants.SSL_CERT_TYPE, caCertData, clientCertData, keyData);
             } else {
-                securityManager.deleteCertificate(getContainer(), "ssl");
+                securityManager.deleteCertificate(getContainer(), SSLConstants.SSL_CERT_TYPE);
             }
-            final String ksPath = makeKeyStorePath(securityManager.getKeyStorePath(getContainer(), "ssl"));
-            final char[] ksPass = securityManager.getKeyStorePassword(getContainer(), "ssl");
+            final String ksPath = makeKeyStorePath(securityManager.getKeyStorePath(getContainer(), SSLConstants.SSL_CERT_TYPE));
+            final char[] ksPass = securityManager.getKeyStorePassword(getContainer(), SSLConstants.SSL_CERT_TYPE);
             if (isMariaDB()) {
                 props.put("trustStore", ksPath);
                 props.put("trustStorePassword", String.valueOf(ksPass));
@@ -465,7 +472,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
 
     @NotNull
     @Override
-    public Class<? extends MySQLCatalog> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) {
+    public Class<? extends MySQLCatalog> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) {
         return MySQLCatalog.class;
     }
 
@@ -538,7 +545,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                 }
             }
         } catch (SQLException ex) {
-            throw new DBException(ex, this);
+            throw new DBDatabaseException(ex, this);
         }
     }
 
@@ -642,7 +649,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                 }
             }
         } catch (SQLException ex) {
-            throw new DBException(ex, this);
+            throw new DBDatabaseException(ex, this);
         }
     }
 
@@ -689,7 +696,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                 }
             }
         } catch (SQLException ex) {
-            throw new DBException(ex, this);
+            throw new DBDatabaseException(ex, this);
         }
     }
 

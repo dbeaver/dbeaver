@@ -49,7 +49,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreFeatures;
 import org.jkiss.dbeaver.core.ui.services.ApplicationPolicyService;
-import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPApplication;
@@ -64,7 +63,6 @@ import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
 import org.jkiss.dbeaver.ui.app.standalone.update.DBeaverVersionChecker;
-import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
@@ -104,7 +102,10 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.epp.mpc.projectnatures",
         "org.eclipse.ui.internal.console.ansi.preferences.AnsiConsolePreferencePage",
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.browser.preferencePage",
-        "org.eclipse.jsch.ui.SSHPreferences"
+        "org.eclipse.jsch.ui.SSHPreferences",
+
+        WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID,
+        WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.AutoSave",
 
         // Team preferences - not needed in CE
         //"org.eclipse.team.ui.TeamPreferences",
@@ -117,8 +118,6 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.browser.preferencePage",
             WORKBENCH_PREF_PAGE_ID + "/org.eclipse.search.preferences.SearchPreferencePage",
             WORKBENCH_PREF_PAGE_ID + "/org.eclipse.text.quicksearch.PreferencesPage",
-            WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID,
-            WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.AutoSave",
             WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.FileEditors" //"File Associations"
     };
 
@@ -139,13 +138,6 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     };
 
 
-    /**
-     * Diagram font
-     */
-    public static String DIAGRAM_FONT = ERDUIConstants.PROP_DIAGRAM_FONT;
-
-    public static String RESULTS_GRID_FONT = ThemeConstants.FONT_SQL_RESULT_SET;
-    
     private static final Set<String> fontPrefIdsToHide = Set.of(
         ApplicationWorkbenchWindowAdvisor.TEXT_EDITOR_BLOCK_SELECTION_FONT,
         ApplicationWorkbenchWindowAdvisor.TEXT_FONT,
@@ -276,13 +268,14 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         
         FontPreferenceOverrides.hideFontPrefs(pm, fontPrefIdsToHide);
         
-        for (String epp : getExcludedPreferencePageIds()) {
-            pm.remove(epp);
-        }
         patchPreferencePages(pm, EDITORS_PREF_PAGES, PrefPageDatabaseEditors.PAGE_ID);
         patchPreferencePages(pm, UI_PREF_PAGES, PrefPageDatabaseUserInterface.PAGE_ID);
         patchPreferencePages(pm, GENERAL_PREF_PAGES, WORKBENCH_PREF_PAGE_ID);
         patchPreferencePages(pm, NETWORK_PREF_PAGES, PrefPageConnectionsGeneral.PAGE_ID);
+
+        for (String epp : getExcludedPreferencePageIds()) {
+            pm.remove(epp);
+        }
     }
 
     @NotNull
@@ -364,70 +357,76 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         if (getWorkbenchConfigurer().emergencyClosing()) {
             return true;
         }
-
         try {
             IWorkbenchWindow window = getWorkbenchConfigurer().getWorkbench().getActiveWorkbenchWindow();
             if (window != null) {
-                if (!MessageDialogWithToggle.NEVER.equals(ConfirmationDialog.getSavedPreference(DBeaverPreferences.CONFIRM_EXIT))) {
-                    // Workaround of #703 bug. NEVER doesn't make sense for Exit confirmation. It is the same as ALWAYS.
-                    if (ConfirmationDialog.confirmAction(window.getShell(), DBeaverPreferences.CONFIRM_EXIT, ConfirmationDialog.QUESTION)
-                        != IDialogConstants.YES_ID)
-                    {
-                        return false;
-                    }
-                }
-                // Close al content editors
-                // They are locks resources which are shared between other editors
-                // So we need to close em first
-                IWorkbenchPage workbenchPage = window.getActivePage();
-                IEditorReference[] editors = workbenchPage.getEditorReferences();
-                List<IEditorPart> editorsToRevert = new ArrayList<>();
-                for (IEditorReference editor : editors) {
-                    IEditorPart editorPart = editor.getEditor(false);
-                    if (editorPart != null && editorPart.getEditorInput() instanceof ContentEditorInput) {
-                        workbenchPage.closeEditor(editorPart, false);
-                    }
-                }
-                // We also save all saveable parts here. Because we need to do this before transaction finializer hook.
-                // Standard workbench finalizer works in the very end when it is too late
-                // (all connections are closed at that moment)
-                for (IEditorReference editor : editors) {
-                    IEditorPart editorPart = editor.getEditor(false);
-                    if (editorPart instanceof ISaveablePart2) {
-                        if (!SaveableHelper.savePart(editorPart, editorPart, window, true)) {
-                            return false;
-                        }
-                        editorsToRevert.add(editorPart);
-                    }
-                }
-
-                // Revert all open editors to  avoid double confirmation
-                for (IEditorPart editorPart : editorsToRevert) {
-                    try {
-                        EditorUtils.revertEditorChanges(editorPart);
-                    } catch (Exception e) {
-                        log.debug(e);
-                    }
+                if (!ApplicationWorkbenchAdvisor.closeOpenEditors(window, false, true)) {
+                    return false;
                 }
             }
-
-            return cancelRunningTasks() && closeActiveTransactions();
+            return ApplicationWorkbenchAdvisor.cancelRunningTasks(true) && ApplicationWorkbenchAdvisor.closeActiveTransactions(false);
         } catch (Throwable e) {
-            e.printStackTrace();
+            log.error(e);
             return true;
         }
     }
 
-    private boolean closeActiveTransactions() {
+    public static boolean closeOpenEditors(IWorkbenchWindow window, boolean forceRevert, boolean showConfirmation) {
+        if (showConfirmation && !forceRevert &&
+                !MessageDialogWithToggle.NEVER.equals(ConfirmationDialog.getSavedPreference(DBeaverPreferences.CONFIRM_EXIT))
+        ) {
+            // Workaround of #703 bug. NEVER doesn't make sense for Exit confirmation. It is the same as ALWAYS.
+            if (ConfirmationDialog.confirmAction(window.getShell(), DBeaverPreferences.CONFIRM_EXIT, ConfirmationDialog.QUESTION)
+                    != IDialogConstants.YES_ID) {
+                return false;
+            }
+        }
+        // Close all content editors
+        // They are locking resources which are shared between other editors
+        // So we need to close them first
+        IWorkbenchPage workbenchPage = window.getActivePage();
+        IEditorReference[] editors = workbenchPage.getEditorReferences();
+        List<IEditorPart> editorsToRevert = new ArrayList<>();
+        for (IEditorReference editor : editors) {
+            IEditorPart editorPart = editor.getEditor(false);
+            if (editorPart != null && editorPart.getEditorInput() instanceof ContentEditorInput) {
+                workbenchPage.closeEditor(editorPart, false);
+            }
+        }
+        // We also save all saveable parts here. Because we need to do this before transaction finializer hook.
+        // Standard workbench finalizer works at the very end when it is too late
+        // (all connections are closed at that moment)
+        for (IEditorReference editor : editors) {
+            IEditorPart editorPart = editor.getEditor(false);
+            if (editorPart instanceof ISaveablePart2) {
+                if (!forceRevert && !SaveableHelper.savePart(editorPart, editorPart, window, true)) {
+                    return false;
+                }
+                editorsToRevert.add(editorPart);
+            }
+        }
+
+        // Revert all open editors to avoid double confirmation
+        for (IEditorPart editorPart : editorsToRevert) {
+            try {
+                EditorUtils.revertEditorChanges(editorPart);
+            } catch (Exception e) {
+                log.debug(e);
+            }
+        }
+        return true;
+    }
+
+    public static boolean closeActiveTransactions(boolean forceRollback) {
         for (DBPDataSourceContainer dataSourceDescriptor : DataSourceRegistry.getAllDataSources()) {
-            if (!DataSourceHandler.checkAndCloseActiveTransaction(dataSourceDescriptor, false)) {
+            if (!DataSourceHandler.checkAndCloseActiveTransaction(dataSourceDescriptor, false, forceRollback)) {
                 return false;
             }
         }
         return true;
     }
 
-    private boolean cancelRunningTasks() {
+    public static boolean cancelRunningTasks(boolean confirmCancel) {
         DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
         if (activeProject == null) {
             // Probably some TE user without permissions and projects
@@ -436,7 +435,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         final DBTTaskManager manager = activeProject.getTaskManager();
 
         if (manager.hasRunningTasks()) {
-            final boolean cancel = DBWorkbench.getPlatformUI().confirmAction(
+            final boolean cancel = !confirmCancel || DBWorkbench.getPlatformUI().confirmAction(
                 CoreApplicationMessages.confirmation_cancel_database_tasks_title,
                 CoreApplicationMessages.confirmation_cancel_database_tasks_message
             );

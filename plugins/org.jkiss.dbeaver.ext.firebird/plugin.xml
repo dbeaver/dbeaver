@@ -38,7 +38,7 @@
                     <replace provider="generic" driver="firebird_jaybird"/>
                     <replace provider="generic" driver="firebird_jaybird3"/>
 
-                    <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird:RELEASE[5.0.2.java11]" bundle="!drivers.firebird"/>
+                    <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird:RELEASE[5.0.4.java11]" bundle="!drivers.firebird"/>
                     <file type="license" path="https://www.gnu.org/licenses/lgpl-3.0.txt" bundle="!drivers.firebird"/>
 
                     <file type="license" path="drivers/jaybird/LICENSE.txt" bundle="drivers.firebird"/>

@@ -87,24 +87,31 @@ public class BigQueryConnectionPage extends ConnectionPageWithAuth implements ID
             extraProjectsText.setToolTipText(BigQueryMessages.label_additional_project_tip);
             extraProjectsText.addModifyListener(textListener);
         }
+        {
+            // Def host/port
+            Composite addrGroup = UIUtils.createControlGroup(settingsGroup, BigQueryMessages.label_server_info, 4, 0, 0);
+            addrGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        // Def host/port
-        Composite addrGroup = UIUtils.createControlGroup(settingsGroup, BigQueryMessages.label_server_info, 4, 0, 0);
-        addrGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            hostText = UIUtils.createLabelText(addrGroup, BigQueryMessages.label_host, BigQueryConstants.DEFAULT_HOST_NAME);
+            hostText.addModifyListener(textListener);
 
-        hostText = UIUtils.createLabelText(addrGroup, BigQueryMessages.label_host, BigQueryConstants.DEFAULT_HOST_NAME);
-        hostText.addModifyListener(textListener);
+            portText = UIUtils.createLabelText(addrGroup, BigQueryMessages.label_port, String.valueOf(BigQueryConstants.DEFAULT_PORT));
+            GridData gd = (GridData) portText.getLayoutData();
+            gd.widthHint = UIUtils.getFontHeight(portText) * 7;
+            portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
+            portText.addModifyListener(textListener);
+        }
 
-        portText = UIUtils.createLabelText(addrGroup, BigQueryMessages.label_port, String.valueOf(BigQueryConstants.DEFAULT_PORT));
-        GridData gd = (GridData) portText.getLayoutData();
-        gd.widthHint = UIUtils.getFontHeight(portText) * 7;
-        portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
-        portText.addModifyListener(textListener);
+        createAdditionalControls(settingsGroup);
 
         createAuthPanel(settingsGroup, 1);
 
         createDriverPanel(settingsGroup);
         setControl(settingsGroup);
+    }
+
+    protected void createAdditionalControls(Composite settingsGroup) {
+
     }
 
     @Override

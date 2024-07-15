@@ -41,7 +41,17 @@ import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDummyDataSourceContext.DummyTableRowsSource;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
-import org.jkiss.dbeaver.model.sql.semantics.model.*;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryObjectDataModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryObjectDropModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryTableDropModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryDeleteModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryInsertModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryUpdateModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryUpdateSetClauseModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.select.*;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.AbstractUIJob;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -523,7 +533,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         @Override
         public Image getImage() {
             // separate image lifetime, because we don't have a guarantee that outline will be disposed earlier than editor
-            // the outline state changes to the response of the editor event asyncroniously, so their lifetimes are a little bit different
+            // the outline state changes to the response of the editor event asynchronously, so their lifetimes are a little bit different
             Image image = editor.getTitleImage();
             if (this.editorImage != image) {
                 if (this.outlineImage != null) {
@@ -1112,7 +1122,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
 
         @Nullable
         @Override
-        public Object visitTableStatementDelete(@NotNull SQLQueryTableDeleteModel deleteStatement, @NotNull OutlineQueryNode node) {
+        public Object visitTableStatementDelete(@NotNull SQLQueryDeleteModel deleteStatement, @NotNull OutlineQueryNode node) {
             if (node.kind == OutlineQueryNodeKind.DELETE_SUBROOT) {
                 if (deleteStatement.getCondition() != null) {
                     this.makeNode(
@@ -1146,7 +1156,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
 
         @Nullable
         @Override
-        public Object visitTableStatementInsert(@NotNull SQLQueryTableInsertModel insertStatement, @NotNull OutlineQueryNode node) {
+        public Object visitTableStatementInsert(@NotNull SQLQueryInsertModel insertStatement, @NotNull OutlineQueryNode node) {
             if (node.kind == OutlineQueryNodeKind.INSERT_SUBROOT) {
                 if (insertStatement.getValuesRows() != null) {
                     insertStatement.getValuesRows().apply(this, node);
@@ -1175,7 +1185,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
 
         @Nullable
         @Override
-        public Object visitTableStatementUpdate(@NotNull SQLQueryTableUpdateModel updateStatement, @NotNull OutlineQueryNode node) {
+        public Object visitTableStatementUpdate(@NotNull SQLQueryUpdateModel updateStatement, @NotNull OutlineQueryNode node) {
             switch (node.kind) {
                 case UPDATE_SUBROOT: {
                     if (updateStatement.getSetClauseList() != null) {
@@ -1220,7 +1230,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
                 default: {
                     List<String> targetNames = new LinkedList<>();
                     if (updateStatement.getSetClauseList() != null) {
-                        for (SQLQueryTableUpdateSetClauseModel setClause : updateStatement.getSetClauseList()) {
+                        for (SQLQueryUpdateSetClauseModel setClause : updateStatement.getSetClauseList()) {
                             setClause.targets.stream()
                                 .map(SQLQueryValueExpression::getColumnNameIfTrivialExpression)
                                 .map(s -> s == null ? "..." : s.getName())
@@ -1250,13 +1260,57 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         @Nullable
         @Override
         public Object visitTableStatementUpdateSetClause(
-            @NotNull SQLQueryTableUpdateSetClauseModel setClause,
+            @NotNull SQLQueryUpdateSetClauseModel setClause,
             @NotNull OutlineQueryNode node
         ) {
             List<SQLQueryNodeModel> nodes = new ArrayList<>(setClause.targets.size() + setClause.sources.size());
             nodes.addAll(setClause.targets);
             nodes.addAll(setClause.sources);
             this.makeNode(node, setClause, setClause.contents, DBIcon.TYPE_ARRAY, nodes.toArray(SQLQueryNodeModel[]::new));
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public Object visitTableStatementDrop(@NotNull SQLQueryTableDropModel dropStatement, OutlineQueryNode node) {
+            String tableNames = dropStatement.getTables().isEmpty() ? SQLConstants.QUESTION
+                : dropStatement.getTables().stream().map(t -> t.getName().toIdentifierString()).collect(Collectors.joining(", "));
+            String nodeName =  "DROP " + (dropStatement.isView() ? "VIEW" : "TABLE")
+                + (dropStatement.getIfExists() ? " IF EXISTS " : " ") + tableNames;
+            this.makeNode(
+                node,
+                dropStatement,
+                nodeName,
+                UIIcon.REMOVE,
+                dropStatement.getTables().toArray(SQLQueryRowsTableDataModel[]::new)
+            );
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public Object visitObjectStatementDrop(@NotNull SQLQueryObjectDropModel dropStatement, OutlineQueryNode node) {
+            String procName = dropStatement.getObject().getName().toIdentifierString();
+            String nodeName =  "DROP " + dropStatement.getObject().getObjectType().getTypeName().toUpperCase()
+               + " " + (dropStatement.getIfExists() ? "IF EXISTS " : " ") + procName;
+            this.makeNode(
+                node,
+                dropStatement,
+                nodeName,
+                UIIcon.REMOVE,
+                dropStatement.getObject()
+            );
+            return null;
+        }
+
+        @Override
+        public Object visitObjectReference(SQLQueryObjectDataModel objectReference, OutlineQueryNode node) {
+            this.makeNode(
+                node,
+                objectReference,
+                objectReference.getName().toIdentifierString(),
+                objectReference.getObjectType().getImage()
+            );
             return null;
         }
 

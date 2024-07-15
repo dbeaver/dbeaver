@@ -130,7 +130,13 @@ public final class DBStructUtils {
         return generateTableDDL(monitor, table, options, addComments);
     }
 
-    public static <T extends DBSEntity> void generateTableListDDL(@NotNull DBRProgressMonitor monitor, @NotNull StringBuilder sql, @NotNull Collection<T> tablesOrViews, Map<String, Object> options, boolean addComments) throws DBException {
+    public static <T extends DBSEntity> void generateTableListDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull StringBuilder sql,
+        @NotNull Collection<T> tablesOrViews,
+        Map<String, Object> options,
+        boolean addComments
+    ) throws DBException {
         List<T> goodTableList = new ArrayList<>();
         List<T> cycleTableList = new ArrayList<>();
         List<T> viewList = new ArrayList<>();
@@ -505,5 +511,9 @@ public final class DBStructUtils {
         return DBUtils.isPseudoAttribute(attribute)
             ? attribute.getName()
             : DBUtils.getObjectFullName(attribute, DBPEvaluationContext.DML);
+    }
+
+    public static boolean isConnectedContainer(DBPObject parent) {
+        return !(parent instanceof DBSInstanceLazy il) || il.isInstanceConnected();
     }
 }

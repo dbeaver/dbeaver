@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model.generic;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableTrigger;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -36,6 +37,7 @@ public class SQLServerGenericTrigger extends GenericTableTrigger implements DBPQ
         return (SQLServerGenericTable) super.getTable();
     }
 
+    @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(),

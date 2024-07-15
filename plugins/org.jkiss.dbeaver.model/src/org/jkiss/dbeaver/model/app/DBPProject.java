@@ -31,9 +31,9 @@ import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.fs.DBFFileSystemManager;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.secret.DBSValueEncryptor;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 
-import javax.crypto.SecretKey;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.UUID;
@@ -67,7 +67,7 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
     String getDisplayName();
 
     /**
-     * Proiject UUID was deprecated. Use getId instead.
+     * Project UUID was deprecated. Use getId instead.
      */
     @Deprecated
     @NotNull
@@ -105,10 +105,12 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
     boolean isPrivateProject();
 
     /**
-     * Secret key is used encrypt project data
+     * An encryptor that can be used to encrypt and decrypt project data.
+     *
+     * @throws DBException if the encryptor is not available
      */
     @NotNull
-    SecretKey getLocalSecretKey();
+    DBSValueEncryptor getValueEncryptor() throws DBException;
 
     @NotNull
     DBPDataSourceRegistry getDataSourceRegistry();
@@ -146,6 +148,8 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
 
     @Nullable
     Map<String, Object> getResourceProperties(@NotNull String resourcePath);
+
+    void setResourceProperties(@NotNull String resourcePath, @NotNull Map<String, Object> newProps);
 
     @Nullable
     Object getResourceProperty(@NotNull String resourcePath, @NotNull String propName);

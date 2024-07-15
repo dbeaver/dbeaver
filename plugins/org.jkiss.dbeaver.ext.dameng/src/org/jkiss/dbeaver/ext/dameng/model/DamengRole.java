@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.dameng.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.dameng.DamengConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -124,7 +125,7 @@ public class DamengRole implements DBARole, DBPScriptObject, DBPObjectWithLongId
     }
 
     @Override
-    public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         this.userPrivCache.clearCache();
         this.objectPrivCache.clearCache();
         this.systemPrivCache.clearCache();
@@ -133,8 +134,9 @@ public class DamengRole implements DBARole, DBPScriptObject, DBPObjectWithLongId
 
     static class UserPrivCache extends JDBCObjectCache<DamengRole, DamengPrivUser> {
 
+        @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, DamengRole damengRole) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DamengRole damengRole) throws SQLException {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                     "SELECT DISTINCT OBJ.ID,\n" +
                             "OBJ.NAME,\n" +
@@ -151,15 +153,16 @@ public class DamengRole implements DBARole, DBPScriptObject, DBPObjectWithLongId
         }
 
         @Override
-        protected DamengPrivUser fetchObject(JDBCSession session, DamengRole damengRole, JDBCResultSet resultSet) throws SQLException, DBException {
+        protected DamengPrivUser fetchObject(@NotNull JDBCSession session, @NotNull DamengRole damengRole, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new DamengPrivUser(damengRole, resultSet);
         }
     }
 
     static class SystemPrivCache extends JDBCObjectCache<DamengRole, DamengPrivSystem> {
 
+        @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, DamengRole damengRole) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DamengRole damengRole) throws SQLException {
             final JDBCPreparedStatement dbStat = session.prepareStatement("SELECT\n" +
                     "PRIVID AS ID,\n" +
                     "SF_GET_SYS_PRIV(PRIVID) AS PRIV,\n" +
@@ -179,15 +182,16 @@ public class DamengRole implements DBARole, DBPScriptObject, DBPObjectWithLongId
         }
 
         @Override
-        protected DamengPrivSystem fetchObject(JDBCSession session, DamengRole damengRole, JDBCResultSet resultSet) throws SQLException, DBException {
+        protected DamengPrivSystem fetchObject(@NotNull JDBCSession session, @NotNull DamengRole damengRole, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new DamengPrivSystem(damengRole, resultSet);
         }
     }
 
     static class ObjectPrivCache extends JDBCObjectCache<DamengRole, DamengPrivObject> {
 
+        @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, DamengRole damengRole) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DamengRole damengRole) throws SQLException {
             final JDBCPreparedStatement dbStat = session.prepareStatement("SELECT\n" +
                     "SF_GET_OBJ_FULL_NAME(OBJID,COLID) AS OBJECT_NAME,\n" +
                     "SF_GET_SYS_PRIV(PRIVID) AS PRIV,\n" +
@@ -210,7 +214,7 @@ public class DamengRole implements DBARole, DBPScriptObject, DBPObjectWithLongId
         }
 
         @Override
-        protected DamengPrivObject fetchObject(JDBCSession session, DamengRole damengRole, JDBCResultSet resultSet) throws SQLException, DBException {
+        protected DamengPrivObject fetchObject(@NotNull JDBCSession session, @NotNull DamengRole damengRole, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new DamengPrivObject(damengRole, resultSet);
         }
     }

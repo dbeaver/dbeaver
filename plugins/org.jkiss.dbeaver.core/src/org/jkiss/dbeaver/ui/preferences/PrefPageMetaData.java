@@ -42,6 +42,7 @@ public class PrefPageMetaData extends TargetPrefPage
 
     private Button readExpensiveCheck;
     private Combo separateMetaConnectionCombo;
+    private Button disableExtraMetadataRead;
     private Button caseSensitiveNamesCheck;
     private Button serverSideFiltersCheck;
     private Button addExtraDDLInfo;
@@ -59,6 +60,7 @@ public class PrefPageMetaData extends TargetPrefPage
             store.contains(ModelPreferences.READ_EXPENSIVE_PROPERTIES) ||
             store.contains(ModelPreferences.META_SEPARATE_CONNECTION) ||
             store.contains(ModelPreferences.META_CASE_SENSITIVE) ||
+            store.contains(ModelPreferences.META_DISABLE_EXTRA_READ) ||
             store.contains(ModelPreferences.META_USE_SERVER_SIDE_FILTERS)
             ;
     }
@@ -81,7 +83,12 @@ public class PrefPageMetaData extends TargetPrefPage
     protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
         {
-            Group metadataGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_general_group_metadata, 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            Group metadataGroup = UIUtils.createControlGroup(
+                composite,
+                CoreMessages.pref_page_database_general_group_metadata,
+                1,
+                GridData.HORIZONTAL_ALIGN_BEGINNING,
+                0);
 
             separateMetaConnectionCombo = UIUtils.createLabelCombo(
                 UIUtils.createComposite(metadataGroup, 3),
@@ -94,15 +101,46 @@ public class PrefPageMetaData extends TargetPrefPage
             ((GridData) separateMetaConnectionCombo.getLayoutData()).grabExcessHorizontalSpace = false;
             separateMetaConnectionCombo.setItems(metaUseSeparateConnectionValues.stream()
                 .map(SeparateConnectionBehavior::getTitle).toArray(String[]::new));
-            caseSensitiveNamesCheck = UIUtils.createCheckbox(metadataGroup, CoreMessages.pref_page_database_general_checkbox_case_sensitive_names, CoreMessages.pref_page_database_general_checkbox_case_sensitive_names_tip, false, 1);
+            caseSensitiveNamesCheck = UIUtils.createCheckbox(
+                metadataGroup,
+                CoreMessages.pref_page_database_general_checkbox_case_sensitive_names,
+                CoreMessages.pref_page_database_general_checkbox_case_sensitive_names_tip,
+                false,
+                1);
             addExtraDDLInfo = UIUtils.createCheckbox(
                 metadataGroup,
                 CoreMessages.pref_page_database_general_checkbox_add_special_DDL_info,
                 CoreMessages.pref_page_database_general_checkbox_add_special_DDL_info_tip,
                 true,
                 1);
-            readExpensiveCheck = UIUtils.createCheckbox(metadataGroup, CoreMessages.pref_page_database_general_checkbox_show_row_count, CoreMessages.pref_page_database_general_checkbox_show_row_count_tip, false, 1);
-            serverSideFiltersCheck = UIUtils.createCheckbox(metadataGroup, CoreMessages.pref_page_database_general_server_side_object_filters, CoreMessages.pref_page_database_general_server_side_object_filters_tip, false, 1);
+            serverSideFiltersCheck = UIUtils.createCheckbox(
+                metadataGroup,
+                CoreMessages.pref_page_database_general_server_side_object_filters,
+                CoreMessages.pref_page_database_general_server_side_object_filters_tip,
+                false,
+                1);
+        }
+
+        {
+            Group performanceGroup = UIUtils.createControlGroup(
+                composite,
+                CoreMessages.pref_page_database_general_group_performance,
+                1,
+                GridData.HORIZONTAL_ALIGN_BEGINNING,
+                0);
+
+            disableExtraMetadataRead = UIUtils.createCheckbox(
+                performanceGroup,
+                CoreMessages.pref_page_database_general_checkbox_disable_extra_metadata,
+                CoreMessages.pref_page_database_general_checkbox_disable_extra_metadata_tip,
+                false,
+                1);
+            readExpensiveCheck = UIUtils.createCheckbox(
+                performanceGroup,
+                CoreMessages.pref_page_database_general_checkbox_show_row_count,
+                CoreMessages.pref_page_database_general_checkbox_show_row_count_tip,
+                false,
+                1);
         }
 
         return composite;
@@ -117,6 +155,7 @@ public class PrefPageMetaData extends TargetPrefPage
                 SeparateConnectionBehavior.parse(store.getString(ModelPreferences.META_SEPARATE_CONNECTION))
             ));
             caseSensitiveNamesCheck.setSelection(store.getBoolean(ModelPreferences.META_CASE_SENSITIVE));
+            disableExtraMetadataRead.setSelection(store.getBoolean(ModelPreferences.META_DISABLE_EXTRA_READ));
             addExtraDDLInfo.setSelection(store.getBoolean(ModelPreferences.META_EXTRA_DDL_INFO));
             serverSideFiltersCheck.setSelection(store.getBoolean(ModelPreferences.META_USE_SERVER_SIDE_FILTERS));
 
@@ -135,6 +174,7 @@ public class PrefPageMetaData extends TargetPrefPage
                 metaUseSeparateConnectionValues.get(separateMetaConnectionCombo.getSelectionIndex()).name()
             );
             store.setValue(ModelPreferences.META_CASE_SENSITIVE, caseSensitiveNamesCheck.getSelection());
+            store.setValue(ModelPreferences.META_DISABLE_EXTRA_READ, disableExtraMetadataRead.getSelection());
             store.setValue(ModelPreferences.META_EXTRA_DDL_INFO, addExtraDDLInfo.getSelection());
             store.setValue(ModelPreferences.META_USE_SERVER_SIDE_FILTERS, serverSideFiltersCheck.getSelection());
 
@@ -150,6 +190,7 @@ public class PrefPageMetaData extends TargetPrefPage
         store.setToDefault(ModelPreferences.READ_EXPENSIVE_PROPERTIES);
         store.setToDefault(ModelPreferences.META_SEPARATE_CONNECTION);
         store.setToDefault(ModelPreferences.META_CASE_SENSITIVE);
+        store.setToDefault(ModelPreferences.META_DISABLE_EXTRA_READ);
         store.setToDefault(ModelPreferences.META_USE_SERVER_SIDE_FILTERS);
         store.setToDefault(ModelPreferences.META_EXTRA_DDL_INFO);
     }
@@ -162,6 +203,7 @@ public class PrefPageMetaData extends TargetPrefPage
             SeparateConnectionBehavior.parse(store.getDefaultString(ModelPreferences.META_SEPARATE_CONNECTION))
         ));
         caseSensitiveNamesCheck.setSelection(store.getDefaultBoolean(ModelPreferences.META_CASE_SENSITIVE));
+        disableExtraMetadataRead.setSelection(store.getDefaultBoolean(ModelPreferences.META_DISABLE_EXTRA_READ));
         addExtraDDLInfo.setSelection(store.getDefaultBoolean(ModelPreferences.META_EXTRA_DDL_INFO));
         serverSideFiltersCheck.setSelection(store.getDefaultBoolean(ModelPreferences.META_USE_SERVER_SIDE_FILTERS));
         super.performDefaults();

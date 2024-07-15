@@ -23,7 +23,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.operation.ModalContext;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.dnd.Clipboard;
@@ -35,13 +34,12 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
-import org.eclipse.ui.services.IDisposable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
@@ -76,7 +74,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -90,21 +87,15 @@ public class DesktopUI implements DBPPlatformUI {
 
     private static final Log log = Log.getLog(DesktopUI.class);
 
-    private static DesktopUI instance;
-
     private TrayIconHandler trayItem;
-    private final List<IDisposable> globalDisposables = new ArrayList<>();
     private WorkbenchContextListener contextListener;
 
     public static DesktopUI getInstance() {
-        if (instance == null) {
-            instance = new DesktopUI();
-            instance.initialize();
-        }
-        return instance;
+        return (DesktopUI) DBWorkbench.getPlatformUI();
     }
 
     static void disposeUI() {
+        DesktopUI instance = getInstance();
         if (instance != null) {
             try {
                 instance.dispose();
@@ -118,20 +109,10 @@ public class DesktopUI implements DBPPlatformUI {
         if (trayItem != null) {
             trayItem.hide();
         }
-
-        List<IDisposable> dispList = new ArrayList<>(globalDisposables);
-        Collections.reverse(dispList);
-        for (IDisposable disp : dispList) {
-            try {
-                disp.dispose();
-            } catch (Exception e) {
-                log.error(e);
-            }
-            globalDisposables.remove(disp);
-        }
     }
 
-    private void initialize() {
+    // This method is called during startup thru @ComponentReference in workbench
+    public void initialize() {
         this.trayItem = new TrayIconHandler();
 
         new AbstractJob("Workbench listener") {
@@ -389,7 +370,7 @@ public class DesktopUI implements DBPPlatformUI {
 
     private static UserResponse showDatabaseError(String message, DBException error)
     {
-        DBPDataSource dataSource = error.getDataSource();
+        DBPDataSource dataSource = error instanceof DBDatabaseException dbe ? dbe.getDataSource() : null;
         DBPErrorAssistant.ErrorType errorType = dataSource == null ? DBPErrorAssistant.ErrorType.NORMAL : DBExecUtils.discoverErrorType(dataSource, error);
         switch (errorType) {
             case CONNECTION_LOST:
@@ -567,7 +548,7 @@ public class DesktopUI implements DBPPlatformUI {
     @Override
     public void executeWithProgress(@NotNull DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException {
         // FIXME: we need to run with progress service bu we can't change active control focus
-        // Otherwise it breaks soem functions (e.g. data editor value save as it handles focus events).
+        // Otherwise it breaks some functions (e.g. data editor value save as it handles focus events).
         // so we can use runInProgressServie function
         runnable.run(new VoidProgressMonitor());
     }
@@ -651,13 +632,10 @@ public class DesktopUI implements DBPPlatformUI {
                             }  
                         };
                         
-                        progress.run(true, runnable != null, new IRunnableWithProgress() {
-                            @Override
-                            public void run(IProgressMonitor monitor) throws InterruptedException {
-                                monitor.beginTask(operationDescription, IProgressMonitor.UNKNOWN);
-                                job.join();
-                                monitor.done();
-                            }
+                        progress.run(true, runnable != null, monitor -> {
+                            monitor.beginTask(operationDescription, IProgressMonitor.UNKNOWN);
+                            job.join();
+                            monitor.done();
                         });
                     }
                 } catch (Exception ex) {

@@ -204,7 +204,7 @@ public class RedshiftExternalTable extends PostgreTable implements DBPRefreshabl
     }
 
     @Override
-    public Collection<PostgreIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+    public Collection<PostgreIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 

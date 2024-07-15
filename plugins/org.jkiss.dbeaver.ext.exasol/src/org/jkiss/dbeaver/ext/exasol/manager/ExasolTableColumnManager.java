@@ -74,9 +74,9 @@ public class ExasolTableColumnManager extends SQLTableColumnManager<ExasolTableC
 
     @Override
     public boolean canEditObject(ExasolTableColumn object) {
-        // Edit is only availabe for ExasolTable and not for other kinds of tables (View, MQTs, Nicknames..)
+        // Edit is only available for ExasolTable and not for other kinds of tables (View, MQTs, Nicknames..)
         ExasolTableBase exasolTableBase = object.getParentObject();
-        if ((exasolTableBase != null) & (exasolTableBase.getClass().equals(ExasolTable.class))) {
+        if ((exasolTableBase != null) && (exasolTableBase.getClass().equals(ExasolTable.class))) {
             return true;
         } else {
             return false;

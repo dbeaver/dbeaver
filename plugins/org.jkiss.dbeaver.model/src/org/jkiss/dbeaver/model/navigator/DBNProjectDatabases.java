@@ -144,9 +144,9 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     }
 
     @Override
-    public DBNNode[] getChildren(DBRProgressMonitor monitor)
+    public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor)
     {
-        if (children == null) {
+        if (children == null && !monitor.isForceCacheUsage()) {
             List<DBNNode> childNodes = new ArrayList<>();
             // Add root folders
             for (DBPDataSourceFolder folder : dataSourceRegistry.getAllFolders()) {
@@ -397,6 +397,18 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                     }
                 }
                 break;
+            case BEFORE_CONNECT:
+            case AFTER_CONNECT: {
+                DBNDatabaseNode dbmNode = model.getNodeByObject(event.getObject());
+                if (dbmNode != null) {
+                    model.fireNodeUpdate(
+                        event,
+                        dbmNode,
+                        event.getAction() == DBPEvent.Action.BEFORE_CONNECT ?
+                            DBNEvent.NodeChange.BEFORE_LOAD : DBNEvent.NodeChange.AFTER_LOAD);
+                }
+                break;
+                }
             case OBJECT_UPDATE:
             case OBJECT_SELECT:
             {

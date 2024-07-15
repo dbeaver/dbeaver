@@ -62,7 +62,7 @@ public class CreateTypesetPage extends BaseObjectEditPage {
             name = nameText.getText().trim();
             updatePageState();
         });
-        
+
         propsGroup.setTabList(ArrayUtils.remove(Control.class, propsGroup.getTabList(), containerText));
 
         return propsGroup;
@@ -89,8 +89,8 @@ public class CreateTypesetPage extends BaseObjectEditPage {
         return !CommonUtils.isEmpty(name);
     }
 
-	@Override
-	public DBSObject getObject() {
-		return procedure;
-	}
+    @Override
+    public DBSObject getObject() {
+        return procedure;
+    }
 }

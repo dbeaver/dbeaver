@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -122,7 +123,8 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
 
         // Make index name unique
         int postfix = 1;
-        while (owner.getSchema().getIndexCache().getObject(monitor, owner.getSchema(), getName()) != null) {
+        PostgreSchema.IndexCache cache = owner.getSchema().getIndexCache();
+        while (cache != null && cache.getObject(monitor, owner.getSchema(), getName()) != null) {
             setName(srcIndex.getName() + "_" + postfix);
             postfix++;
         }
@@ -240,7 +242,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
     }
 
     @Override
-    public List<PostgreIndexColumn> getAttributeReferences(DBRProgressMonitor monitor) {
+    public List<PostgreIndexColumn> getAttributeReferences(@NotNull DBRProgressMonitor monitor) {
         return columns;
     }
 
@@ -278,7 +280,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read index definition")) {
                 indexDDL = JDBCUtils.queryString(session, "SELECT pg_catalog.pg_get_indexdef(?)", indexId);
             } catch (SQLException e) {
-                throw new DBException(e, getDataSource());
+                throw new DBDatabaseException(e, getDataSource());
             }
         }
         return indexDDL;
