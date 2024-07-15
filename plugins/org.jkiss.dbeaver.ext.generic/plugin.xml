@@ -877,6 +877,8 @@
                     <parameter name="supports-truncate" value="true"/>
                     <parameter name="omit-catalog" value="false"/>
                     <parameter name="alter-table-add-column" value="true"/>
+                    <parameter name="query-get-active-db" value="getCurrentCatalog()"/>
+                    <parameter name="query-set-active-db" value="set catalog ?"/>
                 </driver>
 
                 <!-- OrientDB -->
