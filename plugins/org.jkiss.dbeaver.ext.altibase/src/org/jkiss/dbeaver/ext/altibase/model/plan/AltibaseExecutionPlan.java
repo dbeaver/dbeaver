@@ -58,7 +58,7 @@ public class AltibaseExecutionPlan extends AbstractExecutionPlan {
     }
     
     /** 
-     * Deserialize excution plan
+     * Deserialize execution plan
      */
     public AltibaseExecutionPlan(String query, List<AltibasePlanNode> nodes) {
         this.query = query;

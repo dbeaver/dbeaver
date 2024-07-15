@@ -88,7 +88,7 @@ public class DirectedGraphLayoutVisitor {
                         layout.visit(graph);
                     }
                 } catch (Exception e) {
-                    log.error("Error during layoting elements:" + e.getMessage(), e);
+                    log.error("Error during layouting elements:" + e.getMessage(), e);
                 }
                 applyDiagramResults(diagram);
             }

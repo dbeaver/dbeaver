@@ -35,7 +35,7 @@ public class DBRFeatureRegistry {
 
     private final Map<String, DBRFeature> allFeatures = new LinkedHashMap<>();
     private final Map<String, DBRFeature> commandFeatures = new HashMap<>();
-    private DBRFeatureTracker tracker;
+    private final DBRFeatureTracker tracker;
 
     private static DBRFeatureRegistry instance = null;
 
@@ -48,8 +48,11 @@ public class DBRFeatureRegistry {
 
     private DBRFeatureRegistry() {
         this.tracker = GeneralUtils.adapt(this, DBRFeatureTracker.class);
-        if (this.tracker != null) {
-            this.tracker.startTracking();
+    }
+
+    public void startTracking() {
+        if (tracker != null) {
+            tracker.startTracking();
         }
     }
 

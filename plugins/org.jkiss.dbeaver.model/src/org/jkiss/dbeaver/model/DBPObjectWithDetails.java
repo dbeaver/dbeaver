@@ -29,7 +29,7 @@ public interface DBPObjectWithDetails<OBJECT> extends DBPObject {
 
     /**
      * Get additional object information.
-     * Although this function required progress monitor it mustn't establish any remote database connections or require addional authentication.
+     * Although this function required progress monitor it mustn't establish any remote database connections or require additional authentication.
      */
     @Nullable
     DBPObject getObjectDetails(@NotNull DBRProgressMonitor monitor, @NotNull SMSessionContext sessionContext, @NotNull OBJECT dataSource) throws DBException;

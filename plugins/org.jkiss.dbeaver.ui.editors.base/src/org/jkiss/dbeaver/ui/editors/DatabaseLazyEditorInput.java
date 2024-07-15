@@ -26,10 +26,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -62,7 +59,7 @@ import java.util.Objects;
 /**
  * Lazy input. Use by entity editors which are created during DBeaver startup (from memo by factory).
  */
-public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEditorInput, IPersistableElement
+public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEditorInput, IPersistableElement, DBPDataSourceContainerProvider
 {
     private static final Log log = Log.getLog(DatabaseLazyEditorInput.class);
 
@@ -370,4 +367,15 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
         if (!CommonUtils.isEmpty(activeFolderId)) memento.putString(DatabaseEditorInputFactory.TAG_ACTIVE_FOLDER, activeFolderId);
     }
 
+    @Nullable
+    @Override
+    public DBPDataSourceContainer getDataSourceContainer() {
+        if (dataSourceContainer != null) {
+            return dataSourceContainer;
+        }
+        if (project != null) {
+            return project.getDataSourceRegistry().getDataSource(dataSourceId);
+        }
+        return null;
+    }
 }

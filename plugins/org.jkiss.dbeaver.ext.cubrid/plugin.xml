@@ -165,6 +165,9 @@
                         </folder>
                     </items>
                 </folder>
+                <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridServer" label="%tree.servers.node.name" icon="#folder_server" description="%tree.servers.node.tip" visibleIf="object.supportsServer()">
+                    <items label="%tree.server.node.name" path="cubridServer" property="cubridServers" icon="#server"/>
+                </folder>
                 <folder id="users" type="org.jkiss.dbeaver.ext.cubrid.model.CubridUser" label="%tree.users.node.name" icon="#folder_user"
                         description="%tree.users.node.tip">
                     <items label="%tree.user.node.name" path="cubridUser" property="cubridUsers" icon="#user"/>

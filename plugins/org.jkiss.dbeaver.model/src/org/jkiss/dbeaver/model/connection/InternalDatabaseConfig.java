@@ -40,9 +40,9 @@ public interface InternalDatabaseConfig {
     boolean isBackupEnabled();
 
     class Pool {
-        private int minIdleConnections = 2;
+        private int minIdleConnections = 4;
         private int maxIdleConnections = 10;
-        private int maxConnections = 1000;
+        private int maxConnections = 100;
         private String validationQuery = "SELECT 1";
 
         public Pool() {

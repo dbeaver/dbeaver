@@ -107,7 +107,7 @@ public class DBExecUtils {
             ACTIVE_CONTEXTS.add(context);
         }
         // Set proxy auth (if required)
-        // Note: authenticator may be changed by Eclipse frameword on startup or later.
+        // Note: authenticator may be changed by Eclipse framework on startup or later.
         // That's why we set new default authenticator on connection initiation
         boolean hasProxy = false;
         for (DBWHandlerConfiguration handler : context.getConnectionConfiguration().getHandlers()) {
@@ -940,6 +940,10 @@ public class DBExecUtils {
     }
 
     public static String getAttributeReadOnlyStatus(@NotNull DBDAttributeBinding attribute) {
+        return getAttributeReadOnlyStatus(attribute, true);
+    }
+
+    public static String getAttributeReadOnlyStatus(@NotNull DBDAttributeBinding attribute, boolean checkValidKey) {
         if (attribute == null || attribute.getMetaAttribute() == null) {
             return "Null meta attribute";
         }
@@ -950,6 +954,11 @@ public class DBExecUtils {
         if (rowIdentifier == null) {
             String status = attribute.getRowIdentifierStatus();
             return status != null ? status : "No row identifier found";
+        }
+        if (checkValidKey) {
+            if (rowIdentifier.isIncomplete()) {
+                return "No valid row identifier found";
+            }
         }
         DBSEntity dataContainer = rowIdentifier.getEntity();
         if (!(dataContainer instanceof DBSDataManipulator)) {

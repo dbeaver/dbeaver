@@ -193,10 +193,10 @@ public class CubridMetaModel extends GenericMetaModel
     @Nullable
     @Override
     public GenericTableBase createTableImpl(
-            @NotNull JDBCSession session,
-            @NotNull GenericStructContainer owner,
-            @Nullable GenericMetaObject tableObject,
-            @NotNull JDBCResultSet dbResult) {
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer owner,
+        @NotNull GenericMetaObject tableObject,
+        @NotNull JDBCResultSet dbResult) {
         String tableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_NAME);
         String tableType = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TABLE_TYPE);
         GenericTableBase table = createTableOrViewImpl(owner, tableName, tableType, dbResult);

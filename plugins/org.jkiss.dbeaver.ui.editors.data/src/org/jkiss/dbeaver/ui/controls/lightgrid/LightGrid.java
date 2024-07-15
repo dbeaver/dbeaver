@@ -25,6 +25,8 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIElementFontStyle;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomToolTipHandler;
@@ -408,7 +410,7 @@ public abstract class LightGrid extends Canvas {
             | SWT.SINGLE | SWT.MULTI | SWT.NO_FOCUS | SWT.CHECK | SWT.VIRTUAL;
         int newStyle = style & mask;
         newStyle |= SWT.DOUBLE_BUFFERED;
-        // ? do we need it? It may improve performance a bit (as drawBackgraound is relatively slow.
+        // ? do we need it? It may improve performance a bit (as drawBackground is relatively slow.
         // https://www.eclipse.org/forums/index.php/t/146489/
         // | SWT.NO_BACKGROUND;
         return newStyle;
@@ -2722,8 +2724,8 @@ public abstract class LightGrid extends Canvas {
             int max = getItemCount() + 1;
             int thumb = (getVisibleGridHeight(clientArea) + 1) / (getItemHeight() + 1);
 
-            // if possible, remember selection, if selection is too large, just
-            // make it the max you can
+            // if possible, remember selection,
+            // if selection is too large, just make it the max you can
             int selection = Math.min(vScroll.getSelection(), max);
 
             vScroll.setValues(selection, 0, max, thumb, 1, thumb);
@@ -2737,10 +2739,8 @@ public abstract class LightGrid extends Canvas {
 
                 int hiddenArea = preferredSize.x - clientArea.width + 1 + (vScroll.getVisible() ? vScroll.getWidth() : 0);
 
-                // if possi
-                // ble, remember selection, if selection is too large,
-                // just
-                // make it the max you can
+                // if possible, remember selection,
+                // if selection is too large, just make it the max you can
                 int selection = Math.min(hScroll.getSelection(), hiddenArea - 1);
 
                 hScroll.setValues(
@@ -2773,9 +2773,8 @@ public abstract class LightGrid extends Canvas {
                 int visCols = columns.size();
                 max = Math.min(visCols, max);
 
-                // if possible, remember selection, if selection is too large,
-                // just
-                // make it the max you can
+                // if possible, remember selection,
+                // if selection is too large, just make it the max you can
                 int selection = Math.min(hScroll.getSelection(), max);
 
                 hScroll.setValues(selection, 0, max, 1, 1, 1);
@@ -4225,9 +4224,20 @@ public abstract class LightGrid extends Canvas {
                 }
             } else if (rowHeaderVisible && hoveringItem >= 0 && x <= rowHeaderWidth) {
                 newTip = getLabelProvider().getToolTipText(getRow(hoveringItem));
-            } else {
-                // Top-left cell?
-                newTip = getLabelProvider().getToolTipText(null);
+            } else if (rowHeaderVisible && x <= rowHeaderWidth && columnHeadersVisible && y <= headerHeight) {
+                // Top-left cell
+                StringBuilder status = new StringBuilder();
+                for (IGridStatusColumn gsc : getContentProvider().getStatusColumns()) {
+                    String statusText = gsc.getStatusText();
+                    if (!CommonUtils.isEmpty(statusText)) {
+                        if (!status.isEmpty()) {
+                            status.append("\n");
+                        }
+                        status.append(gsc.getDisplayName())
+                            .append(": ").append(statusText);
+                    }
+                }
+                newTip = status.toString();
             }
 
             //Avoid unnecessarily resetting tooltip - this will cause the tooltip to jump around
@@ -4865,14 +4875,21 @@ public abstract class LightGrid extends Canvas {
         paintTopLeftCellCustom(gc, y);
 
         {
-            Image topLeftImage = getLabelProvider().getImage(null);
-            if (topLeftImage != null) {
-                Rectangle iconBounds = topLeftImage.getBounds();
-                int xPos = x + width - GridColumnRenderer.ARROW_MARGIN - iconBounds.width;
-                if (sortOrder != SWT.NONE) {
-                    xPos -= GridColumnRenderer.SORT_WIDTH + GridColumnRenderer.IMAGE_SPACING;
+            int xPos = x + width - GridColumnRenderer.ARROW_MARGIN;
+            if (sortOrder != SWT.NONE) {
+                xPos -= GridColumnRenderer.SORT_WIDTH + GridColumnRenderer.IMAGE_SPACING;
+            }
+            IGridStatusColumn[] statusColumns = getContentProvider().getStatusColumns();
+            ArrayUtils.reverse(statusColumns);
+            for (IGridStatusColumn gsc : statusColumns) {
+                DBPImage statusIcon = gsc.getStatusIcon();
+                if (statusIcon != null) {
+                    Image statusImage = DBeaverIcons.getImage(statusIcon);
+                    Rectangle iconBounds = statusImage.getBounds();
+                    xPos -= iconBounds.width;
+                    gc.drawImage(statusImage, xPos, y + (height - iconBounds.height) / 2);
+                    xPos -= 1;
                 }
-                gc.drawImage(topLeftImage, xPos, y + (height - iconBounds.height) / 2);
             }
         }
 

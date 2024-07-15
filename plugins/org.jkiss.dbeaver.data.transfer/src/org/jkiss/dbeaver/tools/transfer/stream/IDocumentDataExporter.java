@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.tools.transfer.stream;
 /**
  * IDocumentDataExporter.
  * Supports export of raw documents.
- * For such processors no additional data transofrmation will be performed.
+ * For such processors no additional data transformation will be performed.
  */
 public interface IDocumentDataExporter extends IStreamDataExporter {
 

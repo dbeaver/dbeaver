@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
-import java.util.stream.Stream;
+import java.util.LinkedList;
 
 /**
  * Describes all columns of the table of a selection result
@@ -36,12 +36,13 @@ public class SQLQuerySelectionResultCompleteTupleSpec extends SQLQuerySelectionR
 
     @NotNull
     @Override
-    protected Stream<SQLQueryResultColumn> expand(
+    protected void collectColumns(
         @NotNull SQLQueryDataContext context,
         @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
-        @NotNull SQLQueryRecognitionContext statistics
+        @NotNull SQLQueryRecognitionContext statistics,
+        @NotNull LinkedList<SQLQueryResultColumn> resultColumns
     ) {
-        return context.getColumnsList().stream();
+        this.collectForeignColumns(context.getColumnsList(), rowsSourceModel, resultColumns);
     }
 
     @Override

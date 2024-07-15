@@ -53,6 +53,7 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject {
         super.dispose(reflect);
     }
 
+    @NotNull
     @Override
     public DBXTreeObject getMeta() {
         return meta;

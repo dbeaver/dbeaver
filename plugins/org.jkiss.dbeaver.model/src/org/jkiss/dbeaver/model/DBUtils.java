@@ -69,7 +69,6 @@ import java.util.*;
 public final class DBUtils {
 
     private static final Log log = Log.getLog(DBUtils.class);
-    private static final int MAX_SAMPLE_ROWS = 1000;
 
     @NotNull
     public static String getQuotedIdentifier(@NotNull DBPNamedObject object) {
@@ -298,10 +297,13 @@ public final class DBUtils {
             // One container name
             String containerName = !CommonUtils.isEmpty(catalogName) ? catalogName : schemaName;
             DBSObject sc = rootSC.getChild(monitor, containerName);
+            if (!DBStructUtils.isConnectedContainer(sc)) {
+                sc = null;
+            }
             if (!(sc instanceof DBSObjectContainer)) {
                 // Not found - try to find in selected object
                 DBSObject selectedObject = getSelectedObject(executionContext);
-                if (selectedObject instanceof DBSObjectContainer objectContainer) {
+                if (selectedObject instanceof DBSObjectContainer) {
                     if (selectedObject instanceof DBSSchema && selectedObject.getParentObject() instanceof DBSCatalog && CommonUtils.isEmpty(catalogName) &&
                         !CommonUtils.equalObjects(schemaName, selectedObject.getName())) {
                         // We search for schema and active object is schema. Let's search our schema in catalog
@@ -311,7 +313,8 @@ public final class DBUtils {
                         selectedObject instanceof DBSCatalog && CommonUtils.equalObjects(catalogName, selectedObject.getName())) {
                         // Selected object is a catalog or schema which is also specified as catalogName/schemaName -
                         sc = selectedObject;
-                    } else {
+                    } else if (selectedObject instanceof DBSObjectContainer objectContainer) {
+                        // Get schema in catalog
                         sc = objectContainer.getChild(monitor, containerName);
                     }
                 }
@@ -323,7 +326,7 @@ public final class DBUtils {
                 // Probably on this step we found a catalog, but not a schema.
                 Class<? extends DBSObject> childType = catalog.getPrimaryChildType(monitor);
                 if (DBSSchema.class.isAssignableFrom(childType)) {
-                    DBSObject child = ((DBSCatalog) sc).getChild(monitor, schemaName);
+                    DBSObject child = catalog.getChild(monitor, schemaName);
                     if (child instanceof DBSSchema) {
                         sc = child;
                     }
@@ -348,46 +351,6 @@ public final class DBUtils {
             // Table container not found
             return object;
         }
-    }
-
-    @Nullable
-    public static DBSObject findNestedObject(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull DBSObjectContainer parent,
-        @NotNull List<String> names)
-        throws DBException {
-        for (int i = 0; i < names.size(); i++) {
-            String childName = names.get(i);
-            DBSObject child = parent.getChild(monitor, childName);
-            if (child == null && i == 0) {
-                DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
-                if (contextDefaults != null) {
-                    DBSObjectContainer container = contextDefaults.getDefaultSchema();
-                    if (container != null) {
-                        child = container.getChild(monitor, childName);
-                    }
-                    if (child == null) {
-                        container = contextDefaults.getDefaultCatalog();
-                        if (container != null) {
-                            child = container.getChild(monitor, childName);
-                        }
-                    }
-                }
-            }
-            if (child == null) {
-                break;
-            }
-            if (i == names.size() - 1) {
-                return child;
-            }
-            if (child instanceof DBSObjectContainer oc) {
-                parent = oc;
-            } else {
-                break;
-            }
-        }
-        return null;
     }
 
     @Nullable
@@ -722,79 +685,6 @@ public final class DBUtils {
         }
     }
 
-    /**
-     * Returns "bottom" level attributes out of resultset.
-     * For regular resultsets it is the same as getAttributeBindings, for compelx types it returns only leaf attributes.
-     */
-    @NotNull
-    public static DBDAttributeBinding[] makeLeafAttributeBindings(@NotNull DBCSession session, @NotNull DBSDataContainer dataContainer, @NotNull DBCResultSet resultSet) throws DBCException {
-        List<DBDAttributeBinding> metaColumns = new ArrayList<>();
-        List<? extends DBCAttributeMetaData> attributes = resultSet.getMeta().getAttributes();
-        boolean isDocumentAttribute = attributes.size() == 1 && attributes.get(0).getDataKind() == DBPDataKind.DOCUMENT;
-        if (isDocumentAttribute) {
-            DBCAttributeMetaData attributeMeta = attributes.get(0);
-            DBDAttributeBindingMeta docBinding = DBUtils.getAttributeBinding(dataContainer, session, attributeMeta);
-            try {
-                List<Object[]> sampleRows = Collections.emptyList();
-                if (resultSet instanceof DBCResultSetSampleProvider rssp) {
-                    session.getProgressMonitor().subTask("Read sample rows");
-                    sampleRows = rssp.getSampleRows(session, MAX_SAMPLE_ROWS);
-                }
-                session.getProgressMonitor().subTask("Discover attribute structure");
-                docBinding.lateBinding(session, sampleRows);
-            } catch (Exception e) {
-                log.error("Document attribute '" + docBinding.getName() + "' binding error", e);
-            }
-            List<DBDAttributeBinding> nested = docBinding.getNestedBindings();
-            if (!CommonUtils.isEmpty(nested)) {
-                metaColumns.addAll(nested);
-            } else {
-                // No nested bindings. Try to get entity attributes
-                try {
-                    DBSEntity docEntity = getEntityFromMetaData(session.getProgressMonitor(), session.getExecutionContext(), attributeMeta.getEntityMetaData());
-                    if (docEntity != null) {
-                        Collection<? extends DBSEntityAttribute> entityAttrs = docEntity.getAttributes(session.getProgressMonitor());
-                        if (!CommonUtils.isEmpty(entityAttrs)) {
-                            for (DBSEntityAttribute ea : entityAttrs) {
-                                metaColumns.add(new DBDAttributeBindingType(docBinding, ea, metaColumns.size()));
-                            }
-                        }
-                    }
-                } catch (DBException e) {
-                    log.debug("Error getting attributes from document entity", e);
-                }
-            }
-        }
-        if (metaColumns.isEmpty()) {
-            for (DBCAttributeMetaData attribute : attributes) {
-                DBDAttributeBinding columnBinding = DBUtils.getAttributeBinding(dataContainer, session, attribute);
-                metaColumns.add(columnBinding);
-            }
-        }
-
-        List<DBDAttributeBinding> result = new ArrayList<>(metaColumns.size());
-        for (DBDAttributeBinding binding : metaColumns) {
-            addLeafBindings(result, binding);
-        }
-
-        return injectAndFilterAttributeBindings(
-            session.getDataSource(),
-            dataContainer,
-            result.toArray(new DBDAttributeBinding[0]),
-            true);
-    }
-
-    private static void addLeafBindings(List<DBDAttributeBinding> result, DBDAttributeBinding binding) {
-        List<DBDAttributeBinding> nestedBindings = binding.getNestedBindings();
-        if (CommonUtils.isEmpty(nestedBindings)) {
-            result.add(binding);
-        } else {
-            for (DBDAttributeBinding nested : nestedBindings) {
-                addLeafBindings(result, nested);
-            }
-        }
-    }
-
     @Nullable
     public static Object getAttributeValue(
         @NotNull DBDAttributeBinding attribute,
@@ -848,7 +738,8 @@ public final class DBUtils {
                     curValue = parent.extractNestedValue(curValue, nestedIndexes[curNestedIndex]);
                     curNestedIndex++;
                 } else {
-                    return DBDVoid.INSTANCE;
+                    curValue = parent.extractNestedValue(curValue, 0);
+                    continue;
                 }
             } catch (Throwable e) {
                 return new DBDValueError(e);
@@ -2193,7 +2084,7 @@ public final class DBUtils {
 
     /**
      * Compares two values read from database.
-     * Main difference with regular compare is that all numbers are compared as doubles (i.e. data type oesn't matter).
+     * Main difference with regular compare is that all numbers are compared as doubles (i.e. data type doesn't matter).
      * Also checks DBValue for nullability
      */
     public static int compareDataValues(Object cell1, Object cell2) {
@@ -2259,7 +2150,7 @@ public final class DBUtils {
             return null;
         }
         DBSObject entityObject = getObjectByPath(monitor, executionContext, objectContainer, catalogName, schemaName, entityName);
-        if (entityObject instanceof DBSAlias alias && !(entityObject instanceof DBSEntity) && !monitor.isForceCacheUsage()) {
+        if (entityObject instanceof DBSAlias alias && !(entityObject instanceof DBSEntity)) {
             entityObject = alias.getTargetObject(monitor);
         }
         if (entityObject == null) {
@@ -2355,6 +2246,18 @@ public final class DBUtils {
             return dt;
         } else if (typedObject instanceof DBSTypedObjectEx dte) {
             return dte.getDataType();
+        }
+        return null;
+    }
+
+    @Nullable
+    public static DBSDataType getDataType(@Nullable DBPDataSource dataSource, @NotNull DBSTypedObject typedObject) {
+        DBSDataType dataType = getDataType(typedObject);
+        if (dataType != null) {
+            return dataType;
+        }
+        if (dataSource instanceof DBPDataTypeProvider dtp) {
+            return dtp.getLocalDataType(typedObject.getFullTypeName());
         }
         return null;
     }

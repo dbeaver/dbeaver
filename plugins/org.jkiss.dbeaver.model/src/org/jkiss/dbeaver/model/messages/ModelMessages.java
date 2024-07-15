@@ -206,6 +206,8 @@ public class ModelMessages extends NLS {
     public static String controls_querylog_column_time_tooltip;
     public static String controls_querylog_column_type_name;
     public static String controls_querylog_column_type_tooltip;
+    public static String controls_querylog_column_schema_name;
+    public static String controls_querylog_column_catalog_name;
     public static String controls_querylog_column_connection_name;
     public static String controls_querylog_column_connection_tooltip;
     public static String controls_querylog_column_context_name;

@@ -194,7 +194,7 @@ public abstract class ObjectContainerSelectorPanel extends Composite
                 }
             }
         } else {
-            throw new DBException("Non-databse node " + node);
+            throw new DBException("Non-database node " + node);
         }
     }
 
