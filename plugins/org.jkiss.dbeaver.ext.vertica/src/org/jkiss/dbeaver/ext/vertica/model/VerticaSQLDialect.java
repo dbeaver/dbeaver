@@ -137,6 +137,12 @@ public class VerticaSQLDialect extends GenericSQLDialect implements TPRuleProvid
     @NotNull
     @Override
     public TPRule[] extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull RulePosition position) {
+        return extendRules(dataSource, position, false);
+    }
+
+    @NotNull
+    @Override
+    public TPRule[] extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull RulePosition position, boolean forHighlighting) {
         if (position == RulePosition.INITIAL || position == RulePosition.PARTITION) {
             return new TPRule[] {
                 new SQLDollarQuoteRule(
@@ -145,7 +151,8 @@ public class VerticaSQLDialect extends GenericSQLDialect implements TPRuleProvid
                     false,
                     dataSource == null ||
                         CommonUtils.toBoolean(
-                            dataSource.getConnectionConfiguration().getProviderProperty(VerticaConstants.PROP_DOLLAR_QUOTES_AS_STRING))
+                            dataSource.getConnectionConfiguration().getProviderProperty(VerticaConstants.PROP_DOLLAR_QUOTES_AS_STRING)
+                        ) || !forHighlighting
                 )
             };
         }
