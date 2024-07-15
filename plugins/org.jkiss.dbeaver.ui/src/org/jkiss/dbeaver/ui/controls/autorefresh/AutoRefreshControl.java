@@ -101,7 +101,7 @@ public class AutoRefreshControl {
     }
 
     public synchronized void enableControls(boolean enable) {
-        if (autoRefreshButton != null) {
+        if (autoRefreshButton != null && !autoRefreshButton.isDisposed()) {
             autoRefreshButton.setEnabled(enable);
         }
     }
