@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBPObjectStatistics;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -42,11 +43,12 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * Oracle tablespace
  */
-public class OracleTablespace extends OracleGlobalObject implements DBPRefreshableObject, DBPObjectStatistics
+public class OracleTablespace extends OracleGlobalObject implements DBPRefreshableObject, DBPObjectStatistics, DBPScriptObject
 {
 
     public enum Status {
@@ -412,6 +414,72 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
                 object.getDataSource().tablespaceCache.isFullyCached() ||
                 !object.getDataSource().isAdmin();
         }
+    }
+
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+
+        StringBuilder ddl = new StringBuilder("CREATE ");
+
+        if (isBigFile()) {
+            ddl.append("BIGFILE ");
+        }
+
+        appendEnumField(ddl, " CONTENTS ", contents);
+
+        ddl.append(" TABLESPACE ").append(name);
+
+        appendField(ddl, " BLOCKSIZE ", blockSize, true);
+        appendField(ddl, " INITIAL ", initialExtent, "K");
+        appendField(ddl, " NEXT ", nextExtent, "K");
+        appendField(ddl, " MINEXTENTS ", minExtents);
+        appendField(ddl, " MAXEXTENTS ", maxExtents);
+        appendField(ddl, " PCTINCREASE ", pctIncrease);
+        appendField(ddl, " MINEXTLEN ", minExtLen, "K");
+
+        appendEnumField(ddl, " STATUS ", status);
+        appendEnumField(ddl, " LOGGING ", logging);
+
+        appendBooleanField(ddl, " FORCE LOGGING ", forceLogging);
+        appendEnumField(ddl, " EXTENT MANAGEMENT ", extentManagement);
+        appendEnumField(ddl, " ALLOCATION TYPE ", allocationType);
+        appendBooleanField(ddl, " PLUGGED IN ", pluggedIn);
+        appendEnumField(ddl, " SEGMENT SPACE MANAGEMENT ", segmentSpaceManagement);
+
+        ddl.append(" DEFAULT TABLE COMPRESSION ").append(defTableCompression ? "ENABLED" : "DISABLED");
+
+        appendEnumField(ddl, " RETENTION ", retention);
+
+        return ddl.toString();
+
+    }
+
+    private void appendField(StringBuilder ddl, String label, long value, boolean condition) {
+        if (condition && value > 0) {
+            ddl.append(label).append(value);
+        }
+    }
+
+    private void appendField(StringBuilder ddl, String label, long value, String suffix) {
+        if (value > 0) {
+            ddl.append(label).append(value).append(suffix);
+        }
+    }
+
+    private void appendField(StringBuilder ddl, String label, long value) {
+        if (value > 0) {
+            ddl.append(label).append(value);
+        }
+    }
+
+    private void appendEnumField(StringBuilder ddl, String label, Enum<?> enumValue) {
+        if (enumValue != null) {
+            ddl.append(label).append(enumValue.name());
+        }
+    }
+
+    private void appendBooleanField(StringBuilder ddl, String label, boolean condition) {
+        ddl.append(label).append(condition ? "YES" : "NO");
     }
 
 }
