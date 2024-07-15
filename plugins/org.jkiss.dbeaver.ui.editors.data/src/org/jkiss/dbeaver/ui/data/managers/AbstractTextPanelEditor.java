@@ -271,9 +271,11 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
                         log.debug("Error formatting text: " + e.getMessage());
                     }
 
-                    UIUtils.asyncExec(() -> {
-                        textWidget.setWordWrap(getPanelSettings().getBoolean(PREF_TEXT_EDITOR_WORD_WRAP));
-                    });
+                    if (getPanelSettings().getBoolean(PREF_TEXT_EDITOR_WORD_WRAP)) {
+                        UIUtils.asyncExec(() -> {
+                            textWidget.setWordWrap(true);
+                        });
+                    }
 
                 } finally {
                     if (!oldEditable) {
