@@ -323,12 +323,6 @@ public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProv
     @NotNull
     @Override
     public TPRule[] extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull RulePosition position) {
-        return extendRules(dataSource, position, false);
-    }
-
-    @NotNull
-    @Override
-    public TPRule[] extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull RulePosition position, boolean forHighlighting) {
         if (position == RulePosition.INITIAL || position == RulePosition.PARTITION) {
             boolean useDollarQuoteRule = dataSource == null ||
                 CommonUtils.getBoolean(
@@ -340,7 +334,7 @@ public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProv
                     position == RulePosition.PARTITION,
                     false,
                     false,
-                    useDollarQuoteRule || !forHighlighting
+                    useDollarQuoteRule
                 )
             };
         }
