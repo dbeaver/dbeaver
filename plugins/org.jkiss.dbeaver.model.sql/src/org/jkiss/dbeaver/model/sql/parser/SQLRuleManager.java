@@ -86,14 +86,14 @@ public class SQLRuleManager {
     }
 
     public void loadRules() {
-        loadRules(null, false, false);
+        loadRules(null, false, TPRuleProvider.RulePurpose.DEFAULT);
     }
 
     public void loadRules(@Nullable DBPDataSource dataSource, boolean minimalRules) {
-        loadRules(dataSource, minimalRules, false);
+        loadRules(dataSource, minimalRules, TPRuleProvider.RulePurpose.DEFAULT);
     }
 
-    public void loadRules(@Nullable DBPDataSource dataSource, boolean minimalRules, boolean forHighlighting) {
+    public void loadRules(@Nullable DBPDataSource dataSource, boolean minimalRules, TPRuleProvider.RulePurpose forHighlighting) {
         SQLDialect dialect = syntaxManager.getDialect();
         TPRuleProvider ruleProvider = GeneralUtils.adapt(dialect, TPRuleProvider.class);
         DBPDataSourceContainer dataSourceContainer = dataSource == null ? null : dataSource.getContainer();
