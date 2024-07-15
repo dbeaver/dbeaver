@@ -51,6 +51,7 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
         super.dispose(reflect);
     }
 
+    @NotNull
     @Override
     public DBXTreeFolder getMeta() {
         return meta;

@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.sql.SQLModelPreferences;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
@@ -32,18 +31,23 @@ import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants.*;
 
 import java.util.Map;
 
-/**
- * SQLContextInformer
- */
-public class SQLEditorCompletionContext implements SQLCompletionContext
-{
+
+public class SQLEditorCompletionContext implements SQLCompletionContext {
     private final SQLEditorBase editor;
+    private final SQLCompletionObjectNameFormKind objectNameFormKind;
 
     public SQLEditorCompletionContext(SQLEditorBase editor) {
         this.editor = editor;
+        this.objectNameFormKind = SQLCompletionObjectNameFormKind.getFromPreferences(editor.getActivePreferenceStore());
+    }
+
+    @NotNull
+    public SQLCompletionObjectNameFormKind getObjectNameForm() {
+        return this.objectNameFormKind;
     }
 
     @Override
@@ -69,7 +73,7 @@ public class SQLEditorCompletionContext implements SQLCompletionContext
 
     @Override
     public boolean isUseFQNames() {
-        return getActivePreferenceStore().getBoolean(SQLModelPreferences.SQL_EDITOR_PROPOSAL_ALWAYS_FQ);
+        return objectNameFormKind.qualified;
     }
 
     @Override
@@ -84,7 +88,7 @@ public class SQLEditorCompletionContext implements SQLCompletionContext
 
     @Override
     public boolean isUseShortNames() {
-        return getActivePreferenceStore().getBoolean(SQLModelPreferences.SQL_EDITOR_PROPOSAL_SHORT_NAME);
+        return objectNameFormKind.unqualified;
     }
 
     @Override

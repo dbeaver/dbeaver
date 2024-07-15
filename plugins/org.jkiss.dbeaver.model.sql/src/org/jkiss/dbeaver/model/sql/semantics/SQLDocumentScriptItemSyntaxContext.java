@@ -33,6 +33,7 @@ public class SQLDocumentScriptItemSyntaxContext {
     @NotNull
     private final SQLQueryModel queryModel;
     private int length;
+    private boolean hasContextBoundaryAtLength = true;
     private boolean isDirty = false;
 
     public SQLDocumentScriptItemSyntaxContext(
@@ -57,6 +58,14 @@ public class SQLDocumentScriptItemSyntaxContext {
 
     public int length() {
         return this.length;
+    }
+
+    public boolean hasContextBoundaryAtLength() {
+        return this.hasContextBoundaryAtLength;
+    }
+
+    public void setHasContextBoundaryAtLength(boolean hasContextBoundaryAtLength) {
+        this.hasContextBoundaryAtLength = hasContextBoundaryAtLength;
     }
 
     public boolean isDirty() {

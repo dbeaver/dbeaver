@@ -17,16 +17,15 @@
 
 package org.jkiss.dbeaver.model.struct.rdb;
 
+import org.jkiss.dbeaver.model.DBPObjectWithOrdinalPosition;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * DBSTriggerColumn
  */
-public interface DBSTriggerColumn extends DBSObject
+public interface DBSTriggerColumn extends DBSObject, DBPObjectWithOrdinalPosition
 {
     DBSTrigger getTrigger();
-
-    int getOrdinalPosition();
 
     DBSTableColumn getTableColumn();
 

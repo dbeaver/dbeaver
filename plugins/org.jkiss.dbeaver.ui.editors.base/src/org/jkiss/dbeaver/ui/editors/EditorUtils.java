@@ -38,10 +38,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPContextProvider;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPExternalFileManager;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.*;
@@ -232,6 +229,9 @@ public class EditorUtils {
             final DBSObject object = ((IDatabaseEditorInput) editorInput).getDatabaseObject();
             if (object != null && object.getDataSource() != null) {
                 return object.getDataSource().getContainer();
+            }
+            if (editorInput instanceof DBPDataSourceContainerProvider containerProvider) {
+                return containerProvider.getDataSourceContainer();
             }
             return null;
         } else if (editorInput instanceof IInMemoryEditorInput) {
