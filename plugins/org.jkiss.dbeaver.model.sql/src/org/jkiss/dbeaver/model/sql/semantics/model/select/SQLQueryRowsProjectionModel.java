@@ -29,11 +29,35 @@ import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
  * Describes SELECT clause
  */
 public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
+
+    public static class FiltersData<T> {
+
+        public static final FiltersData EMPTY = new FiltersData(null, null, null, null);;
+
+        public static <T> FiltersData of(T where, T groupBy, T having, T orderBy) {
+            return new FiltersData(where, groupBy, having, orderBy);
+        }
+
+        public final T whereClause;
+        public final T groupByClause;
+        public final T havingClause;
+        public final T orderByClause;
+
+        private FiltersData(T where, T groupBy, T having, T orderBy) {
+            this.whereClause = where;
+            this.groupByClause = groupBy;
+            this.havingClause = having;
+            this.orderByClause = orderBy;
+        }
+    }
+
     @NotNull
     private final SQLQueryLexicalScope selectListScope;
     @NotNull
@@ -42,15 +66,10 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
     @NotNull
     private final SQLQuerySelectionResultModel result; // selectList
 
-    @Nullable
-    private final SQLQueryValueExpression whereClause;
-    @Nullable
-    private final SQLQueryValueExpression havingClause;
-    @Nullable
-    private final SQLQueryValueExpression groupByClause;
-    @Nullable
-    private final SQLQueryValueExpression orderByClause;
-
+    @NotNull
+    private final FiltersData<SQLQueryValueExpression> filterExprs;
+    @NotNull
+    private final FiltersData<SQLQueryLexicalScope> filterScopes;
 
     public SQLQueryRowsProjectionModel(
         @NotNull SQLQueryModelContext context,
@@ -59,7 +78,7 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
         @NotNull SQLQueryRowsSourceModel fromSource,
         @NotNull SQLQuerySelectionResultModel result
     ) {
-        this(context, syntaxNode, selectListScope, fromSource, result, null, null, null, null);
+        this(context, syntaxNode, selectListScope, fromSource, null, FiltersData.EMPTY, FiltersData.EMPTY, result);
     }
 
     public SQLQueryRowsProjectionModel(
@@ -67,22 +86,24 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryLexicalScope selectListScope,
         @NotNull SQLQueryRowsSourceModel fromSource,
-        @NotNull SQLQuerySelectionResultModel result,
-        @Nullable SQLQueryValueExpression whereClause,
-        @Nullable SQLQueryValueExpression havingClause,
-        @Nullable SQLQueryValueExpression groupByClause,
-        @Nullable SQLQueryValueExpression orderByClause
+        @Nullable SQLQueryLexicalScope fromScope,
+        @NotNull FiltersData<SQLQueryValueExpression> filterExprs,
+        @NotNull FiltersData<SQLQueryLexicalScope> filterScopes,
+        @NotNull SQLQuerySelectionResultModel result
     ) {
-        super(context, syntaxNode, fromSource, result, whereClause, havingClause, groupByClause, orderByClause);
+        super(context, syntaxNode, fromSource, result, filterExprs.whereClause, filterExprs.havingClause, filterExprs.groupByClause, filterExprs.orderByClause);
         this.result = result;
         this.selectListScope = selectListScope;
         this.fromSource = fromSource;
-        this.whereClause = whereClause;
-        this.havingClause = havingClause;
-        this.groupByClause = groupByClause;
-        this.orderByClause = orderByClause;
-        
+        this.filterExprs = filterExprs;
+        this.filterScopes = filterScopes;
+
         this.registerLexicalScope(selectListScope);
+        if (fromScope != null) {
+            this.registerLexicalScope(fromScope);
+        }
+        Stream.of(filterScopes.whereClause, filterScopes.havingClause, filterScopes.groupByClause, filterScopes.orderByClause)
+            .filter(Objects::nonNull).forEach(this::registerLexicalScope);
     }
 
     @NotNull
@@ -97,22 +118,22 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
 
     @Nullable
     public SQLQueryValueExpression getWhereClause() {
-        return whereClause;
+        return this.filterExprs.whereClause;
     }
 
     @Nullable
     public SQLQueryValueExpression getHavingClause() {
-        return havingClause;
+        return this.filterExprs.havingClause;
     }
 
     @Nullable
     public SQLQueryValueExpression getGroupByClause() {
-        return groupByClause;
+        return this.filterExprs.groupByClause;
     }
 
     @Nullable
     public SQLQueryValueExpression getOrderByClause() {
-        return orderByClause;
+        return this.filterExprs.orderByClause;
     }
 
     @NotNull
@@ -129,29 +150,25 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
         SQLQueryDataContext resolvedResult = unresolvedResult.overrideResultTuple(resultColumns);
 
         SQLQueryDataContext filtersContext = resolvedResult.combine(unresolvedResult);
-        if (this.whereClause != null) {
-            this.whereClause.propagateContext(
-                aliasScope.contains(ProjectionAliasVisibilityScope.WHERE) ? filtersContext : unresolvedResult,
-                statistics
-            );
+        if (this.filterExprs.whereClause != null) {
+            SQLQueryDataContext clauseCtx = aliasScope.contains(ProjectionAliasVisibilityScope.WHERE) ? filtersContext : unresolvedResult;
+            this.filterExprs.whereClause.propagateContext(clauseCtx, statistics);
+            this.filterScopes.whereClause.setContext(clauseCtx);
         }
-        if (this.havingClause != null) {
-            this.havingClause.propagateContext(
-                aliasScope.contains(ProjectionAliasVisibilityScope.HAVING) ? filtersContext : unresolvedResult,
-                statistics
-            );
+        if (this.filterExprs.havingClause != null) {
+            SQLQueryDataContext clauseCtx = aliasScope.contains(ProjectionAliasVisibilityScope.HAVING) ? filtersContext : unresolvedResult;
+            this.filterExprs.havingClause.propagateContext(clauseCtx, statistics);
+            this.filterScopes.havingClause.setContext(clauseCtx);
         }
-        if (this.groupByClause != null) {
-            this.groupByClause.propagateContext(
-                aliasScope.contains(ProjectionAliasVisibilityScope.GROUP_BY) ? filtersContext : unresolvedResult,
-                statistics
-            );
+        if (this.filterExprs.groupByClause != null) {
+            SQLQueryDataContext clauseCtx = aliasScope.contains(ProjectionAliasVisibilityScope.GROUP_BY) ? filtersContext : unresolvedResult;
+            this.filterExprs.groupByClause.propagateContext(clauseCtx, statistics);
+            this.filterScopes.groupByClause.setContext(clauseCtx);
         }
-        if (this.orderByClause != null) {
-            this.orderByClause.propagateContext(
-                aliasScope.contains(ProjectionAliasVisibilityScope.ORDER_BY) ? filtersContext : unresolvedResult,
-                statistics
-            );
+        if (this.filterExprs.orderByClause != null) {
+            SQLQueryDataContext clauseCtx = aliasScope.contains(ProjectionAliasVisibilityScope.ORDER_BY) ? filtersContext : unresolvedResult;
+            this.filterExprs.orderByClause.propagateContext(clauseCtx, statistics);
+            this.filterScopes.orderByClause.setContext(clauseCtx);
         }
         return resolvedResult.hideSources();
     }
