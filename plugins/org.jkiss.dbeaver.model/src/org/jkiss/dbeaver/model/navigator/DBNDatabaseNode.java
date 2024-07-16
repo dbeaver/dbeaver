@@ -226,6 +226,8 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             if (this.initializeNode(monitor, null)) {
                 final List<DBNDatabaseNode> tmpList = new ArrayList<>();
                 loadChildren(monitor, getMeta(), null, tmpList, this, true);
+                final DBSObjectFilter filter = getNodeFilter(getItemsMeta(), false);
+                this.filtered = filter != null && !filter.isNotApplicable();
                 if (!monitor.isCanceled()) {
                     synchronized (this) {
                         if (tmpList.isEmpty()) {
@@ -476,9 +478,6 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                     if (!isLoaded && item.isOptional() && item.getRecursiveLink() == null) {
                         // This may occur only if no child nodes was read
                         // Then we try to go on next DBX level
-                        if (this instanceof DBNDataSource || this instanceof DBNDatabaseItem) {
-                            return;
-                        }
                         loadChildren(monitor, item, oldList, toList, source, reflect);
                     }
                 }
@@ -912,6 +911,8 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         }
         List<DBNDatabaseNode> newChildren = new ArrayList<>();
         loadChildren(monitor, getMeta(), oldChildren, newChildren, source, reflect);
+        final DBSObjectFilter filter = getNodeFilter(getItemsMeta(), false);
+        this.filtered = filter != null && !filter.isNotApplicable();
         synchronized (this) {
             childNodes = newChildren.toArray(new DBNDatabaseNode[0]);
         }
