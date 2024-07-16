@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNativeCredentials;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 
 import java.util.Properties;
 
@@ -43,7 +44,11 @@ public class SQLServerAuthModelMFA extends SQLServerAuthModelAbstract {
     @Override
     public Object initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull AuthModelDatabaseNativeCredentials credentials, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException {
         connProperties.put(SQLServerConstants.PROP_CONNECTION_AUTHENTICATION, SQLServerConstants.AUTH_ACTIVE_DIRECTORY_INTERACTIVE);
+        // https://github.com/microsoft/mssql-jdbc/issues/2237#issuecomment-2075520355
+
+        connProperties.put(SQLConstants.CONNECT_RETRY_COUNT, "0");
         dataSource.getContainer().setForceUseSingleConnection(true);
+
         return credentials;
     }
 
