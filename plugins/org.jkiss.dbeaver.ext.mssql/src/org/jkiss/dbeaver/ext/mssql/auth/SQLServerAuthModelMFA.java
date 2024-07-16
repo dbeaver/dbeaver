@@ -46,7 +46,7 @@ public class SQLServerAuthModelMFA extends SQLServerAuthModelAbstract {
         connProperties.put(SQLServerConstants.PROP_CONNECTION_AUTHENTICATION, SQLServerConstants.AUTH_ACTIVE_DIRECTORY_INTERACTIVE);
         // https://github.com/microsoft/mssql-jdbc/issues/2237#issuecomment-2075520355
 
-        connProperties.put(SQLConstants.CONNECT_RETRY_COUNT, "0"    );
+        connProperties.put(SQLConstants.CONNECT_RETRY_COUNT, "0");
         dataSource.getContainer().setForceUseSingleConnection(true);
 
         return credentials;
