@@ -403,7 +403,7 @@ public class PostgreSchema implements
 
     @NotNull
     @Override
-    public Class<? extends DBSEntity> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSEntity> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
         return PostgreTableRegular.class;
     }
 
