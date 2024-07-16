@@ -242,38 +242,45 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
     private void initEditorSettings(StyledText control) {
         boolean wwEnabled = getPanelSettings().getBoolean(PREF_TEXT_EDITOR_WORD_WRAP);
         if (wwEnabled != control.getWordWrap()) {
-            control.setWordWrap(wwEnabled);
+            //control.setWordWrap(wwEnabled);
         }
     }
 
     private void applyEditorStyle() {
-        BaseTextEditor textEditor = getTextEditor();
-        if (textEditor != null && getPanelSettings().getBoolean(PREF_TEXT_EDITOR_AUTO_FORMAT)) {
-            TextViewer textViewer = textEditor.getTextViewer();
+        if (editor == null) {
+            return;
+        }
+        StyledText textWidget = editor.getEditorControl();
+        if (textWidget == null || textWidget.isDisposed()) {
+            return;
+        }
+        if (getPanelSettings().getBoolean(PREF_TEXT_EDITOR_AUTO_FORMAT)) {
+            TextViewer textViewer = editor.getTextViewer();
             if (textViewer != null) {
-                StyledText textWidget = textViewer.getTextWidget();
-                if (textWidget == null || textWidget.isDisposed()) {
-                    return;
-                }
-                textWidget.setRedraw(false);
-
                 boolean oldEditable = textViewer.isEditable();
-                if (!oldEditable) {
-                    textViewer.setEditable(true);
-                }
                 try {
-                    if (textViewer.canDoOperation(ISourceViewer.FORMAT)) {
-                        textViewer.doOperation(ISourceViewer.FORMAT);
+                    if (!oldEditable) {
+                        textViewer.setEditable(true);
                     }
-                } catch (Exception e) {
-                    log.debug("Error formatting text: " + e.getMessage());
+                    try {
+                        if (textViewer.canDoOperation(ISourceViewer.FORMAT)) {
+                            textViewer.doOperation(ISourceViewer.FORMAT);
+                        }
+                    } catch (Exception e) {
+                        log.debug("Error formatting text: " + e.getMessage());
+                    }
                 } finally {
                     if (!oldEditable) {
                         textViewer.setEditable(false);
                     }
-                    textWidget.setRedraw(true);
                 }
             }
+        }
+        if (getPanelSettings().getBoolean(PREF_TEXT_EDITOR_WORD_WRAP)) {
+            // It must be execute in async mode. Otherwise StyledText goes mad and freezes UI
+            UIUtils.asyncExec(() -> {
+                textWidget.setWordWrap(true);
+            });
         }
     }
 
@@ -305,25 +312,34 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
             log.error("Content value (LOB) is null");
             return;
         }
+        if (editor == null) {
+            log.error("Editor is null or undefined");
+            return;
+        }
+        StyledText editorControl = editor.getEditorControl();
+        if (editorControl == null) {
+            return;
+        }
         try {
-            if (editor == null) {
-                log.error("Editor is null or undefined");
-                return;
-            }
+
+            editorControl.setRedraw(false);
+
             resetEditorInput();
             final DBPPreferenceStore store = valueController.getExecutionContext() != null
                 ? valueController.getExecutionContext().getDataSource().getContainer().getPreferenceStore()
                 : DBWorkbench.getPlatform().getPreferenceStore();
             final int maxContentLength = store.getInt(ResultSetPreferences.RS_EDIT_MAX_TEXT_SIZE) * 1000;
             if (value.getContentLength() > maxContentLength) {
-                showLimitedContent(value, maxContentLength);
+                showLimitedContent(editorControl, value, maxContentLength);
             } else {
-                showRegularContent(monitor);
+                showRegularContent(editorControl, monitor);
             }
         } catch (Exception e) {
             throw new DBException("Error loading text value", e);
         } finally {
             monitor.done();
+
+            editorControl.setRedraw(true);
         }
     }
 
@@ -333,56 +349,54 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
         UIUtils.syncExec(() -> {
             if (editor != null) {
                 messageBar.hideMessage();
-                editor.setInput(new StringEditorInput("Empty", "", true, StandardCharsets.UTF_8.name()));
+                editor.setInput(StringEditorInput.EMPTY_INPUT);
             }
         });
     }
 
-    private void showRegularContent(@NotNull DBRProgressMonitor monitor) throws DBException {
+    private void showRegularContent(StyledText editorControl, @NotNull DBRProgressMonitor monitor) throws DBException {
         String encoding = getPanelSettings().get(PREF_TEXT_EDITOR_ENCODING);
         if (encoding == null) {
             encoding = StandardCharsets.UTF_8.name();
         }
         final ContentEditorInput textInput = new ContentEditorInput(valueController, null, null, encoding, monitor);
-        UIUtils.syncExec(() -> {
-            if (editor != null) {
-                final TextViewer textViewer = editor.getTextViewer();
-                if (textViewer != null) {
-                    long contentLength = textInput.getContentLength();
+        final TextViewer textViewer = editor.getTextViewer();
+        if (textViewer != null) {
+            long contentLength = textInput.getContentLength();
 
-                    StyledText textWidget = textViewer.getTextWidget();
-                    if (textWidget != null) {
-                        if (contentLength > 100000) {
-                            GC gc = new GC(textWidget);
-                            try {
-                                UIUtils.drawMessageOverControl(textWidget, gc,
-                                    NLS.bind(ResultSetMessages.panel_editor_text_loading_placeholder_label, contentLength), 0);
-                            } finally {
-                                gc.dispose();
-                            }
-                        }
-                        editor.setInput(textInput);
-                        messageBar.hideMessage();
-                    } else {
-                        editor.setInput(textInput);
+            StyledText textWidget = textViewer.getTextWidget();
+            if (textWidget != null) {
+                if (contentLength > 100000) {
+                    GC gc = new GC(textWidget);
+                    try {
+                        UIUtils.drawMessageOverControl(textWidget, gc,
+                            NLS.bind(ResultSetMessages.panel_editor_text_loading_placeholder_label, contentLength), 0);
+                    } finally {
+                        gc.dispose();
                     }
-                    applyEditorStyle();
                 }
+                editorControl.setWordWrap(false);
+                editor.setInput(textInput);
+
+                messageBar.hideMessage();
+            } else {
+                editor.setInput(textInput);
             }
-        });
+            applyEditorStyle();
+        }
     }
 
-    private void showLimitedContent(@NotNull DBDContent value, int lengthInBytes) throws DBCException, IOException {
+    private void showLimitedContent(StyledText editorControl, @NotNull DBDContent value, int lengthInBytes) throws DBCException, IOException {
         DBDContentStorage contents = value.getContents(new VoidProgressMonitor());
         try (final InputStream stream = contents.getContentStream()) {
             byte[] displayingContentBytes = stream.readNBytes(lengthInBytes);
             final String content = new String(displayingContentBytes);
-            UIUtils.syncExec(() -> {
-                if (editor != null) {
-                    editor.setInput(new StringEditorInput("Limited Content ", content, true, StandardCharsets.UTF_8.name()));
-                    messageBar.showMessage(NLS.bind(ResultSetMessages.panel_editor_text_content_limitation_lbl, lengthInBytes / 1000));
-                }
-            });
+            if (editor != null) {
+                editorControl.setWordWrap(false);
+                editor.setInput(new StringEditorInput("Limited Content ", content, true, StandardCharsets.UTF_8.name()));
+                messageBar.showMessage(NLS.bind(ResultSetMessages.panel_editor_text_content_limitation_lbl, lengthInBytes / 1000));
+            }
+            applyEditorStyle();
         }
     }
 

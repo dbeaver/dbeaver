@@ -37,13 +37,13 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
-import org.jkiss.dbeaver.ui.navigator.dialogs.ObjectListDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 public abstract class ConfigImportWizard extends Wizard implements IImportWizard {
     private static final Log log = Log.getLog(ConfigImportWizard.class);
@@ -148,21 +148,17 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
             driver.setModified(true);
             genericProvider.addDriver(driver);
             connectionInfo.setDriver(driver);
-        } else if (matchedDrivers.size() == 1) {
-            // Use the only found driver
-            driver = matchedDrivers.get(0);
-            connectionInfo.setDriver(driver);
         } else {
-            // Let user to choose correct driver
-            driver = ObjectListDialog.selectObject(
-                getShell(), "Choose driver for connection '" + connectionInfo.getAlias() + "'", "ImportDriverSelector", matchedDrivers);
-            if (driver == null) {
-                return false;
-            }
+            // Use the only found driver
+            driver = matchedDrivers.stream()
+                    .filter(driverDescriptor -> driverDescriptor.getName().equalsIgnoreCase(driverInfo.getName()))
+                    .findFirst()
+                    .orElse(matchedDrivers.get(0));
             connectionInfo.setDriver(driver);
         }
 
         if (driver != null) {
+            //fixme driverClassName is not uniq
             driverClassMap.put(driver.getDriverClassName(), driver);
             return true;
         }
@@ -270,66 +266,11 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         if (connectionInfo.getDriver() != null) {
             sampleURL = connectionInfo.getDriver().getSampleURL();
         }
-        final DatabaseURL.MetaURL metaURL = DatabaseURL.parseSampleURL(sampleURL);
-        List<String> urlComponents = metaURL.getUrlComponents();
-        for (int i = 0, urlComponentsSize = urlComponents.size(); i < urlComponentsSize; i++) {
-            String component = urlComponents.get(i);
-            log.info("urlComponents:" + component);
-            
-            int sourceOffset = 0;
-            if (component.length() > 2 && component.charAt(0) == '{' && component.charAt(component.length() - 1) == '}' &&
-                    metaURL.getAvailableProperties().contains(component.substring(1, component.length() - 1))) {
-                    // Property
-                    int partEnd;
-                    if (i < urlComponentsSize - 1) {
-                        // Find next component
-                        final String nextComponent = urlComponents.get(i + 1);
-                        partEnd = url.indexOf(nextComponent, sourceOffset);
-                        if (partEnd == -1) {
-                            if (nextComponent.equals(":")) {
-                                // Try to find another divider - dbvis sometimes contains bad sample URLs (e.g. for Oracle)
-                                partEnd = url.indexOf("/", sourceOffset);
-                            }
-                            if (partEnd == -1) {
-                                if (connectionInfo.getHost() == null) {
-                                    throw new DBException("Can't parse URL '" + url + "' with pattern '" + sampleURL + "'. String '" + nextComponent + "' not found after '" + component);
-                                } else {
-                                    // We have connection properties anyway
-                                    url = null;
-                                    break;
-                                }
-                            }
-                        }
-                    } else {
-                        partEnd = url.length();
-                    }
-
-                    String propertyValue = url.substring(sourceOffset, partEnd);
-                    switch (component) {
-                        case "{host}":
-                            connectionInfo.setHost(propertyValue);
-                            break;
-                        case "{port}":
-                            connectionInfo.setPort(propertyValue);
-                            break;
-                        case "{database}":
-                            connectionInfo.setDatabase(propertyValue);
-                            break;
-                        default:
-                            if (connectionInfo.getHost() == null) {
-                                throw new DBException("Unsupported property " + component);
-                            }
-                    }
-                    sourceOffset = partEnd;
-                } else {
-                    // Static string
-                    sourceOffset += component.length();
-                }
+        Matcher matcher = DatabaseURL.getPattern(sampleURL).matcher(url);
+        if (matcher.matches()) {
+            connectionInfo.setHost(matcher.group("host"));
+            connectionInfo.setPort(matcher.group("port"));
+            connectionInfo.setDatabase(matcher.group("database"));
         }
     }
-    
-    
-    
-    
-
 }
