@@ -51,9 +51,7 @@ public interface DBSObjectContainer extends DBSObject
      * @return collection of child objects (not null).
      *  Objects type depends on implementor (catalogs, schemas, tables, etc)
      * @throws DBException on any DB error
-     * @param monitor progress monitor. If null passed then implementation
-     *                mustn't perform any expensive operations like cache reading.
-     *                In this case it can return null as a result (but also may return some cached collection)
+     * @param monitor progress monitor
      */
     @DPIElement
     Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException;
