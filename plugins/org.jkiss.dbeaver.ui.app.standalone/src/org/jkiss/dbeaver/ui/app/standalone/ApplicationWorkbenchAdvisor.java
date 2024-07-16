@@ -56,6 +56,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.runtime.OperationSystemState;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIFonts;
@@ -72,6 +73,11 @@ import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseEditors;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseUserInterface;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
+import java.awt.*;
+import java.awt.desktop.SystemEventListener;
+import java.awt.desktop.SystemSleepEvent;
+import java.awt.desktop.SystemSleepListener;
+import java.util.List;
 import java.util.*;
 
 /**
@@ -172,6 +178,18 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     protected final DBPApplication application;
     private final DelayedEventsProcessor processor;
 
+    private final SystemEventListener systemSleepListener = new SystemSleepListener() {
+        @Override
+        public void systemAboutToSleep(SystemSleepEvent e) {
+            OperationSystemState.toggleSleepMode(true);
+        }
+
+        @Override
+        public void systemAwoke(SystemSleepEvent e) {
+            OperationSystemState.toggleSleepMode(false);
+        }
+    };
+
     protected ApplicationWorkbenchAdvisor(DBPApplication application) {
         this.application = application;
         this.processor = new DelayedEventsProcessor(Display.getCurrent());
@@ -246,6 +264,12 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         if (!application.isDistributed() &&
             !ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
             startVersionChecker();
+        }
+
+        // System events
+        Desktop desktop = Desktop.getDesktop();
+        if (desktop.isSupported(Desktop.Action.APP_EVENT_SYSTEM_SLEEP)) {
+            desktop.addAppEventListener(systemSleepListener);
         }
     }
 
@@ -335,6 +359,9 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         checker.schedule(3000);
     }
 
+    ///////////////////////
+    // Shutdown
+
     @Override
     public boolean preShutdown() {
         //DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(settingsChangeListener);
@@ -351,6 +378,12 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     @Override
     public void postShutdown() {
         super.postShutdown();
+
+        // System events
+        Desktop desktop = Desktop.getDesktop();
+        if (desktop.isSupported(Desktop.Action.APP_EVENT_SYSTEM_SLEEP)) {
+            desktop.removeAppEventListener(systemSleepListener);
+        }
     }
 
     private boolean saveAndCleanup() {

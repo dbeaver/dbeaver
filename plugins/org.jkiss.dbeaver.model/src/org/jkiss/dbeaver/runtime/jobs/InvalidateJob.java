@@ -44,11 +44,43 @@ public class InvalidateJob extends DataSourceJob
 
     private static final String TASK_INVALIDATE = "dsInvalidate";
 
-    public sealed interface ContextInvalidateResult {
-        record Success() implements ContextInvalidateResult {
+    public static class ContextInvalidateResult {
+
+        private final DBPDataSource dataSource;
+        private final Exception exception;
+
+        public ContextInvalidateResult(DBPDataSource dataSource) {
+            this.dataSource = dataSource;
+            this.exception = null;
         }
 
-        record Error(@NotNull Exception exception) implements ContextInvalidateResult {
+        public ContextInvalidateResult(DBPDataSource dataSource, Exception exception) {
+            this.dataSource = dataSource;
+            this.exception = exception;
+        }
+
+        public static ContextInvalidateResult newSuccess(@NotNull DBPDataSource dataSource) {
+            return new ContextInvalidateResult(dataSource);
+        }
+
+        public static ContextInvalidateResult newError(@NotNull DBPDataSource dataSource, @NotNull Exception exception) {
+            return new ContextInvalidateResult(dataSource, exception);
+        }
+
+        public DBPDataSource getDataSource() {
+            return dataSource;
+        }
+
+        public Exception getException() {
+            return exception;
+        }
+
+        public boolean isSuccess() {
+            return exception == null;
+        }
+
+        public boolean isError() {
+            return exception != null;
         }
     }
 
@@ -164,7 +196,12 @@ public class InvalidateJob extends DataSourceJob
                     continue;
                 }
 
-                var results = invalidateNetworkHandlers(monitor, container.getDataSource(), phase);
+                DBPDataSource dataSource = container.getDataSource();
+                if (dataSource == null) {
+                    continue;
+                }
+
+                var results = invalidateNetworkHandlers(monitor, dataSource, phase);
 
                 if (anyFailed(results)) {
                     failed.put(container, Severity.SEVERE);
@@ -192,8 +229,8 @@ public class InvalidateJob extends DataSourceJob
                         log.error("Error closing inaccessible datasource", e);
                     }
                     final String errors = results.stream()
-                        .filter(result -> result instanceof ContextInvalidateResult.Error)
-                        .map(result -> ((ContextInvalidateResult.Error) result).exception.getMessage())
+                        .filter(ContextInvalidateResult::isError)
+                        .map(result -> result.getException().getMessage())
                         .collect(Collectors.joining("\n"));
                     DBWorkbench.getPlatformUI().showError(
                         "Forced disconnect",
@@ -259,9 +296,9 @@ public class InvalidateJob extends DataSourceJob
 
             try {
                 nh.invalidateHandler(monitor, dataSource, phase);
-                results.add(new ContextInvalidateResult.Success());
+                results.add(ContextInvalidateResult.newSuccess(dataSource));
             } catch (Exception e) {
-                results.add(new ContextInvalidateResult.Error(e));
+                results.add(ContextInvalidateResult.newError(dataSource, e));
             }
         }
 
@@ -286,10 +323,10 @@ public class InvalidateJob extends DataSourceJob
                 final Object exclusiveLock = instance.getExclusiveLock().acquireExclusiveLock();
                 try {
                     context.invalidateContext(monitor, phase);
-                    results.add(new ContextInvalidateResult.Success());
+                    results.add(ContextInvalidateResult.newSuccess(dataSource));
                 } catch (Exception e) {
                     log.debug("\tFailed: " + e.getMessage());
-                    results.add(new ContextInvalidateResult.Error(e));
+                    results.add(ContextInvalidateResult.newError(dataSource, e));
                 } finally {
                     instance.getExclusiveLock().releaseExclusiveLock(exclusiveLock);
                 }
@@ -333,23 +370,23 @@ public class InvalidateJob extends DataSourceJob
     }
 
     public static boolean allSucceeded(@NotNull Collection<ContextInvalidateResult> results) {
-        return results.stream().allMatch(ContextInvalidateResult.Success.class::isInstance);
+        return results.stream().allMatch(ContextInvalidateResult::isSuccess);
     }
 
     public static boolean anySucceeded(@NotNull Collection<ContextInvalidateResult> results) {
-        return results.stream().anyMatch(ContextInvalidateResult.Success.class::isInstance);
+        return results.stream().anyMatch(ContextInvalidateResult::isSuccess);
     }
 
     public static boolean allFailed(@NotNull Collection<ContextInvalidateResult> results) {
-        return results.stream().allMatch(ContextInvalidateResult.Error.class::isInstance);
+        return results.stream().allMatch(ContextInvalidateResult::isError);
     }
 
     public static boolean anyFailed(@NotNull Collection<ContextInvalidateResult> results) {
-        return results.stream().anyMatch(ContextInvalidateResult.Error.class::isInstance);
+        return results.stream().anyMatch(ContextInvalidateResult::isError);
     }
 
     public static int getSucceededCount(@NotNull Collection<ContextInvalidateResult> results) {
-        return (int) results.stream().filter(ContextInvalidateResult.Success.class::isInstance).count();
+        return (int) results.stream().filter(ContextInvalidateResult::isSuccess).count();
     }
 
     @Override
