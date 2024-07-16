@@ -121,7 +121,10 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
                 defaultSchema.setText(CommonUtils.notEmpty(conConfig.getBootstrap().getDefaultSchemaName()));
                 keepAliveInterval.setSelection(conConfig.getKeepAliveInterval());
                 closeIdleConnectionsCheck.setSelection(conConfig.isCloseIdleConnection());
-                closeIdleConnectionsPeriod.setSelection(conConfig.getCloseIdleInterval());
+                closeIdleConnectionsPeriod.setSelection(
+                    conConfig.getCloseIdleInterval() > 0 ?
+                        conConfig.getCloseIdleInterval() :
+                        conConfig.getConnectionType().getCloseIdleConnectionPeriod());
                 closeIdleConnectionsPeriod.setEnabled(closeIdleConnectionsCheck.getSelection());
                 activated = true;
             }
@@ -368,7 +371,12 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
 
         confConfig.setKeepAliveInterval(keepAliveInterval.getSelection());
         confConfig.setCloseIdleConnection(closeIdleConnectionsCheck.getSelection());
-        confConfig.setCloseIdleInterval(closeIdleConnectionsPeriod.getSelection());
+        if (confConfig.isCloseIdleConnection() && closeIdleConnectionsPeriod.getSelection() != confConfig.getConnectionType().getCloseIdleConnectionPeriod()) {
+            // Save only if it is enabled and not equals to default
+            confConfig.setCloseIdleInterval(closeIdleConnectionsPeriod.getSelection());
+        } else {
+            confConfig.setCloseIdleInterval(0);
+        }
     }
 
     @Override
@@ -381,6 +389,12 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
                     DBPConnectionType type = (DBPConnectionType) event.getNewValue();
                     if (autocommit != null) {
                         autocommit.setSelection(type.isAutocommit());
+                    }
+                    if (closeIdleConnectionsCheck != null) {
+                        closeIdleConnectionsCheck.setSelection(type.isAutoCloseConnections());
+                    }
+                    if (closeIdleConnectionsPeriod != null) {
+                        closeIdleConnectionsPeriod.setSelection(type.getCloseIdleConnectionPeriod());
                     }
                 }
             });

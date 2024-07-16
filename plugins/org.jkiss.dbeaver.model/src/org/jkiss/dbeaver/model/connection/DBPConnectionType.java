@@ -104,9 +104,9 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
     private boolean smartCommit;
     private boolean smartCommitRecover;
     private boolean autoCloseTransactions;
-    private long closeIdleTransactionPeriod;
+    private int closeIdleTransactionPeriod;
     private boolean autoCloseConnections;
-    private long closeIdleConnectionPeriod;
+    private int closeIdleConnectionPeriod;
 
     private final boolean predefined;
     private List<DBPDataSourcePermission> connectionModifyRestrictions;
@@ -141,9 +141,9 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         boolean smartCommit,
         boolean smartCommitRecover,
         boolean autoCloseTransactions,
-        long closeIdleTransactionPeriod,
+        int closeIdleTransactionPeriod,
         boolean autoCloseConnections,
-        long closeIdleConnectionPeriod)
+        int closeIdleConnectionPeriod)
     {
         this(
             id,
@@ -174,9 +174,9 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         boolean smartCommit,
         boolean smartCommitRecover,
         boolean autoCloseTransactions,
-        long closeIdleTransactionPeriod,
+        int closeIdleTransactionPeriod,
         boolean autoCloseConnections,
-        long closeIdleConnectionPeriod,
+        int closeIdleConnectionPeriod,
         boolean predefined,
         List<DBPDataSourcePermission> connectionModifyRestrictions)
     {
@@ -283,11 +283,11 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         this.autoCloseTransactions = autoCloseTransactions;
     }
 
-    public long getCloseIdleTransactionPeriod() {
+    public int getCloseIdleTransactionPeriod() {
         return closeIdleTransactionPeriod;
     }
 
-    public void setCloseIdleTransactionPeriod(long closeIdleTransactionPeriod) {
+    public void setCloseIdleTransactionPeriod(int closeIdleTransactionPeriod) {
         this.closeIdleTransactionPeriod = closeIdleTransactionPeriod;
     }
 
@@ -299,11 +299,11 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         this.autoCloseConnections = autoCloseConnections;
     }
     
-    public long getCloseIdleConnectionPeriod() {
+    public int getCloseIdleConnectionPeriod() {
         return closeIdleConnectionPeriod;
     }
 
-    public void setCloseIdleConnectionPeriod(long closeIdleConnectionPeriod) {
+    public void setCloseIdleConnectionPeriod(int closeIdleConnectionPeriod) {
         this.closeIdleConnectionPeriod = closeIdleConnectionPeriod;
     }
 
@@ -378,7 +378,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
     public static DBPConnectionType getDefaultConnectionType() {
         String defTypeName = DBWorkbench.getPlatform().getPreferenceStore().getString(DEFAULT_CONNECTION_TYPE_PREF);
         if (CommonUtils.isEmpty(defTypeName)) {
-            defTypeName = DEV.getName();
+            defTypeName = DEV.getId();
         }
 
         return DBWorkbench.getPlatform().getDataSourceProviderRegistry().getConnectionType(defTypeName, DEV);
