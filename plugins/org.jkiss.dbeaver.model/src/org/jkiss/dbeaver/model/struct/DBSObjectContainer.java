@@ -82,7 +82,7 @@ public interface DBSObjectContainer extends DBSObject
      */
     @DPIElement
     @NotNull
-    Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException;
+    Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Caches all underlying structure contents.
