@@ -460,7 +460,11 @@ public class OracleDataType extends OracleObject<DBSObject>
     public List<OracleDataTypeAttribute> getAttributes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return attributeCache == null ? null : attributeCache.getAllObjects(monitor, this);
+        return !supportsAttributes() || attributeCache == null ? null : attributeCache.getAllObjects(monitor, this);
+    }
+
+    private boolean supportsAttributes() {
+        return getTypeID() == Types.STRUCT;
     }
 
     @Nullable

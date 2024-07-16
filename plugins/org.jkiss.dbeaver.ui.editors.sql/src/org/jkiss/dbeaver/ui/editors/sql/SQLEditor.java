@@ -51,6 +51,7 @@ import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.IMenuService;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.services.IEvaluationReference;
 import org.eclipse.ui.services.IEvaluationService;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
@@ -138,6 +139,7 @@ import org.jkiss.dbeaver.ui.editors.sql.variables.AssignVariableAction;
 import org.jkiss.dbeaver.ui.editors.sql.variables.SQLVariablesPanel;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.ResourceUtils;
@@ -934,7 +936,12 @@ public class SQLEditor extends SQLEditorBase implements
             if (!dataSourceContainer.isConnected()) {
                 UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
                 if (serviceConnections != null) {
-                    serviceConnections.connectDataSource(dataSourceContainer, onFinish);
+                    // Start connect visualizer
+                    ConnectVisualizer connectVisualizer = new ConnectVisualizer(dataSourceContainer);
+                    serviceConnections.connectDataSource(dataSourceContainer, status -> {
+                        if (onFinish != null) onFinish.onTaskFinished(status);
+                        connectVisualizer.stop();
+                    });
                 }
             }
         }
@@ -5585,6 +5592,44 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             }
             schedule(UPDATE_DELAY_MS);
+            return Status.OK_STATUS;
+        }
+    }
+
+    private class ConnectVisualizer extends UIJob {
+        private boolean stopped = false;
+        private int tickCount;
+        private Cursor oldCursor;
+        protected ConnectVisualizer(DBPDataSourceContainer dataSourceContainer) {
+            super("Connect visualizer");
+            StyledText editorControl = getEditorControl();
+            if (editorControl != null) {
+                oldCursor = editorControl.getCursor();
+                editorControl.setCursor(editorControl.getDisplay().getSystemCursor(SWT.CURSOR_APPSTARTING));
+            }
+            schedule();
+        }
+
+        public void stop() {
+            stopped = true;
+        }
+
+        @Override
+        public IStatus runInUIThread(IProgressMonitor monitor) {
+            tickCount++;
+            if (!stopped) {
+                Image image = DatabaseNavigatorTree.IMG_LOADING[tickCount % DatabaseNavigatorTree.IMG_LOADING.length];
+                setTitleImage(image);
+                schedule(100);
+            } else {
+                if (oldCursor != null) {
+                    StyledText editorControl = getEditorControl();
+                    if (editorControl != null) {
+                        editorControl.setCursor(oldCursor);
+                    }
+                }
+                refreshEditorIconAndTitle();
+            }
             return Status.OK_STATUS;
         }
     }

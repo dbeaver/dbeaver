@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLExpressionFormatter;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLDollarQuoteRule;
+import org.jkiss.dbeaver.model.text.TextUtils;
 import org.jkiss.dbeaver.model.text.parser.TPRule;
 import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
 import org.jkiss.utils.CommonUtils;
@@ -141,11 +142,11 @@ public class VerticaSQLDialect extends GenericSQLDialect implements TPRuleProvid
             return new TPRule[] {
                 new SQLDollarQuoteRule(
                     position == RulePosition.PARTITION,
-                    false,
-                    false,
-                    dataSource == null ||
-                        CommonUtils.toBoolean(
-                            dataSource.getConnectionConfiguration().getProviderProperty(VerticaConstants.PROP_DOLLAR_QUOTES_AS_STRING))
+                    true,
+                    false, // actually Vertica supports named dollar-strings, why are we ignoring it?
+                    dataSource == null || CommonUtils.toBoolean(
+                        dataSource.getConnectionConfiguration().getProviderProperty(VerticaConstants.PROP_DOLLAR_QUOTES_AS_STRING)
+                    )
                 )
             };
         }
