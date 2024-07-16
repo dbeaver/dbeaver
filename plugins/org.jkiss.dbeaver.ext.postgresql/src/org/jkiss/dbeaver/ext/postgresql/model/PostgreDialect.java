@@ -1070,12 +1070,6 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     @NotNull
     @Override
     public TPRule[] extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull RulePosition position) {
-        return extendRules(dataSource, position, RulePurpose.DEFAULT);
-    }
-
-    @NotNull
-    @Override
-    public TPRule[] extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull RulePosition position, RulePurpose purpose) {
         if (position == RulePosition.INITIAL || position == RulePosition.PARTITION) {
             boolean ddTagDefault = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PostgreConstants.PROP_DD_TAG_STRING);
             boolean ddTagIsString = dataSource == null
@@ -1092,7 +1086,8 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
                     position == RulePosition.PARTITION,
                     true,
                     ddTagIsString,
-                    ddPlainIsString || !(purpose == RulePurpose.QUERY_HIGHLIGHTING)),
+                    ddPlainIsString
+                ),
                 new PostgreEscapeStringRule()
             };
         }

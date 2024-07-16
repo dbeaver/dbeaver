@@ -43,9 +43,4 @@ public interface TPRuleProvider {
     @NotNull
     TPRule[] extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull RulePosition position);
 
-    @NotNull
-    default TPRule[] extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull RulePosition position, RulePurpose purpose) {
-        return extendRules(dataSource, position);
-    }
-
 }
