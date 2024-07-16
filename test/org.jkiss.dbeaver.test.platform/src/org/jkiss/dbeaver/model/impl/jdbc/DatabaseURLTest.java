@@ -76,6 +76,7 @@ public class DatabaseURLTest {
             });
     }
 
+
     private void assertMatches(@NotNull String sampleUrl, @NotNull String targetUrl, @NotNull String[][] properties) {
         final Matcher matcher = DatabaseURL.getPattern(sampleUrl).matcher(targetUrl);
         Assert.assertTrue(sampleUrl, matcher.matches());

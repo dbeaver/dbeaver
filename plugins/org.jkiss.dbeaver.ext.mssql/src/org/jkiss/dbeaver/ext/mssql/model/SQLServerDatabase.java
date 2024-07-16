@@ -344,7 +344,7 @@ public class SQLServerDatabase
 
     @NotNull
     @Override
-    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) {
+    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) {
         return SQLServerSchema.class;
     }
 
