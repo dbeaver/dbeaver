@@ -54,9 +54,11 @@ public class TextWithOpen extends Composite {
     private final boolean binary;
 
     public TextWithOpen(Composite parent, boolean multiFS) {
-        this(parent, multiFS, false, false);
+        this(parent, multiFS, false);
     }
-    
+    public TextWithOpen(Composite parent, boolean multiFS, boolean secured) {
+        this(parent, multiFS, secured, false);
+    }
     public TextWithOpen(Composite parent, boolean multiFS, boolean secured, boolean binary) {
         super(parent, SWT.NONE);
         this.multiFS = multiFS;
