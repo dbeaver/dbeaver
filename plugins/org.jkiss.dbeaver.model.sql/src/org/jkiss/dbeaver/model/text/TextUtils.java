@@ -20,11 +20,8 @@ package org.jkiss.dbeaver.model.text;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
-import org.jkiss.dbeaver.model.text.parser.TPRule;
 
 import java.util.Locale;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 /**
  * Text utils
@@ -129,15 +126,6 @@ public class TextUtils {
         }
 
         return score;
-    }
-
-    public static void replaceOneRule(TPRule[] rules, Predicate<TPRule> condition, Supplier<TPRule> supplier) {
-        for (int i = 0; i < rules.length; i++) {
-            if (condition.test(rules[i])) {
-                rules[i] = supplier.get();
-                break;
-            }
-        }
     }
 
 }

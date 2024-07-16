@@ -35,11 +35,6 @@ public interface TPRuleProvider {
         KEYWORDS
     }
 
-    enum RulePurpose {
-        DEFAULT,
-        QUERY_HIGHLIGHTING
-    }
-
     @NotNull
     TPRule[] extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull RulePosition position);
 

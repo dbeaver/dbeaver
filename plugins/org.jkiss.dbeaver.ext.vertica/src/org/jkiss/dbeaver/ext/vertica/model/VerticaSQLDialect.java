@@ -145,7 +145,7 @@ public class VerticaSQLDialect extends GenericSQLDialect implements TPRuleProvid
                     true,
                     false, // actually Vertica supports named dollar-strings, why are we ignoring it?
                     dataSource == null || CommonUtils.toBoolean(
-                            dataSource.getConnectionConfiguration().getProviderProperty(VerticaConstants.PROP_DOLLAR_QUOTES_AS_STRING)
+                        dataSource.getConnectionConfiguration().getProviderProperty(VerticaConstants.PROP_DOLLAR_QUOTES_AS_STRING)
                     )
                 )
             };
