@@ -53,6 +53,11 @@ public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase>
         super(monitor, table, dbResult);
     }
 
+    @Override
+    protected boolean supportsDependencies() {
+        return true;
+    }
+
     @NotNull
     @Override
     public PostgreSchema getSchema() {
