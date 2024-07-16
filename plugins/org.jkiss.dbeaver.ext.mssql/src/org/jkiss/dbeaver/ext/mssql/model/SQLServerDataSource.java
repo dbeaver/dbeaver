@@ -204,12 +204,6 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
                 SQLServerUtils.isDriverJtds(getContainer().getDriver()) ? SQLServerConstants.APPNAME_CLIENT_PROPERTY : SQLServerConstants.APPLICATION_NAME_CLIENT_PROPERTY,
                 CommonUtils.truncateString(DBUtils.getClientApplicationName(getContainer(), context, purpose), 64));
         }
-        if (
-            getContainer().getConnectionConfiguration().getAuthModel().getClass().equals(SQLServerAuthModelMFA.class
-        )) {
-            // https://github.com/microsoft/mssql-jdbc/issues/2237#issuecomment-2075520355
-            properties.put(SQLConstants.CONNECT_RETRY_COUNT, "0");
-        }
 
         if (SQLServerUtils.isDriverSqlServer(getContainer().getDriver())) {
             // Starting microsoft driver version 10.1 defaulted the encrypt option to true (previously false)
