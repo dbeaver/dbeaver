@@ -25,8 +25,8 @@ import org.jfree.chart.axis.*;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
+import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.data.time.*;
-import org.jfree.ui.RectangleInsets;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardFetchType;
@@ -156,10 +156,10 @@ public class DashboardRendererTimeseries extends DashboardRendererDatabaseChart 
         }
 
         XYItemRenderer plotRenderer = plot.getRenderer();
-        plotRenderer.setBaseItemLabelPaint(gridColor);
+        plotRenderer.setDefaultItemLabelPaint(gridColor);
 
         BasicStroke stroke = new BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10.0f, null, 0.0f);
-        plot.getRenderer().setBaseStroke(stroke);
+        plot.getRenderer().setDefaultStroke(stroke);
 
 
         // Set background
@@ -220,7 +220,7 @@ public class DashboardRendererTimeseries extends DashboardRendererDatabaseChart 
                 series.setMaximumItemCount(container.getDashboardMaxItems());
                 series.setMaximumItemAge(container.getDashboardMaxAge());
                 chartDataset.addSeries(series);
-                plot.getRenderer().setSeriesStroke(chartDataset.getSeriesCount() - 1, plot.getRenderer().getBaseStroke());
+                plot.getRenderer().setSeriesStroke(chartDataset.getSeriesCount() - 1, plot.getRenderer().getDefaultStroke());
             }
 
             switch (dashboard.getCalcType()) {
