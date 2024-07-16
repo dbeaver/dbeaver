@@ -363,6 +363,8 @@ public class CoreMessages extends NLS {
     public static String pref_page_ui_general_refresh_editor_on_open_tip;
     public static String pref_page_ui_general_keep_database_editors_on_disconnect;
     public static String pref_page_ui_general_keep_database_editors_on_disconnect_tip;
+    public static String pref_page_ui_general_disconnect_on_editors_close;
+    public static String pref_page_ui_general_disconnect_on_editors_close_tip;
     public static String pref_page_ui_general_group_general;
     public static String pref_page_ui_general_group_regional;
     public static String pref_page_ui_general_group_language;

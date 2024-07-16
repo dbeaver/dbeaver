@@ -99,10 +99,64 @@ public class SQLPreferenceConstants {
         public static SQLExperimentalAutocompletionMode fromPreferences(@NotNull DBPPreferenceStore preferenceStore) {
             return valueByName(preferenceStore.getString(SQLModelPreferences.EXPERIMENTAL_AUTOCOMPLETION_MODE));	        
         }
-
     }
-    
-    
+
+    public enum SQLCompletionObjectNameFormKind {
+        DEFAULT(false, false, SQLEditorMessages.pref_page_sql_default),
+        UNQUALIFIED(true, false, SQLEditorMessages.pref_page_sql_completion_label_use_short_names),
+        QUALIFIED(false, true, SQLEditorMessages.pref_page_sql_completion_label_use_long_names);
+
+        public final boolean unqualified;
+        public final boolean qualified;
+        @NotNull
+        public final String title;
+
+        SQLCompletionObjectNameFormKind(boolean unqualified, boolean qualified, @NotNull String title) {
+            this.unqualified = unqualified;
+            this.qualified = qualified;
+            this.title = title;
+        }
+
+        @NotNull
+        public String getName() {
+            return this.toString();
+        }
+
+        public void setToPreferences(@NotNull DBPPreferenceStore preferenceStore) {
+            preferenceStore.setValue(SQLModelPreferences.SQL_EDITOR_PROPOSAL_SHORT_NAME, this.unqualified);
+            preferenceStore.setValue(SQLModelPreferences.SQL_EDITOR_PROPOSAL_ALWAYS_FQ, this.qualified);
+        }
+
+        @NotNull
+        private static SQLCompletionObjectNameFormKind fromBooleanFlags(boolean useShortName, boolean useFqNames) {
+            if (useShortName) {
+                return UNQUALIFIED;
+            } else if (useFqNames) {
+                return QUALIFIED;
+            } else {
+                return DEFAULT;
+            }
+        }
+
+        @NotNull
+        public static SQLCompletionObjectNameFormKind getFromPreferences(@NotNull DBPPreferenceStore preferenceStore) {
+            return fromBooleanFlags(
+                preferenceStore.getBoolean(SQLModelPreferences.SQL_EDITOR_PROPOSAL_SHORT_NAME),
+                preferenceStore.getBoolean(SQLModelPreferences.SQL_EDITOR_PROPOSAL_ALWAYS_FQ)
+            );
+        }
+
+
+        @NotNull
+        public static SQLCompletionObjectNameFormKind getDefaultFromPreferences(@NotNull DBPPreferenceStore preferenceStore) {
+            return fromBooleanFlags(
+                preferenceStore.getDefaultBoolean(SQLModelPreferences.SQL_EDITOR_PROPOSAL_SHORT_NAME),
+                preferenceStore.getDefaultBoolean(SQLModelPreferences.SQL_EDITOR_PROPOSAL_ALWAYS_FQ)
+            );
+        }
+    }
+
+
     public static final String INSERT_SINGLE_PROPOSALS_AUTO            = "SQLEditor.ContentAssistant.insert.single.proposal";
     public static final String ENABLE_HIPPIE                           = "SQLEditor.ContentAssistant.activate.hippie";
     public static final String ENABLE_AUTO_ACTIVATION                  = "SQLEditor.ContentAssistant.auto.activation.enable";

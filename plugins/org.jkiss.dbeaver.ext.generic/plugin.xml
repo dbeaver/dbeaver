@@ -463,7 +463,7 @@
                     icon="icons/teradata_icon.png"
                     iconBig="icons/teradata_icon_big.png"
                     class="com.teradata.jdbc.TeraDriver"
-                    sampleURL="jdbc:teradata://{host}/DATABASE={database},DBS_PORT={port}"
+                    sampleURL="jdbc:teradata://{host}/[DATABASE={database},]DBS_PORT={port}"
                     defaultPort="1025"
                     webURL="https://downloads.teradata.com/download/connectivity/jdbc-driver"
                     databaseDocumentationSuffixURL="Database-driver-Teradata"

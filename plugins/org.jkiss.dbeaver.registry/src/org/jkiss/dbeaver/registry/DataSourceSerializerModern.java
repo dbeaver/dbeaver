@@ -372,8 +372,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         @NotNull DBPDataSourceConfigurationStorage configurationStorage,
         @NotNull DataSourceConfigurationManager configurationManager,
         @NotNull DataSourceRegistry.ParseResults parseResults,
-        @Nullable Collection<String> dataSourceIds,
-        boolean refresh
+        @Nullable Collection<String> dataSourceIds
     ) throws DBException, IOException {
         var connectionConfigurationChanged = false;
 
@@ -471,9 +470,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         CommonUtils.toBoolean(smartCommit),
                         CommonUtils.toBoolean(smartCommitRecover),
                         CommonUtils.toBoolean(autoCloseTransactions),
-                        CommonUtils.toLong(closeTransactionsPeriod),
+                        CommonUtils.toInt(closeTransactionsPeriod),
                         CommonUtils.toBoolean(autoCloseConnections),
-                        CommonUtils.toLong(closeConnectionsPeriod));
+                        CommonUtils.toInt(closeConnectionsPeriod));
                     DBWorkbench.getPlatform().getDataSourceProviderRegistry().addConnectionType(ct);
                 }
                 deserializeModifyPermissions(ctConfig, ct);

@@ -548,7 +548,7 @@ public class SQLQueryJob extends DataSourceJob
             curResult.setQueryTime(System.currentTimeMillis() - startTime);
 
             if (fireEvents && listener != null && startQueryAlerted) {
-                notifyQueryExecutionEnd(curResult);
+                notifyQueryExecutionEnd(session, curResult);
             }
 
             monitor.done();
@@ -576,10 +576,10 @@ public class SQLQueryJob extends DataSourceJob
         return true;
     }
 
-    public void notifyQueryExecutionEnd(SQLQueryResult curResult) {
+    public void notifyQueryExecutionEnd(DBCSession session, SQLQueryResult curResult) {
         // Notify query end
         try {
-            listener.onEndQuery(null, curResult, statistics);
+            listener.onEndQuery(session, curResult, statistics);
         } catch (Exception e) {
             log.error(e);
         }
@@ -667,7 +667,7 @@ public class SQLQueryJob extends DataSourceJob
                                     if (rowsFetched == 0) {
                                         throw e;
                                     } else {
-                                        // Some rows were fetched so we don't want to fail entire query
+                                        // Some rows were fetched, so we don't want to fail entire query
                                         // Ad error as a warning
                                         log.warn("Fetch failed", e);
                                         statistics.setRowsFetched(rowsFetched);
@@ -688,7 +688,7 @@ public class SQLQueryJob extends DataSourceJob
                         }
                     } catch (DBCException e) {
                         // In some cases we can't read update count
-                        // This is bad but we can live with it
+                        // This is bad, but we can live with it
                         // Just print a warning
                         log.warn("Can't obtain update count", e);
                     }

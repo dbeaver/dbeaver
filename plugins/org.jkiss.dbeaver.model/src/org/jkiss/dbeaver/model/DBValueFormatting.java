@@ -27,9 +27,7 @@ import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.struct.rdb.DBSPackage;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTrigger;
+import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -160,6 +158,14 @@ public final class DBValueFormatting {
                     image = DBIcon.TREE_PACKAGE;
                 } else if (object instanceof DBSTrigger) {
                     image = DBIcon.TREE_TRIGGER;
+                } else if (object instanceof DBSSchema s) {
+                    if (s instanceof DBPSystemObject so && so.isSystem()) {
+                        image = DBIcon.TREE_SCHEMA_SYSTEM;
+                    } else {
+                        image = DBIcon.TREE_SCHEMA;
+                    }
+                } else if (object instanceof DBSCatalog c) {
+                    image = DBIcon.TREE_DATABASE;
                 } else {
                     image = DBIcon.TYPE_OBJECT;
                 }
