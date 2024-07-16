@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
-import java.util.stream.Stream;
+import java.util.LinkedList;
 
 /**
  * Describes several columns from the table of a selection result
@@ -56,18 +56,17 @@ public class SQLQuerySelectionResultTupleSpec extends SQLQuerySelectionResultSub
 
     @NotNull
     @Override
-    protected Stream<SQLQueryResultColumn> expand(
-        @NotNull SQLQueryDataContext context,
-        @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
-        @NotNull SQLQueryRecognitionContext statistics
+    protected void collectColumns(
+            @NotNull SQLQueryDataContext context,
+            @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
+            @NotNull SQLQueryRecognitionContext statistics,
+            @NotNull LinkedList<SQLQueryResultColumn> resultColumns
     ) {
         this.tupleReference.propagateContext(context, statistics);
 
         SQLQueryRowsSourceModel tupleSource = this.tupleReference.getTupleSource();
         if (tupleSource != null) {
-            return tupleSource.getResultDataContext().getColumnsList().stream();
-        } else {
-            return Stream.empty();
+            this.collectForeignColumns(tupleSource.getResultDataContext().getColumnsList(), rowsSourceModel, resultColumns);
         }
     }
 

@@ -23,15 +23,13 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LocalCacheProgressMonitor;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.model.struct.DBSObjectReference;
-import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+import org.jkiss.dbeaver.model.struct.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -140,7 +138,7 @@ public class SQLSearchUtils
 
     @Nullable
     public static DBSObject findObjectByPath(
-        @Nullable DBRProgressMonitor monitor,
+        @NotNull DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext executionContext,
         @NotNull DBSObjectContainer sc,
         @NotNull List<String> nameList,
@@ -149,9 +147,45 @@ public class SQLSearchUtils
         boolean isGlobalSearch
     ) {
         try {
+            // Find using context defaults
+            if (!nameList.isEmpty()) {
+                DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
+                if (contextDefaults != null) {
+                    if (nameList.size() == 1) {
+                        DBSObjectContainer defaultSchema = contextDefaults.getDefaultSchema();
+                        if (defaultSchema != null) {
+                            DBSObject entity = defaultSchema.getChild(monitor, nameList.get(0));
+                            if (entity != null) {
+                                return entity;
+                            }
+                        }
+                    }
+                    if (!nameList.isEmpty()) {
+                        DBSObjectContainer catalog = contextDefaults.getDefaultCatalog();
+                        if (catalog != null) {
+                            DBSObject childObject = catalog.getChild(monitor, nameList.get(0));
+                            if (childObject != null) {
+                                if (nameList.size() == 1) {
+                                    return childObject;
+                                }
+                                if (childObject instanceof DBSObjectContainer schema) {
+                                    if (nameList.size() == 2) {
+                                        DBSObject entity = schema.getChild(monitor, nameList.get(1));
+                                        if (entity != null) {
+                                            return entity;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Find structu containers
             DBSObject childObject = null;
             while (childObject == null) {
-                childObject = DBUtils.findNestedObject(monitor, executionContext, sc, nameList);
+                childObject = findNestedObject(monitor, executionContext, sc, nameList);
                 if (childObject == null) {
                     DBSObjectContainer parentSc = DBUtils.getParentAdapter(DBSObjectContainer.class, sc);
                     if (parentSc == null) {
@@ -161,7 +195,7 @@ public class SQLSearchUtils
                 }
             }
             if (childObject == null && nameList.size() <= 1) {
-                if (useAssistant && monitor != null) {
+                if (useAssistant && !monitor.isForceCacheUsage()) {
                     // No such object found - may be it's start of table name
                     DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, sc);
                     if (structureAssistant != null) {
@@ -189,4 +223,33 @@ public class SQLSearchUtils
             return null;
         }
     }
+
+    @Nullable
+    public static DBSObject findNestedObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull DBSObjectContainer parent,
+        @NotNull List<String> names)
+        throws DBException {
+        for (int i = 0; i < names.size(); i++) {
+            String childName = names.get(i);
+            DBSObject child = parent.getChild(monitor, childName);
+            if (!DBStructUtils.isConnectedContainer(child)) {
+                child = null;
+            }
+            if (child == null) {
+                break;
+            }
+            if (i == names.size() - 1) {
+                return child;
+            }
+            if (child instanceof DBSObjectContainer oc) {
+                parent = oc;
+            } else {
+                break;
+            }
+        }
+        return null;
+    }
+
 }

@@ -26,4 +26,5 @@ public class ClickhouseConstants {
     public static final String SSL_ROOT_CERTIFICATE = "sslrootcert"; //$NON-NLS-1$
 
     public static final String DATA_TYPE_IPV4 = "ipv4";
+    public static final String DATA_TYPE_IPV6 = "ipv6";
 }

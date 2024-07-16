@@ -262,9 +262,12 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
-        getContainer().getSchema().getConstraintCache().clearObjectCache(this);
-        getContainer().getSchema().getIndexCache().clearObjectCache(this);
-        return getContainer().getSchema().getTableCache().refreshObject(monitor, getContainer().getSchema(), this);
+        PostgreSchema schema = getContainer().getSchema();
+        schema.getConstraintCache().clearObjectCache(this);
+        if (schema.getIndexCache() != null) {
+            schema.getIndexCache().clearObjectCache(this);
+        }
+        return schema.getTableCache().refreshObject(monitor, schema, this);
     }
 
     @Override
