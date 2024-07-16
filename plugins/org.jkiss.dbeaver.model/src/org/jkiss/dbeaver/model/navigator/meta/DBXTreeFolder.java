@@ -49,6 +49,8 @@ public class DBXTreeFolder extends DBXTreeNode {
     private boolean isOptional;
     private boolean isAdminFolder;
 
+    private IConfigurationElement injectedConfig;
+
     private List<String> contributedCategories = null;
     private ItemType[] itemTypes = null;
 
@@ -173,7 +175,11 @@ public class DBXTreeFolder extends DBXTreeNode {
         if (locale == null) {
             return label;
         } else {
-            return getConfig().getAttribute("label", locale);
+            String injectedLabel = null;
+            if (injectedConfig != null) {
+                injectedLabel = injectedConfig.getAttribute("changeFolderLabel", locale);
+            }
+            return CommonUtils.isNotEmpty(injectedLabel) ? injectedLabel : getConfig().getAttribute("label", locale);
         }
     }
 
@@ -272,5 +278,9 @@ public class DBXTreeFolder extends DBXTreeNode {
 
     public ItemType[] getItemTypes() {
         return itemTypes;
+    }
+
+    public void setInjectedConfig(IConfigurationElement injectedConfig) {
+        this.injectedConfig = injectedConfig;
     }
 }

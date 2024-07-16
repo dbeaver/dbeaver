@@ -140,7 +140,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     private SQLEditorControl editorControl;
 
     private ICharacterPairMatcher characterPairMatcher;
-    private final SQLEditorCompletionContext completionContext;
+    private SQLCompletionContext completionContext;
     private SQLOccurrencesHighlighter occurrencesHighlighter;
     private SQLSymbolInserter sqlSymbolInserter;
 
@@ -912,6 +912,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         return completionContext;
     }
 
+    public void setCompletionContext(SQLCompletionContext completionContext) {
+        this.completionContext = completionContext;
+    }
+
     List<SQLQueryParameter> parseQueryParameters(SQLQuery query) {
         if (parserContext == null) {
             return null;
@@ -1124,7 +1128,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                     if (annotation instanceof SQLProblemAnnotation) {
                         final Position position = annotationModel.getPosition(annotation);
 
-                        if (position.overlapsWith(query.getOffset(), query.getLength())) {
+                        if (position.overlapsWith(query.getOffset(), query.getLength()) ||
+                            (!position.isDeleted() && query.getOffset() + query.getLength() == position.getOffset() + position.getLength())
+                        ) {
                             // We need to delete markers though. Maybe only when there is no line position?
                             try {
                                 ((SQLProblemAnnotation) annotation).getMarker().delete();

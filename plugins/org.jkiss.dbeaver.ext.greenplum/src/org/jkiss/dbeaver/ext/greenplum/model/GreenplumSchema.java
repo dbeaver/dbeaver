@@ -84,7 +84,7 @@ public class GreenplumSchema extends PostgreSchema {
         GreenplumDataSource dataSource = getDataSource();
         if (dataSource.isServerVersionAtLeast(7, 0) && dataSource.isHasAccessToExttable()) {
             // Starting Greenplum version 7 external tables are marked as foreign tables.
-            // Lets's remove external tables from the list foreign tables. Store is the External tables folder.
+            // Let's remove external tables from the list foreign tables. Store is the External tables folder.
             return foreignTables.stream()
                 .filter(e -> !(e instanceof GreenplumExternalTable))
                 .collect(Collectors.toCollection(ArrayList::new));

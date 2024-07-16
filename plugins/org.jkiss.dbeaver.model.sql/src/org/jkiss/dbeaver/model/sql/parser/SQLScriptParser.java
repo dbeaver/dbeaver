@@ -24,6 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.impl.sql.AbstractSQLDialect;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzerParameters;
 import org.jkiss.dbeaver.model.lsm.sql.dialect.SQLStandardAnalyzer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
@@ -162,7 +163,7 @@ public class SQLScriptParser {
                     // This is a tricky thing.
                     // In some dialects block end looks like END CASE, END LOOP. It is parsed as
                     // Block end followed by block begin (as CASE and LOOP are block begin tokens)
-                    // So let's ignore block begin if previos token was block end and there were no delimiters.
+                    // So let's ignore block begin if previous token was block end and there were no delimiters.
                     tokenType = SQLTokenType.T_UNKNOWN;
                 }
                 if (tokenType == SQLTokenType.T_DELIMITER && prevNotEmptyTokenType == SQLTokenType.T_BLOCK_BEGIN) {
@@ -1099,6 +1100,11 @@ public class SQLScriptParser {
             }
             if (this.context.getDialect().getTransactionRollbackKeywords() != null) {
                 Arrays.stream(this.context.getDialect().getTransactionRollbackKeywords())
+                    .map(String::toUpperCase)
+                    .forEach(this.statementStartKeywords::add);
+            }
+            if (this.context.getDialect() instanceof AbstractSQLDialect abstractSQLDialect) {
+                Arrays.stream(abstractSQLDialect.getNonTransactionKeywords())
                     .map(String::toUpperCase)
                     .forEach(this.statementStartKeywords::add);
             }

@@ -27,7 +27,5 @@
     <feature id="org.jkiss.dbeaver.debug.feature">
         <category name="org.jkiss.dbeaver.additions"/>
     </feature>
-    <feature id="org.jkiss.dbeaver.ext.ui.svg.feature">
-        <category name="org.jkiss.dbeaver.additions"/>
-    </feature>
+
 </site>

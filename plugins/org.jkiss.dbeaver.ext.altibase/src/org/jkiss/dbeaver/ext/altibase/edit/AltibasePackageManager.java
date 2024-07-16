@@ -51,7 +51,7 @@ public class AltibasePackageManager extends SQLObjectEditor<GenericPackage, Gene
             List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
         actions.add(
             new SQLDatabasePersistAction(
-                "Drop pacakge",
+                "Drop package",
                 "DROP PACKAGE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL))
         );
     }

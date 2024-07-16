@@ -226,7 +226,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             }
         }
         // Save connection settings AFTER extra pages.
-        // Because it may contain some driver properties save which will be overwrited by driver props page otherwise
+        // Because it may contain some driver properties save which will be overwritten by driver props page otherwise
         if (connectionEditor != null) {
             connectionEditor.saveSettings(dataSource);
         }

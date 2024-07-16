@@ -127,8 +127,6 @@ public class RegistryConstants {
     public static final String ATTR_DIALECT = "dialect"; //$NON-NLS-1$
     public static final String ATTR_REQUIRES_MUTABILITY = "requiresMutability"; //$NON-NLS-1$
 
-    public static final long DEFAULT_IDLE_TRANSACTION_PERIOD = 1800;
-
     public static final String ATTR_TARGET_ID = "targetID"; //$NON-NLS-1$
     public static final String ATTR_TYPE = "type"; //$NON-NLS-1$
     public static final String ATTR_OS = "os"; //$NON-NLS-1$
@@ -173,7 +171,6 @@ public class RegistryConstants {
 
     public static final String ATTR_CONFIRMATION_MESSAGE = "confirmationMessage"; //$NON-NLS-1$
     public static final String ATTR_HANDLER_CLASS = "handlerClass"; //$NON-NLS-1$
-    public static final String ATTR_UI_CLASS = "uiClass"; //$NON-NLS-1$
     public static final String ATTR_SECURED = "secured"; //$NON-NLS-1$
 
     public static final String TAG_DATA_SOURCE = "data-source"; //$NON-NLS-1$

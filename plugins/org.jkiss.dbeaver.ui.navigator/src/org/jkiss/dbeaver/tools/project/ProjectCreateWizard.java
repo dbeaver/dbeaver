@@ -87,6 +87,14 @@ public class ProjectCreateWizard extends BasicNewProjectResourceWizard implement
 
     @Override
 	public boolean performFinish() {
+        if (!DBWorkbench.getPlatform().getWorkspace().canManageProjects()) {
+            DBWorkbench.getPlatformUI().showError(
+                UINavigatorMessages.dialog_project_create_wizard_error_cannot_create,
+                "You can't manage projects"
+            );
+            return false;
+        }
+
         if (DBWorkbench.isDistributed()) {
             try {
                 DBPProject newProject = DBPPlatformDesktop.getInstance().getWorkspace().createProject(
