@@ -225,9 +225,8 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         if (needsLoad && !monitor.isForceCacheUsage()) {
             if (this.initializeNode(monitor, null)) {
                 final List<DBNDatabaseNode> tmpList = new ArrayList<>();
+                this.filtered = false;
                 loadChildren(monitor, getMeta(), null, tmpList, this, true);
-                final DBSObjectFilter filter = getNodeFilter(getItemsMeta(), false);
-                this.filtered = filter != null && !filter.isNotApplicable();
                 if (!monitor.isCanceled()) {
                     synchronized (this) {
                         if (tmpList.isEmpty()) {
@@ -428,7 +427,6 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         if (monitor.isCanceled()) {
             return;
         }
-        this.filtered = false;
 
         List<DBXTreeNode> childMetas = meta.getChildren(this);
         if (CommonUtils.isEmpty(childMetas)) {
