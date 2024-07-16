@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNativeCredentials;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
 
 import java.util.Properties;
 
@@ -35,6 +34,7 @@ import java.util.Properties;
 public class SQLServerAuthModelMFA extends SQLServerAuthModelAbstract {
 
     public static final String ID = "sqlserver_mfa";
+    public static final String CONNECT_RETRY_COUNT = "connectRetryCount";
 
     @Override
     public boolean isUserPasswordApplicable() {
@@ -46,7 +46,7 @@ public class SQLServerAuthModelMFA extends SQLServerAuthModelAbstract {
         connProperties.put(SQLServerConstants.PROP_CONNECTION_AUTHENTICATION, SQLServerConstants.AUTH_ACTIVE_DIRECTORY_INTERACTIVE);
         // https://github.com/microsoft/mssql-jdbc/issues/2237#issuecomment-2075520355
 
-        connProperties.put(SQLConstants.CONNECT_RETRY_COUNT, "0");
+        connProperties.put(CONNECT_RETRY_COUNT, "0");
         dataSource.getContainer().setForceUseSingleConnection(true);
 
         return credentials;
