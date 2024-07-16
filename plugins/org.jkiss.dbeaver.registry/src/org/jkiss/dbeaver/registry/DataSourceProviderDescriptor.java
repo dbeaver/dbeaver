@@ -523,6 +523,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
                 folder.setType(changeFolderType);
                 String changeFolderLabel = config.getAttribute(ATTRIBUTE_CHANGE_FOLDER_LABEL);
                 if (CommonUtils.isNotEmpty(changeFolderLabel)) {
+                    folder.setInjectedConfig(config);
                     folder.setLabel(changeFolderLabel);
                     folder.setDescription(changeFolderLabel);
                 }
