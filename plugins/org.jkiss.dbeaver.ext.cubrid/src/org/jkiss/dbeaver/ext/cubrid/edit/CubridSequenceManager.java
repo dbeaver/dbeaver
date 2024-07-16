@@ -81,8 +81,8 @@ public class CubridSequenceManager extends GenericSequenceManager {
         if (sequence.getIncrementBy() != null) {
             sb.append(" INCREMENT BY ").append(sequence.getIncrementBy());
         }
-        if (sequence.getMinValue() != null) {
-            sb.append(" START WITH ").append(sequence.getLastValue());
+        if (sequence.getStartValue() != null) {
+            sb.append(" START WITH ").append(sequence.getStartValue());
         }
         if (sequence.getMaxValue() != null) {
             sb.append(" MAXVALUE ").append(sequence.getMaxValue());

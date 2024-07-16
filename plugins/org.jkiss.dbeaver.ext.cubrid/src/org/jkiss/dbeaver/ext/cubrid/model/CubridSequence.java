@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.model.meta.PropertyLength;
 public class CubridSequence extends GenericSequence {
 
     private CubridUser owner;
-    private BigDecimal lastValue;
+    private BigDecimal startValue;
     private BigDecimal minValue;
     private BigDecimal maxValue;
     private BigDecimal incrementBy;
@@ -47,7 +47,7 @@ public class CubridSequence extends GenericSequence {
             @NotNull JDBCResultSet dbResult) {
         super(container, name, "", null, null, null, null);
         this.owner = (CubridUser) container;
-        this.lastValue = JDBCUtils.safeGetBigDecimal(dbResult, "current_val");
+        this.startValue = JDBCUtils.safeGetBigDecimal(dbResult, "current_val");
         this.minValue = JDBCUtils.safeGetBigDecimal(dbResult, "min_val");
         this.maxValue = JDBCUtils.safeGetBigDecimal(dbResult, "max_val");
         this.incrementBy = JDBCUtils.safeGetBigDecimal(dbResult, "increment_val");
@@ -59,7 +59,7 @@ public class CubridSequence extends GenericSequence {
     public CubridSequence(@NotNull GenericStructContainer container, @NotNull String name) {
         super(container, name);
         this.owner = (CubridUser) container;
-        this.lastValue = new BigDecimal(1);
+        this.startValue = new BigDecimal(1);
         this.minValue = new BigDecimal(1);
         this.maxValue = new BigDecimal(Long.MAX_VALUE);
         this.incrementBy = new BigDecimal(1);
@@ -80,15 +80,20 @@ public class CubridSequence extends GenericSequence {
         return owner;
     }
 
-    @NotNull
     @Override
-    @Property(viewable = true, editable = true, updatable = true, order = 3)
-    public BigDecimal getLastValue() {
-        return lastValue;
+    @Property(hidden = true)
+    public Number getLastValue() {
+        return null;
     }
 
-    public void setLastValue(@NotNull BigDecimal lastValue) {
-        this.lastValue = lastValue;
+    @NotNull
+    @Property(viewable = true, editable = true, updatable = true, order = 3)
+    public BigDecimal getStartValue() {
+        return startValue;
+    }
+
+    public void setStartValue(@NotNull BigDecimal startValue) {
+        this.startValue = startValue;
     }
 
     @NotNull
