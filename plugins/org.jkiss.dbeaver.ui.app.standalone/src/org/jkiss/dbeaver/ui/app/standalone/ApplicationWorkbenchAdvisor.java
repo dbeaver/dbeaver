@@ -49,7 +49,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreFeatures;
 import org.jkiss.dbeaver.core.ui.services.ApplicationPolicyService;
-import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPApplication;
@@ -57,6 +56,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.runtime.OperationSystemState;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIFonts;
@@ -64,7 +64,6 @@ import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
 import org.jkiss.dbeaver.ui.app.standalone.update.DBeaverVersionChecker;
-import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
@@ -74,6 +73,11 @@ import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseEditors;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseUserInterface;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
+import java.awt.*;
+import java.awt.desktop.SystemEventListener;
+import java.awt.desktop.SystemSleepEvent;
+import java.awt.desktop.SystemSleepListener;
+import java.util.List;
 import java.util.*;
 
 /**
@@ -140,13 +144,6 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     };
 
 
-    /**
-     * Diagram font
-     */
-    public static String DIAGRAM_FONT = ERDUIConstants.PROP_DIAGRAM_FONT;
-
-    public static String RESULTS_GRID_FONT = ThemeConstants.FONT_SQL_RESULT_SET;
-    
     private static final Set<String> fontPrefIdsToHide = Set.of(
         ApplicationWorkbenchWindowAdvisor.TEXT_EDITOR_BLOCK_SELECTION_FONT,
         ApplicationWorkbenchWindowAdvisor.TEXT_FONT,
@@ -180,6 +177,18 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     //processor must be created before we start event loop
     protected final DBPApplication application;
     private final DelayedEventsProcessor processor;
+
+    private final SystemEventListener systemSleepListener = new SystemSleepListener() {
+        @Override
+        public void systemAboutToSleep(SystemSleepEvent e) {
+            OperationSystemState.toggleSleepMode(true);
+        }
+
+        @Override
+        public void systemAwoke(SystemSleepEvent e) {
+            OperationSystemState.toggleSleepMode(false);
+        }
+    };
 
     protected ApplicationWorkbenchAdvisor(DBPApplication application) {
         this.application = application;
@@ -255,6 +264,12 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         if (!application.isDistributed() &&
             !ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
             startVersionChecker();
+        }
+
+        // System events
+        Desktop desktop = Desktop.getDesktop();
+        if (desktop.isSupported(Desktop.Action.APP_EVENT_SYSTEM_SLEEP)) {
+            desktop.addAppEventListener(systemSleepListener);
         }
     }
 
@@ -344,6 +359,9 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         checker.schedule(3000);
     }
 
+    ///////////////////////
+    // Shutdown
+
     @Override
     public boolean preShutdown() {
         //DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(settingsChangeListener);
@@ -360,6 +378,12 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     @Override
     public void postShutdown() {
         super.postShutdown();
+
+        // System events
+        Desktop desktop = Desktop.getDesktop();
+        if (desktop.isSupported(Desktop.Action.APP_EVENT_SYSTEM_SLEEP)) {
+            desktop.removeAppEventListener(systemSleepListener);
+        }
     }
 
     private boolean saveAndCleanup() {

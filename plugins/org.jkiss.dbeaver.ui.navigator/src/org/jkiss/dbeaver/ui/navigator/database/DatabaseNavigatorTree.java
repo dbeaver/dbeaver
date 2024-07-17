@@ -586,19 +586,20 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         }
     }
 
+    public static final Image[] IMG_LOADING = new Image[]{
+        DBeaverIcons.getImage(UIIcon.LOADING0),
+        DBeaverIcons.getImage(UIIcon.LOADING1),
+        DBeaverIcons.getImage(UIIcon.LOADING2),
+        DBeaverIcons.getImage(UIIcon.LOADING3),
+        DBeaverIcons.getImage(UIIcon.LOADING4),
+        DBeaverIcons.getImage(UIIcon.LOADING5),
+        DBeaverIcons.getImage(UIIcon.LOADING6),
+        DBeaverIcons.getImage(UIIcon.LOADING7)
+    };
+
     private class NodeLoadersPainter extends UIJob {
         private static final long REPAINT_DELAY = 100;
         private static final long WAIT_DELAY = 500;
-        public static final Image[] IMG_LOADING = new Image[]{
-            DBeaverIcons.getImage(UIIcon.LOADING0),
-            DBeaverIcons.getImage(UIIcon.LOADING1),
-            DBeaverIcons.getImage(UIIcon.LOADING2),
-            DBeaverIcons.getImage(UIIcon.LOADING3),
-            DBeaverIcons.getImage(UIIcon.LOADING4),
-            DBeaverIcons.getImage(UIIcon.LOADING5),
-            DBeaverIcons.getImage(UIIcon.LOADING6),
-            DBeaverIcons.getImage(UIIcon.LOADING7)
-        };
         private static final Image[] LOADING_ICONS = IMG_LOADING;
 
         private int ticksCount = 0;

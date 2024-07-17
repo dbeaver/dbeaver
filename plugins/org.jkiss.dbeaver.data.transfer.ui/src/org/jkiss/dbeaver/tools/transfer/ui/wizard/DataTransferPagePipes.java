@@ -108,45 +108,33 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         gd.widthHint = 500;
         nodesTable.getTable().setLayoutData(gd);
         nodesTable.getTable().setLinesVisible(true);
-        nodesTable.setContentProvider(new IStructuredContentProvider() {
-            @Override
-            public void dispose()
-            {
+        nodesTable.setContentProvider((IStructuredContentProvider) inputElement -> {
+            if (inputElement instanceof Collection) {
+                return ((Collection<?>) inputElement).toArray();
             }
-
-            @Override
-            public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
-            {
-            }
-
-            @Override
-            public Object[] getElements(Object inputElement)
-            {
-                if (inputElement instanceof Collection) {
-                    return ((Collection<?>) inputElement).toArray();
-                }
-                return new Object[0];
-            }
+            return new Object[0];
         });
         CellLabelProvider labelProvider = new CellLabelProvider() {
             @Override
             public void update(ViewerCell cell) {
                 TransferTarget element = (TransferTarget) cell.getElement();
+                String label;
                 if (cell.getColumnIndex() == 0) {
                     if (element.processor != null) {
                         cell.setImage(DBeaverIcons.getImage(element.processor.getIcon()));
-                        cell.setText(element.processor.getName());
+                        label = element.processor.getName();
                     } else {
                         cell.setImage(DBeaverIcons.getImage(element.node.getIcon()));
-                        cell.setText(element.node.getName());
+                        label = element.node.getName();
                     }
                 } else {
                     if (element.processor != null) {
-                        cell.setText(element.processor.getDescription());
+                        label = element.processor.getDescription();
                     } else {
-                        cell.setText(element.node.getDescription());
+                        label = element.node.getDescription();
                     }
                 }
+                cell.setText(label);
             }
         };
         {
@@ -212,7 +200,6 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         gd.heightHint = 300;
         inputsTable.getTable().setLayoutData(gd);
         inputsTable.getTable().setLinesVisible(true);
-        inputsTable.getTable().setHeaderVisible(true);
         inputsTable.setContentProvider(new ListContentProvider());
         UIUtils.createTableContextMenu(inputsTable.getTable(), null);
         DBNModel nModel = DBWorkbench.getPlatform().getNavigatorModel();
@@ -226,24 +213,18 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
                     cell.setImage(DBeaverIcons.getImage(icon));
                     final SQLQueryContainer queryContainer = DBUtils.getAdapter(SQLQueryContainer.class, element);
                     if (queryContainer != null) {
-                        cell.setText(CommonUtils.getSingleLineString(queryContainer.getQuery().getText()));
+                        cell.setText(
+                            CommonUtils.truncateString(
+                                CommonUtils.getSingleLineString(queryContainer.getQuery().getText()), 64));
                     } else {
-                        cell.setText(DBUtils.getObjectFullName(element, DBPEvaluationContext.UI));
+                        cell.setText(
+                            CommonUtils.truncateString(
+                                DBUtils.getObjectFullName(element, DBPEvaluationContext.UI), 64));
                     }
-                } else if (element.getDescription() != null) {
-                    cell.setText(element.getDescription());
                 }
             }
         };
-        {
-            TableViewerColumn columnName = new TableViewerColumn(inputsTable, SWT.LEFT);
-            columnName.setLabelProvider(labelProvider);
-            columnName.getColumn().setText(DTMessages.data_transfer_wizard_init_column_exported);
-
-            TableViewerColumn columnDesc = new TableViewerColumn(inputsTable, SWT.LEFT);
-            columnDesc.setLabelProvider(labelProvider);
-            columnDesc.getColumn().setText(DTMessages.data_transfer_wizard_init_column_description);
-        }
+        inputsTable.setLabelProvider(labelProvider);
     }
 
     @Override
@@ -294,8 +275,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
         inputsTable.setInput(getWizard().getSettings().getSourceObjects());
 
-        UIUtils.maxTableColumnsWidth(inputsTable.getTable());
-        UIUtils.maxTableColumnsWidth(nodesTable.getTable());
+        UIUtils.packColumns(nodesTable.getTable());
 
         updatePageCompletion();
     }

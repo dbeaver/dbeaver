@@ -121,12 +121,16 @@
             <datasource id="clickhouse"/>
             <type standard="ARRAY"/>
             <type standard="STRUCT"/>
+            <type standard="DATE"/>
+            <type standard="TIME"/>
+            <type standard="TIMESTAMP"/>
             <type name="ENUM8"/>
             <type name="ENUM16"/>
             <type kind="NUMERIC"/>
             <type name="BOOL"/>
             <type name="UUID"/>
             <type name="IPV4"/>
+            <type name="IPV6"/>
         </provider>
     </extension>
 

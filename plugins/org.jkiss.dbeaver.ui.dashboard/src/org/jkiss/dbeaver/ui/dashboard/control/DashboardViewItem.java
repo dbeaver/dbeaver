@@ -49,7 +49,11 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static org.jkiss.dbeaver.ui.dashboard.DashboardUIConstants.PARAM_CATALOG_PANEL_TOGGLE;
 
 public class DashboardViewItem extends Composite implements DashboardItemContainer {
 
@@ -510,9 +514,12 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
         if (!singleChartMode) {
             manager.add(new Separator());
             manager.add(ActionUtils.makeCommandContribution(UIUtils.getActiveWorkbenchWindow(), DashboardUIConstants.CMD_ADD_DASHBOARD));
-            manager.add(ActionUtils.makeCommandContribution(UIUtils.getActiveWorkbenchWindow(), DashboardUIConstants.CMD_CATALOG_SHOW_DASHBOARD));
+            Map<String, Object> params = new HashMap<>();
+            params.put(PARAM_CATALOG_PANEL_TOGGLE, "true");
+            manager.add(ActionUtils.makeCommandContribution(UIUtils.getActiveWorkbenchWindow(),
+                DashboardUIConstants.CMD_CATALOG_SHOW_DASHBOARD, params));
             manager.add(ActionUtils.makeCommandContribution(UIUtils.getActiveWorkbenchWindow(), DashboardUIConstants.CMD_REMOVE_DASHBOARD));
-            manager.add(ActionUtils.makeCommandContribution(UIUtils.getActiveWorkbenchWindow(), DashboardUIConstants.CMD_RESET_DASHBOARD));
+            manager.add(ActionUtils.makeCommandContribution(UIUtils.getActiveWorkbenchWindow(), DashboardUIConstants.CMD_REFRESH_CHART));
         }
         manager.add(new Separator());
     }

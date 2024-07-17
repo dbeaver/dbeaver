@@ -45,6 +45,7 @@ import org.w3c.dom.Element;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class DashboardRegistry {
     private static final Log log = Log.getLog(DashboardRegistry.class);
@@ -230,6 +231,12 @@ public class DashboardRegistry {
 
     public List<DashboardProviderDescriptor> getDashboardProviders() {
         return new ArrayList<>(dashboardProviders.values());
+    }
+
+    public List<DashboardProviderDescriptor> getDashboardProvidersWithSupportCustomDashboards() {
+        return this.getDashboardProviders().stream()
+            .filter(DashboardProviderDescriptor::isSupportsCustomDashboards)
+            .collect(Collectors.toList());
     }
 
     public List<DashboardProviderDescriptor> getDashboardProviders(DBPDataSourceContainer dataSource) {
