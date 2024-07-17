@@ -27,14 +27,9 @@ import java.util.Map.Entry;
 
 public class DbvisConfigurationImporter {
 
-    private static final Map<String, String> version2configuration = new LinkedHashMap<>();
     private static final Map<String, DbvisConfigurationCreator> version2creator = new LinkedHashMap<>();
 
     static {
-        // configurations
-        version2configuration.put(DbvisConfigurationCreatorv7.VERSION, DbvisConfigurationCreatorv7.CONFIG_FOLDER);
-        version2configuration.put(DbvisConfigurationCreatorv233.VERSION, DbvisConfigurationCreatorv233.CONFIG_FOLDER);
-        // creators
         version2creator.put(DbvisConfigurationCreatorv7.VERSION, new DbvisConfigurationCreatorv7());
         version2creator.put(DbvisConfigurationCreatorv233.VERSION, new DbvisConfigurationCreatorv233());
     }
@@ -43,14 +38,11 @@ public class DbvisConfigurationImporter {
         @NotNull ImportData data,
         @NotNull File folder
     ) throws DBException {
-        for (Entry<String, String> configuration : version2configuration.entrySet()) {
-            File configFile = new File(folder, configuration.getValue());
-            if (configFile.exists()) {
-                DbvisConfigurationCreator dbvisConfigurationCreator = version2creator.get(configuration.getKey());
-                File configurationAsset = dbvisConfigurationCreator.getConfigurationAsset(folder);
-                if (configurationAsset.exists()) {
-                    data = dbvisConfigurationCreator.create(data, configurationAsset);
-                }
+        for (Entry<String, DbvisConfigurationCreator> configuration : version2creator.entrySet()) {
+            DbvisConfigurationCreator dbvisConfigurationCreator = configuration.getValue();
+            File configurationAsset = dbvisConfigurationCreator.getConfigurationAsset(folder);
+            if (configurationAsset.exists()) {
+                data = dbvisConfigurationCreator.create(data, configurationAsset);
             }
         }
         return data;

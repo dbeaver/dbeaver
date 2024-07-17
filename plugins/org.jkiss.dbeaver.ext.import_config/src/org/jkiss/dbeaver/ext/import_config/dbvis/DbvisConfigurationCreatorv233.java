@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.import_config.dbvis;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportConnectionInfo;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
@@ -32,7 +33,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -41,16 +41,17 @@ public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCre
     public static final String VERSION = "version.24.3.x"; //$NON-NLS-1$
     public static final String CONFIG_FOLDER = "config233"; //$NON-NLS-1$
     public static final String CONFIG_FILE = "dbvis.xml"; //$NON-NLS-1$
+    public static final String SSH_CONFIG_FILE = "sshservers.xml"; //$NON-NLS-1$
 
     @Override
     public ImportData create(
-        ImportData importData,
-        File configFile) throws DBException {
+        @NotNull ImportData importData,
+        @NotNull File configFile
+    ) throws DBException {
         try {
-            // SshServers
             Map<String, DbvisSshServerConfiguration> sshServerConfigurations = new LinkedHashMap<>();
             DbvisSshServerConfiguration sshConfiguration = null;
-            File sshServersFile = new File(configFile.getParent(), "sshservers.xml");
+            File sshServersFile = new File(configFile.getParent(), SSH_CONFIG_FILE);
             if (sshServersFile.exists()) {
                 Document sshConfigDocument = XMLUtils.parseDocument(sshServersFile);
                 Element sshServersElement = XMLUtils.getChildElement(sshConfigDocument.getDocumentElement(), "SshServers");
@@ -64,9 +65,12 @@ public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCre
                         sshConfig.setSshHost(XMLUtils.getChildElementBody(sshServerElement, "SshHost"));
                         sshConfig.setSshPort(XMLUtils.getChildElementBody(sshServerElement, "SshPort"));
                         sshConfig.setSshUserid(XMLUtils.getChildElementBody(sshServerElement, "SshUserid"));
-                        sshConfig.setAuthenticationType(XMLUtils.getChildElementBody(sshServerElement, "SshHost"));
+                        sshConfig.setAuthenticationType(XMLUtils.getChildElementBody(sshServerElement, "AuthenticationType"));
                         sshConfig.setSshPrivateKeyFile(XMLUtils.getChildElementBody(sshServerElement, "SshPrivateKeyFile"));
                         sshConfig.setSshImplementationType(XMLUtils.getChildElementBody(sshServerElement, "SshImplementationType"));
+                        sshConfig.setSshConfigFile(XMLUtils.getChildElementBody(sshServerElement, "SshConfigFile"));
+                        sshConfig.setSshKnownHostsFile(XMLUtils.getChildElementBody(sshServerElement, "SshKnownHostsFile"));
+                        sshConfig.setSshConnectTimeout(XMLUtils.getChildElementBody(sshServerElement, "SshConnectTimeout"));
                         sshServerConfigurations.put(sshConfig.getId(), sshConfig);
                     }
                 }
@@ -118,13 +122,11 @@ public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCre
                             String sampleURL = XMLUtils.getChildElementBody(driverTypeDocumentElement, "URLFormat");
                             String driverClass = XMLUtils.getChildElementBody(driverTypeDocumentElement, "DefaultClass");
                             String identifier = XMLUtils.getChildElementBody(driverTypeDocumentElement, "Identifier");
-                            String originId = XMLUtils.getChildElementBody(driverTypeDocumentElement, "OriginId");
                             if (!CommonUtils.isEmpty(name) && !CommonUtils.isEmpty(sampleURL) && !CommonUtils.isEmpty(driverClass)) {
                                 ImportDriverInfo driver = new ImportDriverInfo(identifier, name, sampleURL, driverClass);
                                 adaptSampleUrl(driver);
                                 importData.addDriver(driver);
                             }
-
                             Element sshServers = XMLUtils.getChildElement(dbElement, "SshServers");
                             if (sshServers != null) {
                                 for (Element sshServer : XMLUtils.getChildElementList(sshServers, "SshServer")) {
