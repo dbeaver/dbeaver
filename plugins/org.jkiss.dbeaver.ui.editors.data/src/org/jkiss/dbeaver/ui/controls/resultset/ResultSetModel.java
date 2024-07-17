@@ -505,7 +505,7 @@ public class ResultSetModel {
             try {
                 oldValue = attr.extractNestedValue(
                     ownerValue,
-                    rowIndexes == null ? 0 : rowIndexes[rowIndex++]);
+                    rowIndexes == null ? 0 : rowIndexes[rowIndex - 1]);
             } catch (DBCException e) {
                 log.error("Error getting [" + attr.getName() + "] value", e);
             }
