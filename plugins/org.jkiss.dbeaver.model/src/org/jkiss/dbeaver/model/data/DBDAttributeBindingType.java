@@ -151,14 +151,12 @@ public class DBDAttributeBindingType extends DBDAttributeBindingNested implement
             return composite.getAttributeValue(attribute);
         } else if (ownerValue instanceof Map map) {
             return map.get(getName());
-        } else if (ownerValue == null) {
-            return null;
         }
-
-        DBDAttributeBinding parent = getParent(1);
-        log.debug("Can't extract field '" + getName() + "' from type '" + (parent == null ? null : parent.getName()) + "': wrong value (" + ownerValue + ")");
-
-        throw new DBCException(DBValueFormatting.getDefaultValueDisplayString(ownerValue, DBDDisplayFormat.NATIVE));
+        return ownerValue;
+//        DBDAttributeBinding parent = getParent(1);
+//        log.debug("Can't extract field '" + getName() + "' from type '" + (parent == null ? null : parent.getName()) + "': wrong value (" + ownerValue + ")");
+//
+//        throw new DBCException(DBValueFormatting.getDefaultValueDisplayString(ownerValue, DBDDisplayFormat.NATIVE));
     }
 
     @Nullable
