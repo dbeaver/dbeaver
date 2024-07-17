@@ -440,7 +440,8 @@ public class PostgreUtils {
                                 }
                             }
                         }
-                    } else {
+                    }
+                    {
                         String databaseName = ((JDBCColumnMetaData) type).getCatalogName();
                         PostgreDatabase database = dataSource.getDatabase(databaseName);
                         if (database != null) {
