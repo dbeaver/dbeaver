@@ -246,12 +246,7 @@ public class CubridMetaModel extends GenericMetaModel
             @NotNull JDBCResultSet dbResult)
             throws DBException {
         String name = JDBCUtils.safeGetStringTrimmed(dbResult, CubridConstants.NAME);
-        String description = JDBCUtils.safeGetString(dbResult, CubridConstants.COMMENT);
-        Number lastValue = JDBCUtils.safeGetInteger(dbResult, "current_val");
-        Number minValue = JDBCUtils.safeGetInteger(dbResult, "min_val");
-        Number maxValue = JDBCUtils.safeGetInteger(dbResult, "max_val");
-        Number incrementBy = JDBCUtils.safeGetInteger(dbResult, "increment_val");
-        return new CubridSequence(container, name, description, lastValue, minValue, maxValue, incrementBy, dbResult);
+        return new CubridSequence(container, name, dbResult);
     }
 
     @NotNull

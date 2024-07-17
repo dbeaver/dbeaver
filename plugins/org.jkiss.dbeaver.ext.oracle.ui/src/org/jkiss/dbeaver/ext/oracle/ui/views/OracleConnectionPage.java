@@ -354,7 +354,11 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
         if (conTypeProperty != null) {
             connectionType = OracleConstants.ConnectionType.valueOf(CommonUtils.toString(conTypeProperty));
         } else {
-            connectionType = OracleConstants.ConnectionType.BASIC;
+            if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
+                connectionType = OracleConstants.ConnectionType.BASIC;
+            } else {
+                connectionType = OracleConstants.ConnectionType.CUSTOM;
+            }
         }
         connectionTypeFolder.setSelection(connectionType.ordinal());
         if (site.isNew() && CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {

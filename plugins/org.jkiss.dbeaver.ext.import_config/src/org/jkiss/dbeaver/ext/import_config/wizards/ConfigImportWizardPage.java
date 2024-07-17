@@ -42,19 +42,16 @@ public abstract class ConfigImportWizardPage extends ActiveWizardPage<ConfigImpo
     private ImportData importData;
     private ConnectionFolderSelector folderSelector;
 
-    protected ConfigImportWizardPage(String pageName)
-    {
+    protected ConfigImportWizardPage(String pageName) {
         super(pageName);
     }
 
-    public ImportData getImportData()
-    {
+    public ImportData getImportData() {
         return importData;
     }
 
     @Override
-    public void createControl(Composite parent)
-    {
+    public void createControl(Composite parent) {
         Composite placeholder = new Composite(parent, SWT.NONE);
         placeholder.setLayout(new GridLayout(1, true));
 
@@ -99,8 +96,7 @@ public abstract class ConfigImportWizardPage extends ActiveWizardPage<ConfigImpo
 
         connectionTable.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+            public void widgetSelected(SelectionEvent e) {
                 TableItem item = (TableItem) e.item;
                 ((ImportConnectionInfo) item.getData()).setChecked(item.getChecked());
                 getContainer().updateButtons();
@@ -156,8 +152,10 @@ public abstract class ConfigImportWizardPage extends ActiveWizardPage<ConfigImpo
     protected abstract void loadConnections(ImportData importData) throws DBException;
 
     @Override
-    public boolean isPageComplete()
-    {
+    public boolean isPageComplete() {
+        if (connectionTable == null) {
+            return false;
+        }
         for (TableItem item : connectionTable.getItems()) {
             if (item.getChecked()) {
                 return true;
