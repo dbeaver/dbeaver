@@ -41,7 +41,7 @@ public class DbvisConfigurationImporter {
         for (Entry<String, DbvisConfigurationCreator> configuration : version2creator.entrySet()) {
             DbvisConfigurationCreator dbvisConfigurationCreator = configuration.getValue();
             File configurationAsset = dbvisConfigurationCreator.getConfigurationAsset(folder);
-            if (configurationAsset.exists()) {
+            if (configurationAsset != null && configurationAsset.exists()) {
                 data = dbvisConfigurationCreator.create(data, configurationAsset);
             }
         }
