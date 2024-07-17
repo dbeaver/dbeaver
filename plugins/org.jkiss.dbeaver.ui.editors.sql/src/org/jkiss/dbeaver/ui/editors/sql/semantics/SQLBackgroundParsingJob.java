@@ -530,6 +530,7 @@ public class SQLBackgroundParsingJob {
             monitor.worked(1);
 
             SQLSyntaxManager syntaxManager = this.editor.getSyntaxManager();
+            SQLQueryRecognitionContext recognitionContext = new SQLQueryRecognitionContext(monitor, executionContext, useRealMetadata, syntaxManager);
 
             int i = 1;
             for (SQLScriptElement element : elements) {
@@ -537,11 +538,8 @@ public class SQLBackgroundParsingJob {
                     break;
                 }
                 try {
-                    SQLQueryModelContext recognizer = new SQLQueryModelContext(executionContext, useRealMetadata, syntaxManager);
-                    SQLQueryModel queryModel = recognizer.recognizeQuery(
-                        element.getOriginalText(),
-                        monitor
-                    );
+                    recognitionContext.reset();
+                    SQLQueryModel queryModel = SQLQueryModelRecognizer.recognizeQuery(recognitionContext, element.getOriginalText());
 
                     if (queryModel != null) {
                         if (DEBUG) {
@@ -555,6 +553,7 @@ public class SQLBackgroundParsingJob {
                             element instanceof SQLQuery queryElement && Boolean.TRUE.equals(queryElement.isEndsWithDelimiter())
                         );
                         itemContext.clear();
+                        itemContext.setProblems(recognitionContext.getProblems());
                         for (SQLQuerySymbolEntry entry : queryModel.getAllSymbols()) {
                             itemContext.registerToken(entry.getInterval().a, entry);
                         }
