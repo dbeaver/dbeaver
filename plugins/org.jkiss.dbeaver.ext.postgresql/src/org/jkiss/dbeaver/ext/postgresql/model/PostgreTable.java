@@ -105,12 +105,15 @@ public abstract class PostgreTable extends PostgreTableReal
 
         this.partitionKey = source.partitionKey;
 
-        for (PostgreIndex srcIndex : CommonUtils.safeCollection(source.getIndexes(monitor))) {
-            if (srcIndex.isPrimaryKeyIndex()) {
-                continue;
+        PostgreSchema.IndexCache indexCache = getSchema().getIndexCache();
+        if (indexCache != null) {
+            for (PostgreIndex srcIndex : CommonUtils.safeCollection(source.getIndexes(monitor))) {
+                if (srcIndex.isPrimaryKeyIndex()) {
+                    continue;
+                }
+                PostgreIndex constr = new PostgreIndex(monitor, this, srcIndex);
+                indexCache.cacheObject(constr);
             }
-            PostgreIndex constr = new PostgreIndex(monitor, this, srcIndex);
-            getSchema().getIndexCache().cacheObject(constr);
         }
 
 /*
@@ -216,7 +219,7 @@ public abstract class PostgreTable extends PostgreTableReal
         if (!getDataSource().getServerType().supportsIndexes()) {
             return Collections.emptyList();
         }
-        return getSchema().getIndexCache().getObjects(monitor, getSchema(), this);
+        return getSchema().getIndexes(monitor, this);
     }
 
     @Override

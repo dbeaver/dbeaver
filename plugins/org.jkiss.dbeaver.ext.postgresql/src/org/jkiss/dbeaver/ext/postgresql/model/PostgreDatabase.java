@@ -828,17 +828,12 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     @Override
     public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
-        PostgreSchema schema = getSchema(monitor, childName);
-        if (schema == null && getDataSource().getServerType().supportsEventTriggers()) {
-            // If not schema - can be event trigger
-            return getEventTrigger(monitor, childName);
-        }
-        return schema;
+        return getSchema(monitor, childName);
     }
 
     @NotNull
     @Override
-    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
         return PostgreSchema.class;
     }
 
