@@ -956,6 +956,7 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://trino.io/"
                     categories="sql,bigdata,hadoop">
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <file type="jar" path="maven:/io.trino:trino-jdbc:RELEASE" bundle="!drivers.trino"/>
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.trino"/>
                     <file type="jar" path="drivers/trino" bundle="drivers.trino"/>
