@@ -31,7 +31,7 @@
 
             <tree path="cubrid" label="Cubrid data source" supportsEntityMerge="true">
                 <folder id="schemas" type="org.jkiss.dbeaver.ext.cubrid.model.CubridUser" label="%tree.schemas.node.name"
-                        icon="#folder_schema" description="%tree.schemas.node.tip">
+                        icon="#folder_schema" description="%tree.schemas.node.tip" visibleIf="!object.isEOLVersion()">
                     <items label="%tree.user.node.name" path="cubridUser" property="cubridUsers" icon="#schema">
                         <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTable" label="%tree.tables.node.name" icon="#folder_table" description="%tree.tables.node.tip">
                             <items label="%tree.table.node.name" path="table" property="physicalTables" icon="#table">
@@ -165,11 +165,12 @@
                         </folder>
                     </items>
                 </folder>
-                <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridServer" label="%tree.servers.node.name" icon="#folder_server" description="%tree.servers.node.tip" visibleIf="object.supportsServer()">
+                <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridServer" label="%tree.servers.node.name" icon="#folder_server" description="%tree.servers.node.tip"
+                        visibleIf="object.supportsServer() &amp;&amp; !object.isEOLVersion()">
                     <items label="%tree.server.node.name" path="cubridServer" property="cubridServers" icon="#server"/>
                 </folder>
                 <folder id="users" type="org.jkiss.dbeaver.ext.cubrid.model.CubridUser" label="%tree.users.node.name" icon="#folder_user"
-                        description="%tree.users.node.tip">
+                        description="%tree.users.node.tip" visibleIf="!object.isEOLVersion()">
                     <items label="%tree.user.node.name" path="cubridUser" property="cubridUsers" icon="#user"/>
                 </folder>
                 <folder type="org.jkiss.dbeaver.model.struct.DBSDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="%tree.dataTypes.node.tip">
