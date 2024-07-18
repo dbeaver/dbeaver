@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.ui.AbstractUIJob;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -114,7 +115,7 @@ public class SQLEditorSemanticMarkersManager {
             return;
         }
 
-        HashMap.Entry<SQLDocumentScriptItemSyntaxContext, UpdateMarkersOperationInfo>[] entries;
+        Map.Entry<SQLDocumentScriptItemSyntaxContext, UpdateMarkersOperationInfo>[] entries;
         synchronized (syncRoot) {
             if (this.resetAnnotations) {
                 try {
@@ -128,10 +129,10 @@ public class SQLEditorSemanticMarkersManager {
             this.queuedOperations.clear();
         }
 
-        for (HashMap.Entry<SQLDocumentScriptItemSyntaxContext, UpdateMarkersOperationInfo> entry : entries) {
+        for (Map.Entry<SQLDocumentScriptItemSyntaxContext, UpdateMarkersOperationInfo> entry : entries) {
             SQLDocumentScriptItemSyntaxContext scriptItem = entry.getKey();
             if (entry.getValue().introduceMarkers && scriptItem.getProblems() != null) {
-                LinkedList<SQLSemanticErrorAnnotation> itemAnnotations = this.annotations.computeIfAbsent(scriptItem, c -> new LinkedList<>());
+                Deque<SQLSemanticErrorAnnotation> itemAnnotations = this.annotations.computeIfAbsent(scriptItem, c -> new LinkedList<>());
                 int scriptItemPosition = scriptItem.getInitialPosition();
                 for (SQLQueryRecognitionProblemInfo problemInfo : scriptItem.getProblems()) {
                     try {
@@ -151,7 +152,7 @@ public class SQLEditorSemanticMarkersManager {
                     }
                 }
             } else {
-                LinkedList<SQLSemanticErrorAnnotation> itemAnnotations = this.annotations.remove(scriptItem);
+                Deque<SQLSemanticErrorAnnotation> itemAnnotations = this.annotations.remove(scriptItem);
                 if (itemAnnotations != null) {
                     for (SQLSemanticErrorAnnotation annotation : itemAnnotations) {
                         IMarker marker = annotation.getMarker();
