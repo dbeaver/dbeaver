@@ -97,9 +97,9 @@ public class SQLEditorSemanticMarkersManager {
     @NotNull
     private final Object syncRoot = new Object();
     @NotNull
-    private final HashMap<SQLDocumentScriptItemSyntaxContext, UpdateMarkersOperationInfo> queuedOperations = new HashMap<>();
+    private final Map<SQLDocumentScriptItemSyntaxContext, UpdateMarkersOperationInfo> queuedOperations = new HashMap<>();
     @NotNull
-    private final HashMap<SQLDocumentScriptItemSyntaxContext, LinkedList<SQLSemanticErrorAnnotation>> annotations = new HashMap<>();
+    private final Map<SQLDocumentScriptItemSyntaxContext, LinkedList<SQLSemanticErrorAnnotation>> annotations = new HashMap<>();
     private volatile boolean resetAnnotations = false;
 
     public SQLEditorSemanticMarkersManager(@NotNull SQLEditorBase editor) {

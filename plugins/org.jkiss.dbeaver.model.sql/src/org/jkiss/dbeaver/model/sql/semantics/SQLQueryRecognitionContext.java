@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
+import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -44,7 +45,7 @@ public class SQLQueryRecognitionContext {
     private final SQLSyntaxManager syntaxManager;
 
     @NotNull
-    private final LinkedList<SQLQueryRecognitionProblemInfo> problems = new LinkedList<>();
+    private final Deque<SQLQueryRecognitionProblemInfo> problems = new LinkedList<>();
 
     public SQLQueryRecognitionContext(
         @NotNull DBRProgressMonitor monitor,

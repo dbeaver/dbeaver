@@ -28,15 +28,15 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionProblemInfo;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLProblemAnnotation;
 
 public class SQLSemanticErrorAnnotation extends MarkerAnnotation implements IAnnotationPresentation {
     public static final String MARKER_TYPE = "org.jkiss.dbeaver.ui.editors.sql.semanticProblemMarker";
-    public static final String TYPE = "org.eclipse.ui.workbench.texteditor.error";
     public static final String MARKER_ATTRIBUTE_NAME = "org.jkiss.dbeaver.ui.editors.sql.semantics.semanticProblemAnnotation";
     private final SQLQueryRecognitionProblemInfo problemInfo; // TODO will be needed for quick fix
 
     public SQLSemanticErrorAnnotation(@NotNull IMarker marker, SQLQueryRecognitionProblemInfo problemInfo) {
-        super(TYPE, marker);
+        super(SQLProblemAnnotation.TYPE, marker);
         this.problemInfo = problemInfo;
     }
 
