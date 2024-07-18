@@ -62,7 +62,7 @@ public class SQLEditorSemanticMarkersManager {
         @Override
         public void onScriptItemIntroduced(@NotNull SQLDocumentScriptItemSyntaxContext item) {
             synchronized (syncRoot) {
-                queuedOperations.compute(item, (c, op) -> UpdateMarkersOperationInfo.setIntroduce(op, true));
+                queuedOperations.put(item, true);
                 scheduleRefreshJob();
             }
         }
@@ -70,7 +70,7 @@ public class SQLEditorSemanticMarkersManager {
         @Override
         public void onScriptItemInvalidated(@NotNull SQLDocumentScriptItemSyntaxContext item) {
             synchronized (syncRoot) {
-                queuedOperations.compute(item, (c, op) -> UpdateMarkersOperationInfo.setIntroduce(op, false));
+                queuedOperations.put(item, false);
                 scheduleRefreshJob();
             }
         }
@@ -98,9 +98,9 @@ public class SQLEditorSemanticMarkersManager {
     @NotNull
     private final Object syncRoot = new Object();
     @NotNull
-    private final Map<SQLDocumentScriptItemSyntaxContext, UpdateMarkersOperationInfo> queuedOperations = new HashMap<>();
+    private final Map<SQLDocumentScriptItemSyntaxContext, Boolean> queuedOperations = new HashMap<>();
     @NotNull
-    private final Map<SQLDocumentScriptItemSyntaxContext, LinkedList<SQLSemanticErrorAnnotation>> annotations = new HashMap<>();
+    private final Map<SQLDocumentScriptItemSyntaxContext, Deque<SQLSemanticErrorAnnotation>> annotations = new HashMap<>();
     private volatile boolean resetAnnotations = false;
 
     public SQLEditorSemanticMarkersManager(@NotNull SQLEditorBase editor) {
@@ -115,7 +115,7 @@ public class SQLEditorSemanticMarkersManager {
             return;
         }
 
-        Map.Entry<SQLDocumentScriptItemSyntaxContext, UpdateMarkersOperationInfo>[] entries;
+        Map.Entry<SQLDocumentScriptItemSyntaxContext, Boolean>[] entries;
         synchronized (syncRoot) {
             if (this.resetAnnotations) {
                 try {
@@ -129,9 +129,9 @@ public class SQLEditorSemanticMarkersManager {
             this.queuedOperations.clear();
         }
 
-        for (Map.Entry<SQLDocumentScriptItemSyntaxContext, UpdateMarkersOperationInfo> entry : entries) {
+        for (Map.Entry<SQLDocumentScriptItemSyntaxContext, Boolean> entry : entries) {
             SQLDocumentScriptItemSyntaxContext scriptItem = entry.getKey();
-            if (entry.getValue().introduceMarkers && scriptItem.getProblems() != null) {
+            if (entry.getValue() && scriptItem.getProblems() != null) {
                 Deque<SQLSemanticErrorAnnotation> itemAnnotations = this.annotations.computeIfAbsent(scriptItem, c -> new LinkedList<>());
                 int scriptItemPosition = scriptItem.getInitialPosition();
                 for (SQLQueryRecognitionProblemInfo problemInfo : scriptItem.getProblems()) {
@@ -189,7 +189,7 @@ public class SQLEditorSemanticMarkersManager {
                 SQLDocumentSyntaxContext context = this.syntaxContext;
                 if (context != null) {
                     for (SQLScriptItemAtOffset itemAtOffset : context.getScriptItems()) {
-                        queuedOperations.compute(itemAtOffset.item, (c, op) -> UpdateMarkersOperationInfo.setIntroduce(op, true));
+                        queuedOperations.put(itemAtOffset.item, true);
                     }
                     this.scheduleClearAllProblems();
                 }
@@ -243,17 +243,4 @@ public class SQLEditorSemanticMarkersManager {
         this.cleanup();
     }
 
-
-    private static class UpdateMarkersOperationInfo {
-        public boolean introduceMarkers;
-
-        @NotNull
-        public static UpdateMarkersOperationInfo setIntroduce(@Nullable UpdateMarkersOperationInfo operationInfo, boolean addMarkers) {
-            if (operationInfo == null) {
-                operationInfo = new UpdateMarkersOperationInfo();
-            }
-            operationInfo.introduceMarkers = addMarkers;
-            return operationInfo;
-        }
-    }
 }
