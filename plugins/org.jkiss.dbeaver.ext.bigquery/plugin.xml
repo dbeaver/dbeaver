@@ -79,8 +79,8 @@
 
     <extension point="org.jkiss.dbeaver.dashboard">
         <dashboard id="bigquery-dash"
-                   label="API metrics"
-                   description="BigQuery API monitoring charts"
+                   label="%dashboard.monitoring.chart.bq.name"
+                   description="%dashboard.monitoring.chart.bq.description"
                    defaultView="browser"
                    url="https://console.cloud.google.com/apis/api/bigquery.googleapis.com/metrics?project=${database}"
                    externalUrl="https://console.cloud.google.com/apis/api/bigquery.googleapis.com/metrics?project=${database}"
