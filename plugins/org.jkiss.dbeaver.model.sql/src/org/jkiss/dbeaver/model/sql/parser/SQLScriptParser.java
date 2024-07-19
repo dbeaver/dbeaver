@@ -24,6 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.impl.sql.AbstractSQLDialect;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzerParameters;
 import org.jkiss.dbeaver.model.lsm.sql.dialect.SQLStandardAnalyzer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
@@ -1111,6 +1112,9 @@ public class SQLScriptParser {
             }
             if (dialect.getTransactionRollbackKeywords() != null) {
                 Arrays.stream(dialect.getTransactionRollbackKeywords()).map(String::toUpperCase).forEach(statementStartKeywords::add);
+            }
+            if (dialect instanceof AbstractSQLDialect abstractSQLDialect) {
+                Arrays.stream(abstractSQLDialect.getNonTransactionKeywords()).map(String::toUpperCase).forEach(statementStartKeywords::add);
             }
             Arrays.stream(dialect.getExecuteKeywords()).map(String::toUpperCase).forEach(statementStartKeywords::add);
             for (SQLCommandHandlerDescriptor controlCommand : SQLCommandsRegistry.getInstance().getCommandHandlers()) {

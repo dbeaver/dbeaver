@@ -34,6 +34,7 @@ import java.util.Properties;
 public class SQLServerAuthModelMFA extends SQLServerAuthModelAbstract {
 
     public static final String ID = "sqlserver_mfa";
+    public static final String CONNECT_RETRY_COUNT = "connectRetryCount";
 
     @Override
     public boolean isUserPasswordApplicable() {
@@ -43,7 +44,11 @@ public class SQLServerAuthModelMFA extends SQLServerAuthModelAbstract {
     @Override
     public Object initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull AuthModelDatabaseNativeCredentials credentials, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException {
         connProperties.put(SQLServerConstants.PROP_CONNECTION_AUTHENTICATION, SQLServerConstants.AUTH_ACTIVE_DIRECTORY_INTERACTIVE);
+        // https://github.com/microsoft/mssql-jdbc/issues/2237#issuecomment-2075520355
+
+        connProperties.put(CONNECT_RETRY_COUNT, "0");
         dataSource.getContainer().setForceUseSingleConnection(true);
+
         return credentials;
     }
 

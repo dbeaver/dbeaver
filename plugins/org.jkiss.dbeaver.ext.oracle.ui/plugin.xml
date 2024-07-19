@@ -226,6 +226,7 @@
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchema"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSequence"/>
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTablespace"/>
         </editor>
         <editor
                 id="org.jkiss.dbeaver.ext.oracle.ui.editors.SchedulerJobLogEditor"
