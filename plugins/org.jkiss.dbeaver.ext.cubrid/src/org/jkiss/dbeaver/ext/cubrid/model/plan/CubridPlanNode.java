@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlanNodeKind;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -200,25 +201,34 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
 
     @Nullable
     private String getTermExtra(boolean isTerm) {
-        String[] values = terms.get(term).split(" \\(sel");
-        if (isTerm)
-            return values[0].trim();
-        else
-            return "(sel" + values[1].trim();
+        
+        String termValue = terms.get(term);
+        if(CommonUtils.isNotEmpty(termValue)) {
+            String[] values = termValue.split(" \\(sel");
+            if (isTerm)
+                return values[0].trim();
+            else
+                return "(sel" + values[1].trim();
+        }
+        return null;
     }
 
     @Nullable
     private String getNameOrTotal(boolean isName) {
-        Pattern p;
-        if (isName) {
-            p = Pattern.compile("\\w+ \\w+");
-        } else {
-            p = Pattern.compile("\\w+\\/\\w+");
+        String classNodeValue = classNode.get(nodeName);
+        if(CommonUtils.isNotEmpty(classNodeValue)){
+            Pattern p;
+            if (isName) {
+                p = Pattern.compile("\\w+ \\w+");
+            } else {
+                p = Pattern.compile("\\w+\\/\\w+");
+            }
+            Matcher m = p.matcher(classNodeValue);
+            if (m.find()) {
+                return m.group(0);
+            }
         }
-        Matcher m = p.matcher(classNode.get(nodeName));
-        if (m.find()) {
-            return m.group(0);
-        }
+        
         return null;
     }
 
