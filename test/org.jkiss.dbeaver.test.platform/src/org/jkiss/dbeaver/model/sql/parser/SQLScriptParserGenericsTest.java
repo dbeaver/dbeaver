@@ -166,6 +166,7 @@ public class SQLScriptParserGenericsTest {
         assertParse("snowflake", query);
     }
 
+    @Test
     public void checkSmartBlankLineIsAStatementDelimiterMode() throws DBException {
         String[] query = new String[]{
             "DECLARE EXIT HANDLER FOR SQLEXCEPTION\n" +
