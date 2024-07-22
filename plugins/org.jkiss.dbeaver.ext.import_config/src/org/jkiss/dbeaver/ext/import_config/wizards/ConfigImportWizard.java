@@ -266,6 +266,9 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         if (connectionInfo.getDriver() != null) {
             sampleURL = connectionInfo.getDriver().getSampleURL();
         }
+        if (sampleURL == null) {
+            return;
+        }
         Matcher matcher = DatabaseURL.getPattern(sampleURL).matcher(url);
         if (matcher.matches()) {
             connectionInfo.setHost(matcher.group("host"));

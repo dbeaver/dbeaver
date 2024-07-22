@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.import_config.dbvis;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
 
 import java.io.File;
@@ -26,7 +27,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 public class DbvisConfigurationImporter {
-
+    private static final Log log = Log.getLog(DbvisConfigurationImporter.class);
     private static final Map<String, DbvisConfigurationCreator> version2creator = new LinkedHashMap<>();
 
     static {
@@ -37,12 +38,16 @@ public class DbvisConfigurationImporter {
     public ImportData importConfiguration(
         @NotNull ImportData data,
         @NotNull File folder
-    ) throws DBException {
+    ) {
         for (Entry<String, DbvisConfigurationCreator> configuration : version2creator.entrySet()) {
             DbvisConfigurationCreator dbvisConfigurationCreator = configuration.getValue();
             File configurationAsset = dbvisConfigurationCreator.getConfigurationAsset(folder);
             if (configurationAsset != null && configurationAsset.exists()) {
-                data = dbvisConfigurationCreator.create(data, configurationAsset);
+                try {
+                    data = dbvisConfigurationCreator.create(data, configurationAsset);
+                } catch (DBException e) {
+                    log.error(e.getMessage(), e);
+                }
             }
         }
         return data;

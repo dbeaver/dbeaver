@@ -104,6 +104,7 @@ public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCre
                                     database = varValue;
                                 }
                             }
+                            templateId = templateId.replace("_wrapper", "");
                             StringBuilder builder = new StringBuilder("databaseinfo/user/driverTypes/");
                             builder.append(templateId)
                                 .append("_")
