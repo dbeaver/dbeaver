@@ -281,8 +281,8 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
 
             viewPlaceholder.layout();
         }
-        if (valueEditor instanceof BaseValueEditor) {
-            ((BaseValueEditor) valueEditor).setAutoSaveEnabled(false);
+        if (valueEditor instanceof BaseValueEditor<?> baseValueEditor) {
+            baseValueEditor.setAutoSaveEnabled(false);
         }
         if (valueEditor != null) {
             try {
@@ -311,8 +311,8 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
             }
             valueEditor.setDirty(false);
         }
-        if (valueEditor instanceof BaseValueEditor) {
-            ((BaseValueEditor) valueEditor).setAutoSaveEnabled(true);
+        if (valueEditor instanceof BaseValueEditor<?> baseValueEditor) {
+            baseValueEditor.setAutoSaveEnabled(true);
         }
     }
 
