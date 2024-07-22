@@ -21,5 +21,6 @@ public interface SMStandardMeta {
 
     String META_FIRST_NAME = "firstName";
     String META_LAST_NAME = "lastName";
+    String META_FULL_NAME = "fullName";
 
 }
