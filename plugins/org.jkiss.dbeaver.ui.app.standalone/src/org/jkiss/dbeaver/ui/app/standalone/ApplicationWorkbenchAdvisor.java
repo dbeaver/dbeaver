@@ -265,11 +265,12 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             !ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
             startVersionChecker();
         }
-
-        // System events
-        Desktop desktop = Desktop.getDesktop();
-        if (desktop.isSupported(Desktop.Action.APP_EVENT_SYSTEM_SLEEP)) {
-            desktop.addAppEventListener(systemSleepListener);
+        if (!GraphicsEnvironment.isHeadless() && Desktop.isDesktopSupported()) {
+            // System events
+            Desktop desktop = Desktop.getDesktop();
+            if (desktop.isSupported(Desktop.Action.APP_EVENT_SYSTEM_SLEEP)) {
+                desktop.addAppEventListener(systemSleepListener);
+            }
         }
     }
 
