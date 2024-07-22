@@ -52,6 +52,14 @@
             icon="icons/custom.png">
             <description>Custom connections format (CSV, XML)</description>
         </wizard>
+        <wizard
+                category="org.jkiss.dbeaver.import_config.third-party"
+                class="org.jkiss.dbeaver.ext.import_config.wizards.sqlworkbench.ConfigImportWizardSqlWorkbench"
+                id="org.jkiss.dbeaver.import_config.sqlworkbench"
+                name="MySQL Workbench"
+                icon="icons/custom.png">
+            <description>MySQL Workbench</description>
+        </wizard>
     </extension>
 
 
