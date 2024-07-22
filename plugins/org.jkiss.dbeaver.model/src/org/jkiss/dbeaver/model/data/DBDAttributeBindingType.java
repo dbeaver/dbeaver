@@ -128,7 +128,7 @@ public class DBDAttributeBindingType extends DBDAttributeBindingNested implement
         return null;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public DBSAttributeBase getAttribute() {
         return attribute;
@@ -147,18 +147,16 @@ public class DBDAttributeBindingType extends DBDAttributeBindingNested implement
                 return null;
             }
         }
-        if (ownerValue instanceof DBDComposite) {
-            return ((DBDComposite) ownerValue).getAttributeValue(attribute);
-        } else if (ownerValue instanceof Map) {
-            return ((Map<?, ?>) ownerValue).get(getName());
-        } else if (ownerValue == null) {
-            return null;
+        if (ownerValue instanceof DBDComposite composite) {
+            return composite.getAttributeValue(attribute);
+        } else if (ownerValue instanceof Map map) {
+            return map.get(getName());
         }
-
-        DBDAttributeBinding parent = getParent(1);
-        log.debug("Can't extract field '" + getName() + "' from type '" + (parent == null ? null : parent.getName()) + "': wrong value (" + ownerValue + ")");
-
-        throw new DBCException(DBValueFormatting.getDefaultValueDisplayString(ownerValue, DBDDisplayFormat.NATIVE));
+        return ownerValue;
+//        DBDAttributeBinding parent = getParent(1);
+//        log.debug("Can't extract field '" + getName() + "' from type '" + (parent == null ? null : parent.getName()) + "': wrong value (" + ownerValue + ")");
+//
+//        throw new DBCException(DBValueFormatting.getDefaultValueDisplayString(ownerValue, DBDDisplayFormat.NATIVE));
     }
 
     @Nullable
