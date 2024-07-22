@@ -977,12 +977,12 @@ public class SQLScriptParser {
                 while ((captureCurrElement = (
                         currElement instanceof SQLQuery queryElement && !continuationDetector.elementStartsProperly(queryElement) &&
                         !prevElement.isEndsWithDelimiter()
-                )) && it.hasNext()) {
+                    )) && it.hasNext()) {
                     it.remove(); // remove currElement while it is a continuation of the query started at the firstElement
-                    prevElement = (SQLQuery)currElement;
+                    prevElement = (SQLQuery) currElement;
                     currElement = it.next();
                 }
-                SQLQuery lastElement = captureCurrElement ? (SQLQuery)currElement : prevElement;
+                SQLQuery lastElement = captureCurrElement ? (SQLQuery) currElement : prevElement;
                 if (lastElement != firstElement) {
                     if (captureCurrElement) {
                         it.remove();
@@ -1137,8 +1137,7 @@ public class SQLScriptParser {
                 token = lexer.nextToken();
             }
             return token != null && (
-                statementStartTokenIds.contains(token.getType()) || statementStartKeywords.contains(token.getText().toUpperCase())
-            );
+                statementStartTokenIds.contains(token.getType()) || statementStartKeywords.contains(token.getText().toUpperCase()));
         }
 
         private SQLQuery findSmartStatementBegginning(@NotNull SQLQuery element) {
@@ -1146,12 +1145,11 @@ public class SQLScriptParser {
             SQLScriptElement prevElement = extractNextQueryImpl(this.context, element, false);
             boolean takePrev = true;
             while (
-                prevElement instanceof SQLQuery prevQueryFragment && (takePrev = (
-                    !Boolean.TRUE.equals(prevQueryFragment.isEndsWithDelimiter()) ||
-                    prevElement.getOffset() + prevElement.getLength() >= lastElement.getOffset() + lastElement.getLength()
-                )) &&
-                !elementStartsProperly(prevElement) &&
-                prevElement.getOffset() < lastElement.getOffset()
+                prevElement instanceof SQLQuery prevQueryFragment &&
+                    (takePrev = (
+                        !Boolean.TRUE.equals(prevQueryFragment.isEndsWithDelimiter()) ||
+                        prevElement.getOffset() + prevElement.getLength() >= lastElement.getOffset() + lastElement.getLength()
+                    )) && !elementStartsProperly(prevElement) && prevElement.getOffset() < lastElement.getOffset()
             ) {
                 lastElement = prevQueryFragment;
                 prevElement = extractNextQueryImpl(this.context, lastElement, false);
@@ -1163,8 +1161,7 @@ public class SQLScriptParser {
         private SQLQuery findSmartStatementEnding(@NotNull SQLQuery element) {
             SQLQuery lastElement = element;
             SQLScriptElement nextElement = extractNextQueryImpl(this.context, element, true);
-            while (
-                nextElement instanceof SQLQuery nextQueryFragment &&
+            while (nextElement instanceof SQLQuery nextQueryFragment &&
                 !Boolean.TRUE.equals(lastElement.isEndsWithDelimiter()) &&
                 !elementStartsProperly(nextElement) &&
                 nextElement.getOffset() > lastElement.getOffset()
