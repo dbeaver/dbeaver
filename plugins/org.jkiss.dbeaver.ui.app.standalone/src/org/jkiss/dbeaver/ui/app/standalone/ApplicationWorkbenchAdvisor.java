@@ -379,11 +379,12 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     @Override
     public void postShutdown() {
         super.postShutdown();
-
-        // System events
-        Desktop desktop = Desktop.getDesktop();
-        if (desktop.isSupported(Desktop.Action.APP_EVENT_SYSTEM_SLEEP)) {
-            desktop.removeAppEventListener(systemSleepListener);
+        if (!GraphicsEnvironment.isHeadless() && Desktop.isDesktopSupported()) {
+            // System events
+            Desktop desktop = Desktop.getDesktop();
+            if (desktop.isSupported(Desktop.Action.APP_EVENT_SYSTEM_SLEEP)) {
+                desktop.removeAppEventListener(systemSleepListener);
+            }
         }
     }
 
