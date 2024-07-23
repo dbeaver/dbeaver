@@ -219,21 +219,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         // Register core components
         initializeApplicationServices();
 
-        // Custom parameters
-        try {
-            headlessMode = true;
-            if (DBeaverCommandLine.handleCustomParameters(commandLine)) {
-                return IApplication.EXIT_OK;
-            }
-        } finally {
-            headlessMode = false;
-        }
-
-        if (isExclusiveMode()) {
-            // In shared mode we mustn't run UI
-            return IApplication.EXIT_OK;
-        }
-
         final Runtime runtime = Runtime.getRuntime();
 
         initializeConfiguration();
@@ -263,6 +248,21 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         DBWorkbench.getPlatform();
 
         initializeApplication();
+
+        // Custom parameters
+        try {
+            headlessMode = true;
+            if (DBeaverCommandLine.handleCustomParameters(commandLine)) {
+                return IApplication.EXIT_OK;
+            }
+        } finally {
+            headlessMode = false;
+        }
+
+        if (isExclusiveMode()) {
+            // In shared mode we mustn't run UI
+            return IApplication.EXIT_OK;
+        }
 
         // Run instance server
         try {
