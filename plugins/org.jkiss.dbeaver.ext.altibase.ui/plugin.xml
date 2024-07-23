@@ -27,11 +27,12 @@
             <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseSequence"/>
             <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseSynonym"/>
             <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseTableIndex"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseReplication"/>
         </editor>
         <configurator class="org.jkiss.dbeaver.ext.altibase.ui.config.AltibaseProcedureConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseProcedureStandAlone"/>
         </configurator>
-                <configurator class="org.jkiss.dbeaver.ext.altibase.ui.config.AltibaseTypesetConfigurator">
+	    <configurator class="org.jkiss.dbeaver.ext.altibase.ui.config.AltibaseTypesetConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseTypeset"/>
         </configurator>
         <configurator class="org.jkiss.dbeaver.ext.altibase.ui.config.AltibaseSequenceConfigurator">
@@ -119,6 +120,24 @@
                   label="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibasePackageCompile.label"
                   singleton="false">
                 <task id="altibaseToolPackageCompile"/>
+            </tool>
+            <tool
+                  description="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseReplicationStart.label"
+                  id="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseToolReplicationStart"
+                  label="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseReplicationStart.label"
+                  group="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance"
+                  icon="icons/repl_start.png"
+                  singleton="false">
+                <task id="altibaseToolReplicationStart"/>
+            </tool>
+            <tool
+                  description="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseReplicationStop.label"
+                  id="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseToolReplicationStop"
+                  label="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseReplicationStop.label"
+                  group="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance"
+                  icon="icons/repl_stop.png"
+                  singleton="false">
+                <task id="altibaseToolReplicationStop"/>
             </tool>
         </tools>
     </extension>

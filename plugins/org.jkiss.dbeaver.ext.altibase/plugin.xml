@@ -59,7 +59,8 @@
                     <!-- In order to circumvent previous version of JDBC bug: ROLE -->
                     <parameter name="schema-filters-enabled" value="true"/>
                     <parameter name="split-procedures-and-functions" value="true"/>
-                    <parameter name="query-get-active-db" value="SELECT db_name FROM V$DATABASE"/>
+                    <parameter name="query-get-active-db"  value="SELECT user_name()"/>
+                    <parameter name="active-entity-type" value="schema"/>
                 </driver>
              </drivers>
              <tree
@@ -214,9 +215,20 @@
                     </folder>
                     
                     <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseReplication" label="%tree.replications.node.name" icon="#folder_link" description="Replications">
-                        <items label="%tree.replication.node.name" path="replication" property="replications" icon="#folder_link">
-                            <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseReplicationItem" label="%tree.repl_items.node.name" icon="#link" description="Replication Items">
-                                <items label="%tree.repli_item.node.name" path="replication_item" property="replicationItems" icon="#link"/>
+                        <items label="%tree.replication.node.name" path="replication" property="replications" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sync_connection.png">
+                            <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseReplicationSender" navigable="false" 
+                            label="%tree.replication_sender.node.name" description="%tree.replication_sender.node.name"
+                            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png">
+                                <items label="%tree.replication_sender.node.name" path="replicationSender" property="replicationSenders"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseReplicationReceiver" navigable="false" 
+                             label="%tree.replication_receiver.node.name"  description="%tree.replication_receiver.node.name"
+                             icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/import.png">
+                                <items label="%tree.replication_receiver.node.name" path="replicationReceiver" property="replicationReceivers"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseReplicationItem" label="%tree.repl_items.node.name" icon="#folder_table" 
+                            description="%tree.repl_items.node.name">
+                                <items label="%tree.repl_item.node.name" path="replication_item" property="replicationItems" icon="#table_link"/>
                             </folder>
                         </items>
                     </folder>
@@ -322,7 +334,7 @@
     <extension point="org.jkiss.dbeaver.task">
         <category id="altibase" name="Altibase" description="%org.jkiss.dbeaver.task.category.altibase.description" icon="icons/altibase_icon.png"/>
         <category id="altibaseTool" parent="altibase"
-              name="Tools" 
+              name="%org.jkiss.dbeaver.task.category.altibaseTool.name" 
               description="%org.jkiss.dbeaver.task.category.altibaseTool.description"
               icon="icons/altibase_icon.png"/>
 
@@ -351,6 +363,16 @@
         type="altibaseTool" handler="org.jkiss.dbeaver.ext.altibase.tasks.AltibaseToolPackageCompile">
             <datasource id="altibase"/>
             <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibasePackage"/>
+        </task>
+        <task id="altibaseToolReplicationStart" name="%tasks.replication.start.node.name" description="%tasks.replication.start.node.description" 
+        type="altibaseTool" handler="org.jkiss.dbeaver.ext.altibase.tasks.AltibaseToolReplicationStart">
+            <datasource id="altibase"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseReplication"/>
+        </task>
+        <task id="altibaseToolReplicationStop" name="%tasks.replication.stop.node.name" description="%tasks.replication.stop.node.description" 
+        type="altibaseTool" handler="org.jkiss.dbeaver.ext.altibase.tasks.AltibaseToolReplicationStop">
+            <datasource id="altibase"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseReplication"/>
         </task>
     </extension>
 
