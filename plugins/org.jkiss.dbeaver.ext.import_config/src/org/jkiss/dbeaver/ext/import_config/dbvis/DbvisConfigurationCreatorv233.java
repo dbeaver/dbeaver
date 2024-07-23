@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.import_config.dbvis;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportConnectionInfo;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportDriverInfo;
@@ -37,7 +38,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCreator {
-
+    private static final Log log = Log.getLog(DbvisConfigurationCreatorv233.class);
+    
     public static final String VERSION = "version.24.3.x"; //$NON-NLS-1$
     public static final String CONFIG_FOLDER = "config233"; //$NON-NLS-1$
     public static final String CONFIG_FILE = "dbvis.xml"; //$NON-NLS-1$
@@ -117,6 +119,10 @@ public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCre
                                 .append(driverIdSegments[0])
                                 .append(".xml");
                             File driverFile = new File(configFile.getParent(), builder.toString());
+                            if (!driverFile.exists()) {
+                                log.error("Driver descriptor not found by path: " + driverFile.getAbsolutePath());
+                                continue;
+                            }
                             Document driverTypeDocument = XMLUtils.parseDocument(driverFile);
                             Element driverTypeDocumentElement = driverTypeDocument.getDocumentElement();
                             String name = XMLUtils.getChildElementBody(driverTypeDocumentElement, "Label");

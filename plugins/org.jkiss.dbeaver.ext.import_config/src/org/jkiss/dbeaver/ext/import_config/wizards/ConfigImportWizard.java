@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.dbeaver.ui.navigator.dialogs.ObjectListDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -118,6 +119,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         for (DataSourceProviderDescriptor dataSourceProvider : registry.getDataSourceProviders()) {
             for (DriverDescriptor driver : dataSourceProvider.getEnabledDrivers()) {
                 final String driverClassName = driver.getDriverClassName();
+                System.out.println("Driver " + driver.getName() +" " + driverClassName);
                 if (driverClassName != null && driverClassName.equals(driverInfo.getDriverClass())) {
                     matchedDrivers.add(driver);
                 }
@@ -149,11 +151,17 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
             genericProvider.addDriver(driver);
             connectionInfo.setDriver(driver);
         } else {
-            // Use the only found driver
-            driver = matchedDrivers.stream()
-                    .filter(driverDescriptor -> driverDescriptor.getName().equalsIgnoreCase(driverInfo.getName()))
-                    .findFirst()
-                    .orElse(matchedDrivers.get(0));
+         // Let user to choose correct driver
+            driver = ObjectListDialog.selectObject(
+                            getShell(), "Choose driver for connection '" + connectionInfo.getAlias() + "'", "ImportDriverSelector", matchedDrivers);
+                        if (driver == null) {
+                            return false;
+                        }
+//            // Use the only found driver
+//            driver = matchedDrivers.stream()
+//                    .filter(driverDescriptor -> driverDescriptor.getName().equalsIgnoreCase(driverInfo.getName()))
+//                    .findFirst()
+//                    .orElse(matchedDrivers.get(0));
             connectionInfo.setDriver(driver);
         }
 
