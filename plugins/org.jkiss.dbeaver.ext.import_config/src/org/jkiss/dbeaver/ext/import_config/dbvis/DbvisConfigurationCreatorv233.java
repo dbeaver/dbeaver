@@ -140,11 +140,12 @@ public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCre
                             if (!CommonUtils.isEmpty(name) && !CommonUtils.isEmpty(sampleURL) ) {
                                 DriverDescriptor driverDescriptor = getDriverByName(name);
                                 if (driverDescriptor != null) {
-                                    ImportDriverInfo driver = new ImportDriverInfo(identifier, name, sampleURL, driverDescriptor.getDriverClassName());
+                                    driverName = driverDescriptor.getName();
+                                    ImportDriverInfo driver = new ImportDriverInfo(identifier, driverName, sampleURL, driverDescriptor.getDriverClassName());
                                     adaptSampleUrl(driver);
                                     importData.addDriver(driver);
                                 } else {
-                                    log.error("Driver descriptor not found for: " + name);
+                                    log.error("Driver descriptor not found for: " + driverName);
                                 }
                             }
                             Element sshServers = XMLUtils.getChildElement(dbElement, "SshServers");
