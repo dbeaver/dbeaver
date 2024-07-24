@@ -133,7 +133,8 @@ public class ConfigImportWizardPageSqlWorkbenchConnections extends ConfigImportW
         }
     }
 
-    private @Nullable String getElementValueOrEmptyString(@Nullable Element conElement, @NotNull String keyValue) {
+    @Nullable
+    private String getElementValueOrEmptyString(@Nullable Element conElement, @NotNull String keyValue) {
         if (conElement == null) {
             return "";
         }
