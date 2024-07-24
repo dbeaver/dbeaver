@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportDriverInfo;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.SSHConstants;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.utils.CommonUtils;
@@ -127,12 +128,14 @@ public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCre
                             Element driverTypeDocumentElement = driverTypeDocument.getDocumentElement();
                             String name = XMLUtils.getChildElementBody(driverTypeDocumentElement, "Label");
                             String sampleURL = XMLUtils.getChildElementBody(driverTypeDocumentElement, "URLFormat");
-                            String driverClass = XMLUtils.getChildElementBody(driverTypeDocumentElement, "DefaultClass");
                             String identifier = XMLUtils.getChildElementBody(driverTypeDocumentElement, "Identifier");
-                            if (!CommonUtils.isEmpty(name) && !CommonUtils.isEmpty(sampleURL) && !CommonUtils.isEmpty(driverClass)) {
-                                ImportDriverInfo driver = new ImportDriverInfo(identifier, name, sampleURL, driverClass);
-                                adaptSampleUrl(driver);
-                                importData.addDriver(driver);
+                            if (!CommonUtils.isEmpty(name) && !CommonUtils.isEmpty(sampleURL) ) {
+                                DriverDescriptor driverDescriptor = getDriverByName(name);
+                                if (driverDescriptor != null) {
+                                    ImportDriverInfo driver = new ImportDriverInfo(identifier, name, sampleURL, driverDescriptor.getDriverClassName());
+                                    adaptSampleUrl(driver);
+                                    importData.addDriver(driver);
+                                }
                             }
                             Element sshServers = XMLUtils.getChildElement(dbElement, "SshServers");
                             if (sshServers != null) {

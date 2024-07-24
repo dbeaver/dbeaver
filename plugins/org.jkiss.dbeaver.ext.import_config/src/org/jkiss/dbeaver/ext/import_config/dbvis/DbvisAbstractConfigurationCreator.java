@@ -17,9 +17,12 @@
 package org.jkiss.dbeaver.ext.import_config.dbvis;
 
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportDriverInfo;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -61,5 +64,23 @@ public abstract class DbvisAbstractConfigurationCreator implements DbvisConfigur
             }
         }
         return configFile;
+    }
+
+    public DriverDescriptor getDriverByName(String name) {
+        final DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
+        Optional<DriverDescriptor> descriptor = registry.getDataSourceProviders().stream()
+            .flatMap(provider -> provider.getEnabledDrivers().stream())
+            .filter(d -> d.getName().equals(name))
+            .findFirst();
+        if (descriptor.isEmpty()) {
+            descriptor = registry.getDataSourceProviders().stream()
+                .flatMap(provider -> provider.getEnabledDrivers().stream())
+                .filter(d -> d.getName().contains(name))
+                .findFirst();
+        }
+        if (descriptor.isEmpty()) {
+            return null;
+        }
+        return descriptor.get();
     }
 }
