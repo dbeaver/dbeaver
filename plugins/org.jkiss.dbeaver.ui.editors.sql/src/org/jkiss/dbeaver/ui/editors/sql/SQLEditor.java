@@ -2747,9 +2747,9 @@ public class SQLEditor extends SQLEditorBase implements
                     }
                 }
                 // Just create a new query processor
-                if (!foundSuitableTab) {
+                if (!foundSuitableTab && newTab) {
                     // If we already have useless multi-tabbed processor, but we want single-tabbed, then get rid of the useless one  
-                    if (curQueryProcessor instanceof MultiTabsQueryProcessor 
+                    if (!useTabPerQuery(queries.size() == 1) && curQueryProcessor instanceof MultiTabsQueryProcessor
                         && curQueryProcessor.getResultContainers().size() == 1
                         && !curQueryProcessor.getFirstResults().viewer.hasData()
                     ) {
