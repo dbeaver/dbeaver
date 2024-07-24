@@ -55,7 +55,8 @@ public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements
     public static final Log log = Log.getLog(ResultSetHandlerCopySpecial.class);
     public static final String CMD_COPY_SPECIAL = IActionConstants.CMD_COPY_SPECIAL;
     public static final String CMD_COPY_SPECIAL_LAST = IActionConstants.CMD_COPY_SPECIAL_LAST;
-    private AdvancedCopyConfigDialog lastConfigDialog = null;
+    //private AdvancedCopyConfigDialog lastConfigDialog = null;
+    private static ResultSetCopySettings copySettingsLast = null;
 
 
     @Override
@@ -70,11 +71,11 @@ public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements
                 showAdvancedCopyDialog(resultSet, HandlerUtil.getActiveShell(event));
                 break;
             case CMD_COPY_SPECIAL_LAST:
-                if (lastConfigDialog == null) {
+                if (copySettingsLast == null) {
                     showAdvancedCopyDialog(resultSet, HandlerUtil.getActiveShell(event));
                 } else {
                     ResultSetUtils.copyToClipboard(
-                        resultSet.getActivePresentation().copySelection(lastConfigDialog.copySettings));
+                        resultSet.getActivePresentation().copySelection(copySettingsLast));
                 }
                 break;
             default:
@@ -85,10 +86,10 @@ public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements
     }
 
     public void showAdvancedCopyDialog(IResultSetController resultSet, Shell shell) {
-        lastConfigDialog = new AdvancedCopyConfigDialog(shell);
-        if (lastConfigDialog.open() == IDialogConstants.OK_ID) {
-            ResultSetUtils.copyToClipboard(
-                resultSet.getActivePresentation().copySelection(lastConfigDialog.copySettings));
+        AdvancedCopyConfigDialog configDialog = new AdvancedCopyConfigDialog(shell);
+        if (configDialog.open() == IDialogConstants.OK_ID) {
+            copySettingsLast = configDialog.copySettings;
+            ResultSetUtils.copyToClipboard(resultSet.getActivePresentation().copySelection(configDialog.copySettings));
         }
     }
 
