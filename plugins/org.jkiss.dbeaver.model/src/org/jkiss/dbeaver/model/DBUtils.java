@@ -732,10 +732,15 @@ public final class DBUtils {
             final DBDAttributeBinding parent = Objects.requireNonNull(attribute.getParent(depth - i - 1));
 
             try {
+                int fixedNestedIndex = curNestedIndex;
+                if (nestedIndexes != null && fixedNestedIndex >= nestedIndexes.length) {
+                    fixedNestedIndex = nestedIndexes.length - 1;
+                    //return DBDVoid.INSTANCE;
+                }
                 if (!isIndexedValue(parent, curValue)) {
                     curValue = parent.extractNestedValue(curValue, 0);
-                } else if (nestedIndexes != null && isValidIndex(curValue, nestedIndexes[curNestedIndex])) {
-                    curValue = parent.extractNestedValue(curValue, nestedIndexes[curNestedIndex]);
+                } else if (nestedIndexes != null && isValidIndex(curValue, nestedIndexes[fixedNestedIndex])) {
+                    curValue = parent.extractNestedValue(curValue, nestedIndexes[fixedNestedIndex]);
                     curNestedIndex++;
                 } else {
                     curValue = parent.extractNestedValue(curValue, 0);
@@ -745,9 +750,9 @@ public final class DBUtils {
                 return new DBDValueError(e);
             }
 
-            if (nestedIndexes == null || curNestedIndex >= nestedIndexes.length) {
+            /*if (nestedIndexes == null || curNestedIndex >= nestedIndexes.length) {
                 break;
-            }
+            }*/
         }
 
         while (nestedIndexes != null && curNestedIndex < nestedIndexes.length) {
