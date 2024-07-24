@@ -23,6 +23,9 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.utils.ByteNumberFormat;
 
+/*
+ * A thread to send replication target table's data to a peer database.
+ */
 public class AltibaseReplicationSender extends AltibaseReplicationModule {
 
     private long gapSizeInByte;

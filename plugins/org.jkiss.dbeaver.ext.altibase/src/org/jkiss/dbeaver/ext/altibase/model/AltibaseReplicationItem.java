@@ -26,13 +26,19 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAlias;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
+/*
+ * ReplicationItem is a pair of replication tables consisting of local and remote. 
+ * Replication is possible not only at the table level but also at the table partition level.
+ * 
+ * A replication can have multiple replicationItems.
+ */
 public class AltibaseReplicationItem extends AltibaseObject<AltibaseReplication> implements DBSAlias {
 
     // Replication table name index
     private static final int TBL_SCHEMA     = 0;
     private static final int TBL_NAME       = 1;
-    private static final int TBL_PARTN      = 2;
-    private static final int REPL_TBL_CNT   = 3;
+    private static final int TBL_PARTN      = 2; // partition
+    private static final int REPL_TBL_CNT   = TBL_PARTN + 1;
 
     private String tableOid;
 
@@ -42,7 +48,7 @@ public class AltibaseReplicationItem extends AltibaseObject<AltibaseReplication>
     private boolean isPartitionedRepl;
     private long invalidMaxSn;
 
-    protected DBSObject localTable = null;
+    private DBSObject localTable = null;
 
     protected AltibaseReplicationItem(AltibaseReplication parent, JDBCResultSet resultSet) {
         super(parent, AltibaseUtils.getDottedName(

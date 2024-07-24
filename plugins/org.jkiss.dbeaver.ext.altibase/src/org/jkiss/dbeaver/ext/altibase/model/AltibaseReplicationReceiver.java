@@ -22,6 +22,9 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 
+/*
+ * A thread to receive replication target table's data from a peer database.
+ */
 public class AltibaseReplicationReceiver extends AltibaseReplicationModule {
 
     private long applyXsn = -1;
@@ -48,7 +51,7 @@ public class AltibaseReplicationReceiver extends AltibaseReplicationModule {
     @Override
     @Property(viewable = false, order = 1, hidden = true)
     public String getName() {
-        return "Sender";
+        return "Receiver";
     }
 
     @NotNull

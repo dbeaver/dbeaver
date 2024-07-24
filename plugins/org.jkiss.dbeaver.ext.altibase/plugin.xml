@@ -205,7 +205,9 @@
                         </folder>
                     </items> <!--</items>-->
                 </folder> <!-- Schemas -->
-                  <folder label="%tree.global_metadata.node.name" id="globalMetadataObjects" icon="#logical" description="Global metadata objects">
+                <folder id="globalMetadataObjects" 
+                 label="%tree.global_metadata.node.name" description="Global metadata objects"
+                 icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/database.png" >
                     <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="%tree.dataTypes.node.tip">
                         <items label="%tree.dataType.node.name" path="dataType" property="dataTypes" icon="#data_type"/>
                     </folder>
@@ -233,17 +235,27 @@
                         </items>
                     </folder>
                 </folder> <!-- Global metadata -->
-                <folder label="%tree.storage.node.name" id="storageManagement" icon="#storage" description="Storage management">
-                    <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseTablespace" label="%tree.tablespaces.node.name" icon="#tablespaces" description="Tablespaces">
-                        <items label="%tree.tablespace.node.name" path="tablespace" property="tablespaces" icon="#tablespace">
-                            <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseDataFile" label="%tree.files.node.name" icon="#files" description="Data Files">
-                                <items label="%tree.file.node.name" path="file" property="files" icon="#file"/>
+                <folder id="storageManagement" label="%tree.storage.node.name"  description="%tree.storage.node.name" 
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/database_type.png">
+                    <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseTablespace" 
+                    label="%tree.tablespaces.node.name"  description="%tree.tablespaces.node.name"
+                    icon="#folder">
+                        <items label="%tree.tablespace.node.name" path="tablespace" property="tablespaces" 
+                        icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/tablespace.png">
+                            <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseDataFile" 
+                            label="%tree.files.node.name"  description="%tree.files.node.name"
+                            navigable="false">
+                                <items label="%tree.file.node.name" path="file" property="files"/>
                             </folder>
                         </items>
                     </folder>
                 </folder>
-                <folder label="%tree.security.node.name" id="securityManagement" icon="#security" description="Security management">
-                    <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseUser" label="%tree.users.node.name" icon="#folder_user" description="Users">
+                <folder id="securityManagement" 
+                label="%tree.security.node.name" description="%tree.security.node.name"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/folder_key.png" >
+                    <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseUser" 
+                    label="%tree.users.node.name" description="%tree.users.node.name" 
+                    icon="#folder_user">
                         <items label="%tree.user.node.name" path="users" property="users" icon="#user">
                             <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibasePrivSystem" label="%tree.system_privileges.node.name" icon="#permissions" description="System Privileges" navigable="false">
                                 <items label="%tree.privilege.node.name" path="sysPrivs" property="systemPrivs" icon="#privilege"/>
@@ -256,14 +268,18 @@
                             </folder>
                         </items>
                     </folder>
-                    <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseRole" label="%tree.roles.node.name" icon="#folder_role" description="Roles">
-                        <items label="%tree.role.node.name" path="roles" property="roles" icon="#user_group">
+                    <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseRole" 
+                    label="%tree.roles.node.name" description="%tree.roles.node.name" 
+                    icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/group.png" >
+                        <items label="%tree.role.node.name" path="roles" property="roles" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/group.png">
                             <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibasePrivUser" label="%tree.users.node.name" icon="#folder_user" description="Users" navigable="false">
                                 <items label="%tree.user.node.name" path="userPrivs" property="userPrivs" icon="#user"/>
                             </folder>
+                            <!-- Altibase doesn't allow it. ERR-31402 : Cannot grant a role to another role.
                             <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibasePrivRole" label="%tree.roles.node.name" icon="#folder_role" description="Roles" navigable="false">
                                 <items label="%tree.role.node.name" path="roles" property="rolePrivs" icon="#user_group"/>
                             </folder>
+                            -->
                             <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibasePrivSystem" label="%tree.system_privileges.node.name" icon="#permissions" description="System Privileges" navigable="false">
                                 <items label="%tree.privilege.node.name" path="sysPrivs" property="systemPrivs" icon="#privilege"/>
                             </folder>

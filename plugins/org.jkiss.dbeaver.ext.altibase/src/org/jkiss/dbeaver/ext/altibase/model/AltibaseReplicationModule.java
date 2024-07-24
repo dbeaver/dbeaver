@@ -17,6 +17,9 @@
 
 package org.jkiss.dbeaver.ext.altibase.model;
 
+/*
+ * An abstract class for Replication sender and receiver.
+ */
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 
 import java.sql.SQLException;
