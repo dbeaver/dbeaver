@@ -81,7 +81,7 @@ public class ConfigImportWizardPageSqlWorkbenchConnections extends ConfigImportW
                 importXML(importData, reader);
             }
         } catch (Exception e) {
-            log.warn("Exception during to load connections", e);
+            log.warn("Exception during loading connections", e);
             setErrorMessage(e.getMessage());
         }
     }
