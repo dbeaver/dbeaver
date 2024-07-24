@@ -35,6 +35,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -45,6 +46,14 @@ public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCre
     public static final String CONFIG_FOLDER = "config233"; //$NON-NLS-1$
     public static final String CONFIG_FILE = "dbvis.xml"; //$NON-NLS-1$
     public static final String SSH_CONFIG_FILE = "sshservers.xml"; //$NON-NLS-1$
+
+    // substitution map for current version of DBvisualiser
+    public static final Map<String, String> dbvis2dbeaverDriverNames = new HashMap<>();
+    static {
+        dbvis2dbeaverDriverNames.put("H2 2.x Embedded", "H2 Embedded V.2"); //$NON-NLS-1$ $NON-NLS-2$
+        dbvis2dbeaverDriverNames.put("Oracle 9i", "Oracle"); //$NON-NLS-1$ $NON-NLS-2$
+        dbvis2dbeaverDriverNames.put("Db2 LUW", "Db2 for LUW"); //$NON-NLS-1$ $NON-NLS-2$
+    }
 
     @Override
     public ImportData create(
@@ -87,8 +96,8 @@ public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCre
                     String driverName = XMLUtils.getChildElementBody(dbElement, "Driver");
                     String user = XMLUtils.getChildElementBody(dbElement, "Userid");
                     String password = null;
-                    // String passwordEncoded = XMLUtils.getChildElementBody(dbElement, "Password");
                     String hostName = null, port = null, database = null;
+                    String type = XMLUtils.getChildElementBody(dbElement, "Type");
                     Element urlVarsElement = XMLUtils.getChildElement(dbElement, "UrlVariables");
                     if (urlVarsElement != null) {
                         Element driverElement = XMLUtils.getChildElement(urlVarsElement, "Driver");
@@ -107,15 +116,14 @@ public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCre
                                     database = varValue;
                                 }
                             }
-                            templateId = templateId.replace("_wrapper", "");
                             StringBuilder builder = new StringBuilder("databaseinfo/user/driverTypes/");
-                            builder.append(templateId)
+                            builder.append(type)
                                 .append("_")
                                 .append(driverId)
                                 .append("/")
                                 .append("driverType")
                                 .append("_")
-                                .append(templateId)
+                                .append(type)
                                 .append("_")
                                 .append(driverIdSegments[0])
                                 .append(".xml");
@@ -135,6 +143,8 @@ public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCre
                                     ImportDriverInfo driver = new ImportDriverInfo(identifier, name, sampleURL, driverDescriptor.getDriverClassName());
                                     adaptSampleUrl(driver);
                                     importData.addDriver(driver);
+                                } else {
+                                    log.error("Driver descriptor not found for: " + name);
                                 }
                             }
                             Element sshServers = XMLUtils.getChildElement(dbElement, "SshServers");
@@ -148,6 +158,9 @@ public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCre
                                 }
                             }
                         }
+                    }
+                    if (CommonUtils.isEmpty(url) && CommonUtils.isEmpty(hostName)) {
+                        hostName = "localhost"; //$NON-NLS-1$
                     }
                     if (!CommonUtils.isEmpty(alias) && !CommonUtils.isEmpty(driverName)
                         && (!CommonUtils.isEmpty(url) || !CommonUtils.isEmpty(hostName))) {
@@ -181,7 +194,11 @@ public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCre
                                 connectionInfo.addNetworkHandler(sshHandler);
                             }
                             importData.addConnection(connectionInfo);
+                        } else {
+                            log.error("Driver descriptor not found for: " + driverName);
                         }
+                    } else {
+                        log.error("Can not extract data for: " + driverName);
                     }
                 }
             }
@@ -199,6 +216,15 @@ public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCre
     @Override
     public String getConfigurationFolder() {
         return CONFIG_FOLDER;
+    }
+
+    @Override
+    protected String substituteDriverName(String driverName) {
+        String driversubstitutedName = dbvis2dbeaverDriverNames.get(driverName);
+        if (driversubstitutedName == null) {
+            driversubstitutedName = driverName;
+        }
+        return driversubstitutedName;
     }
 
 }

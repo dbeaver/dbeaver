@@ -136,4 +136,10 @@ public class DbvisConfigurationCreatorv7 extends DbvisAbstractConfigurationCreat
         return CONFIG_FOLDER;
     }
 
+    @Override
+    protected String substituteDriverName(String name) {
+        // not require to substitute
+        return name;
+    }
+
 }

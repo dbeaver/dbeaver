@@ -22,9 +22,11 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public abstract class DbvisAbstractConfigurationCreator implements DbvisConfigurationCreator {
 
@@ -67,15 +69,17 @@ public abstract class DbvisAbstractConfigurationCreator implements DbvisConfigur
     }
 
     public DriverDescriptor getDriverByName(String name) {
+        String driverName = substituteDriverName(name);
         final DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
-        Optional<DriverDescriptor> descriptor = registry.getDataSourceProviders().stream()
+        List<DriverDescriptor> descriptors = registry.getDataSourceProviders().stream()
             .flatMap(provider -> provider.getEnabledDrivers().stream())
-            .filter(d -> d.getName().equals(name))
+            .collect(Collectors.toList());
+        Optional<DriverDescriptor> descriptor = descriptors.stream()
+            .filter(d -> d.getName().equals(driverName))
             .findFirst();
         if (descriptor.isEmpty()) {
-            descriptor = registry.getDataSourceProviders().stream()
-                .flatMap(provider -> provider.getEnabledDrivers().stream())
-                .filter(d -> d.getName().contains(name))
+            descriptor = descriptors.stream()
+                .filter(d -> d.getName().contains(driverName))
                 .findFirst();
         }
         if (descriptor.isEmpty()) {
@@ -83,4 +87,6 @@ public abstract class DbvisAbstractConfigurationCreator implements DbvisConfigur
         }
         return descriptor.get();
     }
+
+    protected abstract String substituteDriverName(String name);
 }
