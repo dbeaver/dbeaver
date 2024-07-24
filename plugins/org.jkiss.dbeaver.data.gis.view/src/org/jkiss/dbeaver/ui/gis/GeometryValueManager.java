@@ -45,7 +45,7 @@ public class GeometryValueManager extends BaseValueManager {
         DBPDataKind dataKind = controller.getValueType().getDataKind();
         switch (controller.getEditType()) {
             case INLINE:
-                if (dataKind == DBPDataKind.OBJECT) {
+                if (dataKind == DBPDataKind.OBJECT || dataKind == DBPDataKind.STRING) {
                     return new StringInlineEditor(controller);
                 }
                 return null;
