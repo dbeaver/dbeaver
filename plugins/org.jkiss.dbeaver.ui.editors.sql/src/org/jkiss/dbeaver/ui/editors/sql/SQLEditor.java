@@ -5617,14 +5617,18 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         public IStatus runInUIThread(IProgressMonitor monitor) {
             tickCount++;
+            StyledText editorControl = getEditorControl();
+            if (editorControl == null || editorControl.isDisposed()) {
+                stopped = true;
+            }
+
             if (!stopped) {
                 Image image = DatabaseNavigatorTree.IMG_LOADING[tickCount % DatabaseNavigatorTree.IMG_LOADING.length];
                 setTitleImage(image);
                 schedule(100);
             } else {
                 if (oldCursor != null) {
-                    StyledText editorControl = getEditorControl();
-                    if (editorControl != null) {
+                    if (editorControl != null && !editorControl.isDisposed()) {
                         editorControl.setCursor(oldCursor);
                     }
                 }
