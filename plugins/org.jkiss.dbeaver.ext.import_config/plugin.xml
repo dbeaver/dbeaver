@@ -57,7 +57,7 @@
                 class="org.jkiss.dbeaver.ext.import_config.wizards.sqlworkbench.ConfigImportWizardSqlWorkbench"
                 id="org.jkiss.dbeaver.import_config.sqlworkbench"
                 name="MySQL Workbench"
-                icon="icons/mysql_workbench16.png">
+                icon="icons/mysql_workbench.png">
             <description>MySQL Workbench</description>
         </wizard>
     </extension>
