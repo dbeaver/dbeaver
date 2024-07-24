@@ -50,6 +50,59 @@ public class AltibaseReplicationSender extends AltibaseReplicationModule {
         gapSizeInByte = JDBCUtils.safeGetLong(resultSet, "GAP_SIZE_IN_BYTE");
     }
 
+    @NotNull
+    @Override
+    @Property(viewable = false, order = 1, hidden = true)
+    public String getName() {
+        return "Sender";
+    }
+
+    @Property(viewable = true, order = 2, formatter = ByteNumberFormat.class)
+    public long getGap() {
+        return gapSizeInByte;
+    }
+
+    @NotNull
+    @Property(viewable = true, order = 3)
+    public String getStartFlag() {
+        return startFlag;
+    }
+
+    @Property(viewable = true, order = 4)
+    public boolean getNetworkError() {
+        return networkError;
+    }
+
+    @Property(viewable = true, order = 5)
+    public long getXsn() {
+        return xsn;
+    }
+
+    @Property(viewable = true, order = 6)
+    public long getCommitXsn() {
+        return commitXsn;
+    }
+
+    @NotNull
+    @Property(viewable = true, order = 7)
+    public String getStatus() {
+        return status;
+    }
+
+    @Property(viewable = true, order = 8)
+    public long getReadLogCount() {
+        return readLogCount;
+    }
+
+    @Property(viewable = true, order = 9)
+    public long getSentLogCount() {
+        return sentLogCount;
+    }
+
+    public long getGapSizeInByte() {
+        return gapSizeInByte;
+    }
+
     private String getStartFlag(long value) {
         switch ((int) value) {
             case 0: return "Normal";
@@ -79,64 +132,5 @@ public class AltibaseReplicationSender extends AltibaseReplicationModule {
             case 9: return "Idle";
             default: return "Unknown";
         }
-    }
-
-    @NotNull
-    @Override
-    @Property(viewable = false, order = 1, hidden = true)
-    public String getName() {
-        return "Sender";
-    }
-
-    @NotNull
-    @Property(viewable = true, order = 2, formatter = ByteNumberFormat.class)
-    public long getGap() {
-        return gapSizeInByte;
-    }
-
-    @NotNull
-    @Property(viewable = true, order = 3)
-    public String getStartFlag() {
-        return startFlag;
-    }
-
-    @NotNull
-    @Property(viewable = true, order = 4)
-    public boolean getNetworkError() {
-        return networkError;
-    }
-
-    @NotNull
-    @Property(viewable = true, order = 5)
-    public long getXsn() {
-        return xsn;
-    }
-
-    @NotNull
-    @Property(viewable = true, order = 6)
-    public long getCommitXsn() {
-        return commitXsn;
-    }
-
-    @NotNull
-    @Property(viewable = true, order = 7)
-    public String getStatus() {
-        return status;
-    }
-
-    @NotNull
-    @Property(viewable = true, order = 8)
-    public long getReadLogCount() {
-        return readLogCount;
-    }
-
-    @NotNull
-    @Property(viewable = true, order = 9)
-    public long getSentLogCount() {
-        return sentLogCount;
-    }
-
-    public long getGapSizeInByte() {
-        return gapSizeInByte;
     }
 }

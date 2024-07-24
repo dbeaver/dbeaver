@@ -54,44 +54,36 @@ public class AltibaseReplicationReceiver extends AltibaseReplicationModule {
         return "Receiver";
     }
 
-    @NotNull
     @Property(viewable = true, order = 3)
     public long getApplyXsn() {
         return applyXsn;
     }
 
-    @NotNull
     @Property(viewable = true, order = 4)
     public long getInsertSuccessCount() {
         return insertSuccessCount;
     }
 
-    @NotNull
     @Property(viewable = true, order = 5)
     public long getInsertFailureCount() {
         return insertFailureCount;
     }
 
-
-    @NotNull
     @Property(viewable = true, order = 6)
     public long getUpdateSuccessCount() {
         return updateSuccessCount;
     }
 
-    @NotNull
     @Property(viewable = true, order = 7)
     public long getUpdateFailureCount() {
         return updateFailureCount;
     }
 
-    @NotNull
     @Property(viewable = true, order = 8)
     public long getDeleteSuccessCount() {
         return deleteSuccessCount;
     }
 
-    @NotNull
     @Property(viewable = true, order = 9)
     public long getDeleteFailureCount() {
         return deleteFailureCount;
