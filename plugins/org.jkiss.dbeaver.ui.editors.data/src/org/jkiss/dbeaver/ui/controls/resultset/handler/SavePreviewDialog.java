@@ -205,7 +205,7 @@ public class SavePreviewDialog extends DetailsViewDialog {
                 }
             }
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("Can't generalte SQL script", "Error generating SQL script from changes", e);
+            DBWorkbench.getPlatformUI().showError("Can't generate SQL script", "Error generating SQL script from changes", e);
         }
     }
 

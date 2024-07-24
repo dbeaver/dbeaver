@@ -37,7 +37,11 @@ public class PostgreSetting implements DBSObject, DBPSystemInfoObject {
         this.database = database;
         this.name = JDBCUtils.safeGetString(dbResult, "name");
         this.value = JDBCUtils.safeGetString(dbResult, "setting");
-        this.unit = JDBCUtils.safeGetString(dbResult, "unit");
+        if (database.isServerVersionAtLeast(8, 2)) {
+            this.unit = JDBCUtils.safeGetString(dbResult, "unit");
+        } else {
+            this.unit = null;
+        }
         this.description = JDBCUtils.safeGetString(dbResult, "short_desc");
     }
 

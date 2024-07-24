@@ -92,7 +92,7 @@ class CompareObjectsPageSettings extends ActiveWizardPage<CompareObjectsWizard> 
                     settings.setSkipSystemObjects(skipSystemObjects.getSelection());
                 }
             });
-            compareLazyProperties = UIUtils.createCheckbox(compareSettings, CompareUIMessages.compare_objects_page_settings_checkbox_compare_preporties, settings.isCompareLazyProperties());
+            compareLazyProperties = UIUtils.createCheckbox(compareSettings, CompareUIMessages.compare_objects_page_settings_checkbox_compare_properties, settings.isCompareLazyProperties());
             compareLazyProperties.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)

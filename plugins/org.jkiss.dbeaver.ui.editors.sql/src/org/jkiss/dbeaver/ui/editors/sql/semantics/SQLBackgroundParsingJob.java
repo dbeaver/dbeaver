@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserContext;
@@ -53,6 +54,7 @@ import java.util.ArrayDeque;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 public class SQLBackgroundParsingJob {
 
@@ -97,6 +99,9 @@ public class SQLBackgroundParsingJob {
     private volatile boolean isRunning = false;
     private volatile int knownRegionStart = 0;
     private volatile int knownRegionEnd = 0;
+
+    private static final Pattern anyWordPattern = Pattern.compile("^\\w+$");
+
     @NotNull
     private final DocumentLifecycleListener documentListener = new DocumentLifecycleListener();
 
@@ -147,7 +152,6 @@ public class SQLBackgroundParsingJob {
     }
     
     private final Set<Integer> knownIdentifierPartTerms = Set.of(
-        SQLStandardLexer.Period,
         SQLStandardLexer.Identifier,
         SQLStandardLexer.DelimitedIdentifier,
         SQLStandardLexer.Quotted
@@ -188,51 +192,69 @@ public class SQLBackgroundParsingJob {
     @NotNull
     private SQLQueryCompletionContext prepareCompletionContext(@NotNull SQLScriptItemAtOffset scriptItem, int offset) {
         int position = offset - scriptItem.offset;
-    
+
         SQLQueryModel model = scriptItem.item.getQueryModel();
         if (model != null) {
-            STMTreeNode syntaxNode = model.getSyntaxNode();
-            LSMInspections.SyntaxInspectionResult syntaxInspectionResult = LSMInspections.prepareAbstractSyntaxInspection(syntaxNode, position);
-            SQLQueryDataContext context = null;
-            SQLQueryNodeModel node = model.findNodeContaining(position);
-            SQLQueryLexicalScopeItem lexicalItem = null;
-            if (node != null) {
-                SQLQueryLexicalScope scope = node.findLexicalScope(position);
-                if (scope != null) {
-                    context = scope.getContext();
-                    lexicalItem = scope.findItem(position);
+            if (scriptItem.item.hasContextBoundaryAtLength() && position > scriptItem.item.length()) {
+                return SQLQueryCompletionContext.prepareOffquery(scriptItem.offset);
+            } else {
+                STMTreeNode syntaxNode = model.getSyntaxNode();
+                Interval realInterval = syntaxNode.getRealInterval();
+                if (scriptItem.item.getOriginalText().length() <= SQLQueryCompletionContext.getMaxKeywordLength()
+                    && anyWordPattern.matcher(scriptItem.item.getOriginalText()).matches()
+                ) {
+                    return SQLQueryCompletionContext.prepareOffquery(scriptItem.offset);
                 }
-                if (context == null) {
-                    context = node.getGivenDataContext();
-                }
-            }
-            
-            ArrayDeque<STMTreeTermNode> nameNodes = new ArrayDeque<>();
-            List<STMTreeTermNode> allTerms = LSMInspections.prepareTerms(syntaxNode);
-            int index = STMUtils.binarySearchByKey(allTerms, t -> t.getRealInterval().a, position, Comparator.comparingInt(k -> k));
-            if (index < 0) {
-                index = ~index - 1;
-            }
-            if (allTerms.get(index).getRealInterval().b == position  - 1) {
-                for (int i = index; i >= 0; i--) {
-                    STMTreeTermNode term = allTerms.get(i);
-                    if (knownIdentifierPartTerms.contains(term.symbol.getType())
-                        || (term.getStmParent() != null && term.getStmParent().getNodeKindId() == SQLStandardParser.RULE_nonReserved)
-                    ) {
-                        nameNodes.addFirst(term);
-                    } else {
-                        break;
+                LSMInspections.SyntaxInspectionResult syntaxInspectionResult = LSMInspections.prepareAbstractSyntaxInspection(syntaxNode, position);
+                SQLQueryDataContext context = null;
+                SQLQueryNodeModel node = model.findNodeContaining(position);
+                SQLQueryLexicalScopeItem lexicalItem = null;
+                if (node != null) {
+                    SQLQueryLexicalScope scope = node.findLexicalScope(position);
+                    if (scope != null) {
+                        context = scope.getContext();
+                        lexicalItem = scope.findItem(position);
+                    }
+                    if (context == null) {
+                        context = node.getGivenDataContext();
                     }
                 }
+
+                ArrayDeque<STMTreeTermNode> nameNodes = new ArrayDeque<>();
+                List<STMTreeTermNode> allTerms = LSMInspections.prepareTerms(syntaxNode);
+                int index = STMUtils.binarySearchByKey(allTerms, t -> t.getRealInterval().a, position, Comparator.comparingInt(k -> k));
+                if (index < 0) {
+                    index = ~index - 1;
+                }
+                if (index >= 0) {
+                    STMTreeTermNode immTerm = allTerms.get(index);
+                    if (immTerm.symbol.getType() == SQLStandardLexer.Period) {
+                        index--; // skip identifier separator immediately before the cursor
+                    }
+                    for (int i = index; i >= 0; i--) {
+                        STMTreeTermNode term = allTerms.get(i);
+                        if (knownIdentifierPartTerms.contains(term.symbol.getType())
+                                || (term.getStmParent() != null && term.getStmParent().getNodeKindId() == SQLStandardParser.RULE_nonReserved)
+                        ) {
+                            nameNodes.addFirst(term);
+                            i--;
+                            if (i < 0 || allTerms.get(i).symbol.getType() != SQLStandardLexer.Period) {
+                                break; // not followed by an identifier separator part
+                            }
+                        } else {
+                            break; // not an identifier part
+                        }
+                    }
+                }
+                return SQLQueryCompletionContext.prepare(
+                        scriptItem,
+                        this.editor.getExecutionContext(),
+                        syntaxInspectionResult,
+                        context,
+                        lexicalItem,
+                        nameNodes.toArray(STMTreeTermNode[]::new)
+                );
             }
-            return SQLQueryCompletionContext.prepare(
-                scriptItem,
-                this.editor.getExecutionContext(),
-                syntaxInspectionResult,
-                context,
-                lexicalItem,
-                nameNodes.toArray(STMTreeTermNode[]::new)
-            );
         } else {
             return SQLQueryCompletionContext.EMPTY;
         }
@@ -520,16 +542,17 @@ public class SQLBackgroundParsingJob {
                         element.getOriginalText(),
                         monitor
                     );
-                
+
                     if (queryModel != null) {
                         if (DEBUG) {
                             log.debug("registering script item @" + element.getOffset() + "+" + element.getLength());
                         }
                         SQLDocumentScriptItemSyntaxContext itemContext = this.context.registerScriptItemContext(
-                            element.getOriginalText(), 
+                            element.getOriginalText(),
                             queryModel,
                             element.getOffset(),
-                            element.getLength()
+                            element.getLength(),
+                            element instanceof SQLQuery queryElement && Boolean.TRUE.equals(queryElement.isEndsWithDelimiter())
                         );
                         itemContext.clear();
                         for (SQLQuerySymbolEntry entry : queryModel.getAllSymbols()) {

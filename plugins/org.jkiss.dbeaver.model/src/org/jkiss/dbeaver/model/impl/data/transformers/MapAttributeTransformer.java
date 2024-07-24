@@ -94,10 +94,14 @@ public class MapAttributeTransformer implements DBDAttributeTransformer {
                         if (valueAttributes == null) {
                             valueAttributes = new ArrayList<>();
                         }
-                        valueAttributes.add(
-                            new Pair<>(
-                                attr,
-                                valueList));
+                        Pair<DBSAttributeBase, Object[]> attributePair = new Pair<>(
+                            attr,
+                            valueList);
+                        if (valueAttributes.size() >= attr.getOrdinalPosition()) {
+                            valueAttributes.add(attr.getOrdinalPosition(), attributePair);
+                        } else {
+                            valueAttributes.add(attributePair);
+                        }
                     }
                 }
             }

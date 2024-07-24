@@ -1,4 +1,3 @@
-
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2024 DBeaver Corp and others
@@ -32,6 +31,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 
 public class CubridView extends GenericView
 {
+    private CubridUser owner;
     public CubridView(
             @NotNull GenericStructContainer container,
             @Nullable String tableName,
@@ -44,6 +44,11 @@ public class CubridView extends GenericView
                 this.setSystem(type.equals("YES"));
             }
         }
+        this.owner = (CubridUser) container;
+    }
+
+    public void setSchema(@NotNull CubridUser owner) {
+        this.owner = owner;
     }
 
     @NotNull
@@ -55,7 +60,7 @@ public class CubridView extends GenericView
     @NotNull
     public String getUniqueName() {
         if (getDataSource().getSupportMultiSchema()) {
-            return this.getSchema().getName() + "." + this.getName();
+            return this.getContainer() + "." + this.getName();
         } else {
             return this.getName();
         }
@@ -65,7 +70,7 @@ public class CubridView extends GenericView
     @Override
     @Property(viewable = true, editable = true, updatable = true, listProvider = OwnerListProvider.class, order = 2)
     public GenericSchema getSchema() {
-        return super.getSchema();
+        return owner;
     }
 
     @NotNull

@@ -306,9 +306,12 @@ public class SQLContextInformer
                 if (!ArrayUtils.isEmpty(containerNames)) {
                     DBSObjectContainer dsContainer = DBUtils.getAdapter(DBSObjectContainer.class, getExecutionContext().getDataSource());
                     if (dsContainer != null) {
-                        DBCExecutionContextDefaults contextDefaults = getExecutionContext().getContextDefaults();
+                        DBCExecutionContextDefaults<?,?> contextDefaults = getExecutionContext().getContextDefaults();
 
                         DBSObject childContainer = dsContainer.getChild(monitor, containerNames[0]);
+                        if (!DBStructUtils.isConnectedContainer(childContainer)) {
+                            childContainer = null;
+                        }
                         if (childContainer == null) {
                              if (contextDefaults != null) {
                                  if (contextDefaults.getDefaultCatalog() != null) {
@@ -316,8 +319,8 @@ public class SQLContextInformer
                                  }
                              }
                         }
-                        if (childContainer instanceof DBSObjectContainer) {
-                            container = (DBSObjectContainer) childContainer;
+                        if (childContainer instanceof DBSObjectContainer objectContainer) {
+                            container = objectContainer;
                         } else {
                             // Check in selected object
                             if (childContainer == null && structureAssistant != null) {

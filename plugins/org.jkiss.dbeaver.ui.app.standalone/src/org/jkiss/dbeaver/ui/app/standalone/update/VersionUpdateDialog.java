@@ -82,7 +82,7 @@ public class VersionUpdateDialog extends Dialog {
         this.newVersion = newVersion;
         this.showConfig = showConfig;
 
-        earlyAccessURL = Platform.getProduct().getProperty("earlyAccessURL");
+        earlyAccessURL = GeneralUtils.getProductEarlyAccessURL();
     }
 
     @NotNull

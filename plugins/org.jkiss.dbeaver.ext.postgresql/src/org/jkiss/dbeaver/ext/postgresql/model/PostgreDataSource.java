@@ -449,11 +449,14 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                 serverVersion = "";
             }
 
-            try {
-                supportsEnumTable = PostgreUtils.isMetaObjectExists(session, "pg_enum", "*");
-            } catch (Exception e) {
-                log.debug("Error reading pg_enum " + e.getMessage());
-                supportsEnumTable = false;
+
+            if (isServerVersionAtLeast(12, 0)) {
+                try {
+                    supportsEnumTable = PostgreUtils.isMetaObjectExists(session, "pg_enum", "*");
+                } catch (Exception e) {
+                    log.debug("Error reading pg_enum " + e.getMessage());
+                    supportsEnumTable = false;
+                }
             }
             try {
                 supportsReltypeColumn = PostgreUtils.isMetaObjectExists(session, "pg_class", "reltype");
@@ -495,7 +498,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     @NotNull
     @Override
-    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) {
+    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) {
         return PostgreDatabase.class;
     }
 
