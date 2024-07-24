@@ -55,7 +55,6 @@ public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements
     public static final Log log = Log.getLog(ResultSetHandlerCopySpecial.class);
     public static final String CMD_COPY_SPECIAL = IActionConstants.CMD_COPY_SPECIAL;
     public static final String CMD_COPY_SPECIAL_LAST = IActionConstants.CMD_COPY_SPECIAL_LAST;
-    //private AdvancedCopyConfigDialog lastConfigDialog = null;
     private static ResultSetCopySettings copySettingsLast = null;
 
 
