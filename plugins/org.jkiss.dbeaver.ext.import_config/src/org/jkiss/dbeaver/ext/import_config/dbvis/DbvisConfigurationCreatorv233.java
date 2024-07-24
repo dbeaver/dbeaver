@@ -91,6 +91,7 @@ public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCre
             Element databasesElement = XMLUtils.getChildElement(configDocument.getDocumentElement(), "Databases");
             if (databasesElement != null) {
                 for (Element dbElement : XMLUtils.getChildElementList(databasesElement, "Database")) {
+                    String id = dbElement.getAttribute("id");
                     String alias = XMLUtils.getChildElementBody(dbElement, "Alias");
                     String url = XMLUtils.getChildElementBody(dbElement, "Url");
                     String driverName = XMLUtils.getChildElementBody(dbElement, "Driver");
@@ -99,6 +100,7 @@ public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCre
                     String hostName = null, port = null, database = null;
                     String type = XMLUtils.getChildElementBody(dbElement, "Type");
                     Element urlVarsElement = XMLUtils.getChildElement(dbElement, "UrlVariables");
+                    ImportDriverInfo driver = null;
                     if (urlVarsElement != null) {
                         Element driverElement = XMLUtils.getChildElement(urlVarsElement, "Driver");
                         if (driverElement != null) {
@@ -137,13 +139,12 @@ public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCre
                             String name = XMLUtils.getChildElementBody(driverTypeDocumentElement, "Label");
                             String sampleURL = XMLUtils.getChildElementBody(driverTypeDocumentElement, "URLFormat");
                             String identifier = XMLUtils.getChildElementBody(driverTypeDocumentElement, "Identifier");
+                            
                             if (!CommonUtils.isEmpty(name) && !CommonUtils.isEmpty(sampleURL) ) {
                                 DriverDescriptor driverDescriptor = getDriverByName(name);
                                 if (driverDescriptor != null) {
-                                    driverName = driverDescriptor.getName();
-                                    ImportDriverInfo driver = new ImportDriverInfo(identifier, driverName, sampleURL, driverDescriptor.getDriverClassName());
+                                    driver = new ImportDriverInfo(identifier, driverDescriptor.getName(), sampleURL, driverDescriptor.getDriverClassName());
                                     adaptSampleUrl(driver);
-                                    importData.addDriver(driver);
                                 } else {
                                     log.error("Driver descriptor not found for: " + driverName);
                                 }
@@ -165,7 +166,6 @@ public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCre
                     }
                     if (!CommonUtils.isEmpty(alias) && !CommonUtils.isEmpty(driverName)
                         && (!CommonUtils.isEmpty(url) || !CommonUtils.isEmpty(hostName))) {
-                        ImportDriverInfo driver = importData.getDriver(driverName);
                         if (driver != null) {
                             ImportConnectionInfo connectionInfo = new ImportConnectionInfo(
                                 driver,
