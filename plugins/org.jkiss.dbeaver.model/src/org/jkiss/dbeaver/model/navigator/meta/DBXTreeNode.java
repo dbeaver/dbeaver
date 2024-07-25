@@ -369,4 +369,8 @@ public abstract class DBXTreeNode
             children.remove(item);
         }
     }
+
+    public static boolean hasNonFolderNode(List<DBXTreeNode> list) {
+        return list.stream().anyMatch(dbxTreeNode -> !(dbxTreeNode instanceof DBXTreeFolder));
+    }
 }

@@ -156,8 +156,12 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                 activeDatabaseName = url.substring(divPos + 1, lastPos);
             }
         }
-        if (CommonUtils.isEmpty(activeDatabaseName) && CommonUtils.isEmpty(configuration.getUserName())) {
-            activeDatabaseName = PostgreConstants.DEFAULT_DATABASE;
+        if (CommonUtils.isEmpty(activeDatabaseName)) {
+            if (!CommonUtils.isEmpty(configuration.getUserName())) {
+                activeDatabaseName = configuration.getUserName();
+            } else {
+                activeDatabaseName = PostgreConstants.DEFAULT_DATABASE;
+            }
         }
 
         databaseCache = new DatabaseCache();
@@ -498,7 +502,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     @NotNull
     @Override
-    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) {
+    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) {
         return PostgreDatabase.class;
     }
 

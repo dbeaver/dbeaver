@@ -128,7 +128,7 @@ public class ClickhouseSchema extends GenericSchema implements DBPObjectStatisti
 
     @NotNull
     @Override
-    public Class<? extends DBSEntity> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSEntity> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
         return ClickhouseTable.class;
     }
 }
