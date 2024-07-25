@@ -25,8 +25,8 @@ import java.sql.Connection;
 
 public interface JDBCDatabaseBackupHandler {
     void doBackup(
-            @NotNull Connection connection,
-            int currentSchemaVersion,
-            @NotNull InternalDatabaseConfig databaseConfig
+        @NotNull Connection connection,
+        int currentSchemaVersion,
+        @NotNull InternalDatabaseConfig databaseConfig
     ) throws DBException, IOException;
 }
