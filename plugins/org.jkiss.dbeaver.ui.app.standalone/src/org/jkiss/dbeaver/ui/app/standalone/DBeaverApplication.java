@@ -203,7 +203,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                         return IApplication.EXIT_OK;
                     }
                 }
-                
+
                 if (isExclusiveMode()) {
                     markLocationReadOnly(instanceLoc);
                 } else {
@@ -891,5 +891,4 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         }
 
     }
-
 }
