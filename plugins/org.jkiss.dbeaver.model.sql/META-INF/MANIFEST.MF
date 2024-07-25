@@ -24,7 +24,6 @@ Export-Package: org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.model.sql.parser.tokens,
  org.jkiss.dbeaver.model.sql.parser.tokens.predicates,
  org.jkiss.dbeaver.model.sql.registry,
- org.jkiss.dbeaver.model.sql.schema,
  org.jkiss.dbeaver.model.sql.semantics,
  org.jkiss.dbeaver.model.sql.semantics.completion,
  org.jkiss.dbeaver.model.sql.semantics.context,
@@ -38,14 +37,12 @@ Export-Package: org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.model.text.parser,
  org.jkiss.dbeaver.model.text.parser.rules
 Bundle-ClassPath: .
-Require-Bundle: org.eclipse.equinox.security,
- org.eclipse.core.runtime,
+Require-Bundle: org.eclipse.core.runtime,
  com.google.gson,
  org.eclipse.text;visibility:=reexport,
  org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.model.lsm,
- org.jkiss.bundle.antlr4,
- org.jkiss.dbeaver.model.jdbc
+ org.jkiss.bundle.antlr4
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.model.sql
 Service-Component: META-INF/component-sql-dialect-registry.xml
