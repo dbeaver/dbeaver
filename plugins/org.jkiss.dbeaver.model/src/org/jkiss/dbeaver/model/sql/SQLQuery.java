@@ -25,7 +25,12 @@ import net.sf.jsqlparser.statement.Commit;
 import net.sf.jsqlparser.statement.RollbackStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.create.function.CreateFunction;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
+import net.sf.jsqlparser.statement.create.procedure.CreateProcedure;
+import net.sf.jsqlparser.statement.create.schema.CreateSchema;
+import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
+import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
@@ -510,6 +515,30 @@ public class SQLQuery implements SQLScriptElement {
             ((Drop) statement).getName() != null && ((Drop) statement).getType().equalsIgnoreCase("table");
     }
 
+    public boolean isModifyingSelect() {
+        if (getType() == SQLQueryType.UNKNOWN) {
+            return false;
+        }
+        if (statement instanceof Select) {
+            SelectBody selectBody = ((Select) statement).getSelectBody();
+            if (selectBody instanceof PlainSelect plainSelectBody) {
+                return plainSelectBody.isForUpdate() || plainSelectBody.getIntoTables() != null;
+            }
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    public boolean isMutatingQuery() {
+        parseQuery();
+        return statement != null && (statement instanceof Drop || statement instanceof Delete || statement instanceof Update ||
+            statement instanceof Insert || statement instanceof CreateTable || statement instanceof CreateIndex ||
+            statement instanceof CreateView || statement instanceof CreateFunction || statement instanceof CreateProcedure ||
+            statement instanceof CreateSchema || statement instanceof CreateSequence || statement instanceof CreateSynonym ||
+            this.isModifyingSelect());
+    }
+
     private static class SingleTableMeta implements DBCEntityMetaData {
 
         private final String catalogName;
@@ -567,25 +596,6 @@ public class SQLQuery implements SQLScriptElement {
             return CommonUtils.equalObjects(catalogName, md2.catalogName) &&
                 CommonUtils.equalObjects(schemaName, md2.schemaName) &&
                 CommonUtils.equalObjects(tableName, md2.tableName);
-        }
-    }
-
-    public boolean isModifiyng() {
-        if (getType() == SQLQueryType.UNKNOWN) {
-            return false;
-        }
-        if (statement instanceof Select) {
-            SelectBody selectBody = ((Select) statement).getSelectBody();
-            if (selectBody instanceof PlainSelect) {
-                if (((PlainSelect) selectBody).isForUpdate() ||
-                    ((PlainSelect) selectBody).getIntoTables() != null)
-                {
-                    return true;
-                }
-            }
-            return false;
-        } else {
-            return true;
         }
     }
 
