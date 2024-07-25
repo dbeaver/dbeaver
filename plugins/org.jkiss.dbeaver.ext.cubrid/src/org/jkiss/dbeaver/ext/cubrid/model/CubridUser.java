@@ -194,7 +194,7 @@ public class CubridUser extends GenericSchema
                 try (JDBCResultSet result = dbStat.executeQuery()) {
                     if (result.next()) {
                         dataType = JDBCUtils.safeGetString(result, "Type");
-                        autoIncrement = JDBCUtils.safeGetString(result, "Extra").equals("auto_increment");
+                        autoIncrement = CubridConstants.AUTO_INCREMENT.equals(JDBCUtils.safeGetString(result, "Extra"));
                     }
                 }
             }
