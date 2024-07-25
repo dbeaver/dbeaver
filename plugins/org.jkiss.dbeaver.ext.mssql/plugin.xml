@@ -185,7 +185,7 @@
                     <replace provider="mssql" driver="mssql_jdbc_legacy"/>
 
                     <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[12.7.0.jre11-preview]" bundle="!drivers.mssql.new"/>
-                    <file type="lib" path="maven:/com.microsoft.sqlserver:mssql-jdbc_auth:RELEASE[12.7.0.jre11-preview.x64]" os="win32" arch="x86_64" optional="true" bundle="!drivers.mssql.new"/>
+                    <file type="lib" path="maven:/com.microsoft.sqlserver:mssql-jdbc_auth:RELEASE[12.7.0.x64-preview]" os="win32" arch="x86_64" optional="true" bundle="!drivers.mssql.new"/>
                     <file type="license" path="https://raw.githubusercontent.com/microsoft/sql-server-samples/master/license.txt" bundle="!drivers.mssql.new"/>
 
                     <file type="jar" path="drivers/mssql/new" bundle="drivers.mssql.new"/>
