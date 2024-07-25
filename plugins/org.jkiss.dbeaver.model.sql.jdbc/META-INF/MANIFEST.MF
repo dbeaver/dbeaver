@@ -7,10 +7,9 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Release-Date: 20240805
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
-Export-Package: 
-Bundle-ClassPath: org.jkiss.dbeaver.model.sql.schema,
- org.jkiss.dbeaver.model.sql.task,
- .
+Export-Package: org.jkiss.dbeaver.model.sql.schema,
+ org.jkiss.dbeaver.model.sql.task
+Bundle-ClassPath: .
 Require-Bundle: org.jkiss.dbeaver.model.jdbc,
  org.jkiss.dbeaver.model.sql
 Automatic-Module-Name: org.jkiss.dbeaver.model.sql.jdbc
