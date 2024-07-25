@@ -186,6 +186,7 @@ public class CubridUser extends GenericSchema
                 throws SQLException, DBException {
             String columnName = JDBCUtils.safeGetString(dbResult, "attr_name");
             String dataType = JDBCUtils.safeGetString(dbResult, "data_type");
+            String showDataType = null;
             boolean autoIncrement = false;
             String tableName = table.isSystem() ? table.getName() : ((CubridDataSource) getDataSource()).getMetaModel().getTableOrViewName(table);
             String sql = "show columns from " + DBUtils.getQuotedIdentifier(getDataSource(), tableName) + " where Field = ?";
@@ -193,12 +194,12 @@ public class CubridUser extends GenericSchema
                 dbStat.setString(1, columnName);
                 try (JDBCResultSet result = dbStat.executeQuery()) {
                     if (result.next()) {
-                        dataType = JDBCUtils.safeGetString(result, "Type");
+                        showDataType = JDBCUtils.safeGetString(result, "Type");
                         autoIncrement = JDBCUtils.safeGetString(result, "Extra").equals("auto_increment");
                     }
                 }
             }
-            return new CubridTableColumn(table, columnName, dataType, autoIncrement, dbResult);
+            return new CubridTableColumn(table, columnName, showDataType == null ? dataType : showDataType, autoIncrement, dbResult);
         }
     }
 
