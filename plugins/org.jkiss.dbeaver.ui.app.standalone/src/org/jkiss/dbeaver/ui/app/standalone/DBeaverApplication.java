@@ -203,7 +203,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                         return IApplication.EXIT_OK;
                     }
                 }
-
+                
                 if (isExclusiveMode()) {
                     markLocationReadOnly(instanceLoc);
                 } else {
@@ -218,6 +218,22 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         }
         // Register core components
         initializeApplicationServices();
+        // Register product license list
+        initProductLicenseList();
+        // Custom parameters
+        try {
+            headlessMode = true;
+            if (DBeaverCommandLine.handleCustomParameters(commandLine)) {
+                return IApplication.EXIT_OK;
+            }
+        } finally {
+            headlessMode = false;
+        }
+
+        if (isExclusiveMode()) {
+            // In shared mode we mustn't run UI
+            return IApplication.EXIT_OK;
+        }
 
         final Runtime runtime = Runtime.getRuntime();
 
@@ -248,21 +264,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         DBWorkbench.getPlatform();
 
         initializeApplication();
-
-        // Custom parameters
-        try {
-            headlessMode = true;
-            if (DBeaverCommandLine.handleCustomParameters(commandLine)) {
-                return IApplication.EXIT_OK;
-            }
-        } finally {
-            headlessMode = false;
-        }
-
-        if (isExclusiveMode()) {
-            // In shared mode we mustn't run UI
-            return IApplication.EXIT_OK;
-        }
 
         // Run instance server
         try {
@@ -547,10 +548,13 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     }
 
     /**
-     * May be overrided in implementors
+     * May be override in implementors
      */
     protected void initializeApplication() {
 
+    }
+
+    protected void initProductLicenseList() {
     }
 
     private Display getDisplay() {
@@ -887,4 +891,5 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         }
 
     }
+
 }
