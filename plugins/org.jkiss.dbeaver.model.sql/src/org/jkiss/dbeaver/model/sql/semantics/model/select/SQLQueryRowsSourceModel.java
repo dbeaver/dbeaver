@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model.select;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelContext;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
@@ -35,12 +35,12 @@ public abstract class SQLQueryRowsSourceModel extends SQLQueryModelContent {
     @Nullable
     private SQLQueryDataContext resultDataContext = null;
 
-    public SQLQueryRowsSourceModel(@NotNull SQLQueryModelContext context, @NotNull STMTreeNode syntaxNode, @Nullable SQLQueryNodeModel... subnodes) {
-        super(context, syntaxNode.getRealInterval(), syntaxNode, subnodes);
+    public SQLQueryRowsSourceModel(@NotNull STMTreeNode syntaxNode, @Nullable SQLQueryNodeModel... subnodes) {
+        super(syntaxNode.getRealInterval(), syntaxNode, subnodes);
     }
 
-    public SQLQueryRowsSourceModel(SQLQueryModelContext context, @NotNull Interval region, @NotNull STMTreeNode syntaxNode, @Nullable SQLQueryNodeModel ... subnodes) {
-        super(context, region, syntaxNode, subnodes);
+    public SQLQueryRowsSourceModel(@NotNull Interval region, @NotNull STMTreeNode syntaxNode, @Nullable SQLQueryNodeModel ... subnodes) {
+        super(region, syntaxNode, subnodes);
     }
 
     /**

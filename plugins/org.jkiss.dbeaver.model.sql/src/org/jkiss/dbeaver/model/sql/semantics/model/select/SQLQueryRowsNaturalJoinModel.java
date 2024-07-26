@@ -41,7 +41,6 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
     private final SQLQueryLexicalScope conditionScope;
 
     public SQLQueryRowsNaturalJoinModel(
-        @NotNull SQLQueryModelContext context,
         @NotNull Interval range,
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryRowsSourceModel left,
@@ -49,7 +48,7 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
         @NotNull SQLQueryValueExpression condition,
         @NotNull SQLQueryLexicalScope conditionScope
     ) {
-        super(context, range, syntaxNode, left, right);
+        super(range, syntaxNode, left, right);
         super.registerSubnode(condition);
         this.condition = condition;
         this.conditionScope = conditionScope;
@@ -59,14 +58,13 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
     }
 
     public SQLQueryRowsNaturalJoinModel(
-        @NotNull SQLQueryModelContext context,
         @NotNull Interval range,
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryRowsSourceModel left,
         @NotNull SQLQueryRowsSourceModel right,
         @Nullable List<SQLQuerySymbolEntry> columsToJoin
     ) {
-        super(context, range, syntaxNode, left, right);
+        super(range, syntaxNode, left, right);
         this.condition = null;
         this.conditionScope = null;
         this.columsToJoin = columsToJoin;

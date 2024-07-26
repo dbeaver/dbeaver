@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model.select;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelContext;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -36,28 +37,22 @@ public class SQLQueryRowsCteModel extends SQLQueryRowsSourceModel {
 
     private final boolean isRecursive;
     @NotNull
-    private final List<SQLQueryRowsCteSubqueryModel> subqueries = new ArrayList<>();
+    private final List<SQLQueryRowsCteSubqueryModel> subqueries;
     @NotNull
     private final SQLQueryRowsSourceModel resultQuery;
 
-    public SQLQueryRowsCteModel(SQLQueryModelContext context, @NotNull STMTreeNode syntaxNode, boolean isRecursive, @NotNull SQLQueryRowsSourceModel resultQuery) {
-        super(context, syntaxNode, resultQuery);
+    public SQLQueryRowsCteModel(
+        @NotNull STMTreeNode syntaxNode,
+        boolean isRecursive,
+        @NotNull List<SQLQueryRowsCteSubqueryModel> subqueries,
+        @NotNull SQLQueryRowsSourceModel resultQuery
+    ) {
+        super(syntaxNode, resultQuery);
         this.isRecursive = isRecursive;
         this.resultQuery = resultQuery;
-    }
 
-    /**
-     * Add CTE subquery to the CTE model
-     */
-    public void addSubquery(
-        @NotNull STMTreeNode syntaxNode,
-        @NotNull SQLQuerySymbolEntry subqueryName,
-        @NotNull List<SQLQuerySymbolEntry> columnNames,
-        @NotNull SQLQueryRowsSourceModel source
-    ) {
-        SQLQueryRowsCteSubqueryModel subquery = new SQLQueryRowsCteSubqueryModel(getContext(), syntaxNode, subqueryName, columnNames, source);
-        this.subqueries.add(subquery);
-        super.registerSubnode(subquery);
+        this.subqueries = List.copyOf(subqueries);
+        this.subqueries.forEach(super::registerSubnode);
     }
 
     /**
@@ -85,14 +80,14 @@ public class SQLQueryRowsCteModel extends SQLQueryRowsSourceModel {
             // TODO consider subqueries topological sorting according to their interdependencies, also consider recursive dependency 
             
             for (SQLQueryRowsCteSubqueryModel subquery : this.subqueries) { // bind all the query names at first
-                subquery.propagateContext(context, statistics);                
+                subquery.propagateContext(context, statistics);
                 aggregatedContext = aggregatedContext.combine(
                     aggregatedContext.hideSources().extendWithTableAlias(subquery.subqueryName.getSymbol(), subquery)
                 );
             }
             
             for (SQLQueryRowsCteSubqueryModel subquery : this.subqueries) { // then resolve subqueries themselves
-                if (subquery.subqueryName.isNotClassified()) {                    
+                if (subquery.subqueryName.isNotClassified()) {
                     // TODO but column names are not backwards-visible still 
                     context = subquery.source.propagateContext(aggregatedContext, statistics).hideSources();
                     subquery.propagateContext(context, statistics);
