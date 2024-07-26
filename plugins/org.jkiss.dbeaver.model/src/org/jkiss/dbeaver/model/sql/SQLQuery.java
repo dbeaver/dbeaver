@@ -515,7 +515,7 @@ public class SQLQuery implements SQLScriptElement {
             ((Drop) statement).getName() != null && ((Drop) statement).getType().equalsIgnoreCase("table");
     }
 
-    public boolean isModifyingSelect() {
+    public boolean isModifying() {
         if (getType() == SQLQueryType.UNKNOWN) {
             return false;
         }
@@ -528,15 +528,6 @@ public class SQLQuery implements SQLScriptElement {
         } else {
             return true;
         }
-    }
-
-    public boolean isMutatingQuery() {
-        parseQuery();
-        return statement != null && (statement instanceof Drop || statement instanceof Delete || statement instanceof Update ||
-            statement instanceof Insert || statement instanceof CreateTable || statement instanceof CreateIndex ||
-            statement instanceof CreateView || statement instanceof CreateFunction || statement instanceof CreateProcedure ||
-            statement instanceof CreateSchema || statement instanceof CreateSequence || statement instanceof CreateSynonym ||
-            this.isModifyingSelect());
     }
 
     private static class SingleTableMeta implements DBCEntityMetaData {

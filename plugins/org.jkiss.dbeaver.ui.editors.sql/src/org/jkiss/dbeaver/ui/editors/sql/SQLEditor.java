@@ -2662,7 +2662,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         if (dataSourceContainer.isConnectionReadOnly() &&
-            queries.stream().anyMatch(q -> (q instanceof SQLQuery sqlQuery && sqlQuery.isMutatingQuery()))
+            queries.stream().anyMatch(q -> (q instanceof SQLQuery sqlQuery && sqlQuery.isModifying()))
         ) {
             DBWorkbench.getPlatformUI().showError(
                 SQLEditorMessages.editors_sql_error_cant_execute_query_title,
@@ -2677,8 +2677,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         final boolean isSingleQuery = !forceScript && (queries.size() == 1);
-        if (isSingleQuery && queries.get(0) instanceof SQLQuery) {
-            SQLQuery query = (SQLQuery) queries.get(0);
+        if (isSingleQuery && queries.get(0) instanceof SQLQuery query) {
             boolean isDropTable = query.isDropTableDangerous();
             if (query.isDeleteUpdateDangerous() || isDropTable) {
                 String targetName = "multiple tables";
@@ -2690,8 +2689,8 @@ public class SQLEditor extends SQLEditorBase implements
                     ConfirmationDialog.WARNING, isDropTable ? SQLPreferenceConstants.CONFIRM_DROP_SQL : SQLPreferenceConstants.CONFIRM_DANGER_SQL,
                     ConfirmationDialog.CONFIRM,
                     query.getType().name(),
-                    targetName) != IDialogConstants.OK_ID)
-                {
+                    targetName) != IDialogConstants.OK_ID
+                ) {
                     return false;
                 }
             }
@@ -2700,8 +2699,8 @@ public class SQLEditor extends SQLEditorBase implements
                 getSite().getShell(),
                 ConfirmationDialog.WARNING, SQLPreferenceConstants.CONFIRM_MASS_PARALLEL_SQL,
                 ConfirmationDialog.CONFIRM,
-                queries.size()) != IDialogConstants.OK_ID)
-            {
+                queries.size()) != IDialogConstants.OK_ID
+            ) {
                 return false;
             }
         }
@@ -4135,7 +4134,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
             List<String> features = new ArrayList<>(3);
             features.add(FEATURE_DATA_SELECT);
-            if (query instanceof SQLQuery && ((SQLQuery) query).isModifyingSelect()) {
+            if (query instanceof SQLQuery && ((SQLQuery) query).isModifying()) {
                 features.add(FEATURE_DATA_MODIFIED_ON_REFRESH);
             }
             features.add(FEATURE_DATA_COUNT);
