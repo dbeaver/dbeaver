@@ -497,7 +497,7 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 
 	@NotNull
     @Override
-	public Class<? extends ExasolSchema> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException
+	public Class<? extends ExasolSchema> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException
 	{
 		return ExasolSchema.class;
 	}

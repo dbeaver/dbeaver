@@ -20,9 +20,14 @@
 <plugin>
 
     <extension point="org.eclipse.ui.commands">
-        <command id="org.jkiss.dbeaver.test.object.validate" name="Node - Validate"/>
-        <command id="org.jkiss.dbeaver.test.connection.validate" name="Connection - Validate"/>
-        <command id="org.jkiss.dbeaver.test.dialog" name="Show dialog"/>
+        <category id="org.jkiss.dbeaver.test" name="Test" description="Tools for testing"/>
+
+        <command id="org.jkiss.dbeaver.test.object.validate" name="Node - Validate" categoryId="org.jkiss.dbeaver.test"/>
+        <command id="org.jkiss.dbeaver.test.connection.validate" name="Connection - Validate" categoryId="org.jkiss.dbeaver.test"/>
+        <command id="org.jkiss.dbeaver.test.dialog" name="Show dialog" categoryId="org.jkiss.dbeaver.test"/>
+        <command id="org.jkiss.dbeaver.test.showNotification" name="Show notification" categoryId="org.jkiss.dbeaver.test"/>
+        <command id="org.jkiss.dbeaver.test.showIcons" name="Show icons" categoryId="org.jkiss.dbeaver.test"/>
+
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
@@ -40,8 +45,9 @@
                 </with>
             </activeWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.test.dialog" class="org.jkiss.dbeaver.ext.test.handlers.HandlerDialog">
-        </handler>
+        <handler commandId="org.jkiss.dbeaver.test.dialog" class="org.jkiss.dbeaver.ext.test.handlers.HandlerDialog"/>
+        <handler commandId="org.jkiss.dbeaver.test.showNotification" class="org.jkiss.dbeaver.ext.test.handlers.ShowNotificationHandler"/>
+        <handler commandId="org.jkiss.dbeaver.test.showIcons" class="org.jkiss.dbeaver.ext.test.handlers.ShowIconsHandler"/>
    </extension>
 
    <extension point="org.eclipse.ui.menus">
@@ -55,14 +61,18 @@
             </command>
             <command commandId="org.jkiss.dbeaver.test.connection.validate"/>
         </menuContribution>
-       <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
-            <menu id="test" label="Test">
+       <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=help">
+            <menu id="test" label="&amp;Test">
                 <command commandId="org.jkiss.dbeaver.test.dialog"/>
+                <command commandId="org.jkiss.dbeaver.test.showNotification"/>
+                <command commandId="org.jkiss.dbeaver.test.showIcons"/>
+
+                <separator visible="true"/>
+                <command commandId="org.eclipse.ui.views.showView">
+                    <parameter name="org.eclipse.ui.views.showView.viewId" value="org.eclipse.swt.tools.views.SpyView"/>
+                </command>
             </menu>
        </menuContribution>
-
-
    </extension>
-
 
 </plugin>

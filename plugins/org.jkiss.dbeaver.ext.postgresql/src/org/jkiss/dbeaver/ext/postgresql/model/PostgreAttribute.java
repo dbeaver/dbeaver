@@ -203,9 +203,13 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 
         setPersisted(true);
 
-        if (serverType.supportsSequences()) {
+        if (supportsDependencies() && serverType.supportsSequences()) {
             this.depObjectId = JDBCUtils.safeGetLong(dbResult, "objid"); // ID of object which has dependency with this column
         }
+    }
+
+    protected boolean supportsDependencies() {
+        return false;
     }
 
     @NotNull
