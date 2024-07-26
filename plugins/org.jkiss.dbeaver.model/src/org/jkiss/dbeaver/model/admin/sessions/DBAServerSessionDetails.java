@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import java.util.List;
 
 /**
- * Server session additiona details provider
+ * Server session additional details provider
  */
 public interface DBAServerSessionDetails {
 

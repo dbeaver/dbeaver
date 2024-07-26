@@ -136,4 +136,17 @@ public interface DBPApplication {
         return false;
     }
 
+    /**
+     * Whether the user is allowed to switch workspaces or the default workspace is enforced
+     */
+    default boolean isWorkspaceSwitchingAllowed() {
+        return true;
+    }
+
+    /**
+     * Whether the statistics collection is enforced or can be disabled by the user
+     */
+    default boolean isStatisticsCollectionRequired() {
+        return false;
+    }
 }

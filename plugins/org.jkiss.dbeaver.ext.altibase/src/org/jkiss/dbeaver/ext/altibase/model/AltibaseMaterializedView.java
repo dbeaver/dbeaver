@@ -17,13 +17,13 @@
 package org.jkiss.dbeaver.ext.altibase.model;
 
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
-import org.jkiss.dbeaver.ext.generic.model.GenericView;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 
-public class AltibaseMaterializedView extends GenericView {
+public class AltibaseMaterializedView extends AltibaseViewAbs {
 
-    public AltibaseMaterializedView(GenericStructContainer container, String tableName, String tableType, 
+    public AltibaseMaterializedView(JDBCSession session, GenericStructContainer container, String tableName, String tableType, 
             JDBCResultSet dbResult) {
-        super(container, tableName, tableType, dbResult);
+        super(session, container, tableName, tableType, dbResult);
     }
 }

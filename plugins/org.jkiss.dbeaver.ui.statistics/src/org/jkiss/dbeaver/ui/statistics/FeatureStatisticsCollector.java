@@ -98,9 +98,6 @@ public class FeatureStatisticsCollector implements DBRFeatureTracker {
     }
 
     FeatureStatisticsCollector() {
-        if (UIStatisticsActivator.isTrackingEnabled()) {
-            startMonitor();
-        }
     }
 
     void startMonitor() {
@@ -191,6 +188,7 @@ public class FeatureStatisticsCollector implements DBRFeatureTracker {
     @Override
     public void startTracking() {
         if (UIStatisticsActivator.isTrackingEnabled()) {
+            startMonitor();
             sendCollectedStatistics(true);
         }
     }

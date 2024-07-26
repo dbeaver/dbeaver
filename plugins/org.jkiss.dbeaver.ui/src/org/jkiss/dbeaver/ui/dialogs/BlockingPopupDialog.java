@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.ui.dialogs;
 
 /**
- * Blockign popup dialog. Doesn't force popup panels to close.
+ * Blocking popup dialog. Doesn't force popup panels to close.
  */
 public interface BlockingPopupDialog {
 

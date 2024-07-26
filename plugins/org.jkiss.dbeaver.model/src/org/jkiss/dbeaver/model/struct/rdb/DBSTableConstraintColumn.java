@@ -17,13 +17,14 @@
 package org.jkiss.dbeaver.model.struct.rdb;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPObjectWithOrdinalPosition;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * DBSTableConstraintColumn
  */
-public interface DBSTableConstraintColumn extends DBSObject, DBSEntityAttributeRef
+public interface DBSTableConstraintColumn extends DBSObject, DBSEntityAttributeRef, DBPObjectWithOrdinalPosition
 {
     @Override
     DBSTableConstraint getParentObject();
@@ -32,5 +33,4 @@ public interface DBSTableConstraintColumn extends DBSObject, DBSEntityAttributeR
     @Override
     DBSTableColumn getAttribute();
 
-    int getOrdinalPosition();
 }

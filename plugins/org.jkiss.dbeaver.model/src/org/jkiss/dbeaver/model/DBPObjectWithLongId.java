@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.dpi.DPIElement;
 public interface DBPObjectWithLongId extends DBPObject {
     /**
      * Object unique ID.
-     * ID may be unique withn object parent or within whole database - it depends on particular object type.
+     * ID may be unique within object parent or within whole database - it depends on particular object type.
      * Usually uniqueness has the same rules as for DBPNamedObject
      */
     @DPIElement

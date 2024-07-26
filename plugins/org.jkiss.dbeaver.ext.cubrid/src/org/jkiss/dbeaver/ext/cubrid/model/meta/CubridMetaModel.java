@@ -193,10 +193,10 @@ public class CubridMetaModel extends GenericMetaModel
     @Nullable
     @Override
     public GenericTableBase createTableImpl(
-            @NotNull JDBCSession session,
-            @NotNull GenericStructContainer owner,
-            @Nullable GenericMetaObject tableObject,
-            @NotNull JDBCResultSet dbResult) {
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer owner,
+        @NotNull GenericMetaObject tableObject,
+        @NotNull JDBCResultSet dbResult) {
         String tableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_NAME);
         String tableType = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TABLE_TYPE);
         GenericTableBase table = createTableOrViewImpl(owner, tableName, tableType, dbResult);
@@ -246,12 +246,7 @@ public class CubridMetaModel extends GenericMetaModel
             @NotNull JDBCResultSet dbResult)
             throws DBException {
         String name = JDBCUtils.safeGetStringTrimmed(dbResult, CubridConstants.NAME);
-        String description = JDBCUtils.safeGetString(dbResult, CubridConstants.COMMENT);
-        Number lastValue = JDBCUtils.safeGetInteger(dbResult, "current_val");
-        Number minValue = JDBCUtils.safeGetInteger(dbResult, "min_val");
-        Number maxValue = JDBCUtils.safeGetInteger(dbResult, "max_val");
-        Number incrementBy = JDBCUtils.safeGetInteger(dbResult, "increment_val");
-        return new CubridSequence(container, name, description, lastValue, minValue, maxValue, incrementBy, dbResult);
+        return new CubridSequence(container, name, dbResult);
     }
 
     @NotNull

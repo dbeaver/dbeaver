@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.LocalCacheProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -112,8 +113,12 @@ abstract class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoa
         final DBDDataFilter dataFilter = executionSource.getUseDataFilter();
 
         progressMonitor.beginTask("Read data", 1);
+        if (!getDataSourceContainer().isExtraMetadataReadEnabled()) {
+            monitor = new LocalCacheProgressMonitor(monitor);
+        }
+
         try (DBCSession session = getExecutionContext().openSession(
-            progressMonitor,
+            monitor,
             dataFilter != null && dataFilter.hasFilters() ? DBCExecutionPurpose.USER_FILTERED : DBCExecutionPurpose.USER,
             NLS.bind(ResultSetMessages.controls_rs_pump_job_context_name, dataContainer.toString())))
         {

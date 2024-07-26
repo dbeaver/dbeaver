@@ -361,6 +361,10 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         return drivers;
     }
 
+    public void removeCustomAndDisabledDrivers() {
+        drivers.removeIf(driver -> driver.isCustom() || driver.isDisabled());
+    }
+
     public List<DriverDescriptor> getEnabledDrivers() {
         List<DriverDescriptor> eDrivers = new ArrayList<>();
         for (DriverDescriptor driver : drivers) {
@@ -519,6 +523,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
                 folder.setType(changeFolderType);
                 String changeFolderLabel = config.getAttribute(ATTRIBUTE_CHANGE_FOLDER_LABEL);
                 if (CommonUtils.isNotEmpty(changeFolderLabel)) {
+                    folder.setInjectedConfig(config);
                     folder.setLabel(changeFolderLabel);
                     folder.setDescription(changeFolderLabel);
                 }
