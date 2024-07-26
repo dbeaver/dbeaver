@@ -16,8 +16,10 @@
  */
 package org.jkiss.dbeaver.ext.import_config.wizards.sqlworkbench;
 
+import com.dbeaver.net.auth.krb5.AuthModelKerberosConstants;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportConfigurationException;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportConnectionInfo;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
@@ -41,18 +43,21 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class SqlWorkbenchImportConfigurationService {
+    private static final Log log = Log.getLog(SqlWorkbenchImportConfigurationService.class);
 
     public static final SqlWorkbenchImportConfigurationService INSTANCE = new SqlWorkbenchImportConfigurationService();
 
     private final Set<String> keyWords;
     //for matching like: db1.dev.dbeaver.com:22
     private final Pattern urlPattern = Pattern.compile("^(?<host>[a-zA-Z0-9.-]+):(?<port>\\d+)$");
+    private final Set<String> kerberosDriverTypes = Set.of("ldap_kerberos", "ldap_sasl_kerberos");
     private ImportDriverInfo mysqlDriver;
 
     private SqlWorkbenchImportConfigurationService() {
 
-        keyWords = Set.of("", "SQL_MODE", "hostName", "password", "port", "schema", "sshCompressionLevel", "sshHost", "sshKeyFile",
-            "sshPassword", "sshUserName", "sslCA", "sslCert", "sslCipher", "sslKey", "useSSL", "userName");
+        keyWords = Set.of("", "hostName", "password", "port", "schema", "sshCompressionLevel", "sshHost", "sshKeyFile",
+            "sshPassword", "sshUserName", "sslCA", "sslCert", "sslCipher", "sslKey", "useSSL", "userName", "kerberosMode", "krb5",
+            "krb5cache", "mysqlplugindir");
 
         String idMysql = "mysql8";
         DriverUtils.getAllDrivers().stream()
@@ -103,17 +108,37 @@ public class SqlWorkbenchImportConfigurationService {
             userName,
             null);
 
+        configureAuthType(conElement, parameterValues, connectionInfo);
         configureSsh(parameterValues, connectionInfo);
         configureSsl(parameterValues, connectionInfo);
         configureDriverProperties(parameterValues, connectionInfo);
         return connectionInfo;
     }
 
+    private void configureAuthType(Element conElement, Element parameterValues, ImportConnectionInfo connectionInfo) {
+        String driver = getElementValueOrEmptyString(conElement, "driver");
+        if (driver == null) {
+            log.warn("Can't find driver tag in the xml");
+            return;
+        }
+        String[] split = driver.split("\\.");
+        String driverModel = split[split.length - 1];
+        if (kerberosDriverTypes.contains(driverModel)) {
+            connectionInfo.setAuthModelId("mysql_krb5");
+        }
+        String krbPathConfig = getElementValueOrEmptyString(parameterValues, "krb5");
+        if (CommonUtils.isNotEmpty(krbPathConfig)) {
+            connectionInfo.setAuthProperty(AuthModelKerberosConstants.USE_CUSTOM_CONFIG_PATH, krbPathConfig);
+        }
+    }
+
     private void configureDriverProperties(Element parameterValues, ImportConnectionInfo connectionInfo) {
         for (Element element : XMLUtils.getChildElementList(parameterValues)) {
             if (!keyWords.contains(element.getAttribute("key"))) {
                 String driverPropertyValue = XMLUtils.getElementBody(element);
-                connectionInfo.setProperty(element.getAttribute("key"), driverPropertyValue);
+                if (CommonUtils.isNotEmpty(driverPropertyValue)) {
+                    connectionInfo.setProperty(element.getAttribute("key"), driverPropertyValue);
+                }
             }
         }
     }
