@@ -37,4 +37,8 @@ public class HANAConstants {
     public static final String CONN_VALUE_SPATIAL_OUTPUT_REPRESENTATION = "EWKB";
     public static final String CONN_PROP_SPATIAL_WKB_EMPTY_POINT_REPRESENTATION = "SESSIONVARIABLE:SPATIAL_WKB_EMPTY_POINT_REPRESENTATION";
     public static final String CONN_VALUE_SPATIAL_WKB_EMPTY_POINT_REPRESENTATION = "NAN_COORDINATES";   
+    
+    // error codes, see SYS.M_ERROR_CODES view
+    public static final int ERR_SQL_ALTER_PASSWORD_NEEDED = 414;
+    public static final int WRN_SQL_NEARLY_EXPIRED_PASSWORD = 431;
 }
