@@ -29,4 +29,12 @@ public class HANAConstants {
     public static final String DATA_TYPE_NAME_REAL_VECTOR = "REAL_VECTOR";
     public static final String DATA_TYPE_NAME_ST_GEOMETRY = "ST_GEOMETRY";
     public static final String DATA_TYPE_NAME_ST_POINT = "ST_POINT";
+
+    // connection properties
+    public static final String CONN_PROP_APPLICATION_NAME = "SESSIONVARIABLE:APPLICATION";
+    public static final String CONN_PROP_READONLY = "READONLY";
+    public static final String CONN_PROP_SPATIAL_OUTPUT_REPRESENTATION = "SESSIONVARIABLE:SPATIAL_OUTPUT_REPRESENTATION";
+    public static final String CONN_VALUE_SPATIAL_OUTPUT_REPRESENTATION = "EWKB";
+    public static final String CONN_PROP_SPATIAL_WKB_EMPTY_POINT_REPRESENTATION = "SESSIONVARIABLE:SPATIAL_WKB_EMPTY_POINT_REPRESENTATION";
+    public static final String CONN_VALUE_SPATIAL_WKB_EMPTY_POINT_REPRESENTATION = "NAN_COORDINATES";   
 }
