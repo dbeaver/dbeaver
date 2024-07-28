@@ -81,6 +81,11 @@ public class AttributeMetaDataProxy implements DBCAttributeMetaData, DBPImagePro
     @NotNull
     public String getLabel()
     {
+        DBSAttributeBase proxyAttribute = getProxyAttribute();
+        if (proxyAttribute instanceof DBCAttributeMetaData) {
+            return ((DBCAttributeMetaData) proxyAttribute).getLabel();
+        }
+
         return attribute.getName();
     }
 
