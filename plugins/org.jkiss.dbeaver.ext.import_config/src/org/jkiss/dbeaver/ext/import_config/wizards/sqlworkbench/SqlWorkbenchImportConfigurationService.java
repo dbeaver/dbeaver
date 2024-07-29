@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.import_config.wizards.sqlworkbench;
 
-import com.dbeaver.net.auth.krb5.AuthModelKerberosConstants;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -128,7 +127,7 @@ public class SqlWorkbenchImportConfigurationService {
         }
         String krbPathConfig = getElementValueOrEmptyString(parameterValues, "krb5");
         if (CommonUtils.isNotEmpty(krbPathConfig)) {
-            connectionInfo.setAuthProperty(AuthModelKerberosConstants.USE_CUSTOM_CONFIG_PATH, krbPathConfig);
+            connectionInfo.setAuthProperty("krb5.conf.path", krbPathConfig);
         }
     }
 

@@ -9,8 +9,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.jkiss.dbeaver.core,
  org.eclipse.core.resources,
- org.jkiss.dbeaver.net.ssh,
- com.dbeaver.net.auth.krb5
+ org.jkiss.dbeaver.net.ssh
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp
