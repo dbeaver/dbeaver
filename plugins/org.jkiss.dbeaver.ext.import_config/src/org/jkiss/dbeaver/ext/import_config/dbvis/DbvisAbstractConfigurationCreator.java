@@ -82,10 +82,7 @@ public abstract class DbvisAbstractConfigurationCreator implements DbvisConfigur
                 .filter(d -> d.getName().contains(driverName))
                 .findFirst();
         }
-        if (descriptor.isEmpty()) {
-            return null;
-        }
-        return descriptor.get();
+        return descriptor.orElse(null);
     }
 
     protected abstract String substituteDriverName(String name);
