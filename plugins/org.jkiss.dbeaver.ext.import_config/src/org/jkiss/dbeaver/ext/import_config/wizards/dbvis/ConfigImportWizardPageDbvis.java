@@ -17,11 +17,14 @@
 
 package org.jkiss.dbeaver.ext.import_config.wizards.dbvis;
 
+import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.import_config.Activator;
 import org.jkiss.dbeaver.ext.import_config.ImportConfigMessages;
 import org.jkiss.dbeaver.ext.import_config.dbvis.DbvisConfigurationImporter;
 import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizardPage;
+import org.jkiss.dbeaver.ext.import_config.wizards.ImportConnectionInfo;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
@@ -30,7 +33,7 @@ import java.io.File;
 public class ConfigImportWizardPageDbvis extends ConfigImportWizardPage {
 
     public static final String DBVIS_HOME_FOLDER = ".dbvis";
-
+    
     protected ConfigImportWizardPageDbvis() {
         super("DBVisualizer");
         setTitle("DBVisualizer");
@@ -47,5 +50,26 @@ public class ConfigImportWizardPageDbvis extends ConfigImportWizardPage {
         }
         DbvisConfigurationImporter configurationImporter = new DbvisConfigurationImporter();
         importData = configurationImporter.importConfiguration(importData, dbvisConfigHome);
+    }
+
+    @Override
+    public boolean isPageComplete() {
+        if (getConnectionTable() == null) {
+            return false;
+        }
+        setErrorMessage(null);
+        boolean isCompleted = false;
+        for (TableItem item : getConnectionTable().getItems()) {
+            if (item.getChecked() && item.getData() instanceof ImportConnectionInfo importConnection) {
+                if (importConnection.getDriverInfo() == null) {
+                    isCompleted = false;
+                    setErrorMessage(NLS.bind(ImportConfigMessages.config_import_wizard_error, importConnection.getAlias()));
+                    break;
+                } else {
+                    isCompleted = true;
+                }
+            }
+        }
+        return isCompleted;
     }
 }

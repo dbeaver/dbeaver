@@ -91,7 +91,6 @@ public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCre
             Element databasesElement = XMLUtils.getChildElement(configDocument.getDocumentElement(), "Databases");
             if (databasesElement != null) {
                 for (Element dbElement : XMLUtils.getChildElementList(databasesElement, "Database")) {
-                    String id = dbElement.getAttribute("id");
                     String alias = XMLUtils.getChildElementBody(dbElement, "Alias");
                     String url = XMLUtils.getChildElementBody(dbElement, "Url");
                     String driverName = XMLUtils.getChildElementBody(dbElement, "Driver");
@@ -104,7 +103,6 @@ public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCre
                     if (urlVarsElement != null) {
                         Element driverElement = XMLUtils.getChildElement(urlVarsElement, "Driver");
                         if (driverElement != null) {
-                            String templateId = driverElement.getAttribute("TemplateId");
                             String driverId = driverElement.getAttribute("DriverId");
                             String[] driverIdSegments = driverId.split("-");
                             for (Element urlVarElement : XMLUtils.getChildElementList(driverElement, "UrlVariable")) {
@@ -130,23 +128,36 @@ public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCre
                                 .append(driverIdSegments[0])
                                 .append(".xml");
                             File driverFile = new File(configFile.getParent(), builder.toString());
-                            if (!driverFile.exists()) {
-                                log.error("Driver descriptor not found by path: " + driverFile.getAbsolutePath());
-                                continue;
-                            }
-                            Document driverTypeDocument = XMLUtils.parseDocument(driverFile);
-                            Element driverTypeDocumentElement = driverTypeDocument.getDocumentElement();
-                            String name = XMLUtils.getChildElementBody(driverTypeDocumentElement, "Label");
-                            String sampleURL = XMLUtils.getChildElementBody(driverTypeDocumentElement, "URLFormat");
-                            String identifier = XMLUtils.getChildElementBody(driverTypeDocumentElement, "Identifier");
-                            
-                            if (!CommonUtils.isEmpty(name) && !CommonUtils.isEmpty(sampleURL) ) {
-                                DriverDescriptor driverDescriptor = getDriverByName(name);
-                                if (driverDescriptor != null) {
-                                    driver = new ImportDriverInfo(identifier, driverDescriptor.getName(), sampleURL, driverDescriptor.getDriverClassName());
-                                    adaptSampleUrl(driver);
+                            if (driverFile.exists()) {
+                                Document driverTypeDocument = XMLUtils.parseDocument(driverFile);
+                                Element driverTypeDocumentElement = driverTypeDocument.getDocumentElement();
+                                String name = XMLUtils.getChildElementBody(driverTypeDocumentElement, "Label");
+                                String sampleURL = XMLUtils.getChildElementBody(driverTypeDocumentElement, "URLFormat");
+                                String identifier = XMLUtils.getChildElementBody(driverTypeDocumentElement, "Identifier");
+                                if (!CommonUtils.isEmpty(name) && !CommonUtils.isEmpty(sampleURL)) {
+                                    DriverDescriptor driverDescriptor = getDriverByName(name);
+                                    if (driverDescriptor != null) {
+                                        driver = new ImportDriverInfo(identifier, driverDescriptor.getName(), sampleURL,
+                                            driverDescriptor.getDriverClassName());
+                                        adaptSampleUrl(driver);
+                                    } else {
+                                        log.error("Driver descriptor not found for: " + driverName);
+                                    }
+                                }
+                            } else {
+                                if (!CommonUtils.isEmpty(driverName)) {
+                                    DriverDescriptor driverDescriptor = getDriverByName(driverName);
+                                    if (driverDescriptor != null) {
+                                        driver = new ImportDriverInfo(driverDescriptor.getId(),
+                                            driverDescriptor.getName(),
+                                            driverDescriptor.getSampleURL(),
+                                            driverDescriptor.getDriverClassName());
+                                        adaptSampleUrl(driver);
+                                    } else {
+                                        log.error("Driver descriptor not found for: " + driverName);
+                                    }
                                 } else {
-                                    log.error("Driver descriptor not found for: " + driverName);
+                                    log.error("Driver descriptor not found by path: " + driverFile.getAbsolutePath());
                                 }
                             }
                             Element sshServers = XMLUtils.getChildElement(dbElement, "SshServers");
@@ -166,38 +177,34 @@ public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCre
                     }
                     if (!CommonUtils.isEmpty(alias) && !CommonUtils.isEmpty(driverName)
                         && (!CommonUtils.isEmpty(url) || !CommonUtils.isEmpty(hostName))) {
-                        if (driver != null) {
-                            ImportConnectionInfo connectionInfo = new ImportConnectionInfo(
-                                driver,
-                                dbElement.getAttribute("id"),
-                                alias,
-                                url,
-                                hostName,
-                                port,
-                                database,
-                                user,
-                                password);
-                            if (sshConfiguration != null) {
-                                NetworkHandlerDescriptor sslHD = NetworkHandlerRegistry.getInstance().getDescriptor("ssh_tunnel");
-                                DBWHandlerConfiguration sshHandler = new DBWHandlerConfiguration(sslHD, null);
-                                sshHandler.setUserName(sshConfiguration.getSshUserid());
-                                sshHandler.setSavePassword(true);
-                                sshHandler.setProperty(DBWHandlerConfiguration.PROP_HOST, sshConfiguration.getSshHost());
-                                sshHandler.setProperty(DBWHandlerConfiguration.PROP_PORT, sshConfiguration.getSshPort());
-                                if (sshConfiguration.getAuthenticationType() == SSHConstants.AuthType.PUBLIC_KEY) {
-                                    sshHandler.setProperty(SSHConstants.PROP_AUTH_TYPE, SSHConstants.AuthType.PUBLIC_KEY);
-                                    sshHandler.setProperty(SSHConstants.PROP_KEY_PATH, sshConfiguration.getSshPrivateKeyFile());
-                                } else {
-                                    sshHandler.setProperty(SSHConstants.PROP_AUTH_TYPE, SSHConstants.AuthType.PASSWORD);
-                                }
-                                sshHandler.setProperty(SSHConstants.PROP_IMPLEMENTATION, sshConfiguration.getSshImplementationType());
-                                sshHandler.setEnabled(true);
-                                connectionInfo.addNetworkHandler(sshHandler);
+                        ImportConnectionInfo connectionInfo = new ImportConnectionInfo(
+                            driver,
+                            dbElement.getAttribute("id"),
+                            alias,
+                            url,
+                            hostName,
+                            port,
+                            database,
+                            user,
+                            password);
+                        if (sshConfiguration != null) {
+                            NetworkHandlerDescriptor sslHD = NetworkHandlerRegistry.getInstance().getDescriptor("ssh_tunnel");
+                            DBWHandlerConfiguration sshHandler = new DBWHandlerConfiguration(sslHD, null);
+                            sshHandler.setUserName(sshConfiguration.getSshUserid());
+                            sshHandler.setSavePassword(true);
+                            sshHandler.setProperty(DBWHandlerConfiguration.PROP_HOST, sshConfiguration.getSshHost());
+                            sshHandler.setProperty(DBWHandlerConfiguration.PROP_PORT, sshConfiguration.getSshPort());
+                            if (sshConfiguration.getAuthenticationType() == SSHConstants.AuthType.PUBLIC_KEY) {
+                                sshHandler.setProperty(SSHConstants.PROP_AUTH_TYPE, SSHConstants.AuthType.PUBLIC_KEY);
+                                sshHandler.setProperty(SSHConstants.PROP_KEY_PATH, sshConfiguration.getSshPrivateKeyFile());
+                            } else {
+                                sshHandler.setProperty(SSHConstants.PROP_AUTH_TYPE, SSHConstants.AuthType.PASSWORD);
                             }
-                            importData.addConnection(connectionInfo);
-                        } else {
-                            log.error("Driver descriptor not found for: " + driverName);
+                            sshHandler.setProperty(SSHConstants.PROP_IMPLEMENTATION, sshConfiguration.getSshImplementationType());
+                            sshHandler.setEnabled(true);
+                            connectionInfo.addNetworkHandler(sshHandler);
                         }
+                        importData.addConnection(connectionInfo);
                     } else {
                         log.error("Can not extract data for: " + driverName);
                     }
