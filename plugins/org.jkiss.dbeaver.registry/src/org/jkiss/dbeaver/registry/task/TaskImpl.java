@@ -57,7 +57,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
     private Date updateTime;
     private DBTTaskType type;
     private Map<String, Object> properties;
-    private List<DBTTaskRun> runs;
+    private volatile List<DBTTaskRun> runs;
     private DBTTaskFolder taskFolder;
     private int maxExecutionTime;
 

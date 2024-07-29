@@ -517,9 +517,7 @@ public class SQLEditorUtils {
         }
         for (SQLEditor sqlEditor : affectedEditors) {
             sqlEditor.refreshEditorIconAndTitle();
-            if (sqlEditor.getOverviewOutlinePage() instanceof SQLEditorOutlinePage outline) {
-                outline.refresh();
-            }
+            sqlEditor.refreshAdvancedServices();
         }
 
         PlatformUI.getWorkbench().getService(ICommandService.class).refreshElements(DisableSQLSyntaxParserHandler.COMMAND_ID, null);
