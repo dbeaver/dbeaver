@@ -225,6 +225,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         if (needsLoad && !monitor.isForceCacheUsage()) {
             if (this.initializeNode(monitor, null)) {
                 final List<DBNDatabaseNode> tmpList = new ArrayList<>();
+                this.filtered = false;
                 loadChildren(monitor, getMeta(), null, tmpList, this, true);
                 if (!monitor.isCanceled()) {
                     synchronized (this) {
@@ -426,7 +427,6 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         if (monitor.isCanceled()) {
             return;
         }
-        this.filtered = false;
 
         List<DBXTreeNode> childMetas = meta.getChildren(this);
         if (CommonUtils.isEmpty(childMetas)) {
@@ -815,41 +815,35 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
 
     public DBSObjectFilter getNodeFilter(DBXTreeItem meta, boolean firstMatch) {
         DBPDataSourceContainer dataSource = getDataSourceContainer();
-        if (this instanceof DBNContainer) {
-            Class<?> childrenClass = this.getChildrenOrFolderClass(meta);
-            if (childrenClass != null) {
-                Object valueObject = getValueObject();
-                DBSObject parentObject = null;
-                if (valueObject instanceof DBSObject && !(valueObject instanceof DBPDataSource)) {
-                    parentObject = (DBSObject) valueObject;
-                }
-                return dataSource.getObjectFilter(childrenClass, parentObject, firstMatch);
+        Class<?> childrenClass = this.getChildrenOrFolderClass(meta);
+        if (childrenClass != null) {
+            Object valueObject = getValueObject();
+            DBSObject parentObject = null;
+            if (valueObject instanceof DBSObject && !(valueObject instanceof DBPDataSource)) {
+                parentObject = (DBSObject) valueObject;
             }
+            return dataSource.getObjectFilter(childrenClass, parentObject, firstMatch);
         }
         return null;
     }
 
     public void setNodeFilter(DBXTreeItem meta, DBSObjectFilter filter, boolean saveConfiguration) {
         DBPDataSourceContainer dataSource = getDataSourceContainer();
-        if (this instanceof DBNContainer) {
-            Class<?> childrenClass = this.getChildrenOrFolderClass(meta);
-            if (childrenClass != null) {
-                Object parentObject = getValueObject();
-                if (parentObject instanceof DBPDataSource) {
-                    parentObject = null;
-                }
-                dataSource.setObjectFilter(
-                    childrenClass,
-                    (DBSObject) parentObject,
-                    filter);
-                if (saveConfiguration) {
-                    dataSource.persistConfiguration();
-                }
-            } else {
-                log.error("Cannot detect child node type - can't save filter configuration");
+        Class<?> childrenClass = this.getChildrenOrFolderClass(meta);
+        if (childrenClass != null) {
+            Object parentObject = getValueObject();
+            if (parentObject instanceof DBPDataSource) {
+                parentObject = null;
+            }
+            dataSource.setObjectFilter(
+                childrenClass,
+                (DBSObject) parentObject,
+                filter);
+            if (saveConfiguration) {
+                dataSource.persistConfiguration();
             }
         } else {
-            log.error("No active datasource - can't save filter configuration");
+            log.error("Cannot detect child node type - can't save filter configuration");
         }
     }
 
@@ -914,6 +908,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             oldChildren = Arrays.copyOf(childNodes, childNodes.length);
         }
         List<DBNDatabaseNode> newChildren = new ArrayList<>();
+        this.filtered = false;
         loadChildren(monitor, getMeta(), oldChildren, newChildren, source, reflect);
         synchronized (this) {
             childNodes = newChildren.toArray(new DBNDatabaseNode[0]);
