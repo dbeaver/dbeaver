@@ -51,14 +51,18 @@ public class TextWithOpen extends Composite {
     private final Text text;
     private final ToolBar toolbar;
     private final boolean multiFS;
+    private final boolean binary;
 
     public TextWithOpen(Composite parent, boolean multiFS) {
         this(parent, multiFS, false);
     }
-    
     public TextWithOpen(Composite parent, boolean multiFS, boolean secured) {
+        this(parent, multiFS, secured, false);
+    }
+    public TextWithOpen(Composite parent, boolean multiFS, boolean secured, boolean binary) {
         super(parent, SWT.NONE);
         this.multiFS = multiFS;
+        this.binary = binary;
         final GridLayout gl = new GridLayout(2, false);
         gl.marginHeight = 0;
         gl.marginWidth = 0;
@@ -177,7 +181,7 @@ public class TextWithOpen extends Composite {
     }
 
     protected boolean isBinaryContents() {
-        return false;
+        return binary;
     }
 
     public boolean isMultiFileSystem() {
