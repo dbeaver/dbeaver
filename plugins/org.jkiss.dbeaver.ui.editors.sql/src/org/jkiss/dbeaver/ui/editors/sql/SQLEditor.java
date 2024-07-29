@@ -2663,7 +2663,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         if (dataSourceContainer.isConnectionReadOnly() &&
-            queries.stream().anyMatch(q -> (q instanceof SQLQuery sqlQuery && sqlQuery.isModifying()))
+            queries.stream().anyMatch(q -> (q instanceof SQLQuery sqlQuery && sqlQuery.isMutatingStatement()))
         ) {
             DBWorkbench.getPlatformUI().showError(
                 SQLEditorMessages.editors_sql_error_cant_execute_query_title,

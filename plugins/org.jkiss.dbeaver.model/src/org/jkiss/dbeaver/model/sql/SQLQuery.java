@@ -25,8 +25,15 @@ import net.sf.jsqlparser.statement.Commit;
 import net.sf.jsqlparser.statement.RollbackStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
+import net.sf.jsqlparser.statement.create.function.CreateFunction;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
+import net.sf.jsqlparser.statement.create.procedure.CreateProcedure;
+import net.sf.jsqlparser.statement.create.schema.CreateSchema;
+import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
+import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.drop.Drop;
@@ -523,6 +530,15 @@ public class SQLQuery implements SQLScriptElement {
         } else {
             return true;
         }
+    }
+
+    public boolean isMutatingStatement() {
+        parseQuery();
+        return statement != null && (statement instanceof Drop || statement instanceof Delete || statement instanceof Update ||
+            statement instanceof Insert || statement instanceof CreateTable || statement instanceof CreateIndex ||
+            statement instanceof CreateView || statement instanceof CreateFunction || statement instanceof CreateProcedure ||
+            statement instanceof CreateSchema || statement instanceof CreateSequence || statement instanceof CreateSynonym ||
+            statement instanceof Alter || statement instanceof AlterView || statement instanceof AlterSequence);
     }
 
     private static class SingleTableMeta implements DBCEntityMetaData {
