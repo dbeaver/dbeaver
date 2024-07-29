@@ -116,7 +116,12 @@ public abstract class ConfigImportWizardPage extends ActiveWizardPage<ConfigImpo
             @Override
             public void widgetSelected(SelectionEvent e) {
                 TableItem item = (TableItem) e.item;
-                ((ImportConnectionInfo) item.getData()).setChecked(item.getChecked());
+                if (item == null) {
+                    return;
+                }
+                if (item.getData() instanceof ImportConnectionInfo connectionInfo) {
+                    connectionInfo.setChecked(item.getChecked());
+                }
                 getContainer().updateButtons();
             }
         });
@@ -137,13 +142,11 @@ public abstract class ConfigImportWizardPage extends ActiveWizardPage<ConfigImpo
             getShell(), "Choose driver for connection '" + connectionInfo.getAlias() + "'", "ImportDriverSelector", matchedDrivers);
         if (driver != null) {
             connectionInfo.setDriver(driver);
-            if (connectionInfo.getDriverInfo() == null) {
-                connectionInfo.setDriverInfo(new ImportDriverInfo(
-                    connectionInfo.getAlias(),
-                    driver.getName(),
-                    driver.getSampleURL(),
-                    driver.getDriverClassName()));
-            }
+            connectionInfo.setDriverInfo(new ImportDriverInfo(
+                connectionInfo.getAlias(),
+                driver.getName(),
+                driver.getSampleURL(),
+                driver.getDriverClassName()));
         }
         return connectionInfo;
     }
