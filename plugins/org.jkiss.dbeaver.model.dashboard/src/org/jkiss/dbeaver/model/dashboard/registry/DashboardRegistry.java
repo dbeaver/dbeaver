@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLUtils;
@@ -49,7 +50,7 @@ import java.util.stream.Collectors;
 
 public class DashboardRegistry {
     private static final Log log = Log.getLog(DashboardRegistry.class);
-    
+
     public static final String CONFIG_FILE_NAME = "dashboards.xml";
 
     private static DashboardRegistry instance = null;
@@ -82,6 +83,10 @@ public class DashboardRegistry {
         DBDashboardContext staticContext = new DBDashboardContext();
         for (DashboardProviderDescriptor dp : dashboardProviders.values()) {
             for (DashboardItemConfiguration dashboard : dp.getInstance().loadStaticDashboards(dp)) {
+                //fixme after resolving macOs issue
+                if (dashboard.getId().equals("bigquery-dash") && RuntimeUtils.isMacOS()) {
+                    continue;
+                }
                 dashboardItems.put(dashboard.getId(), dashboard);
             }
         }
@@ -107,7 +112,7 @@ public class DashboardRegistry {
                         .loadConfigurationFile(CONFIG_FILE_NAME);
                 }
             }
-            
+
             synchronized (syncRoot) {
                 // Clear all custom dashboards
                 dashboardItems.values().removeIf(DashboardItemConfiguration::isCustom);
@@ -117,7 +122,7 @@ public class DashboardRegistry {
                         DashboardItemConfiguration dashboard = new DashboardItemConfiguration(this, dbElement);
                         dashboardItems.put(dashboard.getId(), dashboard);
                     }
-                }            
+                }
             }
         } catch (Exception e) {
             log.error("Error loading dashboard configuration", e);
@@ -146,7 +151,7 @@ public class DashboardRegistry {
             }
             xml.flush();
             out.flush();
-            
+
             DBWorkbench.getPlatform()
                 .getConfigurationController()
                 .saveConfigurationFile(CONFIG_FILE_NAME, out.getBuffer().toString());
@@ -313,7 +318,7 @@ public class DashboardRegistry {
                 throw new IllegalArgumentException("Only custom dashboards can be added");
             }
             dashboardItems.put(itemConfiguration.getId(), itemConfiguration);
-    
+
             saveConfigFile();
         }
 
@@ -334,7 +339,7 @@ public class DashboardRegistry {
                 throw new IllegalArgumentException("Only custom dashboards can be removed");
             }
             dashboardItems.remove(dashboard.getId());
-    
+
             saveConfigFile();
         }
 
