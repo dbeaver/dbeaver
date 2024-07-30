@@ -31,7 +31,7 @@ import java.util.Map;
 public class ImportConnectionInfo {
 
     private DriverDescriptor driver;
-    private final ImportDriverInfo driverInfo;
+    private ImportDriverInfo driverInfo;
     private final String id;
     private final String alias;
     private String url;
@@ -90,6 +90,9 @@ public class ImportConnectionInfo {
         return driverInfo;
     }
 
+    public void setDriverInfo(ImportDriverInfo driverInfo) {
+        this.driverInfo = driverInfo;
+    }
     public String getId()
     {
         return id;
