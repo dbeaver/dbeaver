@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.model.sql.semantics.model.select;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelContext;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
@@ -37,10 +37,9 @@ public class SQLQueryRowsTableValueModel extends SQLQueryRowsSourceModel {
     private final List<SQLQueryValueExpression> values;
     
     public SQLQueryRowsTableValueModel(
-        @NotNull SQLQueryModelContext context,
         @NotNull STMTreeNode syntaxNode,
         @NotNull List<SQLQueryValueExpression> values) {
-        super(context, syntaxNode);
+        super(syntaxNode);
         this.values = values;
     }
 

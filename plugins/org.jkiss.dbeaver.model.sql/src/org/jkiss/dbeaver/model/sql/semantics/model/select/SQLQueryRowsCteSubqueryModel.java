@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model.select;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelContext;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
@@ -40,13 +40,12 @@ public class SQLQueryRowsCteSubqueryModel extends SQLQueryRowsSourceModel {
     public final SQLQueryRowsSourceModel source;
 
     public SQLQueryRowsCteSubqueryModel(
-        @NotNull SQLQueryModelContext context,
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQuerySymbolEntry subqueryName,
         @NotNull List<SQLQuerySymbolEntry> columNames,
         @NotNull SQLQueryRowsSourceModel source
     ) {
-        super(context, syntaxNode);
+        super(syntaxNode);
         this.subqueryName = subqueryName;
         this.columNames = columNames;
         this.source = source;

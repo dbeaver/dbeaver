@@ -45,11 +45,10 @@ public class SQLQueryObjectDataModel extends SQLQueryRowsSourceModel implements 
     private DBSObject object = null;
 
     public SQLQueryObjectDataModel(
-        @NotNull SQLQueryModelContext context,
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryQualifiedName name,
         @NotNull DBSObjectType objectType) {
-        super(context, syntaxNode);
+        super(syntaxNode);
         this.name = name;
         this.objectType = objectType;
     }
@@ -84,6 +83,8 @@ public class SQLQueryObjectDataModel extends SQLQueryRowsSourceModel implements 
 
             if (this.object != null) {
                 this.name.setDefinition(object);
+            } else {
+                statistics.appendError(getSyntaxNode(), "Object " + this.name.toIdentifierString() + " not found in the database");
             }
         }
         return context;
