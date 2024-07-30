@@ -138,31 +138,30 @@ public class SQLQuery implements SQLScriptElement {
                 return;
             }
             statement = SQLSemanticProcessor.parseQuery(dataSource == null ? null : dataSource.getSQLDialect(), text);
-            if (statement instanceof Select) {
+            if (statement instanceof PlainSelect plainSelect) {
                 type = SQLQueryType.SELECT;
                 // Detect single source table (no joins, no group by, no sub-selects)
-                SelectBody selectBody = ((Select) statement).getSelectBody();
-                if (selectBody instanceof PlainSelect) {
-                    PlainSelect plainSelect = (PlainSelect) selectBody;
+                {
                     FromItem fromItem = plainSelect.getFromItem();
 
-                    if (fromItem instanceof SubSelect &&
+                    if (fromItem instanceof ParenthesedSelect subSelect &&
                         isPotentiallySingleSourceSelect(plainSelect) &&
-                        ((SubSelect) fromItem).getSelectBody() instanceof PlainSelect &&
-                        isPotentiallySingleSourceSelect((PlainSelect) ((SubSelect) fromItem).getSelectBody()))
+                        subSelect.getPlainSelect() != null &&
+                        isPotentiallySingleSourceSelect(subSelect.getPlainSelect()))
                     {
                         // Real select is in sub-select
-                        plainSelect = (PlainSelect) ((SubSelect) fromItem).getSelectBody();
+                        plainSelect = subSelect.getPlainSelect();
                         fromItem = plainSelect.getFromItem();
                     }
                     if (fromItem instanceof Table &&
                         isPotentiallySingleSourceSelect(plainSelect))
                     {
                         boolean hasSubSelects = false, hasDirectSelects = false;
-                        for (SelectItem si : plainSelect.getSelectItems()) {
-                            if (si instanceof SelectExpressionItem && ((SelectExpressionItem) si).getExpression() instanceof SubSelect) {
+                        for (SelectItem<?> item : plainSelect.getSelectItems()) {
+                            Expression itemExpr = item.getExpression();
+                            if (itemExpr instanceof Select) {
                                 hasSubSelects = true;
-                            } else if (si instanceof SelectExpressionItem && ((SelectExpressionItem) si).getExpression() instanceof Column) {
+                            } else if (itemExpr instanceof Column) {
                                 hasDirectSelects = true;
                             }
                         }
@@ -225,8 +224,8 @@ public class SQLQuery implements SQLScriptElement {
 
     private boolean isValidSelectItem(@NotNull SelectItem item) {
         // Workaround for JSQLParser not respecting the `#` comment in MySQL and treating them as valid values
-        if (item instanceof SelectExpressionItem && dataSource != null) {
-            final Expression expr = ((SelectExpressionItem) item).getExpression();
+        if (item.getExpression() != null && dataSource != null) {
+            final Expression expr = item.getExpression();
             if (expr instanceof Column) {
                 final String name = CommonUtils.trim(((Column) expr).getColumnName());
                 if (CommonUtils.isNotEmpty(name)) {
@@ -288,12 +287,11 @@ public class SQLQuery implements SQLScriptElement {
      */
     public boolean isPlainSelect() {
         parseQuery();
-        if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
-            PlainSelect selectBody = (PlainSelect) ((Select) statement).getSelectBody();
+        if (statement instanceof PlainSelect selectBody) {
             return CommonUtils.isEmpty(selectBody.getIntoTables()) &&
                 selectBody.getLimit() == null &&
                 selectBody.getTop() == null &&
-                !selectBody.isForUpdate();
+                selectBody.getForUpdateTable() == null;
         }
         return false;
     }
@@ -574,12 +572,9 @@ public class SQLQuery implements SQLScriptElement {
         if (getType() == SQLQueryType.UNKNOWN) {
             return false;
         }
-        if (statement instanceof Select) {
-            SelectBody selectBody = ((Select) statement).getSelectBody();
-            if (selectBody instanceof PlainSelect) {
-                if (((PlainSelect) selectBody).isForUpdate() ||
-                    ((PlainSelect) selectBody).getIntoTables() != null)
-                {
+        if (statement instanceof PlainSelect selectBody) {
+            {
+                if (selectBody.getForUpdateTable() != null || selectBody.getIntoTables() != null) {
                     return true;
                 }
             }
