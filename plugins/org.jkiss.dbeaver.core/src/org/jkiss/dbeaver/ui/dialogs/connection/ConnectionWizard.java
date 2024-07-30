@@ -282,7 +282,6 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
         DBPConnectionConfiguration config = new DBPConnectionConfiguration();
         config.setConnectionType(type);
         config.setCloseIdleConnection(type.isAutoCloseConnections());
-        config.setCloseIdleInterval(type.getCloseIdleConnectionPeriod());
 
         return config;
     }
