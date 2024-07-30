@@ -468,6 +468,7 @@ public class ResultSetMessages extends NLS {
     public static String copy_special_force_quote_cell_values_tip;
     public static String copy_special_copy_as_html_text;
     public static String copy_special_copy_as_html_tip;
+    public static String copy_special_hint_for_hotkey;
 
     public static String filter_panel_filters_history_text;
     public static String filter_panel_expand_panel_text;

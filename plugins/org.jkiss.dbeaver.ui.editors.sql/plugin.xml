@@ -1542,6 +1542,11 @@
         <super type="org.eclipse.core.resources.textmarker"/>
     </extension>
 
+    <extension id="semanticProblemMarker" name="%semanticProblem.name" point="org.eclipse.core.resources.markers">
+        <super type="org.eclipse.core.resources.problemmarker"/>
+        <super type="org.eclipse.core.resources.textmarker"/>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.sqlGenerator">
         <generator id="ddlByResultSet" class="org.jkiss.dbeaver.ui.editors.sql.generator.SQLGeneratorDDLFromResultSet" label="CREATE" description="CREATE table" order="6">
             <objectType name="org.jkiss.dbeaver.ui.controls.resultset.IResultSetController"/>

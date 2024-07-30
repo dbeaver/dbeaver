@@ -17,20 +17,84 @@
 package org.jkiss.dbeaver.model.sql.semantics;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
+
+import java.util.Deque;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Accumulates the statistics about recognition process
  */
-public interface SQLQueryRecognitionContext {
+public class SQLQueryRecognitionContext {
 
-    DBRProgressMonitor getMonitor();
+    @NotNull
+    private final DBRProgressMonitor monitor;
 
-    void appendError(@NotNull STMTreeNode treeNode, @NotNull String error);
+    @Nullable
+    DBCExecutionContext executionContext;
 
-    void appendError(@NotNull SQLQuerySymbolEntry symbol, @NotNull String error);
+    private final boolean useRealMetadata;
 
-    void appendError(@NotNull SQLQuerySymbolEntry symbol, @NotNull String error, @NotNull DBException ex);
+    @NotNull
+    private final SQLSyntaxManager syntaxManager;
+
+    @NotNull
+    private final Deque<SQLQueryRecognitionProblemInfo> problems = new LinkedList<>();
+
+    public SQLQueryRecognitionContext(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBCExecutionContext executionContext,
+        boolean useRealMetadata,
+        @NotNull SQLSyntaxManager syntaxManager
+    ) {
+        this.monitor = monitor;
+        this.executionContext = executionContext;
+        this.useRealMetadata = useRealMetadata;
+        this.syntaxManager = syntaxManager;
+    }
+
+    @NotNull
+    public DBRProgressMonitor getMonitor() {
+        return this.monitor;
+    }
+
+    @Nullable
+    DBCExecutionContext getExecutionContext() {
+        return this.executionContext;
+    }
+
+    boolean useRealMetadata() {
+        return this.useRealMetadata;
+    }
+
+    @NotNull
+    SQLSyntaxManager getSyntaxManager() {
+        return this.syntaxManager;
+    }
+
+    public List<SQLQueryRecognitionProblemInfo> getProblems() {
+        return List.copyOf(this.problems);
+    }
+
+    public void appendError(@NotNull SQLQuerySymbolEntry symbol, @NotNull String error, @NotNull DBException ex) {
+        this.problems.addLast(new SQLQueryRecognitionProblemInfo(symbol.getSyntaxNode(), symbol, error, ex));
+    }
+
+    public void appendError(@NotNull SQLQuerySymbolEntry symbol, @NotNull String error) {
+        this.problems.addLast(new SQLQueryRecognitionProblemInfo(symbol.getSyntaxNode(), symbol, error, null));
+    }
+
+    public void appendError(@NotNull STMTreeNode treeNode, @NotNull String error) {
+        this.problems.addLast(new SQLQueryRecognitionProblemInfo(treeNode, null, error, null));
+    }
+
+    public void reset() {
+        this.problems.clear();
+    }
 }
