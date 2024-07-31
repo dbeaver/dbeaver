@@ -68,8 +68,8 @@ public class SQLiteDataSource extends GenericDataSource {
     public SQLiteDataSource(@NotNull DBRProgressMonitor monitor,
         @NotNull GenericMetaModel metaModel,
         @NotNull DBPDataSourceContainer container,
-        @NotNull SQLDialect dialect)
-        throws DBException {
+        @NotNull SQLDialect dialect
+    ) throws DBException {
         super(monitor, metaModel, container, dialect);
     }
 
