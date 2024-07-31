@@ -47,7 +47,7 @@ public class SQLiteTable extends GenericTable implements DBDPseudoAttributeConta
 
 
     public SQLiteTable(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
-        super(container, tableName, tableType, dbResult);
+        super(container.getDataSource(), tableName, tableType, dbResult);
     }
 
     @Override
@@ -93,10 +93,4 @@ public class SQLiteTable extends GenericTable implements DBDPseudoAttributeConta
     public SQLiteTableForeignKey getAssociation(@NotNull DBRProgressMonitor monitor, String name) throws DBException {
         return (SQLiteTableForeignKey) super.getAssociation(monitor, name);
     }
-
-    @Override
-    public GenericStructContainer getContainer() {
-        return getDataSource();
-    }
-
 }
