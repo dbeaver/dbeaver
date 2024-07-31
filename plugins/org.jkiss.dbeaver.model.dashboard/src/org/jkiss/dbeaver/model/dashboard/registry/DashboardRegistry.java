@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLUtils;
@@ -83,10 +82,6 @@ public class DashboardRegistry {
         DBDashboardContext staticContext = new DBDashboardContext();
         for (DashboardProviderDescriptor dp : dashboardProviders.values()) {
             for (DashboardItemConfiguration dashboard : dp.getInstance().loadStaticDashboards(dp)) {
-                //fixme after resolving macOs issue
-                if (dashboard.getId().equals("bigquery-dash") && RuntimeUtils.isMacOS()) {
-                    continue;
-                }
                 dashboardItems.put(dashboard.getId(), dashboard);
             }
         }
