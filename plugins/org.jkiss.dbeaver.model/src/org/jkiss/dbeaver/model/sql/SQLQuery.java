@@ -25,8 +25,15 @@ import net.sf.jsqlparser.statement.Commit;
 import net.sf.jsqlparser.statement.RollbackStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
+import net.sf.jsqlparser.statement.create.function.CreateFunction;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
+import net.sf.jsqlparser.statement.create.procedure.CreateProcedure;
+import net.sf.jsqlparser.statement.create.schema.CreateSchema;
+import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
+import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.drop.Drop;
@@ -138,30 +145,31 @@ public class SQLQuery implements SQLScriptElement {
                 return;
             }
             statement = SQLSemanticProcessor.parseQuery(dataSource == null ? null : dataSource.getSQLDialect(), text);
-            if (statement instanceof PlainSelect plainSelect) {
+            if (statement instanceof Select) {
                 type = SQLQueryType.SELECT;
                 // Detect single source table (no joins, no group by, no sub-selects)
-                {
+                SelectBody selectBody = ((Select) statement).getSelectBody();
+                if (selectBody instanceof PlainSelect) {
+                    PlainSelect plainSelect = (PlainSelect) selectBody;
                     FromItem fromItem = plainSelect.getFromItem();
 
-                    if (fromItem instanceof ParenthesedSelect subSelect &&
+                    if (fromItem instanceof SubSelect &&
                         isPotentiallySingleSourceSelect(plainSelect) &&
-                        subSelect.getPlainSelect() != null &&
-                        isPotentiallySingleSourceSelect(subSelect.getPlainSelect()))
+                        ((SubSelect) fromItem).getSelectBody() instanceof PlainSelect &&
+                        isPotentiallySingleSourceSelect((PlainSelect) ((SubSelect) fromItem).getSelectBody()))
                     {
                         // Real select is in sub-select
-                        plainSelect = subSelect.getPlainSelect();
+                        plainSelect = (PlainSelect) ((SubSelect) fromItem).getSelectBody();
                         fromItem = plainSelect.getFromItem();
                     }
                     if (fromItem instanceof Table &&
                         isPotentiallySingleSourceSelect(plainSelect))
                     {
                         boolean hasSubSelects = false, hasDirectSelects = false;
-                        for (SelectItem<?> item : plainSelect.getSelectItems()) {
-                            Expression itemExpr = item.getExpression();
-                            if (itemExpr instanceof Select) {
+                        for (SelectItem si : plainSelect.getSelectItems()) {
+                            if (si instanceof SelectExpressionItem && ((SelectExpressionItem) si).getExpression() instanceof SubSelect) {
                                 hasSubSelects = true;
-                            } else if (itemExpr instanceof Column) {
+                            } else if (si instanceof SelectExpressionItem && ((SelectExpressionItem) si).getExpression() instanceof Column) {
                                 hasDirectSelects = true;
                             }
                         }
@@ -224,8 +232,8 @@ public class SQLQuery implements SQLScriptElement {
 
     private boolean isValidSelectItem(@NotNull SelectItem item) {
         // Workaround for JSQLParser not respecting the `#` comment in MySQL and treating them as valid values
-        if (item.getExpression() != null && dataSource != null) {
-            final Expression expr = item.getExpression();
+        if (item instanceof SelectExpressionItem && dataSource != null) {
+            final Expression expr = ((SelectExpressionItem) item).getExpression();
             if (expr instanceof Column) {
                 final String name = CommonUtils.trim(((Column) expr).getColumnName());
                 if (CommonUtils.isNotEmpty(name)) {
@@ -287,11 +295,12 @@ public class SQLQuery implements SQLScriptElement {
      */
     public boolean isPlainSelect() {
         parseQuery();
-        if (statement instanceof PlainSelect selectBody) {
+        if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
+            PlainSelect selectBody = (PlainSelect) ((Select) statement).getSelectBody();
             return CommonUtils.isEmpty(selectBody.getIntoTables()) &&
                 selectBody.getLimit() == null &&
                 selectBody.getTop() == null &&
-                selectBody.getForUpdateTable() == null;
+                !selectBody.isForUpdate();
         }
         return false;
     }
@@ -508,6 +517,30 @@ public class SQLQuery implements SQLScriptElement {
             ((Drop) statement).getName() != null && ((Drop) statement).getType().equalsIgnoreCase("table");
     }
 
+    public boolean isModifying() {
+        if (getType() == SQLQueryType.UNKNOWN) {
+            return false;
+        }
+        if (statement instanceof Select) {
+            SelectBody selectBody = ((Select) statement).getSelectBody();
+            if (selectBody instanceof PlainSelect plainSelectBody) {
+                return plainSelectBody.isForUpdate() || plainSelectBody.getIntoTables() != null;
+            }
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    public boolean isMutatingStatement() {
+        parseQuery();
+        return statement != null && (statement instanceof Drop || statement instanceof Delete || statement instanceof Update ||
+            statement instanceof Insert || statement instanceof CreateTable || statement instanceof CreateIndex ||
+            statement instanceof CreateView || statement instanceof CreateFunction || statement instanceof CreateProcedure ||
+            statement instanceof CreateSchema || statement instanceof CreateSequence || statement instanceof CreateSynonym ||
+            statement instanceof Alter || statement instanceof AlterView || statement instanceof AlterSequence);
+    }
+
     private static class SingleTableMeta implements DBCEntityMetaData {
 
         private final String catalogName;
@@ -565,22 +598,6 @@ public class SQLQuery implements SQLScriptElement {
             return CommonUtils.equalObjects(catalogName, md2.catalogName) &&
                 CommonUtils.equalObjects(schemaName, md2.schemaName) &&
                 CommonUtils.equalObjects(tableName, md2.tableName);
-        }
-    }
-
-    public boolean isModifiyng() {
-        if (getType() == SQLQueryType.UNKNOWN) {
-            return false;
-        }
-        if (statement instanceof PlainSelect selectBody) {
-            {
-                if (selectBody.getForUpdateTable() != null || selectBody.getIntoTables() != null) {
-                    return true;
-                }
-            }
-            return false;
-        } else {
-            return true;
         }
     }
 

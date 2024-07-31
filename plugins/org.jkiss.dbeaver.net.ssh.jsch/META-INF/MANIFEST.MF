@@ -9,7 +9,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
 Require-Bundle: org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.net.ssh;visibility:=reexport,
+ org.jkiss.dbeaver.net.ssh,
  com.jcraft.jsch
 Export-Package: org.jkiss.dbeaver.model.net.ssh
 Automatic-Module-Name: org.jkiss.dbeaver.net.ssh.jsch
