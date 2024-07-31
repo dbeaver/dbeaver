@@ -13,7 +13,8 @@ Export-Package: org.jkiss.dbeaver.model.exec.jdbc,
  org.jkiss.dbeaver.model.impl.jdbc.data,
  org.jkiss.dbeaver.model.impl.jdbc.data.handlers,
  org.jkiss.dbeaver.model.impl.jdbc.exec,
- org.jkiss.dbeaver.model.impl.jdbc.struct
+ org.jkiss.dbeaver.model.impl.jdbc.struct,
+ org.jkiss.dbeaver.model.sql.backup
 Bundle-ClassPath: .
 Require-Bundle: org.jkiss.dbeaver.model
 Bundle-Localization: OSGI-INF/l10n/bundle

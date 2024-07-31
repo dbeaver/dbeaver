@@ -7,6 +7,7 @@ Bundle-Release-Date: 20240805
 Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.model.jdbc;visibility:=reexport,
  org.jkiss.dbeaver.model.sql,
+ org.jkiss.dbeaver.model.sql.jdbc,
  org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.data.gis;visibility:=reexport,
  org.jkiss.bundle.gis;visibility:=reexport,
