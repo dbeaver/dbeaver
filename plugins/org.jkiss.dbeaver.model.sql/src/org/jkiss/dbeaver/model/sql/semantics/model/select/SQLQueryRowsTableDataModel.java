@@ -49,8 +49,8 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
     @Nullable
     private DBSEntity table = null;
 
-    public SQLQueryRowsTableDataModel(SQLQueryModelContext context, @NotNull STMTreeNode syntaxNode, @NotNull SQLQueryQualifiedName name) {
-        super(context, syntaxNode);
+    public SQLQueryRowsTableDataModel(@NotNull STMTreeNode syntaxNode, @NotNull SQLQueryQualifiedName name) {
+        super(syntaxNode);
         this.name = name;
     }
 

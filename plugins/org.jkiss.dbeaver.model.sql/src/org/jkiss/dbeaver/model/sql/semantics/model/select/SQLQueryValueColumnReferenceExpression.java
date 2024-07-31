@@ -110,7 +110,7 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
                 if (dialect.isQuotedString(rawString)) {
                     forcedClass = SQLQuerySymbolClass.STRING;
                 } else {
-                    forcedClass = SQLQueryModelContext.tryFallbackSymbolForStringLiteral(dialect, this.columnName, resultColumn != null);
+                    forcedClass = SQLQueryModelRecognizer.tryFallbackSymbolForStringLiteral(dialect, this.columnName, resultColumn != null);
                 }
             } else {
                 this.column = resultColumn;

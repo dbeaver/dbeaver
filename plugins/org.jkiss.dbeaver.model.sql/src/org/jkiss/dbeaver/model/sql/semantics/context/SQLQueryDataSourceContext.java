@@ -18,11 +18,12 @@ package org.jkiss.dbeaver.model.sql.semantics.context;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSearchUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelContext;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableValueModel;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
@@ -41,13 +42,16 @@ import java.util.List;
  */
 public class SQLQueryDataSourceContext extends SQLQueryDataContext {
     @NotNull
-    private final SQLQueryModelContext context;
+    private final SQLDialect dialect;
+    @NotNull
+    private final DBCExecutionContext executionContext;
     @NotNull
     private final SQLIdentifierDetector identifierDetector;
 
-    public SQLQueryDataSourceContext(@NotNull SQLQueryModelContext context) {
-        this.context = context;
-        this.identifierDetector = new SQLIdentifierDetector(context.getDialect());
+    public SQLQueryDataSourceContext(@NotNull SQLDialect dialect, @NotNull DBCExecutionContext executionContext) {
+        this.dialect = dialect;
+        this.executionContext = executionContext;
+        this.identifierDetector = new SQLIdentifierDetector(dialect);
     }
 
     @NotNull
@@ -59,12 +63,12 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
     @Nullable
     @Override
     public DBSEntity findRealTable(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
-        if (this.context.getExecutionContext().getDataSource() instanceof DBSObjectContainer container) {
+        if (this.executionContext.getDataSource() instanceof DBSObjectContainer container) {
             List<String> tableName2 = new ArrayList<>(tableName);
             DBSObject obj = SQLSearchUtils.findObjectByFQN(
                 monitor,
                 container,
-                this.context.getExecutionContext(),
+                this.executionContext,
                 tableName2,
                 false,
                 identifierDetector
@@ -93,13 +97,13 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
     @NotNull
     @Override
     public SQLDialect getDialect() {
-        return this.context.getDialect();
+        return this.dialect;
     }
 
     @NotNull
     @Override
     public SQLQueryRowsSourceModel getDefaultTable(@NotNull STMTreeNode syntaxNode) {
-        return new SQLQueryRowsTableValueModel(context, syntaxNode, Collections.emptyList());
+        return new SQLQueryRowsTableValueModel(syntaxNode, Collections.emptyList());
     }
     
     @Override
