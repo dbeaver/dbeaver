@@ -350,37 +350,37 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
 
     @Override
     public TableCache getTableCache() {
-        return structureContainer.getTableCache();
+        return structureContainer == null ? null : structureContainer.getTableCache();
     }
 
     @Override
     public IndexCache getIndexCache() {
-        return structureContainer.getIndexCache();
+        return structureContainer == null ? null : structureContainer.getIndexCache();
     }
 
     @Override
     public ConstraintKeysCache getConstraintKeysCache() {
-        return structureContainer.getConstraintKeysCache();
+        return structureContainer == null ? null : structureContainer.getConstraintKeysCache();
     }
 
     @Override
     public ForeignKeysCache getForeignKeysCache() {
-        return structureContainer.getForeignKeysCache();
+        return structureContainer == null ? null : structureContainer.getForeignKeysCache();
     }
 
     @Override
     public TableTriggerCache getTableTriggerCache() {
-        return structureContainer.getTableTriggerCache();
+        return structureContainer == null ? null : structureContainer.getTableTriggerCache();
     }
 
     @Override
     public GenericObjectContainer.GenericSequenceCache getSequenceCache() {
-        return structureContainer.getSequenceCache();
+        return structureContainer == null ? null : structureContainer.getSequenceCache();
     }
 
     @Override
     public GenericObjectContainer.GenericSynonymCache getSynonymCache() {
-        return structureContainer.getSynonymCache();
+        return structureContainer == null ? null : structureContainer.getSynonymCache();
     }
 
     @Override
