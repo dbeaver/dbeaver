@@ -133,6 +133,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         this.metaModel = metaModel;
         this.dataTypeCache = metaModel.createDataTypeCache(this);
         this.tableTypeCache = new TableTypeCache();
+        this.structureContainer = new GenericDataSourceObjectContainer(this);
     }
 
     @DPIContainer
