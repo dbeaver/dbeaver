@@ -864,6 +864,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             final String objectName =
                 request.getWordDetector().isQuoted(token) ? request.getWordDetector().removeQuotes(token) :
                 DBObjectNameCaseTransformer.transformName(dataSource, token);
+            sc.cacheStructure(monitor, DBSObjectContainer.STRUCT_ENTITIES);
             childObject = objectName == null ? null : sc.getChild(monitor, objectName);
             if (!DBStructUtils.isConnectedContainer(childObject)) {
                 childObject = null;
@@ -872,6 +873,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 for (DBSObjectContainer selectedContainer : selectedContainers) {
                     if (selectedContainer != null) {
                         // Probably it is from selected object, let's try it
+                        selectedContainer.cacheStructure(monitor, DBSObjectContainer.STRUCT_ENTITIES);
                         childObject = selectedContainer.getChild(monitor, objectName);
                         if (childObject != null) {
                             sc = selectedContainer;

@@ -80,6 +80,8 @@ import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.preferences.*;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLBackgroundParsingJob;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLEditorOutlinePage;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLEditorSemanticMarkersManager;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLSemanticErrorAnnotation;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.*;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
@@ -128,8 +130,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     @Nullable
     private SQLParserContext parserContext;
     private ProjectionSupport projectionSupport;
-    private SQLBackgroundParsingJob backgroundParsingJob;    
+    private SQLBackgroundParsingJob backgroundParsingJob;
     private SQLEditorOutlinePage outlinePage;
+    private SQLEditorSemanticMarkersManager semanticMarkersManager;
 
     //private Map<Annotation, Position> curAnnotations;
 
@@ -183,7 +186,29 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
         DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(this);
     }
-    
+
+    @Override
+    public void gotoMarker(IMarker marker) {
+        try {
+            if (marker.getAttribute(SQLSemanticErrorAnnotation.MARKER_ATTRIBUTE_NAME) instanceof SQLSemanticErrorAnnotation annotation) {
+                final IAnnotationModel annotationModel = this.getAnnotationModel();
+                final TextViewer textViewer = this.getTextViewer();
+                if (annotationModel != null && textViewer != null) {
+                    Position position = annotationModel.getPosition(annotation);
+                    if (!position.isDeleted) {
+                        textViewer.setSelectedRange(position.getOffset(), position.getLength());
+                        textViewer.revealRange(position.getOffset(), position.getLength());
+                    }
+                    return;
+                }
+            }
+        } catch (CoreException e) {
+            log.error("Error retrieving marker attribute", e);
+        }
+
+        super.gotoMarker(marker);
+    }
+
     public SQLDocumentSyntaxContext getSyntaxContext() {
         return backgroundParsingJob == null ? null : backgroundParsingJob.getCurrentContext();
     }
@@ -668,7 +693,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     @Override
     public void dispose() {
         DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(this);
-        if (backgroundParsingJob != null) {
+        if (this.semanticMarkersManager != null) {
+            this.semanticMarkersManager.dispose();
+        }
+        if (this.backgroundParsingJob != null) {
             this.backgroundParsingJob.dispose();
         }
         this.occurrencesHighlighter.dispose();
@@ -779,15 +807,25 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     public void reloadSyntaxRules() {
-        if (SQLEditorUtils.isSQLSyntaxParserApplied(this.getEditorInput()) && isAdvancedHighlightingEnabled()) {
-            if (backgroundParsingJob == null) {
-                backgroundParsingJob = new SQLBackgroundParsingJob(this);
+        if (SQLEditorUtils.isSQLSyntaxParserApplied(this.getEditorInput()) && this.isAdvancedHighlightingEnabled()) {
+            if (this.backgroundParsingJob == null) {
+                this.backgroundParsingJob = new SQLBackgroundParsingJob(this);
+            }
+            if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED) && this.semanticMarkersManager == null) {
+                this.semanticMarkersManager = new SQLEditorSemanticMarkersManager(this);
             }
         } else {
-            if (backgroundParsingJob != null) {
-                backgroundParsingJob.dispose();
-                backgroundParsingJob = null;
+            if (this.backgroundParsingJob != null) {
+                this.backgroundParsingJob.dispose();
+                this.backgroundParsingJob = null;
             }
+        }
+        if (this.semanticMarkersManager != null && (
+            this.backgroundParsingJob == null ||
+            !this.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED)
+        )) {
+            this.semanticMarkersManager.dispose();
+            this.semanticMarkersManager = null;
         }
 
         // Refresh syntax
@@ -846,8 +884,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             verticalRuler.update();
         }
 
-        if (backgroundParsingJob != null) {
-            backgroundParsingJob.setup();
+        if (this.backgroundParsingJob != null) {
+            this.backgroundParsingJob.setup();
+        }
+        if (this.semanticMarkersManager != null) {
+            this.semanticMarkersManager.refresh();
         }
     }
 
@@ -1224,6 +1265,15 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                     this.outlinePage.refresh();
                 }
                 return;
+        }
+    }
+
+    public void refreshAdvancedServices() {
+        if (this.outlinePage != null) {
+            this.outlinePage.refresh();
+        }
+        if (this.semanticMarkersManager != null) {
+            this.semanticMarkersManager.refresh();
         }
     }
     
