@@ -65,7 +65,8 @@ public class SQLiteBaseTableDDLTest {
             .thenReturn(DBWorkbench.getPlatform().getDataSourceProviderRegistry().findDriver("sqlite_jdbc"));
 
         Mockito.when(mockDataSourceContainer.getPreferenceStore()).thenReturn(DBWorkbench.getPlatform().getPreferenceStore());
-        dataSource = new GenericDataSource(mockMonitor, new SQLiteMetaModel(), mockDataSourceContainer, new SQLiteSQLDialect());
+        SQLiteMetaModel sqLiteMetaModel = new SQLiteMetaModel();
+        dataSource = new SQLiteDataSource(mockMonitor, mockDataSourceContainer, sqLiteMetaModel, new SQLiteSQLDialect());
         Mockito.when(mockDataSourceContainer.getNavigatorSettings()).thenReturn(new DataSourceNavigatorSettings());
         Mockito.when(mockRemoteInstance.getDataSource()).thenReturn(dataSource);
         executionContext = new GenericExecutionContext(mockRemoteInstance, "Test");
