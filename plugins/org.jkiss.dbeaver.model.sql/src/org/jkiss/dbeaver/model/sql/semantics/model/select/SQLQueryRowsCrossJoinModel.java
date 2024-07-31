@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model.select;
 
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelContext;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
@@ -29,13 +29,12 @@ import org.jkiss.dbeaver.model.stm.STMTreeNode;
  */
 public class SQLQueryRowsCrossJoinModel extends SQLQueryRowsSetOperationModel {
     public SQLQueryRowsCrossJoinModel(
-        @NotNull SQLQueryModelContext context,
         @NotNull Interval range,
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryRowsSourceModel left,
         @NotNull SQLQueryRowsSourceModel right
     ) {
-        super(context, range, syntaxNode, left, right);
+        super(range, syntaxNode, left, right);
     }
 
     @NotNull
