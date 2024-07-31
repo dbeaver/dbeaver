@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -62,6 +63,15 @@ public class SQLiteDataSource extends GenericDataSource {
         super(monitor, container, metaModel, dialect);
     }
 
+    // Constructor for tests
+    @ForTest
+    public SQLiteDataSource(@NotNull DBRProgressMonitor monitor,
+        @NotNull GenericMetaModel metaModel,
+        @NotNull DBPDataSourceContainer container,
+        @NotNull SQLDialect dialect)
+        throws DBException {
+        super(monitor, metaModel, container, dialect);
+    }
 
     @Override
     protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
