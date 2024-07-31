@@ -35,11 +35,11 @@ import java.util.Locale;
 /**
  * Index cache implementation
  */
-class ConstraintKeysCache extends JDBCCompositeCache<GenericStructContainer, GenericTableBase, GenericUniqueKey, GenericTableConstraintColumn> {
+public class ConstraintKeysCache extends JDBCCompositeCache<GenericStructContainer, GenericTableBase, GenericUniqueKey, GenericTableConstraintColumn> {
 
     private final GenericMetaObject pkObject;
 
-    ConstraintKeysCache(TableCache tableCache)
+    protected ConstraintKeysCache(TableCache tableCache)
     {
         super(
             tableCache,

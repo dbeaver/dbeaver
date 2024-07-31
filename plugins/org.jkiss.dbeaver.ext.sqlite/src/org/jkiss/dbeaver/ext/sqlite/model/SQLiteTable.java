@@ -93,4 +93,10 @@ public class SQLiteTable extends GenericTable implements DBDPseudoAttributeConta
     public SQLiteTableForeignKey getAssociation(@NotNull DBRProgressMonitor monitor, String name) throws DBException {
         return (SQLiteTableForeignKey) super.getAssociation(monitor, name);
     }
+
+    @Override
+    public GenericStructContainer getContainer() {
+        return getDataSource();
+    }
+
 }

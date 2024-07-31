@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.sqlite.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.model.ConstraintKeysCache;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSourceInfo;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
@@ -42,13 +43,14 @@ import java.util.Map;
 
 public class SQLiteDataSource extends GenericDataSource {
 
+    private SQLConstraintKeysCache constraintKeysCache;
+
     public SQLiteDataSource(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDataSourceContainer container,
         GenericMetaModel metaModel
     ) throws DBException {
         super(monitor, container, metaModel, new SQLiteSQLDialect());
-
     }
 
     public SQLiteDataSource(
@@ -127,5 +129,13 @@ public class SQLiteDataSource extends GenericDataSource {
             return ErrorType.UNIQUE_KEY_VIOLATION;
         }
         return super.discoverErrorType(error);
+    }
+
+    @Override
+    public ConstraintKeysCache getConstraintKeysCache() {
+        if (constraintKeysCache == null) {
+            constraintKeysCache = new SQLConstraintKeysCache(getTableCache());
+        }
+        return constraintKeysCache;
     }
 }
