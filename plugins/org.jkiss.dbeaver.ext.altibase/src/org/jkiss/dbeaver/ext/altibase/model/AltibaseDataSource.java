@@ -119,6 +119,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         return (AltibaseMetaModel) super.getMetaModel();
     }
 
+    @Override
     public boolean isOmitCatalog() {
         return true;
     }

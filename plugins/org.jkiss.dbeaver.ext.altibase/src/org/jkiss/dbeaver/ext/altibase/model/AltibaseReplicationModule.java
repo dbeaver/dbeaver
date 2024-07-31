@@ -17,13 +17,6 @@
 
 package org.jkiss.dbeaver.ext.altibase.model;
 
-/*
- * An abstract class for Replication sender and receiver.
- */
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-
-import java.sql.SQLException;
-
 public abstract class AltibaseReplicationModule extends AltibaseObject<AltibaseReplication> {
 
     protected AltibaseReplication parent;
@@ -52,15 +45,4 @@ public abstract class AltibaseReplicationModule extends AltibaseObject<AltibaseR
     public boolean isPersisted() {
         return false;
     }
-    
-    protected boolean hasData(JDBCResultSet resultSet) {
-        try {
-            return (resultSet.getRow() > 0);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        
-        return false;
-    }
-
 }

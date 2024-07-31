@@ -40,6 +40,7 @@ public class AltibaseToolReplicationStop extends SQLToolExecuteHandler<AltibaseR
         queries.add(new SQLDatabasePersistAction(sql));
     }
 
+    @Override
     public boolean needsRefreshOnFinish() {
         return true;
     }
