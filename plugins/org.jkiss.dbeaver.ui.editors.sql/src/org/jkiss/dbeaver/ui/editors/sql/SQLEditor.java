@@ -51,6 +51,7 @@ import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.IMenuService;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.services.IEvaluationReference;
 import org.eclipse.ui.services.IEvaluationService;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
@@ -133,10 +134,12 @@ import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationPanelDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationRegistry;
 import org.jkiss.dbeaver.ui.editors.sql.scripts.ScriptsHandlerImpl;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLEditorCompletionContext;
 import org.jkiss.dbeaver.ui.editors.sql.variables.AssignVariableAction;
 import org.jkiss.dbeaver.ui.editors.sql.variables.SQLVariablesPanel;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.ResourceUtils;
@@ -225,6 +228,7 @@ public class SQLEditor extends SQLEditorBase implements
     private SQLEditorOutputViewer outputViewer;
     private SQLVariablesPanel variablesViewer;
 
+    @Nullable
     private volatile QueryProcessor curQueryProcessor;
     private final List<QueryProcessor> queryProcessors = new ArrayList<>();
 
@@ -933,7 +937,12 @@ public class SQLEditor extends SQLEditorBase implements
             if (!dataSourceContainer.isConnected()) {
                 UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
                 if (serviceConnections != null) {
-                    serviceConnections.connectDataSource(dataSourceContainer, onFinish);
+                    // Start connect visualizer
+                    ConnectVisualizer connectVisualizer = new ConnectVisualizer(dataSourceContainer);
+                    serviceConnections.connectDataSource(dataSourceContainer, status -> {
+                        if (onFinish != null) onFinish.onTaskFinished(status);
+                        connectVisualizer.stop();
+                    });
                 }
             }
         }
@@ -2648,7 +2657,18 @@ public class SQLEditor extends SQLEditorBase implements
         if (!dataSourceContainer.hasModifyPermission(DBPDataSourcePermission.PERMISSION_EXECUTE_SCRIPTS)) {
             DBWorkbench.getPlatformUI().showError(
                 SQLEditorMessages.editors_sql_error_cant_execute_query_title,
-                "Query execution was restricted by connection configuration");
+                SQLEditorMessages.editors_sql_error_cant_execute_permissions_query_message
+            );
+            return false;
+        }
+
+        if (dataSourceContainer.isConnectionReadOnly() &&
+            queries.stream().anyMatch(q -> (q instanceof SQLQuery sqlQuery && sqlQuery.isMutatingStatement()))
+        ) {
+            DBWorkbench.getPlatformUI().showError(
+                SQLEditorMessages.editors_sql_error_cant_execute_query_title,
+                SQLEditorMessages.editors_sql_error_cant_execute_readonly_query_message
+            );
             return false;
         }
 
@@ -2658,8 +2678,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         final boolean isSingleQuery = !forceScript && (queries.size() == 1);
-        if (isSingleQuery && queries.get(0) instanceof SQLQuery) {
-            SQLQuery query = (SQLQuery) queries.get(0);
+        if (isSingleQuery && queries.get(0) instanceof SQLQuery query) {
             boolean isDropTable = query.isDropTableDangerous();
             if (query.isDeleteUpdateDangerous() || isDropTable) {
                 String targetName = "multiple tables";
@@ -2671,8 +2690,8 @@ public class SQLEditor extends SQLEditorBase implements
                     ConfirmationDialog.WARNING, isDropTable ? SQLPreferenceConstants.CONFIRM_DROP_SQL : SQLPreferenceConstants.CONFIRM_DANGER_SQL,
                     ConfirmationDialog.CONFIRM,
                     query.getType().name(),
-                    targetName) != IDialogConstants.OK_ID)
-                {
+                    targetName) != IDialogConstants.OK_ID
+                ) {
                     return false;
                 }
             }
@@ -2681,8 +2700,8 @@ public class SQLEditor extends SQLEditorBase implements
                 getSite().getShell(),
                 ConfirmationDialog.WARNING, SQLPreferenceConstants.CONFIRM_MASS_PARALLEL_SQL,
                 ConfirmationDialog.CONFIRM,
-                queries.size()) != IDialogConstants.OK_ID)
-            {
+                queries.size()) != IDialogConstants.OK_ID
+            ) {
                 return false;
             }
         }
@@ -2704,7 +2723,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         boolean replaceCurrentTab = getActivePreferenceStore().getBoolean(SQLPreferenceConstants.RESULT_SET_REPLACE_CURRENT_TAB);
 
-        if (!export) {
+        if (!export && curQueryProcessor != null) {
             // We only need to prompt user to close extra (unpinned) tabs if:
             // 1. The user is not executing query in a new tab
             // 2. The user is executing script that may open several result sets
@@ -2723,7 +2742,7 @@ public class SQLEditor extends SQLEditorBase implements
             // 1. Or all tabs are closed and no query processors are present
             // 2. Or current query processor has pinned tabs
             // 3. Or current query processor has running jobs
-            if (newTab || queryProcessors.isEmpty() || curQueryProcessor.hasPinnedTabs() || curQueryProcessor.getRunningJobs() > 0) {
+            if (newTab || queryProcessors.isEmpty() || curQueryProcessor.getRunningJobs() > 0 || curQueryProcessor.hasPinnedTabs()) {
                 boolean foundSuitableTab = false;
 
                 // Try to find suitable query processor among exiting ones if:
@@ -2739,9 +2758,9 @@ public class SQLEditor extends SQLEditorBase implements
                     }
                 }
                 // Just create a new query processor
-                if (!foundSuitableTab) {
+                if (!foundSuitableTab && newTab) {
                     // If we already have useless multi-tabbed processor, but we want single-tabbed, then get rid of the useless one  
-                    if (curQueryProcessor instanceof MultiTabsQueryProcessor 
+                    if (!useTabPerQuery(queries.size() == 1) && curQueryProcessor instanceof MultiTabsQueryProcessor
                         && curQueryProcessor.getResultContainers().size() == 1
                         && !curQueryProcessor.getFirstResults().viewer.hasData()
                     ) {
@@ -2768,7 +2787,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
-        if (curQueryProcessor == null || (useTabPerQuery(isSingleQuery) == (curQueryProcessor instanceof SingleTabQueryProcessor))) {
+        if (curQueryProcessor == null || (newTab && useTabPerQuery(isSingleQuery) == (curQueryProcessor instanceof SingleTabQueryProcessor))) {
             createQueryProcessor(true, isSingleQuery, true);
         }
 
@@ -2787,7 +2806,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     public void cancelActiveQuery() {
-        if (isActiveQueryRunning()) {
+        if (curQueryProcessor != null && isActiveQueryRunning()) {
             curQueryProcessor.cancelJob();
         }
     }
@@ -3459,7 +3478,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
             this.updateMultipleResultsPerTabToolItem();
         });
-
+        this.setCompletionContext(new SQLEditorCompletionContext(this));
         fireDataSourceChanged(event);
         super.preferenceChange(event);
     }
@@ -4116,7 +4135,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
             List<String> features = new ArrayList<>(3);
             features.add(FEATURE_DATA_SELECT);
-            if (query instanceof SQLQuery && ((SQLQuery) query).isModifiyng()) {
+            if (query instanceof SQLQuery && ((SQLQuery) query).isModifying()) {
                 features.add(FEATURE_DATA_MODIFIED_ON_REFRESH);
             }
             features.add(FEATURE_DATA_COUNT);
@@ -4359,7 +4378,11 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public void handleExecuteResult(DBCExecutionResult result) {
-            dumpQueryServerOutput(result);
+            // dump server output only once on one query execution
+            // even if it return multiple query results (resultSetNumber > 0)
+            if (this.resultSetNumber == 0) {
+                dumpQueryServerOutput(result);
+            }
         }
 
         @Override
@@ -5580,6 +5603,48 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             }
             schedule(UPDATE_DELAY_MS);
+            return Status.OK_STATUS;
+        }
+    }
+
+    private class ConnectVisualizer extends UIJob {
+        private boolean stopped = false;
+        private int tickCount;
+        private Cursor oldCursor;
+        protected ConnectVisualizer(DBPDataSourceContainer dataSourceContainer) {
+            super("Connect visualizer");
+            StyledText editorControl = getEditorControl();
+            if (editorControl != null) {
+                oldCursor = editorControl.getCursor();
+                editorControl.setCursor(editorControl.getDisplay().getSystemCursor(SWT.CURSOR_APPSTARTING));
+            }
+            schedule();
+        }
+
+        public void stop() {
+            stopped = true;
+        }
+
+        @Override
+        public IStatus runInUIThread(IProgressMonitor monitor) {
+            tickCount++;
+            StyledText editorControl = getEditorControl();
+            if (editorControl == null || editorControl.isDisposed()) {
+                stopped = true;
+            }
+
+            if (!stopped) {
+                Image image = DatabaseNavigatorTree.IMG_LOADING[tickCount % DatabaseNavigatorTree.IMG_LOADING.length];
+                setTitleImage(image);
+                schedule(100);
+            } else {
+                if (oldCursor != null) {
+                    if (editorControl != null && !editorControl.isDisposed()) {
+                        editorControl.setCursor(oldCursor);
+                    }
+                }
+                refreshEditorIconAndTitle();
+            }
             return Status.OK_STATUS;
         }
     }

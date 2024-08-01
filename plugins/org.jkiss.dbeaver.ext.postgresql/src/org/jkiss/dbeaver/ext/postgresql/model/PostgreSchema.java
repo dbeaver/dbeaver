@@ -104,7 +104,7 @@ public class PostgreSchema implements
         aggregateCache = new AggregateCache();
         tableCache = createTableCache();
         constraintCache = createConstraintCache();
-        indexCache = new IndexCache();
+        indexCache = database.getDataSource().getServerType().supportsIndexes() ? new IndexCache() : null;
         proceduresCache = createProceduresCache();
         dataTypeCache = new PostgreDataTypeCache();
     }
@@ -256,12 +256,22 @@ public class PostgreSchema implements
     }
 
     @Association
-    public List<PostgreIndex> getIndexes(DBRProgressMonitor monitor)
-        throws DBException {
-        return indexCache.getObjects(monitor, this, null);
+    public List<PostgreIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return getIndexes(monitor, null);
     }
 
-    public PostgreIndex getIndex(DBRProgressMonitor monitor, long indexId) throws DBException {
+    public List<PostgreIndex> getIndexes(@NotNull DBRProgressMonitor monitor, @Nullable PostgreTableBase parent) throws DBException {
+        if (indexCache == null) {
+            return List.of();
+        }
+        return indexCache.getObjects(monitor, this, parent);
+    }
+
+    @Nullable
+    public PostgreIndex getIndex(@NotNull DBRProgressMonitor monitor, long indexId) throws DBException {
+        if (indexCache == null) {
+            return null;
+        }
         for (PostgreIndex index : indexCache.getAllObjects(monitor, this)) {
             if (index.getObjectId() == indexId) {
                 return index;
@@ -293,6 +303,7 @@ public class PostgreSchema implements
         return this.proceduresCache;
     }
 
+    @Nullable
     public IndexCache getIndexCache() {
         return indexCache;
     }
@@ -392,7 +403,7 @@ public class PostgreSchema implements
 
     @NotNull
     @Override
-    public Class<? extends DBSEntity> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSEntity> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
         return PostgreTableRegular.class;
     }
 
@@ -409,7 +420,9 @@ public class PostgreSchema implements
             monitor.subTask("Cache constraints");
             constraintCache.getAllObjects(monitor, this);
             monitor.subTask("Cache indexes");
-            indexCache.getAllObjects(monitor, this);
+            if (indexCache != null) {
+                indexCache.getAllObjects(monitor, this);
+            }
             if (getDataSource().getServerType().supportsInheritance()) {
                 monitor.subTask("Cache inheritance");
                 try {
@@ -482,7 +495,9 @@ public class PostgreSchema implements
         tableCache.clearCache();
         constraintCache.clearCache();
         proceduresCache.clearCache();
-        indexCache.clearCache();
+        if (indexCache != null) {
+            indexCache.clearCache();
+        }
         defaultPrivileges = null;
         hasStatistics = false;
 

@@ -27,8 +27,8 @@ import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Describes the structure of the result of select clause
@@ -111,7 +111,11 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
         @NotNull SQLQueryRecognitionContext statistics
     ) {
         this.dataContext = context;
-        return this.sublists.stream().flatMap(s -> s.expand(context, rowsSourceModel, statistics)).collect(Collectors.toList());
+        LinkedList<SQLQueryResultColumn> resultColumns = new LinkedList<>();
+        for (SQLQuerySelectionResultSublistSpec sublist : this.sublists) {
+            sublist.collectColumns(context, rowsSourceModel, statistics, resultColumns);
+        }
+        return List.copyOf(resultColumns);
     }
 
     @Nullable

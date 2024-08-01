@@ -142,6 +142,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
         return dataSource.getId();
     }
 
+    @NotNull
     @Override
     public DBXTreeNode getMeta()
     {

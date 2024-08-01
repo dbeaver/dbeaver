@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model.select;
 
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelContext;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 /**
@@ -29,13 +29,12 @@ public abstract class SQLQueryRowsSetOperationModel extends SQLQueryRowsSourceMo
     protected final SQLQueryRowsSourceModel right;
 
     public SQLQueryRowsSetOperationModel(
-        @NotNull SQLQueryModelContext context,
         @NotNull Interval range,
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryRowsSourceModel left,
         @NotNull SQLQueryRowsSourceModel right
     ) {
-        super(context, range, syntaxNode, left, right);
+        super(range, syntaxNode, left, right);
         this.left = left;
         this.right = right;
     }

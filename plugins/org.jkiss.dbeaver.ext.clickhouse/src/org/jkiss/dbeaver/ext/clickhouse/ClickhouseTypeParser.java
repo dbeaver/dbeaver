@@ -30,11 +30,11 @@ import org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseArrayType;
 import org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseDataSource;
 import org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseMapType;
 import org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseTupleType;
+import org.jkiss.dbeaver.ext.clickhouse.model.data.ClickhouseMapValue;
 import org.jkiss.dbeaver.ext.clickhouse.model.data.ClickhouseTupleValue;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCompositeMap;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -52,7 +52,7 @@ public class ClickhouseTypeParser {
     private static final Gson gson = new Gson();
 
     // FIXME: Disabled as per dbeaver/dbeaver#34283
-    private static final boolean ENABLE_COMPLEX_TYPE_PARSING = false;
+    private static final boolean ENABLE_COMPLEX_TYPE_PARSING = true;
 
     private ClickhouseTypeParser() {
         // prevents instantiation
@@ -80,7 +80,7 @@ public class ClickhouseTypeParser {
         }
 
         if (type instanceof ClickhouseMapType map && ENABLE_COMPLEX_TYPE_PARSING) {
-            return new JDBCCompositeMap(session, map, ((Map<?, ?>) object));
+            return new ClickhouseMapValue((ClickhouseDataSource) session.getDataSource(), map, ((Map<?, ?>) object));
         } else if (type instanceof ClickhouseTupleType tuple && ENABLE_COMPLEX_TYPE_PARSING) {
             final Object[] values;
             if (object instanceof Map) {

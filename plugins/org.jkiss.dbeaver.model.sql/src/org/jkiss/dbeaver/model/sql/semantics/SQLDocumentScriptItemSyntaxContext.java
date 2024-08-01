@@ -22,6 +22,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
 
+import java.util.List;
+
 public class SQLDocumentScriptItemSyntaxContext {
     private static final Log log = Log.getLog(SQLDocumentScriptItemSyntaxContext.class);
     @NotNull
@@ -32,17 +34,27 @@ public class SQLDocumentScriptItemSyntaxContext {
     private final String originalText;
     @NotNull
     private final SQLQueryModel queryModel;
+    private final int initialPosition;
     private int length;
+    private boolean hasContextBoundaryAtLength = true;
     private boolean isDirty = false;
+    @Nullable
+    private List<SQLQueryRecognitionProblemInfo> problems = null;
 
     public SQLDocumentScriptItemSyntaxContext(
+        int initialPosition,
         @NotNull String originalText,
         @NotNull SQLQueryModel queryModel,
         int length
     ) {
+        this.initialPosition = initialPosition;
         this.originalText = originalText;
         this.queryModel = queryModel;
         this.length = length;
+    }
+
+    public int getInitialPosition() {
+        return this.initialPosition;
     }
 
     @NotNull
@@ -59,10 +71,27 @@ public class SQLDocumentScriptItemSyntaxContext {
         return this.length;
     }
 
+    public boolean hasContextBoundaryAtLength() {
+        return this.hasContextBoundaryAtLength;
+    }
+
+    public void setHasContextBoundaryAtLength(boolean hasContextBoundaryAtLength) {
+        this.hasContextBoundaryAtLength = hasContextBoundaryAtLength;
+    }
+
     public boolean isDirty() {
         synchronized (this.lock) {
             return this.isDirty;
         }
+    }
+    
+    public void setProblems(@Nullable List<SQLQueryRecognitionProblemInfo> problems) {
+        this.problems = problems;
+    }
+
+    @Nullable
+    public List<SQLQueryRecognitionProblemInfo> getProblems() {
+        return problems;
     }
 
     @Nullable

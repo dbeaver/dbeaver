@@ -174,10 +174,20 @@ public class SQLDocumentSyntaxContext {
         @NotNull String elementOriginalText,
         @NotNull SQLQueryModel queryModel,
         int offset,
-        int length
+        int length,
+        boolean hasContextBoundaryAtLength
     ) {
-        SQLDocumentScriptItemSyntaxContext scriptItem = new SQLDocumentScriptItemSyntaxContext(elementOriginalText, queryModel, length);
-        this.scriptItems.put(offset, scriptItem);
+        SQLDocumentScriptItemSyntaxContext scriptItem = new SQLDocumentScriptItemSyntaxContext(
+            offset,
+            elementOriginalText,
+            queryModel,
+            length
+        );
+        scriptItem.setHasContextBoundaryAtLength(hasContextBoundaryAtLength);
+        SQLDocumentScriptItemSyntaxContext oldScriptItem = this.scriptItems.put(offset, scriptItem);
+        if (oldScriptItem != scriptItem && oldScriptItem != null) {
+            this.forEachListener(l -> l.onScriptItemInvalidated(oldScriptItem));
+        }
         this.forEachListener(l -> l.onScriptItemIntroduced(scriptItem));
         return scriptItem;
     }
@@ -212,7 +222,7 @@ public class SQLDocumentSyntaxContext {
                     SQLDocumentScriptItemSyntaxContext currItem2 = it.getCurrValue();
                     if (currOffset <= offset && currOffset + currItem2.length() > offset) {
                         keyOffsetsToRemove = ListNode.push(keyOffsetsToRemove, currOffset);
-                        this.forEachListener(l -> l.onScriptItemInvalidated(currItem));
+                        this.forEachListener(l -> l.onScriptItemInvalidated(currItem2));
                         lastAffectedOffset = currOffset + currItem2.length();
                     }
                 } else {

@@ -103,7 +103,7 @@ public class SQLCompletionProposalBase {
         this.cursorPosition = cursorPosition;
         this.image = image;
         this.proposalType = proposalType;
-        this.additionalProposalInfo = object;
+        this.additionalProposalInfo = object != null ? object : description;
 
         setPosition(wordPartDetector);
 

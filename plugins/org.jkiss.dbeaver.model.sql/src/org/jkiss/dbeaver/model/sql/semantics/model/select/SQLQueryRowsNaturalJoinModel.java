@@ -37,29 +37,36 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
     @Nullable
     private final List<SQLQuerySymbolEntry> columsToJoin;
 
+    @Nullable
+    private final SQLQueryLexicalScope conditionScope;
+
     public SQLQueryRowsNaturalJoinModel(
-        @NotNull SQLQueryModelContext context,
         @NotNull Interval range,
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryRowsSourceModel left,
         @NotNull SQLQueryRowsSourceModel right,
-        @Nullable SQLQueryValueExpression condition
+        @NotNull SQLQueryValueExpression condition,
+        @NotNull SQLQueryLexicalScope conditionScope
     ) {
-        super(context, range, syntaxNode, left, right);
+        super(range, syntaxNode, left, right);
+        super.registerSubnode(condition);
         this.condition = condition;
+        this.conditionScope = conditionScope;
         this.columsToJoin = null;
+        
+        this.registerLexicalScope(conditionScope);
     }
 
     public SQLQueryRowsNaturalJoinModel(
-        @NotNull SQLQueryModelContext context,
         @NotNull Interval range,
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryRowsSourceModel left,
         @NotNull SQLQueryRowsSourceModel right,
         @Nullable List<SQLQuerySymbolEntry> columsToJoin
     ) {
-        super(context, range, syntaxNode, left, right);
+        super(range, syntaxNode, left, right);
         this.condition = null;
+        this.conditionScope = null;
         this.columsToJoin = columsToJoin;
     }
 
@@ -105,6 +112,7 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
         SQLQueryDataContext combinedContext = left.combine(right);
         if (this.condition != null) {
             this.condition.propagateContext(combinedContext, statistics);
+            this.conditionScope.setContext(combinedContext);
         }
         return combinedContext;
     }

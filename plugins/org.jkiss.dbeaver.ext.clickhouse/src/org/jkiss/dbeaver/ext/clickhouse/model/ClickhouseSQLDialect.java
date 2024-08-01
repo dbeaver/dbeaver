@@ -63,6 +63,7 @@ public class ClickhouseSQLDialect extends GenericSQLDialect {
         "UUIDStringToNum",
         "visitParamHas",
         "IPv4StringToNum",
+        "IPv6StringToNum",
         "randConstant",
         "javaHash",
         "bitmapBuild",
@@ -276,10 +277,14 @@ public class ClickhouseSQLDialect extends GenericSQLDialect {
     @Override
     public String getTypeCastClause(@NotNull DBSTypedObject attribute, String expression, boolean isInCondition) {
         String typeName = attribute.getTypeName();
-        if (isInCondition && CommonUtils.isNotEmpty(typeName) && ClickhouseConstants.DATA_TYPE_IPV4.equals(typeName.toLowerCase())) {
-            return "IPv4StringToNum(" + expression + ")";
-        } else {
-            return super.getTypeCastClause(attribute, expression, isInCondition);
+        if (isInCondition && CommonUtils.isNotEmpty(typeName)) {
+            String lowerTypeName = typeName.toLowerCase();
+            if (ClickhouseConstants.DATA_TYPE_IPV4.equals(lowerTypeName)) {
+                return "IPv4StringToNum(" + expression + ")";
+            } else if (ClickhouseConstants.DATA_TYPE_IPV6.equals(lowerTypeName)) {
+                return "IPv6StringToNum(" + expression + ")";
+            }
         }
+        return super.getTypeCastClause(attribute, expression, isInCondition);
     }
 }

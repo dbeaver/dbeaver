@@ -75,7 +75,7 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
     {
         this.editor = editor;
         this.contextInformer = contextInformer;
-        implementation = new SQLAnnotationHover(editor);
+        this.implementation = new SQLAnnotationHover(editor);
 
         if (this.editor instanceof SQLEditor) {
 

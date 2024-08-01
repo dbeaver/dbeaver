@@ -35,7 +35,7 @@ import java.util.*;
 
 public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
 
-    private final SQLQueryModelContext context;
+    private final SQLDialect dialect;
 
     private final DummyDbObject dummyDataSource;
     private final DummyDbObject defaultDummyCatalog;
@@ -247,7 +247,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
 
         @NotNull
         @Override
-        public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
+        public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
             return DummyDbObject.class;
         }
 
@@ -309,7 +309,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
 
         @Override
         public SQLDialect getSQLDialect() {
-            return context.getDialect();
+            return dialect;
         }
 
         @Override
@@ -338,11 +338,12 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     }
 
     public SQLQueryDummyDataSourceContext(
-        @NotNull SQLQueryModelContext context,
+        @NotNull SQLDialect dialect,
         @NotNull Set<String> knownColumnNames,
         @NotNull Set<List<String>> knownTableNames
     ) {
-        this.context = context;
+        this.dialect = dialect;
+
         this.knownColumnNames = knownColumnNames;
         this.knownTableNames = new HashSet<>();
         this.knownSchemaNames = new HashSet<>();
@@ -439,7 +440,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     
     @Override
     public DBSEntity findRealTable(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
-        List<String> rawTableName = tableName.stream().map(this.context.getDialect()::getUnquotedIdentifier).toList();
+        List<String> rawTableName = tableName.stream().map(this.dialect::getUnquotedIdentifier).toList();
         DummyDbObject catalog = rawTableName.size() > 2
             ? this.dummyDataSource.getChildrenMapImpl().get(rawTableName.get(rawTableName.size() - 3)) : this.defaultDummyCatalog;
         DummyDbObject schema = rawTableName.size() > 1
@@ -460,13 +461,13 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     @NotNull
     @Override
     public SQLDialect getDialect() {
-        return this.context.getDialect();
+        return this.dialect;
     }
     
     @NotNull
     @Override
     public SQLQueryRowsSourceModel getDefaultTable(@NotNull STMTreeNode syntaxNode) {
-        return new DummyTableRowsSource(context, syntaxNode);
+        return new DummyTableRowsSource(syntaxNode);
     }
     
     @Override
@@ -476,8 +477,8 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     
     public class DummyTableRowsSource extends SQLQueryRowsTableDataModel {
         
-        public DummyTableRowsSource(SQLQueryModelContext context, @NotNull STMTreeNode syntaxNode) {
-            super(context, syntaxNode, new SQLQueryQualifiedName(syntaxNode, new SQLQuerySymbolEntry(syntaxNode, "DummyTable", "DummyTable")));
+        public DummyTableRowsSource(@NotNull STMTreeNode syntaxNode) {
+            super(syntaxNode, new SQLQueryQualifiedName(syntaxNode, new SQLQuerySymbolEntry(syntaxNode, "DummyTable", "DummyTable")));
         }
 
         @NotNull
