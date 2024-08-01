@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ext.altibase.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.altibase.AltibaseUtils;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -34,16 +34,15 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public class AltibaseReplicationItem extends AltibaseObject<AltibaseReplication> implements DBSAlias {
 
-    // Replication table name index
-    private static final int TBL_SCHEMA     = 0;
-    private static final int TBL_NAME       = 1;
-    private static final int TBL_PARTN      = 2; // partition
-    private static final int REPL_TBL_CNT   = TBL_PARTN + 1;
-
     private String tableOid;
-
-    private String[] replObjFrom = new String[REPL_TBL_CNT];
-    private String[] replObjTo = new String[REPL_TBL_CNT];
+    
+    private String localSchemaName;
+    private String localTableName;
+    private String localPartnName;
+    
+    private String remoteSchemaName;
+    private String remoteTableName;
+    private String remotePartnName;
 
     private boolean isPartitionedRepl;
     private long invalidMaxSn;
@@ -51,7 +50,8 @@ public class AltibaseReplicationItem extends AltibaseObject<AltibaseReplication>
     private DBSObject localTable = null;
 
     protected AltibaseReplicationItem(AltibaseReplication parent, JDBCResultSet resultSet) {
-        super(parent, AltibaseUtils.getDottedName(
+        super(parent, DBUtils.getFullyQualifiedName(
+                parent.getDataSource(),
                 JDBCUtils.safeGetString(resultSet, "LOCAL_USER_NAME"), 
                 JDBCUtils.safeGetString(resultSet, "LOCAL_TABLE_NAME"), 
                 JDBCUtils.safeGetString(resultSet, "LOCAL_PARTITION_NAME")),
@@ -63,13 +63,13 @@ public class AltibaseReplicationItem extends AltibaseObject<AltibaseReplication>
 
         invalidMaxSn = JDBCUtils.safeGetLong(resultSet, "INVALID_MAX_SN");
 
-        replObjFrom[TBL_SCHEMA] = JDBCUtils.safeGetString(resultSet, "LOCAL_USER_NAME");
-        replObjFrom[TBL_NAME]   = JDBCUtils.safeGetString(resultSet, "LOCAL_TABLE_NAME");
-        replObjFrom[TBL_PARTN]  = JDBCUtils.safeGetString(resultSet, "LOCAL_PARTITION_NAME");
+        localSchemaName = JDBCUtils.safeGetString(resultSet, "LOCAL_USER_NAME");
+        localTableName  = JDBCUtils.safeGetString(resultSet, "LOCAL_TABLE_NAME");
+        localPartnName  = JDBCUtils.safeGetString(resultSet, "LOCAL_PARTITION_NAME");
 
-        replObjTo[TBL_SCHEMA]   = JDBCUtils.safeGetString(resultSet, "REMOTE_USER_NAME");
-        replObjTo[TBL_NAME]     = JDBCUtils.safeGetString(resultSet, "REMOTE_TABLE_NAME");
-        replObjTo[TBL_PARTN]    = JDBCUtils.safeGetString(resultSet, "REMOTE_PARTITION_NAME");
+        remoteSchemaName= JDBCUtils.safeGetString(resultSet, "REMOTE_USER_NAME");
+        remoteTableName = JDBCUtils.safeGetString(resultSet, "REMOTE_TABLE_NAME");
+        remotePartnName = JDBCUtils.safeGetString(resultSet, "REMOTE_PARTITION_NAME");
     }
 
     @NotNull
@@ -96,7 +96,7 @@ public class AltibaseReplicationItem extends AltibaseObject<AltibaseReplication>
     @NotNull
     @Property(viewable = true, order = 6)
     public String getReplObjTo() {
-        return AltibaseUtils.getDottedName(replObjTo);
+        return DBUtils.getFullyQualifiedName(parent.getDataSource(), remoteSchemaName, remoteTableName, remotePartnName);
     }
 
     @Property(viewable = true, order = 10)
@@ -112,9 +112,9 @@ public class AltibaseReplicationItem extends AltibaseObject<AltibaseReplication>
     @Override
     public DBSObject getTargetObject(DBRProgressMonitor monitor) throws DBException {
         DBSObject localTable = null;
-        AltibaseSchema refSchema = (AltibaseSchema) getDataSource().getSchema(replObjFrom[TBL_SCHEMA]);
+        AltibaseSchema refSchema = (AltibaseSchema) getDataSource().getSchema(localSchemaName);
         if (refSchema != null) {
-            localTable = refSchema.getTable(monitor, replObjFrom[TBL_NAME]);
+            localTable = refSchema.getTable(monitor, localTableName);
         }
         return localTable;
     }

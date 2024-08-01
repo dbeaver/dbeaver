@@ -72,16 +72,4 @@ public class AltibaseUtils {
         
         return ddl.substring(0, last);
     }
-    
-    public static String getDottedName(String schemaName, String tableName, String partName) {
-        return getDottedName(new String[] {schemaName, tableName, partName});
-    }
-    
-    public static String getDottedName(String[] nameParts) {
-        int i = 0;
-        return new StringBuilder().append(nameParts[i++])
-                .append(".").append(nameParts[i++])
-                .append(CommonUtils.isEmpty(nameParts[i]) ? "" : "." + nameParts[i])
-                .toString();
-    }
 }
