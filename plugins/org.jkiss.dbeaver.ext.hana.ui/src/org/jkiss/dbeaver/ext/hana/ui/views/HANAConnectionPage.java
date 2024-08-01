@@ -120,7 +120,7 @@ public class HANAConnectionPage extends ConnectionPageWithAuth implements IDialo
         editionCombo.addSelectionListener(new SelectionAdapter() {
             @Override public void widgetSelected(SelectionEvent e) { editionUpdated(); site.updateButtons(); }
         });
-        hostText.addModifyListener(e -> site.updateButtons());
+        hostText.addModifyListener(e -> { hostUpdated(); site.updateButtons(); });
         portText.addModifyListener(e -> site.updateButtons());
         instanceText.addModifyListener(e -> { instanceUpdated(); site.updateButtons(); });
         databaseText.addModifyListener(e -> site.updateButtons());
@@ -182,7 +182,7 @@ public class HANAConnectionPage extends ConnectionPageWithAuth implements IDialo
         super.loadSettings();
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
         edition = HANAEdition.fromName(connectionInfo.getProviderProperty(PROV_PROP_EDITION));
-        portValue = CommonUtils.toString(connectionInfo.getHostPort(), site.getDriver().getDefaultPort());
+        portValue = CommonUtils.toString(connectionInfo.getHostPort()/*, site.getDriver().getDefaultPort()*/);
         instanceValue = CommonUtils.notEmpty(connectionInfo.getProviderProperty(PROV_PROP_INSTANCE_NUMBER));
         databaseValue = CommonUtils.notEmpty(getProperty(connectionInfo, PROP_DATABASE_NAME));
         if (created) {
@@ -290,21 +290,34 @@ public class HANAConnectionPage extends ConnectionPageWithAuth implements IDialo
         }
         UIUtils.fixReadonlyTextBackground(databaseText);
 
-        toggleControlVisibility(instanceLabel);
-        toggleControlVisibility(instanceText);
-        toggleControlVisibility(databaseLabel);
-        toggleControlVisibility(databaseText);
+        boolean visible = edition != HANAEdition.GENERIC && edition != HANAEdition.CLOUD;
+        toggleControlVisibility(instanceLabel, visible);
+        toggleControlVisibility(instanceText, visible);
+        toggleControlVisibility(databaseLabel, visible);
+        toggleControlVisibility(databaseText, visible);
         ((Composite)getControl()).layout(true, true);
     }
 
-    private void toggleControlVisibility(Control control) {
-        control.setVisible(edition != HANAEdition.GENERIC);
+    private void toggleControlVisibility(Control control, boolean visible) {
+        control.setVisible(visible);
         Object layoutData = control.getLayoutData();
         if (layoutData instanceof GridData) {
-            ((GridData) layoutData).exclude = (edition == HANAEdition.GENERIC);
+            ((GridData) layoutData).exclude = !visible;
         }
     }
 
+    private void hostUpdated() {
+        if (CommonUtils.isEmpty(hostText.getText())) {
+            return;
+        }
+        String host = hostText.getText().trim();
+        if (edition == HANAEdition.GENERIC && CommonUtils.isEmpty(portText.getText()) && host.endsWith(":443")) {
+            hostText.setText(host.substring(0, host.length()-4));
+            editionCombo.select(editionCombo.indexOf(HANAEdition.CLOUD.getTitle()));
+            editionUpdated();
+        }
+    }
+    
     private void instanceUpdated() {
         if (CommonUtils.isEmpty(instanceText.getText())) {
             return;
