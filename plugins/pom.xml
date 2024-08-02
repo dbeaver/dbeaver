@@ -21,6 +21,7 @@
         <module>org.jkiss.dbeaver.model.nio</module>
         <module>org.jkiss.dbeaver.model.sm</module>
         <module>org.jkiss.dbeaver.model.sql</module>
+        <module>org.jkiss.dbeaver.model.sql.jdbc</module>
         <module>org.jkiss.dbeaver.model.lsm</module>
         <module>org.jkiss.dbeaver.model.dashboard</module>
         <module>org.jkiss.dbeaver.registry</module>
@@ -74,7 +75,8 @@
         <module>org.jkiss.dbeaver.ext.datavirtuality</module>
         <module>org.jkiss.dbeaver.ext.denodo</module>
         <module>org.jkiss.dbeaver.ext.altibase</module>
-
+        <module>org.jkiss.dbeaver.ext.gaussdb</module>
+        
         <module>org.jkiss.dbeaver.tasks.native</module>
 
         <module>org.jkiss.dbeaver.data.office</module>
@@ -172,6 +174,8 @@
                 <module>org.jkiss.dbeaver.data.transfer.ui</module>
                 <module>org.jkiss.dbeaver.data.gis.view</module>
                 <module>org.jkiss.dbeaver.net.ssh.ui</module>
+                
+                <module>org.jkiss.dbeaver.ext.gaussdb.ui</module>
 
                 <module>org.jkiss.dbeaver.team.git.ui</module>
             </modules>

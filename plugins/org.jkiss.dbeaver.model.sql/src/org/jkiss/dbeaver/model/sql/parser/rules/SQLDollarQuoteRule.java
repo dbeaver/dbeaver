@@ -43,8 +43,8 @@ public class SQLDollarQuoteRule implements TPPredicateRule {
     public SQLDollarQuoteRule(boolean partitionRule, boolean allowNamedQuotes, boolean fullyConsumeNamed, boolean fullyConsumeUnnamed) {
         this.partitionRule = partitionRule;
         this.allowNamedQuotes = allowNamedQuotes;
-        this.fullyConsumeNamed = fullyConsumeNamed;
-        this.fullyConsumeUnnamed = fullyConsumeUnnamed;
+        this.fullyConsumeNamed = fullyConsumeNamed || partitionRule;
+        this.fullyConsumeUnnamed = fullyConsumeUnnamed || partitionRule;
 
         this.stringToken = new TPTokenDefault(SQLTokenType.T_STRING);
         this.delimiterToken = new SQLBlockToggleToken();

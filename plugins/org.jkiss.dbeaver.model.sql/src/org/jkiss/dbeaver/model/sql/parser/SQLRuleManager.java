@@ -57,9 +57,12 @@ public class SQLRuleManager {
     private TPRule[] allRules = new TPRule[0];
     @NotNull
     private SQLSyntaxManager syntaxManager;
+    @Nullable
+    private TPRuleProvider ruleProvider;
 
     public SQLRuleManager(@NotNull SQLSyntaxManager syntaxManager) {
         this.syntaxManager = syntaxManager;
+        this.ruleProvider = GeneralUtils.adapt(syntaxManager.getDialect(), TPRuleProvider.class);
     }
 
     @NotNull
@@ -91,7 +94,6 @@ public class SQLRuleManager {
 
     public void loadRules(@Nullable DBPDataSource dataSource, boolean minimalRules) {
         SQLDialect dialect = syntaxManager.getDialect();
-        TPRuleProvider ruleProvider = GeneralUtils.adapt(dialect, TPRuleProvider.class);
         DBPDataSourceContainer dataSourceContainer = dataSource == null ? null : dataSource.getContainer();
 
         final TPToken keywordToken = new TPTokenDefault(SQLTokenType.T_KEYWORD);

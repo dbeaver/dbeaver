@@ -24,6 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.impl.sql.AbstractSQLDialect;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzerParameters;
 import org.jkiss.dbeaver.model.lsm.sql.dialect.SQLStandardAnalyzer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
@@ -970,15 +971,18 @@ public class SQLScriptParser {
         while (it.hasNext()) {
             SQLScriptElement firstElement = it.next();
             if (firstElement instanceof SQLQuery queryStart && !queryStart.isEndsWithDelimiter() && it.hasNext()) {
-                SQLScriptElement prevElement = firstElement;
+                SQLQuery prevElement = queryStart;
                 SQLScriptElement currElement = it.next();
                 boolean captureCurrElement;
-                while ((captureCurrElement = (currElement instanceof SQLQuery queryElement && !continuationDetector.elementStartsProperly(queryElement))) && it.hasNext()) {
+                while ((captureCurrElement = (
+                        currElement instanceof SQLQuery queryElement && !continuationDetector.elementStartsProperly(queryElement) &&
+                        !prevElement.isEndsWithDelimiter()
+                    )) && it.hasNext()) {
                     it.remove(); // remove currElement while it is a continuation of the query started at the firstElement
-                    prevElement = currElement;
+                    prevElement = (SQLQuery) currElement;
                     currElement = it.next();
                 }
-                SQLScriptElement lastElement = captureCurrElement ? currElement : prevElement;
+                SQLQuery lastElement = captureCurrElement ? (SQLQuery) currElement : prevElement;
                 if (lastElement != firstElement) {
                     if (captureCurrElement) {
                         it.remove();
@@ -992,7 +996,7 @@ public class SQLScriptParser {
                     assert prev == firstElement;
                     // replace the original query head element with extended element
                     it.remove();
-                    it.add(continuationDetector.prepareExtendedSQLScriptElement(firstElement, lastElement));
+                    it.add(continuationDetector.prepareExtendedSQLScriptElement(queryStart, lastElement));
                 } else {
                     // if there is nothing to capture, return the currElement back
                     // because it apparently is a head of the next query to handle on the next iteration
@@ -1070,55 +1074,57 @@ public class SQLScriptParser {
         }
         return element;
     }
-
+    
     private static class ScriptElementContinuationDetector {
-        private final Set<Integer> statementStartTokenIds = LSMInspections.prepareOffquerySyntaxInspection().predictedTokensIds;
-        private final Set<String> statementStartKeywords = new HashSet<>();
+        private static final Set<Integer> statementStartTokenIds = LSMInspections.prepareOffquerySyntaxInspection().predictedTokensIds;
+
+        private static final Map<SQLDialect, Set<String>> statementStartKeywordsByDialect = Collections.synchronizedMap(new WeakHashMap<>());
+        
+        private final Set<String> statementStartKeywords;
 
         private final SQLParserContext context;
         private final LSMAnalyzerParameters analyzerParameters;
         
         public ScriptElementContinuationDetector(@NotNull SQLParserContext context) {
             this.context = context;
+            this.statementStartKeywords = getStatementStartKeywords(this.context.getDialect());
+            this.analyzerParameters = LSMAnalyzerParameters.forDialect(this.context.getDialect(), this.context.getSyntaxManager());
+        }
 
-            if (this.context.getDialect().getBlockHeaderStrings() != null) {
-                Arrays.stream(this.context.getDialect().getBlockHeaderStrings())
-                    .map(String::toUpperCase)
-                    .forEach(this.statementStartKeywords::add);
+        private static Set<String> getStatementStartKeywords(SQLDialect dialect) {
+            return statementStartKeywordsByDialect.computeIfAbsent(dialect, d -> prepareStatementStartKeywordsSet(d));
+        }
+
+        private static Set<String> prepareStatementStartKeywordsSet(SQLDialect dialect) {
+            Set<String> statementStartKeywords = new HashSet<>();
+
+            if (dialect.getBlockHeaderStrings() != null) {
+                Arrays.stream(dialect.getBlockHeaderStrings()).map(String::toUpperCase).forEach(statementStartKeywords::add);
             }
-            String[][] blockBoundStrings = this.context.getDialect().getBlockBoundStrings();
+            String[][] blockBoundStrings = dialect.getBlockBoundStrings();
             if (blockBoundStrings != null) {
                 for (String[] block : blockBoundStrings) {
-                    this.statementStartKeywords.add(block[0]);
+                    statementStartKeywords.add(block[0]);
                 }
             }
-            if (this.context.getDialect().getTransactionCommitKeywords() != null) {
-                Arrays.stream(this.context.getDialect().getTransactionCommitKeywords())
-                    .map(String::toUpperCase)
-                    .forEach(this.statementStartKeywords::add);
+            if (dialect.getTransactionCommitKeywords() != null) {
+                Arrays.stream(dialect.getTransactionCommitKeywords()).map(String::toUpperCase).forEach(statementStartKeywords::add);
             }
-            if (this.context.getDialect().getTransactionRollbackKeywords() != null) {
-                Arrays.stream(this.context.getDialect().getTransactionRollbackKeywords())
-                    .map(String::toUpperCase)
-                    .forEach(this.statementStartKeywords::add);
+            if (dialect.getTransactionRollbackKeywords() != null) {
+                Arrays.stream(dialect.getTransactionRollbackKeywords()).map(String::toUpperCase).forEach(statementStartKeywords::add);
             }
-            Arrays.stream(this.context.getDialect().getExecuteKeywords())
-                .map(String::toUpperCase)
-                .forEach(this.statementStartKeywords::add);
+            if (dialect instanceof AbstractSQLDialect abstractSQLDialect) {
+                Arrays.stream(abstractSQLDialect.getNonTransactionKeywords()).map(String::toUpperCase).forEach(statementStartKeywords::add);
+            }
+            Arrays.stream(dialect.getExecuteKeywords()).map(String::toUpperCase).forEach(statementStartKeywords::add);
             for (SQLCommandHandlerDescriptor controlCommand : SQLCommandsRegistry.getInstance().getCommandHandlers()) {
-                this.statementStartKeywords.add("@" + controlCommand.getId().toUpperCase());
+                statementStartKeywords.add("@" + controlCommand.getId().toUpperCase());
             }
-            Arrays.stream(this.context.getDialect().getQueryKeywords())
-                .map(String::toUpperCase)
-                .forEach(this.statementStartKeywords::add);
-            Arrays.stream(this.context.getDialect().getDMLKeywords())
-                .map(String::toUpperCase)
-                .forEach(this.statementStartKeywords::add);
-            Arrays.stream(this.context.getDialect().getDDLKeywords())
-                .map(String::toUpperCase)
-                .forEach(this.statementStartKeywords::add);
+            Arrays.stream(dialect.getQueryKeywords()).map(String::toUpperCase).forEach(statementStartKeywords::add);
+            Arrays.stream(dialect.getDMLKeywords()).map(String::toUpperCase).forEach(statementStartKeywords::add);
+            Arrays.stream(dialect.getDDLKeywords()).map(String::toUpperCase).forEach(statementStartKeywords::add);
 
-            this.analyzerParameters = LSMAnalyzerParameters.forDialect(this.context.getDialect(), this.context.getSyntaxManager());
+            return statementStartKeywords;
         }
 
         private boolean elementStartsProperly(@NotNull SQLScriptElement element) {
@@ -1130,38 +1136,67 @@ public class SQLScriptParser {
             while (token != null && token.getType() != -1 && token.getChannel() != Token.DEFAULT_CHANNEL) {
                 token = lexer.nextToken();
             }
-            return token != null
-                && (statementStartTokenIds.contains(token.getType()) || statementStartKeywords.contains(token.getText().toUpperCase()));
+            return token != null && (
+                statementStartTokenIds.contains(token.getType()) || statementStartKeywords.contains(token.getText().toUpperCase()));
         }
 
-        private SQLScriptElement findSmartStatementBoundary(@NotNull SQLQuery element, boolean forward) {
+        private SQLQuery findSmartStatementBegginning(@NotNull SQLQuery element) {
             SQLQuery lastElement = element;
-            SQLScriptElement nextElement = extractNextQueryImpl(this.context, element, forward);
-            boolean delimiterFound = false;
-            while (nextElement instanceof SQLQuery nextQueryFragment && !(delimiterFound = (forward ? lastElement : nextQueryFragment).isEndsWithDelimiter()) &&
-                    !elementStartsProperly(nextElement) && nextElement.getOffset() != lastElement.getOffset()) {
-                lastElement = nextQueryFragment;
-                nextElement = extractNextQueryImpl(this.context, lastElement, forward);
+            SQLScriptElement prevElement = extractNextQueryImpl(this.context, element, false);
+            boolean takePrev = true;
+            while (
+                prevElement instanceof SQLQuery prevQueryFragment &&
+                    (takePrev = (
+                        !Boolean.TRUE.equals(prevQueryFragment.isEndsWithDelimiter()) ||
+                        prevElement.getOffset() + prevElement.getLength() >= lastElement.getOffset() + lastElement.getLength()
+                    )) && !elementStartsProperly(prevElement) && prevElement.getOffset() < lastElement.getOffset()
+            ) {
+                lastElement = prevQueryFragment;
+                prevElement = extractNextQueryImpl(this.context, lastElement, false);
             }
-            SQLScriptElement boundaryElement = forward || delimiterFound || !(nextElement instanceof SQLQuery) ? lastElement : nextElement;
+            SQLQuery boundaryElement = prevElement instanceof SQLQuery prevQueryElement && takePrev ? prevQueryElement : lastElement;
             return boundaryElement;
+        }
+
+        private SQLQuery findSmartStatementEnding(@NotNull SQLQuery element) {
+            SQLQuery lastElement = element;
+            SQLScriptElement nextElement = extractNextQueryImpl(this.context, element, true);
+            while (nextElement instanceof SQLQuery nextQueryFragment &&
+                !Boolean.TRUE.equals(lastElement.isEndsWithDelimiter()) &&
+                !elementStartsProperly(nextElement) &&
+                nextElement.getOffset() > lastElement.getOffset()
+            ) {
+                lastElement = nextQueryFragment;
+                nextElement = extractNextQueryImpl(this.context, lastElement, true);
+            }
+            return lastElement;
         }
 
         @Nullable
         public SQLScriptElement tryPrepareExtendedElement(@NotNull SQLQuery element) {
-            SQLScriptElement headElement = this.elementStartsProperly(element) ? element : this.findSmartStatementBoundary(element, false);
-            SQLScriptElement tailElement = this.findSmartStatementBoundary(element, true);
-            return prepareExtendedSQLScriptElement(headElement, tailElement);
+            SQLQuery headElement = this.elementStartsProperly(element) ? element : this.findSmartStatementBegginning(element);
+            SQLQuery extendedHead = headElement == element ? element : this.prepareExtendedSQLScriptElement(headElement, element);
+            SQLQuery tailElement = this.findSmartStatementEnding(extendedHead);
+            return prepareExtendedSQLScriptElement(extendedHead, tailElement);
         }
 
-        public SQLScriptElement prepareExtendedSQLScriptElement(
-            @NotNull SQLScriptElement headElement,
-            @NotNull SQLScriptElement tailElement
+        public SQLQuery prepareExtendedSQLScriptElement(
+            @NotNull SQLQuery headElement,
+            @NotNull SQLQuery tailElement
         ) {
             try {
                 int start = headElement.getOffset();
-                int realEnd = tailElement.getOffset() + tailElement.getLength();
-                int extractionEnd = tailElement.getOffset() + tailElement.getOriginalText().length();
+                int headEnd = headElement.getOffset() + headElement.getLength();
+                int tailEnd = tailElement.getOffset() + tailElement.getLength();
+                int realEnd;
+                int extractionEnd;
+                if (headEnd > tailEnd) {
+                    realEnd = headEnd;
+                    extractionEnd = headElement.getOffset() + headElement.getOriginalText().length();
+                } else {
+                    realEnd = tailEnd;
+                    extractionEnd = tailElement.getOffset() + tailElement.getOriginalText().length();
+                }
                 String text = this.context.getDocument().get(start, extractionEnd - start);
                 return new SQLQuery(this.context.getDataSource(), text, start, realEnd - start);
             } catch (BadLocationException ex) {
