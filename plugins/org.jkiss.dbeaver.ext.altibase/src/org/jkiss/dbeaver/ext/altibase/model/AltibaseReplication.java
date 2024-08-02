@@ -96,13 +96,15 @@ public class AltibaseReplication extends AltibaseGlobalObject
         remoteConnType = JDBCUtils.safeGetString(resultSet, "REMOTE_CONN_TYPE");
     }
 
+    @NotNull
     @Association
-    public Collection<AltibaseReplicationSender> getReplicationSenders(DBRProgressMonitor monitor) throws DBException {
+    public Collection<AltibaseReplicationSender> getReplicationSenders(@NotNull DBRProgressMonitor monitor) throws DBException {
         return senderCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     @Association
-    public List<AltibaseReplicationReceiver> getReplicationReceivers(DBRProgressMonitor monitor) throws DBException {
+    public List<AltibaseReplicationReceiver> getReplicationReceivers(@NotNull DBRProgressMonitor monitor) throws DBException {
         return receiverCache.getAllObjects(monitor, this);
     }
 
@@ -199,7 +201,7 @@ public class AltibaseReplication extends AltibaseGlobalObject
     }
 
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (CommonUtils.isEmpty(ddl)) {
             ddl = ((AltibaseMetaModel) getDataSource().getMetaModel()).getReplicationDDL(monitor, this, options) + ";";
         }
@@ -213,7 +215,7 @@ public class AltibaseReplication extends AltibaseGlobalObject
     }
 
     @Override
-    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException {
+    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, 
                 "Refresh state of replication '" + this.getName() + "'")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(

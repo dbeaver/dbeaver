@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.altibase.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -84,6 +85,7 @@ public class AltibaseReplicationItem extends AltibaseObject<AltibaseReplication>
         return tableOid;
     }
 
+    @NotNull
     @Property(viewable = true, linkPossible = true, order = 5)
     public AltibaseTable getReplObjFrom(DBRProgressMonitor monitor) throws DBException {
         if (localTable == null) {
@@ -109,8 +111,9 @@ public class AltibaseReplicationItem extends AltibaseObject<AltibaseReplication>
         return invalidMaxSn;
     }
 
+    @NotNull
     @Override
-    public DBSObject getTargetObject(DBRProgressMonitor monitor) throws DBException {
+    public DBSObject getTargetObject(@Nullable DBRProgressMonitor monitor) throws DBException {
         DBSObject localTable = null;
         AltibaseSchema refSchema = (AltibaseSchema) getDataSource().getSchema(localSchemaName);
         if (refSchema != null) {

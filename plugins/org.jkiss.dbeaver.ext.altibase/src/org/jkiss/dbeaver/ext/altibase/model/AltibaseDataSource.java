@@ -158,6 +158,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         return this;
     }
 
+    @Nullable
     @Override
     public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
         DBSObject child = super.getChild(monitor, childName);

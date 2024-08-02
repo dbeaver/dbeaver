@@ -17,6 +17,9 @@
 
 package org.jkiss.dbeaver.ext.altibase.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+
 public abstract class AltibaseReplicationModule extends AltibaseObject<AltibaseReplication> {
 
     protected AltibaseReplication parent;
@@ -26,11 +29,13 @@ public abstract class AltibaseReplicationModule extends AltibaseObject<AltibaseR
         this.parent = parent;
     }
     
+    @NotNull
     @Override
     public AltibaseReplication getParentObject() {
         return parent;
     }
 
+    @NotNull
     @Override
     public AltibaseDataSource getDataSource() {
         return parent.getDataSource();

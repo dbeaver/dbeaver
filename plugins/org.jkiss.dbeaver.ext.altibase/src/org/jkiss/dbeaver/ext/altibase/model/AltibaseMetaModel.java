@@ -231,8 +231,8 @@ public class AltibaseMetaModel extends GenericMetaModel {
     /**
      * Get a specific Replication DDL
      */
-    public String getReplicationDDL(DBRProgressMonitor monitor, AltibaseReplication sourceObject, 
-            Map<String, Object> options) throws DBException {
+    public String getReplicationDDL(@NotNull DBRProgressMonitor monitor, @NotNull  AltibaseReplication sourceObject, 
+            @NotNull Map<String, Object> options) throws DBException {
         return getDDLFromDbmsMetadata(monitor, sourceObject, null, "REPLICATION");
     }
 
