@@ -75,6 +75,9 @@ public class STMKnownRuleNames {
     public static final String constraintName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_constraintName];
     public static final String columnConstraint = SQLStandardParser.ruleNames[SQLStandardParser.RULE_columnConstraint];
     public static final String checkConstraintDefinition = SQLStandardParser.ruleNames[SQLStandardParser.RULE_checkConstraintDefinition];
+    public static final String columnConstraintNotNull = SQLStandardParser.ruleNames[SQLStandardParser.RULE_columnConstraintNotNull];
+    public static final String columnConstraintUnique = SQLStandardParser.ruleNames[SQLStandardParser.RULE_columnConstraintUnique];
+    public static final String columnConstraintPrimaryKey = SQLStandardParser.ruleNames[SQLStandardParser.RULE_columnConstraintPrimaryKey];
 
     // references
     public static final String referencesSpecification = SQLStandardParser.ruleNames[SQLStandardParser.RULE_referencesSpecification];

@@ -93,7 +93,7 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
                     columns.size(),
                     this.prepareColumnSymbol(attrsContext, attr),
                     this, this.table, attr,
-                    obtainColumnType(cause, statistics, attr)
+                    this.obtainColumnType(cause, statistics, attr)
                 ));
             }
         }

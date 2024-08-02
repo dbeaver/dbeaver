@@ -19,13 +19,12 @@ package org.jkiss.dbeaver.model.sql.semantics.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDummyDataSourceContext.DummyTableRowsSource;
-import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryObjectDataModel;
-import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryObjectDropModel;
-import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryTableDropModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.ddl.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryDeleteModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryInsertModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryUpdateModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryUpdateSetClauseModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.expressions.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.*;
 
 /**
@@ -208,4 +207,12 @@ public interface SQLQueryNodeModelVisitor<T, R> {
     R visitObjectStatementDrop(@NotNull SQLQueryObjectDropModel dropStatement, T arg);
 
     R visitObjectReference(SQLQueryObjectDataModel objectReference, T arg);
+
+    R visitCreateTable(SQLQueryCreateTableModel createTable, T arg);
+
+    R visitColumnConstraintSpec(SQLQueryColumnConstraintSpec columnConstraintSpec, T arg);
+
+    R visitColumnSpec(SQLQueryColumnSpec columnSpec, T arg);
+
+    R visitTableConstraintSpec(SQLQueryTableConstraintSpec tableConstraintSpec, T arg);
 }

@@ -38,11 +38,13 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryCreateTableModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryObjectDropModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryTableDropModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryDeleteModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryInsertModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryUpdateModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.expressions.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.*;
 import org.jkiss.dbeaver.model.stm.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -127,7 +129,8 @@ public class SQLQueryModelRecognizer {
             case SQLStandardParser.RULE_sqlSchemaStatement -> {
                 STMTreeNode stmtBodyNode = queryNode.getFirstStmChild();
                 yield switch (stmtBodyNode.getNodeKindId()) {
-                    case SQLStandardParser.RULE_createTableStatement -> null;
+                    case SQLStandardParser.RULE_createTableStatement ->
+                        SQLQueryCreateTableModel.recognize(this, stmtBodyNode);
                     case SQLStandardParser.RULE_createViewStatement -> null;
                     case SQLStandardParser.RULE_dropTableStatement ->
                         SQLQueryTableDropModel.recognize(this, stmtBodyNode, false);
@@ -395,7 +398,7 @@ public class SQLQueryModelRecognizer {
         STMKnownRuleNames.insertStatement,
         STMKnownRuleNames.updateStatement,
         STMKnownRuleNames.correlationSpecification
-    ); 
+    );
     
     private static final Set<String> actualTableNameContainers = Set.of(
         STMKnownRuleNames.tableName, 
@@ -408,7 +411,7 @@ public class SQLQueryModelRecognizer {
     }
 
     @Nullable
-    private SQLQueryQualifiedName collectTableName(@NotNull STMTreeNode node) {
+    public SQLQueryQualifiedName collectTableName(@NotNull STMTreeNode node) {
         return this.collectTableName(node, false);
     }
 
@@ -430,7 +433,11 @@ public class SQLQueryModelRecognizer {
         STMKnownRuleNames.tableName,
         STMKnownRuleNames.constraintName
     );
-    
+
+    public SQLQueryQualifiedName collectQualifiedName(@NotNull STMTreeNode node) {
+        return this.collectQualifiedName(node, false);
+    }
+
     @NotNull
     private SQLQueryQualifiedName collectQualifiedName(@NotNull STMTreeNode node, boolean forceUnquotted) { // qualifiedName
         STMTreeNode entityNameNode = qualifiedNameDirectWrapperNames.contains(node.getNodeName()) ? node.getFirstStmChild() : node;
@@ -468,7 +475,9 @@ public class SQLQueryModelRecognizer {
         STMKnownRuleNames.whereClause,
         STMKnownRuleNames.groupByClause,
         STMKnownRuleNames.orderByClause,
-        STMKnownRuleNames.rowValueConstructor
+        STMKnownRuleNames.rowValueConstructor,
+        STMKnownRuleNames.defaultClause,
+        STMKnownRuleNames.checkConstraintDefinition
     );
         
     private static final Set<String> knownRecognizableValueExpressionNames = Set.of(
@@ -623,10 +632,10 @@ public class SQLQueryModelRecognizer {
         STMTreeNode head = node.getFirstStmChild();
         SQLQueryValueExpression expr = switch (head.getNodeKindId()) {
             case SQLStandardParser.RULE_columnReference -> {
-                SQLQueryQualifiedName tableName = collectTableName(head.getFirstStmChild());
+                SQLQueryQualifiedName tableName = this.collectTableName(head.getFirstStmChild());
                 STMTreeNode nameNode = head.findChildOfName(STMKnownRuleNames.columnName);
                 if (nameNode != null) {
-                    SQLQuerySymbolEntry columnName = collectIdentifier(nameNode);
+                    SQLQuerySymbolEntry columnName = this.collectIdentifier(nameNode);
                     yield head.getChildCount() == 1 ? new SQLQueryValueColumnReferenceExpression(head, columnName)
                       : new SQLQueryValueColumnReferenceExpression(head, tableName, columnName);
                 } else {

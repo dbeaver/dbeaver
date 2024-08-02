@@ -44,13 +44,12 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
-import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryObjectDataModel;
-import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryObjectDropModel;
-import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryTableDropModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.ddl.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryDeleteModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryInsertModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryUpdateModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryUpdateSetClauseModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.expressions.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.*;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.AbstractUIJob;
@@ -1311,6 +1310,30 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
                 objectReference.getName().toIdentifierString(),
                 objectReference.getObjectType().getImage()
             );
+            return null;
+        }
+
+        @Override
+        public Object visitCreateTable(SQLQueryCreateTableModel createTable, OutlineQueryNode arg) {
+            // TODO
+            return null;
+        }
+
+        @Override
+        public Object visitColumnConstraintSpec(SQLQueryColumnConstraintSpec columnConstraintSpec, OutlineQueryNode arg) {
+            // TODO
+            return null;
+        }
+
+        @Override
+        public Object visitColumnSpec(SQLQueryColumnSpec columnSpec, OutlineQueryNode arg) {
+            // TODO
+            return null;
+        }
+
+        @Override
+        public Object visitTableConstraintSpec(SQLQueryTableConstraintSpec tableConstraintSpec, OutlineQueryNode arg) {
+            // TODO
             return null;
         }
 

@@ -99,17 +99,20 @@ intervalFractionalSecondsPrecision: UnsignedInteger;
 singleDatetimeField: (nonSecondDatetimeField (LeftParen intervalLeadingFieldPrecision RightParen)?|SECOND (LeftParen intervalLeadingFieldPrecision (Comma intervalFractionalSecondsPrecision)? RightParen)?);
 
 // column definition
-columnDefinition: columnName dataType (defaultClause)? (columnConstraintDefinition)* (anyWordWithAnyValue)?;
+columnDefinition: columnName dataType defaultClause? columnConstraintDefinition* anyWordWithAnyValue?; // why anyWordWithAnyValue?
 columnName: identifier;
 
 // default
-defaultClause: DEFAULT anyWordsWithProperty;
+defaultClause: DEFAULT? valueExpression;
 
 // column constraints
 columnConstraintDefinition: (constraintNameDefinition)? columnConstraint (constraintAttributes)?;
 constraintNameDefinition: CONSTRAINT constraintName;
 constraintName: qualifiedName;
-columnConstraint: (NOT NULL|UNIQUE|PRIMARY KEY|referencesSpecification|checkConstraintDefinition);
+columnConstraint: columnConstraintNotNull|columnConstraintUnique|columnConstraintPrimaryKey|referencesSpecification|checkConstraintDefinition;
+columnConstraintNotNull: NOT NULL;
+columnConstraintUnique: UNIQUE;
+columnConstraintPrimaryKey: PRIMARY KEY;
 checkConstraintDefinition: CHECK LeftParen searchCondition RightParen;
 
 // references
@@ -321,26 +324,43 @@ sqlSchemaStatement: (schemaDefinition|
     createTableStatement|createViewStatement
     alterTableStatement|
     dropSchemaStatement|dropTableStatement|dropViewStatement|dropProcedureStatement|dropCharacterSetStatement);
-schemaDefinition: CREATE SCHEMA schemaNameClause (schemaCharacterSetSpecification)? (schemaElement)*;
+schemaDefinition: CREATE SCHEMA (IF NOT EXISTS)? schemaNameClause (schemaCharacterSetSpecification)? (schemaElement)*;
 schemaNameClause: (schemaName|AUTHORIZATION schemaAuthorizationIdentifier|schemaName AUTHORIZATION schemaAuthorizationIdentifier);
 schemaAuthorizationIdentifier: authorizationIdentifier;
 authorizationIdentifier: identifier;
 schemaCharacterSetSpecification: DEFAULT CHARACTER SET characterSetSpecification;
 schemaElement: (createTableStatement|createViewStatement);
 
-// table definition
-createTableStatement: CREATE ((GLOBAL|LOCAL) TEMPORARY)? TABLE tableName tableElementList (ON COMMIT (DELETE|PRESERVE) ROWS)?;
+createTableStatement: createTableHead tableName createTableExtraHead tableElementList createTableTail;
+createTableHead: CREATE (OR REPLACE)? ((GLOBAL|LOCAL) (TEMPORARY|TEMP))? TABLE (IF NOT EXISTS)? ;// here orReplace is MariaDB-specific only
+createTableExtraHead: (OF identifier)?;
+tableElementList: LeftParen tableElement (Comma tableElement)* RightParen;
+tableElement: (columnDefinition|tableConstraintDefinition);
+createTableTail: anyUnexpected;
+//                 createTableTailForValues? createTableTailOther*
+//                 createTableTailPartition? createTableTailOther*
+//                 createTableTailOnCommit? createTableTailOther*;
+//createTableTailPartition: PARTITION BY (RANGE|LIST|HASH|anyUnexpected) LeftParen createTableTailPartitionColumnSpec (Comma createTableTailPartitionColumnSpec)* RightParen;
+//createTableTailPartitionColumnSpec: (columnName|valueExpression) anyWordsWithProperty?;
+//createTableTailOnCommit: ON COMMIT (DELETE|PRESERVE) ROWS;
+//createTableTailForValues: FOR VALUES createTablePartitionValuesSpec|DEFAULT;
+//createTablePartitionValuesSpec: IN LeftParen queryExpression (Comma queryExpression)* RightParen |
+//                     FROM LeftParen (queryExpression | MINVALUE | MAXVALUE) (Comma queryExpression | MINVALUE | MAXVALUE)* RightParen
+//                       TO LeftParen (queryExpression | MINVALUE | MAXVALUE) (Comma queryExpression | MINVALUE | MAXVALUE)* RightParen |
+//                     WITH LeftParen MODULUS signedNumericLiteral Comma REMAINDER signedNumericLiteral RightParen;
+//createTableTailOther: ((~(LeftParen|RightParen|Period|Semicolon|Comma|
+//        PARTITION|ON|FOR
+//    ))|(LeftParen anyUnexpected* RightParen))+;
+
 createViewStatement: CREATE VIEW tableName (LeftParen viewColumnList RightParen)? AS queryExpression (WITH (levelsClause)? CHECK OPTION)?;
 viewColumnList: columnNameList;
 levelsClause: (CASCADED|LOCAL);
-tableElementList: LeftParen tableElement (Comma tableElement)* RightParen;
-tableElement: (columnDefinition|tableConstraintDefinition);
 
 // schema ddl
 dropSchemaStatement: DROP SCHEMA schemaName dropBehaviour;
 dropBehaviour: (CASCADE|RESTRICT);
-alterTableStatement: ALTER TABLE tableName alterTableAction;
-alterTableAction: (addColumnDefinition|alterColumnDefinition|dropColumnDefinition|addTableConstraintDefinition|dropTableConstraintDefinition);
+alterTableStatement: ALTER anyWord+ TABLE (IF EXISTS)? tableName alterTableAction;
+alterTableAction: (addColumnDefinition|alterColumnDefinition|dropColumnDefinition|addTableConstraintDefinition|dropTableConstraintDefinition|anyWordsWithProperty);
 addColumnDefinition: ADD (COLUMN)? columnDefinition;
 alterColumnDefinition: ALTER (COLUMN)? columnName alterColumnAction;
 alterColumnAction: (setColumnDefaultClause|dropColumnDefaultClause);
