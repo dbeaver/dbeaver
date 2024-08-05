@@ -61,7 +61,7 @@ public class DesktopPreferencesInitializer extends AbstractPreferenceInitializer
         // General UI
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_AUTO_UPDATE_CHECK,
             !ApplicationPolicyService.getInstance().isInstallUpdateDisabled());
-        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_USE_EMBEDDED_AUTH, false);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_USE_EMBEDDED_AUTH, RuntimeUtils.isWindows());
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_SHOW_HOLIDAY_DECORATIONS, true);
 
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_KEEP_DATABASE_EDITORS, true);

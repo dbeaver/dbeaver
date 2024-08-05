@@ -97,6 +97,9 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
                     case Types.TIME_WITH_TIMEZONE:
                         return dbResults.getTime(index + 1);
                     case Types.DATE:
+                        if (isReadDateAsObject()) {
+                            return getValueFromObject(session, type, dbResults.getObject(index + 1), false, false);
+                        }
                         return dbResults.getDate(index + 1);
                     default:
                         Object value = dbResults.getObject(index + 1);
@@ -137,6 +140,13 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
             }
             throw new DBCException(e, session.getExecutionContext());
         }
+    }
+
+    /**
+     * Allow to read datatime from LocalTime object
+     */
+    protected boolean isReadDateAsObject() {
+        return false;
     }
 
     @Override

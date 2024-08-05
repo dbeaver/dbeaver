@@ -501,11 +501,12 @@ public class ResultSetModel {
         }
         // Get old value
         Object oldValue = rootValue;
+        int targetValueIndex = rowIndex - 1;
         if (ownerValue != null) {
             try {
                 oldValue = attr.extractNestedValue(
                     ownerValue,
-                    rowIndexes == null ? 0 : rowIndexes[rowIndex++]);
+                    rowIndexes == null ? 0 : rowIndexes[targetValueIndex]);
             } catch (DBCException e) {
                 log.error("Error getting [" + attr.getName() + "] value", e);
             }
@@ -520,7 +521,8 @@ public class ResultSetModel {
             if (ownerValue != null) {
                 if (ownerValue instanceof DBDCollection collection) {
                     if (collection.getItemCount() > 0) {
-                        ownerValue = collection.getItem(0);
+                        ownerValue = collection.getItem(
+                            rowIndexes == null ? 0 : rowIndexes[targetValueIndex]);
                     }
                 }
                 if (!(ownerValue instanceof DBDComposite)) {

@@ -175,27 +175,27 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             ));
 
         }
-        Group groupObjects = UIUtils.createControlGroup(
-            composite,
-            CoreMessages.pref_page_ui_general_group_browser, 2,
-            GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0
-        );
-        if (isWindowsDesktopClient()) {
-            browserCombo = UIUtils.createLabelCombo(groupObjects, CoreMessages.pref_page_ui_general_combo_browser,
-                SWT.READ_ONLY
+        if (isStandalone && !RuntimeUtils.isLinux()) {
+            Group groupObjects = UIUtils.createControlGroup(
+                composite,
+                CoreMessages.pref_page_ui_general_group_browser, 2,
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0
             );
-            browserCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-            for (SWTBrowserRegistry.BrowserSelection value : SWTBrowserRegistry.BrowserSelection.values()) {
-                browserCombo.add(value.getFullName(), value.ordinal());
+            if (RuntimeUtils.isWindows()) {
+                browserCombo = UIUtils.createLabelCombo(groupObjects, CoreMessages.pref_page_ui_general_combo_browser,
+                    SWT.READ_ONLY
+                );
+                browserCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+                for (SWTBrowserRegistry.BrowserSelection value : SWTBrowserRegistry.BrowserSelection.values()) {
+                    browserCombo.add(value.getFullName(), value.ordinal());
+                }
+                Control tipLabel =
+                    UIUtils.createInfoLabel(groupObjects, CoreMessages.pref_page_ui_general_combo_browser_tip);
+                tipLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING,
+                    GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1
+                ));
             }
-            Control tipLabel =
-                UIUtils.createInfoLabel(groupObjects, CoreMessages.pref_page_ui_general_combo_browser_tip);
-            tipLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING,
-                GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1
-            ));
-        }
 
-        if (isStandalone) {
             useEmbeddedBrowserAuth = UIUtils.createCheckbox(groupObjects,
                 CoreMessages.pref_page_ui_general_check_browser_auth,
                 CoreMessages.pref_page_ui_general_check_browser_auth_tip,
@@ -256,7 +256,9 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     protected void performDefaults() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         if (isStandalone) {
-            useEmbeddedBrowserAuth.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH));
+            if (!RuntimeUtils.isLinux()) {
+                useEmbeddedBrowserAuth.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH));
+            }
             if (!ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
                 automaticUpdateCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
             }
@@ -286,7 +288,9 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         if (isStandalone) {
-            store.setValue(DBeaverPreferences.UI_USE_EMBEDDED_AUTH, useEmbeddedBrowserAuth.getSelection());
+            if (!RuntimeUtils.isLinux()) {
+                store.setValue(DBeaverPreferences.UI_USE_EMBEDDED_AUTH, useEmbeddedBrowserAuth.getSelection());
+            }
             if (!ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
                 store.setValue(DBeaverPreferences.UI_AUTO_UPDATE_CHECK, automaticUpdateCheck.getSelection());
             } else {

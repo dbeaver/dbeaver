@@ -470,9 +470,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         CommonUtils.toBoolean(smartCommit),
                         CommonUtils.toBoolean(smartCommitRecover),
                         CommonUtils.toBoolean(autoCloseTransactions),
-                        CommonUtils.toLong(closeTransactionsPeriod),
+                        CommonUtils.toInt(closeTransactionsPeriod),
                         CommonUtils.toBoolean(autoCloseConnections),
-                        CommonUtils.toLong(closeConnectionsPeriod));
+                        CommonUtils.toInt(closeConnectionsPeriod));
                     DBWorkbench.getPlatform().getDataSourceProviderRegistry().addConnectionType(ct);
                 }
                 deserializeModifyPermissions(ctConfig, ct);

@@ -145,7 +145,7 @@ compOp: (EqualsOperator|NotEqualsOperator|LessThanOperator|GreaterThanOperator|L
 quantifier: (ALL|SOME|ANY);
 truthValue: (TRUE|FALSE|UNKNOWN);
 existsPredicate: EXISTS tableSubquery;
-likePredicate: matchValue (NOT)? (LIKE|ILIKE) pattern (ESCAPE escapeCharacter)?;
+likePredicate: matchValue (NOT)? (LIKE|ILIKE) pattern? (ESCAPE escapeCharacter)?;
 matchValue: characterValueExpression;
 pattern: characterValueExpression;
 escapeCharacter: characterValueExpression;

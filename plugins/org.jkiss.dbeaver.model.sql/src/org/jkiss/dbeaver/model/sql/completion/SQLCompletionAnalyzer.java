@@ -128,6 +128,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         SQLSyntaxManager syntaxManager = request.getContext().getSyntaxManager();
         String prevKeyWord = wordDetector.getPrevKeyWord();
         boolean isPrevWordEmpty = CommonUtils.isEmpty(wordDetector.getPrevWords());
+        boolean isInLiteral = SQLParserPartitions.CONTENT_TYPE_SQL_STRING.equals(request.getContentType());
         String prevDelimiter = wordDetector.getPrevDelimiter();
         // Here we handle the case when user started typing the new query on the next line without query delimiter for the previous one.
         // If setting `Blank line is statement delimiter` set, then active query is only newly typed characters
@@ -159,6 +160,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         if (!isPrevWordEmpty && CommonUtils.isEmpty(prevDelimiter)) {
                             // Seems to be table alias
                             //request.setQueryType(SQLCompletionRequest.QueryType.COLUMN);
+                        } else if (SQLConstants.KEYWORD_INTO.equals(prevKeyWord) && isInLiteral) {
+                            // Here we should not show any proposals
+                            // INSERT INTO tableName VALUES ('|');
+                            return;
                         } else {
                             request.setQueryType(SQLCompletionRequest.QueryType.TABLE);
                         }
@@ -193,7 +198,6 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         }
         String wordPart = request.getWordPart();
         boolean emptyWord = wordPart.isEmpty();
-        boolean isInLiteral = SQLParserPartitions.CONTENT_TYPE_SQL_STRING.equals(request.getContentType());
         boolean isNumber = !CommonUtils.isEmpty(wordPart) && CommonUtils.isNumber(wordPart);
         boolean isInQuotedIdentifier = SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED.equals(request.getContentType());
 
@@ -1427,7 +1431,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             params);
     }
 
-    private static String convertKeywordCase(SQLCompletionRequest request, String replaceString, boolean isObject) {
+    public static String convertKeywordCase(SQLCompletionRequest request, String replaceString, boolean isObject) {
         final int proposalCase = request.getContext().getInsertCase();
         switch (proposalCase) {
             case SQLCompletionContext.PROPOSAL_CASE_UPPER:

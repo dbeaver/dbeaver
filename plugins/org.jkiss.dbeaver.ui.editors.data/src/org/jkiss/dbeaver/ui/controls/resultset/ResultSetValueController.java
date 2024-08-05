@@ -197,8 +197,10 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     public IValueManager getValueManager() {
         DBSTypedObject valueType = getBinding().getPresentationAttribute();
         DBDValueHandler valueHandler = getBinding().getValueHandler();
+
         if (cellLocation.getRowIndexes() != null && valueType != null) {
             try {
+                // Seems to be an array item
                 DBRProgressMonitor monitor = new VoidProgressMonitor();
                 DBSDataType dataType = DBUtils.getDataType(valueType);
                 if (dataType == null) {
@@ -217,6 +219,18 @@ public class ResultSetValueController implements IAttributeController, IRowContr
                         valueType = attributes.get(index);
                         valueHandler = DBUtils.findValueHandler(getBinding().getDataSource(), valueType);
                     }
+                } else {
+                    /*
+                    // Array item value handler. Data type not recognized. Use String
+                    if (getBinding().getDataSource() instanceof DBPDataTypeProvider dtp) {
+                        for (DBSDataType dt : dtp.getLocalDataTypes()) {
+                            if (dt.getDataKind() == DBPDataKind.STRING) {
+                                valueType = dt;
+                                valueHandler = DBUtils.findValueHandler(getBinding().getDataSource(), valueType);
+                                break;
+                            }
+                        }
+                    }*/
                 }
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError("Data type resolve", "Error resolving component data type", e);
