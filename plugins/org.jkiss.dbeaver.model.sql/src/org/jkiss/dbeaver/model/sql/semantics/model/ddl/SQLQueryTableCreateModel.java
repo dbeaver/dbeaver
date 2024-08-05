@@ -21,7 +21,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
@@ -35,7 +34,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-public class SQLQueryCreateTableModel extends SQLQueryModelContent {
+public class SQLQueryTableCreateModel extends SQLQueryModelContent {
 
     @NotNull
     private final SQLQueryQualifiedName tableName;
@@ -47,7 +46,12 @@ public class SQLQueryCreateTableModel extends SQLQueryModelContent {
     @Nullable
     private SQLQueryDataContext dataContext = null;
 
-    public SQLQueryCreateTableModel(@NotNull STMTreeNode syntaxNode, @NotNull SQLQueryQualifiedName tableName, @NotNull List<SQLQueryColumnSpec> columns, @NotNull List<SQLQueryTableConstraintSpec> constraints) {
+    public SQLQueryTableCreateModel(
+        @NotNull STMTreeNode syntaxNode,
+        @NotNull SQLQueryQualifiedName tableName,
+        @NotNull List<SQLQueryColumnSpec> columns,
+        @NotNull List<SQLQueryTableConstraintSpec> constraints
+    ) {
         super(syntaxNode.getRealInterval(), syntaxNode);
         this.tableName = tableName;
         this.columns = List.copyOf(columns);
@@ -57,6 +61,20 @@ public class SQLQueryCreateTableModel extends SQLQueryModelContent {
         this.constraints.forEach(super::registerSubnode);
     }
 
+    @NotNull
+    public SQLQueryQualifiedName getTableName() {
+        return this.tableName;
+    }
+
+    @NotNull
+    public List<SQLQueryColumnSpec> getColumns() {
+        return this.columns;
+    }
+
+    @NotNull
+    public List<SQLQueryTableConstraintSpec> getConstraints() {
+        return this.constraints;
+    }
 
     @Override
     protected void applyContext(@NotNull SQLQueryDataContext dataContext, @NotNull SQLQueryRecognitionContext statistics) {
@@ -77,30 +95,30 @@ public class SQLQueryCreateTableModel extends SQLQueryModelContent {
             List<SQLQueryResultColumn> columns = new ArrayList<>(this.columns.size());
             for (SQLQueryColumnSpec columnSpec : this.columns) {
                 SQLQuerySymbolEntry columnNameEntry = columnSpec.getColumnName();
-                SQLQuerySymbol columnName = columnNameEntry.getSymbol();
-                if (columnNameEntry.isNotClassified()) {
-                    columnName.setDefinition(columnNameEntry);
-                    columnName.setSymbolClass(SQLQuerySymbolClass.COLUMN);
+                SQLQuerySymbol columnName;
+                if (columnNameEntry != null) {
+                    columnName = columnNameEntry.getSymbol();
+                    if (columnNameEntry.isNotClassified()) {
+                        columnName.setDefinition(columnNameEntry);
+                        columnName.setSymbolClass(SQLQuerySymbolClass.COLUMN);
+                    }
+                } else {
+                    columnName = new SQLQuerySymbol("?");
                 }
 
                 columns.add(new SQLQueryResultColumn(
-                        columns.size(), columnName, virtualTableRows, null, null,
-                        SQLQueryExprType.forExplicitTypeRef(columnSpec.getTypeName())
+                    columns.size(), columnName, virtualTableRows, null, null,
+                    columnSpec.getDeclaredColumnType()
                 ));
             }
             SQLQueryDataContext tableContext = dataContext.overrideResultTuple(columns);
 
             for (SQLQueryColumnSpec columnSpec : this.columns) {
-                if (columnSpec.getDefaultValueExpression() != null) {
-                    columnSpec.getDefaultValueExpression().propagateContext(tableContext, statistics);
-                }
-                for (SQLQueryColumnConstraintSpec constraintSpec : columnSpec.getConstraints()) {
-                    constraintSpec.propagateContext(tableContext, statistics);
-                }
+                columnSpec.propagateContext(dataContext, tableContext, statistics);
             }
 
             for (SQLQueryTableConstraintSpec constraintSpec : this.constraints) {
-                constraintSpec.propagateContext(tableContext, statistics);
+                constraintSpec.propagateContext(dataContext, tableContext, statistics);
             }
         }
     }
@@ -122,21 +140,24 @@ public class SQLQueryCreateTableModel extends SQLQueryModelContent {
         return this.dataContext;
     }
 
-    public static SQLQueryCreateTableModel recognize(SQLQueryModelRecognizer recognizer, STMTreeNode node) {
+    public static SQLQueryTableCreateModel recognize(SQLQueryModelRecognizer recognizer, STMTreeNode node) {
         SQLQueryQualifiedName tableName = recognizer.collectTableName(node);
 
         LinkedList<SQLQueryColumnSpec> columns = new LinkedList<>();
         LinkedList<SQLQueryTableConstraintSpec> constraints = new LinkedList<>();
 
         STMTreeNode elementsNode = node.findChildOfName(STMKnownRuleNames.tableElementList);
-        for (int i = 1; i < elementsNode.getChildCount(); i += 2) {
-            STMTreeNode elementNode = elementsNode.getStmChild(i).getStmChild(0);
-            switch (elementNode.getNodeKindId()) {
-                case SQLStandardParser.RULE_columnDefinition -> columns.addLast(SQLQueryColumnSpec.recognize(recognizer, elementNode));
-                case SQLStandardParser.RULE_tableConstraintDefinition -> constraints.addLast(SQLQueryTableConstraintSpec.recognizer(recognizer, elementNode));
+        if (elementsNode != null) {
+            for (int i = 1; i < elementsNode.getChildCount(); i += 2) {
+                STMTreeNode elementNode = elementsNode.getStmChild(i).getStmChild(0);
+                switch (elementNode.getNodeKindId()) {
+                    case SQLStandardParser.RULE_columnDefinition ->
+                        columns.addLast(SQLQueryColumnSpec.recognize(recognizer, elementNode));
+                    case SQLStandardParser.RULE_tableConstraintDefinition ->
+                        constraints.addLast(SQLQueryTableConstraintSpec.recognize(recognizer, elementNode));
+                }
             }
         }
-
-        return new SQLQueryCreateTableModel(node, tableName, columns, constraints);
+        return new SQLQueryTableCreateModel(node, tableName, columns, constraints);
     }
 }

@@ -116,15 +116,15 @@ columnConstraintPrimaryKey: PRIMARY KEY;
 checkConstraintDefinition: CHECK LeftParen searchCondition RightParen;
 
 // references
-referencesSpecification: REFERENCES referencedTableAndColumns (MATCH matchType)? (referentialTriggeredAction)?;
+referencesSpecification: REFERENCES referencedTableAndColumns (MATCH matchType)? referentialTriggeredAction?;
 referencedTableAndColumns: tableName (LeftParen referenceColumnList RightParen)?;
 tableName: qualifiedName;
 referenceColumnList: columnNameList;
 columnNameList: columnName (Comma columnName)*;
-matchType: (FULL|PARTIAL);
-referentialTriggeredAction: (updateRule (deleteRule)?|deleteRule (updateRule)?);
+matchType: FULL|PARTIAL;
+referentialTriggeredAction: updateRule deleteRule? | deleteRule updateRule?;
 updateRule: ON UPDATE referentialAction;
-referentialAction: (CASCADE|SET NULL|SET DEFAULT|NO ACTION);
+referentialAction: CASCADE|SET NULL|SET DEFAULT|NO ACTION;
 deleteRule: ON DELETE referentialAction;
 
 // search conditions
@@ -320,22 +320,21 @@ columnIndex: UnsignedInteger;
 orderingSpecification: (ASC|DESC);
 
 // schema definition
-sqlSchemaStatement: (schemaDefinition|
-    createTableStatement|createViewStatement
-    alterTableStatement|
-    dropSchemaStatement|dropTableStatement|dropViewStatement|dropProcedureStatement|dropCharacterSetStatement);
-schemaDefinition: CREATE SCHEMA (IF NOT EXISTS)? schemaNameClause (schemaCharacterSetSpecification)? (schemaElement)*;
-schemaNameClause: (schemaName|AUTHORIZATION schemaAuthorizationIdentifier|schemaName AUTHORIZATION schemaAuthorizationIdentifier);
+sqlSchemaStatement: schemaDefinition|
+    createTableStatement|createViewStatement|alterTableStatement|
+    dropSchemaStatement|dropTableStatement|dropViewStatement|dropProcedureStatement|dropCharacterSetStatement;
+schemaDefinition: CREATE SCHEMA (IF NOT EXISTS)? schemaNameClause schemaCharacterSetSpecification? schemaElement*;
+schemaNameClause: schemaName|AUTHORIZATION schemaAuthorizationIdentifier|schemaName AUTHORIZATION schemaAuthorizationIdentifier;
 schemaAuthorizationIdentifier: authorizationIdentifier;
 authorizationIdentifier: identifier;
 schemaCharacterSetSpecification: DEFAULT CHARACTER SET characterSetSpecification;
-schemaElement: (createTableStatement|createViewStatement);
+schemaElement: createTableStatement|createViewStatement;
 
 createTableStatement: createTableHead tableName createTableExtraHead tableElementList createTableTail;
 createTableHead: CREATE (OR REPLACE)? ((GLOBAL|LOCAL) (TEMPORARY|TEMP))? TABLE (IF NOT EXISTS)? ;// here orReplace is MariaDB-specific only
 createTableExtraHead: (OF identifier)?;
 tableElementList: LeftParen tableElement (Comma tableElement)* RightParen;
-tableElement: (columnDefinition|tableConstraintDefinition);
+tableElement: (columnDefinition|tableConstraintDefinition) anyUnexpected??;
 createTableTail: anyUnexpected;
 //                 createTableTailForValues? createTableTailOther*
 //                 createTableTailPartition? createTableTailOther*
@@ -359,7 +358,7 @@ levelsClause: (CASCADED|LOCAL);
 // schema ddl
 dropSchemaStatement: DROP SCHEMA schemaName dropBehaviour;
 dropBehaviour: (CASCADE|RESTRICT);
-alterTableStatement: ALTER anyWord+ TABLE (IF EXISTS)? tableName alterTableAction;
+alterTableStatement: ALTER anyWord* TABLE (IF EXISTS)? tableName alterTableAction (Comma alterTableAction)*;
 alterTableAction: (addColumnDefinition|alterColumnDefinition|dropColumnDefinition|addTableConstraintDefinition|dropTableConstraintDefinition|anyWordsWithProperty);
 addColumnDefinition: ADD (COLUMN)? columnDefinition;
 alterColumnDefinition: ALTER (COLUMN)? columnName alterColumnAction;

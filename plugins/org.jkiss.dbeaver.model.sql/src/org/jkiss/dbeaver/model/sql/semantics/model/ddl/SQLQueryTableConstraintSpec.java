@@ -16,28 +16,114 @@
  */
 package org.jkiss.dbeaver.model.sql.semantics.model.ddl;
 
-import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
+import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueColumnReferenceExpression;
+import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
+import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
+import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
-public class SQLQueryTableConstraintSpec extends SQLQueryNodeModel {
-    @Nullable
-    private final SQLQuerySymbolEntry constraintName;
+import java.util.*;
 
-    protected SQLQueryTableConstraintSpec(@NotNull STMTreeNode syntaxNode, @Nullable SQLQuerySymbolEntry constraintName) {
-        super(syntaxNode.getRealInterval(), syntaxNode);
+public class SQLQueryTableConstraintSpec extends SQLQueryNodeModel {
+
+    private static final Map<String, SQLQueryTableConstraintKind> constraintKindByNodeName = Map.of(
+        STMKnownRuleNames.uniqueConstraintDefinition, SQLQueryTableConstraintKind.UNIQUE,
+        STMKnownRuleNames.referentialConstraintDefinition, SQLQueryTableConstraintKind.REFERENCES,
+        STMKnownRuleNames.checkConstraintDefinition, SQLQueryTableConstraintKind.CHECK
+    );
+
+    @Nullable
+    private final SQLQueryQualifiedName constraintName;
+    @NotNull
+    private final SQLQueryTableConstraintKind constraintKind;
+
+    @Nullable
+    private final List<SQLQuerySymbolEntry> tupleColumnsList;
+
+    @Nullable
+    private final SQLQueryRowsTableDataModel referencedTable;
+    @Nullable
+    private final List<SQLQuerySymbolEntry> referencedColumns;
+    @Nullable
+    private final SQLQueryValueExpression checkExpression;
+
+
+    protected SQLQueryTableConstraintSpec(
+        @NotNull STMTreeNode syntaxNode,
+        @Nullable SQLQueryQualifiedName constraintName,
+        @NotNull SQLQueryTableConstraintKind constraintKind,
+        @Nullable List<SQLQuerySymbolEntry> tupleColumnsList,
+        @Nullable SQLQueryRowsTableDataModel referencedTable,
+        @Nullable List<SQLQuerySymbolEntry> referencedColumns,
+        @Nullable SQLQueryValueExpression checkExpression
+    ) {
+        super(syntaxNode.getRealInterval(), syntaxNode, checkExpression);
         this.constraintName = constraintName;
+        this.constraintKind = constraintKind;
+        this.tupleColumnsList = tupleColumnsList;
+        this.referencedTable = referencedTable;
+        this.referencedColumns = referencedColumns;
+        this.checkExpression = checkExpression;
     }
 
-    public void propagateContext(SQLQueryDataContext tableContext, SQLQueryRecognitionContext statistics) {
+    @Nullable
+    public SQLQueryQualifiedName getConstraintName() {
+        return constraintName;
+    }
 
+    @NotNull
+    public SQLQueryTableConstraintKind getConstraintKind() {
+        return constraintKind;
+    }
+
+    /**
+     * Propagate semantics context and establish relations through the query model
+     */
+    public void propagateContext(
+        @NotNull SQLQueryDataContext sourceContext,
+        @Nullable SQLQueryDataContext tableContext,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        List<SQLQueryResultColumn> referenceKey;
+        if (this.tupleColumnsList != null && !this.tupleColumnsList.isEmpty() && tableContext != null) {
+            referenceKey = new ArrayList<>(this.tupleColumnsList.size());
+            for (SQLQuerySymbolEntry columnRef : this.tupleColumnsList) {
+                if (columnRef.isNotClassified()) {
+                    SQLQueryResultColumn rc = tableContext.resolveColumn(statistics.getMonitor(), columnRef.getName());
+                    SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(columnRef, rc, statistics);
+                    referenceKey.add(rc);
+                }
+            }
+        } else {
+            referenceKey = null;
+        }
+
+        if (this.referencedTable != null) {
+            SQLQueryDataContext referencedContext = SQLQueryColumnConstraintSpec.propagateForReferencedEntity(
+                this.referencedTable,
+                this.referencedColumns,
+                sourceContext,
+                statistics
+            );
+            if (referencedContext != null && referenceKey != null) {
+                List<SQLQueryResultColumn> referencedKey = referencedContext.getColumnsList();
+                if (referenceKey.size() != referencedKey.size()) {
+                    statistics.appendError(this.getSyntaxNode(), "Inconsistent foreign key tuple size");
+                }
+                // TODO validate data types of tupleColumnList against referencedContext tuple
+            }
+        }
+
+        if (this.checkExpression != null && tableContext != null) {
+            this.checkExpression.propagateContext(tableContext, statistics);
+        }
     }
 
     @Override
@@ -57,9 +143,48 @@ public class SQLQueryTableConstraintSpec extends SQLQueryNodeModel {
         return null;
     }
 
-    public static SQLQueryTableConstraintSpec recognizer(SQLQueryModelRecognizer recognizer, STMTreeNode node) {
-        // TODO
-        return new SQLQueryTableConstraintSpec(node, null);
+
+    @NotNull
+    public static SQLQueryTableConstraintSpec recognize(@NotNull SQLQueryModelRecognizer recognizer, @NotNull STMTreeNode node) {
+        SQLQueryQualifiedName constraintName = Optional.ofNullable(node.findChildOfName(STMKnownRuleNames.constraintNameDefinition))
+            .map(n -> n.findChildOfName(STMKnownRuleNames.constraintName))
+            .map(recognizer::collectQualifiedName).orElse(null);
+
+        STMTreeNode constraintNode = Optional.ofNullable(node.findChildOfName(STMKnownRuleNames.tableConstraint))
+            .map(n -> n.getStmChild(0)).orElse(null);
+
+        SQLQueryTableConstraintKind constraintKind;
+        List<SQLQuerySymbolEntry> tupleColumnsList = null;
+        SQLQueryRowsTableDataModel referencedTable = null;
+        List<SQLQuerySymbolEntry> referencedColumns = null;
+        SQLQueryValueExpression checkExpression = null;
+        if (constraintNode != null) {
+            constraintKind = Optional.ofNullable(constraintKindByNodeName.get(constraintNode.getNodeName()))
+                .orElse(SQLQueryTableConstraintKind.UNKNOWN);
+
+            tupleColumnsList = switch (constraintKind) {
+                case UNIQUE -> recognizer.collectColumnNameList(constraintNode);
+                case REFERENCES -> Optional.ofNullable(constraintNode.findChildOfName(STMKnownRuleNames.referencingColumns))
+                    .map(recognizer::collectColumnNameList).orElse(null);
+                default -> null;
+            };
+
+            switch (constraintKind) {
+                case CHECK -> checkExpression = recognizer.collectValueExpression(constraintNode);
+                case REFERENCES -> {
+                    STMTreeNode refNode = Optional.ofNullable(constraintNode.findChildOfName(STMKnownRuleNames.referencesSpecification))
+                        .map(n -> n.findChildOfName(STMKnownRuleNames.referencedTableAndColumns))
+                        .orElse(null);
+                    if (refNode != null) {
+                        referencedTable = recognizer.collectTableReference(refNode);
+                        referencedColumns = recognizer.collectColumnNameList(refNode);
+                    }
+                }
+            }
+        } else {
+            constraintKind = SQLQueryTableConstraintKind.UNKNOWN;
+        }
+        return new SQLQueryTableConstraintSpec(node, constraintName, constraintKind, tupleColumnsList, referencedTable, referencedColumns, checkExpression);
     }
 
 }

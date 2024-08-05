@@ -208,11 +208,15 @@ public interface SQLQueryNodeModelVisitor<T, R> {
 
     R visitObjectReference(SQLQueryObjectDataModel objectReference, T arg);
 
-    R visitCreateTable(SQLQueryCreateTableModel createTable, T arg);
+    R visitCreateTable(SQLQueryTableCreateModel createTable, T arg);
 
     R visitColumnConstraintSpec(SQLQueryColumnConstraintSpec columnConstraintSpec, T arg);
 
     R visitColumnSpec(SQLQueryColumnSpec columnSpec, T arg);
 
     R visitTableConstraintSpec(SQLQueryTableConstraintSpec tableConstraintSpec, T arg);
+
+    R visitAlterTable(SQLQueryTableAlterModel alterTable, T arg);
+
+    R visitAlterTableAction(SQLQueryTableAlterActionSpec actionSpec, T arg);
 }

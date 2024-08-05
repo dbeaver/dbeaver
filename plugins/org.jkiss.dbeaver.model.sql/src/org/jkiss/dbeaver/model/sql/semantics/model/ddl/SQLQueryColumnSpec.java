@@ -21,12 +21,13 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryQualifiedName;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
-import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueTypeCastExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
@@ -34,19 +35,34 @@ import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class SQLQueryColumnSpec extends SQLQueryNodeModel {
 
-    @NotNull
+    private static final Map<String, SQLQueryColumnConstraintKind> constraintKindByNodeName = Map.of(
+            STMKnownRuleNames.columnConstraintNotNull, SQLQueryColumnConstraintKind.NOT_NULL,
+            STMKnownRuleNames.columnConstraintUnique, SQLQueryColumnConstraintKind.UNIQUE,
+            STMKnownRuleNames.columnConstraintPrimaryKey, SQLQueryColumnConstraintKind.PRIMARY_KEY,
+            STMKnownRuleNames.referencesSpecification, SQLQueryColumnConstraintKind.REFERENCES,
+            STMKnownRuleNames.checkConstraintDefinition, SQLQueryColumnConstraintKind.CHECK
+    );
+
+    @Nullable
     private final SQLQuerySymbolEntry columnName;
-    @NotNull
+    @Nullable
     private final String typeName;
     @Nullable
     private final SQLQueryValueExpression defaultValueExpression;
     @NotNull
     private final List<SQLQueryColumnConstraintSpec> constraints;
 
-    public SQLQueryColumnSpec(@NotNull STMTreeNode syntaxNode, @NotNull SQLQuerySymbolEntry columnName, @NotNull String typeName, @Nullable SQLQueryValueExpression defaultValueExpression, @NotNull List<SQLQueryColumnConstraintSpec> constraints) {
+    public SQLQueryColumnSpec(
+        @NotNull STMTreeNode syntaxNode,
+        @Nullable SQLQuerySymbolEntry columnName,
+        @Nullable String typeName,
+        @Nullable SQLQueryValueExpression defaultValueExpression,
+        @NotNull List<SQLQueryColumnConstraintSpec> constraints
+    ) {
         super(syntaxNode.getRealInterval(), syntaxNode, defaultValueExpression);
         this.columnName = columnName;
         this.typeName = typeName;
@@ -56,14 +72,18 @@ public class SQLQueryColumnSpec extends SQLQueryNodeModel {
         this.constraints.forEach(this::registerSubnode);
     }
 
-    @NotNull
+    @Nullable
     public SQLQuerySymbolEntry getColumnName() {
         return this.columnName;
     }
 
-    @NotNull
+    @Nullable
     public String getTypeName() {
         return this.typeName;
+    }
+
+    public SQLQueryExprType getDeclaredColumnType() {
+        return this.typeName != null ? SQLQueryExprType.forExplicitTypeRef(this.typeName) : SQLQueryExprType.UNKNOWN;
     }
 
     @Nullable
@@ -74,50 +94,6 @@ public class SQLQueryColumnSpec extends SQLQueryNodeModel {
     @NotNull
     public List<SQLQueryColumnConstraintSpec> getConstraints() {
         return this.constraints;
-    }
-
-    private static final Map<String, SQLQueryColumnConstraintKind> constraintKindByNodeName = Map.of(
-        STMKnownRuleNames.columnConstraintNotNull, SQLQueryColumnConstraintKind.NOT_NULL,
-        STMKnownRuleNames.columnConstraintUnique, SQLQueryColumnConstraintKind.UNIQUE,
-        STMKnownRuleNames.columnConstraintPrimaryKey, SQLQueryColumnConstraintKind.PRIMARY_KEY,
-        STMKnownRuleNames.referencesSpecification, SQLQueryColumnConstraintKind.REFERENCES,
-        STMKnownRuleNames.checkConstraintDefinition, SQLQueryColumnConstraintKind.CHECK
-    );
-
-    public static SQLQueryColumnSpec recognize(SQLQueryModelRecognizer recognizer, STMTreeNode node) {
-        SQLQuerySymbolEntry columnName = recognizer.collectIdentifier(node.findChildOfName(STMKnownRuleNames.columnName));
-        String typeName = node.findChildOfName(STMKnownRuleNames.dataType).getTextContent();
-
-        STMTreeNode defaultValueNode = node.findChildOfName(STMKnownRuleNames.defaultClause);
-        SQLQueryValueExpression defaultValueExprssion = defaultValueNode == null ? null : recognizer.collectValueExpression(defaultValueNode);
-
-        LinkedList<SQLQueryColumnConstraintSpec> constraints = new LinkedList<>();
-        for (int i = 0; i < node.getChildCount(); i++) {
-            STMTreeNode subnode = node.getStmChild(i);
-            if (subnode.getNodeKindId() == SQLStandardParser.RULE_columnConstraintDefinition) {
-                STMTreeNode constraintNameNode = subnode.findChildOfName(STMKnownRuleNames.constraintNameDefinition);
-                SQLQueryQualifiedName constraintName = constraintNameNode == null ? null : recognizer.collectQualifiedName(constraintNameNode.findChildOfName(STMKnownRuleNames.constraintName));
-
-                STMTreeNode constraintNode = subnode.findChildOfName(STMKnownRuleNames.columnConstraint).getStmChild(0);
-                SQLQueryColumnConstraintKind constraintKind = constraintKindByNodeName.get(constraintNode.getNodeName());
-
-                SQLQueryRowsTableDataModel referencedTable = null;
-                List<SQLQuerySymbolEntry> referencedColumns = null;
-                SQLQueryValueExpression checkExpression = null;
-                switch (constraintKind) {
-                    case CHECK -> checkExpression = recognizer.collectValueExpression(constraintNode.getStmChild(0));
-                    case REFERENCES -> {
-                        STMTreeNode refNode = constraintNode.findChildOfName(STMKnownRuleNames.referencedTableAndColumns);
-                        referencedTable = recognizer.collectTableReference(refNode);
-                        referencedColumns = recognizer.collectColumnNameList(refNode);
-                    }
-                }
-
-                constraints.add(new SQLQueryColumnConstraintSpec(subnode, constraintName, constraintKind, referencedTable, referencedColumns, checkExpression));
-            }
-        }
-
-        return new SQLQueryColumnSpec(node, columnName, typeName, defaultValueExprssion, constraints);
     }
 
     @Override
@@ -136,4 +112,68 @@ public class SQLQueryColumnSpec extends SQLQueryNodeModel {
     public SQLQueryDataContext getResultDataContext() {
         return null;
     }
+
+    /**
+     * Propagate semantics context and establish relations through the query model
+     */
+    public void propagateContext(
+        @NotNull SQLQueryDataContext dataContext,
+        @Nullable SQLQueryDataContext tableContext,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        if (this.defaultValueExpression != null && tableContext != null) {
+            this.defaultValueExpression.propagateContext(tableContext, statistics);
+        }
+        for (SQLQueryColumnConstraintSpec constraintSpec : this.constraints) {
+            constraintSpec.propagateContext(dataContext, tableContext, statistics);
+        }
+    }
+
+    public static SQLQueryColumnSpec recognize(SQLQueryModelRecognizer recognizer, STMTreeNode node) {
+        SQLQuerySymbolEntry columnName = Optional.ofNullable(node.findChildOfName(STMKnownRuleNames.columnName))
+            .map(recognizer::collectIdentifier)
+            .orElse(null);
+        String typeName = Optional.ofNullable(node.findChildOfName(STMKnownRuleNames.dataType)).map(n -> n.getTextContent()).orElse(null);
+
+        STMTreeNode defaultValueNode = node.findChildOfName(STMKnownRuleNames.defaultClause);
+        SQLQueryValueExpression defaultValueExpr = defaultValueNode == null ? null : recognizer.collectValueExpression(defaultValueNode);
+
+        LinkedList<SQLQueryColumnConstraintSpec> constraints = new LinkedList<>();
+        for (int i = 0; i < node.getChildCount(); i++) {
+            STMTreeNode subnode = node.getStmChild(i);
+            if (subnode.getNodeKindId() == SQLStandardParser.RULE_columnConstraintDefinition) {
+                SQLQueryQualifiedName constraintName = Optional.ofNullable(subnode.findChildOfName(STMKnownRuleNames.constraintNameDefinition))
+                    .map(n -> n.findChildOfName(STMKnownRuleNames.constraintName))
+                    .map(recognizer::collectQualifiedName)
+                    .orElse(null);
+
+                STMTreeNode constraintNode = Optional.ofNullable(subnode.findChildOfName(STMKnownRuleNames.columnConstraint))
+                    .map(n -> n.getStmChild(0)).orElse(null);
+                SQLQueryColumnConstraintKind constraintKind;
+                SQLQueryRowsTableDataModel referencedTable = null;
+                List<SQLQuerySymbolEntry> referencedColumns = null;
+                SQLQueryValueExpression checkExpression = null;
+                if (constraintNode != null) {
+                    constraintKind = constraintKindByNodeName.get(constraintNode.getNodeName());
+                    switch (constraintKind) {
+                        case CHECK ->
+                            checkExpression = recognizer.collectValueExpression(constraintNode.getStmChild(0));
+                        case REFERENCES -> {
+                            STMTreeNode refNode = constraintNode.findChildOfName(STMKnownRuleNames.referencedTableAndColumns);
+                            if (refNode != null) {
+                                referencedTable = recognizer.collectTableReference(refNode);
+                                referencedColumns = recognizer.collectColumnNameList(refNode);
+                            }
+                        }
+                    }
+                } else {
+                    constraintKind = SQLQueryColumnConstraintKind.UNKNOWN;
+                }
+                constraints.addLast(new SQLQueryColumnConstraintSpec(subnode, constraintName, constraintKind, referencedTable, referencedColumns, checkExpression));
+            }
+        }
+
+        return new SQLQueryColumnSpec(node, columnName, typeName, defaultValueExpr, constraints);
+    }
+
 }

@@ -38,7 +38,8 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
-import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryCreateTableModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryTableAlterModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryTableCreateModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryObjectDropModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryTableDropModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryDeleteModel;
@@ -130,7 +131,7 @@ public class SQLQueryModelRecognizer {
                 STMTreeNode stmtBodyNode = queryNode.getFirstStmChild();
                 yield switch (stmtBodyNode.getNodeKindId()) {
                     case SQLStandardParser.RULE_createTableStatement ->
-                        SQLQueryCreateTableModel.recognize(this, stmtBodyNode);
+                        SQLQueryTableCreateModel.recognize(this, stmtBodyNode);
                     case SQLStandardParser.RULE_createViewStatement -> null;
                     case SQLStandardParser.RULE_dropTableStatement ->
                         SQLQueryTableDropModel.recognize(this, stmtBodyNode, false);
@@ -138,6 +139,8 @@ public class SQLQueryModelRecognizer {
                         SQLQueryTableDropModel.recognize(this, stmtBodyNode, true);
                     case SQLStandardParser.RULE_dropProcedureStatement ->
                         SQLQueryObjectDropModel.recognize(this, stmtBodyNode, RelationalObjectType.TYPE_PROCEDURE);
+                    case SQLStandardParser.RULE_alterTableStatement->
+                        SQLQueryTableAlterModel.recognize(this, stmtBodyNode);
                     default -> null;
                 };
             }

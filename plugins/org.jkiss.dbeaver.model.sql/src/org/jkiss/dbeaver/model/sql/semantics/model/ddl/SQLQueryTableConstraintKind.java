@@ -16,11 +16,9 @@
  */
 package org.jkiss.dbeaver.model.sql.semantics.model.ddl;
 
-public enum SQLQueryColumnConstraintKind {
+public enum SQLQueryTableConstraintKind {
     UNKNOWN,
-    NOT_NULL,
     UNIQUE,
-    PRIMARY_KEY,
     REFERENCES,
     CHECK
 }

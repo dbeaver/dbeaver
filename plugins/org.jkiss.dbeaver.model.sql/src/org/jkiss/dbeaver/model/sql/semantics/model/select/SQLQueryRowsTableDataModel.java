@@ -71,7 +71,7 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
     }
 
     @NotNull
-    private SQLQuerySymbol prepareColumnSymbol(@NotNull SQLQueryDataContext context, @NotNull DBSEntityAttribute attr) {
+    private static SQLQuerySymbol prepareColumnSymbol(@NotNull SQLQueryDataContext context, @NotNull DBSEntityAttribute attr) {
         String name = SQLUtils.identifierToCanonicalForm(context.getDialect(), attr.getName(), false, true);
         SQLQuerySymbol symbol = new SQLQuerySymbol(name);
         symbol.setDefinition(new SQLQuerySymbolByDbObjectDefinition(attr, SQLQuerySymbolClass.COLUMN));
@@ -81,19 +81,31 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
 
     @NotNull
     protected List<SQLQueryResultColumn> prepareResultColumnsList(
-        @NotNull SQLQuerySymbolEntry cause,
-        @NotNull SQLQueryDataContext attrsContext,
-        @NotNull SQLQueryRecognitionContext statistics,
-        @NotNull List<? extends DBSEntityAttribute> attributes
+            @NotNull SQLQuerySymbolEntry cause,
+            @NotNull SQLQueryDataContext attrsContext,
+            @NotNull SQLQueryRecognitionContext statistics,
+            @NotNull List<? extends DBSEntityAttribute> attributes
+    ) {
+        return prepareResultColumnsList(cause, this, this.table, attrsContext, statistics, attributes);
+    }
+
+    @NotNull
+    public static List<SQLQueryResultColumn> prepareResultColumnsList(
+            @NotNull SQLQuerySymbolEntry cause,
+            @NotNull SQLQueryRowsSourceModel rowsSourceModel,
+            @Nullable DBSEntity table,
+            @NotNull SQLQueryDataContext attrsContext,
+            @NotNull SQLQueryRecognitionContext statistics,
+            @NotNull List<? extends DBSEntityAttribute> attributes
     ) {
         List<SQLQueryResultColumn> columns = new ArrayList<>(attributes.size());
         for (DBSEntityAttribute attr : attributes) {
             if (!DBUtils.isHiddenObject(attr)) {
                 columns.add(new SQLQueryResultColumn(
-                    columns.size(),
-                    this.prepareColumnSymbol(attrsContext, attr),
-                    this, this.table, attr,
-                    this.obtainColumnType(cause, statistics, attr)
+                        columns.size(),
+                        prepareColumnSymbol(attrsContext, attr),
+                        rowsSourceModel, table, attr,
+                        obtainColumnType(cause, statistics, attr)
                 ));
             }
         }
@@ -101,7 +113,7 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
     }
 
     @NotNull
-    private SQLQueryExprType obtainColumnType(
+    private static SQLQueryExprType obtainColumnType(
         @NotNull SQLQuerySymbolEntry reason,
         @NotNull SQLQueryRecognitionContext statistics,
         @NotNull DBSAttributeBase attr

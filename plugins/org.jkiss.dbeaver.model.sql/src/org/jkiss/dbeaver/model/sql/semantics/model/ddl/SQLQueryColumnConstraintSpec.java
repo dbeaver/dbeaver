@@ -18,11 +18,10 @@ package org.jkiss.dbeaver.model.sql.semantics.model.ddl;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryQualifiedName;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
@@ -30,11 +29,13 @@ import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueColu
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
+import org.jkiss.dbeaver.model.struct.*;
 
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class SQLQueryColumnConstraintSpec extends SQLQueryNodeModel {
-    @NotNull
+    @Nullable
     private final SQLQueryQualifiedName constraintName;
     @NotNull
     private final SQLQueryColumnConstraintKind kind;
@@ -46,13 +47,30 @@ public class SQLQueryColumnConstraintSpec extends SQLQueryNodeModel {
     @Nullable
     private final SQLQueryValueExpression checkExpression;
 
-    public SQLQueryColumnConstraintSpec(@NotNull STMTreeNode syntaxNode, @NotNull SQLQueryQualifiedName constraintName, @NotNull SQLQueryColumnConstraintKind kind, @Nullable SQLQueryRowsTableDataModel referencedTable, @Nullable List<SQLQuerySymbolEntry> referencedColumns, @Nullable SQLQueryValueExpression checkExpression) {
-        super(syntaxNode.getRealInterval(), syntaxNode);
+    public SQLQueryColumnConstraintSpec(
+        @NotNull STMTreeNode syntaxNode,
+        @Nullable SQLQueryQualifiedName constraintName,
+        @NotNull SQLQueryColumnConstraintKind kind,
+        @Nullable SQLQueryRowsTableDataModel referencedTable,
+        @Nullable List<SQLQuerySymbolEntry> referencedColumns,
+        @Nullable SQLQueryValueExpression checkExpression
+    ) {
+        super(syntaxNode.getRealInterval(), syntaxNode, checkExpression);
         this.constraintName = constraintName;
         this.kind = kind;
         this.referencedTable = referencedTable;
         this.referencedColumns = referencedColumns;
         this.checkExpression = checkExpression;
+    }
+
+    @NotNull
+    public SQLQueryQualifiedName getConstraintName() {
+        return this.constraintName;
+    }
+
+    @NotNull
+    public SQLQueryColumnConstraintKind getKind() {
+        return this.kind;
     }
 
     @Override
@@ -72,25 +90,114 @@ public class SQLQueryColumnConstraintSpec extends SQLQueryNodeModel {
         return null;
     }
 
-    public void propagateContext(SQLQueryDataContext tableContext, SQLQueryRecognitionContext statistics) {
-        SQLQueryDataContext referencedContext = this.referencedTable == null ? null : this.referencedTable.propagateContext(tableContext, statistics);
+    /**
+     * Propagate semantics context and establish relations through the query model
+     */
+    public void propagateContext(
+        @NotNull SQLQueryDataContext dataContext,
+        @Nullable SQLQueryDataContext tableContext,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
 
-        if (this.referencedColumns != null) {
+        if (this.referencedTable != null) {
+            SQLQueryDataContext referencedContext = propagateForReferencedEntity(this.referencedTable, this.referencedColumns, dataContext, statistics);
             if (referencedContext != null) {
-                for (SQLQuerySymbolEntry columnRef: this.referencedColumns) {
-                    SQLQueryResultColumn rc = referencedContext.resolveColumn(statistics.getMonitor(), columnRef.getName());
-                    SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(columnRef, rc, statistics);
-                }
-            } else {
-                // table reference resolution failed, so cannot resolve its columns as well
-                for (SQLQuerySymbolEntry columnRef: this.referencedColumns) {
-                    columnRef.getSymbol().setSymbolClass(SQLQuerySymbolClass.ERROR);
+                if (referencedContext.getColumnsList().size() != 1) {
+                    statistics.appendWarning(this.getSyntaxNode(), "Inconsistent foreign key tuple size");
                 }
             }
         }
 
-        if (this.checkExpression != null) {
+        if (this.checkExpression != null && tableContext != null) {
             this.checkExpression.propagateContext(tableContext, statistics);
         }
     }
+
+    /**
+     * Propagate semantics context for referenced entity
+     */
+    public static @Nullable SQLQueryDataContext propagateForReferencedEntity(
+        @NotNull SQLQueryRowsTableDataModel referencedTable,
+        @Nullable List<SQLQuerySymbolEntry> referencedColumns,
+        @NotNull SQLQueryDataContext dataContext,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        SQLQueryDataContext referencedContext = referencedTable.propagateContext(dataContext, statistics);
+        DBSEntity realTable = referencedTable.getTable();
+        SQLQueryDataContext resultContext;
+
+        if (referencedColumns != null && !referencedColumns.isEmpty()) {
+            List<SQLQueryResultColumn> resultColumns = new ArrayList<>(referencedColumns.size());
+            if (realTable != null) {
+                for (SQLQuerySymbolEntry columnRef : referencedColumns) {
+                    SQLQueryResultColumn rc = referencedContext.resolveColumn(statistics.getMonitor(), columnRef.getName());
+                    if (rc != null) {
+                        if (columnRef.isNotClassified()) {
+                            SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(columnRef, rc, statistics);
+                        }
+                        resultColumns.add(rc.withNewIndex(resultColumns.size()));
+                    } else {
+                        statistics.appendWarning(columnRef, "Failed to resolve column");
+                        columnRef.getSymbol().setSymbolClass(SQLQuerySymbolClass.COLUMN);
+
+                        resultColumns.add(new SQLQueryResultColumn(
+                            resultColumns.size(), columnRef.getSymbol(),
+                            referencedTable, realTable,
+                            null, SQLQueryExprType.UNKNOWN
+                        ));
+                    }
+                }
+            } else {
+                // table reference resolution failed, so cannot resolve its columns as well
+                statistics.appendWarning(referencedTable.getName().entityName, "Failed to resolve table to validate compound foreign key columns");
+                for (SQLQuerySymbolEntry columnRef : referencedColumns) {
+                    if (columnRef.isNotClassified()) {
+                        columnRef.getSymbol().setSymbolClass(SQLQuerySymbolClass.COLUMN);
+                    }
+                    resultColumns.add(new SQLQueryResultColumn(
+                        resultColumns.size(), columnRef.getSymbol(),
+                        referencedTable, referencedTable.getTable(),
+                        null, SQLQueryExprType.UNKNOWN
+                    ));
+                }
+            }
+            resultContext = referencedContext.overrideResultTuple(resultColumns);
+        } else {
+            if (realTable != null) {
+                try {
+                    Optional<? extends DBSEntityConstraint> pk = Optional.ofNullable(realTable.getConstraints(statistics.getMonitor()))
+                        .orElse(Collections.emptyList()).stream()
+                        .filter(c -> c.getConstraintType().equals(DBSEntityConstraintType.PRIMARY_KEY))
+                        .findFirst();
+                    if (pk.isPresent() && pk.get() instanceof DBSEntityReferrer referrer) {
+                        List<DBSEntityAttribute> pkAttrs = Optional.ofNullable(referrer.getAttributeReferences(statistics.getMonitor()))
+                            .orElse(Collections.emptyList()).stream()
+                            .map(DBSEntityAttributeRef::getAttribute).collect(Collectors.toList());
+                        if (pkAttrs.isEmpty()) {
+                            statistics.appendWarning(referencedTable.getName().entityName, "Failed to resolve referenced table primary key");
+                            resultContext = null;
+                        } else {
+                            List<SQLQueryResultColumn> resultColumns = SQLQueryRowsTableDataModel.prepareResultColumnsList(
+                                referencedTable.getName().entityName, referencedTable, realTable, referencedContext, statistics, pkAttrs
+                            );
+                            resultContext = referencedContext.overrideResultTuple(resultColumns);
+                        }
+                    } else {
+                        statistics.appendWarning(referencedTable.getName().entityName, "Failed to resolve referenced table primary key");
+                        resultContext = null;
+                    }
+                } catch (DBException e) {
+                    statistics.appendError(referencedTable.getName().entityName, "Failed to resolve referenced table primary key", e);
+                    resultContext = null;
+                }
+            } else {
+                // no explicit foreign key columns, and table is not resolved, so no way to validate the reference
+                resultContext = null;
+            }
+        }
+
+        return resultContext;
+    }
+
+
 }

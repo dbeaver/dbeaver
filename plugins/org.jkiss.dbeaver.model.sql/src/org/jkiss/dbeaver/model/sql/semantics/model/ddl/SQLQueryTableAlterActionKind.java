@@ -16,11 +16,10 @@
  */
 package org.jkiss.dbeaver.model.sql.semantics.model.ddl;
 
-public enum SQLQueryColumnConstraintKind {
-    UNKNOWN,
-    NOT_NULL,
-    UNIQUE,
-    PRIMARY_KEY,
-    REFERENCES,
-    CHECK
+public enum SQLQueryTableAlterActionKind {
+    ADD_COLUMN,
+    ALTER_COLUMN,
+    DROP_COLUMN,
+    ADD_TABLE_CONSTRAINT,
+    DROP_TABLE_CONSTRAINT
 }

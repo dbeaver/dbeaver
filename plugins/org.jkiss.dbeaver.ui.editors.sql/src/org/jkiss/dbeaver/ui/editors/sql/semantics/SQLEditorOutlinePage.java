@@ -59,12 +59,14 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerToggleOutlineView;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 public class SQLEditorOutlinePage extends ContentOutlinePage implements IContentOutlinePage {
@@ -1302,8 +1304,9 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             return null;
         }
 
+        @Nullable
         @Override
-        public Object visitObjectReference(SQLQueryObjectDataModel objectReference, OutlineQueryNode node) {
+        public Object visitObjectReference(@NotNull SQLQueryObjectDataModel objectReference, OutlineQueryNode node) {
             this.makeNode(
                 node,
                 objectReference,
@@ -1313,27 +1316,69 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             return null;
         }
 
+        @Nullable
         @Override
-        public Object visitCreateTable(SQLQueryCreateTableModel createTable, OutlineQueryNode arg) {
-            // TODO
+        public Object visitCreateTable(@NotNull SQLQueryTableCreateModel createTable, OutlineQueryNode node) {
+            String nodeName =  "CREATE TABLE " + createTable.getTableName().toIdentifierString();
+            this.makeNode(
+                node, createTable, nodeName, UIIcon.ACTION_OBJECT_ADD,
+                Stream.concat(createTable.getColumns().stream(), createTable.getConstraints().stream()).toArray(SQLQueryNodeModel[]::new)
+            );
             return null;
         }
 
+        @Nullable
         @Override
-        public Object visitColumnConstraintSpec(SQLQueryColumnConstraintSpec columnConstraintSpec, OutlineQueryNode arg) {
-            // TODO
+        public Object visitColumnConstraintSpec(@NotNull SQLQueryColumnConstraintSpec columnConstraintSpec, OutlineQueryNode node) {
+            String nodeText = prepareQueryPreview(columnConstraintSpec.getSyntaxNode().getTextContent());
+            this.makeNode(node, columnConstraintSpec, nodeText, DBIcon.TREE_CONSTRAINT);
             return null;
         }
 
+        @Nullable
         @Override
-        public Object visitColumnSpec(SQLQueryColumnSpec columnSpec, OutlineQueryNode arg) {
-            // TODO
+        public Object visitColumnSpec(@NotNull SQLQueryColumnSpec columnSpec, OutlineQueryNode node) {
+            String nodeText = columnSpec.getColumnName() == null ? "?" : columnSpec.getColumnName().getName();
+            this.makeNode(
+                node, columnSpec, nodeText, " " + CommonUtils.notNull(columnSpec.getTypeName(), ""), DBIcon.TREE_COLUMN,
+                Stream.concat(
+                    Stream.of(columnSpec.getDefaultValueExpression()),
+                    columnSpec.getConstraints().stream()
+                ).toArray(SQLQueryNodeModel[]::new)
+            );
             return null;
         }
 
+        @Nullable
         @Override
-        public Object visitTableConstraintSpec(SQLQueryTableConstraintSpec tableConstraintSpec, OutlineQueryNode arg) {
-            // TODO
+        public Object visitTableConstraintSpec(@NotNull SQLQueryTableConstraintSpec tableConstraintSpec, OutlineQueryNode node) {
+            String nodeText = prepareQueryPreview(tableConstraintSpec.getSyntaxNode().getTextContent());
+            this.makeNode(node, tableConstraintSpec, nodeText, DBIcon.TREE_CONSTRAINT);
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public Object visitAlterTable(@NotNull SQLQueryTableAlterModel alterTable, OutlineQueryNode node) {
+            String nodeText = prepareQueryPreview(alterTable.getSyntaxNode().getTextContent());
+            this.makeNode(
+                node, alterTable, nodeText, DBIcon.TREE_FOLDER_CONSTRAINT,
+                Stream.concat(
+                    Stream.of(alterTable.getTargetTable()),
+                    alterTable.getAlterActions().stream()
+                ).toArray(SQLQueryNodeModel[]::new)
+            );
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public Object visitAlterTableAction(@NotNull SQLQueryTableAlterActionSpec actionSpec, OutlineQueryNode node) {
+            String nodeText = prepareQueryPreview(actionSpec.getSyntaxNode().getTextContent());
+            this.makeNode(
+                node, actionSpec, nodeText, DBIcon.TREE_CONSTRAINT,
+                actionSpec.getColumnSpec(), actionSpec.getTableConstraintSpec()
+            );
             return null;
         }
 
