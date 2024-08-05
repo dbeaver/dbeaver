@@ -14,19 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.sql.backup;
+
+package org.jkiss.dbeaver.ext.import_config.dbvis;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.connection.InternalDatabaseConfig;
+import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
 
-import java.io.IOException;
-import java.sql.Connection;
+import java.io.File;
 
-public interface JDBCDatabaseBackupHandler {
-    void doBackup(
-            @NotNull Connection connection,
-            int currentSchemaVersion,
-            @NotNull InternalDatabaseConfig databaseConfig
-    ) throws DBException, IOException;
+public interface DbvisConfigurationCreator {
+
+    ImportData create(
+        @NotNull ImportData data,
+        @NotNull File configFile) throws DBException;
+
+    File getConfigurationAsset(File folder);
+
+    String getConfigurationFolder();
+
+    String getConfigurationFile();
+
 }
