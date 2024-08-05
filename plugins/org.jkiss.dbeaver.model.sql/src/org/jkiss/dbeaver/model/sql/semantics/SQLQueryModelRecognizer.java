@@ -21,7 +21,6 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
@@ -30,9 +29,7 @@ import org.jkiss.dbeaver.model.lsm.LSMAnalyzerParameters;
 import org.jkiss.dbeaver.model.lsm.sql.dialect.LSMDialectRegistry;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataSourceContext;
@@ -61,46 +58,34 @@ import java.util.function.Predicate;
 /**
  * Responsible for semantics model preparation based on the parsing result
  */
-public class SQLQueryModelContext {
+public class SQLQueryModelRecognizer {
+
+    private final SQLQueryExpressionMapper queryExpressionMapper = new SQLQueryExpressionMapper(this);
 
     private final Set<SQLQuerySymbolEntry> symbolEntries = new HashSet<>();
     
-    private final boolean isReadMetadataForSemanticAnalysis;
+    private final SQLQueryRecognitionContext recognitionContext;
 
     private final DBCExecutionContext executionContext;
     
     private final Set<String> reservedWords;
 
-    private final SQLSyntaxManager syntaxManager;
     private final SQLDialect dialect;
     
     private final LinkedList<SQLQueryLexicalScope> currentLexicalScopes = new LinkedList<>();
 
     private SQLQueryDataContext queryDataContext;
 
-    public SQLQueryModelContext(@Nullable DBCExecutionContext executionContext, boolean isReadMetadataForSemanticAnalysis, @NotNull SQLSyntaxManager syntaxManager) {
-        this.isReadMetadataForSemanticAnalysis = isReadMetadataForSemanticAnalysis;
-        this.executionContext = executionContext;
-        this.syntaxManager = syntaxManager;
+    private SQLQueryModelRecognizer(@NotNull SQLQueryRecognitionContext recognitionContext) {
+        this.recognitionContext = recognitionContext;
 
+        this.executionContext = recognitionContext.getExecutionContext();
         if (executionContext != null && executionContext.getDataSource() != null) {
             this.dialect = this.executionContext.getDataSource().getSQLDialect();
         } else {
             this.dialect = BasicSQLDialect.INSTANCE;
         }
         this.reservedWords = new HashSet<>(this.dialect.getReservedWords());
-    }
-
-    public SQLSyntaxManager getSyntaxManager() {
-        return syntaxManager;
-    }
-
-    public SQLDialect getDialect() {
-        return dialect;
-    }
-
-    public DBCExecutionContext getExecutionContext() {
-        return executionContext;
     }
 
     public SQLQueryDataContext getQueryDataContext() {
@@ -111,10 +96,10 @@ public class SQLQueryModelContext {
      * Provides the semantic model for the provided text
      */
     @Nullable
-    public SQLQueryModel recognizeQuery(@NotNull String text, @NotNull DBRProgressMonitor monitor) {
+    private SQLQueryModel recognizeQuery(@NotNull String text) {
         STMSource querySource = STMSource.fromString(text);
         LSMAnalyzer analyzer = LSMDialectRegistry.getInstance().getAnalyzerFactoryForDialect(this.dialect)
-            .createAnalyzer(LSMAnalyzerParameters.forDialect(this.dialect, this.syntaxManager));
+            .createAnalyzer(LSMAnalyzerParameters.forDialect(this.dialect, this.recognitionContext.getSyntaxManager()));
         STMTreeRuleNode tree = analyzer.parseSqlQueryTree(querySource, new STMSkippingErrorListener());
 
         if (tree == null) {
@@ -131,11 +116,11 @@ public class SQLQueryModelContext {
                 // TODO collect CTE for insert-update-delete as well as recursive CTE
                 yield switch (stmtBodyNode.getNodeKindId()) {
                     case SQLStandardParser.RULE_deleteStatement ->
-                        SQLQueryDeleteModel.createModel(this, stmtBodyNode);
+                        SQLQueryDeleteModel.recognize(this, stmtBodyNode);
                     case SQLStandardParser.RULE_insertStatement ->
-                        SQLQueryInsertModel.createModel(this, stmtBodyNode);
+                        SQLQueryInsertModel.recognize(this, stmtBodyNode);
                     case SQLStandardParser.RULE_updateStatement ->
-                        SQLQueryUpdateModel.createModel(this, stmtBodyNode);
+                        SQLQueryUpdateModel.recognize(this, stmtBodyNode);
                     default -> this.collectQueryExpression(tree);
                 };
             }
@@ -145,11 +130,11 @@ public class SQLQueryModelContext {
                     case SQLStandardParser.RULE_createTableStatement -> null;
                     case SQLStandardParser.RULE_createViewStatement -> null;
                     case SQLStandardParser.RULE_dropTableStatement ->
-                        SQLQueryTableDropModel.createModel(this, stmtBodyNode, false);
+                        SQLQueryTableDropModel.recognize(this, stmtBodyNode, false);
                     case SQLStandardParser.RULE_dropViewStatement ->
-                        SQLQueryTableDropModel.createModel(this, stmtBodyNode, true);
+                        SQLQueryTableDropModel.recognize(this, stmtBodyNode, true);
                     case SQLStandardParser.RULE_dropProcedureStatement ->
-                        SQLQueryObjectDropModel.createModel(this, stmtBodyNode, RelationalObjectType.TYPE_PROCEDURE);
+                        SQLQueryObjectDropModel.recognize(this, stmtBodyNode, RelationalObjectType.TYPE_PROCEDURE);
                     default -> null;
                 };
             }
@@ -159,7 +144,7 @@ public class SQLQueryModelContext {
         if (contents != null) {
             SQLQueryModel model = new SQLQueryModel(tree, contents, symbolEntries);
 
-            model.propagateContext(this.queryDataContext, new RecognitionContext(monitor));
+            model.propagateContext(this.queryDataContext, this.recognitionContext);
 
             int actualTailPosition = model.getSyntaxNode().getRealInterval().b;
             SQLQueryNodeModel tailNode = model.findNodeContaining(actualTailPosition);
@@ -262,12 +247,12 @@ public class SQLQueryModelContext {
 
     @NotNull
     private SQLQueryDataContext prepareDataContext(@NotNull STMTreeNode root) {
-        if (this.isReadMetadataForSemanticAnalysis
+        if (this.recognitionContext.useRealMetadata()
             && this.executionContext != null
             && this.executionContext.getDataSource() instanceof DBSObjectContainer
             && this.executionContext.getDataSource().getSQLDialect() instanceof BasicSQLDialect
         ) {
-            return new SQLQueryDataSourceContext(this);
+            return new SQLQueryDataSourceContext(this.dialect, this.executionContext);
         } else {
             Set<String> allColumnNames = new HashSet<>();
             Set<List<String>> allTableNames = new HashSet<>();
@@ -277,42 +262,13 @@ public class SQLQueryModelContext {
                 e -> allTableNames.add(e.toListOfStrings()),
                 true);
             symbolEntries.clear();
-            return new SQLQueryDummyDataSourceContext(this, allColumnNames, allTableNames);
-        }
-    }
-
-    private static class RecognitionContext implements SQLQueryRecognitionContext {
-        private final DBRProgressMonitor monitor;
-
-        public RecognitionContext(@NotNull DBRProgressMonitor monitor) {
-            this.monitor = monitor;
-        }
-
-        @NotNull
-        @Override
-        public DBRProgressMonitor getMonitor() {
-            return this.monitor;
-        }
-
-        @Override
-        public void appendError(@NotNull SQLQuerySymbolEntry symbol, @NotNull String error, @NotNull DBException ex) {
-            // System.out.println(symbol.getName() + ": " + error + ": " + ex.toString());
-        }
-
-        @Override
-        public void appendError(@NotNull SQLQuerySymbolEntry symbol, @NotNull String error) {
-            // System.out.println(symbol.getName() + ": " + error);
-        }
-
-        @Override
-        public void appendError(@NotNull STMTreeNode treeNode, @NotNull String error) {
-            // TODO generate problem markers
+            return new SQLQueryDummyDataSourceContext(this.dialect, allColumnNames, allTableNames);
         }
     }
 
     @NotNull
     public SQLQueryRowsSourceModel collectQueryExpression(@NotNull STMTreeNode tree) {
-        return new SQLQueryExpressionMapper(this).translate(tree);
+        return this.queryExpressionMapper.translate(tree);
     }
 
     @NotNull
@@ -448,7 +404,7 @@ public class SQLQueryModelContext {
 
     @NotNull
     public SQLQueryRowsTableDataModel collectTableReference(@NotNull STMTreeNode node) {
-        return new SQLQueryRowsTableDataModel(this, node, collectTableName(node));
+        return new SQLQueryRowsTableDataModel(node, collectTableName(node));
     }
 
     @Nullable
@@ -765,7 +721,7 @@ public class SQLQueryModelContext {
 
         @Override
         public void close() {
-            SQLQueryModelContext.this.endScope(this.lexicalScope);
+            SQLQueryModelRecognizer.this.endScope(this.lexicalScope);
         }
     }
 
@@ -773,6 +729,11 @@ public class SQLQueryModelContext {
         return new LexicalScopeHolder(this.beginScope());
     }
 
+    @Nullable
+    public static SQLQueryModel recognizeQuery(@NotNull SQLQueryRecognitionContext recognitionContext, @NotNull String queryText) {
+        SQLQueryModelRecognizer recognizer = new SQLQueryModelRecognizer(recognitionContext);
+        return recognizer.recognizeQuery(queryText);
+    }
 
     /**
      * A debugging facility
@@ -866,6 +827,5 @@ public class SQLQueryModelContext {
             }
         }
     }
-
 
 }

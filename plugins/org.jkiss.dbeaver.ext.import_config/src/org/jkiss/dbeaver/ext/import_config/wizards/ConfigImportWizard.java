@@ -190,6 +190,8 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         config.setHostName(connectionInfo.getHost());
         config.setHostPort(connectionInfo.getPort());
         config.setDatabaseName(connectionInfo.getDatabase());
+        config.setAuthModelId(connectionInfo.getAuthModelId());
+        config.setAuthProperties(connectionInfo.getAuthProperties());
         //It allows to specify whether connection url should be used directly or not after connection creation.
         if (CommonUtils.isEmpty(connectionInfo.getHost())) {
             config.setConfigurationType(DBPDriverConfigurationType.URL);
