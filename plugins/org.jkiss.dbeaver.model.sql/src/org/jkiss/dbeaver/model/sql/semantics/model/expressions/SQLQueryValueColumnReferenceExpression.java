@@ -80,7 +80,7 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
             columnName.setDefinition(resultColumn.symbol.getDefinition());
         } else {
             columnName.getSymbol().setSymbolClass(SQLQuerySymbolClass.ERROR);
-            statistics.appendError(columnName, "Column not found in dataset");
+            statistics.appendError(columnName, "Column " + columnName.getName() + " not found");
         }
     }
 
@@ -98,7 +98,10 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
                 type = resultColumn != null ? resultColumn.type : SQLQueryExprType.UNKNOWN;
             } else {
                 this.tableName.setSymbolClass(SQLQuerySymbolClass.ERROR);
-                statistics.appendError(this.tableName.entityName, "Table or subquery not found");
+                statistics.appendError(
+                    this.tableName.entityName,
+                    "Table or subquery " + this.tableName.toIdentifierString() + " not found"
+                );
                 type = SQLQueryExprType.UNKNOWN;
             }
         } else if (this.tableName == null && this.columnName.isNotClassified()) {

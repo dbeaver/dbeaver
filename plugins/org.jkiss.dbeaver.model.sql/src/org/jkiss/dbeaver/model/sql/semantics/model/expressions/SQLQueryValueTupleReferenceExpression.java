@@ -64,7 +64,7 @@ public class SQLQueryValueTupleReferenceExpression extends SQLQueryValueExpressi
                 this.tableName.setDefinition(rr);
             } else {
                 this.tableName.setSymbolClass(SQLQuerySymbolClass.ERROR);
-                statistics.appendError(this.tableName.entityName, "Table or subquery not found");
+                statistics.appendError(this.tableName.entityName, "Table or subquery " + this.tableName.toIdentifierString() + " not found");
             }
         }
     }

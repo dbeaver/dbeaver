@@ -123,7 +123,7 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
             type = SQLQueryExprType.forTypedObject(statistics.getMonitor(), attr, SQLQuerySymbolClass.COLUMN);
         } catch (DBException e) {
             log.debug(e);
-            statistics.appendError(reason, "Failed to resolve column type", e);
+            statistics.appendError(reason, "Failed to resolve column type for column " + attr.getName(), e);
             type = SQLQueryExprType.UNKNOWN;
         }
         return type;
@@ -131,7 +131,10 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
 
     @NotNull
     @Override
-    protected SQLQueryDataContext propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+    protected SQLQueryDataContext propagateContextImpl(
+        @NotNull SQLQueryDataContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
         if (this.name.isNotClassified()) {
             List<String> nameStrings = this.name.toListOfStrings();
             this.table = context.findRealTable(statistics.getMonitor(), nameStrings);
@@ -151,7 +154,11 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
                         context = context.overrideResultTuple(columns);
                     }
                 } catch (DBException ex) {
-                    statistics.appendError(this.name.entityName, "Failed to resolve table", ex);
+                    statistics.appendError(
+                        this.name.entityName,
+                        "Failed to resolve columns of the table " + this.name.toIdentifierString(),
+                        ex
+                    );
                 }
             } else {
                 SourceResolutionResult rr = context.resolveSource(statistics.getMonitor(), nameStrings);
@@ -161,7 +168,7 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
                     context = context.overrideResultTuple(rr.source.getResultDataContext().getColumnsList());
                 } else {
                     this.name.setSymbolClass(SQLQuerySymbolClass.ERROR);
-                    statistics.appendError(this.name.entityName, "Table not found");
+                    statistics.appendError(this.name.entityName, "Table " + this.name.toIdentifierString() + " not found");
                 }
             }
         }

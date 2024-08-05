@@ -85,7 +85,11 @@ public class SQLQueryValueMemberExpression extends SQLQueryValueExpression {
                 }
             } catch (DBException e) {
                 log.debug(e);
-                statistics.appendError(this.identifier, "Failed to resolve member reference", e);
+                statistics.appendError(
+                    this.identifier,
+                    "Failed to resolve member reference " + this.identifier.getName() + " for " + this.owner.getValueType().getDisplayName(),
+                    e
+                );
                 type = null;
             }
 

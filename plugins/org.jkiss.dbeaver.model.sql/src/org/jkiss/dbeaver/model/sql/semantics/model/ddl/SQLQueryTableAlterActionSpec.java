@@ -102,7 +102,7 @@ public class SQLQueryTableAlterActionSpec extends SQLQueryNodeModel {
                     SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(this.columnName, rc, statistics);
                 } else {
                     columnName.getSymbol().setSymbolClass(SQLQuerySymbolClass.COLUMN);
-                    statistics.appendWarning(columnName, "Column not found in dataset");
+                    statistics.appendWarning(columnName, "Column " + columnName.getName() + " not found");
                 }
             } else {
                 // a message that the table doesn't exist will appear, so no need additional warning here, I assume

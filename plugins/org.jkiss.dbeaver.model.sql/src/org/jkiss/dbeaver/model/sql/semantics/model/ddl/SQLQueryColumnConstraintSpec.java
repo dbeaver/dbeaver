@@ -137,7 +137,7 @@ public class SQLQueryColumnConstraintSpec extends SQLQueryNodeModel {
                         }
                         resultColumns.add(rc.withNewIndex(resultColumns.size()));
                     } else {
-                        statistics.appendWarning(columnRef, "Failed to resolve column");
+                        statistics.appendWarning(columnRef, "Failed to resolve column " + columnRef.getName());
                         columnRef.getSymbol().setSymbolClass(SQLQuerySymbolClass.COLUMN);
 
                         resultColumns.add(new SQLQueryResultColumn(
@@ -149,7 +149,10 @@ public class SQLQueryColumnConstraintSpec extends SQLQueryNodeModel {
                 }
             } else {
                 // table reference resolution failed, so cannot resolve its columns as well
-                statistics.appendWarning(referencedTable.getName().entityName, "Failed to resolve table to validate compound foreign key columns");
+                statistics.appendWarning(
+                    referencedTable.getName().entityName,
+                    "Failed to resolve table " + referencedTable.getName().toIdentifierString() + " to validate compound foreign key columns"
+                );
                 for (SQLQuerySymbolEntry columnRef : referencedColumns) {
                     if (columnRef.isNotClassified()) {
                         columnRef.getSymbol().setSymbolClass(SQLQuerySymbolClass.COLUMN);
@@ -174,7 +177,9 @@ public class SQLQueryColumnConstraintSpec extends SQLQueryNodeModel {
                             .orElse(Collections.emptyList()).stream()
                             .map(DBSEntityAttributeRef::getAttribute).collect(Collectors.toList());
                         if (pkAttrs.isEmpty()) {
-                            statistics.appendWarning(referencedTable.getName().entityName, "Failed to resolve referenced table primary key");
+                            statistics.appendWarning(
+                                referencedTable.getName().entityName,
+                                "Failed to obtain primary key attribute of the referenced table " + referencedTable.getName().toIdentifierString());
                             resultContext = null;
                         } else {
                             List<SQLQueryResultColumn> resultColumns = SQLQueryRowsTableDataModel.prepareResultColumnsList(
@@ -183,11 +188,17 @@ public class SQLQueryColumnConstraintSpec extends SQLQueryNodeModel {
                             resultContext = referencedContext.overrideResultTuple(resultColumns);
                         }
                     } else {
-                        statistics.appendWarning(referencedTable.getName().entityName, "Failed to resolve referenced table primary key");
+                        statistics.appendWarning(
+                            referencedTable.getName().entityName,
+                            "Failed to obtain primary key of the referenced table " + referencedTable.getName().toIdentifierString());
                         resultContext = null;
                     }
                 } catch (DBException e) {
-                    statistics.appendError(referencedTable.getName().entityName, "Failed to resolve referenced table primary key", e);
+                    statistics.appendError(
+                        referencedTable.getName().entityName,
+                        "Failed to resolve primary key of the referenced table " + referencedTable.getName().toIdentifierString(),
+                        e
+                    );
                     resultContext = null;
                 }
             } else {

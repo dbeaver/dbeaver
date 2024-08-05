@@ -74,7 +74,7 @@ public class SQLQueryTableAlterModel extends SQLQueryModelContent {
     protected void applyContext(@NotNull SQLQueryDataContext dataContext, @NotNull SQLQueryRecognitionContext statistics) {
         this.dataContext = dataContext;
 
-        if (targetTable!= null) {
+        if (targetTable != null) {
             SQLQueryDataContext tableContext = this.targetTable.propagateContext(dataContext, statistics);
             for (SQLQueryTableAlterActionSpec alterAction : this.alterActions) {
                 alterAction.propagateContext(dataContext, this.targetTable.getTable() == null ? null : tableContext, statistics);
