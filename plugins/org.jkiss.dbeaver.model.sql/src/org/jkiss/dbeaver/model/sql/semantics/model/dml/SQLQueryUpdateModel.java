@@ -184,7 +184,7 @@ public class SQLQueryUpdateModel extends SQLQueryModelContent {
             for (SQLQueryUpdateSetClauseModel setClauseModel : this.setClauseList) {
                 // resolve source value expressions against combined participating sets
                 for (SQLQueryValueExpression valueExpression : setClauseModel.sources) {
-                    valueExpression.propagateContext(targetContext, statistics);
+                    valueExpression.propagateContext(context, statistics);
                 }
             }
         }
