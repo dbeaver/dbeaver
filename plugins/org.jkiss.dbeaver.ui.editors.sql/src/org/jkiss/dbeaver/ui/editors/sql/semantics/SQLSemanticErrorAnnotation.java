@@ -42,7 +42,7 @@ public class SQLSemanticErrorAnnotation extends MarkerAnnotation implements IAnn
 
     private static final Map<SQLQueryRecognitionProblemInfo.Severity, Image> imageByProblemSeverity = Map.of(
         SQLQueryRecognitionProblemInfo.Severity.ERROR, DBeaverIcons.getImage(DBIcon.TINY_ERROR),
-        SQLQueryRecognitionProblemInfo.Severity.WARNING, DBeaverIcons.getImage(DBIcon.SMALL_WARNING)
+        SQLQueryRecognitionProblemInfo.Severity.WARNING, DBeaverIcons.getImage(DBIcon.TINY_WARNING)
     );
 
     private final SQLQueryRecognitionProblemInfo problemInfo; // TODO will be needed for quick fix
