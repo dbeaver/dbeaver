@@ -41,8 +41,8 @@ public class SQLSemanticErrorAnnotation extends MarkerAnnotation implements IAnn
     public static final String MARKER_ATTRIBUTE_NAME = "org.jkiss.dbeaver.ui.editors.sql.semantics.semanticProblemAnnotation";
 
     private static final Map<SQLQueryRecognitionProblemInfo.Severity, Image> imageByProblemSeverity = Map.of(
-        SQLQueryRecognitionProblemInfo.Severity.ERROR, UIUtils.getShardImageDescriptor(ISharedImages.IMG_OBJS_ERROR_TSK).createImage(),// DBeaverIcons.getImage(DBIcon.TINY_ERROR),
-        SQLQueryRecognitionProblemInfo.Severity.WARNING, UIUtils.getShardImageDescriptor(ISharedImages.IMG_OBJS_WARN_TSK).createImage()
+        SQLQueryRecognitionProblemInfo.Severity.ERROR, DBeaverIcons.getImage(DBIcon.TINY_ERROR),
+        SQLQueryRecognitionProblemInfo.Severity.WARNING, DBeaverIcons.getImage(DBIcon.SMALL_WARNING)
     );
 
     private final SQLQueryRecognitionProblemInfo problemInfo; // TODO will be needed for quick fix
