@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.cache.SimpleObjectCache;
@@ -106,6 +107,16 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         // Statistics was disabled then mark it as already read
         this.hasStatistics = !CommonUtils.getBoolean(container.getConnectionConfiguration().getProviderProperty(
             PostgreConstants.PROP_SHOW_DATABASE_STATISTICS));
+    }
+
+    public PostgreDataSource(@NotNull DBRProgressMonitor monitor,
+                             @NotNull DBPDataSourceContainer container,
+                             @NotNull SQLDialect dialect) throws DBException {
+        super(monitor, container, dialect);
+
+        // Statistics was disabled then mark it as already read
+        this.hasStatistics = !CommonUtils.getBoolean(container.getConnectionConfiguration()
+                    .getProviderProperty(PostgreConstants.PROP_SHOW_DATABASE_STATISTICS));
     }
 
     // Constructor for tests

@@ -66,7 +66,9 @@ public class DatabaseDashboardProvider implements DBDashboardProvider {
         for (IConfigurationElement ext : extElements) {
             if ("dashboard".equals(ext.getName())) {
                 DashboardItemConfiguration dashboard = new DashboardItemConfiguration(dp, mapQueries::get, ext);
-                dashboards.add(dashboard);
+                if (dashboard.isSupportedByLocalSystem()) {
+                    dashboards.add(dashboard);
+                }
             }
         }
 
@@ -87,5 +89,4 @@ public class DatabaseDashboardProvider implements DBDashboardProvider {
     public boolean appliesTo(@NotNull DBPDataSourceContainer dataSource) {
         return true;
     }
-
 }
