@@ -199,7 +199,9 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
         sql.append(
             "SELECT s.*, ");
         if (atLeastV11) {
-            sql.append("sq.SQL_FULLTEXT, ");
+            sql.append("(SELECT SQL_FULLTEXT FROM gv$sql\n" +
+                "WHERE s.sql_address = address(+) AND s.sql_hash_value = hash_value(+)\n" +
+                "AND s.sql_child_number = child_number (+)), ");
         } else {
             sql.append("sq.SQL_TEXT AS SQL_FULLTEXT, ");
         }
