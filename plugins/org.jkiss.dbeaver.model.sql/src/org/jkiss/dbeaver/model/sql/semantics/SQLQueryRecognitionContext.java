@@ -37,7 +37,7 @@ public class SQLQueryRecognitionContext {
     private final DBRProgressMonitor monitor;
 
     @Nullable
-    DBCExecutionContext executionContext;
+    private final DBCExecutionContext executionContext;
 
     private final boolean useRealMetadata;
 

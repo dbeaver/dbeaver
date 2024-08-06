@@ -20,10 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.semantics.*;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
-import org.jkiss.dbeaver.model.sql.semantics.context.SourceResolutionResult;
+import org.jkiss.dbeaver.model.sql.semantics.context.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
@@ -102,26 +99,37 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
                 type = SQLQueryExprType.UNKNOWN;
             }
         } else if (this.tableName == null && this.columnName.isNotClassified()) {
-            SQLQueryResultColumn resultColumn = context.resolveColumn(statistics.getMonitor(), this.columnName.getName());
-
-            SQLQuerySymbolClass forcedClass = null;
-            if (resultColumn == null) {
-                String rawString = columnName.getRawName();
-                if (dialect.isQuotedString(rawString)) {
-                    forcedClass = SQLQuerySymbolClass.STRING;
-                } else {
-                    forcedClass = SQLQueryModelRecognizer.tryFallbackSymbolForStringLiteral(dialect, this.columnName, resultColumn != null);
+            SQLQueryResultPseudoColumn pseudoColumn = context.resolvePseudoColumn(statistics.getMonitor(), this.columnName.getName());
+            if (pseudoColumn != null) {
+                type = pseudoColumn.type;
+                if (this.columnName.isNotClassified()) {
+                    this.columnName.getSymbol().setSymbolClass(SQLQuerySymbolClass.COLUMN);
                 }
+                this.column = new SQLQueryResultColumn(
+                    -1, pseudoColumn.symbol, pseudoColumn.source, pseudoColumn.realSource, null, pseudoColumn.type
+                );
             } else {
-                this.column = resultColumn;
-            }
+                SQLQueryResultColumn resultColumn = context.resolveColumn(statistics.getMonitor(), this.columnName.getName());
 
-            if (forcedClass != null) {
-                this.columnName.getSymbol().setSymbolClass(forcedClass);
-                type = forcedClass == SQLQuerySymbolClass.STRING ? SQLQueryExprType.STRING : SQLQueryExprType.UNKNOWN;
-            } else {
-                propagateColumnDefinition(this.columnName, resultColumn, statistics);
-                type = resultColumn != null ? resultColumn.type : SQLQueryExprType.UNKNOWN;
+                SQLQuerySymbolClass forcedClass = null;
+                if (resultColumn == null) {
+                    String rawString = columnName.getRawName();
+                    if (dialect.isQuotedString(rawString)) {
+                        forcedClass = SQLQuerySymbolClass.STRING;
+                    } else {
+                        forcedClass = SQLQueryModelRecognizer.tryFallbackSymbolForStringLiteral(dialect, this.columnName, resultColumn != null);
+                    }
+                } else {
+                    this.column = resultColumn;
+                }
+
+                if (forcedClass != null) {
+                    this.columnName.getSymbol().setSymbolClass(forcedClass);
+                    type = forcedClass == SQLQuerySymbolClass.STRING ? SQLQueryExprType.STRING : SQLQueryExprType.UNKNOWN;
+                } else {
+                    propagateColumnDefinition(this.columnName, resultColumn, statistics);
+                    type = resultColumn != null ? resultColumn.type : SQLQueryExprType.UNKNOWN;
+                }
             }
         } else {
             type = SQLQueryExprType.UNKNOWN;

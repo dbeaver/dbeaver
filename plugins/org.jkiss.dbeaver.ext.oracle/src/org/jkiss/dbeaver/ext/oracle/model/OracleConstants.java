@@ -161,7 +161,9 @@ public class OracleConstants {
         "$alias.ROWID",
         null,
         "Unique row identifier",
-        true);
+        true,
+        DBDPseudoAttribute.PropagationPolicy.NORMAL
+    );
 
     public static final String PREF_EXPLAIN_TABLE_NAME = "oracle.explain.table";
     public static final String PREF_SUPPORT_ROWID = "oracle.support.rowid";

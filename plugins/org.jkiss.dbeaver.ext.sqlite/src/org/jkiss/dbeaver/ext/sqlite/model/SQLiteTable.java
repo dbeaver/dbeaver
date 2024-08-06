@@ -43,7 +43,9 @@ public class SQLiteTable extends GenericTable implements DBDPseudoAttributeConta
         "$alias.rowid",
         null,
         "Unique row identifier",
-        true);
+        true,
+        DBDPseudoAttribute.PropagationPolicy.LOCAL
+    );
 
 
     public SQLiteTable(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {

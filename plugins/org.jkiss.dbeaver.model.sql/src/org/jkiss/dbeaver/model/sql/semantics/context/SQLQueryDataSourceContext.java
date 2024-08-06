@@ -60,6 +60,12 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
         return Collections.emptyList();
     }
 
+    @NotNull
+    @Override
+    public List<SQLQueryResultPseudoColumn> getPseudoColumnsList() {
+        return Collections.emptyList();
+    }
+
     @Nullable
     @Override
     public DBSEntity findRealTable(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
@@ -91,6 +97,12 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
     @Nullable
     @Override
     public SQLQueryResultColumn resolveColumn(@NotNull DBRProgressMonitor monitor, @NotNull String simpleName) {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public SQLQueryResultPseudoColumn resolvePseudoColumn(DBRProgressMonitor monitor, @NotNull String name) {
         return null;
     }
 

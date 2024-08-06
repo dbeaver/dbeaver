@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultPseudoColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
@@ -145,7 +146,9 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
         EnumSet<ProjectionAliasVisibilityScope> aliasScope = context.getDialect().getProjectionAliasVisibilityScope();
 
         List<SQLQueryResultColumn> resultColumns = this.result.expandColumns(unresolvedResult, this, statistics);
-        SQLQueryDataContext resolvedResult = unresolvedResult.overrideResultTuple(resultColumns);
+        List<SQLQueryResultPseudoColumn> resultPseudoColumns = unresolvedResult.getPseudoColumnsList().stream()
+            .filter(s -> s.propagationPolicy.projected).toList();
+        SQLQueryDataContext resolvedResult = unresolvedResult.overrideResultTuple(resultColumns, resultPseudoColumns);
 
         SQLQueryDataContext filtersContext = resolvedResult.combine(unresolvedResult);
         if (this.filterExprs.whereClause != null) {

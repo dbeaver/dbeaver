@@ -53,7 +53,9 @@ public class ExasolConstants {
             "$alias.ROWID",
             null,
             "Unique row identifier",
-            true);
+            true,
+        DBDPseudoAttribute.PropagationPolicy.LOCAL
+    );
 
     public static final String TYPE_GEOMETRY = "GEOMETRY";
     public static final String TYPE_DECIMAL = "DECIMAL";

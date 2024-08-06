@@ -45,6 +45,12 @@ public abstract class SQLQueryDataContext {
     public abstract List<SQLQueryResultColumn> getColumnsList();
 
     /**
+     * Get pseudo columns of the query result tuple
+     */
+    @NotNull
+    public abstract List<SQLQueryResultPseudoColumn> getPseudoColumnsList();
+
+    /**
      * Find real table referenced by its name in the database
      */
     @Nullable
@@ -57,6 +63,14 @@ public abstract class SQLQueryDataContext {
      */
     @Nullable
     public abstract SQLQueryResultColumn resolveColumn(@NotNull DBRProgressMonitor monitor, @NotNull String simpleName);
+
+    /**
+     * Find pseudo column referenced by its name in the result tuple
+     *
+     * @implNote TODO consider ambiguous column names
+     */
+    @Nullable
+    public abstract SQLQueryResultPseudoColumn resolvePseudoColumn(DBRProgressMonitor monitor, @NotNull String name);
 
     /**
      * Find semantic model item responsible for the representation of the data rows source having a given name
@@ -81,8 +95,8 @@ public abstract class SQLQueryDataContext {
      * Prepare new semantic context by overriding result tuple columns information
      */
     @NotNull
-    public final SQLQueryDataContext overrideResultTuple(@NotNull List<SQLQueryResultColumn> columns) {
-        return new SQLQueryResultTupleContext(this, columns);
+    public final SQLQueryDataContext overrideResultTuple(@NotNull List<SQLQueryResultColumn> columns, @NotNull List<SQLQueryResultPseudoColumn> pseudoColumns) {
+        return new SQLQueryResultTupleContext(this, columns, pseudoColumns);
     }
 
     /**

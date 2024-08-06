@@ -18,38 +18,36 @@ package org.jkiss.dbeaver.model.sql.semantics.context;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
-public class SQLQueryResultColumn {
-    public final int index;
+public class SQLQueryResultPseudoColumn {
     @NotNull
     public final SQLQuerySymbol symbol;
     @NotNull
     public final SQLQueryRowsSourceModel source;
     @Nullable
     public final DBSEntity realSource;
-    @Nullable
-    public final DBSEntityAttribute realAttr;
     @NotNull
     public final SQLQueryExprType type;
+    @NotNull
+    public final DBDPseudoAttribute.PropagationPolicy propagationPolicy;
 
-    public SQLQueryResultColumn(
-        int index,
+    public SQLQueryResultPseudoColumn(
         @NotNull SQLQuerySymbol symbol,
         @NotNull SQLQueryRowsSourceModel source,
         @Nullable DBSEntity realSource,
-        @Nullable DBSEntityAttribute realAttr,
-        @NotNull SQLQueryExprType type
+        @NotNull SQLQueryExprType type,
+        @NotNull DBDPseudoAttribute.PropagationPolicy propagationPolicy
     ) {
-        this.index = index;
         this.symbol = symbol;
         this.source = source;
         this.realSource = realSource;
-        this.realAttr = realAttr;
         this.type = type;
+        this.propagationPolicy = propagationPolicy;
     }
 }
 
