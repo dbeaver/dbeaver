@@ -47,6 +47,8 @@ public class SQLEditorMessages extends NLS {
     public static String editors_sql_editor_presentation;
     public static String editors_sql_error_cant_execute_query_message;
     public static String editors_sql_error_cant_execute_query_title;
+    public static String editors_sql_error_cant_execute_permissions_query_message;
+    public static String editors_sql_error_cant_execute_readonly_query_message;
     public static String editors_sql_error_cant_obtain_session;
     public static String editors_sql_error_execution_plan_message;
     public static String editors_sql_error_execution_plan_title;

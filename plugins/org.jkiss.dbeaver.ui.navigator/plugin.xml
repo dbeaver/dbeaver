@@ -223,6 +223,7 @@
         <command id="org.jkiss.dbeaver.core.edit.save.resource" name="%command.org.jkiss.dbeaver.core.edit.save.resource.name" description="%command.org.jkiss.dbeaver.core.edit.save.resource.description" categoryId="org.jkiss.dbeaver.core.util"/>
         <command id="org.jkiss.dbeaver.core.edit.load.resource" name="%command.org.jkiss.dbeaver.core.edit.load.resource.name" description="%command.org.jkiss.dbeaver.core.edit.load.resource.description" categoryId="org.jkiss.dbeaver.core.util"/>
         <command id="org.jkiss.dbeaver.core.edit.copy.special" name="%command.org.jkiss.dbeaver.core.edit.copy.special.name" description="%command.org.jkiss.dbeaver.core.edit.copy.special.description" categoryId="org.jkiss.dbeaver.core.util"/>
+        <command id="org.jkiss.dbeaver.core.edit.copy.special.with.last.settings" name="%org.jkiss.dbeaver.core.edit.copy.special.with.last.settings.name" description="%org.jkiss.dbeaver.core.edit.copy.special.with.last.settings.description" categoryId="org.jkiss.dbeaver.core.util"/>
         <command id="org.jkiss.dbeaver.core.edit.paste.special" name="%command.org.jkiss.dbeaver.core.edit.paste.special.name" description="%command.org.jkiss.dbeaver.core.edit.paste.special.description" categoryId="org.jkiss.dbeaver.core.util"/>
 
         <command id="org.jkiss.dbeaver.core.object.open" name="%command.org.jkiss.dbeaver.core.object.open.name" description="%command.org.jkiss.dbeaver.core.object.open.description" categoryId="org.jkiss.dbeaver.core.database">
