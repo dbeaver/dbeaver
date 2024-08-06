@@ -86,6 +86,8 @@ public class SQLiteDataSource extends GenericDataSource {
             affinity = SQLiteAffinity.BLOB;
         } else if (typeName.startsWith("REAL") || typeName.startsWith("FLOA") || typeName.startsWith("DOUB")) {
             affinity = SQLiteAffinity.REAL;
+        } else if (typeName.equalsIgnoreCase("N/A")) { // Workaround for #34906
+            affinity = SQLiteAffinity.TEXT;
         } else {
             affinity = SQLiteAffinity.NUMERIC;
         }
