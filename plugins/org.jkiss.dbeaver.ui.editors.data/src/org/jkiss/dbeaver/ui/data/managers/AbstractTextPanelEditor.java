@@ -279,7 +279,9 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
         if (getPanelSettings().getBoolean(PREF_TEXT_EDITOR_WORD_WRAP)) {
             // It must be execute in async mode. Otherwise StyledText goes mad and freezes UI
             UIUtils.asyncExec(() -> {
-                textWidget.setWordWrap(true);
+                if (!textWidget.isDisposed()) {
+                    textWidget.setWordWrap(true);
+                }
             });
         }
     }
