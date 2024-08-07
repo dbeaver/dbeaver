@@ -444,8 +444,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
     }
 
     @Override
-    public void shutdown(@NotNull DBRProgressMonitor monitor)
-    {
+    public void shutdown(@NotNull DBRProgressMonitor monitor) {
         for (JDBCRemoteInstance instance : getAvailableInstances()) {
             Object exclusiveLock = instance.getExclusiveLock().acquireExclusiveLock();
             try {
@@ -475,10 +474,12 @@ public abstract class JDBCDataSource extends AbstractDataSource
     }
 
     @Override
-    public void initialize(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
-        getDefaultInstance().initializeMetaContext(monitor);
+    public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
+        List<? extends JDBCRemoteInstance> availableInstances = getAvailableInstances();
+        if (availableInstances.isEmpty()) {
+            throw new DBCException("Can't obtain default instance");
+        }
+        availableInstances.get(0).initializeMetaContext(monitor);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, ModelMessages.model_jdbc_read_database_meta_data)) {
             JDBCDatabaseMetaData metaData = session.getMetaData();
 
