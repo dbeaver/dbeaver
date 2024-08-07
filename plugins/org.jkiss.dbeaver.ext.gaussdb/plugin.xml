@@ -33,7 +33,7 @@
                         defaultPort="8000"
                         description="%driver.gaussdb.description"
                         categories="sql">
-                    <file type="jar" path="https://repo.huaweicloud.com/repository/maven/huaweicloudsdk/gsjdbc4/gsjdbc4/1.0/gsjdbc4-1.0.jar" bundle="!drivers.gaussdb"/>
+                    <file type="jar" path="https://repo.huaweicloud.com/repository/maven/huaweicloudsdk/gsjdbc4/gsjdbc4/1.1/gsjdbc4-1.1.jar" bundle="!drivers.gaussdb"/>
                     <parameter name="serverType" value="gaussdb"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
