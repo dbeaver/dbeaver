@@ -86,10 +86,9 @@ public class SQLiteDataSource extends GenericDataSource {
             affinity = SQLiteAffinity.BLOB;
         } else if (typeName.startsWith("REAL") || typeName.startsWith("FLOA") || typeName.startsWith("DOUB")) {
             affinity = SQLiteAffinity.REAL;
-        } else if (typeName.equalsIgnoreCase("N/A")) { // Workaround for #34906
-            affinity = SQLiteAffinity.TEXT;
         } else {
-            affinity = SQLiteAffinity.NUMERIC;
+            // If type is unknown, let's assume it's a text. Otherwise, search and data editor doesn't work right.
+            affinity = SQLiteAffinity.TEXT;
         }
         return super.getLocalDataType(affinity.name());
     }
