@@ -11,4 +11,11 @@
   <artifactId>org.jkiss.dbeaver.ui.navigator</artifactId>
   <version>1.0.137-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
+  <dependencies>
+  	<dependency>
+  		<groupId>org.jkiss.dbeaver</groupId>
+  		<artifactId>org.jkiss.dbeaver.model</artifactId>
+  		<version>1.1.30-SNAPSHOT</version>
+  	</dependency>
+  </dependencies>
 </project>
