@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ext.vertica.model;
 
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformerExt;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
@@ -40,13 +39,12 @@ public class QueryTransformerLimitVertica extends QueryTransformerLimit implemen
     }
 
     public boolean isLimitApplicable(Statement statement) {
-        if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
-            PlainSelect selectBody = (PlainSelect) ((Select) statement).getSelectBody();
+        if (statement instanceof PlainSelect selectBody) {
             return selectBody.getFromItem() != null &&
                 CommonUtils.isEmpty(selectBody.getIntoTables()) &&
                 selectBody.getLimit() == null &&
                 selectBody.getTop() == null &&
-                !selectBody.isForUpdate();
+                selectBody.getForUpdateTable() == null;
         }
         return false;
     }
