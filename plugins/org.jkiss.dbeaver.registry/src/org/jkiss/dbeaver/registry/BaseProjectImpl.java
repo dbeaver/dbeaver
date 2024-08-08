@@ -327,7 +327,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
             return;
         }
 
-        Path settingsFile = getMetadataPath().resolve(SETTINGS_STORAGE_FILE);
+        Path settingsFile = getMetadataFolder(true).resolve(SETTINGS_STORAGE_FILE);
         String settingsString = METADATA_GSON.toJson(properties);
 
         try {
@@ -644,7 +644,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
             ContentUtils.makeFileBackup(getMetadataFolder(false).resolve(METADATA_STORAGE_FILE));
 
             synchronized (metadataSync) {
-                Path mdFile = getMetadataPath().resolve(METADATA_STORAGE_FILE);
+                Path mdFile = getMetadataFolder(true).resolve(METADATA_STORAGE_FILE);
                 if (CommonUtils.isEmpty(resourceProperties) && !Files.exists(mdFile)) {
                     // Nothing to save and metadata file doesn't exist
                     return Status.OK_STATUS;
