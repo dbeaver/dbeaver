@@ -279,17 +279,13 @@ public class EditConnectionWizard extends ConnectionWizard {
         }
 
 
-        boolean saveConnectionSettings = true;
+        boolean performReconnect = false;
         if (originalDataSource.isConnected()) {
             if (UIUtils.confirmAction(getShell(), CoreMessages.dialog_connection_edit_wizard_conn_change_title,
                 NLS.bind(CoreMessages.dialog_connection_edit_wizard_conn_change_question,
                 originalDataSource.getName()) )
             ) {
-                DataSourceHandler.reconnectDataSource(null, originalDataSource);
-            } else {
-                // Guess we shouldn't apply connection settings changes if reconnect was rejected,
-                // because in this case they are in inconsistent state
-                saveConnectionSettings = false;
+                performReconnect = true;
             }
         }
 
@@ -301,7 +297,11 @@ public class EditConnectionWizard extends ConnectionWizard {
             selectedSharedCredentials.setValue(originalDataSource.saveToSecret());
             originalDataSource.setSelectedSharedCredentials(selectedSharedCredentials);
         }
-        return originalDataSource.persistConfiguration();
+        boolean changesSaved = originalDataSource.persistConfiguration();
+        if (changesSaved && performReconnect) {
+            DataSourceHandler.reconnectDataSource(null, originalDataSource);
+        }
+        return changesSaved;
     }
 
     private boolean isOnlyUserCredentialChanged(DataSourceDescriptor dsCopy, DataSourceDescriptor dsChanged) {
