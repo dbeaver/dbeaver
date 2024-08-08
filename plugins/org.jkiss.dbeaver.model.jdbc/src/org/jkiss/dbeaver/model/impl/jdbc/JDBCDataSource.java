@@ -80,6 +80,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
     protected volatile DBPDataSourceInfo dataSourceInfo;
     protected final SQLDialect sqlDialect;
     protected final JDBCFactory jdbcFactory;
+    @Nullable
     private JDBCRemoteInstance defaultRemoteInstance;
 
     private int databaseMajorVersion = 0;
@@ -428,7 +429,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         return jdbcFactory;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public JDBCRemoteInstance getDefaultInstance() {
         return defaultRemoteInstance;
@@ -475,11 +476,11 @@ public abstract class JDBCDataSource extends AbstractDataSource
 
     @Override
     public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
-        List<? extends JDBCRemoteInstance> availableInstances = getAvailableInstances();
-        if (availableInstances.isEmpty()) {
+        JDBCRemoteInstance defaultInstance = getDefaultInstance();
+        if (defaultInstance == null) {
             throw new DBCException("Can't obtain default instance");
         }
-        availableInstances.get(0).initializeMetaContext(monitor);
+        defaultInstance.initializeMetaContext(monitor);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, ModelMessages.model_jdbc_read_database_meta_data)) {
             JDBCDatabaseMetaData metaData = session.getMetaData();
 
