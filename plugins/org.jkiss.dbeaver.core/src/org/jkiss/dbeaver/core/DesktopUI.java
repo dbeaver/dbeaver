@@ -54,7 +54,7 @@ import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
-import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
+import org.jkiss.dbeaver.runtime.ui.console.ConsoleUserInterface;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler;
 import org.jkiss.dbeaver.ui.dialogs.*;
@@ -83,7 +83,7 @@ import java.util.stream.Collectors;
 /**
  * DBeaver UI core
  */
-public class DesktopUI implements DBPPlatformUI {
+public class DesktopUI extends ConsoleUserInterface {
 
     private static final Log log = Log.getLog(DesktopUI.class);
 
@@ -182,6 +182,9 @@ public class DesktopUI implements DBPPlatformUI {
 
     @Override
     public UserResponse showError(@Nullable final String title, @Nullable final String message, @NotNull final IStatus status) {
+        if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+            return super.showError(title, message, status);
+        }
         IStatus rootStatus = status;
         for (IStatus s = status; s != null; ) {
             if (s.getException() instanceof DBException) {
@@ -220,20 +223,30 @@ public class DesktopUI implements DBPPlatformUI {
 
     @Override
     public UserResponse showError(@Nullable String title, @Nullable String message, @NotNull Throwable error) {
+        if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+            return super.showError(title, message, error);
+        }
         return showError(title, message, GeneralUtils.makeExceptionStatus(error));
     }
 
     @Override
     public UserResponse showError(@NotNull String title, @Nullable String message) {
+        if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+            return super.showError(title, message);
+        }
         return showError(title, null, new Status(IStatus.ERROR, DesktopPlatform.PLUGIN_ID, message));
     }
 
     @Override
     public void showMessageBox(@NotNull String title, String message, boolean error) {
-        if (error) {
-            showMessageBox(title, message, DBIcon.STATUS_ERROR);
+        if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+            super.showMessageBox(title, message, error);
         } else {
-            showMessageBox(title, message, DBIcon.STATUS_INFO);
+            if (error) {
+                showMessageBox(title, message, DBIcon.STATUS_ERROR);
+            } else {
+                showMessageBox(title, message, DBIcon.STATUS_INFO);
+            }
         }
     }
 
@@ -249,7 +262,11 @@ public class DesktopUI implements DBPPlatformUI {
 
     @Override
     public void showWarningMessageBox(@NotNull String title, String message) {
-        showMessageBox(title, message, DBIcon.STATUS_WARNING);
+        if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+            super.showWarningMessageBox(title, message);
+        } else {
+            showMessageBox(title, message, DBIcon.STATUS_WARNING);
+        }
     }
 
     @Override
