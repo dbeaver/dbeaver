@@ -790,11 +790,14 @@ public class ComplexObjectEditor extends TreeViewer {
             final CollectionElement collection = item.collection;
             final boolean child = !(collection instanceof CollectionRootElement);
             final int index = collection.items.indexOf(item);
-
-            addElementAction.setEnabled(extendable);
-            removeElementAction.setEnabled(child);
-            moveElementUpAction.setEnabled(child && index > 0);
-            moveElementDownAction.setEnabled(child && index < collection.items.size() - 1);
+            boolean isFixedSize = collection.source instanceof DBDFixedSizeCollection;
+            if (isFixedSize) {
+                setToNullAction.setEnabled(setToNullAction.isEnabled() && ((DBDFixedSizeCollection) collection.source).canSetValueToNull());
+            }
+            addElementAction.setEnabled(extendable && !isFixedSize);
+            removeElementAction.setEnabled(child && !isFixedSize);
+            moveElementUpAction.setEnabled(child && index > 0 && !isFixedSize);
+            moveElementDownAction.setEnabled(child && index < collection.items.size() - 1 && !isFixedSize);
         } else {
             addElementAction.setEnabled(editable && extendable);
             removeElementAction.setEnabled(false);
