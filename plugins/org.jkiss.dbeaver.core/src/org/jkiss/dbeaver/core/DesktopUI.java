@@ -182,7 +182,7 @@ public class DesktopUI extends ConsoleUserInterface {
 
     @Override
     public UserResponse showError(@Nullable final String title, @Nullable final String message, @NotNull final IStatus status) {
-        if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+        if (isHeadlessMode()) {
             return super.showError(title, message, status);
         }
         IStatus rootStatus = status;
@@ -221,9 +221,13 @@ public class DesktopUI extends ConsoleUserInterface {
         return UserResponse.OK;
     }
 
+    private static boolean isHeadlessMode() {
+        return DBWorkbench.getPlatform().getApplication().isHeadlessMode();
+    }
+
     @Override
     public UserResponse showError(@Nullable String title, @Nullable String message, @NotNull Throwable error) {
-        if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+        if (isHeadlessMode()) {
             return super.showError(title, message, error);
         }
         return showError(title, message, GeneralUtils.makeExceptionStatus(error));
@@ -231,7 +235,7 @@ public class DesktopUI extends ConsoleUserInterface {
 
     @Override
     public UserResponse showError(@NotNull String title, @Nullable String message) {
-        if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+        if (isHeadlessMode()) {
             return super.showError(title, message);
         }
         return showError(title, null, new Status(IStatus.ERROR, DesktopPlatform.PLUGIN_ID, message));
@@ -239,7 +243,7 @@ public class DesktopUI extends ConsoleUserInterface {
 
     @Override
     public void showMessageBox(@NotNull String title, String message, boolean error) {
-        if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+        if (isHeadlessMode()) {
             super.showMessageBox(title, message, error);
         } else {
             if (error) {
@@ -262,7 +266,7 @@ public class DesktopUI extends ConsoleUserInterface {
 
     @Override
     public void showWarningMessageBox(@NotNull String title, String message) {
-        if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+        if (isHeadlessMode()) {
             super.showWarningMessageBox(title, message);
         } else {
             showMessageBox(title, message, DBIcon.STATUS_WARNING);
@@ -293,16 +297,25 @@ public class DesktopUI extends ConsoleUserInterface {
 
     @Override
     public boolean confirmAction(String title, String message) {
+        if (isHeadlessMode()) {
+            return super.confirmAction(title, message);
+        }
         return UIUtils.confirmAction(title, message);
     }
 
     @Override
     public boolean confirmAction(String title, String message, boolean isWarning) {
+        if (isHeadlessMode()) {
+            return super.confirmAction(title, message, isWarning);
+        }
         return UIUtils.confirmAction(null, title, message, isWarning ? DBIcon.STATUS_WARNING : DBIcon.STATUS_QUESTION);
     }
 
     @Override
     public boolean confirmAction(@NotNull String title, @NotNull String message, @NotNull String buttonLabel, boolean isWarning) {
+        if (isHeadlessMode()) {
+            return super.confirmAction(title, message, buttonLabel, isWarning);
+        }
         final Reply confirm = new Reply(buttonLabel);
         final Reply[] decision = new Reply[1];
 
@@ -329,6 +342,9 @@ public class DesktopUI extends ConsoleUserInterface {
         @Nullable Integer previousChoice,
         int defaultChoice
     ) {
+        if (isHeadlessMode()) {
+            return super.showUserChoice(title, message, labels, forAllLabels, previousChoice, defaultChoice);
+        }
         final List<Reply> reply = labels.stream()
             .map(s -> CommonUtils.isEmpty(s) ? null : new Reply(s))
             .collect(Collectors.toList());
