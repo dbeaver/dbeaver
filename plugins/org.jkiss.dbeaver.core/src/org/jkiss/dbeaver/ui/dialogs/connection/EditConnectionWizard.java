@@ -122,12 +122,12 @@ public class EditConnectionWizard extends ConnectionWizard {
     }
 
     @Override
-    DBPProject getSelectedProject() {
+    public DBPProject getSelectedProject() {
         return dataSource.getRegistry().getProject();
     }
 
     @Override
-    DBNBrowseSettings getSelectedNavigatorSettings() {
+    public DBNBrowseSettings getSelectedNavigatorSettings() {
         return dataSource.getNavigatorSettings();
     }
 

@@ -99,11 +99,11 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
     @Nullable
     abstract public DBPDataSourceRegistry getDataSourceRegistry();
 
-    abstract DBPDriver getSelectedDriver();
+    public abstract DBPDriver getSelectedDriver();
 
-    abstract DBPProject getSelectedProject();
+    public abstract DBPProject getSelectedProject();
 
-    abstract DBNBrowseSettings getSelectedNavigatorSettings();
+    public abstract DBNBrowseSettings getSelectedNavigatorSettings();
 
     public abstract ConnectionPageSettings getPageSettings();
 

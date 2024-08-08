@@ -63,6 +63,7 @@ public class AuthModelSelector extends Composite {
     private Combo authModelCombo;
     private boolean authSettingsEnabled = true;
     private boolean isEnableSharedConfigurator = true;
+    private boolean isAuthModelSelectionEnabled = true;
 
     public AuthModelSelector(Composite parent, Runnable panelExtender, Runnable changeListener, boolean enableShared) {
         super(parent, SWT.NONE);
@@ -196,7 +197,7 @@ public class AuthModelSelector extends Composite {
             authModelCombo.select(allAuthModels.indexOf(selectedAuthModel));
             authModelCombo.setToolTipText(CommonUtils.notEmpty(selectedAuthModel.getDescription()));
         }
-        boolean authSelectorVisible = allAuthModels.size() >= 2;
+        boolean authSelectorVisible = this.isAuthModelSelectionEnabled && allAuthModels.size() >= 2;
         UIUtils.setControlVisible(authModelLabel, authSelectorVisible);
         UIUtils.setControlVisible(authModelComp, authSelectorVisible);
         ((Group)modelConfigPlaceholder).setText(authSelectorVisible ? UIConnectionMessages.dialog_connection_auth_group : UIConnectionMessages.dialog_connection_auth_group + " (" + selectedAuthModel.getName() + ")");
@@ -282,5 +283,9 @@ public class AuthModelSelector extends Composite {
 
     public void setEnableSharedConfigurator(boolean isEnable) {
         this.isEnableSharedConfigurator = isEnable;
+    }
+
+    public void setAuthModelSelectionEnabled(boolean authModelSelectionEnabled) {
+        this.isAuthModelSelectionEnabled = authModelSelectionEnabled;
     }
 }

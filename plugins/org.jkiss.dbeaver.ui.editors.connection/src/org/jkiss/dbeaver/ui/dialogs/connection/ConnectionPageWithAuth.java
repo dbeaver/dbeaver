@@ -52,6 +52,7 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
                 panelExtender.run();
             }
         }, () -> getSite().updateButtons(), true);
+        authModelSelector.setAuthModelSelectionEnabled(this.isAuthModelSelectionEnabled());
         authModelSelector.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         ((GridData)authModelSelector.getLayoutData()).horizontalSpan = hSpan;
     }
@@ -120,6 +121,10 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
     }
 
     protected boolean isAuthEnabled() {
+        return true;
+    }
+
+    protected boolean isAuthModelSelectionEnabled() {
         return true;
     }
 }
