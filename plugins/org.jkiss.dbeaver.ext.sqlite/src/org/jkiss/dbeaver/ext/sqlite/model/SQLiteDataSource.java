@@ -86,9 +86,8 @@ public class SQLiteDataSource extends GenericDataSource {
             affinity = SQLiteAffinity.BLOB;
         } else if (typeName.startsWith("REAL") || typeName.startsWith("FLOA") || typeName.startsWith("DOUB")) {
             affinity = SQLiteAffinity.REAL;
-        } else if (typeName.toUpperCase().contains(SQLConstants.DATA_TYPE_INT) || typeName.toUpperCase().contains("NUMERIC") ||
-            typeName.toUpperCase().contains("DECIMAL") || typeName.toUpperCase().contains("DATE") ||
-            typeName.toUpperCase().contains("TIME") || typeName.toUpperCase().contains("BOOL")
+        } else if (typeName.contains(SQLConstants.DATA_TYPE_INT) || typeName.contains("NUMERIC") || typeName.contains("DECIMAL") ||
+            typeName.contains("DATE") || typeName.contains("TIME") || typeName.contains("BOOL")
         ) {
             affinity = SQLiteAffinity.NUMERIC;
         } else {
