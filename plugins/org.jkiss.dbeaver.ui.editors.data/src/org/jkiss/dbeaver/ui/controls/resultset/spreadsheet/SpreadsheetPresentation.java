@@ -85,6 +85,7 @@ import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
 import org.jkiss.dbeaver.ui.data.editors.BaseValueEditor;
 import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
+import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.ui.properties.PropertySourceDelegate;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -731,7 +732,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     if (attr == null || row == null) {
                         continue;
                     }
-                    if (controller.getAttributeReadOnlyStatus(attr, true, true) != null) {
+                    if (controller.getAttributeReadOnlyStatus(attr, true, false) != null) {
                         // No inline editors for readonly columns
                         continue;
                     }
@@ -1363,7 +1364,26 @@ public class SpreadsheetPresentation extends AbstractPresentation
         } else {
             // Navigate hyperlink
             String strValue = attr.getValueHandler().getValueDisplayString(attr, value, DBDDisplayFormat.UI);
-            ShellUtils.launchProgram(strValue);
+            if (isLinkSafeToOpen(strValue)) {
+                ShellUtils.launchProgram(strValue);
+            } else {
+                EditTextDialog dialog = new EditTextDialog(
+                    getSpreadsheet().getShell(),
+                    attr.getName(),
+                    strValue,
+                    true);
+                dialog.open();
+            }
+        }
+    }
+
+    private boolean isLinkSafeToOpen(String strValue) {
+        if (RuntimeUtils.isWindows()) {
+            return !strValue.startsWith("file:") &&
+                !strValue.startsWith("search:") &&
+                !strValue.startsWith("search-ms:");
+        } else {
+            return true;
         }
     }
 

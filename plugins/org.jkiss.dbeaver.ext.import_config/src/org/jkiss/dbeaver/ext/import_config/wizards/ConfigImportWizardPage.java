@@ -28,28 +28,32 @@ import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.import_config.ImportConfigMessages;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ConnectionFolderSelector;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.dbeaver.ui.navigator.dialogs.ObjectListDialog;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 public abstract class ConfigImportWizardPage extends ActiveWizardPage<ConfigImportWizard> {
 
     private Table connectionTable;
     private ImportData importData;
+
     private ConnectionFolderSelector folderSelector;
 
     protected ConfigImportWizardPage(String pageName) {
         super(pageName);
     }
-
-    public ImportData getImportData() {
-        return importData;
-    }
-
+ 
     @Override
     public void createControl(Composite parent) {
         Composite placeholder = new Composite(parent, SWT.NONE);
@@ -58,33 +62,47 @@ public abstract class ConfigImportWizardPage extends ActiveWizardPage<ConfigImpo
         UIUtils.createControlLabel(placeholder, ImportConfigMessages.config_import_wizard_page_caption_connections);
 
         connectionTable = new Table(placeholder, SWT.BORDER | SWT.CHECK | SWT.MULTI);
-        connectionTable.setHeaderVisible(true);
-        connectionTable.setLinesVisible(true);
-        connectionTable.setLayoutData(new GridData(GridData.FILL_BOTH));
-        UIUtils.createTableColumn(connectionTable, SWT.LEFT, ImportConfigMessages.config_import_wizard_page_th_name);
-        UIUtils.createTableColumn(connectionTable, SWT.LEFT, ImportConfigMessages.config_import_wizard_page_th_driver);
-        UIUtils.createTableColumn(connectionTable, SWT.LEFT, ImportConfigMessages.config_import_wizard_page_th_url);
+        getConnectionTable().setHeaderVisible(true);
+        getConnectionTable().setLinesVisible(true);
+        getConnectionTable().setLayoutData(new GridData(GridData.FILL_BOTH));
+        UIUtils.createTableColumn(getConnectionTable(), SWT.LEFT, ImportConfigMessages.config_import_wizard_page_th_name);
+        UIUtils.createTableColumn(getConnectionTable(), SWT.LEFT, ImportConfigMessages.config_import_wizard_page_th_driver);
+        UIUtils.createTableColumn(getConnectionTable(), SWT.LEFT, ImportConfigMessages.config_import_wizard_page_th_url);
 
         {
-            Composite buttonsPanel = UIUtils.createComposite(placeholder, 4);
-            UIUtils.createDialogButton(buttonsPanel, "Select All", new SelectionAdapter() {
+            Composite buttonsPanel = UIUtils.createComposite(placeholder, 5);
+            UIUtils.createDialogButton(buttonsPanel, ImportConfigMessages.config_import_wizard_btn_select_all, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    for (TableItem item : connectionTable.getItems()) {
+                    for (TableItem item : getConnectionTable().getItems()) {
                         ((ImportConnectionInfo) item.getData()).setChecked(true);
                         item.setChecked(true);
                     }
                     getContainer().updateButtons();
                 }
             });
-            UIUtils.createDialogButton(buttonsPanel, "Select None", new SelectionAdapter() {
+            UIUtils.createDialogButton(buttonsPanel,  ImportConfigMessages.config_import_wizard_btn_deselect_all, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    for (TableItem item : connectionTable.getItems()) {
+                    for (TableItem item : getConnectionTable().getItems()) {
                         item.setChecked(false);
                         ((ImportConnectionInfo) item.getData()).setChecked(false);
                     }
                     getContainer().updateButtons();
+                }
+            });
+            UIUtils.createDialogButton(buttonsPanel,  ImportConfigMessages.config_import_wizard_btn_set_driver, new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    TableItem[] selection = getConnectionTable().getSelection();
+                    if (selection != null && selection.length > 0) {
+                        for (TableItem item : selection) {
+                            if (item.getData() instanceof ImportConnectionInfo connectionInfo) {
+                                setConnectionInfoForItem(setDriverForConnection(connectionInfo), item);
+                            }
+                        }
+                        isPageComplete();
+                    }
                 }
             });
 
@@ -92,13 +110,18 @@ public abstract class ConfigImportWizardPage extends ActiveWizardPage<ConfigImpo
             folderSelector.loadConnectionFolders(NavigatorUtils.getSelectedProject());
         }
 
-        UIUtils.packColumns(connectionTable);
+        UIUtils.packColumns(getConnectionTable());
 
-        connectionTable.addSelectionListener(new SelectionAdapter() {
+        getConnectionTable().addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 TableItem item = (TableItem) e.item;
-                ((ImportConnectionInfo) item.getData()).setChecked(item.getChecked());
+                if (item == null) {
+                    return;
+                }
+                if (item.getData() instanceof ImportConnectionInfo connectionInfo) {
+                    connectionInfo.setChecked(item.getChecked());
+                }
                 getContainer().updateButtons();
             }
         });
@@ -106,9 +129,31 @@ public abstract class ConfigImportWizardPage extends ActiveWizardPage<ConfigImpo
         setControl(placeholder);
     }
 
+    protected ImportConnectionInfo setDriverForConnection(ImportConnectionInfo connectionInfo) {
+        final DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
+        List<DriverDescriptor> matchedDrivers = new ArrayList<>();
+        for (DataSourceProviderDescriptor dataSourceProvider : registry.getDataSourceProviders()) {
+            for (DriverDescriptor driver : dataSourceProvider.getEnabledDrivers()) {
+                matchedDrivers.add(driver);
+            }
+        }
+        matchedDrivers = matchedDrivers.stream().sorted(Comparator.comparing(DriverDescriptor::getName)).collect(Collectors.toList());
+        DriverDescriptor driver = ObjectListDialog.selectObject(
+            getShell(), "Choose driver for connection '" + connectionInfo.getAlias() + "'", "ImportDriverSelector", matchedDrivers);
+        if (driver != null) {
+            connectionInfo.setDriver(driver);
+            connectionInfo.setDriverInfo(new ImportDriverInfo(
+                connectionInfo.getAlias(),
+                driver.getName(),
+                driver.getSampleURL(),
+                driver.getDriverClassName()));
+        }
+        return connectionInfo;
+    }
+
     @Override
     public void activatePage() {
-        connectionTable.removeAll();
+        getConnectionTable().removeAll();
         importData = new ImportData();
         boolean loaded = false;
         try {
@@ -124,28 +169,41 @@ public abstract class ConfigImportWizardPage extends ActiveWizardPage<ConfigImpo
             } else {
                 setMessage(null);
                 for (ImportConnectionInfo connectionInfo : importData.getConnections()) {
-                    TableItem item = new TableItem(connectionTable, SWT.NONE);
-                    item.setImage(0, DBeaverIcons.getImage(DBIcon.TREE_DATABASE));
-                    item.setText(0, connectionInfo.getAlias());
-                    item.setText(1, connectionInfo.getDriverInfo().getName());
-                    String url = connectionInfo.getUrl();
-                    if (CommonUtils.isEmpty(url)) {
-                        url = connectionInfo.getHost();
-                    }
-                    if (CommonUtils.isEmpty(url)) {
-                        url = "jdbc:???";
-                    }
-                    item.setText(2, url);
-                    item.setData(connectionInfo);
+                    TableItem item = new TableItem(getConnectionTable(), SWT.NONE);
+                    setConnectionInfoForItem(connectionInfo, item);
                 }
             }
         }
-        UIUtils.packColumns(connectionTable);
+        UIUtils.packColumns(getConnectionTable());
+    }
+
+    private void setConnectionInfoForItem(ImportConnectionInfo connectionInfo,
+        TableItem item) {
+        if (connectionInfo.getDriverInfo() != null) {
+            item.setImage(0, DBeaverIcons.getImage(DBIcon.TREE_DATABASE));
+            item.setText(0, connectionInfo.getAlias());
+            item.setText(1, connectionInfo.getDriverInfo().getName());
+            String url = connectionInfo.getUrl();
+            if (CommonUtils.isEmpty(url)) {
+                url = connectionInfo.getHost();
+            }
+            if (CommonUtils.isEmpty(url)) {
+                url = "jdbc:???";
+            }
+            item.setText(2, url);
+            item.setData(connectionInfo);
+        } else {
+            item.setImage(0, DBeaverIcons.getImage(DBIcon.DATABASE_DEFAULT));
+            item.setText(0, connectionInfo.getAlias());
+            item.setText(1, ImportConfigMessages.config_import_wizard_page_driver_unknown);
+            item.setText(2, ImportConfigMessages.config_import_wizard_page_driver_unknown); 
+            item.setData(connectionInfo);
+        }
     }
 
     @Override
     public void deactivatePage() {
-        importData.setDataSourceFolder(folderSelector.getFolder());
+        getImportData().setDataSourceFolder(folderSelector.getFolder());
         super.deactivatePage();
     }
 
@@ -153,15 +211,23 @@ public abstract class ConfigImportWizardPage extends ActiveWizardPage<ConfigImpo
 
     @Override
     public boolean isPageComplete() {
-        if (connectionTable == null) {
+        if (getConnectionTable() == null) {
             return false;
         }
-        for (TableItem item : connectionTable.getItems()) {
+        for (TableItem item : getConnectionTable().getItems()) {
             if (item.getChecked()) {
                 return true;
             }
         }
         return false;
+    }
+
+    public Table getConnectionTable() {
+        return connectionTable;
+    }
+
+    public ImportData getImportData() {
+        return importData;
     }
 
 }

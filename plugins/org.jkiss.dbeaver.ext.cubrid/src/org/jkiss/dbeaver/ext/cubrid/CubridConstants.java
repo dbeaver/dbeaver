@@ -32,4 +32,5 @@ public class CubridConstants
     public static final String[] EVENT_OPTION = {"UPDATE", "UPDATE STATEMENT", "DELETE", "DELETE STATEMENT", "INSERT", "INSERT STATEMENT", "COMMIT", "ROLLBACK"};
     public static final String[] ACTION_TIME_OPTION = {"BEFORE", "AFTER", "DEFFERED"};
     public static final String[] ACTION_TYPE_OPTION = {"OTHER STATEMENT", "REJECT", "INVALIDATE_TRANSACTION", "PRINT"};
+    public static final String AUTO_INCREMENT = "auto_increment";
 }
