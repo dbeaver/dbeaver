@@ -1258,7 +1258,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         if (request.getActiveQuery() instanceof SQLQuery) {
                             Statement sqlStatement = ((SQLQuery) request.getActiveQuery()).getStatement();
                             if (sqlStatement != null) {
-                                TablesNamesFinder namesFinder = new TablesNamesFinder() {
+                                TablesNamesFinder<?> namesFinder = new TablesNamesFinder<>() {
+                                    {
+                                        init(false);
+                                    }
                                     @Override
                                     public void visit(@Nullable Table table) {
                                         if (table != null && table.getAlias() != null && table.getAlias().getName() != null) {
