@@ -22,7 +22,6 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -128,18 +127,18 @@ public class SQLGroupingQueryGenerator {
                     PlainSelect select = (PlainSelect) ((Select) statement).getSelectBody();
                     select.setOrderByElements(null);
 
-                    List<SelectItem> selectItems = new ArrayList<>();
+                    List<SelectItem<?>> selectItems = new ArrayList<>();
                     select.setSelectItems(selectItems);
                     for (String groupAttribute : groupAttributes) {
                         selectItems.add(
-                            new SelectExpressionItem(
+                            new SelectItem<>(
                                 new Column(
                                     quotedGroupingString(dataSource, groupAttribute))));
                     }
                     for (int i = 0; i < groupFunctions.size(); i++) {
                         String func = groupFunctions.get(i);
                         Expression expression = SQLSemanticProcessor.parseExpression(func);
-                        SelectExpressionItem sei = new SelectExpressionItem(expression);
+                        SelectItem<?> sei = new SelectItem<>(expression);
                         if (useAliasForColumns) {
                             sei.setAlias(new Alias(funcAliases[i]));
                         }
@@ -182,7 +181,7 @@ public class SQLGroupingQueryGenerator {
                 alias.append(c);
             }
         }
-        if (alias.length() > 0) {
+        if (!alias.isEmpty()) {
             alias.append('_');
             return alias.toString().toLowerCase(Locale.ENGLISH);
         }
