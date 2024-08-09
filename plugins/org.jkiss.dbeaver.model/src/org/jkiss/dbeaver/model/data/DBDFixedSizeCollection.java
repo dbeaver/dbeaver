@@ -16,6 +16,10 @@
  */
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.dbeaver.model.exec.DBCException;
+
 public interface DBDFixedSizeCollection {
-    boolean canSetValueToNull();
+    boolean canSetElementsToNull();
+
+    Object populateCollection() throws DBCException;
 }
