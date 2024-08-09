@@ -689,7 +689,8 @@ public final class DBUtils {
     public static Object getAttributeValue(
         @NotNull DBDAttributeBinding attribute,
         DBDAttributeBinding[] allAttributes,
-        Object[] row) {
+        Object[] row
+    ) {
         return getAttributeValue(attribute, allAttributes, row, null);
     }
 
@@ -699,6 +700,17 @@ public final class DBUtils {
         @NotNull DBDAttributeBinding[] allAttributes,
         @NotNull Object[] row,
         @Nullable int[] nestedIndexes
+    ) {
+        return getAttributeValue(attribute, allAttributes, row, nestedIndexes, false);
+    }
+
+    @Nullable
+    public static Object getAttributeValue(
+        @NotNull DBDAttributeBinding attribute,
+        @NotNull DBDAttributeBinding[] allAttributes,
+        @NotNull Object[] row,
+        @Nullable int[] nestedIndexes,
+        boolean retrieveLeafValue
     ) {
         if (attribute.isCustom()) {
             try {
@@ -732,27 +744,24 @@ public final class DBUtils {
             final DBDAttributeBinding parent = Objects.requireNonNull(attribute.getParent(depth - i - 1));
 
             try {
-                int fixedNestedIndex = curNestedIndex;
-                if (nestedIndexes != null && fixedNestedIndex >= nestedIndexes.length) {
-                    fixedNestedIndex = nestedIndexes.length - 1;
-                    //return DBDVoid.INSTANCE;
-                }
                 if (!isIndexedValue(parent, curValue)) {
                     curValue = parent.extractNestedValue(curValue, 0);
-                } else if (nestedIndexes != null && isValidIndex(curValue, nestedIndexes[fixedNestedIndex])) {
-                    curValue = parent.extractNestedValue(curValue, nestedIndexes[fixedNestedIndex]);
-                    curNestedIndex++;
-                } else {
+                } else if (nestedIndexes == null) {
                     curValue = parent.extractNestedValue(curValue, 0);
                     continue;
+                } else if (retrieveLeafValue || isValidIndex(curValue, nestedIndexes[curNestedIndex])) {
+                    curValue = parent.extractNestedValue(curValue, nestedIndexes[curNestedIndex]);
+                    curNestedIndex++;
+                } else {
+                    return DBDVoid.INSTANCE;
                 }
             } catch (Throwable e) {
                 return new DBDValueError(e);
             }
 
-            /*if (nestedIndexes == null || curNestedIndex >= nestedIndexes.length) {
+            if (!retrieveLeafValue && (nestedIndexes == null || curNestedIndex >= nestedIndexes.length)) {
                 break;
-            }*/
+            }
         }
 
         while (nestedIndexes != null && curNestedIndex < nestedIndexes.length) {

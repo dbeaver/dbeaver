@@ -380,11 +380,18 @@ public class ResultSetModel {
 
     @Nullable
     public Object getCellValue(@NotNull ResultSetCellLocation cellLocation) {
+        return getCellValue(cellLocation, false);
+    }
+
+    @Nullable
+    public Object getCellValue(@NotNull ResultSetCellLocation cellLocation, boolean retrieveLeafValue) {
         return DBUtils.getAttributeValue(
             cellLocation.getAttribute(),
             attributes,
             cellLocation.getRow().values,
-            cellLocation.getRowIndexes());
+            cellLocation.getRowIndexes(),
+            retrieveLeafValue
+        );
     }
 
     @Nullable

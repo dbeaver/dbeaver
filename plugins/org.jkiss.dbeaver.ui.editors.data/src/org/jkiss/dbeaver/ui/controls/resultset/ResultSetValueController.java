@@ -144,7 +144,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
 
     @Override
     public Object getValue() {
-        return controller.getModel().getCellValue(cellLocation);
+        return controller.getModel().getCellValue(cellLocation, true);
     }
 
     @Override
