@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model.ddl;
 public enum SQLQueryTableAlterActionKind {
     ADD_COLUMN,
     ALTER_COLUMN,
+    RENAME_COLUMN,
     DROP_COLUMN,
     ADD_TABLE_CONSTRAINT,
     DROP_TABLE_CONSTRAINT

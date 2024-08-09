@@ -34,6 +34,7 @@ public class SQLQueryTableAlterModel extends SQLQueryModelContent {
     private static final Map<String, SQLQueryTableAlterActionKind> alterActionKindByNodeName = Map.of(
         STMKnownRuleNames.addColumnDefinition, SQLQueryTableAlterActionKind.ADD_COLUMN,
         STMKnownRuleNames.alterColumnDefinition, SQLQueryTableAlterActionKind.ALTER_COLUMN,
+        STMKnownRuleNames.renameColumnDefinition, SQLQueryTableAlterActionKind.RENAME_COLUMN,
         STMKnownRuleNames.dropColumnDefinition, SQLQueryTableAlterActionKind.DROP_COLUMN,
         STMKnownRuleNames.addTableConstraintDefinition, SQLQueryTableAlterActionKind.ADD_TABLE_CONSTRAINT,
         STMKnownRuleNames.dropTableConstraintDefinition, SQLQueryTableAlterActionKind.DROP_TABLE_CONSTRAINT
@@ -117,22 +118,24 @@ public class SQLQueryTableAlterModel extends SQLQueryModelContent {
                 SQLQueryTableConstraintSpec tableConstraintSpec = null;
                 SQLQueryQualifiedName tableConstraintName = null;
 
-                switch (actionKind) {
-                    case ADD_COLUMN ->
-                        columnSpec = Optional.ofNullable(actionNode.findChildOfName(STMKnownRuleNames.columnDefinition))
-                            .map(n -> SQLQueryColumnSpec.recognize(recognizer, n)).orElse(null);
-                    case ALTER_COLUMN, DROP_COLUMN ->
-                        columnName = Optional.ofNullable(actionNode.findChildOfName(STMKnownRuleNames.columnName))
-                            .map(recognizer::collectIdentifier).orElse(null);
-                    case ADD_TABLE_CONSTRAINT ->
-                        tableConstraintSpec = Optional.ofNullable(actionNode.findChildOfName(STMKnownRuleNames.tableConstraintDefinition))
-                            .map(n -> SQLQueryTableConstraintSpec.recognize(recognizer, n)).orElse(null);
-                    case DROP_TABLE_CONSTRAINT ->
-                        tableConstraintName = Optional.ofNullable(actionNode.findChildOfName(STMKnownRuleNames.constraintName))
-                            .map(recognizer::collectQualifiedName).orElse(null);
-                }
+                if (actionKind != null) {
+                    switch (actionKind) {
+                        case ADD_COLUMN ->
+                                columnSpec = Optional.ofNullable(actionNode.findChildOfName(STMKnownRuleNames.columnDefinition))
+                                        .map(n -> SQLQueryColumnSpec.recognize(recognizer, n)).orElse(null);
+                        case ALTER_COLUMN, RENAME_COLUMN, DROP_COLUMN ->
+                                columnName = Optional.ofNullable(actionNode.findChildOfName(STMKnownRuleNames.columnName))
+                                        .map(recognizer::collectIdentifier).orElse(null);
+                        case ADD_TABLE_CONSTRAINT ->
+                                tableConstraintSpec = Optional.ofNullable(actionNode.findChildOfName(STMKnownRuleNames.tableConstraintDefinition))
+                                        .map(n -> SQLQueryTableConstraintSpec.recognize(recognizer, n)).orElse(null);
+                        case DROP_TABLE_CONSTRAINT ->
+                                tableConstraintName = Optional.ofNullable(actionNode.findChildOfName(STMKnownRuleNames.constraintName))
+                                        .map(recognizer::collectQualifiedName).orElse(null);
+                    }
 
-                alterActions.addLast(new SQLQueryTableAlterActionSpec(actionNode, actionKind, columnSpec, columnName, tableConstraintSpec, tableConstraintName));
+                    alterActions.addLast(new SQLQueryTableAlterActionSpec(actionNode, actionKind, columnSpec, columnName, tableConstraintSpec, tableConstraintName));
+                }
             }
         }
 

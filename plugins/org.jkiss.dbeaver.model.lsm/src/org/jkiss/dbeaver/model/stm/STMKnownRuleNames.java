@@ -290,6 +290,7 @@ public class STMKnownRuleNames {
     public static final String alterTableAction = SQLStandardParser.ruleNames[SQLStandardParser.RULE_alterTableAction];
     public static final String addColumnDefinition = SQLStandardParser.ruleNames[SQLStandardParser.RULE_addColumnDefinition];
     public static final String alterColumnDefinition = SQLStandardParser.ruleNames[SQLStandardParser.RULE_alterColumnDefinition];
+    public static final String renameColumnDefinition = SQLStandardParser.ruleNames[SQLStandardParser.RULE_renameColumnDefinition];
     public static final String alterColumnAction = SQLStandardParser.ruleNames[SQLStandardParser.RULE_alterColumnAction];
     public static final String setColumnDefaultClause = SQLStandardParser.ruleNames[SQLStandardParser.RULE_setColumnDefaultClause];
     public static final String dropColumnDefaultClause = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dropColumnDefaultClause];
