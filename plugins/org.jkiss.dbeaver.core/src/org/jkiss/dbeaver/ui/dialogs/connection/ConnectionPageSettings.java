@@ -74,7 +74,7 @@ import java.util.*;
 /**
  * Settings connection page. Hosts particular drivers' connection pages
  */
-public class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implements IDataSourceConnectionEditorSite, IDialogPageProvider, ICompositeDialogPageContainer, IDataSourceConnectionTester {
+class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implements IDataSourceConnectionEditorSite, IDialogPageProvider, ICompositeDialogPageContainer, IDataSourceConnectionTester {
     private static final Log log = Log.getLog(DriverDescriptor.class);
 
     public static final String PAGE_NAME = ConnectionPageSettings.class.getSimpleName();

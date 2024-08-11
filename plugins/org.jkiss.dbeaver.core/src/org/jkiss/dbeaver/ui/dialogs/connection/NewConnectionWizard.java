@@ -112,12 +112,12 @@ public class NewConnectionWizard extends ConnectionWizard
     }
 
     @Override
-    public DBPProject getSelectedProject() {
+    DBPProject getSelectedProject() {
         return pageDrivers.getConnectionProject();
     }
 
     @Override
-    public DBNBrowseSettings getSelectedNavigatorSettings() {
+    DBNBrowseSettings getSelectedNavigatorSettings() {
         return pageDrivers.getNavigatorSettings();
     }
 
