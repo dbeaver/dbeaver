@@ -86,7 +86,8 @@ public class SQLiteDataSource extends GenericDataSource {
             affinity = SQLiteAffinity.BLOB;
         } else if (typeName.startsWith("REAL") || typeName.startsWith("FLOA") || typeName.startsWith("DOUB")) {
             affinity = SQLiteAffinity.REAL;
-        } else if (typeName.contains(SQLConstants.DATA_TYPE_INT) || typeName.contains("NUMERIC") || typeName.contains("DECIMAL") || typeName.contains("BOOL")) {
+        } else if (typeName.contains(SQLConstants.DATA_TYPE_INT) || typeName.contains("NUMERIC") || typeName.contains("DECIMAL") ||
+            typeName.contains("BOOL") || typeName.contains("GUID")) {
             affinity = SQLiteAffinity.NUMERIC;
         } else {
             // If type is unknown, let's assume it's a text. Otherwise, search and data editor doesn't work right.
