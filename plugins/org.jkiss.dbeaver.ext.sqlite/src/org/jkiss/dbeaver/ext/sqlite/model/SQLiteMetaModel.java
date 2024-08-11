@@ -107,19 +107,6 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
     }
 
     @Override
-    public JDBCStatement prepareUniqueConstraintsLoadStatement(
-        @NotNull JDBCSession session,
-        @NotNull GenericStructContainer owner,
-        @NotNull GenericTableBase table
-    ) throws SQLException, DBException {
-        JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM pragma_table_info(?) as t WHERE t.pk<>0");
-        if (table != null) {
-            dbStat.setString(1, table.getName());
-        }
-        return dbStat;
-    }
-
-    @Override
     public GenericTrigger createTableTriggerImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer genericStructContainer, @NotNull GenericTableBase genericTableBase, String triggerName, @NotNull JDBCResultSet resultSet) throws DBException {
         if (CommonUtils.isEmpty(triggerName)) {
             triggerName = JDBCUtils.safeGetString(resultSet, 1);
@@ -260,5 +247,4 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
         }
         return null;
     }
-
 }
