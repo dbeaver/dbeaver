@@ -24,6 +24,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.ext.hana.model.HANAConstants;
 import org.jkiss.dbeaver.ext.hana.ui.internal.HANAEdition;
 import org.jkiss.dbeaver.ext.hana.ui.internal.HANAMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -311,8 +312,8 @@ public class HANAConnectionPage extends ConnectionPageWithAuth implements IDialo
             return;
         }
         String host = hostText.getText().trim();
-        if (edition == HANAEdition.GENERIC && CommonUtils.isEmpty(portText.getText()) && host.endsWith(":443")) {
-            hostText.setText(host.substring(0, host.length()-4));
+        if (edition == HANAEdition.GENERIC && CommonUtils.isEmpty(portText.getText()) && host.endsWith(HANAConstants.HTTPS_PORT_SUFFIX)) {
+            hostText.setText(host.substring(0, host.length() - HANAConstants.HTTPS_PORT_SUFFIX.length()));
             editionCombo.select(editionCombo.indexOf(HANAEdition.CLOUD.getTitle()));
             editionUpdated();
         }
