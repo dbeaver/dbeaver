@@ -1556,9 +1556,9 @@ public class SQLEditor extends SQLEditorBase implements
 
         createExtraViewControls();
 
-        if (outTab != null) showOutputPanel();
-        if (logTab != null) showExecutionLogPanel();
-        if (varTab != null) showVariablesPanel();
+        if (outTab != null) showOutputPanel(true);
+        if (logTab != null) showExecutionLogPanel(true);
+        if (varTab != null) showVariablesPanel(true);
     }
 
     public String getExtraPanelsLocation() {
@@ -1620,7 +1620,15 @@ public class SQLEditor extends SQLEditorBase implements
         return null;
     }
 
-    private void showExtraView(final String commandId, String name, String toolTip, Image image, Control view, IActionContributor actionContributor) {
+    private void showExtraView(
+        @NotNull final String commandId,
+        @NotNull String name,
+        @NotNull String toolTip,
+        @NotNull Image image,
+        @NotNull Control view,
+        @Nullable IActionContributor actionContributor,
+        @Nullable Boolean show // true - show, false - hide, null - toggle
+    ) {
         ToolItem viewItem = getViewToolItem(commandId);
         if (viewItem == null) {
             log.warn("Tool item for command " + commandId + " not found");
@@ -1629,9 +1637,14 @@ public class SQLEditor extends SQLEditorBase implements
         CTabFolder tabFolder = this.getFolderForExtraPanels();
         CTabItem curItem = getExtraViewTab(view);
         if (curItem != null) {
-            // Close tab if it is already open
-            viewItem.setSelection(false);
-            curItem.dispose();
+            if (show == null || !show) {
+                // Close tab if it is already open
+                viewItem.setSelection(false);
+                curItem.dispose();
+            }
+            return;
+        }
+        if (show != null && !show) {
             return;
         }
 
@@ -1763,34 +1776,37 @@ public class SQLEditor extends SQLEditorBase implements
         return tabItem != null && ((QueryResultsContainer) tabItem.getData()).isPinned();
     }
 
-    public void showOutputPanel() {
+    public void showOutputPanel(@Nullable Boolean show) {
         showExtraView(
             SQLEditorCommands.CMD_SQL_SHOW_OUTPUT,
             SQLEditorMessages.editors_sql_output,
             SQLEditorMessages.editors_sql_output_tip,
             IMG_OUTPUT,
             outputViewer,
-            manager -> manager.add(new OutputAutoShowToggleAction()));
+            manager -> manager.add(new OutputAutoShowToggleAction()),
+            show);
     }
 
-    public void showExecutionLogPanel() {
+    public void showExecutionLogPanel(@Nullable Boolean show) {
         showExtraView(
             SQLEditorCommands.CMD_SQL_SHOW_LOG,
             SQLEditorMessages.editors_sql_execution_log,
             SQLEditorMessages.editors_sql_execution_log_tip,
             IMG_LOG,
             logViewer,
-            null);
+            null,
+            show);
     }
 
-    public void showVariablesPanel() {
+    public void showVariablesPanel(@Nullable Boolean show) {
         showExtraView(
             SQLEditorCommands.CMD_SQL_SHOW_VARIABLES,
             SQLEditorMessages.editors_sql_variables,
             SQLEditorMessages.editors_sql_variables_tip,
             IMG_VARIABLES,
             variablesViewer,
-            null);
+            null,
+            show);
         UIUtils.asyncExec(() -> variablesViewer.refreshVariables());
     }
 
@@ -2400,7 +2416,7 @@ public class SQLEditor extends SQLEditorBase implements
             explainPlanFromQuery(planner, sqlQuery);
         } else if (planStyle == DBCPlanStyle.OUTPUT) {
             explainPlanFromQuery(planner, sqlQuery);
-            showOutputPanel();
+            showOutputPanel(true);
         } else {
             ExplainPlanViewer planView = getPlanView(sqlQuery, planner);
 
@@ -4932,9 +4948,8 @@ public class SQLEditor extends SQLEditorBase implements
                             // But we need to avoid the result tab with the select statement
                             // because the statistics window can not be in focus in this case
 
-                            if (!(scriptMode && results.query instanceof SQLQuery sqlQuery && sqlQuery.getData() == SQLQueryJob.STATS_RESULTS)) {
-                                results.handleExecuteResult(result);
-                            }
+                            results.handleExecuteResult(result);
+
                             if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.SET_SELECTION_TO_STATISTICS_TAB) &&
                                 query.getType() != SQLQueryType.SELECT
                             ) {
@@ -5465,7 +5480,7 @@ public class SQLEditor extends SQLEditorBase implements
                 if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.OUTPUT_PANEL_AUTO_SHOW)) {
                     ToolItem toolItem = getViewToolItem(SQLEditorCommands.CMD_SQL_SHOW_OUTPUT);
                     if (toolItem != null && !toolItem.getSelection()) {
-                        showOutputPanel();
+                        showOutputPanel(true);
                     }
                 }
 /*
