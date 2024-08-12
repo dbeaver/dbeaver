@@ -111,7 +111,7 @@ public class SQLQueryTableCreateModel extends SQLQueryModelContent {
                     columnSpec.getDeclaredColumnType()
                 ));
             }
-            SQLQueryDataContext tableContext = dataContext.overrideResultTuple(columns);
+            SQLQueryDataContext tableContext = dataContext.overrideResultTuple(null, columns, Collections.emptyList());
 
             for (SQLQueryColumnSpec columnSpec : this.columns) {
                 columnSpec.propagateContext(dataContext, tableContext, statistics);

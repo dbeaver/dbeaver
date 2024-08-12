@@ -51,11 +51,11 @@ public class SQLQueryRecognitionProblemInfo {
     private final DBException exception;
 
     private SQLQueryRecognitionProblemInfo(
-            @NotNull Severity severity,
-            @NotNull STMTreeNode syntaxNode,
-            @Nullable SQLQuerySymbolEntry symbol,
-            @NotNull String message,
-            @Nullable DBException exception
+        @NotNull Severity severity,
+        @NotNull STMTreeNode syntaxNode,
+        @Nullable SQLQuerySymbolEntry symbol,
+        @NotNull String message,
+        @Nullable DBException exception
     ) {
         this.severity = severity;
         this.syntaxNode = syntaxNode;

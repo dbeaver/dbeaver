@@ -103,11 +103,14 @@ public abstract class SQLQueryDataContext {
      */
     @NotNull
     public final SQLQueryDataContext overrideResultTuple(
-        @NotNull SQLQueryRowsSourceModel source,
+        @Nullable SQLQueryRowsSourceModel source,
         @NotNull List<SQLQueryResultColumn> columns,
         @NotNull List<SQLQueryResultPseudoColumn> pseudoColumns
     ) {
-        List<SQLQueryResultPseudoColumn> allPseudoColumns = STMUtils.combineLists(this.prepareRowsetPseudoColumns(source), pseudoColumns);
+        // TODO: review pseudoattributes behavior in DDL expressions (not handling for now)
+        List<SQLQueryResultPseudoColumn> allPseudoColumns = source == null
+            ? pseudoColumns
+            : STMUtils.combineLists(this.prepareRowsetPseudoColumns(source), pseudoColumns);
         return new SQLQueryResultTupleContext(this, columns, allPseudoColumns);
     }
 

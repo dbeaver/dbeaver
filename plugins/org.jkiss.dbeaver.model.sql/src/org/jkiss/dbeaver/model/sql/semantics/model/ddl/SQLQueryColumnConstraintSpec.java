@@ -63,7 +63,7 @@ public class SQLQueryColumnConstraintSpec extends SQLQueryNodeModel {
         this.checkExpression = checkExpression;
     }
 
-    @NotNull
+    @Nullable
     public SQLQueryQualifiedName getConstraintName() {
         return this.constraintName;
     }
@@ -164,7 +164,7 @@ public class SQLQueryColumnConstraintSpec extends SQLQueryNodeModel {
                     ));
                 }
             }
-            resultContext = referencedContext.overrideResultTuple(resultColumns);
+            resultContext = referencedContext.overrideResultTuple(null, resultColumns, Collections.emptyList());
         } else {
             if (realTable != null) {
                 try {
@@ -185,7 +185,7 @@ public class SQLQueryColumnConstraintSpec extends SQLQueryNodeModel {
                             List<SQLQueryResultColumn> resultColumns = SQLQueryRowsTableDataModel.prepareResultColumnsList(
                                 referencedTable.getName().entityName, referencedTable, realTable, referencedContext, statistics, pkAttrs
                             );
-                            resultContext = referencedContext.overrideResultTuple(resultColumns);
+                            resultContext = referencedContext.overrideResultTuple(null, resultColumns, Collections.emptyList());
                         }
                     } else {
                         statistics.appendWarning(

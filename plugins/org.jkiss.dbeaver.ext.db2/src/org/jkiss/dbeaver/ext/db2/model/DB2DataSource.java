@@ -85,6 +85,15 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
             "Contains the value of the client IP address for the connection.",
             true,
             DBDPseudoAttribute.PropagationPolicy.GLOBAL_VARIABLE
+        ),
+        new DBDPseudoAttribute(
+            DBDPseudoAttributeType.OTHER,
+            "DATASLICEID",
+            null,
+            null,
+            "Determines the the database partition number where a specific row of the distributed relational database is stored.",
+            true,
+            DBDPseudoAttribute.PropagationPolicy.GLOBAL_VARIABLE
         )
     };
 
