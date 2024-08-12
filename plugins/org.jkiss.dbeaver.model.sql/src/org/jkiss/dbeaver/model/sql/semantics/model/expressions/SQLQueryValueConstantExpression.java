@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.sql.semantics.model.select;
+package org.jkiss.dbeaver.model.sql.semantics.model.expressions;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
@@ -24,48 +24,31 @@ import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 /**
- * Describes type cast expression
+ * Describes a constant expression in the query, like string or number
  */
-public class SQLQueryValueTypeCastExpression extends SQLQueryValueExpression {
-
+public class SQLQueryValueConstantExpression extends SQLQueryValueExpression {
     @NotNull
-    private final SQLQueryValueExpression value;
-    @NotNull
-    private final String typeRefString;
-
-    public SQLQueryValueTypeCastExpression(
-        @NotNull STMTreeNode syntaxNode,
-        @NotNull SQLQueryValueExpression value,
-        @NotNull String typeRefString
-    ) {
+    protected String valueString;
+    
+    public SQLQueryValueConstantExpression(@NotNull STMTreeNode syntaxNode, @NotNull String valueString, @NotNull SQLQueryExprType type) {
         super(syntaxNode);
-        this.value = value;
-        this.typeRefString = typeRefString;
+        this.valueString = valueString;
+        this.type = type;
     }
-
+    
     @NotNull
-    public String getTypeRefString() {
-        return this.typeRefString;
-    }
-
-    @NotNull
-    public SQLQueryValueExpression getValueExpr() {
-        return this.value;
-    }
-
-    @Override
-    protected void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
-        this.value.propagateContext(context, statistics);
-        this.type = SQLQueryExprType.forExplicitTypeRef(this.typeRefString);
+    public String getValueString() {
+        return this.valueString;
     }
     
     @Override
-    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg) {
-        return visitor.visitValueTypeCastExpr(this, arg);
+    protected void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        // do nothing
     }
-
+    
     @Override
-    public String toString() {
-        return "TypeCast[" + this.value.toString() + ", " + this.typeRefString + "]";
+    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, T arg) {
+        return visitor.visitValueConstantExpr(this, arg);
     }
 }
+

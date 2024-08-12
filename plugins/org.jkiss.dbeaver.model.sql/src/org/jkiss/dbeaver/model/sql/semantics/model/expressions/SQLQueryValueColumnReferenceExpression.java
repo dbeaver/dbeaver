@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.sql.semantics.model.select;
+package org.jkiss.dbeaver.model.sql.semantics.model.expressions;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -80,7 +80,7 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
             columnName.setDefinition(resultColumn.symbol.getDefinition());
         } else {
             columnName.getSymbol().setSymbolClass(SQLQuerySymbolClass.ERROR);
-            statistics.appendError(columnName, "Column not found in dataset");
+            statistics.appendError(columnName, "Column " + columnName.getName() + " not found");
         }
     }
 
@@ -98,7 +98,10 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
                 type = resultColumn != null ? resultColumn.type : SQLQueryExprType.UNKNOWN;
             } else {
                 this.tableName.setSymbolClass(SQLQuerySymbolClass.ERROR);
-                statistics.appendError(this.tableName.entityName, "Table or subquery not found");
+                statistics.appendError(
+                    this.tableName.entityName,
+                    "Table or subquery " + this.tableName.toIdentifierString() + " not found"
+                );
                 type = SQLQueryExprType.UNKNOWN;
             }
         } else if (this.tableName == null && this.columnName.isNotClassified()) {
