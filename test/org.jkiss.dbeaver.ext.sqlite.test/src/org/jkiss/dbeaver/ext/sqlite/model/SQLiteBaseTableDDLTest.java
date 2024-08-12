@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ext.sqlite.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
-import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -66,8 +65,7 @@ public class SQLiteBaseTableDDLTest {
             .thenReturn(DBWorkbench.getPlatform().getDataSourceProviderRegistry().findDriver("sqlite_jdbc"));
 
         Mockito.when(mockDataSourceContainer.getPreferenceStore()).thenReturn(DBWorkbench.getPlatform().getPreferenceStore());
-        GenericMetaModel sqLiteMetaModel = new SQLiteMetaModel();
-        dataSource = new SQLiteDataSource(mockMonitor, sqLiteMetaModel, mockDataSourceContainer, new SQLiteSQLDialect());
+        dataSource = new GenericDataSource(mockMonitor, new SQLiteMetaModel(), mockDataSourceContainer, new SQLiteSQLDialect());
         Mockito.when(mockDataSourceContainer.getNavigatorSettings()).thenReturn(new DataSourceNavigatorSettings());
         Mockito.when(mockRemoteInstance.getDataSource()).thenReturn(dataSource);
         executionContext = new GenericExecutionContext(mockRemoteInstance, "Test");
@@ -114,6 +112,40 @@ public class SQLiteBaseTableDDLTest {
         Assert.assertEquals(script, expectedDDL);
     }
 
+    @Test
+    public void generateCreateNewTableWithTwoColumnsThenDropColumn() throws Exception {
+        TestCommandContext commandContext = new TestCommandContext(executionContext, false);
+
+        GenericTableBase table = objectMaker.createNewObject(
+            mockMonitor,
+            commandContext,
+            container,
+            null,
+            Collections.emptyMap());
+        DBEObjectMaker<SQLiteTableColumn, SQLiteTable> objectManager = getManagerForClass(SQLiteTableColumn.class);
+        SQLiteTableColumn column1 = objectManager.createNewObject(
+                mockMonitor,
+                commandContext,
+                table,
+                null,
+                Collections.emptyMap());
+        objectManager.createNewObject(mockMonitor, commandContext, table, null, Collections.emptyMap());
+        objectManager.deleteObject(commandContext, column1, Collections.emptyMap());
+        List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(
+            mockMonitor,
+            commandContext,
+            executionContext,
+            Collections.emptyMap(),
+            null);
+        String script = SQLUtils.generateScript(dataSource, actions.toArray(new DBEPersistAction[0]), false);
+
+        String expectedDDL = "CREATE TABLE NewTable (" + lineBreak +
+                "\tColumn2 INTEGER" + lineBreak +
+                ");" + lineBreak;
+
+        Assert.assertEquals(script, expectedDDL);
+    }
+    
     @Test
     public void generateCreateNewTableWithTwoColumnsOneNotNullOneNullableStatement() throws Exception {
         TestCommandContext commandContext = new TestCommandContext(executionContext, false);
