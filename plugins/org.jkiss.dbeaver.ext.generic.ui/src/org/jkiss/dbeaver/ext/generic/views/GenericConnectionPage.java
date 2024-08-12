@@ -519,13 +519,14 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
                 setErrorMessage(e.getMessage());
             }
             final Set<String> properties = metaURL.getAvailableProperties();
-            urlText.setEditable(false);
-
+            boolean isUrlEditable = !(properties.contains(DBConstants.PROP_HOST) || properties.contains(DBConstants.PROP_FOLDER) || properties.contains(DBConstants.PROP_FILE));
+            urlText.setEditable(isUrlEditable);
+            urlText.setEnabled(isUrlEditable);
             showControlGroup(GROUP_HOST, properties.contains(DBConstants.PROP_HOST));
             showControlGroup(GROUP_SERVER, properties.contains(DBConstants.PROP_SERVER));
             showControlGroup(GROUP_DB, properties.contains(DBConstants.PROP_DATABASE));
             showControlGroup(GROUP_PATH, properties.contains(DBConstants.PROP_FOLDER) || properties.contains(DBConstants.PROP_FILE));
-            showControlGroup(GROUP_CONNECTION_MODE, true);
+            showControlGroup(GROUP_CONNECTION_MODE, false);
             controlGroupsByUrl = properties.stream().map(controlGroupByUrlProp::get).collect(Collectors.toSet());
         } else {
             isCustom = true;
@@ -535,6 +536,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             showControlGroup(GROUP_PATH, false);
             showControlGroup(GROUP_CONNECTION_MODE, false);
             urlText.setEditable(true);
+            urlText.setEnabled(true);
             controlGroupsByUrl = Collections.emptyList();
         }
         UIUtils.fixReadonlyTextBackground(urlText);
