@@ -47,7 +47,7 @@ public class SQLiteTable extends GenericTable implements DBDPseudoAttributeConta
 
 
     public SQLiteTable(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
-        super(container.getDataSource(), tableName, tableType, dbResult);
+        super(container, tableName, tableType, dbResult);
     }
 
     @Override

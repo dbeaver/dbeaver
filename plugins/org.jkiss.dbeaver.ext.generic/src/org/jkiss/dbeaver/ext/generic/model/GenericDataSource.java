@@ -133,7 +133,6 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         this.metaModel = metaModel;
         this.dataTypeCache = metaModel.createDataTypeCache(this);
         this.tableTypeCache = new TableTypeCache();
-        this.structureContainer = new GenericDataSourceObjectContainer(this);
     }
 
     @DPIContainer
@@ -351,37 +350,37 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
 
     @Override
     public TableCache getTableCache() {
-        return structureContainer == null ? null : structureContainer.getTableCache();
+        return structureContainer.getTableCache();
     }
 
     @Override
     public IndexCache getIndexCache() {
-        return structureContainer == null ? null : structureContainer.getIndexCache();
+        return structureContainer.getIndexCache();
     }
 
     @Override
     public ConstraintKeysCache getConstraintKeysCache() {
-        return structureContainer == null ? null : structureContainer.getConstraintKeysCache();
+        return structureContainer.getConstraintKeysCache();
     }
 
     @Override
     public ForeignKeysCache getForeignKeysCache() {
-        return structureContainer == null ? null : structureContainer.getForeignKeysCache();
+        return structureContainer.getForeignKeysCache();
     }
 
     @Override
     public TableTriggerCache getTableTriggerCache() {
-        return structureContainer == null ? null : structureContainer.getTableTriggerCache();
+        return structureContainer.getTableTriggerCache();
     }
 
     @Override
     public GenericObjectContainer.GenericSequenceCache getSequenceCache() {
-        return structureContainer == null ? null : structureContainer.getSequenceCache();
+        return structureContainer.getSequenceCache();
     }
 
     @Override
     public GenericObjectContainer.GenericSynonymCache getSynonymCache() {
-        return structureContainer == null ? null : structureContainer.getSynonymCache();
+        return structureContainer.getSynonymCache();
     }
 
     @Override
