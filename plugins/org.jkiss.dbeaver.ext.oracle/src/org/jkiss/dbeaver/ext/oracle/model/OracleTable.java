@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttributeType;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -43,6 +44,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * OracleTable
@@ -50,6 +52,17 @@ import java.util.*;
 public class OracleTable extends OracleTablePhysical implements DBPScriptObject, DBDPseudoAttributeContainer,
         DBPObjectStatistics, DBPImageProvider, DBPReferentialIntegrityController, DBPScriptObjectExt2 {
     private static final Log log = Log.getLog(OracleTable.class);
+
+    private static final DBDPseudoAttribute ROWSCN_PSEUDO_ATTRIBUTE = new DBDPseudoAttribute(
+        DBDPseudoAttributeType.OTHER,
+        "ORA_ROWSCN",
+        null,
+        null,
+        "System Change Number",
+        true,
+        DBDPseudoAttribute.PropagationPolicy.TABLE_LOCAL
+    );
+
 
     private static final CharSequence TABLE_NAME_PLACEHOLDER = "%table_name%";
     private static final CharSequence FOREIGN_KEY_NAME_PLACEHOLDER = "%foreign_key_name%";
@@ -137,6 +150,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     }
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
+    private DBDPseudoAttribute[] allPseudoAttributes = null;
 
     public OracleTable(OracleSchema schema, String name)
     {
@@ -358,10 +372,14 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         return super.refreshObject(monitor);
     }
 
+    private boolean hasRowIdPseudoAttribute() {
+        return CommonUtils.isEmpty(this.iotType)
+            && getDataSource().getContainer().getPreferenceStore().getBoolean(OracleConstants.PREF_SUPPORT_ROWID);
+    }
+
     @Override
-    public DBDPseudoAttribute[] getPseudoAttributes() throws DBException
-    {
-        if (CommonUtils.isEmpty(this.iotType) && getDataSource().getContainer().getPreferenceStore().getBoolean(OracleConstants.PREF_SUPPORT_ROWID)) {
+    public DBDPseudoAttribute[] getPseudoAttributes() throws DBException {
+        if (this.hasRowIdPseudoAttribute()) {
             // IOT tables have index id instead of ROWID
             return new DBDPseudoAttribute[] {
                 OracleConstants.PSEUDO_ATTR_ROWID
@@ -369,6 +387,18 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         } else {
             return null;
         }
+    }
+
+    @Override
+    public DBDPseudoAttribute[] getAllPseudoAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (this.allPseudoAttributes == null) {
+            // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/Pseudocolumns.html
+            this.allPseudoAttributes = Stream.<List<DBDPseudoAttribute>>of(
+                this.hasRowIdPseudoAttribute() ? List.of(OracleConstants.PSEUDO_ATTR_ROWID) : Collections.emptyList(),
+                List.of(ROWSCN_PSEUDO_ATTRIBUTE)
+            ).flatMap(Collection::stream).toArray(DBDPseudoAttribute[]::new);
+        }
+        return this.allPseudoAttributes;
     }
 
     @Override

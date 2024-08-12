@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttributeType;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -42,11 +43,13 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.cache.SimpleObjectCache;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * PostgreTable
@@ -55,6 +58,35 @@ public abstract class PostgreTable extends PostgreTableReal
     implements PostgreTableContainer, DBDPseudoAttributeContainer, DBSEntityConstrainable
 {
     private static final Log log = Log.getLog(PostgreTable.class);
+
+    /**
+     * see https://www.postgresql.org/docs/8.2/ddl-system-columns.html
+     * 'oid' described at {@link PostgreConstants#PSEUDO_ATTR_OID}
+     */
+    private static final Map<DBDPseudoAttributeType, List<Pair<String, String>>> ALWAYS_PRESENTED_PSEUDO_ATTR_ENTRIES = Map.of(
+        DBDPseudoAttributeType.OTHER, List.of(
+            Pair.of("tableoid", "The OID of the table containing this row."),
+            Pair.of("xmin", "The identity (transaction ID) of the inserting transaction for this row version. "),
+            Pair.of("cmin", "The command identifier (starting at zero) within the inserting transaction."),
+            Pair.of("xmax", "The identity (transaction ID) of the deleting transaction, or zero for an undeleted row version."),
+            Pair.of("cmax", "The command identifier within the deleting transaction, or zero.")
+        ),
+        DBDPseudoAttributeType.ROWID, List.of(
+            Pair.of("ctid",  "The physical location of the row version within its table.")
+        )
+    );
+    private static final List<DBDPseudoAttribute> ALWAYS_PRESENTED_PSEUDO_ATTRS = ALWAYS_PRESENTED_PSEUDO_ATTR_ENTRIES.entrySet().stream()
+        .flatMap(e -> e.getValue().stream().map(p -> new DBDPseudoAttribute(
+            e.getKey(),
+            p.getFirst(),
+            null,
+            null,
+            p.getSecond(),
+            true,
+            DBDPseudoAttribute.PropagationPolicy.TABLE_LOCAL
+        ))).toList();
+
+    private DBDPseudoAttribute[] allPseudoAttributes = null;
 
     private final SimpleObjectCache<PostgreTable, PostgreTableForeignKey> foreignKeys = new SimpleObjectCache<>();
     //private List<PostgreTablePartition>  partitions  = null;
@@ -153,8 +185,7 @@ public abstract class PostgreTable extends PostgreTableReal
     }
 
     @Override
-    public boolean isView()
-    {
+    public boolean isView() {
         return false;
     }
 
@@ -227,13 +258,28 @@ public abstract class PostgreTable extends PostgreTableReal
         return DBStructUtils.generateTableDDL(monitor, this, options, false);
     }
 
+    private boolean hasOidPseudoAttribute() {
+        return this.hasOids && getDataSource().getServerType().supportsOids();
+    }
+
     @Override
     public DBDPseudoAttribute[] getPseudoAttributes() {
-        if (this.hasOids && getDataSource().getServerType().supportsOids()) {
+        if (this.hasOidPseudoAttribute()) {
             return new DBDPseudoAttribute[]{PostgreConstants.PSEUDO_ATTR_OID};
         } else {
             return null;
         }
+    }
+
+    @Override
+    public DBDPseudoAttribute[] getAllPseudoAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (this.allPseudoAttributes == null) {
+            this.allPseudoAttributes = Stream.<List<DBDPseudoAttribute>>of(
+                this.hasOidPseudoAttribute() ? List.of(PostgreConstants.PSEUDO_ATTR_OID) : Collections.emptyList(),
+                ALWAYS_PRESENTED_PSEUDO_ATTRS
+            ).flatMap(Collection::stream).toArray(DBDPseudoAttribute[]::new);
+        }
+        return this.allPseudoAttributes;
     }
 
     @Association

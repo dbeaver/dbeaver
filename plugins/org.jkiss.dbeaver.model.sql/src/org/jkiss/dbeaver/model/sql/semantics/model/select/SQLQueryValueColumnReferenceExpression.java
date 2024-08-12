@@ -99,7 +99,11 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
                 type = SQLQueryExprType.UNKNOWN;
             }
         } else if (this.tableName == null && this.columnName.isNotClassified()) {
-            SQLQueryResultPseudoColumn pseudoColumn = context.resolvePseudoColumn(statistics.getMonitor(), this.columnName.getName());
+            // TODO consider resolution order ?
+            SQLQueryResultPseudoColumn pseudoColumn = context.resolveGlobalPseudoColumn(statistics.getMonitor(), this.columnName.getName());
+            if (pseudoColumn == null) {
+                pseudoColumn = context.resolvePseudoColumn(statistics.getMonitor(), this.columnName.getName());
+            }
             if (pseudoColumn != null) {
                 type = pseudoColumn.type;
                 if (this.columnName.isNotClassified()) {

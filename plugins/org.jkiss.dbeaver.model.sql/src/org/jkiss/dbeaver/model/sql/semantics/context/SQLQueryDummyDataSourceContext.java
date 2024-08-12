@@ -470,6 +470,12 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         return null;
     }
 
+    @Nullable
+    @Override
+    public SQLQueryResultPseudoColumn resolveGlobalPseudoColumn(DBRProgressMonitor monitor, @NotNull String name) {
+        return null;
+    }
+
     @NotNull
     @Override
     public SQLDialect getDialect() {
@@ -486,7 +492,12 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     protected void collectKnownSourcesImpl(@NotNull KnownSourcesInfo result) {
         // no sources have been referenced yet, so nothing to register
     }
-    
+
+    @Override
+    protected List<SQLQueryResultPseudoColumn> prepareRowsetPseudoColumns(@NotNull SQLQueryRowsSourceModel source) {
+        return Collections.emptyList();
+    }
+
     public class DummyTableRowsSource extends SQLQueryRowsTableDataModel {
         
         public DummyTableRowsSource(@NotNull STMTreeNode syntaxNode) {
@@ -508,7 +519,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
                     List<SQLQueryResultColumn> columns = this.prepareResultColumnsList(
                         this.getName().entityName, context, statistics, attributes
                     );
-                    context = context.overrideResultTuple(columns, Collections.emptyList());
+                    context = context.overrideResultTuple(this, columns, Collections.emptyList());
                 }
             } catch (DBException ex) {
                 statistics.appendError(this.getName().entityName, "Failed to resolve table", ex);

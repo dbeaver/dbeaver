@@ -162,7 +162,7 @@ public class OracleConstants {
         null,
         "Unique row identifier",
         true,
-        DBDPseudoAttribute.PropagationPolicy.NORMAL
+        DBDPseudoAttribute.PropagationPolicy.TABLE_LOCAL
     );
 
     public static final String PREF_EXPLAIN_TABLE_NAME = "oracle.explain.table";

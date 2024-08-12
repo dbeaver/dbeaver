@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttributeType;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -73,6 +74,18 @@ public class DB2Table extends DB2TableBase
 
     private static final String C_PT = "SELECT * FROM SYSCAT.DATAPARTITIONS WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY SEQNO WITH UR";
     private static final String C_PE = "SELECT * FROM SYSCAT.PERIODS WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY PERIODNAME WITH UR";
+
+    private static final DBDPseudoAttribute[] PRESENTED_PSEUDO_ATTRS = new DBDPseudoAttribute[] {
+        new DBDPseudoAttribute(
+            DBDPseudoAttributeType.OTHER,
+            "DATASLICEID",
+            null,
+            null,
+            "The database partition number for a row (Netezza Platform Software compatibility).",
+            true,
+            DBDPseudoAttribute.PropagationPolicy.TABLE_NORMAL
+        )
+    };
 
     private DB2TableTriggerCache tableTriggerCache = new DB2TableTriggerCache();
 
@@ -537,6 +550,11 @@ public class DB2Table extends DB2TableBase
         } else {
             return null;
         }
+    }
+
+    @Override
+    public DBDPseudoAttribute[] getAllPseudoAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return PRESENTED_PSEUDO_ATTRS;
     }
 
     @NotNull

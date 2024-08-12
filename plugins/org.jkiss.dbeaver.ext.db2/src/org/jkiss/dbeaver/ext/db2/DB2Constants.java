@@ -134,7 +134,7 @@ public class DB2Constants {
         "IMPLICITLY", "HIDDEN" };
 
     public static final DBDPseudoAttribute PSEUDO_ATTR_RID_BIT         = new DBDPseudoAttribute(DBDPseudoAttributeType.ROWID,
-        "RID_BIT()", "RID_BIT($alias)", "RID_BIT", "Unique physical row identifier", false, DBDPseudoAttribute.PropagationPolicy.NORMAL);
+        "RID_BIT()", "RID_BIT($alias)", "RID_BIT", "Unique physical row identifier", false, DBDPseudoAttribute.PropagationPolicy.TABLE_NORMAL);
 
     static final String[] ROUTINES = {
         "ABS",

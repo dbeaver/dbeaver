@@ -60,7 +60,7 @@ public class SQLQueryRowsTableValueModel extends SQLQueryRowsSourceModel {
             value.propagateContext(context, statistics);
             resultColumns.addLast(new SQLQueryResultColumn(resultColumns.size(), new SQLQuerySymbol("?"), this, null, null, SQLQueryExprType.UNKNOWN));
         }
-        return context.hideSources().overrideResultTuple(List.copyOf(resultColumns), Collections.emptyList());
+        return context.hideSources().overrideResultTuple(this, List.copyOf(resultColumns), Collections.emptyList());
     }
 
     @Override

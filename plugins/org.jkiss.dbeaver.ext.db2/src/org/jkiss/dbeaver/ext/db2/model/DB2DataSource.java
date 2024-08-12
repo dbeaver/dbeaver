@@ -39,6 +39,9 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttributeType;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -70,7 +73,20 @@ import java.util.*;
  * 
  * @author Denis Forveille
  */
-public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DBPAdaptable, DBPObjectStatisticsCollector {
+public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DBPAdaptable, DBPObjectStatisticsCollector,
+    DBDPseudoAttributeContainer {
+
+    private static final DBDPseudoAttribute[] KNOWN_GLOBAL_PSEUDO_ATTRS = new DBDPseudoAttribute[] {
+        new DBDPseudoAttribute(
+            DBDPseudoAttributeType.OTHER,
+            "CLIENT_IPADDR",
+            null,
+            null,
+            "Contains the value of the client IP address for the connection.",
+            true,
+            DBDPseudoAttribute.PropagationPolicy.GLOBAL_VARIABLE
+        )
+    };
 
     private static final Log log = Log.getLog(DB2DataSource.class);
 
@@ -791,4 +807,13 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
         }
     }
 
+    @Override
+    public DBDPseudoAttribute[] getPseudoAttributes() throws DBException {
+        return DBDPseudoAttribute.EMPTY_ARRAY;
+    }
+
+    @Override
+    public DBDPseudoAttribute[] getAllPseudoAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return KNOWN_GLOBAL_PSEUDO_ATTRS;
+    }
 }

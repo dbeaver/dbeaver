@@ -24,14 +24,13 @@ import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsCorrelatedSourceModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
+import org.jkiss.dbeaver.model.stm.STMUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
 
 /**
  * Semantic context query information about entities involved in the semantics model
@@ -70,7 +69,15 @@ public abstract class SQLQueryDataContext {
      * @implNote TODO consider ambiguous column names
      */
     @Nullable
-    public abstract SQLQueryResultPseudoColumn resolvePseudoColumn(DBRProgressMonitor monitor, @NotNull String name);
+    public abstract SQLQueryResultPseudoColumn resolvePseudoColumn(@NotNull DBRProgressMonitor monitor, @NotNull String name);
+
+    /**
+     * Find global pseudo column referenced by its name in the result tuple
+     *
+     * @implNote TODO consider ambiguous column names
+     */
+    @Nullable
+    public abstract SQLQueryResultPseudoColumn resolveGlobalPseudoColumn(@NotNull DBRProgressMonitor monitor, @NotNull String name);
 
     /**
      * Find semantic model item responsible for the representation of the data rows source having a given name
@@ -95,8 +102,13 @@ public abstract class SQLQueryDataContext {
      * Prepare new semantic context by overriding result tuple columns information
      */
     @NotNull
-    public final SQLQueryDataContext overrideResultTuple(@NotNull List<SQLQueryResultColumn> columns, @NotNull List<SQLQueryResultPseudoColumn> pseudoColumns) {
-        return new SQLQueryResultTupleContext(this, columns, pseudoColumns);
+    public final SQLQueryDataContext overrideResultTuple(
+        @NotNull SQLQueryRowsSourceModel source,
+        @NotNull List<SQLQueryResultColumn> columns,
+        @NotNull List<SQLQueryResultPseudoColumn> pseudoColumns
+    ) {
+        List<SQLQueryResultPseudoColumn> allPseudoColumns = STMUtils.combineLists(this.prepareRowsetPseudoColumns(source), pseudoColumns);
+        return new SQLQueryResultTupleContext(this, columns, allPseudoColumns);
     }
 
     /**
@@ -184,4 +196,6 @@ public abstract class SQLQueryDataContext {
     }
     
     protected abstract void collectKnownSourcesImpl(@NotNull KnownSourcesInfo result);
+
+    protected abstract List<SQLQueryResultPseudoColumn> prepareRowsetPseudoColumns(@NotNull SQLQueryRowsSourceModel source);
 }

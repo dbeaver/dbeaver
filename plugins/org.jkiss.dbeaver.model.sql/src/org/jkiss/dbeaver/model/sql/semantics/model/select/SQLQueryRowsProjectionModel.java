@@ -148,7 +148,7 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
         List<SQLQueryResultColumn> resultColumns = this.result.expandColumns(unresolvedResult, this, statistics);
         List<SQLQueryResultPseudoColumn> resultPseudoColumns = unresolvedResult.getPseudoColumnsList().stream()
             .filter(s -> s.propagationPolicy.projected).toList();
-        SQLQueryDataContext resolvedResult = unresolvedResult.overrideResultTuple(resultColumns, resultPseudoColumns);
+        SQLQueryDataContext resolvedResult = unresolvedResult.overrideResultTuple(this, resultColumns, resultPseudoColumns);
 
         SQLQueryDataContext filtersContext = resolvedResult.combine(unresolvedResult);
         if (this.filterExprs.whereClause != null) {
@@ -161,7 +161,7 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
             this.filterExprs.havingClause.propagateContext(clauseCtx, statistics);
             this.filterScopes.havingClause.setContext(clauseCtx);
         }
-        if (this.filterExprs.groupByClause != null) {
+        if (this.filterExprs.groupByClause != null) { // TODO consider dropping certain pseudocolumns
             SQLQueryDataContext clauseCtx = aliasScope.contains(ProjectionAliasVisibilityScope.GROUP_BY) ? filtersContext : unresolvedResult;
             this.filterExprs.groupByClause.propagateContext(clauseCtx, statistics);
             this.filterScopes.groupByClause.setContext(clauseCtx);

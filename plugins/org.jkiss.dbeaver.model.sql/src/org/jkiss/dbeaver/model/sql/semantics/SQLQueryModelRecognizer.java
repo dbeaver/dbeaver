@@ -21,6 +21,9 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
@@ -31,10 +34,7 @@ import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataSourceContext;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDummyDataSourceContext;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
+import org.jkiss.dbeaver.model.sql.semantics.context.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
@@ -53,7 +53,10 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Responsible for semantics model preparation based on the parsing result
@@ -252,7 +255,30 @@ public class SQLQueryModelRecognizer {
             && this.executionContext.getDataSource() instanceof DBSObjectContainer
             && this.executionContext.getDataSource().getSQLDialect() instanceof BasicSQLDialect
         ) {
-            return new SQLQueryDataSourceContext(this.dialect, this.executionContext);
+            Map<String, SQLQueryResultPseudoColumn> globalPseudoColumns;
+            Function<SQLQueryRowsSourceModel, List<SQLQueryResultPseudoColumn>> rowsetPseudoColumns;
+            if (this.executionContext.getDataSource() instanceof DBDPseudoAttributeContainer pac) {
+                try {
+                    DBDPseudoAttribute[] pc = pac.getAllPseudoAttributes(this.recognitionContext.getMonitor());
+                    globalPseudoColumns = SQLQueryRowsTableDataModel.prepareResultPseudoColumnsList(
+                        this.dialect, null, null, Stream.of(pc).filter(a -> a.getPropagationPolicy().providedByEnvironment)
+                    ).stream().collect(Collectors.toMap(c -> c.symbol.getName(), c -> c));
+                    List<DBDPseudoAttribute> rowsetsPc = Stream.of(pc).filter(a -> a.getPropagationPolicy().providedByRowset).toList();
+                    rowsetPseudoColumns = rowsetsPc.isEmpty() ? s -> Collections.emptyList() : (
+                        s -> SQLQueryRowsTableDataModel.prepareResultPseudoColumnsList(
+                            this.dialect, s, null, rowsetsPc.stream()
+                        ).stream().collect(Collectors.toList())
+                    );
+                } catch (DBException e) {
+                    this.recognitionContext.appendError(root, "Failed to obtain global pseudo-columns information", e);
+                    globalPseudoColumns = Collections.emptyMap();
+                    rowsetPseudoColumns = s -> Collections.emptyList();
+                }
+            } else {
+                globalPseudoColumns = Collections.emptyMap();
+                rowsetPseudoColumns = s -> Collections.emptyList();
+            }
+            return new SQLQueryDataSourceContext(this.dialect, this.executionContext, globalPseudoColumns, rowsetPseudoColumns);
         } else {
             Set<String> allColumnNames = new HashSet<>();
             Set<List<String>> allTableNames = new HashSet<>();

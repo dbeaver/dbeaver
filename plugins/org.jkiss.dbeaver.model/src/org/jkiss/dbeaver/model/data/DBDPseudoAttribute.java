@@ -29,13 +29,23 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
  */
 public class DBDPseudoAttribute implements DBPNamedObject {
 
-    public enum PropagationPolicy {
-        NORMAL(true),
-        LOCAL(false);
+    public static final DBDPseudoAttribute[] EMPTY_ARRAY = new DBDPseudoAttribute[0];
 
+    public enum PropagationPolicy {
+        GLOBAL_VARIABLE(true, false, false, false),
+        TABLE_NORMAL(false, true, false, true),
+        TABLE_LOCAL(false, true, false, false),
+        ROWSET_LOCAL(false, false, true, false);
+
+        public final boolean providedByEnvironment;
+        public final boolean providedByTable;
+        public final boolean providedByRowset;
         public final boolean projected;
 
-        PropagationPolicy(boolean projected) {
+        PropagationPolicy(boolean providedByEnvironment, boolean providedByTable, boolean providedByRowset, boolean projected) {
+            this.providedByEnvironment = providedByEnvironment;
+            this.providedByTable = providedByTable;
+            this.providedByRowset = providedByRowset;
             this.projected = projected;
         }
     }

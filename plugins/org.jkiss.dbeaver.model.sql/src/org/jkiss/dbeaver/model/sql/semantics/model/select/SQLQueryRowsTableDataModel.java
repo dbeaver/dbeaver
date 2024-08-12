@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.*;
@@ -129,7 +130,8 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
             List<String> nameStrings = this.name.toListOfStrings();
             if (nameStrings.size() == 1 && this.name.entityName.getName().equalsIgnoreCase(context.getDialect().getDualTableName())) {
                 this.name.setSymbolClass(SQLQuerySymbolClass.TABLE);
-                return context.overrideResultTuple(Collections.emptyList(), Collections.emptyList());
+                // TODO consider pseudocolumns, for example: dual in Oracle has them ?
+                return context.overrideResultTuple(this, Collections.emptyList(), Collections.emptyList());
             }
 
             this.table = context.findRealTable(statistics.getMonitor(), nameStrings);
@@ -148,8 +150,14 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
                             attributes
                         );
                         List<SQLQueryResultPseudoColumn> pseudoColumns = table instanceof DBDPseudoAttributeContainer pac
-                            ? this.prepareResultPseudoColumnsList(context, pac) : Collections.emptyList();
-                        context = context.overrideResultTuple(columns, pseudoColumns);
+                            ? prepareResultPseudoColumnsList(
+                                context.getDialect(),
+                                this,
+                                this.table,
+                                Stream.of(pac.getAllPseudoAttributes(statistics.getMonitor()))
+                                    .filter(a -> a.getPropagationPolicy().providedByTable)
+                            ) : Collections.emptyList();
+                        context = context.overrideResultTuple(this, columns, pseudoColumns);
                     }
                 } catch (DBException ex) {
                     statistics.appendError(this.name.entityName, "Failed to resolve table", ex);
@@ -159,7 +167,7 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
                 if (rr != null && rr.tableOrNull == null && rr.source != null && rr.aliasOrNull != null && nameStrings.size() == 1) {
                     // seems cte reference resolved
                     this.name.entityName.setDefinition(rr.aliasOrNull.getDefinition());
-                    context = context.overrideResultTuple(rr.source.getResultDataContext().getColumnsList(), Collections.emptyList());
+                    context = context.overrideResultTuple(this, rr.source.getResultDataContext().getColumnsList(), Collections.emptyList());
                 } else {
                     this.name.setSymbolClass(SQLQuerySymbolClass.ERROR);
                     statistics.appendError(this.name.entityName, "Table not found");
@@ -169,16 +177,16 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
         return context;
     }
 
-    private List<SQLQueryResultPseudoColumn> prepareResultPseudoColumnsList(SQLQueryDataContext context, DBDPseudoAttributeContainer pac) throws DBException {
-        DBDPseudoAttribute[] pseudoAttributes = pac.getPseudoAttributes();
-        return pseudoAttributes == null ? Collections.emptyList() : Arrays.stream(pseudoAttributes)
-            .flatMap(a -> Stream.of(Pair.of(a.getName(), a.getPropagationPolicy()), Pair.of(a.getAlias(), a.getPropagationPolicy())))
-            .filter(p -> CommonUtils.isNotEmpty(p.getFirst()))
-            .map(p -> new SQLQueryResultPseudoColumn(
-                new SQLQuerySymbol(SQLUtils.identifierToCanonicalForm(context.getDialect(), p.getFirst(), false, true)),
-                this, this.table, SQLQueryExprType.UNKNOWN, p.getSecond()
-            ))
-            .collect(Collectors.toList());
+    public static List<SQLQueryResultPseudoColumn> prepareResultPseudoColumnsList(
+        @NotNull SQLDialect dialect,
+        @Nullable SQLQueryRowsSourceModel source,
+        @Nullable DBSEntity table,
+        @NotNull Stream<DBDPseudoAttribute> pseudoAttributes
+    ) {
+        return pseudoAttributes == null ? Collections.emptyList() : pseudoAttributes.map(a -> new SQLQueryResultPseudoColumn(
+            new SQLQuerySymbol(SQLUtils.identifierToCanonicalForm(dialect, a.getName(), false, false)),
+            source, table, SQLQueryExprType.UNKNOWN, a.getPropagationPolicy()
+        )).collect(Collectors.toList());
     }
 
     @Override
