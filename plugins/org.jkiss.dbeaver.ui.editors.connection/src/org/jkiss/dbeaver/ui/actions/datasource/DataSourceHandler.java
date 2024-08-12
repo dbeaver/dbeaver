@@ -79,12 +79,20 @@ public class DataSourceHandler {
             Job[] connectJobs = Job.getJobManager().find(dataSource);
             if (!ArrayUtils.isEmpty(connectJobs)) {
                 // Already connecting/disconnecting - just return
+                IStatus lastResult = null;
                 if (monitor != null && connectJobs.length == 1) {
                     try {
                         connectJobs[0].join(0, monitor.getNestedMonitor());
+                        lastResult = connectJobs[0].getResult();
                     } catch (InterruptedException e) {
                         log.debug(e);
                     }
+                }
+                if (onFinish != null) {
+                    if (lastResult == null) {
+                        lastResult = dataSourceContainer.isConnected() ? Status.OK_STATUS : Status.CANCEL_STATUS;
+                    }
+                    onFinish.onTaskFinished(lastResult);
                 }
                 return;
             }
