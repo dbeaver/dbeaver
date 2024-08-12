@@ -138,7 +138,7 @@ public class SQLEditorSemanticMarkersManager {
                     try {
                         Interval problemInterval = problemInfo.getInterval();
                         final IMarker marker = resource.createMarker(SQLSemanticErrorAnnotation.MARKER_TYPE, Map.of(
-                                IMarker.SEVERITY, IMarker.SEVERITY_ERROR,
+                                IMarker.SEVERITY, problemInfo.getSeverity().markerSeverity,
                                 IMarker.MESSAGE, problemInfo.getMessage(),
                                 IMarker.TRANSIENT, true
                         ));
