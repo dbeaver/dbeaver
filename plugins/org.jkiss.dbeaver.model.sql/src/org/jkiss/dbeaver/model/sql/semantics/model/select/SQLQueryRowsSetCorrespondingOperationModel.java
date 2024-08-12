@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.sql.semantics.model.select;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
@@ -136,7 +135,7 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
             statistics.appendError((STMTreeNode) null, "UNION, EXCEPT and INTERSECT require subsets column tuples to match"); // TODO detailed messages per column
         }
 
-        return correspondingColumnNames.isEmpty() ? left : context.overrideResultTuple(resultColumns, Collections.emptyList()); // TODO multiple definitions per symbol
+        return context.overrideResultTuple(this, resultColumns, Collections.emptyList()); // TODO multiple definitions per symbol
     }
 
     @Override
