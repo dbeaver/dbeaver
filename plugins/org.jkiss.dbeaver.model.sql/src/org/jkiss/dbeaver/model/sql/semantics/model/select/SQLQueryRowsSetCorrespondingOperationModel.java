@@ -19,9 +19,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model.select;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
+import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
@@ -102,12 +100,23 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
                 } else if (i >= rightColumns.size()) {
                     resultColumns.add(leftColumns.get(i));
                     nonMatchingColumnSets = true;
-                } else { // TODO validate corresponding names to be the same?
+                } else {
                     SQLQueryResultColumn leftColumn = leftColumns.get(i);
                     SQLQueryResultColumn rightColumn = rightColumns.get(i);
                     SQLQueryExprType type = this.obtainCommonType(leftColumn, rightColumn);
-                    SQLQuerySymbol symbol = leftColumn.symbol.getName().equalsIgnoreCase(rightColumn.symbol.getName())
-                        ? leftColumn.symbol.merge(rightColumn.symbol) : leftColumn.symbol;
+                    SQLQuerySymbol symbol;
+                    if (leftColumn.symbol.getName().equalsIgnoreCase(rightColumn.symbol.getName())) {
+                        SQLQuerySymbolClass leftClass = leftColumn.symbol.getSymbolClass();
+                        SQLQuerySymbolDefinition leftDef = leftColumn.symbol.getDefinition();
+                        // new symbol after merge carries underlying info of the left column and combined entries set
+                        symbol = leftColumn.symbol.merge(rightColumn.symbol);
+                        symbol.setDefinition(leftDef);
+                        if (symbol.getSymbolClass() == SQLQuerySymbolClass.UNKNOWN) {
+                            symbol.setSymbolClass(leftClass);
+                        }
+                    } else {
+                        symbol = leftColumn.symbol;
+                    }
                     resultColumns.add(new SQLQueryResultColumn(i, symbol, this, null, null, type));
                 }
             }
