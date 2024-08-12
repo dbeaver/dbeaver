@@ -732,7 +732,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     if (attr == null || row == null) {
                         continue;
                     }
-                    if (controller.getAttributeReadOnlyStatus(attr, true, true) != null) {
+                    if (controller.getAttributeReadOnlyStatus(attr, true, false) != null) {
                         // No inline editors for readonly columns
                         continue;
                     }
