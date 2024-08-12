@@ -75,6 +75,9 @@ public class STMKnownRuleNames {
     public static final String constraintName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_constraintName];
     public static final String columnConstraint = SQLStandardParser.ruleNames[SQLStandardParser.RULE_columnConstraint];
     public static final String checkConstraintDefinition = SQLStandardParser.ruleNames[SQLStandardParser.RULE_checkConstraintDefinition];
+    public static final String columnConstraintNotNull = SQLStandardParser.ruleNames[SQLStandardParser.RULE_columnConstraintNotNull];
+    public static final String columnConstraintUnique = SQLStandardParser.ruleNames[SQLStandardParser.RULE_columnConstraintUnique];
+    public static final String columnConstraintPrimaryKey = SQLStandardParser.ruleNames[SQLStandardParser.RULE_columnConstraintPrimaryKey];
 
     // references
     public static final String referencesSpecification = SQLStandardParser.ruleNames[SQLStandardParser.RULE_referencesSpecification];
@@ -287,6 +290,7 @@ public class STMKnownRuleNames {
     public static final String alterTableAction = SQLStandardParser.ruleNames[SQLStandardParser.RULE_alterTableAction];
     public static final String addColumnDefinition = SQLStandardParser.ruleNames[SQLStandardParser.RULE_addColumnDefinition];
     public static final String alterColumnDefinition = SQLStandardParser.ruleNames[SQLStandardParser.RULE_alterColumnDefinition];
+    public static final String renameColumnDefinition = SQLStandardParser.ruleNames[SQLStandardParser.RULE_renameColumnDefinition];
     public static final String alterColumnAction = SQLStandardParser.ruleNames[SQLStandardParser.RULE_alterColumnAction];
     public static final String setColumnDefaultClause = SQLStandardParser.ruleNames[SQLStandardParser.RULE_setColumnDefaultClause];
     public static final String dropColumnDefaultClause = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dropColumnDefaultClause];

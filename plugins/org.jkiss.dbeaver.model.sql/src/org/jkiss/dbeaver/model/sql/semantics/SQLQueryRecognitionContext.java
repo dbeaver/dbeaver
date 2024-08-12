@@ -83,15 +83,23 @@ public class SQLQueryRecognitionContext {
     }
 
     public void appendError(@NotNull SQLQuerySymbolEntry symbol, @NotNull String error, @NotNull DBException ex) {
-        this.problems.addLast(new SQLQueryRecognitionProblemInfo(symbol.getSyntaxNode(), symbol, error, ex));
+        this.problems.addLast(SQLQueryRecognitionProblemInfo.makeError(symbol.getSyntaxNode(), symbol, error, ex));
     }
 
     public void appendError(@NotNull SQLQuerySymbolEntry symbol, @NotNull String error) {
-        this.problems.addLast(new SQLQueryRecognitionProblemInfo(symbol.getSyntaxNode(), symbol, error, null));
+        this.problems.addLast(SQLQueryRecognitionProblemInfo.makeError(symbol.getSyntaxNode(), symbol, error, null));
     }
 
     public void appendError(@NotNull STMTreeNode treeNode, @NotNull String error) {
-        this.problems.addLast(new SQLQueryRecognitionProblemInfo(treeNode, null, error, null));
+        this.problems.addLast(SQLQueryRecognitionProblemInfo.makeError(treeNode, null, error, null));
+    }
+
+    public void appendWarning(@NotNull SQLQuerySymbolEntry symbol, @NotNull String error) {
+        this.problems.addLast(SQLQueryRecognitionProblemInfo.makeWarning(symbol.getSyntaxNode(), symbol, error, null));
+    }
+
+    public void appendWarning(@NotNull STMTreeNode treeNode, @NotNull String error) {
+        this.problems.addLast(SQLQueryRecognitionProblemInfo.makeWarning(treeNode, null, error, null));
     }
 
     public void appendError(@NotNull STMTreeNode treeNode, @NotNull String error, @NotNull DBException ex) {

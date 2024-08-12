@@ -141,10 +141,11 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
         }
 
         if (nonMatchingColumnSets) {
-            statistics.appendError((STMTreeNode) null, "UNION, EXCEPT and INTERSECT require subsets column tuples to match"); // TODO detailed messages per column
+            // TODO detailed messages per column
+            statistics.appendError(this.getSyntaxNode(), "UNION, EXCEPT and INTERSECT require subsets column tuples to match");
         }
-
-        return context.overrideResultTuple(this, resultColumns, Collections.emptyList()); // TODO multiple definitions per symbol
+        // TODO multiple definitions per symbol
+        return context.overrideResultTuple(this, resultColumns, Collections.emptyList());
     }
 
     @Override

@@ -51,5 +51,9 @@ public class SQLQueryResultColumn {
         this.realAttr = realAttr;
         this.type = type;
     }
+
+    public SQLQueryResultColumn withNewIndex(int index) {
+        return new SQLQueryResultColumn(index, this.symbol, this.source, this.realSource, this.realAttr, this.type);
+    }
 }
 

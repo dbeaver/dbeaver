@@ -221,6 +221,9 @@ public class SQLBackgroundParsingJob {
                 } else {
                     return SQLQueryCompletionContext.EMPTY;
                 }
+                if (context == null) {
+                    return SQLQueryCompletionContext.EMPTY;
+                }
 
                 ArrayDeque<STMTreeTermNode> nameNodes = new ArrayDeque<>();
                 List<STMTreeTermNode> allTerms = LSMInspections.prepareTerms(syntaxNode);

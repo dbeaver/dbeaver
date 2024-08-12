@@ -522,7 +522,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
                     context = context.overrideResultTuple(this, columns, Collections.emptyList());
                 }
             } catch (DBException ex) {
-                statistics.appendError(this.getName().entityName, "Failed to resolve table", ex);
+                statistics.appendError(this.getName().entityName, "Failed to resolve table " + this.getName().toIdentifierString(), ex);
             }
             return context;
         }
