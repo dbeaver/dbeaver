@@ -2744,6 +2744,7 @@ public class SQLEditor extends SQLEditorBase implements
             // 3. Or current query processor has running jobs
             if (newTab || queryProcessors.isEmpty() || curQueryProcessor.getRunningJobs() > 0 || curQueryProcessor.hasPinnedTabs()) {
                 boolean foundSuitableTab = false;
+                boolean anyNotPinnedTab = false;
 
                 // Try to find suitable query processor among exiting ones if:
                 // 1. New tab is not required
@@ -2755,10 +2756,11 @@ public class SQLEditor extends SQLEditorBase implements
                             curQueryProcessor = processor;
                             break;
                         }
+                        anyNotPinnedTab = anyNotPinnedTab || processor.hasNotPinnedTabs();
                     }
                 }
                 // Just create a new query processor
-                if (!foundSuitableTab && newTab) {
+                if (!foundSuitableTab && (newTab || !anyNotPinnedTab)) {
                     // If we already have useless multi-tabbed processor, but we want single-tabbed, then get rid of the useless one  
                     if (!useTabPerQuery(queries.size() == 1) && curQueryProcessor instanceof MultiTabsQueryProcessor
                         && curQueryProcessor.getResultContainers().size() == 1
@@ -3620,6 +3622,14 @@ public class SQLEditor extends SQLEditorBase implements
             return false;
         }
 
+        public boolean hasNotPinnedTabs() {
+            for (QueryResultsContainer container : resultContainers) {
+                if (!container.isPinned()) {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         @NotNull
         QueryResultsContainer getFirstResults()
