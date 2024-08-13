@@ -44,7 +44,7 @@ public class PostgreTablePolicyManager
     implements DBEObjectRenamer<PostgreTablePolicy> {
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_EDITOR_ON_CREATE;
     }
 
@@ -56,11 +56,11 @@ public class PostgreTablePolicyManager
 
     @Override
     protected PostgreTablePolicy createDatabaseObject(
-        DBRProgressMonitor monitor,
-        DBECommandContext context,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
         Object container,
         Object copyFrom,
-        Map<String, Object> options
+        @NotNull Map<String, Object> options
     ) throws DBException {
         final PostgreTable table = (PostgreTable) container;
         return new PostgreTablePolicy(
@@ -71,11 +71,11 @@ public class PostgreTablePolicyManager
 
     @Override
     protected void addObjectCreateActions(
-        DBRProgressMonitor monitor,
-        DBCExecutionContext executionContext,
-        List<DBEPersistAction> actions,
-        ObjectCreateCommand command,
-        Map<String, Object> options
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectCreateCommand command,
+        @NotNull Map<String, Object> options
     ) throws DBException {
         final PostgreTablePolicy policy = command.getObject();
         final StringJoiner sql = new StringJoiner("\n\t");
@@ -104,11 +104,11 @@ public class PostgreTablePolicyManager
 
     @Override
     protected void addObjectModifyActions(
-        DBRProgressMonitor monitor,
-        DBCExecutionContext executionContext,
-        List<DBEPersistAction> actions,
-        ObjectChangeCommand command,
-        Map<String, Object> options
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectChangeCommand command,
+        @NotNull Map<String, Object> options
     ) throws DBException {
         final PostgreTablePolicy policy = command.getObject();
         final StringJoiner sql = new StringJoiner("\n\t");
@@ -135,11 +135,11 @@ public class PostgreTablePolicyManager
 
     @Override
     protected void addObjectDeleteActions(
-        DBRProgressMonitor monitor,
-        DBCExecutionContext executionContext,
-        List<DBEPersistAction> actions,
-        ObjectDeleteCommand command,
-        Map<String, Object> options
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectDeleteCommand command,
+        @NotNull Map<String, Object> options
     ) throws DBException {
         actions.add(new SQLDatabasePersistAction(
             "Drop policy",
@@ -149,11 +149,11 @@ public class PostgreTablePolicyManager
 
     @Override
     protected void addObjectRenameActions(
-        DBRProgressMonitor monitor,
-        DBCExecutionContext executionContext,
-        List<DBEPersistAction> actions,
-        ObjectRenameCommand command,
-        Map<String, Object> options
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectRenameCommand command,
+        @NotNull Map<String, Object> options
     ) {
         final DBPDataSource dataSource = command.getObject().getDataSource();
         actions.add(new SQLDatabasePersistAction(
