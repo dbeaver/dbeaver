@@ -535,7 +535,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         return hasVerticalRuler ? super.createVerticalRuler() : new VerticalRuler(0);
     }
 
-    void setHasVerticalRuler(boolean hasVerticalRuler) {
+    public void setHasVerticalRuler(boolean hasVerticalRuler) {
         this.hasVerticalRuler = hasVerticalRuler;
     }
 

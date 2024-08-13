@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 
 import java.util.ArrayList;
@@ -100,7 +99,7 @@ public class StreamMappingContainer implements DBPNamedObject, DBPImageProvider 
         if (attributes.isEmpty()) {
             try {
                 monitor.beginTask("Load attributes from '" + getName() + "'", 1);
-                for (DBSAttributeBase attribute : DTUtils.getAttributes(monitor, source, this)) {
+                for (DBSAttributeBase attribute : DBUtils.getAttributes(monitor, source, this)) {
                     attributes.add(new StreamMappingAttribute(this, attribute, StreamMappingType.unspecified));
                 }
             } catch (DBException e) {

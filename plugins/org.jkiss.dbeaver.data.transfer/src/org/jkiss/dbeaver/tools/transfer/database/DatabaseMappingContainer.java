@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.utils.CommonUtils;
 
@@ -260,7 +259,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     }
 
     private void readAttributes(DBRProgressMonitor monitor) throws DBException {
-        for (DBSAttributeBase attr : DTUtils.getAttributes(monitor, source, this)) {
+        for (DBSAttributeBase attr : DBUtils.getAttributes(monitor, source, this)) {
             addAttributeMapping(monitor, attr);
         }
     }
