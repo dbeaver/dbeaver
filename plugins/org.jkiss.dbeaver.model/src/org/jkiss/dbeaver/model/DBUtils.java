@@ -744,11 +744,11 @@ public final class DBUtils {
             final DBDAttributeBinding parent = Objects.requireNonNull(attribute.getParent(depth - i - 1));
 
             try {
-                if (!isIndexedValue(parent, curValue)) {
-                    curValue = parent.extractNestedValue(curValue, 0);
-                } else if (nestedIndexes == null) {
+                if (nestedIndexes == null) {
                     curValue = parent.extractNestedValue(curValue, 0);
                     continue;
+                } else if (!isIndexedValue(parent, curValue)) {
+                    curValue = parent.extractNestedValue(curValue, 0);
                 } else if (retrieveLeafValue || isValidIndex(curValue, nestedIndexes[curNestedIndex])) {
                     curValue = parent.extractNestedValue(curValue, nestedIndexes[curNestedIndex]);
                     curNestedIndex++;
