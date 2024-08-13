@@ -75,7 +75,7 @@ public class DatabaseURLTest {
                 {"file", "C:\\Users\\%USERNAME%\\Documents\\Chinook.db"}
             });
 
-        assertMatches(
+        assertFind(
             "jdbc:mysql://{host}[:{port}]/[{database}]",
             "jdbc:mysql://mysql-rfam-public.ebi.ac.uk:4497/Rfam?useSSL=false&serverTimezone=UTC",
             new String[][]{
@@ -85,10 +85,17 @@ public class DatabaseURLTest {
             });
     }
 
-
     private void assertMatches(@NotNull String sampleUrl, @NotNull String targetUrl, @NotNull String[][] properties) {
         final Matcher matcher = DatabaseURL.getPattern(sampleUrl).matcher(targetUrl);
         Assert.assertTrue(sampleUrl, matcher.matches());
+        for (String[] property : properties) {
+            Assert.assertEquals(sampleUrl, property[1], matcher.group(property[0]));
+        }
+    }
+
+    private void assertFind(@NotNull String sampleUrl, @NotNull String targetUrl, @NotNull String[][] properties) {
+        final Matcher matcher = DatabaseURL.getPattern(sampleUrl).matcher(targetUrl);
+        Assert.assertTrue(sampleUrl, matcher.find());
         for (String[] property : properties) {
             Assert.assertEquals(sampleUrl, property[1], matcher.group(property[0]));
         }

@@ -186,9 +186,6 @@ public class DatabaseURL {
         pattern = CommonUtils.replaceAll(pattern, "\\{(.*?)}", m -> "\\\\E(\\?<\\\\Q" + m.group(1) + "\\\\E>" + getPropertyRegex(m.group(1)) + ")\\\\Q");
         pattern = "^\\Q" + pattern + "\\E";
 
-        //add handling params in the end of url
-        pattern += "(?:\\?[\\w\\-_.~=&]*)?$";
-
         return Pattern.compile(pattern);
     }
 
