@@ -94,8 +94,8 @@ public class VerticaSequenceManager extends GenericSequenceManager implements DB
     protected void addObjectRenameActions(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext executionContext,
-        List<DBEPersistAction> actions,
-        ObjectRenameCommand command,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectRenameCommand command,
         @NotNull Map<String, Object> options
     ) {
         GenericSequence sequence = command.getObject();
@@ -112,7 +112,7 @@ public class VerticaSequenceManager extends GenericSequenceManager implements DB
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext executionContext,
         @NotNull List<DBEPersistAction> actionList,
-        ObjectChangeCommand command,
+        @NotNull ObjectChangeCommand command,
         @NotNull Map<String, Object> options
     ) {
         GenericSequence sequence = command.getObject();

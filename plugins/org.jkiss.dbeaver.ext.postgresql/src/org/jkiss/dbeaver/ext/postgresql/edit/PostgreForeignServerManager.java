@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreForeignServer;
@@ -47,8 +48,8 @@ public class PostgreForeignServerManager extends SQLObjectEditor<PostgreForeignS
 
     @Override
     protected PostgreForeignServer createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context,
-        Object container, Object copyFrom, Map<String, Object> options) throws DBException
+        @NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context,
+        Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException
     {
         return new PostgreForeignServer((PostgreDatabase) container);
     }
@@ -56,10 +57,10 @@ public class PostgreForeignServerManager extends SQLObjectEditor<PostgreForeignS
 
     @Override
     protected void addObjectCreateActions(
-        DBRProgressMonitor monitor,
-        DBCExecutionContext executionContext, List<DBEPersistAction> actions,
-        ObjectCreateCommand command,
-        Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectCreateCommand command,
+        @NotNull Map<String, Object> options) {
         final PostgreForeignServer foreignServer = command.getObject();
 
         actions.add(
@@ -70,9 +71,9 @@ public class PostgreForeignServerManager extends SQLObjectEditor<PostgreForeignS
 
     @Override
     protected void addObjectDeleteActions(
-        DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
-        ObjectDeleteCommand command,
-        Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectDeleteCommand command,
+        @NotNull Map<String, Object> options) {
         actions.add(new SQLDatabasePersistAction("Drop extension", "DROP FOREIGN SERVER " + DBUtils.getQuotedIdentifier(command.getObject())));
     }
 

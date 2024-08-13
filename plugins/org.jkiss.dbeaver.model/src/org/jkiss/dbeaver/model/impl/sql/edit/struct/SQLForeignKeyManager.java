@@ -63,7 +63,7 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends AbstractTableCons
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) throws DBException
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options) throws DBException
     {
         final TABLE_TYPE table = (TABLE_TYPE) command.getObject().getTable();
         actions.add(
@@ -74,7 +74,7 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends AbstractTableCons
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) throws DBException
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options) throws DBException
     {
         actions.add(
             new SQLDatabasePersistAction(

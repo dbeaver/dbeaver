@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.vertica.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.vertica.model.VerticaProjection;
 import org.jkiss.dbeaver.ext.vertica.model.VerticaProjectionColumn;
@@ -57,7 +58,7 @@ public class VerticaProjectionColumnManager extends SQLTableColumnManager<Vertic
     }
 
     @Override
-    protected VerticaProjectionColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
+    protected VerticaProjectionColumn createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
         return null;
     }
 
@@ -66,7 +67,7 @@ public class VerticaProjectionColumnManager extends SQLTableColumnManager<Vertic
      * TODO: Vertica is originally based on PG. Maybe we should refactor this stuff somehow.
      */
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options)
     {
         final VerticaProjectionColumn column = command.getObject();
 

@@ -18,6 +18,7 @@
 
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
@@ -54,11 +55,11 @@ public class PostgreTablespaceManager extends SQLObjectEditor<PostgreTablespace,
 
     @Override
     protected PostgreTablespace createDatabaseObject(
-        DBRProgressMonitor monitor,
-        DBECommandContext context,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
         Object container,
         Object copyFrom,
-        Map<String, Object> options) throws DBException
+        @NotNull Map<String, Object> options) throws DBException
     {
         return new PostgreTablespace((PostgreDatabase) container);
     }
@@ -75,10 +76,10 @@ public class PostgreTablespaceManager extends SQLObjectEditor<PostgreTablespace,
 
     @Override
     protected void addObjectCreateActions(
-        DBRProgressMonitor monitor,
-        DBCExecutionContext executionContext, List<DBEPersistAction> actions,
-        ObjectCreateCommand command,
-        Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectCreateCommand command,
+        @NotNull Map<String, Object> options) {
         final PostgreTablespace tablespace = command.getObject();
 
         try {
@@ -92,9 +93,9 @@ public class PostgreTablespaceManager extends SQLObjectEditor<PostgreTablespace,
 
     @Override
     protected void addObjectDeleteActions(
-        DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
-        ObjectDeleteCommand command,
-        Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectDeleteCommand command,
+        @NotNull Map<String, Object> options) {
         actions.add(
             new SQLDatabasePersistActionAtomic("Drop tablespace", "DROP TABLESPACE " //$NON-NLS-2$
                 + DBUtils.getQuotedIdentifier(command.getObject()))

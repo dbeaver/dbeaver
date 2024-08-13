@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.exasol.manager;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.ext.exasol.model.security.ExasolSecurityPolicy;
@@ -55,8 +56,8 @@ public class ExasolSecurityPolicyManager
     
     @Override
     protected ExasolSecurityPolicy createDatabaseObject(
-        DBRProgressMonitor monitor,
-        DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options)
         throws DBException
     {
         throw new DBCFeatureNotSupportedException();
@@ -64,8 +65,8 @@ public class ExasolSecurityPolicyManager
     
     
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
-                                          ObjectRenameCommand command, Map<String, Object> options)
+    protected void addObjectRenameActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
+                                          @NotNull ObjectRenameCommand command, @NotNull Map<String, Object> options)
     {
         ExasolSecurityPolicy obj = command.getObject();
         actions.add(
@@ -77,8 +78,8 @@ public class ExasolSecurityPolicyManager
     }
     
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
-                                          ObjectDeleteCommand command, Map<String, Object> options)
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
+                                          @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options)
     {
         final ExasolSecurityPolicy con = command.getObject();
         actions.add(
@@ -87,8 +88,8 @@ public class ExasolSecurityPolicyManager
     }
     
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList,
-                                          ObjectChangeCommand command, Map<String, Object> options)
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList,
+                                          @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options)
     {
     	
     	ExasolSecurityPolicy policy = command.getObject();
@@ -116,9 +117,9 @@ public class ExasolSecurityPolicyManager
 
 
 	@Override
-	protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
-                                          ObjectCreateCommand command,
-                                          Map<String, Object> options) {
+	protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
+                                          @NotNull ObjectCreateCommand command,
+                                          @NotNull Map<String, Object> options) {
 	}
     
     

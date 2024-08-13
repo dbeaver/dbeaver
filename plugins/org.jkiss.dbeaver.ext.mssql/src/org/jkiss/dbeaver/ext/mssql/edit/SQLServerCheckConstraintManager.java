@@ -83,8 +83,8 @@ public class SQLServerCheckConstraintManager extends SQLObjectEditor<SQLServerTa
     protected void addObjectCreateActions(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext executionContext,
-        List<DBEPersistAction> actions,
-        ObjectCreateCommand command,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectCreateCommand command,
         @NotNull Map<String, Object> options
     ) {
         final SQLServerTableCheckConstraint constraint = command.getObject();
@@ -103,8 +103,8 @@ public class SQLServerCheckConstraintManager extends SQLObjectEditor<SQLServerTa
     protected void addObjectDeleteActions(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext executionContext,
-        List<DBEPersistAction> actions,
-        ObjectDeleteCommand command,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectDeleteCommand command,
         @NotNull Map<String, Object> options
     ) {
         final SQLServerTableCheckConstraint constraint = command.getObject();

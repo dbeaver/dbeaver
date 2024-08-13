@@ -43,7 +43,7 @@ public class PostgrePartitionManager extends PostgreTableManager {
         PostgreIndex.class
     );
 
-    protected PostgreTablePartition createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) {
+    protected PostgreTablePartition createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options) {
         return new PostgreTablePartition((PostgreTable) container);
     }
 
