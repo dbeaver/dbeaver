@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
@@ -53,8 +54,8 @@ public class SQLServerIndexManager extends SQLIndexManager<SQLServerTableIndex, 
 
     @Override
     protected SQLServerTableIndex createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, final Object container,
-        Object from, Map<String, Object> options)
+        @NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, final Object container,
+        Object from, @NotNull Map<String, Object> options)
     {
         SQLServerTable table = (SQLServerTable) container;
 
@@ -69,7 +70,7 @@ public class SQLServerIndexManager extends SQLIndexManager<SQLServerTableIndex, 
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options) {
         SQLServerTableIndex index = command.getObject();
         SQLServerTableBase indexTable = index.getTable();
         if (indexTable instanceof SQLServerTableType) {

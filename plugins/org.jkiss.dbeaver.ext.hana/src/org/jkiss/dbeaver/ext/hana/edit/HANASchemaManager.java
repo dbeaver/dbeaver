@@ -41,12 +41,12 @@ import java.util.Map;
 public class HANASchemaManager extends SQLObjectEditor<HANASchema, HANADataSource> implements DBEObjectRenamer<HANASchema> {
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return true;
     }
 
     @Override
-    public boolean canDeleteObject(HANASchema object) {
+    public boolean canDeleteObject(@NotNull HANASchema object) {
         return true;
     }
 
@@ -57,11 +57,11 @@ public class HANASchemaManager extends SQLObjectEditor<HANASchema, HANADataSourc
 
     @Override
     protected HANASchema createDatabaseObject(
-        DBRProgressMonitor monitor,
-        DBECommandContext context,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
         Object container,
         Object copyFrom,
-        Map<String, Object> options
+        @NotNull Map<String, Object> options
     ) {
         if (container instanceof HANADataSource) {
             HANADataSource dataSource = (HANADataSource) container;
@@ -74,11 +74,11 @@ public class HANASchemaManager extends SQLObjectEditor<HANASchema, HANADataSourc
 
     @Override
     protected void addObjectCreateActions(
-        DBRProgressMonitor monitor,
-        DBCExecutionContext executionContext,
-        List<DBEPersistAction> actions,
-        ObjectCreateCommand command,
-        Map<String, Object> options
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectCreateCommand command,
+        @NotNull Map<String, Object> options
     ) {
         actions.add(
             new SQLDatabasePersistAction(
@@ -99,11 +99,11 @@ public class HANASchemaManager extends SQLObjectEditor<HANASchema, HANADataSourc
 
     @Override
     protected void addObjectRenameActions(
-        DBRProgressMonitor monitor,
-        DBCExecutionContext executionContext,
-        List<DBEPersistAction> actions,
-        ObjectRenameCommand command,
-        Map<String, Object> options
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectRenameCommand command,
+        @NotNull Map<String, Object> options
     ) {
         HANASchema schema = command.getObject();
         GenericDataSource dataSource = schema.getDataSource();
@@ -118,11 +118,11 @@ public class HANASchemaManager extends SQLObjectEditor<HANASchema, HANADataSourc
 
     @Override
     protected void addObjectDeleteActions(
-        DBRProgressMonitor monitor,
-        DBCExecutionContext executionContext,
-        List<DBEPersistAction> actions,
-        ObjectDeleteCommand command,
-        Map<String, Object> options
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectDeleteCommand command,
+        @NotNull Map<String, Object> options
     ) {
         // RESTRICT drops the schema, but only when there are no objects in it.
         // If RESTRICT is specified while there are still objects in the schema, then an error is returned.
@@ -135,7 +135,7 @@ public class HANASchemaManager extends SQLObjectEditor<HANASchema, HANADataSourc
     }
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_SAVE_IMMEDIATELY;
     }
 

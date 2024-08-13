@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
@@ -36,7 +37,7 @@ import java.util.Map;
 
 public class SQLServerExtendedPropertyManager extends SQLObjectEditor<SQLServerExtendedProperty, SQLServerExtendedPropertyOwner> {
     @Override
-    protected SQLServerExtendedProperty createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
+    protected SQLServerExtendedProperty createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
         final SQLServerExtendedPropertyOwner owner = (SQLServerExtendedPropertyOwner) container;
 
         return new SQLServerExtendedProperty(
@@ -48,7 +49,7 @@ public class SQLServerExtendedPropertyManager extends SQLObjectEditor<SQLServerE
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) throws DBException {
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options) throws DBException {
         actions.add(new SQLDatabasePersistAction(
             "Create extended property",
             command.getObject().getObjectDefinitionText(monitor, false, false)
@@ -56,7 +57,7 @@ public class SQLServerExtendedPropertyManager extends SQLObjectEditor<SQLServerE
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options) throws DBException {
         actions.add(new SQLDatabasePersistAction(
             "Alter extended property",
             command.getObject().getObjectDefinitionText(monitor, true, false)
@@ -64,7 +65,7 @@ public class SQLServerExtendedPropertyManager extends SQLObjectEditor<SQLServerE
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) throws DBException {
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options) throws DBException {
         actions.add(new SQLDatabasePersistAction(
             "Drop extended property",
             command.getObject().getObjectDefinitionText(monitor, false, true)
@@ -78,7 +79,7 @@ public class SQLServerExtendedPropertyManager extends SQLObjectEditor<SQLServerE
     }
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return 0;
     }
 }
