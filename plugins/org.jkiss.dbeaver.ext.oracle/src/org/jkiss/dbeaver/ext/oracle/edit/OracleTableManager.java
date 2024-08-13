@@ -78,7 +78,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext executionContext,
         @NotNull List<DBEPersistAction> actionList,
-        ObjectChangeCommand command,
+        @NotNull ObjectChangeCommand command,
         @NotNull Map<String, Object> options
     ) throws DBException {
         if (command.getProperties().size() > 1 || command.getProperty("comment") == null) { //$NON-NLS-1$
@@ -94,7 +94,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext executionContext,
         @NotNull List<DBEPersistAction> actions,
-        NestedObjectCommand<OracleTable, PropertyHandler> command,
+        @NotNull NestedObjectCommand<OracleTable, PropertyHandler> command,
         @NotNull Map<String, Object> options
     ) throws DBException {
         OracleTable table = command.getObject();
@@ -140,8 +140,8 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     protected void addObjectRenameActions(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext executionContext,
-        List<DBEPersistAction> actions,
-        ObjectRenameCommand command,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectRenameCommand command,
         @NotNull Map<String, Object> options
     ) {
         actions.add(
@@ -153,7 +153,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options) {
         OracleTable object = command.getObject();
         actions.add(
             new SQLDatabasePersistAction(

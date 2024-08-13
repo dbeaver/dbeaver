@@ -1930,8 +1930,8 @@ public final class DBUtils {
         return (o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName());
     }
 
-    public static Comparator<? super DBSAttributeBase> orderComparator() {
-        return Comparator.comparingInt(DBSAttributeBase::getOrdinalPosition);
+    public static Comparator<? super DBPObjectWithOrdinalPosition> orderComparator() {
+        return Comparator.comparingInt(DBPObjectWithOrdinalPosition::getOrdinalPosition);
     }
 
     public static <T extends DBPNamedObject> List<T> makeOrderedObjectList(@NotNull Collection<T> objects) {

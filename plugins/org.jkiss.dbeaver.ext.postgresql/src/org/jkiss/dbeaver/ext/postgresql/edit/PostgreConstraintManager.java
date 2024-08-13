@@ -59,11 +59,11 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
 
     @Override
     protected PostgreTableConstraintBase<?> createDatabaseObject(
-        DBRProgressMonitor monitor,
-        DBECommandContext context,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
         final Object container,
         Object from,
-        Map<String, Object> options)
+        @NotNull Map<String, Object> options)
     {
         return new PostgreTableConstraint((PostgreTableBase) container, "NewConstraint", DBSEntityConstraintType.UNIQUE_KEY);
     }
@@ -96,7 +96,7 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options)
     {
         if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
             addConstraintCommentAction(actionList, command.getObject());
@@ -123,11 +123,11 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
 
     @Override
     protected void addObjectRenameActions(
-        DBRProgressMonitor monitor,
-        DBCExecutionContext executionContext,
-        List<DBEPersistAction> actions,
-        ObjectRenameCommand command,
-        Map<String, Object> options
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectRenameCommand command,
+        @NotNull Map<String, Object> options
     ) {
         PostgreTableConstraintBase<?> constraint = command.getObject();
         PostgreDataSource dataSource = constraint.getDataSource();
