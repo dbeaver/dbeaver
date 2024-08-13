@@ -203,7 +203,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             // Document-based datasource
             rsAttributes = DBUtils.getAttributeBindings(session, sourceObject, resultSet.getMeta());
         } else {
-            rsAttributes = DBUtils.makeLeafAttributeBindings(session, sourceObject, resultSet);
+            rsAttributes = DTUtils.makeLeafAttributeBindings(session, sourceObject, resultSet);
         }
         columnMappings = new ColumnMapping[rsAttributes.length];
         sourceBindings = rsAttributes;
