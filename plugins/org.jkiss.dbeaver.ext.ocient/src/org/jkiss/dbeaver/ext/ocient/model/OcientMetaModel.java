@@ -16,11 +16,13 @@
  */
 package org.jkiss.dbeaver.ext.ocient.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericView;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -45,7 +47,7 @@ public class OcientMetaModel extends GenericMetaModel {
         @Nullable String tableOrViewType,
         @Nullable JDBCResultSet dbResult)
     {
-        if (isView(tableOrViewType))
+        if (tableOrViewType != null && isView(tableOrViewType))
         {
             return new OcientView(
                 container,
@@ -61,9 +63,13 @@ public class OcientMetaModel extends GenericMetaModel {
         }
     }
 
-    protected String getObjectDDL(DBRProgressMonitor monitor,
-            GenericTableBase sourceObject, Map<String, Object> options,
-            String sql, String description) throws DBException {
+    protected String getObjectDDL(
+        DBRProgressMonitor monitor,
+        GenericTableBase sourceObject,
+        Map<String, Object> options,
+        String sql,
+        String description
+    ) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, description)) {
@@ -77,7 +83,7 @@ public class OcientMetaModel extends GenericMetaModel {
                             createText.append(creationDDL);
                     }
 
-                    if (createText.length() == 0) {
+                    if (createText.isEmpty()) {
                         return "-- Create text not found";
                     }
                     else {
@@ -87,12 +93,15 @@ public class OcientMetaModel extends GenericMetaModel {
             }
         }
         catch (SQLException e) {
-            throw new DBException(e, dataSource);
+            throw new DBDatabaseException(e, dataSource);
         }
     }
 
-    public String getViewDDL(DBRProgressMonitor monitor,
-            GenericView sourceObject, Map<String, Object> options) throws DBException {
+    public String getViewDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericView sourceObject,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         String fullQualifiedName =
                 DBUtils.getFullQualifiedName(sourceObject.getDataSource(), sourceObject.getContainer(), sourceObject);
         String viewDDLSQL = String.format("export view %s", fullQualifiedName);
@@ -104,8 +113,11 @@ public class OcientMetaModel extends GenericMetaModel {
         }
     }
 
-    public String getTableDDL(DBRProgressMonitor monitor,
-            GenericTableBase sourceObject, Map<String, Object> options) throws DBException {
+    public String getTableDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericTableBase sourceObject,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         String fullQualifiedName =
                 DBUtils.getFullQualifiedName(sourceObject.getDataSource(), sourceObject.getContainer(), sourceObject);
         String tableDDLSQL = String.format("export table %s", fullQualifiedName);
