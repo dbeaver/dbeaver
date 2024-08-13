@@ -890,6 +890,12 @@ public class GeneralUtils {
         return new UUID(target.getLong(), target.getLong());
     }
 
+    /**
+     * Validates the resource name, only if the application is running in desktop mode.
+     *
+     * @param name the resource name to validate
+     * @throws DBException if the resource name is invalid
+     */
     public static void validateResourceName(String name) throws DBException {
         if (!DBWorkbench.isDistributed() && !DBWorkbench.getPlatform().getApplication().isMultiuser()) {
             return;
@@ -897,6 +903,12 @@ public class GeneralUtils {
         validateResourceNameUnconditionally(name);
     }
 
+    /**
+     * Validates the resource name unconditionally.
+     *
+     * @param name resource name to validate
+     * @throws DBException if resource name is invalid
+     */
     public static void validateResourceNameUnconditionally(String name) throws DBException {
         if (name.startsWith(".")) {
             throw new DBException("Resource name '" + name + "' can't start with dot");
