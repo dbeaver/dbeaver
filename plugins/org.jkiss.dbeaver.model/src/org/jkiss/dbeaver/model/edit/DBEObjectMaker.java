@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -67,11 +68,11 @@ public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> e
      * @return null if no additional actions should be performed
      */
     OBJECT_TYPE createNewObject(
-        DBRProgressMonitor monitor,
-        DBECommandContext commandContext,
-        Object container,
-        Object copyFrom,
-        Map<String, Object> options) throws DBException;
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext commandContext,
+        @NotNull Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options) throws DBException;
 
     /**
      * Deletes specified object.

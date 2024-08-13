@@ -94,7 +94,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     public final OBJECT_TYPE createNewObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext commandContext,
-        Object container,
+        @NotNull Object container,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) throws DBException {
