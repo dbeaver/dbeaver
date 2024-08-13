@@ -449,8 +449,8 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     private void addGISDatatype(String typeGeometry) {
         dataTypeCache.cacheObject(new JDBCDataType<>(this,
             Types.OTHER,
-            typeGeometry,
-            typeGeometry,
+            typeGeometry.toUpperCase(Locale.ROOT),
+            typeGeometry.toUpperCase(Locale.ROOT),
             false,
             true,
             0,
