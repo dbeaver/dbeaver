@@ -44,7 +44,7 @@ public class GenericIndexManager extends SQLIndexManager<GenericTableIndex, Gene
     }
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return (container instanceof GenericTable)
             && ((GenericTable) container).getDataSource().getInfo().supportsIndexes()
             && ((GenericTable) container).getDataSource().getSQLDialect().supportsIndexCreateAndDrop();
@@ -56,7 +56,7 @@ public class GenericIndexManager extends SQLIndexManager<GenericTableIndex, Gene
     }
 
     @Override
-    public boolean canDeleteObject(GenericTableIndex object) {
+    public boolean canDeleteObject(@NotNull GenericTableIndex object) {
         return object.getDataSource().getSQLDialect().supportsIndexCreateAndDrop();
     }
 

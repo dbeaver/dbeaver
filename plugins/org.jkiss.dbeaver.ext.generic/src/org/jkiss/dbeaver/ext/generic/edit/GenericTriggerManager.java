@@ -38,12 +38,12 @@ public class GenericTriggerManager<
     extends SQLTriggerManager<TRIGGER, GenericTableBase> {
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return false;
     }
 
     @Override
-    public boolean canDeleteObject(TRIGGER object) {
+    public boolean canDeleteObject(@NotNull TRIGGER object) {
         return true;
     }
 

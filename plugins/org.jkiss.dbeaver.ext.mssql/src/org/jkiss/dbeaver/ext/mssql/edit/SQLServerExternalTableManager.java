@@ -48,7 +48,7 @@ public class SQLServerExternalTableManager extends SQLServerBaseTableManager<SQL
     }
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return false;
     }
 

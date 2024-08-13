@@ -56,18 +56,18 @@ public class GaussDBProcedureManager extends SQLObjectEditor<GaussDBProcedure, G
     }
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return container instanceof PostgreSchema
             && ((PostgreSchema) container).getDataSource().getServerType().supportsFunctionCreate();
     }
 
     @Override
-    public boolean canDeleteObject(GaussDBProcedure object) {
+    public boolean canDeleteObject(@NotNull GaussDBProcedure object) {
         return object.getDataSource().getServerType().supportsFunctionCreate();
     }
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_EDITOR_ON_CREATE;
     }
 

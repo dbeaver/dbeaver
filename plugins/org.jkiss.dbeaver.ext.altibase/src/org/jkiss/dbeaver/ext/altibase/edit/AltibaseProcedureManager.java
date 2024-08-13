@@ -37,7 +37,7 @@ import java.util.Map;
 public class AltibaseProcedureManager extends GenericProcedureManager  {
     
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return true;
     }
     

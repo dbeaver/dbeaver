@@ -112,7 +112,7 @@ public abstract class SQLServerBaseTableManager<OBJECT extends SQLServerTableBas
     }
 
     @Override
-    public boolean canDeleteObject(OBJECT object) {
+    public boolean canDeleteObject(@NotNull OBJECT object) {
         return !SQLServerUtils.isTableType(object) && super.canDeleteObject(object);
     }
 

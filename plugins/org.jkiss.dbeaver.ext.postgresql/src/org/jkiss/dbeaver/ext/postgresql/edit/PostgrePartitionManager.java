@@ -88,12 +88,12 @@ public class PostgrePartitionManager extends PostgreTableManager {
     }
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return container instanceof PostgreTable;
     }
 
     @Override
-    public boolean canDeleteObject(PostgreTableBase object) {
+    public boolean canDeleteObject(@NotNull PostgreTableBase object) {
         return true;
     }
 

@@ -51,7 +51,7 @@ public class GaussDBDatabaseManager extends SQLObjectEditor<GaussDBDatabase, Gau
     implements DBEObjectRenamer<GaussDBDatabase> {
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_SAVE_IMMEDIATELY;
     }
 
@@ -62,7 +62,7 @@ public class GaussDBDatabaseManager extends SQLObjectEditor<GaussDBDatabase, Gau
     }
 
     @Override
-    public void deleteObject(DBECommandContext commandContext, GaussDBDatabase object, Map<String, Object> options)
+    public void deleteObject(@NotNull DBECommandContext commandContext, @NotNull GaussDBDatabase object, @NotNull Map<String, Object> options)
         throws DBException {
         if (object == object.getDataSource().getDefaultInstance()) {
             throw new DBException("Cannot drop the currently open database."

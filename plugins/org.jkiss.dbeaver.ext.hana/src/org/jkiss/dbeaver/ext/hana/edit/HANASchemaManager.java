@@ -41,12 +41,12 @@ import java.util.Map;
 public class HANASchemaManager extends SQLObjectEditor<HANASchema, HANADataSource> implements DBEObjectRenamer<HANASchema> {
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return true;
     }
 
     @Override
-    public boolean canDeleteObject(HANASchema object) {
+    public boolean canDeleteObject(@NotNull HANASchema object) {
         return true;
     }
 
@@ -135,7 +135,7 @@ public class HANASchemaManager extends SQLObjectEditor<HANASchema, HANADataSourc
     }
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_SAVE_IMMEDIATELY;
     }
 

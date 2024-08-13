@@ -44,7 +44,7 @@ public class PostgreTablespaceManager extends SQLObjectEditor<PostgreTablespace,
     private static final Log log = Log.getLog(PostgreTablespaceManager.class);
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_SAVE_IMMEDIATELY;
     }
 
@@ -65,7 +65,7 @@ public class PostgreTablespaceManager extends SQLObjectEditor<PostgreTablespace,
     }
 
     @Override
-    public void deleteObject(DBECommandContext commandContext, PostgreTablespace object, Map<String, Object> options)
+    public void deleteObject(@NotNull DBECommandContext commandContext, @NotNull PostgreTablespace object, @NotNull Map<String, Object> options)
         throws DBException {
         if (systemTablespaces.contains(object.getName().toLowerCase())) {
             DBWorkbench.getPlatformUI().showError("Drop tablespace", "Unable to drop system tablespace " + object.getName());
@@ -104,12 +104,12 @@ public class PostgreTablespaceManager extends SQLObjectEditor<PostgreTablespace,
     }
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return true;
     }
 
     @Override
-    public boolean canDeleteObject(PostgreTablespace object) {
+    public boolean canDeleteObject(@NotNull PostgreTablespace object) {
         return true;
     }
 

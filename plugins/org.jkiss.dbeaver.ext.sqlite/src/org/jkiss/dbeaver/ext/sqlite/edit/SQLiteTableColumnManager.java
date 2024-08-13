@@ -39,7 +39,7 @@ import java.util.Map;
 public class SQLiteTableColumnManager extends GenericTableColumnManager implements DBEObjectRenamer<GenericTableColumn> {
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return true;
     }
 
@@ -55,7 +55,7 @@ public class SQLiteTableColumnManager extends GenericTableColumnManager implemen
     protected SQLiteDefaultModifier sqliteDefaultModifier = new SQLiteDefaultModifier();
 
     @Override
-    public boolean canDeleteObject(GenericTableColumn object) {
+    public boolean canDeleteObject(@NotNull GenericTableColumn object) {
         return true;
     }
 

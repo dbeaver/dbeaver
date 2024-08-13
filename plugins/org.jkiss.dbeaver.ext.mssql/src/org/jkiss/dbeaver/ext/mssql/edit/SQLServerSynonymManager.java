@@ -46,12 +46,12 @@ public class SQLServerSynonymManager extends SQLServerObjectManager<SQLServerSyn
     }
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return false;
     }
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return 0;
     }
 

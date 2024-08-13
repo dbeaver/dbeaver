@@ -45,7 +45,7 @@ public class ExasolScriptManager extends SQLObjectEditor<ExasolScript, ExasolSch
     }
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_EDITOR_ON_CREATE;
     }
 

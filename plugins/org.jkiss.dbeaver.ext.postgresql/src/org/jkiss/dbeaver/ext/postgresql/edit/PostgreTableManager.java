@@ -62,7 +62,7 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
     }
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return super.getMakerOptions(dataSource) | FEATURE_SUPPORTS_COPY;
     }
 

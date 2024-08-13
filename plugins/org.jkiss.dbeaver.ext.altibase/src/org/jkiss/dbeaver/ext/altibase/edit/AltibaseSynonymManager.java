@@ -38,12 +38,12 @@ import java.util.Map;
 public class AltibaseSynonymManager extends SQLObjectEditor<GenericSynonym, GenericStructContainer> {
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return false;
     }
 
     @Override
-    public boolean canDeleteObject(GenericSynonym object) {
+    public boolean canDeleteObject(@NotNull GenericSynonym object) {
         return true;
     }
     
@@ -60,7 +60,7 @@ public class AltibaseSynonymManager extends SQLObjectEditor<GenericSynonym, Gene
     }
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return 0;
     }
 

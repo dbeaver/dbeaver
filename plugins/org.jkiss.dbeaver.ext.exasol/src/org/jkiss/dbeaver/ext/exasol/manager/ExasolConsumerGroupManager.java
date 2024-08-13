@@ -42,7 +42,7 @@ import java.util.Map;
 public class ExasolConsumerGroupManager extends SQLObjectEditor<ExasolConsumerGroup, ExasolDataSource> implements DBEObjectRenamer<ExasolConsumerGroup> {
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_SAVE_IMMEDIATELY;
     }
 

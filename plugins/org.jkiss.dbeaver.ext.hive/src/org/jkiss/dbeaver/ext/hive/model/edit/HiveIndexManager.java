@@ -37,12 +37,12 @@ import java.util.Map;
 public class HiveIndexManager extends GenericIndexManager {
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return true;
     }
 
     @Override
-    public boolean canDeleteObject(GenericTableIndex object) {
+    public boolean canDeleteObject(@NotNull GenericTableIndex object) {
         return true;
     }
 

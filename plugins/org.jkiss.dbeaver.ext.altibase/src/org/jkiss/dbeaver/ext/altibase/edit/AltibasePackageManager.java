@@ -38,12 +38,12 @@ import java.util.Map;
 public class AltibasePackageManager extends SQLObjectEditor<GenericPackage, GenericStructContainer> {
     
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return false;
     }
 
     @Override
-    public boolean canDeleteObject(GenericPackage object) {
+    public boolean canDeleteObject(@NotNull GenericPackage object) {
         return true;
     }
     
@@ -58,7 +58,7 @@ public class AltibasePackageManager extends SQLObjectEditor<GenericPackage, Gene
     }
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return 0;
     }
 

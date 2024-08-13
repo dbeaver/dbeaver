@@ -126,7 +126,7 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
     }
 
     @Override
-    public boolean canDeleteObject(SQLServerTableColumn object) {
+    public boolean canDeleteObject(@NotNull SQLServerTableColumn object) {
         return !isTableType(object) && super.canDeleteObject(object);
     }
 

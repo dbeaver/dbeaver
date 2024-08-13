@@ -31,7 +31,7 @@ import java.util.Map;
 
 public class SQLiteTableForeignKeyManager extends GenericForeignKeyManager {
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return true;
     }
 
@@ -41,7 +41,7 @@ public class SQLiteTableForeignKeyManager extends GenericForeignKeyManager {
     }
 
     @Override
-    public boolean canDeleteObject(GenericTableForeignKey object) {
+    public boolean canDeleteObject(@NotNull GenericTableForeignKey object) {
         return true;
     }
 

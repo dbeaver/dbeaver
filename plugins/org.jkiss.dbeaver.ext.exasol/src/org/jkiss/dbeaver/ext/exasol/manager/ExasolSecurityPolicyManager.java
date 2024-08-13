@@ -40,7 +40,7 @@ public class ExasolSecurityPolicyManager
         extends SQLObjectEditor<ExasolSecurityPolicy, ExasolDataSource>  {
     
     @Override
-    public long getMakerOptions(DBPDataSource dataSource)
+    public long getMakerOptions(@NotNull DBPDataSource dataSource)
     {
         return FEATURE_SAVE_IMMEDIATELY;
     }
@@ -106,12 +106,12 @@ public class ExasolSecurityPolicyManager
     }
     
     @Override
-    public boolean canDeleteObject(ExasolSecurityPolicy object) {
+    public boolean canDeleteObject(@NotNull ExasolSecurityPolicy object) {
     	return false;
     }
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
     	return false;
     }
 

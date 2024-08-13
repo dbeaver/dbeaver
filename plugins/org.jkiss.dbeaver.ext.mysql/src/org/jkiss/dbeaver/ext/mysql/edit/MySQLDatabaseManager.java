@@ -42,7 +42,7 @@ import java.util.Map;
 public class MySQLDatabaseManager extends SQLObjectEditor<MySQLCatalog, MySQLDataSource> implements DBEObjectRenamer<MySQLCatalog> {
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource)
+    public long getMakerOptions(@NotNull DBPDataSource dataSource)
     {
         return FEATURE_SAVE_IMMEDIATELY;
     }

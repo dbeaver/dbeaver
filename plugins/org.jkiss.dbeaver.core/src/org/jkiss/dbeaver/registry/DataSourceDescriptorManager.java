@@ -45,7 +45,7 @@ import java.util.Map;
 public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourceDescriptor> implements DBEObjectMaker<DataSourceDescriptor, DBPObject> {
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return 0;
     }
 
@@ -56,7 +56,7 @@ public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourc
     }
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         if (container instanceof DBPProject) {
             return ((DBPProject) container).hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
         }
@@ -64,7 +64,7 @@ public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourc
     }
 
     @Override
-    public boolean canDeleteObject(DataSourceDescriptor object) {
+    public boolean canDeleteObject(@NotNull DataSourceDescriptor object) {
         return object.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
     }
 
@@ -114,7 +114,7 @@ public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourc
     }
 
     @Override
-    public void deleteObject(DBECommandContext commandContext, final DataSourceDescriptor object, Map<String, Object> options) {
+    public void deleteObject(@NotNull DBECommandContext commandContext, @NotNull final DataSourceDescriptor object, @NotNull Map<String, Object> options) {
         Runnable remover = () -> object.getRegistry().removeDataSource(object);
         if (object.isConnected()) {
             DataSourceHandler.disconnectDataSource(object, remover);

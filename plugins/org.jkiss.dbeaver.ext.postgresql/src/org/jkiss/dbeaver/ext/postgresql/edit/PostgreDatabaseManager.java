@@ -47,7 +47,7 @@ import java.util.Map;
 public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, PostgreDataSource> implements DBEObjectRenamer<PostgreDatabase> {
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_SAVE_IMMEDIATELY;
     }
 
@@ -58,7 +58,7 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
     }
 
     @Override
-    public void deleteObject(DBECommandContext commandContext, PostgreDatabase object, Map<String, Object> options) throws DBException {
+    public void deleteObject(@NotNull DBECommandContext commandContext, @NotNull PostgreDatabase object, @NotNull Map<String, Object> options) throws DBException {
         if (object == object.getDataSource().getDefaultInstance()) {
             throw new DBException("Cannot drop the currently open database." +
                 "\nSwitch to another database and try again\n(Note: enable 'Show all databases' option to see them).");

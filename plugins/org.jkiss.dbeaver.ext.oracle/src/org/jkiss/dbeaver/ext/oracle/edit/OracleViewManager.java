@@ -56,7 +56,7 @@ public class OracleViewManager extends SQLTableManager<OracleView, OracleSchema>
     }
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_EDITOR_ON_CREATE;
     }
 

@@ -42,12 +42,12 @@ import java.util.Map;
  */
 public class VerticaProjectionColumnManager extends SQLTableColumnManager<VerticaProjectionColumn, VerticaProjection> {
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return false;
     }
 
     @Override
-    public boolean canDeleteObject(VerticaProjectionColumn object) {
+    public boolean canDeleteObject(@NotNull VerticaProjectionColumn object) {
         return false;
     }
 

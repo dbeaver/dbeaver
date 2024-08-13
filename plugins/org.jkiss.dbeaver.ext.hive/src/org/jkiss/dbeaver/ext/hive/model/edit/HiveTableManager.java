@@ -66,7 +66,7 @@ public class HiveTableManager extends GenericTableManager implements DBEObjectRe
     }
 
     @Override
-    public boolean canDeleteObject(GenericTableBase object) {
+    public boolean canDeleteObject(@NotNull GenericTableBase object) {
         return !((HiveTable)object).isIndexTable();
     }
 

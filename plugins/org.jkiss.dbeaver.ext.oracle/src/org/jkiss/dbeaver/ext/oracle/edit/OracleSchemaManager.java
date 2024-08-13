@@ -43,7 +43,7 @@ import java.util.Map;
 public class OracleSchemaManager extends SQLObjectEditor<OracleSchema, OracleDataSource> /*implements DBEObjectRenamer<OracleSchema>*/ {
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_SAVE_IMMEDIATELY;
     }
 

@@ -79,7 +79,7 @@ public class SQLServerExtendedPropertyManager extends SQLObjectEditor<SQLServerE
     }
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return 0;
     }
 }

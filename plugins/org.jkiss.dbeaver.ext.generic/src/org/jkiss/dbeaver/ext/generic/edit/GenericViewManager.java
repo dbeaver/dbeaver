@@ -49,7 +49,7 @@ import java.util.Map;
 public class GenericViewManager extends SQLObjectEditor<GenericTableBase, GenericStructContainer> {
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource)
+    public long getMakerOptions(@NotNull DBPDataSource dataSource)
     {
         return FEATURE_EDITOR_ON_CREATE;
     }
@@ -74,7 +74,7 @@ public class GenericViewManager extends SQLObjectEditor<GenericTableBase, Generi
     }
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         if (container instanceof DBSObject) {
             DBPDataSource dataSource = ((DBSObject) container).getDataSource();
             if (dataSource instanceof GenericDataSource) {

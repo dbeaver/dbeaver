@@ -43,7 +43,7 @@ public class GaussDBPackageManager extends SQLObjectEditor<GaussDBPackage, Gauss
     implements DBEObjectRenamer<GaussDBPackage> {
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return 1 << 2;
     }
 
@@ -60,12 +60,12 @@ public class GaussDBPackageManager extends SQLObjectEditor<GaussDBPackage, Gauss
     }
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return true;
     }
 
     @Override
-    public boolean canDeleteObject(GaussDBPackage object) {
+    public boolean canDeleteObject(@NotNull GaussDBPackage object) {
         return true;
     }
 

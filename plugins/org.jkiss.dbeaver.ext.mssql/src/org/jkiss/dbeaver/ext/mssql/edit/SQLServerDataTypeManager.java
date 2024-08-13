@@ -43,12 +43,12 @@ public class SQLServerDataTypeManager extends SQLObjectEditor<SQLServerDataType,
     }
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return false;
     }
 
     @Override
-    public boolean canDeleteObject(SQLServerDataType object) {
+    public boolean canDeleteObject(@NotNull SQLServerDataType object) {
         return object.isUserType();
     }
 
@@ -70,7 +70,7 @@ public class SQLServerDataTypeManager extends SQLObjectEditor<SQLServerDataType,
     }
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_EDITOR_ON_CREATE;
     }
 

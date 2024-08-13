@@ -48,7 +48,7 @@ public class OracleTableTriggerManager extends SQLTriggerManager<OracleTableTrig
     }
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return container instanceof OracleTableBase;
     }
 

@@ -47,7 +47,7 @@ import java.util.Map;
 public class GenericProcedureManager extends SQLObjectEditor<GenericProcedure, GenericStructContainer> {
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_EDITOR_ON_CREATE;
     }
 
@@ -95,12 +95,12 @@ public class GenericProcedureManager extends SQLObjectEditor<GenericProcedure, G
     }
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return false;
     }
 
     @Override
-    public boolean canDeleteObject(GenericProcedure object) {
+    public boolean canDeleteObject(@NotNull GenericProcedure object) {
         return true;
     }
 

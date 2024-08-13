@@ -85,7 +85,7 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
     }
 
     @Override
-    public void deleteObject(DBECommandContext commandContext, PostgreIndex object, Map<String, Object> options) throws DBException {
+    public void deleteObject(@NotNull DBECommandContext commandContext, @NotNull PostgreIndex object, @NotNull Map<String, Object> options) throws DBException {
         if (object.isPrimaryKeyIndex()) {
             throw new DBException("You can not drop constraint-based unique index.\n" +
                 "Try to drop constraint '" + object.getName() + "'.");

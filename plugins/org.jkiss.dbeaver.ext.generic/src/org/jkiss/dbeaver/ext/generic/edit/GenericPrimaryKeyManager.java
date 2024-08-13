@@ -51,7 +51,7 @@ public class GenericPrimaryKeyManager extends SQLConstraintManager<GenericUnique
     }
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return (container instanceof GenericTable)
             && (!(((GenericTable) container).getDataSource().getInfo() instanceof GenericDataSourceInfo) || ((GenericDataSourceInfo) ((GenericTable) container).getDataSource().getInfo()).supportsTableConstraints())
             && GenericUtils.canAlterTable((GenericTable) container);
@@ -63,7 +63,7 @@ public class GenericPrimaryKeyManager extends SQLConstraintManager<GenericUnique
     }
 
     @Override
-    public boolean canDeleteObject(GenericUniqueKey object) {
+    public boolean canDeleteObject(@NotNull GenericUniqueKey object) {
         return GenericUtils.canAlterTable(object);
     }
 

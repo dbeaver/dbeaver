@@ -53,17 +53,17 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
     }
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return container instanceof PostgreSchema && ((PostgreSchema) container).getDataSource().getServerType().supportsFunctionCreate();
     }
 
     @Override
-    public boolean canDeleteObject(PostgreProcedure object) {
+    public boolean canDeleteObject(@NotNull PostgreProcedure object) {
         return object.getDataSource().getServerType().supportsFunctionCreate();
     }
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource)
+    public long getMakerOptions(@NotNull DBPDataSource dataSource)
     {
         return FEATURE_EDITOR_ON_CREATE;
     }

@@ -40,13 +40,13 @@ public abstract class DB2AbstractDropOnlyManager<OBJECT_TYPE extends DBSObject &
     extends SQLObjectEditor<OBJECT_TYPE, CONTAINER_TYPE> {
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource)
+    public long getMakerOptions(@NotNull DBPDataSource dataSource)
     {
         return 0;
     }
 
     @Override
-    public boolean canCreateObject(Object container)
+    public boolean canCreateObject(@NotNull Object container)
     {
         return false;
     }

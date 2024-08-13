@@ -38,7 +38,7 @@ import java.util.Map;
 public class PostgreExtensionManager extends SQLObjectEditor<PostgreExtension, PostgreDatabase>{
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_SAVE_IMMEDIATELY;
     }
 
@@ -79,12 +79,12 @@ public class PostgreExtensionManager extends SQLObjectEditor<PostgreExtension, P
     }
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
          return true;
     }
 
     @Override
-    public boolean canDeleteObject(PostgreExtension object) {
+    public boolean canDeleteObject(@NotNull PostgreExtension object) {
         return true;
     }
 

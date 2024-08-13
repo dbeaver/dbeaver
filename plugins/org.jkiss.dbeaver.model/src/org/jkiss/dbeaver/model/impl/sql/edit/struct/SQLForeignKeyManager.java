@@ -57,7 +57,7 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends AbstractTableCons
     public static final String OPTION_OWN_ATTRIBUTES = "ownAttributes";
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource)
+    public long getMakerOptions(@NotNull DBPDataSource dataSource)
     {
         return FEATURE_EDITOR_ON_CREATE;
     }

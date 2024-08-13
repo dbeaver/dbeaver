@@ -42,12 +42,12 @@ import java.util.Map;
 public class DamengSchemaManager extends SQLObjectEditor<DamengSchema, DamengDataSource> {
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return true;
     }
 
     @Override
-    public boolean canDeleteObject(DamengSchema object) {
+    public boolean canDeleteObject(@NotNull DamengSchema object) {
         return true;
     }
 
@@ -57,7 +57,7 @@ public class DamengSchemaManager extends SQLObjectEditor<DamengSchema, DamengDat
     }
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_SAVE_IMMEDIATELY;
     }
 

@@ -44,12 +44,12 @@ public class HiveTableColumnManager extends GenericTableColumnManager {
     private static final Log log = Log.getLog(HiveTableColumnManager.class);
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return true;
     }
 
     @Override
-    public boolean canDeleteObject(GenericTableColumn object) {
+    public boolean canDeleteObject(@NotNull GenericTableColumn object) {
         return true;
     }
 
