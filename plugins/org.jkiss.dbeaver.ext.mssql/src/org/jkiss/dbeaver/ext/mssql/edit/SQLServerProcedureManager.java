@@ -55,7 +55,7 @@ public class SQLServerProcedureManager extends SQLServerObjectManager<SQLServerP
     }
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_EDITOR_ON_CREATE;
     }
 
@@ -71,24 +71,24 @@ public class SQLServerProcedureManager extends SQLServerObjectManager<SQLServerP
     }
 
     @Override
-    protected SQLServerProcedure createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options) {
+    protected SQLServerProcedure createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, final Object container, Object copyFrom, @NotNull Map<String, Object> options) {
         return new SQLServerProcedure((SQLServerSchema) container);
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) throws DBException {
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options) throws DBException {
         createOrReplaceProcedureQuery(monitor, executionContext, actions, command.getObject(), true);
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options) throws DBException {
         if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
             createOrReplaceProcedureQuery(monitor, executionContext, actionList, command.getObject(), false);
         }
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options) {
         addDatabaseSwitchAction1(executionContext, actions, command.getObject().getContainer().getDatabase());
 
         actions.add(
@@ -112,11 +112,11 @@ public class SQLServerProcedureManager extends SQLServerObjectManager<SQLServerP
 
     @Override
     protected void addObjectRenameActions(
-        @Nullable DBRProgressMonitor monitor,
-        @Nullable DBCExecutionContext executionContext,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
         @NotNull List<DBEPersistAction> actions,
         @NotNull ObjectRenameCommand command,
-        @Nullable Map<String, Object> options
+        @NotNull Map<String, Object> options
     ) {
         final SQLServerProcedure procedure = command.getObject();
         if (procedure.getDatabase() == null) {
@@ -131,7 +131,7 @@ public class SQLServerProcedureManager extends SQLServerObjectManager<SQLServerP
     }
 
     @Override
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<SQLServerProcedure, PropertyHandler> command, Map<String, Object> options) throws DBException {
+    protected void addObjectExtraActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull NestedObjectCommand<SQLServerProcedure, PropertyHandler> command, @NotNull Map<String, Object> options) throws DBException {
         final SQLServerProcedure procedure = command.getObject();
         if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
             SQLServerDatabase database = procedure.getContainer().getDatabase();

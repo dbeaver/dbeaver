@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.dameng.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.dameng.model.DamengDataSource;
 import org.jkiss.dbeaver.ext.dameng.model.DamengSchema;
@@ -41,12 +42,12 @@ import java.util.Map;
 public class DamengSchemaManager extends SQLObjectEditor<DamengSchema, DamengDataSource> {
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return true;
     }
 
     @Override
-    public boolean canDeleteObject(DamengSchema object) {
+    public boolean canDeleteObject(@NotNull DamengSchema object) {
         return true;
     }
 
@@ -56,7 +57,7 @@ public class DamengSchemaManager extends SQLObjectEditor<DamengSchema, DamengDat
     }
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_SAVE_IMMEDIATELY;
     }
 
@@ -67,7 +68,7 @@ public class DamengSchemaManager extends SQLObjectEditor<DamengSchema, DamengDat
 
 
     @Override
-    protected DamengSchema createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
+    protected DamengSchema createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
         DamengDataSource dataSource = (DamengDataSource) container;
         DamengSchema damengSchema = new DamengSchema(dataSource, "NEW_SCHEMA", false);
         setNewObjectName(monitor, dataSource, damengSchema);
@@ -75,7 +76,7 @@ public class DamengSchemaManager extends SQLObjectEditor<DamengSchema, DamengDat
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, SQLObjectEditor<DamengSchema, DamengDataSource>.ObjectCreateCommand command, Map<String, Object> options) throws DBException {
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull SQLObjectEditor<DamengSchema, DamengDataSource>.ObjectCreateCommand command, @NotNull Map<String, Object> options) throws DBException {
         actions.add(
                 new SQLDatabasePersistAction(
                         "Create schema",
@@ -84,7 +85,7 @@ public class DamengSchemaManager extends SQLObjectEditor<DamengSchema, DamengDat
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, SQLObjectEditor<DamengSchema, DamengDataSource>.ObjectDeleteCommand command, Map<String, Object> options) throws DBException {
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull SQLObjectEditor<DamengSchema, DamengDataSource>.ObjectDeleteCommand command, @NotNull Map<String, Object> options) throws DBException {
         actions.add(
                 new SQLDatabasePersistAction(
                         "Drop schema",
