@@ -74,6 +74,15 @@ public class DatabaseURLTest {
             new String[][]{
                 {"file", "C:\\Users\\%USERNAME%\\Documents\\Chinook.db"}
             });
+
+        assertMatches(
+            "jdbc:mysql://{host}[:{port}]/[{database}]",
+            "jdbc:mysql://mysql-rfam-public.ebi.ac.uk:4497/Rfam?useSSL=false&serverTimezone=UTC",
+            new String[][]{
+                {"host", "mysql-rfam-public.ebi.ac.uk"},
+                {"port", "4497"},
+                {"database", "Rfam"}
+            });
     }
 
 
