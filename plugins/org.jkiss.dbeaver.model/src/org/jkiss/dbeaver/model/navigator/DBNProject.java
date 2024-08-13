@@ -152,7 +152,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
 
     @Override
     public void rename(DBRProgressMonitor monitor, String newName) throws DBException {
-        GeneralUtils.validateResourceName(newName);
+        GeneralUtils.validateResourceNameUnconditionally(newName);
 
         project.ensureOpen();
 

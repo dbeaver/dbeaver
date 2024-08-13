@@ -891,6 +891,13 @@ public class GeneralUtils {
     }
 
     public static void validateResourceName(String name) throws DBException {
+        if (!DBWorkbench.isDistributed() && !DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+            return;
+        }
+        validateResourceNameUnconditionally(name);
+    }
+
+    public static void validateResourceNameUnconditionally(String name) throws DBException {
         if (name.startsWith(".")) {
             throw new DBException("Resource name '" + name + "' can't start with dot");
         }
