@@ -17,12 +17,30 @@
 package org.jkiss.dbeaver.model.sql.semantics;
 
 import org.antlr.v4.runtime.misc.Interval;
+import org.eclipse.core.resources.IMarker;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
+import java.io.Serializable;
+
 public class SQLQueryRecognitionProblemInfo {
+
+    public enum Severity {
+        ERROR(IMarker.SEVERITY_ERROR),
+        WARNING(IMarker.SEVERITY_WARNING);
+
+        public final int markerSeverity;
+
+        Severity(int markerSeverity) {
+            this.markerSeverity = markerSeverity;
+        }
+    }
+
+    @NotNull
+    private final Severity severity;
     @NotNull
     private final STMTreeNode syntaxNode;
     @Nullable
@@ -32,16 +50,41 @@ public class SQLQueryRecognitionProblemInfo {
     @Nullable
     private final DBException exception;
 
-    public SQLQueryRecognitionProblemInfo(
-        @NotNull STMTreeNode syntaxNode,
-        @Nullable SQLQuerySymbolEntry symbol,
-        @NotNull String message,
-        @Nullable DBException exception
+    private SQLQueryRecognitionProblemInfo(
+            @NotNull Severity severity,
+            @NotNull STMTreeNode syntaxNode,
+            @Nullable SQLQuerySymbolEntry symbol,
+            @NotNull String message,
+            @Nullable DBException exception
     ) {
+        this.severity = severity;
         this.syntaxNode = syntaxNode;
         this.symbol = symbol;
         this.message = message;
         this.exception = exception;
+    }
+
+    public static SQLQueryRecognitionProblemInfo makeError(
+            @NotNull STMTreeNode syntaxNode,
+            @Nullable SQLQuerySymbolEntry symbol,
+            @NotNull String message,
+            @Nullable DBException exception
+    ) {
+        return new SQLQueryRecognitionProblemInfo(Severity.ERROR, syntaxNode, symbol, message, exception);
+    }
+
+    public static SQLQueryRecognitionProblemInfo makeWarning(
+            @NotNull STMTreeNode syntaxNode,
+            @Nullable SQLQuerySymbolEntry symbol,
+            @NotNull String message,
+            @Nullable DBException exception
+    ) {
+        return new SQLQueryRecognitionProblemInfo(Severity.WARNING, syntaxNode, symbol, message, exception);
+    }
+
+    @NotNull
+    public Severity getSeverity() {
+        return this.severity;
     }
 
     @NotNull
