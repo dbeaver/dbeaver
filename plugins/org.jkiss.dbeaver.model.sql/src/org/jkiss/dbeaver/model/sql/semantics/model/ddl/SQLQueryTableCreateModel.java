@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableValueModel;
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
+import org.jkiss.dbeaver.model.stm.STMTreeTermErrorNode;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 
 import java.util.ArrayList;
@@ -149,12 +150,15 @@ public class SQLQueryTableCreateModel extends SQLQueryModelContent {
         STMTreeNode elementsNode = node.findChildOfName(STMKnownRuleNames.tableElementList);
         if (elementsNode != null) {
             for (int i = 1; i < elementsNode.getChildCount(); i += 2) {
-                STMTreeNode elementNode = elementsNode.getStmChild(i).getStmChild(0);
-                switch (elementNode.getNodeKindId()) {
-                    case SQLStandardParser.RULE_columnDefinition ->
-                        columns.addLast(SQLQueryColumnSpec.recognize(recognizer, elementNode));
-                    case SQLStandardParser.RULE_tableConstraintDefinition ->
-                        constraints.addLast(SQLQueryTableConstraintSpec.recognize(recognizer, elementNode));
+                STMTreeNode elementNode = elementsNode.getStmChild(i);
+                if (!(elementNode instanceof STMTreeTermErrorNode)) {
+                    STMTreeNode payloadNode = elementNode.getStmChild(0);
+                    switch (payloadNode.getNodeKindId()) {
+                        case SQLStandardParser.RULE_columnDefinition ->
+                            columns.addLast(SQLQueryColumnSpec.recognize(recognizer, payloadNode));
+                        case SQLStandardParser.RULE_tableConstraintDefinition ->
+                            constraints.addLast(SQLQueryTableConstraintSpec.recognize(recognizer, payloadNode));
+                    }
                 }
             }
         }
