@@ -136,10 +136,10 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             if (workbenchWindow.getActivePage().getActivePart() == activeEditor &&
                 activeEditor.getAdapter(IDatabaseModellerEditor.class) != null &&
                 activeEditor.getAdapter(IDatabaseModellerEditor.class).isModelEditEnabled() &&
-                activeEditor.getEditorInput() instanceof IDatabaseEditorInput)
+                activeEditor.getEditorInput() instanceof IDatabaseEditorInput editorInput)
             {
                 // We are in model editor.
-                editorNode = ((IDatabaseEditorInput) activeEditor.getEditorInput()).getNavigatorNode();
+                editorNode = editorInput.getNavigatorNode();
             }
 
             DBEObjectManager<?> objectManager = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(newObjectType);
@@ -148,7 +148,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             }
             DBEObjectMaker objectMaker = (DBEObjectMaker) objectManager;
 
-            DBPDataSource dataSource = container instanceof DBNDatabaseNode ? ((DBNDatabaseNode) container).getDataSource() : null;
+            DBPDataSource dataSource = container instanceof DBNDatabaseNode dbNode ? dbNode.getDataSource() : null;
 
             final boolean openEditor = dataSource != null &&
                 (objectMaker.getMakerOptions(dataSource) & DBEObjectMaker.FEATURE_EDITOR_ON_CREATE) != 0;
