@@ -318,7 +318,7 @@ public class ResultSetMessages extends NLS {
     public static String dialog_save_script_button_delete_cascade_tip;
     public static String dialog_save_script_button_delete_deep_cascade;
     public static String dialog_save_script_button_delete_deep_cascade_tip;
-    public static String dialog_save_script_button_bar_button_persist;
+    public static String dialog_save_script_button_bar_button_execute;
     public static String dialog_save_script_button_bar_button_copy;
 
     //Preference/Properties

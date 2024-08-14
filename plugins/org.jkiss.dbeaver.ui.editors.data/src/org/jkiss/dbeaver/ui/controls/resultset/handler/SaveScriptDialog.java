@@ -187,7 +187,7 @@ class SaveScriptDialog extends BaseDialog {
     @Override
     protected void createButtonsForButtonBar(@NotNull Composite parent, int alignment) {
         if (alignment == SWT.LEAD) {
-            createButton(parent, IDialogConstants.OK_ID, ResultSetMessages.dialog_save_script_button_bar_button_persist, false);
+            createButton(parent, IDialogConstants.OK_ID, ResultSetMessages.dialog_save_script_button_bar_button_execute, false);
         } else {
             createButton(parent, IDialogConstants.DETAILS_ID, ResultSetMessages.dialog_save_script_button_bar_button_copy, false);
             createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CLOSE_LABEL, true);
