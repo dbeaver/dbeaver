@@ -234,6 +234,15 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
         return taskManager;
     }
 
+    @Nullable
+    @Override
+    public DBTTaskManager getTaskManager(boolean create) {
+        if (taskManager != null) {
+            return taskManager;
+        }
+        return create ? getTaskManager() : null;
+    }
+
     ////////////////////////////////////////////////////////
     // Secure storage
 
