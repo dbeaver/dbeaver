@@ -90,7 +90,7 @@ public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCred
         DBPConnectionConfiguration originalConfiguration = dataSource.getConnectionConfiguration();
         String conHostName = originalConfiguration.getHostName();
         String sshHost = null;
-        if (CommonUtils.isEmpty(conHostName) || conHostName.equals("localhost") || conHostName.equals(DBConstants.HOST_LOCALHOST_IP)) {
+        if (CommonUtils.isEmpty(conHostName) || conHostName.equals(DBConstants.HOST_LOCALHOST) || conHostName.equals(DBConstants.HOST_LOCALHOST_IP)) {
             sshHost = getSSHHost(dataSource);
         }
         final String providerProperty = dataSource.getConnectionConfiguration()
