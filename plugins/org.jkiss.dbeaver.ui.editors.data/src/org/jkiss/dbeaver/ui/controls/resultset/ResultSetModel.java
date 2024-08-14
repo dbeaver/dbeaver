@@ -462,9 +462,13 @@ public class ResultSetModel {
                 DBDAttributeBinding ownerAttr = attr.getParent(depth - i - 1);
                 assert ownerAttr != null;
                 try {
+                    int itemIndex = 0;
+                    if (rowIndexes != null && ownerValue instanceof Collection<?>) {
+                        itemIndex = rowIndexes[rowIndex++];
+                    }
                     Object nestedValue = ownerAttr.extractNestedValue(
                         ownerValue,
-                        rowIndexes == null ? 0 : rowIndexes[rowIndex++]);
+                        itemIndex);
                     if (nestedValue == null) {
                         // Try to create nested value
                         DBCExecutionContext context = DBUtils.getDefaultContext(ownerAttr, false);
