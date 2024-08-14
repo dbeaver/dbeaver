@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql.parser;
 
 import org.antlr.v4.runtime.Token;
 import org.eclipse.jface.text.*;
+import org.eclipse.jface.text.rules.FastPartitioner;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -1041,6 +1042,13 @@ public class SQLScriptParser {
         ruleManager.loadRules();
 
         Document sqlDocument = new Document(sqlScriptContent);
+
+        FastPartitioner partitioner = new FastPartitioner(
+            new SQLPartitionScanner(dataSource, dialect, ruleManager),
+            SQLParserPartitions.SQL_CONTENT_TYPES);
+        partitioner.connect(sqlDocument);
+
+        sqlDocument.setDocumentPartitioner(SQLParserPartitions.SQL_PARTITIONING, partitioner);
 
         SQLParserContext parserContext = new SQLParserContext(dataSource, syntaxManager, ruleManager, sqlDocument);
         parserContext.setPreferenceStore(preferenceStore);
