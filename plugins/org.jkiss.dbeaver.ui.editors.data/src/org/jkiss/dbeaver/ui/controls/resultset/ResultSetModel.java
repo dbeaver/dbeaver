@@ -506,7 +506,7 @@ public class ResultSetModel {
             try {
                 oldValue = attr.extractNestedValue(
                     ownerValue,
-                    rowIndexes == null ? 0 : rowIndexes[targetValueIndex]);
+                    rowIndexes == null || targetValueIndex < 0 ? 0 : rowIndexes[targetValueIndex]);
             } catch (DBCException e) {
                 log.error("Error getting [" + attr.getName() + "] value", e);
             }
@@ -550,9 +550,19 @@ public class ResultSetModel {
                     changesCount++;
                 }
             }
-            if (ownerValue != null) {
+            if (ownerValue instanceof DBDComposite compositeValue) {
                 try {
-                    ((DBDComposite) ownerValue).setAttributeValue(attr.getAttribute(), value);
+                    if (rowIndexes != null) {
+                        int itemIndex = rowIndexes[rowIndex];
+                        Object arrayValue = compositeValue.getAttributeValue(attr.getAttribute());
+                        if (arrayValue instanceof DBDCollection collection) {
+                            collection.setItem(itemIndex, value);
+                        } else {
+                            throw new DBCException("Wrong composite: cannot update item " + itemIndex);
+                        }
+                    } else {
+                        compositeValue.setAttributeValue(attr.getAttribute(), value);
+                    }
                 } catch (DBCException e) {
                     log.debug("Error setting attribute value", e);
                 }
