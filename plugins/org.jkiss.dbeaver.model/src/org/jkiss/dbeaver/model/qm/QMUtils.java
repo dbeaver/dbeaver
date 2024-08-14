@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -31,6 +32,7 @@ import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.auth.SMSessionPersistent;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.filters.QMEventCriteria;
 import org.jkiss.dbeaver.model.qm.meta.*;
@@ -39,6 +41,9 @@ import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -52,6 +57,9 @@ public class QMUtils {
 
     private static DBPPlatform application;
     private static QMExecutionHandler defaultHandler;
+
+    public static final DateTimeFormatter ISO_DATE_FORMAT = DateTimeFormatter.ofPattern(DBConstants.DEFAULT_ISO_TIMESTAMP_FORMAT)
+        .withZone(ZoneId.of("UTC"));
 
     public static void initApplication(DBPPlatform application) {
         QMUtils.application = application;
@@ -176,6 +184,58 @@ public class QMUtils {
             txnStartTime = System.currentTimeMillis();
         }
         return new QMTransactionState(execCount, updateCount, txnMode, txnStartTime);
+    }
+
+    @NotNull
+    public static QMTransactionLogInfo getTransactionLogInfo(DBCExecutionContext executionContext) {
+        int updateCount = 0;
+        List<QMTransactionLogItemInfo> logItemInfos = new ArrayList<>();
+        QMMConnectionInfo sessionInfo = getCurrentConnection(executionContext);
+        if (sessionInfo.isTransactional()) {
+            QMMTransactionInfo txnInfo = sessionInfo.getTransaction();
+            if (txnInfo != null) {
+                QMMTransactionSavepointInfo sp = txnInfo.getCurrentSavepoint();
+                QMMStatementExecuteInfo execInfo = sp.getLastExecute();
+                for (QMMStatementExecuteInfo exec = execInfo; exec != null && exec.getSavepoint() == sp; exec = exec.getPrevious()) {
+                    if (exec.getUpdateRowCount() > 0 ) {
+                        DBCExecutionPurpose purpose = exec.getStatement().getPurpose();
+                        if (!exec.hasError() && purpose != DBCExecutionPurpose.META && purpose != DBCExecutionPurpose.UTIL) {
+                            updateCount++;
+                        }
+                        generateLogInfo(logItemInfos, exec, purpose);
+                    }
+                }
+            }
+        } else {
+            QMMStatementExecuteInfo execInfo = sessionInfo.getExecutionStack();
+            for (QMMStatementExecuteInfo exec = execInfo; exec != null; exec = exec.getPrevious()) {
+                if (exec.getUpdateRowCount() > 0) {
+                    DBCExecutionPurpose purpose = exec.getStatement().getPurpose();
+                    generateLogInfo(logItemInfos, exec, purpose);
+                }
+            }
+        }
+        return new QMTransactionLogInfo(logItemInfos, updateCount == 0 ? null : updateCount);
+    }
+
+    private static void generateLogInfo(List<QMTransactionLogItemInfo> logItemInfos, QMMStatementExecuteInfo exec, DBCExecutionPurpose purpose) {
+        String type = "SQL / " + purpose.getTitle();
+        String dateTime = ISO_DATE_FORMAT.format(Instant.ofEpochMilli(exec.getCloseTime()));
+        String result = ModelMessages.controls_querylog_success;
+        if (exec.hasError()) {
+            if (exec.getErrorCode() == 0) {
+                result = exec.getErrorMessage();
+            } else if (exec.getErrorMessage() == null) {
+                result = ModelMessages.controls_querylog_error + exec.getErrorCode() + "]"; //$NON-NLS-1$
+            } else {
+                result = "[" + exec.getErrorCode() + "] " + exec.getErrorMessage(); //$NON-NLS-1$ //$NON-NLS-2$
+            }
+        }
+
+        logItemInfos.add(
+            new QMTransactionLogItemInfo(dateTime, type, exec.getQueryString(),
+                exec.getDuration(), exec.getUpdateRowCount(), result)
+        );
     }
 
     public static QMEventCriteria createDefaultCriteria(DBPPreferenceStore store) {
