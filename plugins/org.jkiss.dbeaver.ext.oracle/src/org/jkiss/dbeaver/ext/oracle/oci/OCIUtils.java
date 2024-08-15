@@ -29,6 +29,8 @@ import org.jkiss.utils.StandardConstants;
 
 import java.io.*;
 import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class OCIUtils
 {
@@ -319,6 +321,7 @@ public class OCIUtils
 
         if (tnsnamesOra.exists()) {
             try {
+                // use Files.lines(Paths.get("file.txt")), because Files.lines is recommended for large files
                 BufferedReader reader = new BufferedReader(new FileReader(tnsnamesOra));
                 StringBuilder tnsDescription = new StringBuilder();
                 String curAlias = null;
