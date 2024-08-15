@@ -39,11 +39,6 @@ public class CustomExpression implements Expression {
     }
 
     @Override
-    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S s) {
-        return expressionVisitor.visit(new StringValue(), s);
-    }
-
-    @Override
     public String toString() {
         return expression;
     }
@@ -57,5 +52,4 @@ public class CustomExpression implements Expression {
     public void setASTNode(SimpleNode simpleNode) {
         this.simpleNode = simpleNode;
     }
-
 }
