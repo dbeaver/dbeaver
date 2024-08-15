@@ -112,9 +112,7 @@ public class GeometryDataUtils {
         }
         final Map<String, Object> properties = new LinkedHashMap<>();
         properties.put("id", DBUtils.getObjectFullName(geomAttrs.geomAttr, DBPEvaluationContext.UI));
-        properties.put("color",
-            info.getOrDefault("color", rgbToHex(makeGeometryColor(index)))
-        );
+        properties.put("color", info.getOrDefault("color", rgbToHex(makeGeometryColor(index))));
         properties.put("info", info);
         geometry.setProperties(properties);
 
@@ -149,6 +147,7 @@ public class GeometryDataUtils {
         }
     }
 
+    @NotNull
     private static String rgbToHex(RGB rgb) {
         return String.format("#%02x%02x%02x", rgb.red, rgb.green, rgb.blue);
     }
