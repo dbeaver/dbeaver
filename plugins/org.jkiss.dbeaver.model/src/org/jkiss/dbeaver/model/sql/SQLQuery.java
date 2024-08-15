@@ -160,7 +160,7 @@ public class SQLQuery implements SQLScriptElement {
                         plainSelect = ps.getPlainSelect();
                         fromItem = plainSelect.getFromItem();
                     }
-                    if (fromItem instanceof Table &&
+                    if (fromItem instanceof Table fromTable &&
                         isPotentiallySingleSourceSelect(plainSelect))
                     {
                         boolean hasSubSelects = false, hasDirectSelects = false;
@@ -172,7 +172,7 @@ public class SQLQuery implements SQLScriptElement {
                             }
                         }
                         if (hasDirectSelects || !hasSubSelects) {
-                            fillSingleSource((Table) fromItem);
+                            fillSingleSource(fromTable);
                         }
                     }
                     if (!CommonUtils.isEmpty(plainSelect.getJoins()) && fromItem instanceof Table) {
@@ -187,21 +187,21 @@ public class SQLQuery implements SQLScriptElement {
                         selectItems = items;
                     }
                 }
-            } else if (statement instanceof Insert) {
+            } else if (statement instanceof Insert insert) {
                 type = SQLQueryType.INSERT;
-                fillSingleSource(((Insert) statement).getTable());
-            } else if (statement instanceof Update) {
+                fillSingleSource(insert.getTable());
+            } else if (statement instanceof Update update) {
                 type = SQLQueryType.UPDATE;
-                Table table = ((Update) statement).getTable();
+                Table table = update.getTable();
                 if (table != null) {
                     fillSingleSource(table);
                 }
-            } else if (statement instanceof Delete) {
+            } else if (statement instanceof Delete delete) {
                 type = SQLQueryType.DELETE;
-                if (((Delete) statement).getTable() != null) {
-                    fillSingleSource(((Delete) statement).getTable());
+                if (delete.getTable() != null) {
+                    fillSingleSource(delete.getTable());
                 } else {
-                    List<Table> tables = ((Delete) statement).getTables();
+                    List<Table> tables = delete.getTables();
                     if (tables != null && tables.size() == 1) {
                         fillSingleSource(tables.get(0));
                     }
