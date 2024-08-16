@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.model.sql.parser;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
+import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
-import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.parser.StringProvider;
@@ -344,12 +344,13 @@ public class SQLSemanticProcessor {
 
     @Nullable
     public static Table findTableByNameOrAlias(Select select, String tableName) {
-        if (select instanceof PlainSelect plainSelect) {
-            FromItem fromItem = plainSelect.getFromItem();
+        SelectBody selectBody = select.getSelectBody();
+        if (selectBody instanceof PlainSelect) {
+            FromItem fromItem = ((PlainSelect) selectBody).getFromItem();
             if (fromItem instanceof Table && equalTables((Table) fromItem, tableName)) {
                 return (Table) fromItem;
             }
-            for (Join join : CommonUtils.safeCollection(plainSelect.getJoins())) {
+            for (Join join : CommonUtils.safeCollection(((PlainSelect) selectBody).getJoins())) {
                 if (join.getRightItem() instanceof Table && equalTables((Table) join.getRightItem(), tableName)) {
                     return (Table) join.getRightItem();
                 }
@@ -379,7 +380,7 @@ public class SQLSemanticProcessor {
         if (sourceWhere == null) {
             select.setWhere(conditionExpr);
         } else {
-            select.setWhere(new AndExpression(new ParenthesedExpressionList<>(sourceWhere), conditionExpr));
+            select.setWhere(new AndExpression(new Parenthesis(sourceWhere), conditionExpr));
         }
     }
 
