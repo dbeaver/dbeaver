@@ -56,8 +56,8 @@ public class AltibaseTableColumnManager extends GenericTableColumnManager
     protected void addObjectCreateActions(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext executionContext,
-        List<DBEPersistAction> actions,
-        ObjectCreateCommand command,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectCreateCommand command,
         @NotNull Map<String, Object> options
     ) {
         final GenericTableBase table = command.getObject().getParentObject();
@@ -74,8 +74,8 @@ public class AltibaseTableColumnManager extends GenericTableColumnManager
     protected void addObjectRenameActions(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext executionContext,
-        List<DBEPersistAction> actions,
-        ObjectRenameCommand command,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectRenameCommand command,
         @NotNull Map<String, Object> options
     ) {
         final GenericTableColumn column = command.getObject();

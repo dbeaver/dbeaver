@@ -16,9 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.altibase.edit;
 
-import org.jkiss.dbeaver.ext.altibase.model.AltibaseTrigger;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ext.altibase.model.AltibaseTableTrigger;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTriggerManager;
-import org.jkiss.dbeaver.ext.generic.model.GenericTrigger;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
@@ -26,21 +26,21 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
 
-public class AltibaseTriggerManager extends GenericTriggerManager {
+public class AltibaseTriggerManager extends GenericTriggerManager<AltibaseTableTrigger> {
     
     @Override
-    public boolean canEditObject(GenericTrigger object) {
+    public boolean canEditObject(AltibaseTableTrigger object) {
         return true;
     }
     
     @Override
     protected void createOrReplaceTriggerQuery(
-        DBRProgressMonitor monitor,
-        DBCExecutionContext executionContext,
-        List<DBEPersistAction> actions,
-        GenericTrigger trigger,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull AltibaseTableTrigger trigger,
         boolean create) {
         actions.add(new SQLDatabasePersistAction(
-                "Alter Trigger", ((AltibaseTrigger) trigger).getSource()));
+                "Alter Trigger", trigger.getSource()));
     }
 }

@@ -28,6 +28,10 @@
             <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseSynonym"/>
             <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseTableIndex"/>
             <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseReplication"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseJob"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseDbLink"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseLibrary"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseDirectory"/>
         </editor>
         <configurator class="org.jkiss.dbeaver.ext.altibase.ui.config.AltibaseProcedureConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseProcedureStandAlone"/>
