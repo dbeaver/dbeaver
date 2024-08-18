@@ -64,7 +64,7 @@ public class DB2ITableManager extends GenericTableManager implements DBEObjectRe
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
+    protected void addObjectRenameActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectRenameCommand command, @NotNull Map<String, Object> options) {
         GenericTableBase tableBase = command.getObject();
         GenericDataSource dataSource = tableBase.getDataSource();
         GenericStructContainer container = tableBase.getParentObject();

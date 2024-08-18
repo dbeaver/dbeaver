@@ -68,7 +68,7 @@ public class SQLServerTableTriggerManager extends SQLTriggerManager<SQLServerTab
         return newTrigger;
     }
 
-    protected void createOrReplaceTriggerQuery(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, SQLServerTableTrigger trigger, boolean create) {
+    protected void createOrReplaceTriggerQuery(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull SQLServerTableTrigger trigger, boolean create) {
         DBSObject defaultDatabase = ((SQLServerExecutionContext)executionContext).getDefaultCatalog();
         SQLServerTableBase table = trigger.getTable();
         if (defaultDatabase != table.getDatabase()) {
@@ -91,7 +91,7 @@ public class SQLServerTableTriggerManager extends SQLTriggerManager<SQLServerTab
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options) {
         SQLServerTableTrigger trigger = command.getObject();
         DBSObject defaultDatabase = ((SQLServerExecutionContext)executionContext).getDefaultCatalog();
         SQLServerTableBase table = trigger.getTable();

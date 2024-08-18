@@ -14,19 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.sql.backup;
+package org.jkiss.dbeaver.model.sql.semantics.model.ddl;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.connection.InternalDatabaseConfig;
-
-import java.io.IOException;
-import java.sql.Connection;
-
-public interface JDBCDatabaseBackupHandler {
-    void doBackup(
-            @NotNull Connection connection,
-            int currentSchemaVersion,
-            @NotNull InternalDatabaseConfig databaseConfig
-    ) throws DBException, IOException;
+public enum SQLQueryColumnConstraintKind {
+    UNKNOWN,
+    NOT_NULL,
+    UNIQUE,
+    PRIMARY_KEY,
+    REFERENCES,
+    CHECK
 }
