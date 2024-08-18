@@ -16,11 +16,13 @@
  */
 package org.jkiss.dbeaver.model.net;
 
+import org.jkiss.code.NotNull;
+
 /**
  * Handler which forward traffic to other machine. Lise SSH or SOCKS5
  */
 public interface DBWForwarder {
 
-    boolean matchesParameters(String host, int port);
+    boolean matchesParameters(@NotNull String host, int port);
 
 }
