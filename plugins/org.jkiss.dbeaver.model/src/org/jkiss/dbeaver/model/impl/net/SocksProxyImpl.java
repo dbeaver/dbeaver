@@ -42,13 +42,18 @@ public class SocksProxyImpl implements DBWNetworkHandler, DBWForwarder {
 
     private DBWHandlerConfiguration configuration;
 
+    @NotNull
     @Override
-    public DBPConnectionConfiguration initializeHandler(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo) throws DBException, IOException {
+    public DBPConnectionConfiguration initializeHandler(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBWHandlerConfiguration configuration,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBException, IOException {
         this.configuration = configuration;
 
         setupProxyHandler();
 
-        return null;
+        return connectionInfo;
     }
 
     @Override
@@ -61,7 +66,7 @@ public class SocksProxyImpl implements DBWNetworkHandler, DBWForwarder {
     }
 
     @Override
-    public boolean matchesParameters(String host, int port) {
+    public boolean matchesParameters(@NotNull String host, int port) {
         if (host.equals(configuration.getStringProperty(SocksConstants.PROP_HOST))) {
             int socksPort = configuration.getIntProperty(SocksConstants.PROP_PORT);
             return socksPort == port;
