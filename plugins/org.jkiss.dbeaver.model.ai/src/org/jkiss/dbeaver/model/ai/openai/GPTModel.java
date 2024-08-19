@@ -23,11 +23,13 @@ import java.util.Optional;
 
 public enum GPTModel {
     GPT_4_OMNI("gpt-4o", 128000, true),
+    GPT_4_MINI("gpt-4o-mini", 128000, true),
     GPT_TURBO_4("gpt-4-turbo", 128000, true),
-    GPT_TURBO("gpt-3.5-turbo", 4096, true),
-    GPT_TURBO16("gpt-3.5-turbo-16k", 16384, true),
+    GPT_TURBO("gpt-3.5-turbo", 16384, true),
     GPT_TURBO_INSTRUCT("gpt-3.5-turbo-instruct", 4096, false),
     GPT_4("gpt-4", 8192, true),
+    @Deprecated
+    GPT_TURBO16("gpt-3.5-turbo-16k", 16384, true, GPT_TURBO),
     @Deprecated
     TEXT_ADA("text-ada-001", 2048, false, GPT_TURBO_INSTRUCT),
     @Deprecated
@@ -53,7 +55,7 @@ public enum GPTModel {
     @NotNull
     public static GPTModel getByName(@NotNull String name) {
         Optional<GPTModel> model = Arrays.stream(values()).filter(it -> it.name.equals(name)).findFirst();
-        GPTModel gptModel = model.orElse(GPT_TURBO16);
+        GPTModel gptModel = model.orElse(GPT_TURBO);
         if (gptModel.getDeprecationReplacementModel() != null) {
             return gptModel.getDeprecationReplacementModel();
         } else {

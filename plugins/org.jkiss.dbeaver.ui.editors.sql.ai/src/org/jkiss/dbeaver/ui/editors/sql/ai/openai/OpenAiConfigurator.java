@@ -158,7 +158,7 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAIComple
     }
 
     protected String getDefaultModel() {
-        return GPTModel.GPT_TURBO16.getName();
+        return GPTModel.GPT_TURBO.getName();
     }
 
     protected void applySettings() {
