@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
+import org.jkiss.dbeaver.model.connection.DBPConnectionEditIntention;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
@@ -34,6 +35,7 @@ import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.IElementFilter;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
+import org.jkiss.dbeaver.ui.IObjectPropertyConfiguratorProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
@@ -63,15 +65,16 @@ public class AuthModelSelector extends Composite {
     private Combo authModelCombo;
     private boolean authSettingsEnabled = true;
     private boolean isEnableSharedConfigurator = true;
-    private boolean isAuthModelSelectionEnabled = true;
+    private final DBPConnectionEditIntention intention;
 
-    public AuthModelSelector(Composite parent, Runnable panelExtender, Runnable changeListener, boolean enableShared) {
+    public AuthModelSelector(Composite parent, Runnable panelExtender, Runnable changeListener, boolean enableShared, DBPConnectionEditIntention intention) {
         super(parent, SWT.NONE);
         setLayout(new FillLayout());
 
         this.panelExtender = panelExtender;
         this.changeListener = changeListener;
         this.isEnableSharedConfigurator = enableShared;
+        this.intention = intention;
 
         modelConfigPlaceholder = UIUtils.createControlGroup(this, UIConnectionMessages.dialog_connection_auth_group, 2, GridData.FILL_HORIZONTAL, 0);
 
@@ -197,7 +200,7 @@ public class AuthModelSelector extends Composite {
             authModelCombo.select(allAuthModels.indexOf(selectedAuthModel));
             authModelCombo.setToolTipText(CommonUtils.notEmpty(selectedAuthModel.getDescription()));
         }
-        boolean authSelectorVisible = this.isAuthModelSelectionEnabled && allAuthModels.size() >= 2;
+        boolean authSelectorVisible = this.intention.authModelSelectionEnabled && allAuthModels.size() >= 2;
         UIUtils.setControlVisible(authModelLabel, authSelectorVisible);
         UIUtils.setControlVisible(authModelComp, authSelectorVisible);
         ((Group)modelConfigPlaceholder).setText(authSelectorVisible ? UIConnectionMessages.dialog_connection_auth_group : UIConnectionMessages.dialog_connection_auth_group + " (" + selectedAuthModel.getName() + ")");
@@ -205,15 +208,13 @@ public class AuthModelSelector extends Composite {
         DBAAuthModel<?> authModel = selectedAuthModel.getInstance();
         if (authSettingsEnabled) {
             authModelConfigurator = null;
-            UIPropertyConfiguratorDescriptor uiConfiguratorDescriptor = UIPropertyConfiguratorRegistry.getInstance().getDescriptor(authModel);
-            if (uiConfiguratorDescriptor != null) {
-                try {
-                    authModelConfigurator = uiConfiguratorDescriptor.createConfigurator();
-                } catch (DBException e) {
-                    log.error(e);
+            try {
+                authModelConfigurator = UIPropertyConfiguratorRegistry.getInstance().tryCreateConfigurator(authModel, this.intention);
+                if (authModelConfigurator != null) {
+                    log.debug("No UI configurator for auth model " + selectedAuthModel.getId());
                 }
-            } else {
-                log.debug("No UI configurator for auth model " + selectedAuthModel.getId());
+            } catch (DBException e) {
+                log.error(e);
             }
         }
 
@@ -283,9 +284,5 @@ public class AuthModelSelector extends Composite {
 
     public void setEnableSharedConfigurator(boolean isEnable) {
         this.isEnableSharedConfigurator = isEnable;
-    }
-
-    public void setAuthModelSelectionEnabled(boolean authModelSelectionEnabled) {
-        this.isAuthModelSelectionEnabled = authModelSelectionEnabled;
     }
 }

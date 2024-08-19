@@ -32,6 +32,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.forms.events.ExpansionAdapter;
 import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
+import org.eclipse.ui.forms.widgets.Section;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -39,6 +40,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPConnectionEditIntention;
 import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
@@ -53,10 +55,7 @@ import org.jkiss.dbeaver.model.net.ssh.registry.SSHSessionControllerRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractTrackingJob;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
-import org.jkiss.dbeaver.ui.ShellUtils;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ConfigurationFileSelector;
 import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
@@ -66,10 +65,8 @@ import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.*;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * SSH tunnel configuration
@@ -853,6 +850,69 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 SSHConstants.DEFAULT_PORT,
                 new SSHAuthConfiguration.Password("", true)
             );
+        }
+    }
+
+    public static class Provider implements IObjectPropertyConfiguratorProvider<Object, DBWHandlerConfiguration, DBPConnectionEditIntention, SshTunnelCredsConfigurator> {
+
+        @NotNull
+        @Override
+        public SshTunnelCredsConfigurator createConfigurator(Object object, DBPConnectionEditIntention intention) throws DBException {
+            return switch (intention) {
+                case DEFAULT -> throw new RuntimeException("not implemented"); // TODO
+                case CREDENTIALS_ONLY -> new SshTunnelCredsConfigurator();
+            };
+        }
+    }
+
+    private static class SshTunnelCredsConfigurator implements IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> {
+        private List<ConfigurationWrapper> configurations;
+        private List<CredentialsPanel> credPanels;
+        private Composite credPanelsContainer;
+        private Runnable propertyChangeListener;
+
+        @Override
+        public void createControl(@NotNull Composite parent, Object object, @NotNull Runnable propertyChangeListener) {
+            this.credPanelsContainer = UIUtils.createControlGroup(parent, "SSH tunnel credentials", 1, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+            this.propertyChangeListener = propertyChangeListener;
+        }
+
+        @Override
+        public void loadSettings(@NotNull DBWHandlerConfiguration handlerConfiguration) {
+            try {
+                this.configurations = Arrays.stream(SSHUtils.loadHostConfigurations(handlerConfiguration, false))
+                                            .map(ConfigurationWrapper::new).toList();
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError("SSH configuration", "Unable to load SSH configuration due to an error", e);
+                return;
+            }
+            Arrays.stream(this.credPanelsContainer.getChildren()).forEach(c -> c.dispose());
+
+            this.credPanels = new ArrayList<>();
+            for (ConfigurationWrapper cfg: this.configurations) {
+                CredentialsPanel credsPanel = new CredentialsPanel(this.credPanelsContainer, this.propertyChangeListener);
+                this.credPanels.add(credsPanel);
+                credsPanel.loadSettings(cfg, false);
+            }
+            this.credPanelsContainer.pack(true);
+        }
+
+        @Override
+        public void saveSettings(@NotNull DBWHandlerConfiguration handlerConfiguration) {
+            SSHUtils.saveHostConfigurations(
+                handlerConfiguration,
+                this.credPanels.stream().map(CredentialsPanel::saveSettings).toArray(SSHHostConfiguration[]::new)
+            );
+        }
+
+        @Override
+        public void resetSettings(@NotNull DBWHandlerConfiguration handlerConfiguration) {
+
+        }
+
+        @Override
+        public boolean isComplete() {
+            return this.credPanels.stream().map(c -> c.saveSettings()).map(c -> validateConfiguration(c)).allMatch(s -> s == null);
         }
     }
 }

@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
  */
 public class UIPropertyConfiguratorDescriptor extends AbstractContextDescriptor
 {
-    public static final String EXTENSION_ID = "org.jkiss.dbeaver.ui.propertyConfigurator"; //$NON-NLS-1$
+    public static final String ELEMENT_NAME = "propertyConfigurator";
 
     private final String objectType;
     private final ObjectType uiConfigType;

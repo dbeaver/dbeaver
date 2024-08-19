@@ -30,12 +30,16 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
+import org.jkiss.dbeaver.model.connection.DBPConnectionEditIntention;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.registry.driver.DriverClassFindJob;
+import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
+import org.jkiss.dbeaver.ui.IObjectPropertyConfiguratorProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.net.SSLConfiguratorTrustStoreUI;
 import org.jkiss.utils.CommonUtils;
@@ -151,6 +155,25 @@ public class PostgreSSLConfigurator extends SSLConfiguratorTrustStoreUI {
         configuration.setProperty(PostgreConstants.PROP_SSL_FACTORY, sslFactoryCombo.getText());
         if (ENABLE_PROXY) {
             configuration.setProperty(PostgreConstants.PROP_SSL_PROXY, useProxyService.getSelection());
+        }
+    }
+
+    public static class Provider implements IObjectPropertyConfiguratorProvider<Object, DBWHandlerConfiguration, DBPConnectionEditIntention, IObjectPropertyConfigurator<Object, DBWHandlerConfiguration>> {
+
+        @NotNull
+        @Override
+        public IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> createConfigurator(
+            Object object, DBPConnectionEditIntention intention
+        ) throws DBException {
+            return switch (intention) {
+                case DEFAULT -> new PostgreSSLConfigurator();
+                case CREDENTIALS_ONLY -> new SSLConfiguratorTrustStoreUI() {
+                    @Override
+                    protected boolean useCACertificate() {
+                        return true;
+                    }
+                };
+            };
         }
     }
 }

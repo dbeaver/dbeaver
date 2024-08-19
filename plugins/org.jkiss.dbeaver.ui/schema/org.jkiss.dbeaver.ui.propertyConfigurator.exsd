@@ -18,7 +18,10 @@
       </annotation>
       <complexType>
          <sequence>
-            <element ref="propertyConfigurator" minOccurs="0" maxOccurs="unbounded"/>
+            <choice minOccurs="0" maxOccurs="unbounded">
+               <element ref="propertyConfigurator" />
+               <element ref="propertyConfiguratorProvider" />
+            </choice>
          </sequence>
       </complexType>
    </element>
@@ -28,17 +31,49 @@
          <attribute name="class" type="string">
             <annotation>
                <documentation>
-                  
+
                </documentation>
             </annotation>
          </attribute>
          <attribute name="uiClass" type="string">
             <annotation>
                <documentation>
-                  
+
                </documentation>
                <appInfo>
                   <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.ui.IObjectPropertyConfigurator"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="propertyConfiguratorProvider">
+      <complexType>
+         <attribute name="class" type="string" use="required">
+            <annotation>
+               <documentation>
+
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="uiProviderClass" type="string" use="required">
+            <annotation>
+               <documentation>
+
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.ui.IObjectPropertyConfiguratorProvider"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="parameterClass" type="string" use="optional">
+            <annotation>
+               <documentation>
+
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn=":java.lang.Object"/>
                </appInfo>
             </annotation>
          </attribute>
