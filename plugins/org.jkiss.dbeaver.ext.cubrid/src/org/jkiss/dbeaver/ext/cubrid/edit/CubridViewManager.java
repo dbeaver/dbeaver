@@ -16,9 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.edit;
 
-import java.util.List;
-import java.util.Map;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -40,16 +37,19 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
+import java.util.Map;
+
 public class CubridViewManager extends GenericViewManager implements DBEObjectRenamer<GenericTableBase> {
 
     @NotNull
     @Override
     protected GenericTableBase createDatabaseObject(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBECommandContext context,
-            @Nullable Object container,
-            @Nullable Object copyFrom,
-            @Nullable Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @Nullable Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options) {
         GenericStructContainer structContainer = (GenericStructContainer) container;
         String tableName = getNewChildName(monitor, structContainer, SQLTableManager.BASE_VIEW_NAME);
         GenericTableBase viewImpl = structContainer.getDataSource().getMetaModel().createTableOrViewImpl(

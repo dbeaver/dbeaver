@@ -21,18 +21,23 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Map;
 
-public class AltibaseReplication extends AltibaseGlobalObject implements DBSObjectLazy<AltibaseDataSource>, DBPRefreshableObject {
-    
+public class AltibaseReplication extends AltibaseGlobalObject implements DBSObjectLazy<AltibaseDataSource>, DBPRefreshableObject, DBPScriptObject {
+
+    protected String ddl;
+
     private String name;
     private String remoteAddr;
     private String remoteConnType;
@@ -52,7 +57,7 @@ public class AltibaseReplication extends AltibaseGlobalObject implements DBSObje
     private Timestamp remoteFaultDetectTime;
     
     protected AltibaseReplication(GenericStructContainer owner, JDBCResultSet resultSet) {
-        super((AltibaseDataSource) owner.getDataSource(), true);
+        super((AltibaseDataSource)owner.getDataSource(), true);
         
         name = JDBCUtils.safeGetString(resultSet, "REPLICATION_NAME");
         
@@ -156,11 +161,20 @@ public class AltibaseReplication extends AltibaseGlobalObject implements DBSObje
     public Object getLazyReference(Object propertyId) {
         return null;
     }
-    
+
     /**
      * Returns a replication's children: replication item
      */
     public List<AltibaseReplicationItem> getReplicationItems(DBRProgressMonitor monitor) throws DBException {
         return this.getDataSource().getReplicationCache().getChildren(monitor, this.getDataSource(), this);
+    }
+
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        if (CommonUtils.isEmpty(ddl)) {
+            ddl = ((AltibaseMetaModel) getDataSource().getMetaModel()).getReplicationDDL(monitor, this, options);
+        }
+        
+        return (CommonUtils.isEmpty(ddl)) ? "" : ddl + ";";
     }
 }

@@ -27,11 +27,16 @@
             <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseSequence"/>
             <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseSynonym"/>
             <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseTableIndex"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseReplication"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseJob"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseDbLink"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseLibrary"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseDirectory"/>
         </editor>
         <configurator class="org.jkiss.dbeaver.ext.altibase.ui.config.AltibaseProcedureConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseProcedureStandAlone"/>
         </configurator>
-                <configurator class="org.jkiss.dbeaver.ext.altibase.ui.config.AltibaseTypesetConfigurator">
+        <configurator class="org.jkiss.dbeaver.ext.altibase.ui.config.AltibaseTypesetConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseTypeset"/>
         </configurator>
         <configurator class="org.jkiss.dbeaver.ext.altibase.ui.config.AltibaseSequenceConfigurator">

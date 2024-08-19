@@ -250,7 +250,10 @@ public class SQLQueryTranslator implements SQLTranslator {
 
     private boolean translateColumnDataType(ColumnDefinition cd, SQLDialectDDLExtension extendedDialect, SQLDialect targetDialect) {
         String newDataType = null;
-        switch (cd.getColDataType().getDataType().toUpperCase(Locale.ENGLISH)) {
+        var colDataType = cd.getColDataType() != null
+            ? cd.getColDataType().getDataType().toUpperCase(Locale.ENGLISH)
+            : "";
+        switch (colDataType) {
             case "CLOB":
                 newDataType = (extendedDialect != null) ? extendedDialect.getClobDataType() : "varchar";
                 break;
