@@ -206,7 +206,7 @@ public class DTUIMessages extends NLS {
 
     public static String page_configure_metadata_title;
     public static String page_configure_table_properties_tab_title;
-    public static String page_configure_table_DDL_button_persist;
+    public static String page_configure_table_DDL_button_execute;
     public static String page_configure_table_DDL_button_copy;
     public static String page_configure_table_properties_text;
     public static String page_configure_table_properties_no_properties;

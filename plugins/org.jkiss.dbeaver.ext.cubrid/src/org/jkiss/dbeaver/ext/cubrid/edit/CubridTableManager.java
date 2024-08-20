@@ -49,7 +49,7 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
             GenericTableIndex.class);
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return !(container instanceof CubridTable);
     }
 

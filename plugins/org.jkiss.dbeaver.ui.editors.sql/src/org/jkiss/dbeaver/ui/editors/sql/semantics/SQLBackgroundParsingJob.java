@@ -218,6 +218,8 @@ public class SQLBackgroundParsingJob {
                     if (context == null) {
                         context = node.getGivenDataContext();
                     }
+                } else {
+                    return SQLQueryCompletionContext.EMPTY;
                 }
                 if (context == null) {
                     return SQLQueryCompletionContext.EMPTY;

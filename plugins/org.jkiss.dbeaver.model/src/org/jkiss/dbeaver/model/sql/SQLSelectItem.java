@@ -21,10 +21,7 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Database;
 import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.select.AllColumns;
-import net.sf.jsqlparser.statement.select.AllTableColumns;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectItem;
+import net.sf.jsqlparser.statement.select.*;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.utils.CommonUtils;
@@ -35,33 +32,38 @@ import org.jkiss.utils.CommonUtils;
  */
 public class SQLSelectItem {
     private final SQLQuery query;
-    private final SelectItem<?> source;
+    private final SelectItem source;
     private final Table table;
     private final String name;
     private boolean plainColumn;
 
-    SQLSelectItem(SQLQuery query, SelectItem<?> item) {
+    SQLSelectItem(SQLQuery query, SelectItem item) {
         this.query = query;
         this.source = item;
-        Expression itemExpression = item.getExpression();
-        if (itemExpression instanceof Column) {
-            table = ((Column) itemExpression).getTable();
-            name = ((Column) itemExpression).getColumnName();
-            plainColumn = true;
-        } else if (itemExpression instanceof AllTableColumns atc) {
-            table = atc.getTable();
-            name = "*";
-        } else if (itemExpression instanceof AllColumns) {
+        if (item instanceof SelectExpressionItem) {
+            final Expression itemExpression = ((SelectExpressionItem) item).getExpression();
+            if (itemExpression instanceof Column) {
+                table = ((Column) itemExpression).getTable();
+                name = ((Column) itemExpression).getColumnName();
+                plainColumn = true;
+            } else {
+                table = null;
+                final Alias alias = ((SelectExpressionItem) item).getAlias();
+                if (alias != null) {
+                    name = alias.getName();
+                } else {
+                    name = item.toString();
+                }
+            }
+        } else if (item instanceof AllColumns) {
             table = null;
+            name = "*";
+        } else if (item instanceof AllTableColumns) {
+            table = ((AllTableColumns) item).getTable();
             name = "*";
         } else {
             table = null;
-            final Alias alias = item.getAlias();
-            if (alias != null) {
-                name = alias.getName();
-            } else {
-                name = item.toString();
-            }
+            name = "?";
         }
     }
 
