@@ -47,7 +47,6 @@ public class PostgreIntervalValueHandler extends JDBCStringValueHandler {
 
     private static final DecimalFormat SECONDS_FORMAT;
 
-
     private static final long MILLISECONDS_IN_SECOND = 1000;
     private static final long MILLISECONDS_IN_MINUTE = 60 * MILLISECONDS_IN_SECOND;
     private static final long MILLISECONDS_IN_HOUR = 60 * MILLISECONDS_IN_MINUTE;
