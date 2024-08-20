@@ -55,14 +55,12 @@ public class PostgreIntervalValueHandler extends JDBCStringValueHandler {
     private static final long MILLISECONDS_IN_YEAR = 365 * MILLISECONDS_IN_DAY;
 
     // parsing values like: 3 mons 15 days, 00:00:00.12, -9 days
-    private final String intervalRegex = "(?i)(?<sign>-)?\\s*" +
+    private static final String intervalRegex = "(?i)(?<sign>-)?\\s*" +
         "(?:(?<years>\\d+)\\s+years?)?\\s*" +
         "(?:(?<months>\\d+)\\s+mon(?:s|ths)?)?\\s*" +
         "(?:(?<days>\\d+)\\s+days?)?\\s*" +
         "(?:(?<time>\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?))?\\b";
-    private final Pattern pattern = Pattern.compile(intervalRegex);
-
-
+    private static final Pattern pattern = Pattern.compile(intervalRegex);
 
     static {
         SECONDS_FORMAT = new DecimalFormat("0.00####");
@@ -122,13 +120,13 @@ public class PostgreIntervalValueHandler extends JDBCStringValueHandler {
     @Override
     public Comparator<Object> getComparator() {
         return (o1, o2) -> {
-            Long leftInterval = getSecondsFromInterval((String) o1);
-            Long rightInterval = getSecondsFromInterval((String) o2);
+            long leftInterval = getSecondsFromInterval((String) o1);
+            long rightInterval = getSecondsFromInterval((String) o2);
             return Long.compare(leftInterval, rightInterval);
         };
     }
 
-    private Long getSecondsFromInterval(String interval) {
+    private long getSecondsFromInterval(String interval) {
 
         Matcher matcher = pattern.matcher(interval);
         long totalSeconds = 0;
