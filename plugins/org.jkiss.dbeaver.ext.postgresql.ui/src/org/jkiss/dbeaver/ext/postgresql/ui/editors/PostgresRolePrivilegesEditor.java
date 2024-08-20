@@ -278,6 +278,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     continue;
                 }
                 if (isRoleEditor()) {
+                    PostgreRole role = (PostgreRole) databaseObject;
                     PostgrePrivilegeGrant.Kind kind;
                     String objectName;
                     String schemaName;
@@ -288,7 +289,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                             defaultPrivOwner = (PostgreSchema) parentObject;
                             PostgreDefaultPrivilege defaultPrivilege = new PostgreDefaultPrivilege(
                                 defaultPrivOwner,
-                                databaseObject.getName(),
+                                role.getRoleReference(),
                                 Collections.emptyList());
                             Class<? extends DBSObject> childrenClass = folder.getChildrenClass();
                             if (DBSSequence.class.isAssignableFrom(childrenClass)) {
@@ -329,10 +330,12 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                             Collections.emptyList());
                     }
                 } else {
-                    String currentUser = databaseObject.getDataSource().getContainer().getActualConnectionConfiguration().getUserName();
+                    String currentUserName = databaseObject.getDataSource().getContainer().getActualConnectionConfiguration().getUserName();
+                    PostgreRoleReference currentUserReference = new PostgreRoleReference(databaseObject.getDatabase(), currentUserName, null);
+                    PostgreRoleReference grantee = ((PostgreRole) currentObject).getRoleReference();
                     PostgrePrivilegeGrant privGrant = new PostgrePrivilegeGrant(
-                        currentUser,
-                        currentObject.getName(),
+                        currentUserReference,
+                        grantee,
                         databaseObject.getDatabase().getName(),
                         databaseObject.getSchema().getName(),
                         databaseObject.getName(),
@@ -341,7 +344,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                         false);
                     permission = new PostgreObjectPrivilege(
                         databaseObject,
-                        currentObject.getName(),
+                        grantee,
                         Collections.singletonList(privGrant));
                 }
                 if (permission != null) {
