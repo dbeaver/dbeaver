@@ -235,6 +235,12 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
         return Objects.hash(nodePath, activePageId, activeFolderId, dataSourceId);
     }
 
+    @NotNull
+    @Override
+    public DBPProject getProject() {
+        return project;
+    }
+
     public IDatabaseEditorInput initializeRealInput(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         // Get the node path.
