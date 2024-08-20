@@ -52,7 +52,7 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
     private static final boolean USE_DIRECT_UPDATE = false;
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource)
+    public long getMakerOptions(@NotNull DBPDataSource dataSource)
     {
         return FEATURE_EDITOR_ON_CREATE;
     }
@@ -65,19 +65,19 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
     }
 
     @Override
-    public boolean canCreateObject(Object container)
+    public boolean canCreateObject(@NotNull Object container)
     {
         return true;
     }
 
     @Override
-    public boolean canDeleteObject(MySQLUser object)
+    public boolean canDeleteObject(@NotNull MySQLUser object)
     {
         return true;
     }
 
     @Override
-    public MySQLUser createNewObject(DBRProgressMonitor monitor, DBECommandContext commandContext, Object container, Object copyFrom, Map<String, Object> options)
+    public MySQLUser createNewObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext commandContext, @NotNull Object container, Object copyFrom, @NotNull Map<String, Object> options)
     {
         MySQLUser newUser = new MySQLUser((MySQLDataSource) container, null);
         if (copyFrom instanceof MySQLUser) {
@@ -95,7 +95,7 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
     }
 
     @Override
-    public void deleteObject(DBECommandContext commandContext, MySQLUser user, Map<String, Object> options)
+    public void deleteObject(@NotNull DBECommandContext commandContext, @NotNull MySQLUser user, @NotNull Map<String, Object> options)
     {
         commandContext.addCommand(new CommandDropUser(user), new DeleteObjectReflector<>(this), true);
     }

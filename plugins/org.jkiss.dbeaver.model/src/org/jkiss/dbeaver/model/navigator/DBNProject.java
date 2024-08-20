@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -151,6 +152,8 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
 
     @Override
     public void rename(DBRProgressMonitor monitor, String newName) throws DBException {
+        GeneralUtils.validateResourceNameUnconditionally(newName);
+
         project.ensureOpen();
 
         try {
@@ -161,8 +164,8 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
             final IProjectDescription description = eclipseProject.getDescription();
             description.setName(newName);
             eclipseProject.move(description, true, monitor.getNestedMonitor());
-        } catch (CoreException e) {
-            throw new DBException("Can't rename project", e);
+        } catch (Exception e) {
+            throw new DBException("Can't rename project: " + e.getMessage(), e);
         }
     }
 

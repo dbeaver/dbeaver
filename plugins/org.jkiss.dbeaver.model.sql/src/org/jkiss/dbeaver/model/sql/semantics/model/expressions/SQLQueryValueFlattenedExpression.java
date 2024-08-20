@@ -14,41 +14,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.sql.semantics.model.select;
+package org.jkiss.dbeaver.model.sql.semantics.model.expressions;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
+import java.util.List;
+
 /**
- * Describes a constant expression in the query, like string or number
+ * Describes value expressions tree hierarchy
  */
-public class SQLQueryValueConstantExpression extends SQLQueryValueExpression {
+public class SQLQueryValueFlattenedExpression extends SQLQueryValueExpression {
     @NotNull
-    protected String valueString;
-    
-    public SQLQueryValueConstantExpression(@NotNull STMTreeNode syntaxNode, @NotNull String valueString, @NotNull SQLQueryExprType type) {
-        super(syntaxNode);
-        this.valueString = valueString;
-        this.type = type;
+    private final List<SQLQueryValueExpression> operands;
+
+    public SQLQueryValueFlattenedExpression(
+        @NotNull STMTreeNode syntaxNode,
+        @NotNull List<SQLQueryValueExpression> operands
+    ) {
+        super(syntaxNode, operands.toArray(SQLQueryValueExpression[]::new));
+        this.operands = operands;
     }
-    
+
     @NotNull
-    public String getValueString() {
-        return this.valueString;
+    public List<SQLQueryValueExpression> getOperands() {
+        return operands;
     }
-    
+
     @Override
     protected void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
-        // do nothing
+        this.operands.forEach(opnd -> opnd.propagateContext(context, statistics));
     }
-    
+
     @Override
-    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, T arg) {
-        return visitor.visitValueConstantExpr(this, arg);
+    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg) {
+        return visitor.visitValueFlatExpr(this, arg);
     }
 }
-
