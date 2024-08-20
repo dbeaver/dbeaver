@@ -465,8 +465,9 @@ public final class DBStructUtils {
 
         // Get type modifiers from target datasource
         if (addModifiers && objectContainer != null) {
-            SQLDialect dialect = objectContainer.getDataSource().getSQLDialect();
-            String modifiers = dialect.getColumnTypeModifiers((DBPDataSource)objectContainer, srcTypedObject, typeName, dataKind);
+            DBPDataSource dataSource = objectContainer.getDataSource();
+            SQLDialect dialect = dataSource.getSQLDialect();
+            String modifiers = dialect.getColumnTypeModifiers(dataSource, srcTypedObject, typeName, dataKind);
             if (modifiers != null) {
                 typeName += modifiers;
             } else if (VARCHAR_DATA_TYPE.equals(typeNameLower) || VARCHAR2_DATA_TYPE.equals(typeNameLower)) {

@@ -25,9 +25,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -40,13 +42,14 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * EditDictionaryPage
  *
  * @author Serge Rider
  */
-public class EditDictionaryPage extends AttributesSelectorPage {
+public class EditDictionaryPage extends AttributesSelectorPage<DBSEntity, DBSEntityAttribute> {
 
     private Text criteriaText;
     private DBVEntity dictionary;
@@ -146,6 +149,15 @@ public class EditDictionaryPage extends AttributesSelectorPage {
     @Override
     public DBSObject getObject() {
         return entity;
+    }
+
+    @NotNull
+    @Override
+    protected List<? extends DBSEntityAttribute> getAttributes(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntity object
+    ) throws DBException {
+        return CommonUtils.safeList(object.getAttributes(monitor));
     }
 
     @Override
