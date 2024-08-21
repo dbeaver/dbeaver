@@ -293,13 +293,13 @@ public class PostgreDatabase extends JDBCRemoteInstance
     @NotNull
     @Override
     protected String getMainContextName() {
-        return JDBCExecutionContext.TYPE_MAIN + " <" + getName() + ">";
+        return JDBCExecutionContext.TYPE_MAIN + " <" + getName() + "> [Connection info]" + getDataSource().getContainer().getName() + " " + getDataSource().getContainer().getId();
     }
 
     @NotNull
     @Override
     protected String getMetadataContextName() {
-        return JDBCExecutionContext.TYPE_METADATA + " <" + getName() + ">";
+        return JDBCExecutionContext.TYPE_METADATA + " <" + getName() + "> [Connection info]" + getDataSource().getContainer().getName() + " " + getDataSource().getContainer().getId();
     }
 
     @NotNull
