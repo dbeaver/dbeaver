@@ -63,8 +63,6 @@ import java.util.function.Predicate;
  */
 public class SQLQueryModelRecognizer {
 
-    private final SQLQueryExpressionMapper queryExpressionMapper = new SQLQueryExpressionMapper(this);
-
     private final Set<SQLQuerySymbolEntry> symbolEntries = new HashSet<>();
     
     private final SQLQueryRecognitionContext recognitionContext;
@@ -274,7 +272,10 @@ public class SQLQueryModelRecognizer {
 
     @NotNull
     public SQLQueryRowsSourceModel collectQueryExpression(@NotNull STMTreeNode tree) {
-        return this.queryExpressionMapper.translate(tree);
+        // expression mapper is a stateful thing, so it cannot be reused for multiple subtrees and should be local only
+        // its configuration is already static internally and shared between all instances avoiding repeated initialization
+        SQLQueryExpressionMapper queryExpressionMapper = new SQLQueryExpressionMapper(this);
+        return queryExpressionMapper.translate(tree);
     }
 
     @NotNull
