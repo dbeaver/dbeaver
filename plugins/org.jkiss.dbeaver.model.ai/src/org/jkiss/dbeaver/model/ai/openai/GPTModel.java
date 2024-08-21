@@ -55,7 +55,7 @@ public enum GPTModel {
     public static GPTModel getByName(@NotNull String name) {
         return Arrays.stream(values()).filter(it -> it.name.equals(name))
                 .findFirst()
-                .map(GPTModel::getLastDeprecationReplacementModel)
+                .map(GPTModel::getFinalReplacementModel)
                 .orElse(GPT_TURBO);
     }
 
@@ -88,7 +88,12 @@ public enum GPTModel {
         return deprecationReplacementModel;
     }
 
-    public GPTModel getLastDeprecationReplacementModel() {
+    /**
+     * Returns the last model in the deprecation chain. If the model is not deprecated, returns the model itself.
+     *
+     * @return the last model in the deprecation chain
+     */
+    public GPTModel getFinalReplacementModel() {
         GPTModel lastReplacement = this;
         while (lastReplacement.getDeprecationReplacementModel() != null) {
             lastReplacement = lastReplacement.getDeprecationReplacementModel();
