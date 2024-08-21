@@ -183,17 +183,11 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                 if (contextDefaults != null) {
                     DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
                     DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
-                    String databaseNameFromConnectionConfiguration = executionContext.getDataSource().getContainer()
-                        .getConnectionConfiguration().getDatabaseName();
-
                     if (defaultCatalog != null && (defaultSchema != null || contextDefaults.supportsSchemaChange())) {
-                        String catalogName = databaseNameFromConnectionConfiguration != null ?
-                            databaseNameFromConnectionConfiguration : defaultCatalog.getName();
-                        schemaName = defaultSchema == null ? "?" : defaultSchema.getName() + "@" + catalogName;
+                        schemaName = defaultSchema == null ? "?": defaultSchema.getName() + "@" + defaultCatalog.getName();
                         schemaIcon = DBIcon.TREE_SCHEMA;
                     } else if (defaultCatalog != null) {
-                        schemaName = databaseNameFromConnectionConfiguration != null ?
-                            databaseNameFromConnectionConfiguration : defaultCatalog.getName();
+                        schemaName = defaultCatalog.getName();
                         schemaIcon = DBIcon.TREE_DATABASE;
                     } else if (defaultSchema != null) {
                         schemaName = defaultSchema.getName();
