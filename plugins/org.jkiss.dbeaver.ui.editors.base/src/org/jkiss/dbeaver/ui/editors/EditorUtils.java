@@ -413,6 +413,8 @@ public class EditorUtils {
 
         String resourcePath = projectMeta.getResourcePath(file);
         projectMeta.setResourceProperty(resourcePath, PROP_CONTEXT_DEFAULT_DATASOURCE, dataSourceId);
+        projectMeta.setResourceProperty(resourcePath, PROP_CONTEXT_DEFAULT_CATALOG, "");
+        projectMeta.setResourceProperty(resourcePath, PROP_CONTEXT_DEFAULT_SCHEMA, "");
         if (!isDefaultContextSettings(context)) {
             String defaultCatalogName = getDefaultCatalogName(context);
             if (!CommonUtils.isEmpty(defaultCatalogName)) {
