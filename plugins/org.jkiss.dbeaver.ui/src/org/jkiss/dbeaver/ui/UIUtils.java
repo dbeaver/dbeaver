@@ -25,6 +25,7 @@ import org.eclipse.e4.ui.model.application.ui.menu.MHandledItem;
 import org.eclipse.e4.ui.workbench.renderers.swt.HandledContributionItem;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.commands.ActionHandler;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
@@ -1234,22 +1235,31 @@ public class UIUtils {
 
         // Dialog settings
         GridData gd = new GridData(style);
-        GC gc = new GC(button);
-        int widthHint;
-        try {
-            gc.setFont(JFaceResources.getDialogFont());
-            widthHint = org.eclipse.jface.dialogs.Dialog.convertHorizontalDLUsToPixels(gc.getFontMetrics(), IDialogConstants.BUTTON_WIDTH);
-        } finally {
-            gc.dispose();
-        }
-        Point minSize = button.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
-        gd.widthHint = Math.max(widthHint, minSize.x);
+        gd.widthHint = getDialogButtonWidth(button);
         button.setLayoutData(gd);
 
         if (selectionListener != null) {
             button.addSelectionListener(selectionListener);
         }
         return button;
+    }
+
+    /**
+     * Returns the width of the button. The width is calculated based on the button font.
+     *
+     * @param button the button.
+     * @return the width of the button.
+     */
+    public static int getDialogButtonWidth(@NotNull Button button) {
+        GC gc = new GC(button);
+        try {
+            gc.setFont(JFaceResources.getDialogFont());
+            int widthHint = Dialog.convertHorizontalDLUsToPixels(gc.getFontMetrics(), IDialogConstants.BUTTON_WIDTH);
+            Point minSize = button.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
+            return Math.max(widthHint, minSize.x);
+        } finally {
+            gc.dispose();
+        }
     }
 
     @NotNull
@@ -1654,7 +1664,7 @@ public class UIUtils {
     }
 
     public static boolean isInDialog(Control control) {
-        return control.getShell().getData() instanceof org.eclipse.jface.dialogs.Dialog;
+        return control.getShell().getData() instanceof Dialog;
     }
 
     public static boolean isInWizard(Control control) {
