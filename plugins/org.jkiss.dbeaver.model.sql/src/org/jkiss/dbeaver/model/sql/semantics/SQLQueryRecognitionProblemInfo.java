@@ -50,36 +50,18 @@ public class SQLQueryRecognitionProblemInfo {
     @Nullable
     private final DBException exception;
 
-    private SQLQueryRecognitionProblemInfo(
-            @NotNull Severity severity,
-            @NotNull STMTreeNode syntaxNode,
-            @Nullable SQLQuerySymbolEntry symbol,
-            @NotNull String message,
-            @Nullable DBException exception
+    public SQLQueryRecognitionProblemInfo(
+        @NotNull Severity severity,
+        @NotNull STMTreeNode syntaxNode,
+        @Nullable SQLQuerySymbolEntry symbol,
+        @NotNull String message,
+        @Nullable DBException exception
     ) {
         this.severity = severity;
         this.syntaxNode = syntaxNode;
         this.symbol = symbol;
         this.message = message;
         this.exception = exception;
-    }
-
-    public static SQLQueryRecognitionProblemInfo makeError(
-            @NotNull STMTreeNode syntaxNode,
-            @Nullable SQLQuerySymbolEntry symbol,
-            @NotNull String message,
-            @Nullable DBException exception
-    ) {
-        return new SQLQueryRecognitionProblemInfo(Severity.ERROR, syntaxNode, symbol, message, exception);
-    }
-
-    public static SQLQueryRecognitionProblemInfo makeWarning(
-            @NotNull STMTreeNode syntaxNode,
-            @Nullable SQLQuerySymbolEntry symbol,
-            @NotNull String message,
-            @Nullable DBException exception
-    ) {
-        return new SQLQueryRecognitionProblemInfo(Severity.WARNING, syntaxNode, symbol, message, exception);
     }
 
     @NotNull
