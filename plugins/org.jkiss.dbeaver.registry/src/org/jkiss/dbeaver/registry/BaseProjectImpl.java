@@ -417,8 +417,9 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
         loadMetadata();
         resourcePath = CommonUtils.normalizeResourcePath(resourcePath);
         synchronized (resourcesSync) {
-            this.resourceProperties.put(resourcePath, new HashMap<>(newProps));
+            this.resourceProperties.put(resourcePath, new LinkedHashMap<>(newProps));
         }
+        flushMetadata();
     }
 
     @Override
