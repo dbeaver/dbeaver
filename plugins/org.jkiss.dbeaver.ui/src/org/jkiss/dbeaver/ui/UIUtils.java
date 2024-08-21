@@ -53,6 +53,8 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowData;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.contexts.IContextService;
@@ -1206,12 +1208,12 @@ public class UIUtils {
 
     @NotNull
     public static Button createDialogButton(@NotNull Composite parent, @Nullable String label, @Nullable SelectionListener selectionListener) {
-        return createDialogButton(parent, label, null, null, selectionListener);
+        return createDialogButton(parent, label, null, (DBPImage) null, selectionListener);
     }
 
     @NotNull
     public static Button createDialogButton(@NotNull Composite parent, @Nullable String label, @Nullable DBPImage icon, @Nullable String toolTip, @Nullable SelectionListener selectionListener) {
-        return createDialogButton(parent, label, toolTip, icon, GridData.HORIZONTAL_ALIGN_FILL, selectionListener);
+        return createDialogButton(parent, label, toolTip, icon, selectionListener);
     }
 
     @NotNull
@@ -1220,7 +1222,6 @@ public class UIUtils {
         @Nullable String label,
         @Nullable String toolTip,
         @Nullable DBPImage icon,
-        int style,
         @Nullable SelectionListener selectionListener
     ) {
         Button button = new Button(parent, SWT.PUSH);
@@ -1233,15 +1234,25 @@ public class UIUtils {
             button.setToolTipText(toolTip);
         }
 
-        // Dialog settings
-        GridData gd = new GridData(style);
-        gd.widthHint = getDialogButtonWidth(button);
-        button.setLayoutData(gd);
+        button.setLayoutData(getDialogButtonLayoutData(parent, button));
 
         if (selectionListener != null) {
             button.addSelectionListener(selectionListener);
         }
         return button;
+    }
+
+    private static Object getDialogButtonLayoutData(@NotNull Composite parent, @NotNull Button button) {
+        int buttonWidth = getDialogButtonWidth(button);
+        if (parent.getLayout() instanceof GridLayout) {
+            GridData gridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+            gridData.widthHint = buttonWidth;
+            return gridData;
+        } else if (parent.getLayout() instanceof RowLayout) {
+            return new RowData(buttonWidth, SWT.DEFAULT);
+        } else {
+            return null;
+        }
     }
 
     /**
