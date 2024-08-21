@@ -144,17 +144,17 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAIComple
     @Override
     public void loadSettings(@NotNull AIEngineSettings aiSettings) {
         token = CommonUtils.toString(aiSettings.getProperties().get(AIConstants.GPT_API_TOKEN), "");
-        if (isUsesModel()) {
-            model = CommonUtils.toString(aiSettings.getProperties().get(AIConstants.GPT_MODEL),
-                getDefaultModel()
-            );
-        }
+        model = isUsesModel() ? readModel(aiSettings).getName() : "";
         temperature = CommonUtils.toString(aiSettings.getProperties().get(
             AIConstants.AI_TEMPERATURE),
             "0.0"
         );
         logQuery = CommonUtils.toBoolean(aiSettings.getProperties().get(AIConstants.AI_LOG_QUERY)) ;
         applySettings();
+    }
+
+    private GPTModel readModel(@NotNull AIEngineSettings aiSettings) {
+        return GPTModel.getByName(CommonUtils.toString(aiSettings.getProperties().get(AIConstants.GPT_MODEL), getDefaultModel()));
     }
 
     protected String getDefaultModel() {

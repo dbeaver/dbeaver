@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.ai.openai;
 import org.jkiss.code.NotNull;
 
 import java.util.Arrays;
-import java.util.Optional;
 
 public enum GPTModel {
     GPT_4_OMNI("gpt-4o", 128000, true),
@@ -54,13 +53,10 @@ public enum GPTModel {
      */
     @NotNull
     public static GPTModel getByName(@NotNull String name) {
-        Optional<GPTModel> model = Arrays.stream(values()).filter(it -> it.name.equals(name)).findFirst();
-        GPTModel gptModel = model.orElse(GPT_TURBO);
-        if (gptModel.getDeprecationReplacementModel() != null) {
-            return gptModel.getDeprecationReplacementModel();
-        } else {
-            return gptModel;
-        }
+        return Arrays.stream(values()).filter(it -> it.name.equals(name))
+                .findFirst()
+                .map(GPTModel::getLastDeprecationReplacementModel)
+                .orElse(GPT_TURBO);
     }
 
     GPTModel(String name, int maxTokens, boolean isChatAPI) {
@@ -90,5 +86,13 @@ public enum GPTModel {
 
     public GPTModel getDeprecationReplacementModel() {
         return deprecationReplacementModel;
+    }
+
+    public GPTModel getLastDeprecationReplacementModel() {
+        GPTModel lastReplacement = this;
+        while (lastReplacement.getDeprecationReplacementModel() != null) {
+            lastReplacement = lastReplacement.getDeprecationReplacementModel();
+        }
+        return lastReplacement;
     }
 }
