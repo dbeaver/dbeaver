@@ -62,16 +62,12 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
     @Override
     public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException {
         Object value = super.getValueFromObject(session, type, object, copy, validateValue);
-        if (value instanceof Date || value instanceof LocalDateTime) {
-            switch (type.getTypeID()) {
-                case Types.TIME:
-                case Types.TIME_WITH_TIMEZONE:
-                    return getTimeValue(value);
-                case Types.DATE:
-                    return getDateValue(value);
-                default:
-                    return getTimestampValue(value);
-            }
+        if (value instanceof Date || value instanceof LocalDate || value instanceof LocalDateTime) {
+            return switch (type.getTypeID()) {
+                case Types.TIME, Types.TIME_WITH_TIMEZONE -> getTimeValue(value);
+                case Types.DATE -> getDateValue(value);
+                default -> getTimestampValue(value);
+            };
         }
         return value;
     }
@@ -79,8 +75,7 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
     @Override
     public Object fetchValueObject(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, @NotNull DBSTypedObject type, int index) throws DBCException {
         try {
-            if (resultSet instanceof JDBCResultSet) {
-                JDBCResultSet dbResults = (JDBCResultSet) resultSet;
+            if (resultSet instanceof JDBCResultSet dbResults) {
 
                 // check for native format
                 if (formatSettings.isUseNativeDateTimeFormat()) {
@@ -93,19 +88,19 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
 
                 // It seems that some drivers doesn't support reading date/time values with explicit calendar
                 // So let's use simple version
-                switch (type.getTypeID()) {
-                    case Types.TIME:
-                    case Types.TIME_WITH_TIMEZONE:
-                        return dbResults.getTime(index + 1);
-                    case Types.DATE:
+                return switch (type.getTypeID()) {
+                    case Types.TIME, Types.TIME_WITH_TIMEZONE -> dbResults.getTime(index + 1);
+                    case Types.DATE -> {
                         if (isReadDateAsObject()) {
-                            return getValueFromObject(session, type, dbResults.getObject(index + 1), false, false);
+                            yield getValueFromObject(session, type, dbResults.getObject(index + 1), false, false);
                         }
-                        return dbResults.getDate(index + 1);
-                    default:
+                        yield dbResults.getDate(index + 1);
+                    }
+                    default -> {
                         Object value = dbResults.getObject(index + 1);
-                        return getValueFromObject(session, type, value, false, false);
-                }
+                        yield getValueFromObject(session, type, value, false, false);
+                    }
+                };
             } else {
                 return resultSet.getAttributeValue(index);
             }
