@@ -238,5 +238,4 @@ public class RegistryConstants {
     public static final String ATTR_NOT_AVAILABLE_DRIVER = "notAvailableDriver";
     public static final String ATTR_MESSAGE = "message";
     public static final String ATTR_TITLE = "title";
-
 }
