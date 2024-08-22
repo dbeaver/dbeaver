@@ -22,6 +22,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
+import java.util.Comparator;
+
 /**
  * DBD Value Handler.
  * Extract, edit and bind database values.
@@ -116,5 +118,14 @@ public interface DBDValueHandler extends DBDValueRenderer
      */
     @NotNull
     DBCLogicalOperator[] getSupportedOperators(@NotNull DBSTypedObject attribute);
+
+    /**
+     * Get comparator for compare values
+     *
+     * @return comparator
+     */
+    default Comparator<Object> getComparator() {
+        return null;
+    }
 
 }

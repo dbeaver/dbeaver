@@ -190,7 +190,7 @@ public class GroupingPanel implements IResultSetPanel {
 
     static class EditColumnsAction extends GroupingAction {
         EditColumnsAction(GroupingResultsContainer resultsContainer) {
-            super(resultsContainer, ResultSetMessages.controls_resultset_grouping_edit, DBeaverIcons.getImageDescriptor(UIIcon.ADD));
+            super(resultsContainer, ResultSetMessages.controls_resultset_grouping_edit, DBeaverIcons.getImageDescriptor(UIIcon.EDIT_COLUMN));
         }
 
         @Override
