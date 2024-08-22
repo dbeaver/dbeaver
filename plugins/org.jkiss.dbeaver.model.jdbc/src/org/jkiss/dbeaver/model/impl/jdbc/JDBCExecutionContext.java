@@ -69,13 +69,17 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     public JDBCExecutionContext(@NotNull JDBCRemoteInstance instance, String purpose) {
         super(instance.getDataSource(), purpose);
         this.instance = instance;
-        // Null check is needed for unit tests
-        JDBCDataSource dataSource = instance.getDataSource();
-        if (dataSource != null && !dataSource.getContainer().getDriver().isThreadSafeDriver()) {
+        if (!instance.getDataSource().getContainer().getDriver().isThreadSafeDriver()) {
             queryExecutionLock = new ReentrantLock();
         } else {
             queryExecutionLock = null;
         }
+    }
+
+    public JDBCExecutionContext(@NotNull JDBCRemoteInstance instance, boolean test) {
+        super(instance.getDataSource(), "Test for " + instance);
+        this.instance = instance;
+        queryExecutionLock = null;
     }
 
     @Override
