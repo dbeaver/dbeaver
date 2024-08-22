@@ -234,7 +234,7 @@ public class SQLGroupingQueryGenerator {
             String schemaName = getSchemaName() != null ? getSchemaName() + sqlDialect.getStructSeparator() : "";
             String fullyQualifiedTableName = databaseName + schemaName + getName();
             String alias = getAlias() != null ? getAlias().toString() : "";
-            return fullyQualifiedTableName + alias;
+            return fullyQualifiedTableName + " " + alias;
         }
     }
 }
