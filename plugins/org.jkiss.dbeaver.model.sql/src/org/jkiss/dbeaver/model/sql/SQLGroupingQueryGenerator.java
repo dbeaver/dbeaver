@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -227,7 +228,9 @@ public class SQLGroupingQueryGenerator {
 
         @Override
         public String toString() {
-            String databaseName = getDatabase().getDatabaseName() != null ? getDatabase().getDatabaseName() + sqlDialect.getCatalogSeparator() : "";
+            String databaseName = !CommonUtils.isEmpty(getDatabase().getDatabaseName())
+                    ? getDatabase().getDatabaseName() + sqlDialect.getCatalogSeparator()
+                    : "";
             String schemaName = getSchemaName() != null ? getSchemaName() + sqlDialect.getStructSeparator() : "";
             String fullyQualifiedTableName = databaseName + schemaName + getName();
             String alias = getAlias() != null ? getAlias().toString() : "";
