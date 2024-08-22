@@ -21,14 +21,10 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.select.FromItem;
-import net.sf.jsqlparser.statement.select.FromItemVisitor;
-import net.sf.jsqlparser.statement.select.Pivot;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
-import net.sf.jsqlparser.statement.select.UnPivot;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -220,52 +216,22 @@ public class SQLGroupingQueryGenerator {
      * This class is used to format the table name according to the specified SQL dialect.
      * It is necessary because `net.sf.jsqlparser.schema.Table` only supports a dot as a separator.
      */
-    private record FormattedTable(Table table, SQLDialect sqlDialect) implements FromItem {
+    // TODO: Remove this class when https://github.com/dbeaver/pro/issues/3140 will be resolved
+    private static class FormattedTable extends Table {
+        private final SQLDialect sqlDialect;
 
-        @Override
-        public void accept(FromItemVisitor fromItemVisitor) {
-            table.accept(fromItemVisitor);
-        }
-
-        @Override
-        public Alias getAlias() {
-            return table.getAlias();
-        }
-
-        @Override
-        public void setAlias(Alias alias) {
-            table.setAlias(alias);
-        }
-
-        @Override
-        public Pivot getPivot() {
-            return table.getPivot();
-        }
-
-        @Override
-        public void setPivot(Pivot pivot) {
-            table.setPivot(pivot);
-        }
-
-        @Override
-        public UnPivot getUnPivot() {
-            return table.getUnPivot();
-        }
-
-        @Override
-        public void setUnPivot(UnPivot unPivot) {
-            table.setUnPivot(unPivot);
+        public FormattedTable(Table table, SQLDialect sqlDialect) {
+            super(table.getDatabase(), table.getSchemaName(), table.getName());
+            this.sqlDialect = sqlDialect;
         }
 
         @Override
         public String toString() {
-            String tableName = table.getDatabase()
-                + sqlDialect.getCatalogSeparator()
-                + table.getSchemaName()
-                + sqlDialect.getStructSeparator()
-                + table.getName();
-            String alias = table.getAlias() != null ? table.getAlias().toString() : "";
-            return tableName + alias;
+            String databaseName = getDatabase().getDatabaseName() != null ? getDatabase().getDatabaseName() + sqlDialect.getCatalogSeparator() : "";
+            String schemaName = getSchemaName() != null ? getSchemaName() + sqlDialect.getStructSeparator() : "";
+            String fullyQualifiedTableName = databaseName + schemaName + getName();
+            String alias = getAlias() != null ? getAlias().toString() : "";
+            return fullyQualifiedTableName + alias;
         }
     }
 }
