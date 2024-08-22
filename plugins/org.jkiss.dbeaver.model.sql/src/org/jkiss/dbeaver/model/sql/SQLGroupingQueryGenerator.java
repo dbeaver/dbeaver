@@ -227,14 +227,12 @@ public class SQLGroupingQueryGenerator {
         }
 
         @Override
-        public String toString() {
+        public String getFullyQualifiedName() {
             String databaseName = !CommonUtils.isEmpty(getDatabase().getDatabaseName())
                     ? getDatabase().getDatabaseName() + sqlDialect.getCatalogSeparator()
                     : "";
             String schemaName = getSchemaName() != null ? getSchemaName() + sqlDialect.getStructSeparator() : "";
-            String fullyQualifiedTableName = databaseName + schemaName + getName();
-            String alias = getAlias() != null ? getAlias().toString() : "";
-            return fullyQualifiedTableName + " " + alias;
+            return databaseName + schemaName + getName();
         }
     }
 }
