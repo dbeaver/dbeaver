@@ -39,6 +39,7 @@ import java.sql.Types;
 import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.Date;
@@ -182,6 +183,11 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
         if (format == DBDDisplayFormat.NATIVE) {
+            if (value instanceof LocalDate localDate) {
+                value = getDateValue(localDate);
+            } else if (value instanceof LocalDateTime localDateTime) {
+                value = getTimestampValue(localDateTime);
+            }
             if (value instanceof Date) {
                 Format nativeFormat = getNativeValueFormat(column);
                 if (nativeFormat != null) {
@@ -191,8 +197,7 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
                         log.error("Error formatting date", e);
                     }
                 }
-            } else if (value instanceof String) {
-                String strValue = (String) value;
+            } else if (value instanceof String strValue) {
                 if (!strValue.startsWith("'") && !strValue.endsWith("'")) {
                     strValue = "'" + strValue + "'";
                 }
@@ -204,43 +209,37 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
 
     @Nullable
     protected Format getNativeValueFormat(DBSTypedObject type) {
-        switch (type.getTypeID()) {
-            case Types.TIMESTAMP:
-                return DEFAULT_DATETIME_FORMAT;
-            case Types.TIMESTAMP_WITH_TIMEZONE:
-                return DEFAULT_DATETIME_FORMAT;
-            case Types.TIME:
-                return DEFAULT_TIME_FORMAT;
-            case Types.TIME_WITH_TIMEZONE:
-                return DEFAULT_TIME_TZ_FORMAT;
-            case Types.DATE:
-                return DEFAULT_DATE_FORMAT;
-        }
-        return null;
+        return switch (type.getTypeID()) {
+            case Types.TIMESTAMP -> DEFAULT_DATETIME_FORMAT;
+            case Types.TIMESTAMP_WITH_TIMEZONE -> DEFAULT_DATETIME_FORMAT;
+            case Types.TIME -> DEFAULT_TIME_FORMAT;
+            case Types.TIME_WITH_TIMEZONE -> DEFAULT_TIME_TZ_FORMAT;
+            case Types.DATE -> DEFAULT_DATE_FORMAT;
+            default -> null;
+        };
     }
 
     @NotNull
     protected String getFormatterId(DBSTypedObject column) {
-        switch (column.getTypeID()) {
-            case Types.TIME:
-                return DBDDataFormatter.TYPE_NAME_TIME;
-            case Types.DATE:
-                return DBDDataFormatter.TYPE_NAME_DATE;
-            case Types.TIME_WITH_TIMEZONE:
-                return DBDDataFormatter.TYPE_NAME_TIME_TZ;
-            case Types.TIMESTAMP_WITH_TIMEZONE:
-                return DBDDataFormatter.TYPE_NAME_TIMESTAMP_TZ;
-            default:
-                return DBDDataFormatter.TYPE_NAME_TIMESTAMP;
-        }
+        return switch (column.getTypeID()) {
+            case Types.TIME -> DBDDataFormatter.TYPE_NAME_TIME;
+            case Types.DATE -> DBDDataFormatter.TYPE_NAME_DATE;
+            case Types.TIME_WITH_TIMEZONE -> DBDDataFormatter.TYPE_NAME_TIME_TZ;
+            case Types.TIMESTAMP_WITH_TIMEZONE -> DBDDataFormatter.TYPE_NAME_TIMESTAMP_TZ;
+            default -> DBDDataFormatter.TYPE_NAME_TIMESTAMP;
+        };
     }
 
     @Nullable
     protected static java.sql.Time getTimeValue(Object value) {
-        if (value instanceof java.sql.Time) {
-            return (java.sql.Time) value;
-        } else if (value instanceof Date) {
-            return new java.sql.Time(((Date) value).getTime());
+        if (value instanceof java.sql.Time time) {
+            return time;
+        } else if (value instanceof Date date) {
+            return new java.sql.Time(date.getTime());
+        } else if (value instanceof LocalDate localDate) {
+            return java.sql.Time.valueOf(localDate.atStartOfDay().toLocalTime());
+        } else if (value instanceof LocalDateTime localDateTime) {
+            return java.sql.Time.valueOf(localDateTime.toLocalTime());
         } else if (value != null) {
             return java.sql.Time.valueOf(value.toString());
         } else {
@@ -250,10 +249,14 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
 
     @Nullable
     protected static java.sql.Date getDateValue(Object value) {
-        if (value instanceof java.sql.Date) {
-            return (java.sql.Date) value;
-        } else if (value instanceof Date) {
-            return new java.sql.Date(((Date) value).getTime());
+        if (value instanceof java.sql.Date date) {
+            return date;
+        } else if (value instanceof Date date) {
+            return new java.sql.Date(date.getTime());
+        } else if (value instanceof LocalDate localDate) {
+            return java.sql.Date.valueOf(localDate);
+        } else if (value instanceof LocalDateTime localDateTime) {
+            return java.sql.Date.valueOf(localDateTime.toLocalDate());
         } else if (value != null) {
             return java.sql.Date.valueOf(value.toString());
         } else {
@@ -263,16 +266,18 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
 
     @Nullable
     protected static java.sql.Timestamp getTimestampValue(Object value) {
-        if (value instanceof java.sql.Timestamp) {
-            return (java.sql.Timestamp) value;
-        } else if (value instanceof Date) {
-            return new java.sql.Timestamp(((Date) value).getTime());
-        } else if (value instanceof LocalDateTime) {
-            return Timestamp.valueOf(((LocalDateTime) value));
-        } else if (value instanceof OffsetDateTime) {
-            return Timestamp.valueOf((((OffsetDateTime) value).toLocalDateTime()));
+        if (value instanceof Timestamp timestamp) {
+            return timestamp;
+        } else if (value instanceof Date date) {
+            return new Timestamp(date.getTime());
+        } else if (value instanceof LocalDate localDate) {
+            return Timestamp.valueOf(localDate.atStartOfDay());
+        } else if (value instanceof LocalDateTime localDateTime) {
+            return Timestamp.valueOf(localDateTime);
+        } else if (value instanceof OffsetDateTime offsetDateTime) {
+            return Timestamp.valueOf((offsetDateTime.toLocalDateTime()));
         } else if (value != null) {
-            return java.sql.Timestamp.valueOf(value.toString());
+            return Timestamp.valueOf(value.toString());
         } else {
             return null;
         }
