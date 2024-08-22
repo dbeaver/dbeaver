@@ -147,7 +147,7 @@
                         </folder>
                         <folder id="procedures-or-functions" label="%tree.procedures_functions.node.name" icon="#folder_procedure" description="%tree.procedures_functions.node.tip">
                             <folder label="%tree.procedures.node.name" icon="#procedures" description="%tree.procedures.node.name" type="org.jkiss.dbeaver.ext.cubrid.model.CubridProcedure">
-                                <items label="%tree.procedure.node.name" path="column" property="proceduresOnly">
+                                <items label="%tree.procedure.node.name" path="procedure" property="proceduresOnly">
 	                                <folder label="%tree.parameters.node.name" icon="#columns" description="%tree.parameters.node.name">
                                         <items label="%tree.parameters.node.name" itemLabel="%tree.column.node.name" path="column" property="params">
                                         </items>
@@ -155,7 +155,7 @@
                                 </items>
                             </folder>
                             <folder label="%tree.functions.node.name" icon="#procedures" description="%tree.functions.node.name" type="org.jkiss.dbeaver.ext.cubrid.model.CubridProcedure">
-                                <items label="%tree.function.node.name" path="function" property="functionsOnly" icon="#function">
+                                <items label="%tree.function.node.name" path="function" property="functionsOnly">
                                     <folder label="%tree.parameters.node.name" icon="#columns" description="%tree.parameters.node.name">
                                         <items label="%tree.parameters.node.name" itemLabel="%tree.column.node.name" path="column" property="params">
                                         </items>
@@ -219,6 +219,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridProcedureManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridProcedure"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridTableManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridPartition"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridTableManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTable"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridTableColumnManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTableColumn"/>

@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -31,16 +32,20 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-public class CubridProcedure extends GenericProcedure
+public class CubridProcedure extends GenericProcedure implements DBSObjectWithScript, DBPRefreshableObject
 {
     private List<CubridProcedureParameter> proColumns;
+    private DBSProcedureType procedureType;
     private String returnType;
+    private String source;
 
     public CubridProcedure(
             @NotNull GenericStructContainer container,
@@ -49,7 +54,13 @@ public class CubridProcedure extends GenericProcedure
             @NotNull DBSProcedureType procedureType,
             @NotNull String returnType) {
         super(container, procedureName, description, procedureType, null, true);
+        this.procedureType = procedureType;
         this.returnType = returnType;
+    }
+
+    public CubridProcedure(@NotNull GenericStructContainer container, DBSProcedureType procedureType) {
+        super(container, null, null, procedureType, null, false);
+        this.procedureType = procedureType;
     }
 
     @NotNull
@@ -69,6 +80,16 @@ public class CubridProcedure extends GenericProcedure
     @Override
     public GenericCatalog getCatalog() {
         return null;
+    }
+
+    @Override
+    @Property(order = 2)
+    public DBSProcedureType getProcedureType() {
+        return procedureType;
+    }
+
+    public void setProcedureType(DBSProcedureType procedureType) {
+        this.procedureType = procedureType;
     }
 
     @Nullable
@@ -111,6 +132,36 @@ public class CubridProcedure extends GenericProcedure
             }
         }
         return proColumns;
+    }
+
+    @Override
+    @Property(hidden = true, editable = true, updatable = true)
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        if (source == null) {
+            if (!persisted) {
+                this.source = "CREATE OR REPLACE " + getProcedureType().name() + " " + getName() + "()";
+                this.source += (getProcedureType() == DBSProcedureType.FUNCTION) ? " RETURN int" : "";
+                this.source += "\nAS LANGUAGE JAVA NAME";
+            } else {
+                this.source = "-- Procedure definition not available";
+            }
+        }
+        return source;
+    }
+
+    @Override
+    public String getSource() {
+        return source;
+    }
+
+    @Override
+    public void setSource(String source) {
+        this.source = source;
+    }
+
+    @Override
+    public void setObjectDefinitionText(String source) {
+        setSource(source);
     }
 
     @NotNull
