@@ -148,7 +148,7 @@ public class SQLEditorSemanticMarkersManager {
                         annotationModel.addAnnotation(annotation, position);
                         itemAnnotations.addLast(annotation);
                         severestAnnotationsByLine.compute(problemLine, (k, v) -> (v == null ||
-                            annotation.getProblemInfo().getSeverity().markerSeverity > v.getProblemInfo().getSeverity().markerSeverity
+                            annotation.getProblemMarkerSeverity() > v.getProblemMarkerSeverity()
                         ) ? annotation : v);
                     } catch (CoreException|BadLocationException e) {
                         log.error("Error creating problem marker", e);

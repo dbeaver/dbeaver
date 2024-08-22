@@ -71,6 +71,10 @@ public class SQLSemanticErrorAnnotation extends MarkerAnnotation implements IAnn
         return this.underlyingErrorMessage;
     }
 
+    public int getProblemMarkerSeverity() {
+        return this.getProblemInfo().getSeverity().markerSeverity;
+    }
+
     @SuppressWarnings("deprecation")
     @Override
     public void paint(GC gc, Canvas canvas, Rectangle r) {
