@@ -92,7 +92,10 @@ public class EditorUtils {
             if (editorInput instanceof IDatabaseEditorInput dei) {
                 DBSObject dbo = dei.getDatabaseObject();
                 if (dbo != null) {
-                    return dbo.getDataSource().getContainer().getProject();
+                    DBPDataSource dataSource = dbo.getDataSource();
+                    if (dataSource != null) {
+                        return dataSource.getContainer().getProject();
+                    }
                 }
             }
             IFile curFile = EditorUtils.getFileFromInput(editorInput);

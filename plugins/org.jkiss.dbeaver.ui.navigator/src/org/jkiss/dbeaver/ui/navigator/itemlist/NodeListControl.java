@@ -173,7 +173,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
             }
             final List<DBXTreeNode> inlineMetas = collectInlineMetas(dbNode, metaNode);
 
-            if (!inlineMetas.isEmpty() || dbNode.isDynamicStructObject()) {
+            if (!inlineMetas.isEmpty() || !(node instanceof DBNDataSource) && dbNode.isDynamicStructObject()) {
                 return new TreeContentProvider() {
                     @Override
                     public boolean hasChildren(Object parentElement) {
