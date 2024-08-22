@@ -29,13 +29,14 @@ import org.jkiss.utils.CommonUtils;
  * The class descriptor of representing visual connection between figures
  */
 public class ERDConnectionRouterDescriptor extends AbstractDescriptor {
-    private String id;
-    private String name;
-    private String description;
-    private boolean isEnableAttributeAssociation;
-    private ObjectType lazyRouter;
+    private final static Log log = Log.getLog(ERDConnectionRouterDescriptor.class.getName());
 
-    private Log log = Log.getLog(ERDConnectionRouterDescriptor.class.getName());
+    private final String id;
+    private final String name;
+    private final String description;
+    private final boolean isEnableAttributeAssociation;
+    private final ObjectType lazyRouter;
+    private final boolean isDefault;
 
     protected ERDConnectionRouterDescriptor(IConfigurationElement cf) throws CoreException {
         super(cf);
@@ -43,7 +44,8 @@ public class ERDConnectionRouterDescriptor extends AbstractDescriptor {
         this.name = cf.getAttribute(RegistryConstants.ATTR_NAME);
         this.description = cf.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.isEnableAttributeAssociation = CommonUtils.toBoolean(cf.getAttribute(ERDUIConstants.ATTR_ERD_SUPPORT_ATTRIBUTES_ASSOCIATION));
-        this.lazyRouter = new ObjectType(cf.getAttribute(ERDUIConstants.ATTR_ERD_ROUTER)); // $NON-NLS-1$
+        this.lazyRouter = new ObjectType(cf.getAttribute(ERDUIConstants.ATTR_ERD_ROUTER));
+        this.isDefault = CommonUtils.toBoolean(cf.getAttribute(RegistryConstants.ATTR_DEFAULT));
     }
 
     /**
@@ -86,6 +88,10 @@ public class ERDConnectionRouterDescriptor extends AbstractDescriptor {
      */
     public boolean supportedAttributeAssociation() {
         return isEnableAttributeAssociation;
+    }
+
+    public boolean isDefaultRouter() {
+        return isDefault;
     }
 
 }
