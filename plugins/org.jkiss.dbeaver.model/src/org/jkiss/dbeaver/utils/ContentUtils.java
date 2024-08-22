@@ -244,7 +244,7 @@ public class ContentUtils {
             return false;
         }
         for (byte b : bytes) {
-            if (' ' > b || b > '~') {
+            if (b < ' ' || '~' < b) {
                 return false;
             }
         }
