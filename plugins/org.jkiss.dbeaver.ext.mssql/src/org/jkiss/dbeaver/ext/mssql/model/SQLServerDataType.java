@@ -520,6 +520,9 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
     }
 
     private SQLServerTableType getTableType(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (!isTableType()) {
+            return null;
+        }
         SQLServerSchema sysSchema = owner instanceof SQLServerDatabase db ? db.getSchema(monitor, tableTypeSchemaId) : null;
         if (sysSchema != null) {
             SQLServerTableType tableType = sysSchema.getTableType(monitor, tableTypeId);
