@@ -31,7 +31,11 @@ import java.io.IOException;
  */
 public interface DBWNetworkHandler {
 
-    DBPConnectionConfiguration initializeHandler(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
+    @NotNull
+    DBPConnectionConfiguration initializeHandler(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBWHandlerConfiguration configuration,
+        @NotNull DBPConnectionConfiguration connectionInfo)
         throws DBException, IOException;
 
     /**

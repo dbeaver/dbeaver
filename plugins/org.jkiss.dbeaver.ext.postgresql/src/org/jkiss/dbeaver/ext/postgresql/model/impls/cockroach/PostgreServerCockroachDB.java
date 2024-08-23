@@ -198,10 +198,13 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
                         String privilege = JDBCUtils.safeGetString(resultSet, "privilege_type");
                         List<PostgrePrivilegeGrant> privList = privilegeMap.computeIfAbsent(grantee, k -> new ArrayList<>());
                         PostgrePrivilegeType privType = CommonUtils.valueOf(PostgrePrivilegeType.class, privilege, PostgrePrivilegeType.UNKNOWN);
-                        privList.add(new PostgrePrivilegeGrant("", grantee, databaseName, schemaName, tableName, privType, true, true));
+                        assert grantee != null;
+                        privList.add(new PostgrePrivilegeGrant(null, new PostgreRoleReference(table.getDatabase(), grantee, null),
+                            databaseName, schemaName, tableName, privType, true, true
+                        ));
                     }
                     for (Map.Entry<String, List<PostgrePrivilegeGrant>> entry : privilegeMap.entrySet()) {
-                        PostgrePrivilege permission = new PostgreObjectPrivilege(table, entry.getKey(), entry.getValue());
+                        PostgrePrivilege permission = new PostgreObjectPrivilege(table, new PostgreRoleReference(table.getDatabase(), entry.getKey(), null), entry.getValue());
                         permissions.add(permission);
                     }
                     return permissions;

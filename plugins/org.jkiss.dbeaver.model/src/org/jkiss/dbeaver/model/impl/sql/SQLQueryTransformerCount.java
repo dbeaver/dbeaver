@@ -20,10 +20,7 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.select.AllColumns;
-import net.sf.jsqlparser.statement.select.Distinct;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.SelectItem;
+import net.sf.jsqlparser.statement.select.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -64,10 +61,13 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
         try {
             // Remove orderings (#4652)
             Statement statement = SQLSemanticProcessor.parseQuery(query.getText());
-            if (statement instanceof PlainSelect plainSelect) {
-                if (!CommonUtils.isEmpty(plainSelect.getOrderByElements())) {
-                    plainSelect.setOrderByElements(null);
-                    queryText = statement.toString();
+            if (statement instanceof Select) {
+                SelectBody selectBody = ((Select) statement).getSelectBody();
+                if (selectBody instanceof PlainSelect) {
+                    if (!CommonUtils.isEmpty(((PlainSelect) selectBody).getOrderByElements())) {
+                        ((PlainSelect) selectBody).setOrderByElements(null);
+                        queryText = statement.toString();
+                    }
                 }
             }
         } catch (Throwable e) {
@@ -85,11 +85,12 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
     private SQLQuery tryInjectCount(DBPDataSource dataSource, SQLQuery query) throws DBException {
         try {
             Statement statement = SQLSemanticProcessor.parseQuery(query.getText());
-            if (statement instanceof PlainSelect select) {
+            if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
+                PlainSelect select = (PlainSelect) ((Select) statement).getSelectBody();
                 if (select.getHaving() != null) {
                     throw new DBException("Can't inject COUNT into query with HAVING clause");
                 }
-                if (select.getGroupBy() != null && !CommonUtils.isEmpty(select.getGroupBy().getGroupByExpressionList())) {
+                if (select.getGroupBy() != null && !CommonUtils.isEmpty(select.getGroupBy().getGroupByExpressions())) {
                     throw new DBException("Can't inject COUNT into query with GROUP BY clause");
                 }
 
@@ -104,19 +105,21 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
                 if (selectDistinct != null) {
                     countFunc.setDistinct(true);
                     List<Expression> exprs = new ArrayList<>();
-                    for (SelectItem<?> item : select.getSelectItems()) {
-                        exprs.add(item.getExpression());
+                    for (SelectItem item : select.getSelectItems()) {
+                        if (item instanceof SelectExpressionItem) {
+                            exprs.add(((SelectExpressionItem)item).getExpression());
+                        }
                     }
                     if (!exprs.isEmpty()) {
-                        countFunc.setParameters(new ExpressionList<>(exprs));
+                        countFunc.setParameters(new ExpressionList(exprs));
                     }
                 } else {
                     //countFunc.setAllColumns(true); // We can't use setAllColumns now (since JSQLParser 4.2), it will return COUNT(ALL). Replaced by AllColumns Expression
-                    countFunc.setParameters(new ExpressionList<>(new AllColumns()));
+                    countFunc.setParameters(new ExpressionList(new AllColumns()));
                 }
 
-                List<SelectItem<?>> selectItems = new ArrayList<>();
-                selectItems.add(new SelectItem<>(countFunc));
+                List<SelectItem> selectItems = new ArrayList<>();
+                selectItems.add(new SelectExpressionItem(countFunc));
                 select.setSelectItems(selectItems);
                 select.setOrderByElements(null);
                 return new SQLQuery(dataSource, select.toString(), query, false);
