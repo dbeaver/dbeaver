@@ -40,6 +40,8 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentNavigableMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
  * Abstract SQL Dialect
@@ -84,11 +86,12 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     // Keywords
     private final TreeMap<String, KeywordHolder> allKeywords = new TreeMap<>();
 
-    private final TreeMap<String, String> reservedWords = new TreeMap<>();
-    private final TreeMap<String, String> functions = new TreeMap<>();
-    private final TreeMap<String, String> types = new TreeMap<>();
-    private final TreeMap<String, String> tableQueryWords = new TreeMap<>();
-    private final TreeMap<String, String> columnQueryWords = new TreeMap<>();
+    // avoiding ConcurrentModificationException (CB-5521)
+    private final ConcurrentNavigableMap<String, String> reservedWords = new ConcurrentSkipListMap<>();
+    private final ConcurrentNavigableMap<String, String> functions = new ConcurrentSkipListMap<>();
+    private final ConcurrentNavigableMap<String, String> types = new ConcurrentSkipListMap<>();
+    private final ConcurrentNavigableMap<String, String> tableQueryWords = new ConcurrentSkipListMap<>();
+    private final ConcurrentNavigableMap<String, String> columnQueryWords = new ConcurrentSkipListMap<>();
     // Comments
     private final Pair<String, String> multiLineComments = new Pair<>(SQLConstants.ML_COMMENT_START, SQLConstants.ML_COMMENT_END);
     private final Map<String, Integer> keywordsIndent = new HashMap<>();
