@@ -97,6 +97,20 @@ public class SQLQueryRecognitionProblemInfo {
         return this.syntaxNode.getRealInterval();
     }
 
+    public String getExceptionMessage() {
+        Throwable ex = this.exception;
+        if (ex != null) {
+            StringBuilder sb = new StringBuilder();
+            while (ex != null) {
+                sb.append(ex.getMessage()).append("\n");
+                ex = ex.getCause();
+            }
+            return sb.toString();
+        } else {
+            return null;
+        }
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
