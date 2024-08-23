@@ -97,7 +97,12 @@ public class SQLQueryTableConstraintSpec extends SQLQueryNodeModel {
             for (SQLQuerySymbolEntry columnRef : this.tupleColumnsList) {
                 if (columnRef.isNotClassified()) {
                     SQLQueryResultColumn rc = tableContext.resolveColumn(statistics.getMonitor(), columnRef.getName());
-                    SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(columnRef, rc, statistics);
+                    if (rc != null) {
+                        SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(columnRef, rc, statistics);
+                    } else {
+                        columnRef.getSymbol().setSymbolClass(SQLQuerySymbolClass.COLUMN);
+                        statistics.appendWarning(columnRef, "Column " + columnRef.getName() + " not found");
+                    }
                     referenceKey.add(rc);
                 }
             }
