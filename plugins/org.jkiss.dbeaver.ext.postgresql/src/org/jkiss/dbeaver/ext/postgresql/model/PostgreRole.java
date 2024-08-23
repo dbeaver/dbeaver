@@ -553,14 +553,19 @@ public class PostgreRole implements
                             }
                             for (PostgrePrivilege p : CommonUtils.safeCollection(privileges)) {
                                 if (p instanceof PostgreObjectPrivilege) {
-                                    String grantee = ((PostgreObjectPrivilege) p).getGrantee();
-                                    if (CommonUtils.isNotEmpty(grantee) &&
-                                        getName().equals(DBUtils.getUnQuotedIdentifier(getDataSource(), grantee))
-                                    ) {
+                                    PostgreRoleReference grantee = ((PostgreObjectPrivilege) p).getGrantee();
+                                    if (grantee != null && this.isReferencedWith(grantee)) {
                                         List<PostgrePrivilegeGrant> grants = new ArrayList<>();
                                         for (PostgrePrivilege.ObjectPermission perm : p.getPermissions()) {
-                                            grants.add(new PostgrePrivilegeGrant(perm.getGrantor(), getName(), getDatabase().getName(),
-                                                schema.getName(), objectName, perm.getPrivilegeType(), false, false));
+                                            grants.add(new PostgrePrivilegeGrant(
+                                                perm.getGrantor(),
+                                                grantee,
+                                                getDatabase().getName(),
+                                                schema.getName(),
+                                                objectName, perm.getPrivilegeType(),
+                                                false,
+                                                false
+                                            ));
                                         }
                                         permissions.add(
                                             new PostgreRolePrivilege(
@@ -641,7 +646,7 @@ public class PostgreRole implements
         try (JDBCResultSet dbResult = dbStat.executeQuery()) {
             Map<String, List<PostgrePrivilegeGrant>> privs = new LinkedHashMap<>();
             while (dbResult.next()) {
-                PostgrePrivilegeGrant privilege = new PostgrePrivilegeGrant(kind, dbResult);
+                PostgrePrivilegeGrant privilege = new PostgrePrivilegeGrant(role.database, kind, dbResult);
                 String privilegeObjectName = privilege.getObjectName();
                 String objectSchema = privilege.getObjectSchema();
                 if ((kind == PostgrePrivilegeGrant.Kind.FUNCTION || kind == PostgrePrivilegeGrant.Kind.PROCEDURE)
@@ -717,6 +722,17 @@ public class PostgreRole implements
     @Nullable
     public String getSpecificRoleType() {
         return null;
+    }
+
+    public PostgreRoleReference getRoleReference() {
+        return new PostgreRoleReference(this.database, this.getName(), this.getSpecificRoleType());
+    }
+
+    public boolean isReferencedWith(PostgreRoleReference reference) {
+        return reference != null
+            && Objects.equals(this.getDatabase(), reference.getDatabase())
+            && Objects.equals(this.getName(), reference.getRoleName())
+            && Objects.equals(this.getSpecificRoleType(), reference.getRoleType());
     }
 
     /**
