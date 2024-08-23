@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPRegistryListener;
@@ -468,14 +469,22 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
 
     public void saveDrivers(DBConfigurationController configurationController) {
         try {
+            saveDriversConfigFile(configurationController);
+        } catch (Exception ex) {
+            log.error("Error saving drivers", ex);
+        }
+    }
+
+    public void saveDriversConfigFile(DBConfigurationController configurationController) throws DBException {
+        try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             new DriverDescriptorSerializerLegacy().serializeDrivers(baos, this.dataSourceProviders);
             configurationController.saveConfigurationFile(
                 DriverDescriptorSerializerLegacy.DRIVERS_FILE_NAME,
                 baos.toString(StandardCharsets.UTF_8)
             );
-        } catch (Exception ex) {
-            log.error("Error saving drivers", ex);
+        } catch (IOException e) {
+            throw new DBException("Error serializing drivers configuration file", e);
         }
     }
 

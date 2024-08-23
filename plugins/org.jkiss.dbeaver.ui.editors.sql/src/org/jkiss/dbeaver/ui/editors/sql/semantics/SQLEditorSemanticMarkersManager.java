@@ -22,10 +22,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.ITextInputListener;
-import org.eclipse.jface.text.Position;
-import org.eclipse.jface.text.TextViewer;
+import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -132,11 +129,14 @@ public class SQLEditorSemanticMarkersManager {
         for (Map.Entry<SQLDocumentScriptItemSyntaxContext, Boolean> entry : entries) {
             SQLDocumentScriptItemSyntaxContext scriptItem = entry.getKey();
             if (entry.getValue() && scriptItem.getProblems() != null) {
+                Map<Integer, SQLSemanticErrorAnnotation> severestAnnotationsByLine = new HashMap<>();
                 Deque<SQLSemanticErrorAnnotation> itemAnnotations = this.annotations.computeIfAbsent(scriptItem, c -> new LinkedList<>());
                 int scriptItemPosition = scriptItem.getInitialPosition();
                 for (SQLQueryRecognitionProblemInfo problemInfo : scriptItem.getProblems()) {
                     try {
                         Interval problemInterval = problemInfo.getInterval();
+                        int problemOffset = scriptItemPosition + problemInterval.a;
+                        int problemLine = this.editor.getDocument().getLineOfOffset(problemOffset);
                         final IMarker marker = resource.createMarker(SQLSemanticErrorAnnotation.MARKER_TYPE, Map.of(
                                 IMarker.SEVERITY, problemInfo.getSeverity().markerSeverity,
                                 IMarker.MESSAGE, problemInfo.getMessage(),
@@ -144,12 +144,18 @@ public class SQLEditorSemanticMarkersManager {
                         ));
                         SQLSemanticErrorAnnotation annotation = new SQLSemanticErrorAnnotation(marker, problemInfo);
                         marker.setAttribute(SQLSemanticErrorAnnotation.MARKER_ATTRIBUTE_NAME, annotation);
-                        Position position = new Position(scriptItemPosition + problemInterval.a, problemInterval.length());
+                        Position position = new Position(problemOffset, problemInterval.length());
                         annotationModel.addAnnotation(annotation, position);
                         itemAnnotations.addLast(annotation);
-                    } catch (CoreException e) {
+                        severestAnnotationsByLine.compute(problemLine, (k, v) -> (v == null ||
+                            annotation.getProblemMarkerSeverity() > v.getProblemMarkerSeverity()
+                        ) ? annotation : v);
+                    } catch (CoreException|BadLocationException e) {
                         log.error("Error creating problem marker", e);
                     }
+                }
+                for (SQLSemanticErrorAnnotation annotation: severestAnnotationsByLine.values()) {
+                    annotation.setMarginMarkerVisible(true);
                 }
             } else {
                 Deque<SQLSemanticErrorAnnotation> itemAnnotations = this.annotations.remove(scriptItem);
