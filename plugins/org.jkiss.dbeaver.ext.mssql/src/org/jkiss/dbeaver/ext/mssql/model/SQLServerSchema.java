@@ -250,7 +250,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
     @Nullable
     public SQLServerTableType getTableType(@NotNull DBRProgressMonitor monitor, long tableId) throws DBException {
-        for (SQLServerTableBase table : getTablesTypes(monitor)) {
+        for (SQLServerTableBase table : tableCache.getAllObjects(monitor, this)) {
             if (table.getObjectId() == tableId && table instanceof SQLServerTableType tt) {
                 return tt;
             }
