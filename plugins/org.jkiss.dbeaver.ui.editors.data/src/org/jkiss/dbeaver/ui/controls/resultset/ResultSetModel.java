@@ -1120,7 +1120,7 @@ public class ResultSetModel {
         this.dataFilter.setAnyConstraint(filter.isAnyConstraint());
     }
 
-    public void resetOrdering() {
+    public void resetOrdering(@NotNull DBDAttributeBinding columnElement) {
         final boolean hasOrdering = dataFilter.hasOrdering();
 
         // First sort in original order to reset multi-column orderings
@@ -1138,7 +1138,10 @@ public class ResultSetModel {
                     }
                     Object cell1 = getCellValue(new ResultSetCellLocation(binding, row1));
                     Object cell2 = getCellValue(new ResultSetCellLocation(binding, row2));
-                    if (cell1 instanceof String && cell2 instanceof String) {
+                    Comparator<Object> comparator = columnElement.getValueHandler().getComparator();
+                    if (comparator != null) {
+                        result = comparator.compare(cell1, cell2);
+                    } else if (cell1 instanceof String && cell2 instanceof String) {
                     	result = (cell1.toString()).compareToIgnoreCase(cell2.toString());
                     } else {
                     	result = DBUtils.compareDataValues(cell1, cell2);

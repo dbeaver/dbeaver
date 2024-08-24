@@ -135,6 +135,11 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     @Override
     public UUID getProjectID() {
         if (projectID == null) {
+            if (isInMemory()) {
+                // anonymous project does not have properties file, so we need to generate random uuid
+                projectID = UUID.randomUUID();
+                return projectID;
+            }
             String idStr = CommonUtils.toString(this.getProjectProperty(PROP_PROJECT_ID), null);
             if (CommonUtils.isEmpty(idStr)) {
                 projectID = UUID.randomUUID();
@@ -412,8 +417,9 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
         loadMetadata();
         resourcePath = CommonUtils.normalizeResourcePath(resourcePath);
         synchronized (resourcesSync) {
-            this.resourceProperties.put(resourcePath, new HashMap<>(newProps));
+            this.resourceProperties.put(resourcePath, new LinkedHashMap<>(newProps));
         }
+        flushMetadata();
     }
 
     @Override

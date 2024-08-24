@@ -79,6 +79,9 @@ public class TextWithOpen extends Composite {
         if (useTextEditor) {
             gd.heightHint = text.getLineHeight() * (secured ? 1 : 2);
             gd.widthHint = 300;
+        } else {
+            // We use width hint to avoid infinite text control expansion if predefined text is too long
+            gd.widthHint = 200;
         }
         text.setLayoutData(gd);
 
