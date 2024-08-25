@@ -22,13 +22,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.branding.IProductConstants;
 import org.eclipse.ui.splash.BasicSplashHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -110,7 +107,9 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
             versionInfoColorString = product.getProperty("versionInfoColor");
         }
 
-        setProgressRect(StringConverter.asRectangle(progressRectString, new Rectangle(275, 300, 280, 10)));
+        Rectangle message = StringConverter.asRectangle(progressRectString, new Rectangle(275, 300, 280, 10));
+
+        setProgressRect(flipRectangleVertically(message));
         setMessageRect(StringConverter.asRectangle(messageRectString, new Rectangle(275,275,280,25)));
         final Point versionCoord = StringConverter.asPoint(versionCoordString, new Point(485, 215));
         final int versionInfoSize = StringConverter.asInt(versionInfoSizeString, 22);
@@ -154,6 +153,11 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
             //e.gc.drawText(osVersion, 115, 200, true);
             e.gc.setFont(normalFont);
         });
+    }
+
+    private Rectangle flipRectangleVertically(Rectangle rect) {
+        int flippedY = -rect.y - rect.height;
+        return new Rectangle(rect.x, flippedY, rect.width, rect.height);
     }
 
     @Override
