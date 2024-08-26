@@ -532,6 +532,7 @@
                     defaultPort="5439"
                     defaultDatabase="dev"
                     defaultUser="awsuser"
+                    threadSafe="false"
                     description="AWS Redshift JDBC driver"
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
