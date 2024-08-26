@@ -22,12 +22,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.branding.IProductConstants;
 import org.eclipse.ui.splash.BasicSplashHandler;
@@ -68,13 +63,12 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
     @Override
     public void init(Shell splash) {
         super.init(splash);
-        /*
-         * Related to a bug in MacOS Sonoma
-         * (https://github.com/eclipse-platform/eclipse.platform.swt/issues/772)
-         */
-        if (RuntimeUtils.isMacOsSomona()) {
+
+        // https://github.com/eclipse-platform/eclipse.platform.swt/issues/772
+        if (RuntimeUtils.isMacOS() && RuntimeUtils.isOSVersionAtLeast(14, 0, 0)) {
             return;
         }
+
         try {
             initVisualization();
 
@@ -87,11 +81,8 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
     
     @Override
     public IProgressMonitor getBundleProgressMonitor() {
-        /*
-         * Related to a bug in MacOS Sonoma
-         * (https://github.com/eclipse-platform/eclipse.platform.swt/issues/772)
-         */
-        if (RuntimeUtils.isMacOsSomona()) {
+        // https://github.com/eclipse-platform/eclipse.platform.swt/issues/772
+        if (RuntimeUtils.isMacOS() && RuntimeUtils.isOSVersionAtLeast(14, 0, 0)) {
             return null;
         }
         return super.getBundleProgressMonitor();
