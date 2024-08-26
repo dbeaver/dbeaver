@@ -417,19 +417,26 @@ public final class RuntimeUtils {
     /**
      * Retrieves version of the operating system.
      *
-     * <p><b>Note:</b> this method was only tested to be working on macOS. Please test on other platforms.
-     *
-     * @return version of the operating system
+     * @return version of the operating system, or {@code null} if the version is unknown
+     * @see #isOSVersionAtLeast(int, int, int)
      */
-    @NotNull
+    @Nullable
     public static Version getOSVersion() {
-        return new Version(System.getProperty("os.version"));
+        String version = System.getProperty("os.version");
+        if (version != null) {
+            try {
+                return new Version(version);
+            } catch (IllegalArgumentException e) {
+                log.debug("Error parsing OS version: " + version, e);
+            }
+        }
+        return null;
     }
 
     public static boolean isOSVersionAtLeast(int major, int minor, int micro) {
         Version expected = new Version(major, minor, micro);
         Version actual = getOSVersion();
-        return actual.compareTo(expected) >= 0;
+        return actual != null && actual.compareTo(expected) >= 0;
     }
 
     public static void setThreadName(String name) {
