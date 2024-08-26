@@ -35,10 +35,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.FrameworkUtil;
-import org.osgi.framework.ServiceReference;
+import org.osgi.framework.*;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -418,12 +415,21 @@ public final class RuntimeUtils {
     }
 
     /**
-     * Determine OS Sonoma
-     * 
-     * @return - true if Os Sonoma, version 14.x
+     * Retrieves version of the operating system.
+     *
+     * <p><b>Note:</b> this method was only tested to be working on macOS. Please test on other platforms.
+     *
+     * @return version of the operating system
      */
-    public static boolean isMacOsSomona() {
-        return isMacOS() && System.getProperty("os.version").startsWith("14");
+    @NotNull
+    public static Version getOSVersion() {
+        return new Version(System.getProperty("os.version"));
+    }
+
+    public static boolean isOSVersionAtLeast(int major, int minor, int micro) {
+        Version expected = new Version(major, minor, micro);
+        Version actual = getOSVersion();
+        return actual.compareTo(expected) >= 0;
     }
 
     public static void setThreadName(String name) {
