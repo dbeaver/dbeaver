@@ -417,10 +417,10 @@ public final class RuntimeUtils {
     /**
      * Retrieves version of the operating system.
      *
-     * @return version of the operating system, or {@code null} if the version is unknown
+     * @return version of the operating system, or {@link Version#emptyVersion} if the version is unknown
      * @see #isOSVersionAtLeast(int, int, int)
      */
-    @Nullable
+    @NotNull
     public static Version getOSVersion() {
         String version = System.getProperty("os.version");
         if (version != null) {
@@ -430,13 +430,13 @@ public final class RuntimeUtils {
                 log.debug("Error parsing OS version: " + version, e);
             }
         }
-        return null;
+        return Version.emptyVersion;
     }
 
     public static boolean isOSVersionAtLeast(int major, int minor, int micro) {
         Version expected = new Version(major, minor, micro);
         Version actual = getOSVersion();
-        return actual != null && actual.compareTo(expected) >= 0;
+        return actual.compareTo(expected) >= 0;
     }
 
     public static void setThreadName(String name) {
