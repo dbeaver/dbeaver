@@ -36,5 +36,6 @@
    <plugin id="org.jkiss.dbeaver.ext.wmi" os="win32" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.altibase.ui" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.gaussdb.ui" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.cubrid.ui" version="0.0.0" />
 
 </feature>
