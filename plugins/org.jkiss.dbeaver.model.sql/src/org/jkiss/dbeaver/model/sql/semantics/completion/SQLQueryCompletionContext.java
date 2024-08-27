@@ -210,24 +210,25 @@ public abstract class SQLQueryCompletionContext {
                     nameNodes.length > 1
                         ? Collections.emptyList()
                         : prepareKeywordCompletions(syntaxInspectionResult.predictedWords, currentWord);
+
+                List<SQLQueryCompletionItem> columnRefCompletions = syntaxInspectionResult.expectingColumnReference && nameNodes.length == 0
+                    ? this.prepareColumnCompletions(null)
+                    : Collections.emptyList();
+
+                List<SQLQueryCompletionItem> tableRefCompletions = syntaxInspectionResult.expectingTableReference && nameNodes.length == 0
+                    ? this.prepareTableCompletions(monitor, request)
+                    : Collections.emptyList();
                 
-                List<SQLQueryCompletionItem> columnRefCompletions = 
-                    syntaxInspectionResult.expectingColumnReference && nameNodes.length == 0
-                        ? this.prepareColumnCompletions(null) : Collections.emptyList();
-                
-                List<SQLQueryCompletionItem> tableRefCompletions = 
-                    syntaxInspectionResult.expectingTableReference && nameNodes.length == 0
-                        ? this.prepareTableCompletions(monitor, request) : Collections.emptyList();
-                
-                List<SQLQueryCompletionItem> lexicalItemCompletions = 
-                    lexicalItem != null ? this.prepareLexicalItemCompletions(monitor, lexicalItem, position) :
-                    syntaxInspectionResult.expectingIdentifier || nameNodes.length > 0
+                List<SQLQueryCompletionItem> lexicalItemCompletions = lexicalItem != null
+                    ? this.prepareLexicalItemCompletions(monitor, lexicalItem, position)
+                    : syntaxInspectionResult.expectingIdentifier || nameNodes.length > 0
                         ? this.prepareIdentifierCompletions(monitor, position)
                         : Collections.emptyList();
                 
                 List<SQLQueryCompletionItem> completionItems = Stream.of(
-                        columnRefCompletions, tableRefCompletions, lexicalItemCompletions, keywordCompletions
-                ).flatMap(Collection::stream).collect(Collectors.toList());
+                    columnRefCompletions, tableRefCompletions, lexicalItemCompletions, keywordCompletions)
+                    .flatMap(Collection::stream)
+                    .collect(Collectors.toList());
                 
                 int replacementLength = currentWord == null ? 0 : currentWord.length();
                 return new SQLQueryCompletionSet(position - replacementLength, replacementLength, completionItems);
@@ -325,7 +326,8 @@ public abstract class SQLQueryCompletionContext {
             private List<SQLQueryCompletionItem> prepareObjectComponentCompletions(
                 @NotNull DBRProgressMonitor monitor,
                 @NotNull DBSObject object,
-                @NotNull String componentNamePart, Class<?> componentType
+                @NotNull String componentNamePart,
+                Class<?> componentType
             ) {
                 try {
                     Stream<? extends DBSObject> components;
@@ -342,8 +344,16 @@ public abstract class SQLQueryCompletionContext {
                         components = Stream.empty();
                     }
 
-                    return components.filter(a -> (componentType == null || componentType.isInstance(a)) && a.getName().toLowerCase().contains(componentNamePart))
-                        .map(SQLQueryCompletionItem::forDbObject)
+                    return components.filter(a -> (componentType == null || componentType.isInstance(a))
+                            && a.getName().toLowerCase().contains(componentNamePart))
+                        .map(x -> {
+                            //todo transform to the map strategy if add one more case
+                            if (x instanceof DBSEntity dbsEntity) {
+                                return SQLQueryCompletionItem.forRealTable(dbsEntity, true);
+                            } else {
+                                return SQLQueryCompletionItem.forDbObject(x);
+                            }
+                        })
                         .toList();
                 } catch (DBException ex) {
                     return Collections.emptyList();

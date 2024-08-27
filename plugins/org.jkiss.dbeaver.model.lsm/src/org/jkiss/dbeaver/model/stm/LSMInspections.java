@@ -329,7 +329,7 @@ public class LSMInspections {
             expectingTableName,
             expectingColumnReference,
             reachabilityTests.get(SQLStandardParser.RULE_identifier) || presenceTests.get(SQLStandardParser.RULE_identifier),
-            expectingTableName && reachabilityTests.get(SQLStandardParser.RULE_nonjoinedTableReference),
+            expectingTableName || reachabilityTests.get(SQLStandardParser.RULE_nonjoinedTableReference),
             expectingColumnReference && reachabilityTests.get(SQLStandardParser.RULE_derivedColumn),
             reachabilityTests.get(SQLStandardParser.RULE_pattern)
         );
