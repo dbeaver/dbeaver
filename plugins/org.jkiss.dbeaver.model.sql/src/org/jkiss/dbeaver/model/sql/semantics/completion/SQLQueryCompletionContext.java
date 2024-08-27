@@ -169,6 +169,7 @@ public abstract class SQLQueryCompletionContext {
             private final Map<SQLQueryRowsSourceModel, SourceResolutionResult> referencedSources
                 = context.collectKnownSources().getResolutionResults();
             private Set<String> aliasesInUse = null;
+            private final Set<DBSObject> alreadyReferencedObjects = fillAlreadyReferenceTables();
 
             @NotNull
             @Override
@@ -299,7 +300,8 @@ public abstract class SQLQueryCompletionContext {
                         );
                     return prefixContext == null
                         ? Collections.emptyList()
-                        : this.prepareObjectComponentCompletions(monitor, prefixContext, tail, componentType);
+                        : this.prepareObjectComponentCompletions(monitor, prefixContext, tail, componentType,
+                            x -> SQLQueryCompletionItem.forRealTable((DBSEntity) x, alreadyReferencedObjects.contains(x)));
                 }
             }
 
@@ -329,6 +331,17 @@ public abstract class SQLQueryCompletionContext {
                 @NotNull String componentNamePart,
                 Class<?> componentType
             ) {
+                return prepareObjectComponentCompletions(monitor, object, componentNamePart, componentType,
+                    SQLQueryCompletionItem::forDbObject);
+            }
+            @NotNull
+            private List<SQLQueryCompletionItem> prepareObjectComponentCompletions(
+                @NotNull DBRProgressMonitor monitor,
+                @NotNull DBSObject object,
+                @NotNull String componentNamePart,
+                Class<?> componentType,
+                Function<DBSObject, SQLQueryCompletionItem> queryCompletionItemProvider
+            ) {
                 try {
                     Stream<? extends DBSObject> components;
                     if (object instanceof DBSEntity entity) {
@@ -346,18 +359,21 @@ public abstract class SQLQueryCompletionContext {
 
                     return components.filter(a -> (componentType == null || componentType.isInstance(a))
                             && a.getName().toLowerCase().contains(componentNamePart))
-                        .map(x -> {
-                            //todo transform to the map strategy if add one more case
-                            if (x instanceof DBSEntity dbsEntity) {
-                                return SQLQueryCompletionItem.forRealTable(dbsEntity, true);
-                            } else {
-                                return SQLQueryCompletionItem.forDbObject(x);
-                            }
-                        })
+                        .map(queryCompletionItemProvider)
                         .toList();
                 } catch (DBException ex) {
                     return Collections.emptyList();
                 }
+            }
+
+            private Set<DBSObject> fillAlreadyReferenceTables() {
+                Set<DBSObject> alreadyReferencedObjects = new HashSet<>();
+                for (SourceResolutionResult rr : this.referencedSources.values()) {
+                    if (rr.tableOrNull != null) {
+                        alreadyReferencedObjects.add(rr.tableOrNull);
+                    }
+                }
+                return alreadyReferencedObjects;
             }
 
             private List<String> obtainIdentifierParts(int position) {
@@ -486,15 +502,10 @@ public abstract class SQLQueryCompletionContext {
                 @NotNull DBRProgressMonitor monitor,
                 @NotNull SQLCompletionRequest request
             ) {
-                Set<DBSObject> alreadyReferencedObjects = new HashSet<>();
-                
                 LinkedList<SQLQueryCompletionItem> completions = new LinkedList<>();
                 for (SourceResolutionResult rr : this.referencedSources.values()) {
                     if (rr.aliasOrNull != null && rr.isCteSubquery) {
                         completions.add(SQLQueryCompletionItem.forSubqueryAlias(rr.aliasOrNull, rr.source));
-                    }
-                    if (rr.tableOrNull != null) {
-                        alreadyReferencedObjects.add(rr.tableOrNull);
                     }
                 }
 

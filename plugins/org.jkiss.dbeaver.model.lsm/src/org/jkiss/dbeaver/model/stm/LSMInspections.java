@@ -40,7 +40,8 @@ public class LSMInspections {
     private static final Set<Integer> presenceTestRules = Set.of(
         SQLStandardParser.RULE_tableName,
         SQLStandardParser.RULE_columnReference,
-        SQLStandardParser.RULE_identifier
+        SQLStandardParser.RULE_identifier,
+        SQLStandardParser.RULE_nonjoinedTableReference
     );
 
     @NotNull
@@ -329,7 +330,8 @@ public class LSMInspections {
             expectingTableName,
             expectingColumnReference,
             reachabilityTests.get(SQLStandardParser.RULE_identifier) || presenceTests.get(SQLStandardParser.RULE_identifier),
-            expectingTableName || reachabilityTests.get(SQLStandardParser.RULE_nonjoinedTableReference),
+            expectingTableName && (reachabilityTests.get(SQLStandardParser.RULE_nonjoinedTableReference)
+                || presenceTests.get(SQLStandardParser.RULE_nonjoinedTableReference)),
             expectingColumnReference && reachabilityTests.get(SQLStandardParser.RULE_derivedColumn),
             reachabilityTests.get(SQLStandardParser.RULE_pattern)
         );
