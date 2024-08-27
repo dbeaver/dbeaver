@@ -30,6 +30,11 @@ import org.jkiss.dbeaver.ui.navigator.actions.NavigatorNodeActionHandlerAbstract
 public class NNAHDataSourceConfiguration extends NavigatorNodeActionHandlerAbstract {
 
     @Override
+    public boolean isEnabledFor(INavigatorModelView view, DBNNode node) {
+        return false;
+    }
+
+    @Override
     public boolean isSticky(INavigatorModelView view, DBNNode node) {
         return false;
     }
