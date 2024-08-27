@@ -167,24 +167,8 @@ public class SQLBackgroundParsingJob {
     public SQLQueryCompletionContext obtainCompletionContext(int offset) {
         SQLScriptItemAtOffset scriptItem = null;
         Position requestPosition = new Position(offset);
-        do {
-            final long requestStamp = System.currentTimeMillis();
-            CompletableFuture<Long> expectedParsingSessionFinishStamp;
-            synchronized (this.syncRoot) {
-                if (scriptItem == null || this.queuedForReparse.size() == 0) {
-                    scriptItem = this.context.findScriptItem(offset - 1);
-                    if (scriptItem != null) { // TODO consider statements separation which is ignored for now
-                        if (scriptItem.item.isDirty()) {
-                            // awaiting reparse, so proceed to release lock and wait for the job to finish, then retry
-                        } else {
-                            return this.prepareCompletionContext(scriptItem, requestPosition.getOffset());
-                        }
-                    } else {
-                        // no script items here, so fallback to offquery context
-                        break;
-                    }
-                }
-
+        try {
+            UIUtils.syncExec(() -> {
                 try {
                     assert this.document != null;
                     this.document.addPosition(requestPosition);
@@ -192,26 +176,46 @@ public class SQLBackgroundParsingJob {
                     log.error(e);
                     throw new RuntimeException(e);
                 }
-                expectedParsingSessionFinishStamp = this.lastParsingFinishStamp;
-            }
-            
-            try {
-                // job.join() cannot be used here because completion request is being submitted at before-change event,
-                // when the job is not scheduled yet (so join returns immediately)
-                // job.schedule() performed only after the series of keypresses at after-change event
-                if (expectedParsingSessionFinishStamp.get() < requestStamp) {
+            });
+            do {
+                final long requestStamp = System.currentTimeMillis();
+                CompletableFuture<Long> expectedParsingSessionFinishStamp;
+                synchronized (this.syncRoot) {
+                    if (scriptItem == null || this.queuedForReparse.size() == 0) {
+                        scriptItem = this.context.findScriptItem(offset - 1);
+                        if (scriptItem != null) { // TODO consider statements separation which is ignored for now
+                            if (scriptItem.item.isDirty()) {
+                                // awaiting reparse, so proceed to release lock and wait for the job to finish, then retry
+                            } else {
+                                return this.prepareCompletionContext(scriptItem, requestPosition.getOffset());
+                            }
+                        } else {
+                            // no script items here, so fallback to offquery context
+                            break;
+                        }
+                    }
+                    expectedParsingSessionFinishStamp = this.lastParsingFinishStamp;
+                }
+
+                try {
+                    // job.join() cannot be used here because completion request is being submitted at before-change event,
+                    // when the job is not scheduled yet (so join returns immediately)
+                    // job.schedule() performed only after the series of keypresses at after-change event
+                    if (expectedParsingSessionFinishStamp.get() < requestStamp) {
+                        return SQLQueryCompletionContext.EMPTY;
+                    }
+                } catch (InterruptedException | ExecutionException e) {
+                    break;
+                }
+                if (requestPosition.isDeleted()) {
                     return SQLQueryCompletionContext.EMPTY;
                 }
-            } catch (InterruptedException | ExecutionException e) {
-                break;
-            }
-            if (requestPosition.isDeleted()) {
-                return SQLQueryCompletionContext.EMPTY;
-            } else {
-                this.document.removePosition(requestPosition);
-            }
-        } while (scriptItem != null);
-        return SQLQueryCompletionContext.prepareOffquery(0);
+            } while (scriptItem != null);
+            return SQLQueryCompletionContext.prepareOffquery(0);
+        }
+        finally {
+            UIUtils.syncExec(() -> this.document.removePosition(requestPosition));
+        }
     }
 
     @NotNull
