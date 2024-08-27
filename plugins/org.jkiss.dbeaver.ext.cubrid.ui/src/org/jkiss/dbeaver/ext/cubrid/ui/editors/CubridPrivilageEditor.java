@@ -55,21 +55,13 @@ public class CubridPrivilageEditor  extends AbstractDatabaseObjectEditor<CubridP
     private CubridPrivilage user;
     private Table table;
     private List<String> groups = new ArrayList<>();
-    private boolean allowEditPassword = false;
     UserPageControl pageControl;
+    
     @Override
     public RefreshResult refreshPart(Object source, boolean force) {
         return RefreshResult.REFRESHED;
     }
     
-    @Override
-    public void init(IEditorSite site, IEditorInput input)
-        throws PartInitException
-    {
-        super.init(site, input);
-
-        
-    }
     
     @Override
     public void createPartControl(Composite parent) {
@@ -98,7 +90,7 @@ public class CubridPrivilageEditor  extends AbstractDatabaseObjectEditor<CubridP
         {
             
             String loginedUser = user.getDataSource().getContainer().getConnectionConfiguration().getUserName().toUpperCase();
-            allowEditPassword = new ArrayList<>(Arrays.asList("DBA", user.getName())).contains(loginedUser);
+            boolean allowEditPassword = new ArrayList<>(Arrays.asList("DBA", user.getName())).contains(loginedUser);
             
             Text t = UIUtils.createLabelText(container, "Password ","",  SWT.BORDER | SWT.PASSWORD);
             GridData gd1 = new GridData();
@@ -262,14 +254,19 @@ public class CubridPrivilageEditor  extends AbstractDatabaseObjectEditor<CubridP
 
                             @Override
                             public void redoCommand(DBECommandProperty<CubridPrivilage> command) {
-                                
+                                if(!table.isDisposed()) {
+                                    editor.loadGroups();
+                                    values = new ArrayList<String>(oldValue);
+                                }
                             }
 
                             @Override
                             public void undoCommand(DBECommandProperty<CubridPrivilage> cp) {
                                
-//                               editor.loadGroups();
-                               values = new ArrayList<String>(oldValue);
+                                if(!table.isDisposed()) {
+                                    editor.loadGroups();
+                                    values = new ArrayList<String>(oldValue);
+                                }
                            
                             }
                       
