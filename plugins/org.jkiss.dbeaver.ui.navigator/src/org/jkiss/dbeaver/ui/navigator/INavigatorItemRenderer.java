@@ -39,4 +39,5 @@ public interface INavigatorItemRenderer {
 
     @Nullable
     Cursor getCursor(@NotNull DBNNode node, @NotNull Tree tree, @NotNull Event event);
+
 }
