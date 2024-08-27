@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model.select;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
+import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
@@ -102,10 +99,23 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
                 } else if (i >= rightColumns.size()) {
                     resultColumns.add(leftColumns.get(i));
                     nonMatchingColumnSets = true;
-                } else { // TODO validate corresponding names to be the same?
-                    SQLQueryExprType type = this.obtainCommonType(leftColumns.get(i), rightColumns.get(i));
-                    SQLQuerySymbol symbol = leftColumns.get(i).symbol.merge(rightColumns.get(i).symbol);
-                    resultColumns.add(new SQLQueryResultColumn(i, symbol, this, null, null, type));
+                } else {
+                    SQLQueryResultColumn leftColumn = leftColumns.get(i);
+                    SQLQueryResultColumn rightColumn = rightColumns.get(i);
+                    SQLQueryExprType type = this.obtainCommonType(leftColumn, rightColumn);
+                    SQLQuerySymbol columnSymbol;
+                    if (leftColumn.symbol.getName().equals(rightColumn.symbol.getName())) {
+                        SQLQuerySymbolDefinition symbolDef = leftColumn.symbol.getDefinition();
+                        SQLQuerySymbolClass symbolClass = leftColumn.symbol.getSymbolClass();
+                        columnSymbol = leftColumns.get(i).symbol.merge(rightColumns.get(i).symbol);
+                        columnSymbol.setDefinition(symbolDef); // propagate leftmost column's metainfo
+                        if (columnSymbol.getSymbolClass() == SQLQuerySymbolClass.UNKNOWN) {
+                            columnSymbol.setSymbolClass(symbolClass);
+                        }
+                    } else {
+                        columnSymbol = leftColumn.symbol;
+                    }
+                    resultColumns.add(new SQLQueryResultColumn(i, columnSymbol, this, null, null, type));
                 }
             }
         } else { // require left and right to have columns subset as given with correspondingColumnNames

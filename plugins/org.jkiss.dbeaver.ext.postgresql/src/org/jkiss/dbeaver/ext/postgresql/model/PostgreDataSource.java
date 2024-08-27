@@ -222,7 +222,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                 }
             }
         } catch (SQLException e) {
-            throw new DBException("Can't connect ot remote PostgreSQL server", e);
+            throw new DBException("Can't connect to remote PostgreSQL server", e);
         } finally {
             DBExecUtils.finishContextInitiation(getContainer());
         }

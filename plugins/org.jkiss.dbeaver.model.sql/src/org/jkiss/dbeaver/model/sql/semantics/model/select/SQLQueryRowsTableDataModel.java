@@ -167,7 +167,10 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
                     this.name.entityName.setDefinition(rr.aliasOrNull.getDefinition());
                     context = context.overrideResultTuple(rr.source.getResultDataContext().getColumnsList());
                 } else {
-                    this.name.setSymbolClass(SQLQuerySymbolClass.ERROR);
+                    SQLQuerySymbolClass tableSymbolClass = statistics.isTreatErrorsAsWarnings()
+                        ? SQLQuerySymbolClass.TABLE
+                        : SQLQuerySymbolClass.ERROR;
+                    this.name.setSymbolClass(tableSymbolClass);
                     statistics.appendError(this.name.entityName, "Table " + this.name.toIdentifierString() + " not found");
                 }
             }

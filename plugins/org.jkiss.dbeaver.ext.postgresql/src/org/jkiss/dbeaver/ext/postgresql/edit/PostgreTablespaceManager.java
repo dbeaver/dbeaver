@@ -18,6 +18,7 @@
 
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
@@ -43,7 +44,7 @@ public class PostgreTablespaceManager extends SQLObjectEditor<PostgreTablespace,
     private static final Log log = Log.getLog(PostgreTablespaceManager.class);
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_SAVE_IMMEDIATELY;
     }
 
@@ -54,17 +55,17 @@ public class PostgreTablespaceManager extends SQLObjectEditor<PostgreTablespace,
 
     @Override
     protected PostgreTablespace createDatabaseObject(
-        DBRProgressMonitor monitor,
-        DBECommandContext context,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
         Object container,
         Object copyFrom,
-        Map<String, Object> options) throws DBException
+        @NotNull Map<String, Object> options) throws DBException
     {
         return new PostgreTablespace((PostgreDatabase) container);
     }
 
     @Override
-    public void deleteObject(DBECommandContext commandContext, PostgreTablespace object, Map<String, Object> options)
+    public void deleteObject(@NotNull DBECommandContext commandContext, @NotNull PostgreTablespace object, @NotNull Map<String, Object> options)
         throws DBException {
         if (systemTablespaces.contains(object.getName().toLowerCase())) {
             DBWorkbench.getPlatformUI().showError("Drop tablespace", "Unable to drop system tablespace " + object.getName());
@@ -75,10 +76,10 @@ public class PostgreTablespaceManager extends SQLObjectEditor<PostgreTablespace,
 
     @Override
     protected void addObjectCreateActions(
-        DBRProgressMonitor monitor,
-        DBCExecutionContext executionContext, List<DBEPersistAction> actions,
-        ObjectCreateCommand command,
-        Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectCreateCommand command,
+        @NotNull Map<String, Object> options) {
         final PostgreTablespace tablespace = command.getObject();
 
         try {
@@ -92,9 +93,9 @@ public class PostgreTablespaceManager extends SQLObjectEditor<PostgreTablespace,
 
     @Override
     protected void addObjectDeleteActions(
-        DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
-        ObjectDeleteCommand command,
-        Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectDeleteCommand command,
+        @NotNull Map<String, Object> options) {
         actions.add(
             new SQLDatabasePersistActionAtomic("Drop tablespace", "DROP TABLESPACE " //$NON-NLS-2$
                 + DBUtils.getQuotedIdentifier(command.getObject()))
@@ -103,12 +104,12 @@ public class PostgreTablespaceManager extends SQLObjectEditor<PostgreTablespace,
     }
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return true;
     }
 
     @Override
-    public boolean canDeleteObject(PostgreTablespace object) {
+    public boolean canDeleteObject(@NotNull PostgreTablespace object) {
         return true;
     }
 

@@ -124,7 +124,7 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
     }
 
     public String getModelName() {
-        return CommonUtils.toString(getSettings().getProperties().get(AIConstants.GPT_MODEL), GPTModel.GPT_TURBO16.getName());
+        return CommonUtils.toString(getSettings().getProperties().get(AIConstants.GPT_MODEL), GPTModel.GPT_TURBO.getName());
     }
 
     public boolean isValidConfiguration() {
@@ -350,7 +350,7 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
     @NotNull
     @Override
     protected String getInstructions(boolean chatCompletion) {
-        if (GPTModel.GPT_TURBO.equals(getModel()) || GPTModel.GPT_TURBO16.equals(getModel())) {
+        if (GPTModel.GPT_TURBO.equals(getModel())) {
             return """
                 You are SQL assistant. You must produce SQL code for given prompt.
                 You must produce valid SQL statement enclosed with Markdown code block and terminated with semicolon.
@@ -375,7 +375,7 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
     @NotNull
     private GPTModel getModel() {
         final String modelId = CommonUtils.toString(getSettings().getProperties().get(AIConstants.GPT_MODEL), "");
-        return CommonUtils.isEmpty(modelId) ? GPTModel.GPT_TURBO16 : GPTModel.getByName(modelId);
+        return CommonUtils.isEmpty(modelId) ? GPTModel.GPT_TURBO : GPTModel.getByName(modelId);
     }
 
     private List<?> getCompletionChoices(GPTCompletionAdapter service, Object completionRequest) {
