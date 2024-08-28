@@ -97,6 +97,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     protected final Object metadataSync = new Object();
     protected final Object resourcesSync = new Object();
     private ProjectSyncJob metadataSyncJob;
+    private boolean isUserDeclineProjectDecryption = false;
 
     private boolean inMemory;
 
@@ -640,6 +641,16 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
                 metadataSyncJob.schedule(100);
             }
         }
+    }
+
+    @Override
+    public boolean isUserDeclineProjectDecryption() {
+        return isUserDeclineProjectDecryption;
+    }
+
+    @Override
+    public void setIsUserDeclineProjectDecryption(boolean userDeclinePorjectDecryption) {
+        isUserDeclineProjectDecryption = userDeclinePorjectDecryption;
     }
 
     @Override

@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
-import org.jkiss.dbeaver.model.navigator.DBNProjectConstants;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -404,7 +403,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             && DBWorkbench.getPlatform().getApplication().isCommunity() &&
             CommonUtils.toBoolean(registry.getProject().getProjectProperty(USE_PROJECT_PASSWORD))
         ) {
-            if (CommonUtils.toBoolean(registry.getProject().getProjectProperty(DBNProjectConstants.PROP_USER_DECLINE_DECRYPTION))) {
+            if (registry.getProject().isUserDeclineProjectDecryption()) {
                 throw new DBInterruptedException("Project secure credentials read canceled by user.");
             }
             if (DBWorkbench.getPlatformUI().confirmAction(
@@ -414,11 +413,11 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 RegistryMessages.project_open_cannot_read_credentials_button_text, true)) {
                 // in case of user agreed lost project credentials - proceed opening
                 log.info("The user agreed lost project credentials.");
-                registry.getProject().setProjectProperty(DBNProjectConstants.PROP_USER_DECLINE_DECRYPTION, false);
+                registry.getProject().setIsUserDeclineProjectDecryption(false);
 
             } else {
                 // in case of canceling erase credentials intercept original exception
-                registry.getProject().setProjectProperty(DBNProjectConstants.PROP_USER_DECLINE_DECRYPTION, true);
+                registry.getProject().setIsUserDeclineProjectDecryption(true);
                 throw new DBInterruptedException("Project secure credentials read canceled by user.");
             }
         }

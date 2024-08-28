@@ -175,7 +175,6 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
             project.ensureOpen();
         }
 
-        project.setProjectProperty(DBNProjectConstants.PROP_USER_DECLINE_DECRYPTION, false);
         final DBPDataSourceRegistry dataSourceRegistry = project.getDataSourceRegistry();
 
         try {

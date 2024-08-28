@@ -175,4 +175,7 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
      * close project and all related resources
      */
     void dispose();
+
+    void setIsUserDeclineProjectDecryption(boolean value);
+    boolean isUserDeclineProjectDecryption();
 }
