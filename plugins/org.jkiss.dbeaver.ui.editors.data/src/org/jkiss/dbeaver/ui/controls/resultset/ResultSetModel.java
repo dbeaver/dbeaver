@@ -462,9 +462,13 @@ public class ResultSetModel {
                 DBDAttributeBinding ownerAttr = attr.getParent(depth - i - 1);
                 assert ownerAttr != null;
                 try {
+                    int itemIndex = 0;
+                    if (rowIndexes != null && ownerValue instanceof Collection<?>) {
+                        itemIndex = rowIndexes[rowIndex++];
+                    }
                     Object nestedValue = ownerAttr.extractNestedValue(
                         ownerValue,
-                        rowIndexes == null ? 0 : rowIndexes[rowIndex++]);
+                        itemIndex);
                     if (nestedValue == null) {
                         // Try to create nested value
                         DBCExecutionContext context = DBUtils.getDefaultContext(ownerAttr, false);
@@ -506,7 +510,7 @@ public class ResultSetModel {
             try {
                 oldValue = attr.extractNestedValue(
                     ownerValue,
-                    rowIndexes == null ? 0 : rowIndexes[targetValueIndex]);
+                    rowIndexes == null || targetValueIndex < 0 ? 0 : rowIndexes[targetValueIndex]);
             } catch (DBCException e) {
                 log.error("Error getting [" + attr.getName() + "] value", e);
             }
@@ -550,9 +554,19 @@ public class ResultSetModel {
                     changesCount++;
                 }
             }
-            if (ownerValue != null) {
+            if (ownerValue instanceof DBDComposite compositeValue) {
                 try {
-                    ((DBDComposite) ownerValue).setAttributeValue(attr.getAttribute(), value);
+                    if (rowIndexes != null) {
+                        int itemIndex = rowIndexes[rowIndex];
+                        Object arrayValue = compositeValue.getAttributeValue(attr.getAttribute());
+                        if (arrayValue instanceof DBDCollection collection) {
+                            collection.setItem(itemIndex, value);
+                        } else {
+                            throw new DBCException("Wrong composite: cannot update item " + itemIndex);
+                        }
+                    } else {
+                        compositeValue.setAttributeValue(attr.getAttribute(), value);
+                    }
                 } catch (DBCException e) {
                     log.debug("Error setting attribute value", e);
                 }
@@ -1106,7 +1120,7 @@ public class ResultSetModel {
         this.dataFilter.setAnyConstraint(filter.isAnyConstraint());
     }
 
-    public void resetOrdering() {
+    public void resetOrdering(@NotNull DBDAttributeBinding columnElement) {
         final boolean hasOrdering = dataFilter.hasOrdering();
 
         // First sort in original order to reset multi-column orderings
@@ -1124,7 +1138,10 @@ public class ResultSetModel {
                     }
                     Object cell1 = getCellValue(new ResultSetCellLocation(binding, row1));
                     Object cell2 = getCellValue(new ResultSetCellLocation(binding, row2));
-                    if (cell1 instanceof String && cell2 instanceof String) {
+                    Comparator<Object> comparator = columnElement.getValueHandler().getComparator();
+                    if (comparator != null) {
+                        result = comparator.compare(cell1, cell2);
+                    } else if (cell1 instanceof String && cell2 instanceof String) {
                     	result = (cell1.toString()).compareToIgnoreCase(cell2.toString());
                     } else {
                     	result = DBUtils.compareDataValues(cell1, cell2);

@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.dameng.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.dameng.model.DamengTableColumn;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager;
@@ -43,7 +44,7 @@ import java.util.Map;
 public class DamengTableColumnManager extends GenericTableColumnManager implements DBEObjectRenamer<GenericTableColumn> {
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, SQLObjectEditor<GenericTableColumn, GenericTableBase>.ObjectRenameCommand command, Map<String, Object> options) {
+    protected void addObjectRenameActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull SQLObjectEditor<GenericTableColumn, GenericTableBase>.ObjectRenameCommand command, @NotNull Map<String, Object> options) {
         final GenericTableColumn column = command.getObject();
         actions.add(
                 new SQLDatabasePersistAction(
@@ -60,7 +61,7 @@ public class DamengTableColumnManager extends GenericTableColumnManager implemen
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, SQLObjectEditor<GenericTableColumn, GenericTableBase>.ObjectChangeCommand command, Map<String, Object> options) throws DBException {
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList, @NotNull SQLObjectEditor<GenericTableColumn, GenericTableBase>.ObjectChangeCommand command, @NotNull Map<String, Object> options) throws DBException {
         final DamengTableColumn column = (DamengTableColumn) command.getObject();
         actionList.add(
                 new SQLDatabasePersistAction(

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
@@ -48,7 +49,7 @@ public class GenericForeignKeyManager extends SQLForeignKeyManager<GenericTableF
     }
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return (container instanceof GenericTable)
             && ((GenericTable) container).getDataSource().getInfo().supportsReferentialIntegrity()
             && GenericUtils.canAlterTable((GenericTable) container);
@@ -60,12 +61,12 @@ public class GenericForeignKeyManager extends SQLForeignKeyManager<GenericTableF
     }
 
     @Override
-    public boolean canDeleteObject(GenericTableForeignKey object) {
+    public boolean canDeleteObject(@NotNull GenericTableForeignKey object) {
         return GenericUtils.canAlterTable(object);
     }
 
     @Override
-    protected GenericTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object from, Map<String, Object> options) {
+    protected GenericTableForeignKey createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, final Object container, Object from, @NotNull Map<String, Object> options) {
         GenericTableBase tableBase = (GenericTableBase)container;
         GenericTableForeignKey foreignKey = tableBase.getDataSource().getMetaModel().createTableForeignKeyImpl(
             tableBase,

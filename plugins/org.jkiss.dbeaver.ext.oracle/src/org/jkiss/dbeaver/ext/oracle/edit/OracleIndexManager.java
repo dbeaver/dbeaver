@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex;
@@ -42,11 +43,11 @@ public class OracleIndexManager extends SQLIndexManager<OracleTableIndex, Oracle
 
     @Override
     protected OracleTableIndex createDatabaseObject(
-        DBRProgressMonitor monitor,
-        DBECommandContext context,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
         final Object container,
         Object from,
-        Map<String, Object> options
+        @NotNull Map<String, Object> options
     ) {
         OracleTableBase table = (OracleTableBase) container;
 

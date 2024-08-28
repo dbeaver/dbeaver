@@ -22,7 +22,9 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -32,9 +34,9 @@ public class PostgreObjectPrivilege extends PostgrePrivilege {
 
     private static final Log log = Log.getLog(PostgreObjectPrivilege.class);
 
-    private String grantee;
+    private final PostgreRoleReference grantee;
 
-    public PostgreObjectPrivilege(PostgrePrivilegeOwner owner, String grantee, List<PostgrePrivilegeGrant> privileges) {
+    public PostgreObjectPrivilege(PostgrePrivilegeOwner owner, PostgreRoleReference grantee, List<PostgrePrivilegeGrant> privileges) {
         super(owner, privileges);
         this.grantee = grantee;
     }
@@ -42,16 +44,15 @@ public class PostgreObjectPrivilege extends PostgrePrivilege {
     @Property(viewable = true, order = 1)
     @NotNull
     public String getName() {
-        return grantee == null ? "": DBUtils.getQuotedIdentifier(getDataSource(), grantee);
+        return grantee == null ? "" : grantee.getDisplayString();
     }
 
     @Override
-    public PostgreRole getTargetObject(DBRProgressMonitor monitor) throws DBException
-    {
-        return owner.getDatabase().getRoleByName(monitor, owner.getDatabase(), grantee);
+    public PostgreRole getTargetObject(DBRProgressMonitor monitor) throws DBException {
+        return owner.getDatabase().getRoleByReference(monitor, this.grantee);
     }
 
-    public String getGrantee() {
+    public PostgreRoleReference getGrantee() {
         return grantee;
     }
 
@@ -62,10 +63,11 @@ public class PostgreObjectPrivilege extends PostgrePrivilege {
 
     @Override
     public int compareTo(@NotNull PostgrePrivilege o) {
-        if (o instanceof PostgreObjectPrivilege) {
-            return grantee.compareTo(((PostgreObjectPrivilege)o).grantee);
+        if (o instanceof PostgreObjectPrivilege other) {
+            return this.grantee.compareTo(other.grantee);
+        } else {
+            return 0;
         }
-        return 0;
     }
 
 }
