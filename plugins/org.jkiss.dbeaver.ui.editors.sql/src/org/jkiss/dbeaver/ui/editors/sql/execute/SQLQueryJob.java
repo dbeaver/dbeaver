@@ -92,6 +92,7 @@ public class SQLQueryJob extends DataSourceJob
 
     public static final Object STATS_RESULTS = new Object();
     private static final int MAX_QUERY_PREVIEW_LENGTH = 8192;
+    private static final int MAX_UPDATE_COUNT_READS = 1000;
 
     private final DBSDataContainer dataContainer;
     private final List<SQLScriptElement> queries;
@@ -623,6 +624,7 @@ public class SQLQueryJob extends DataSourceJob
             // Some databases (especially NoSQL) may produce a lot of
             // result sets, we should warn user because it may lead to UI freeze
             int resultSetCounter = 0;
+            int updateCountReads = 0;
             boolean confirmed = false;
             while (true) {
                 // Fetch data only if we have to fetch all results or if it is rs requested
@@ -685,6 +687,7 @@ public class SQLQueryJob extends DataSourceJob
                         if (updateCount >= 0) {
                             executeResult.setUpdateCount(updateCount);
                             statistics.addRowsUpdated(updateCount);
+                            updateCountReads++;
                         }
                     } catch (DBCException e) {
                         // In some cases we can't read update count
@@ -697,9 +700,15 @@ public class SQLQueryJob extends DataSourceJob
                     resultSetNumber++;
                     fetchResultSetNumber = resultSetNumber;
                 }
-                if (!hasResultSet && updateCount < 0) {
-                    // Nothing else to fetch
-                    break;
+                if (!hasResultSet) {
+                    if (updateCount <= 0 && updateCountReads >= MAX_UPDATE_COUNT_READS) {
+                        // Exhausted all read attempts with no success
+                        break;
+                    }
+                    if (updateCount < 0) {
+                        // Nothing else to fetch
+                        break;
+                    }
                 }
 
                 if (session.getDataSource().getInfo().supportsMultipleResults()) {

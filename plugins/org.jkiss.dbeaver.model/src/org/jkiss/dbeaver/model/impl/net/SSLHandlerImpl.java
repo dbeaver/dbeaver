@@ -33,9 +33,14 @@ import java.io.IOException;
  */
 public class SSLHandlerImpl implements DBWNetworkHandler, DBWConfigProvider {
 
+    @NotNull
     @Override
-    public DBPConnectionConfiguration initializeHandler(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo) throws DBException, IOException {
-        return null;
+    public DBPConnectionConfiguration initializeHandler(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBWHandlerConfiguration configuration,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBException, IOException {
+        return connectionInfo;
     }
 
     @Override

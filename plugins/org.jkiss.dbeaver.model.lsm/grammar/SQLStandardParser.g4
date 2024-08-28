@@ -87,8 +87,8 @@ identifier: (Introducer characterSetSpecification)? actualIdentifier;
 actualIdentifier: (Identifier|DelimitedIdentifier|nonReserved|Quotted);
 
 // data types
-dataType: (datetimeType|intervalType|anyWordsWithProperty (CHARACTER SET characterSetSpecification)?);
-datetimeType: (DATE|TIME (LeftParen UnsignedInteger RightParen)? (WITH TIME ZONE)?|TIMESTAMP (LeftParen UnsignedInteger RightParen)? (WITH TIME ZONE)?);
+dataType: (datetimeType|intervalType|qualifiedName|anyWordsWithProperty (CHARACTER SET characterSetSpecification)?);
+datetimeType: DATE|TIME (LeftParen UnsignedInteger RightParen)? (WITH TIME ZONE)?|TIMESTAMP (LeftParen UnsignedInteger RightParen)? (WITH TIME ZONE)?;
 intervalType: INTERVAL intervalQualifier;
 intervalQualifier: (startField TO endField|singleDatetimeField);
 startField: nonSecondDatetimeField (LeftParen intervalLeadingFieldPrecision RightParen)?;
@@ -99,29 +99,32 @@ intervalFractionalSecondsPrecision: UnsignedInteger;
 singleDatetimeField: (nonSecondDatetimeField (LeftParen intervalLeadingFieldPrecision RightParen)?|SECOND (LeftParen intervalLeadingFieldPrecision (Comma intervalFractionalSecondsPrecision)? RightParen)?);
 
 // column definition
-columnDefinition: columnName dataType (defaultClause)? (columnConstraintDefinition)* (anyWordWithAnyValue)?;
+columnDefinition: columnName dataType defaultClause? columnConstraintDefinition* anyWordWithAnyValue?; // why anyWordWithAnyValue?
 columnName: identifier;
 
 // default
-defaultClause: DEFAULT anyWordsWithProperty;
+defaultClause: DEFAULT? valueExpression;
 
 // column constraints
 columnConstraintDefinition: (constraintNameDefinition)? columnConstraint (constraintAttributes)?;
 constraintNameDefinition: CONSTRAINT constraintName;
 constraintName: qualifiedName;
-columnConstraint: (NOT NULL|UNIQUE|PRIMARY KEY|referencesSpecification|checkConstraintDefinition);
+columnConstraint: columnConstraintNotNull|columnConstraintUnique|columnConstraintPrimaryKey|referencesSpecification|checkConstraintDefinition;
+columnConstraintNotNull: NOT NULL;
+columnConstraintUnique: UNIQUE;
+columnConstraintPrimaryKey: PRIMARY KEY;
 checkConstraintDefinition: CHECK LeftParen searchCondition RightParen;
 
 // references
-referencesSpecification: REFERENCES referencedTableAndColumns (MATCH matchType)? (referentialTriggeredAction)?;
+referencesSpecification: REFERENCES referencedTableAndColumns (MATCH matchType)? referentialTriggeredAction?;
 referencedTableAndColumns: tableName (LeftParen referenceColumnList RightParen)?;
 tableName: qualifiedName;
 referenceColumnList: columnNameList;
 columnNameList: columnName (Comma columnName)*;
-matchType: (FULL|PARTIAL);
-referentialTriggeredAction: (updateRule (deleteRule)?|deleteRule (updateRule)?);
+matchType: FULL|PARTIAL;
+referentialTriggeredAction: updateRule deleteRule? | deleteRule updateRule?;
 updateRule: ON UPDATE referentialAction;
-referentialAction: (CASCADE|SET NULL|SET DEFAULT|NO ACTION);
+referentialAction: CASCADE|SET NULL|SET DEFAULT|NO ACTION;
 deleteRule: ON DELETE referentialAction;
 
 // search conditions
@@ -317,31 +320,48 @@ columnIndex: UnsignedInteger;
 orderingSpecification: (ASC|DESC);
 
 // schema definition
-sqlSchemaStatement: (schemaDefinition|
-    createTableStatement|createViewStatement
-    alterTableStatement|
-    dropSchemaStatement|dropTableStatement|dropViewStatement|dropProcedureStatement|dropCharacterSetStatement);
-schemaDefinition: CREATE SCHEMA schemaNameClause (schemaCharacterSetSpecification)? (schemaElement)*;
-schemaNameClause: (schemaName|AUTHORIZATION schemaAuthorizationIdentifier|schemaName AUTHORIZATION schemaAuthorizationIdentifier);
+sqlSchemaStatement: schemaDefinition|
+    createTableStatement|createViewStatement|alterTableStatement|
+    dropSchemaStatement|dropTableStatement|dropViewStatement|dropProcedureStatement|dropCharacterSetStatement;
+schemaDefinition: CREATE SCHEMA (IF NOT EXISTS)? schemaNameClause schemaCharacterSetSpecification? schemaElement*;
+schemaNameClause: schemaName|AUTHORIZATION schemaAuthorizationIdentifier|schemaName AUTHORIZATION schemaAuthorizationIdentifier;
 schemaAuthorizationIdentifier: authorizationIdentifier;
 authorizationIdentifier: identifier;
 schemaCharacterSetSpecification: DEFAULT CHARACTER SET characterSetSpecification;
-schemaElement: (createTableStatement|createViewStatement);
+schemaElement: createTableStatement|createViewStatement;
 
-// table definition
-createTableStatement: CREATE ((GLOBAL|LOCAL) TEMPORARY)? TABLE tableName tableElementList (ON COMMIT (DELETE|PRESERVE) ROWS)?;
+createTableStatement: createTableHead tableName createTableExtraHead tableElementList createTableTail;
+createTableHead: CREATE (OR REPLACE)? (GLOBAL|LOCAL)? (TEMPORARY|TEMP)? TABLE (IF NOT EXISTS)? ;// here orReplace is MariaDB-specific only
+createTableExtraHead: (OF identifier)?;
+tableElementList: LeftParen tableElement (Comma tableElement)* RightParen;
+tableElement: (columnDefinition|tableConstraintDefinition) anyUnexpected??;
+createTableTail: anyUnexpected;
+//                 createTableTailForValues? createTableTailOther*
+//                 createTableTailPartition? createTableTailOther*
+//                 createTableTailOnCommit? createTableTailOther*;
+//createTableTailPartition: PARTITION BY (RANGE|LIST|HASH|anyUnexpected) LeftParen createTableTailPartitionColumnSpec (Comma createTableTailPartitionColumnSpec)* RightParen;
+//createTableTailPartitionColumnSpec: (columnName|valueExpression) anyWordsWithProperty?;
+//createTableTailOnCommit: ON COMMIT (DELETE|PRESERVE) ROWS;
+//createTableTailForValues: FOR VALUES createTablePartitionValuesSpec|DEFAULT;
+//createTablePartitionValuesSpec: IN LeftParen queryExpression (Comma queryExpression)* RightParen |
+//                     FROM LeftParen (queryExpression | MINVALUE | MAXVALUE) (Comma queryExpression | MINVALUE | MAXVALUE)* RightParen
+//                       TO LeftParen (queryExpression | MINVALUE | MAXVALUE) (Comma queryExpression | MINVALUE | MAXVALUE)* RightParen |
+//                     WITH LeftParen MODULUS signedNumericLiteral Comma REMAINDER signedNumericLiteral RightParen;
+//createTableTailOther: ((~(LeftParen|RightParen|Period|Semicolon|Comma|
+//        PARTITION|ON|FOR
+//    ))|(LeftParen anyUnexpected* RightParen))+;
+
 createViewStatement: CREATE VIEW tableName (LeftParen viewColumnList RightParen)? AS queryExpression (WITH (levelsClause)? CHECK OPTION)?;
 viewColumnList: columnNameList;
 levelsClause: (CASCADED|LOCAL);
-tableElementList: LeftParen tableElement (Comma tableElement)* RightParen;
-tableElement: (columnDefinition|tableConstraintDefinition);
 
 // schema ddl
 dropSchemaStatement: DROP SCHEMA schemaName dropBehaviour;
 dropBehaviour: (CASCADE|RESTRICT);
-alterTableStatement: ALTER TABLE tableName alterTableAction;
-alterTableAction: (addColumnDefinition|alterColumnDefinition|dropColumnDefinition|addTableConstraintDefinition|dropTableConstraintDefinition);
+alterTableStatement: ALTER anyWord* TABLE (IF EXISTS)? tableName alterTableAction (Comma alterTableAction)*;
+alterTableAction: addColumnDefinition|alterColumnDefinition|renameColumnDefinition|dropColumnDefinition|addTableConstraintDefinition|dropTableConstraintDefinition|anyWordsWithProperty;
 addColumnDefinition: ADD (COLUMN)? columnDefinition;
+renameColumnDefinition: RENAME (COLUMN)? columnName TO identifier;
 alterColumnDefinition: ALTER (COLUMN)? columnName alterColumnAction;
 alterColumnAction: (setColumnDefaultClause|dropColumnDefaultClause);
 setColumnDefaultClause: SET defaultClause;
@@ -400,7 +420,7 @@ anyValue: rowValueConstructor|searchCondition;
 anyWordWithAnyValue: anyWord anyValue;
 anyProperty: LeftParen (anyValue (Comma anyValue)*) RightParen;
 anyWordsWithProperty: anyWord+ anyProperty?;
-anyWordsWithProperty2: anyWord+ anyProperty overClause?;
+anyWordsWithProperty2: (anyWord|IF)+ anyProperty overClause?; // to handle if as function like IF(c.tipo_cliente='F','Física','Jurídica')
 
 aggregateExpression: actualIdentifier LeftParen aggregateExprParam+ RightParen (WITHIN GROUP LeftParen orderByClause RightParen)? (FILTER LeftParen WHERE searchCondition RightParen)?;
 aggregateExprParam: DISTINCT|ALL|ORDER|BY|ASC|DESC|LIMIT|SEPARATOR|OFFSET|rowValueConstructor;
@@ -420,7 +440,7 @@ nonReserved: COMMITTED | REPEATABLE | SERIALIZABLE | TYPE | UNCOMMITTED |
     CURRENT_USER | SESSION_USER | SYSTEM_USER | USER | VALUE | RIGHT | LEFT |
     DATE | YEAR | MONTH | DAY | HOUR | MINUTE | SECOND | ZONE |
     ACTION | ADD | AUTHORIZATION | BY | CASCADE | CASCADED | CATALOG | COALESCE | COMMIT |
-    CONSTRAINT | CONSTRAINTS | CORRESPONDING | COUNT | DEFERRABLE | DEFERRED | IMMEDIATE |
+    CONSTRAINTS | CORRESPONDING | COUNT | DEFERRABLE | DEFERRED | IMMEDIATE |
     EXTRACT | FULL | GLOBAL | LOCAL | INDICATOR | INITIALLY | INTERVAL | ISOLATION | KEY | LEVEL |
     NAMES | NO | NULLIF| ONLY | OVERLAPS| PARTIAL | PRESERVE | READ | RESTRICT | ROLLBACK | SCHEMA |
     SESSION | SET | TEMPORARY | TIME | TIMESTAMP | TIMEZONE_HOUR | TIMEZONE_MINUTE | TRANSACTION |

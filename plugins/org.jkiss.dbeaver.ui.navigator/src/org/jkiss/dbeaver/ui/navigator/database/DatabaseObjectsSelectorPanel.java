@@ -40,9 +40,12 @@ public class DatabaseObjectsSelectorPanel extends Composite {
     private final DBPProject project;
     private DatabaseNavigatorTree dataSourceTree;
     private DatabaseObjectsTreeManager checkboxTreeManager;
-    private DBRRunnableContext runnableContext;
 
     public DatabaseObjectsSelectorPanel(Composite parent, boolean multiSelector, DBRRunnableContext runnableContext) {
+        this(parent, runnableContext, SWT.SINGLE | SWT.BORDER | (multiSelector ? SWT.CHECK : SWT.NONE));
+    }
+
+    public DatabaseObjectsSelectorPanel(Composite parent, DBRRunnableContext runnableContext, int style) {
         super(parent, SWT.NONE);
         if (parent.getLayout() instanceof GridLayout) {
             setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -51,13 +54,12 @@ public class DatabaseObjectsSelectorPanel extends Composite {
         gl.marginHeight = 0;
         gl.marginWidth = 0;
         setLayout(gl);
-        this.runnableContext = runnableContext;
 
         DBPPlatform platform = DBWorkbench.getPlatform();
         project = NavigatorUtils.getSelectedProject();
         final DBNProject projectNode = platform.getNavigatorModel().getRoot().getProjectNode(project);
         DBNNode rootNode = projectNode == null ? platform.getNavigatorModel().getRoot() : projectNode.getDatabases();
-        dataSourceTree = new DatabaseNavigatorTree(this, rootNode, SWT.SINGLE | SWT.BORDER | (multiSelector ? SWT.CHECK : SWT.NONE));
+        dataSourceTree = new DatabaseNavigatorTree(this, rootNode, style);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 300;
         dataSourceTree.setLayoutData(gd);
@@ -87,7 +89,7 @@ public class DatabaseObjectsSelectorPanel extends Composite {
                 return false;
             }
         });
-        if (multiSelector) {
+        if ((style & SWT.MULTI) != 0) {
             final CheckboxTreeViewer viewer = dataSourceTree.getCheckboxViewer();
 
             checkboxTreeManager = new DatabaseObjectsTreeManager(runnableContext, viewer,

@@ -56,8 +56,8 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.runtime.OperationSystemState;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.OperationSystemState;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIFonts;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
@@ -467,7 +467,10 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             // Probably some TE user without permissions and projects
             return true;
         }
-        final DBTTaskManager manager = activeProject.getTaskManager();
+        final DBTTaskManager manager = activeProject.getTaskManager(false);
+        if (manager == null) {
+            return true;
+        }
 
         if (manager.hasRunningTasks()) {
             final boolean cancel = !confirmCancel || DBWorkbench.getPlatformUI().confirmAction(
