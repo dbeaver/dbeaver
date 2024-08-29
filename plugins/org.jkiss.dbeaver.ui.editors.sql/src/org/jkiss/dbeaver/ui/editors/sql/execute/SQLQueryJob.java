@@ -549,10 +549,13 @@ public class SQLQueryJob extends DataSourceJob
             curResult.setQueryTime(System.currentTimeMillis() - startTime);
 
             if (fireEvents && listener != null && startQueryAlerted) {
-                boolean firstQuery = queries.get(0) == element;
-                boolean lastQuery = queries.get(queries.size() - 1) == element;
-                boolean refreshContext = lastQuery || (lastError != null && !firstQuery);
-                notifyQueryExecutionEnd(session, curResult, refreshContext);
+                // The context should be refreshed if:
+                // - the current query is the last query in the script, or
+                // - an exception occurred during the execution of the script after the first query.
+                boolean isLastQuery = queries.get(queries.size() - 1) == element;
+                boolean hasExecutionException = queries.size() > 1 && queries.get(0) == element && lastError != null;
+
+                notifyQueryExecutionEnd(session, curResult, isLastQuery || hasExecutionException);
             }
 
             monitor.done();
