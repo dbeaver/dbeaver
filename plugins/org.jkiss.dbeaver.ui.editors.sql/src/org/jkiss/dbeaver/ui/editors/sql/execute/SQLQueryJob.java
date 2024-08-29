@@ -549,7 +549,10 @@ public class SQLQueryJob extends DataSourceJob
             curResult.setQueryTime(System.currentTimeMillis() - startTime);
 
             if (fireEvents && listener != null && startQueryAlerted) {
-                notifyQueryExecutionEnd(session, curResult);
+                boolean firstQuery = queries.get(0) == element;
+                boolean lastQuery = queries.get(queries.size() - 1) == element;
+                boolean refreshContext = lastQuery || (lastError != null && !firstQuery);
+                notifyQueryExecutionEnd(session, curResult, refreshContext);
             }
 
             monitor.done();
@@ -577,10 +580,10 @@ public class SQLQueryJob extends DataSourceJob
         return true;
     }
 
-    public void notifyQueryExecutionEnd(DBCSession session, SQLQueryResult curResult) {
+    public void notifyQueryExecutionEnd(DBCSession session, SQLQueryResult curResult, boolean refreshContext) {
         // Notify query end
         try {
-            listener.onEndQuery(session, curResult, statistics);
+            listener.onEndQuery(session, curResult, statistics, refreshContext);
         } catch (Exception e) {
             log.error(e);
         }

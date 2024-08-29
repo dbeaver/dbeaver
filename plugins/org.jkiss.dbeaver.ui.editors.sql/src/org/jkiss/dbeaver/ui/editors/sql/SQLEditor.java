@@ -4407,7 +4407,7 @@ public class SQLEditor extends SQLEditorBase implements
                         currentQueryResult = new SQLQueryResult(new SQLQuery(null, ""));
                     }
                     currentQueryResult.setError(error);
-                    job.notifyQueryExecutionEnd(null, currentQueryResult);
+                    job.notifyQueryExecutionEnd(null, currentQueryResult, true);
                 }
             }
         }
@@ -4839,8 +4839,10 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         @Override
-        public void onEndQuery(final DBCSession session, final SQLQueryResult result, DBCStatistics statistics) {
-            refreshContextDefaults(session, result);
+        public void onEndQuery(final DBCSession session, final SQLQueryResult result, DBCStatistics statistics, boolean refreshContext) {
+            if (refreshContext) {
+                refreshContextDefaults(session, result);
+            }
 
             try {
                 synchronized (runningQueries) {
@@ -4872,7 +4874,7 @@ public class SQLEditor extends SQLEditorBase implements
                 });
             } finally {
                 if (extListener != null) {
-                    extListener.onEndQuery(session, result, statistics);
+                    extListener.onEndQuery(session, result, statistics, refreshContext);
                 }
             }
         }
@@ -4881,10 +4883,7 @@ public class SQLEditor extends SQLEditorBase implements
             final DBCExecutionContext executionContext = getExecutionContext();
             if (executionContext != null && session != null) {
                 // Refresh active object
-                if ((result == null || !result.hasError()) &&
-                    executionContext.getDataSource().getContainer().isExtraMetadataReadEnabled() &&
-                    getActivePreferenceStore().getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)
-                ) {
+                if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)) {
                     DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
                     if (contextDefaults != null) {
                         try {

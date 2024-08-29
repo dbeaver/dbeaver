@@ -30,7 +30,7 @@ public interface SQLQueryListener
 
     void onStartQuery(DBCSession session, SQLQuery query);
 
-    void onEndQuery(DBCSession session, SQLQueryResult result, DBCStatistics statistics);
+    void onEndQuery(DBCSession session, SQLQueryResult result, DBCStatistics statistics, boolean refreshContext);
 
     void onEndScript(DBCStatistics statistics, boolean hasErrors);
 
