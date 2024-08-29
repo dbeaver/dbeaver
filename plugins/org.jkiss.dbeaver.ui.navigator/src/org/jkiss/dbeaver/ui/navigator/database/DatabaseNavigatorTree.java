@@ -369,9 +369,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 // Disable redraw during expand (its blinking)
                 getTree().setRedraw(false);
                 try {
-                    if (event.getSource() instanceof Tree tree
-                        && tree.getItemCount() == 1
-                        && tree.getItem(0).getData() instanceof DBNProject dbnProject) {
+                    if (event.item != null && event.item.getData() instanceof DBNProject dbnProject) {
                         //manual opening
                         dbnProject.getProject().setIsUserDeclineProjectDecryption(false);
                     }
