@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.sql.semantics.model.select;
+package org.jkiss.dbeaver.model.sql.semantics.model.expressions;
 
 
 import org.antlr.v4.runtime.misc.Interval;
@@ -85,7 +85,11 @@ public class SQLQueryValueMemberExpression extends SQLQueryValueExpression {
                 }
             } catch (DBException e) {
                 log.debug(e);
-                statistics.appendError(this.identifier, "Failed to resolve member reference", e);
+                statistics.appendError(
+                    this.identifier,
+                    "Failed to resolve member reference " + this.identifier.getName() + " for " + this.owner.getValueType().getDisplayName(),
+                    e
+                );
                 type = null;
             }
 

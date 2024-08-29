@@ -234,6 +234,15 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
         return taskManager;
     }
 
+    @Nullable
+    @Override
+    public DBTTaskManager getTaskManager(boolean create) {
+        if (taskManager != null) {
+            return taskManager;
+        }
+        return create ? getTaskManager() : null;
+    }
+
     ////////////////////////////////////////////////////////
     // Secure storage
 
@@ -327,7 +336,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
             return;
         }
 
-        Path settingsFile = getMetadataPath().resolve(SETTINGS_STORAGE_FILE);
+        Path settingsFile = getMetadataFolder(true).resolve(SETTINGS_STORAGE_FILE);
         String settingsString = METADATA_GSON.toJson(properties);
 
         try {
@@ -403,8 +412,9 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
         loadMetadata();
         resourcePath = CommonUtils.normalizeResourcePath(resourcePath);
         synchronized (resourcesSync) {
-            this.resourceProperties.put(resourcePath, new HashMap<>(newProps));
+            this.resourceProperties.put(resourcePath, new LinkedHashMap<>(newProps));
         }
+        flushMetadata();
     }
 
     @Override
@@ -644,7 +654,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
             ContentUtils.makeFileBackup(getMetadataFolder(false).resolve(METADATA_STORAGE_FILE));
 
             synchronized (metadataSync) {
-                Path mdFile = getMetadataPath().resolve(METADATA_STORAGE_FILE);
+                Path mdFile = getMetadataFolder(true).resolve(METADATA_STORAGE_FILE);
                 if (CommonUtils.isEmpty(resourceProperties) && !Files.exists(mdFile)) {
                     // Nothing to save and metadata file doesn't exist
                     return Status.OK_STATUS;

@@ -24,6 +24,10 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
@@ -41,7 +45,7 @@ import java.util.List;
  *
  * @author Serge Rider
  */
-public class EditIndexPage extends AttributesSelectorPage {
+public class EditIndexPage extends AttributesSelectorPage<DBSEntity, DBSEntityAttribute> {
 
     public static final String PROP_DESC = "desc";
 
@@ -143,7 +147,7 @@ public class EditIndexPage extends AttributesSelectorPage {
     }
 
     @Override
-    protected int fillAttributeColumns(DBSEntityAttribute attribute, AttributeInfo attributeInfo, TableItem columnItem) {
+    protected int fillAttributeColumns(DBSEntityAttribute attribute, AttributeInfo<DBSEntityAttribute> attributeInfo, TableItem columnItem) {
         descColumnIndex = super.fillAttributeColumns(attribute, attributeInfo, columnItem) + 1;
 
         boolean isDesc = Boolean.TRUE.equals(attributeInfo.getProperty(PROP_DESC));
@@ -152,7 +156,7 @@ public class EditIndexPage extends AttributesSelectorPage {
         return descColumnIndex;
     }
 
-    protected Control createCellEditor(Table table, int index, TableItem item, AttributeInfo attributeInfo) {
+    protected Control createCellEditor(Table table, int index, TableItem item, AttributeInfo<DBSEntityAttribute> attributeInfo) {
         if (index == descColumnIndex) {
             boolean isDesc = Boolean.TRUE.equals(attributeInfo.getProperty(PROP_DESC));
             CCombo combo = new CCombo(table, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -164,7 +168,7 @@ public class EditIndexPage extends AttributesSelectorPage {
         return super.createCellEditor(table, index, item, attributeInfo);
     }
 
-    protected void saveCellValue(Control control, int index, TableItem item, AttributeInfo attributeInfo) {
+    protected void saveCellValue(Control control, int index, TableItem item, AttributeInfo<DBSEntityAttribute> attributeInfo) {
         if (index == descColumnIndex) {
             CCombo combo = (CCombo) control;
             boolean isDesc = combo.getSelectionIndex() == 1;
@@ -178,5 +182,14 @@ public class EditIndexPage extends AttributesSelectorPage {
     @Override
     public DBSObject getObject() {
         return index;
+    }
+
+    @NotNull
+    @Override
+    protected List<? extends DBSEntityAttribute> getAttributes(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntity object
+    ) throws DBException {
+        return CommonUtils.safeList(object.getAttributes(monitor));
     }
 }
