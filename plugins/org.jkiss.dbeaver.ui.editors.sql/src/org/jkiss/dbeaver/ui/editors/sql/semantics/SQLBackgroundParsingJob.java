@@ -54,6 +54,8 @@ import java.util.ArrayDeque;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 
 public class SQLBackgroundParsingJob {
@@ -95,6 +97,7 @@ public class SQLBackgroundParsingJob {
             }
         }
     };
+    private CompletableFuture<Long> lastParsingFinishStamp = new CompletableFuture<>() { { this.complete(0l); } };
 
     private volatile boolean isRunning = false;
     private volatile int knownRegionStart = 0;
@@ -121,7 +124,7 @@ public class SQLBackgroundParsingJob {
         synchronized (this.syncRoot) {
             if (this.editor.getTextViewer() != null) {
                 this.editor.getTextViewer().addTextInputListener(this.documentListener);
-                this.editor.getTextViewer().addViewportListener(this.documentListener);                
+                this.editor.getTextViewer().addViewportListener(this.documentListener);
                 if (this.document == null) {
                     IDocument document = this.editor.getTextViewer().getDocument();
                     if (document != null) {
@@ -163,27 +166,49 @@ public class SQLBackgroundParsingJob {
     @NotNull
     public SQLQueryCompletionContext obtainCompletionContext(int offset) {
         SQLScriptItemAtOffset scriptItem = null;
+        Position requestPosition = new Position(offset);
         do {
+            final long requestStamp = System.currentTimeMillis();
+            CompletableFuture<Long> expectedParsingSessionFinishStamp;
             synchronized (this.syncRoot) {
                 if (scriptItem == null || this.queuedForReparse.size() == 0) {
-                    scriptItem = this.context.findScriptItem(offset);
+                    scriptItem = this.context.findScriptItem(offset - 1);
                     if (scriptItem != null) { // TODO consider statements separation which is ignored for now
                         if (scriptItem.item.isDirty()) {
                             // awaiting reparse, so proceed to release lock and wait for the job to finish, then retry
                         } else {
-                            return this.prepareCompletionContext(scriptItem, offset); 
+                            return this.prepareCompletionContext(scriptItem, requestPosition.getOffset());
                         }
                     } else {
                         // no script items here, so fallback to offquery context
                         break;
                     }
                 }
+
+                try {
+                    assert this.document != null;
+                    this.document.addPosition(requestPosition);
+                } catch (BadLocationException e) {
+                    log.error(e);
+                    throw new RuntimeException(e);
+                }
+                expectedParsingSessionFinishStamp = this.lastParsingFinishStamp;
             }
             
             try {
-                this.job.join();
-            } catch (InterruptedException e) {
+                // job.join() cannot be used here because completion request is being submitted at before-change event,
+                // when the job is not scheduled yet (so join returns immediately)
+                // job.schedule() performed only after the series of keypresses at after-change event
+                if (expectedParsingSessionFinishStamp.get() < requestStamp) {
+                    return SQLQueryCompletionContext.EMPTY;
+                }
+            } catch (InterruptedException | ExecutionException e) {
                 break;
+            }
+            if (requestPosition.isDeleted()) {
+                return SQLQueryCompletionContext.EMPTY;
+            } else {
+                this.document.removePosition(requestPosition);
             }
         } while (scriptItem != null);
         return SQLQueryCompletionContext.prepareOffquery(0);
@@ -202,6 +227,7 @@ public class SQLBackgroundParsingJob {
                 Interval realInterval = syntaxNode.getRealInterval();
                 if (scriptItem.item.getOriginalText().length() <= SQLQueryCompletionContext.getMaxKeywordLength()
                     && anyWordPattern.matcher(scriptItem.item.getOriginalText()).matches()
+                    && position <= scriptItem.item.getOriginalText().length()
                 ) {
                     return SQLQueryCompletionContext.prepareOffquery(scriptItem.offset);
                 }
@@ -324,6 +350,7 @@ public class SQLBackgroundParsingJob {
                 }
                 this.queuedForReparse.put(reparseStart, new QueuedRegionInfo(reparseLength));
             }
+            this.resetLastParsingFinishTime();
         }
     }
 
@@ -341,6 +368,15 @@ public class SQLBackgroundParsingJob {
                 region.length = Math.max(region.length, toParseStart + toParseLength - regionOffset);
             } else {
                 this.queuedForReparse.put(toParseStart, new QueuedRegionInfo(toParseLength));
+                this.resetLastParsingFinishTime();
+            }
+        }
+    }
+
+    private void resetLastParsingFinishTime() {
+        synchronized (this.syncRoot) {
+            if (this.lastParsingFinishStamp.isDone()) {
+                this.lastParsingFinishStamp = new CompletableFuture<>();
             }
         }
     }
@@ -587,6 +623,7 @@ public class SQLBackgroundParsingJob {
                 log.debug("known is " + knownRegionStart + "-" + knownRegionEnd);
             }
             this.isRunning = false;
+            this.lastParsingFinishStamp.complete(System.currentTimeMillis());
         }
         
         UIUtils.asyncExec(() -> {

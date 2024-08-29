@@ -1047,7 +1047,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
                     );
                 }
             } else {
-                String text = prepareQueryPreview(getScriptElementNode(node).scriptElement.getOriginalText());
+                String text = prepareQueryPreview(projection.getSyntaxNode().getTextContent());
                 this.makeNode(node, projection, OutlineQueryNodeKind.PROJECTION_SUBROOT, text, DBIcon.TREE_TABLE_LINK, projection);
             }
             return null;
