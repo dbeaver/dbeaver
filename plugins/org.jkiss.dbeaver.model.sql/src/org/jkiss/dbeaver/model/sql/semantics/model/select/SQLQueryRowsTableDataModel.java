@@ -161,6 +161,7 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
                     );
                 }
             } else {
+                context = context.markHasUnresolvedSource();
                 SourceResolutionResult rr = context.resolveSource(statistics.getMonitor(), nameStrings);
                 if (rr != null && rr.tableOrNull == null && rr.source != null && rr.aliasOrNull != null && nameStrings.size() == 1) {
                     // seems cte reference resolved

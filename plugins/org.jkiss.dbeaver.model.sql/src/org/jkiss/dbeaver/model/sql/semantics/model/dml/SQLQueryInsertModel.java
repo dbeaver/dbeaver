@@ -45,18 +45,18 @@ public class SQLQueryInsertModel extends SQLQueryDMLStatementModel {
 
     @NotNull
     public static SQLQueryModelContent recognize(@NotNull SQLQueryModelRecognizer recognizer, @NotNull STMTreeNode node) {
-        STMTreeNode tableNameNode = node.findChildOfName(STMKnownRuleNames.tableName);
+        STMTreeNode tableNameNode = node.findFirstChildOfName(STMKnownRuleNames.tableName);
         SQLQueryRowsTableDataModel tableModel = tableNameNode == null ? null : recognizer.collectTableReference(tableNameNode);
 
         List<SQLQuerySymbolEntry> columnNames;
         SQLQueryRowsSourceModel valuesRows;
 
-        STMTreeNode insertColumnsAndSource = node.findChildOfName(STMKnownRuleNames.insertColumnsAndSource);
+        STMTreeNode insertColumnsAndSource = node.findFirstChildOfName(STMKnownRuleNames.insertColumnsAndSource);
         if (insertColumnsAndSource != null) {
-            STMTreeNode insertColumnList = insertColumnsAndSource.findChildOfName(STMKnownRuleNames.insertColumnList);
+            STMTreeNode insertColumnList = insertColumnsAndSource.findFirstChildOfName(STMKnownRuleNames.insertColumnList);
             columnNames = insertColumnList == null ? null : recognizer.collectColumnNameList(insertColumnList);
 
-            STMTreeNode valuesNode = insertColumnsAndSource.findChildOfName(STMKnownRuleNames.queryExpression);
+            STMTreeNode valuesNode = insertColumnsAndSource.findFirstChildOfName(STMKnownRuleNames.queryExpression);
             valuesRows = valuesNode == null ? null : recognizer.collectQueryExpression(valuesNode);
         } else {
             columnNames = Collections.emptyList();

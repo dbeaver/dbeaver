@@ -93,7 +93,9 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
             if (rr != null) {
                 this.tableName.setDefinition(rr);
                 SQLQueryResultColumn resultColumn = rr.source.getResultDataContext().resolveColumn(statistics.getMonitor(), this.columnName.getName());
-                propagateColumnDefinition(this.columnName, resultColumn, statistics);
+                if (resultColumn != null || !rr.source.getResultDataContext().hasUndresolvedSource()) {
+                    propagateColumnDefinition(this.columnName, resultColumn, statistics);
+                }
                 this.column = resultColumn;
                 type = resultColumn != null ? resultColumn.type : SQLQueryExprType.UNKNOWN;
             } else {
@@ -123,7 +125,9 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
                 this.columnName.getSymbol().setSymbolClass(forcedClass);
                 type = forcedClass == SQLQuerySymbolClass.STRING ? SQLQueryExprType.STRING : SQLQueryExprType.UNKNOWN;
             } else {
-                propagateColumnDefinition(this.columnName, resultColumn, statistics);
+                if (resultColumn != null || !context.hasUndresolvedSource()) {
+                    propagateColumnDefinition(this.columnName, resultColumn, statistics);
+                }
                 type = resultColumn != null ? resultColumn.type : SQLQueryExprType.UNKNOWN;
             }
         } else {

@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.sql.semantics.model.ddl;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryQualifiedName;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
@@ -27,6 +26,8 @@ import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
+
+import java.util.Objects;
 
 public class SQLQueryObjectDropModel extends SQLQueryModelContent {
 
@@ -43,11 +44,12 @@ public class SQLQueryObjectDropModel extends SQLQueryModelContent {
         @NotNull STMTreeNode node,
         @NotNull DBSObjectType objectType
     ) {
-        SQLQueryObjectDataModel procedure = node.getChildren().stream()
-            .filter(n -> n.getNodeName().equals(STMKnownRuleNames.qualifiedName))
-            .map(n -> new SQLQueryObjectDataModel(n, recognizer.collectQualifiedName(n), objectType))
+        SQLQueryObjectDataModel procedure = node.findChildrenOfName(STMKnownRuleNames.qualifiedName).stream()
+            .map(recognizer::collectQualifiedName)
+            .filter(Objects::nonNull)
+            .map(n -> new SQLQueryObjectDataModel(n.getSyntaxNode(), n, objectType))
             .findFirst().orElse(null);
-        boolean ifExists = node.findChildOfName(STMKnownRuleNames.ifExistsSpec) != null; // "IF EXISTS" presented
+        boolean ifExists = node.findFirstChildOfName(STMKnownRuleNames.ifExistsSpec) != null; // "IF EXISTS" presented
         return new SQLQueryObjectDropModel(node, procedure, ifExists);
     }
 

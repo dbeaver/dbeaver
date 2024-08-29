@@ -81,14 +81,19 @@ public class SQLQueryRowsCteModel extends SQLQueryRowsSourceModel {
             
             for (SQLQueryRowsCteSubqueryModel subquery : this.subqueries) { // bind all the query names at first
                 subquery.propagateContext(context, statistics);
-                aggregatedContext = aggregatedContext.combine(
-                    aggregatedContext.hideSources().extendWithTableAlias(subquery.subqueryName.getSymbol(), subquery)
-                );
+                if (subquery.subqueryName != null) {
+                    aggregatedContext = aggregatedContext.combine(
+                        aggregatedContext.hideSources().extendWithTableAlias(subquery.subqueryName.getSymbol(), subquery)
+                    );
+                } else {
+                    // should never happen according to the grammar
+                    aggregatedContext = aggregatedContext.markHasUnresolvedSource();
+                }
             }
             
             for (SQLQueryRowsCteSubqueryModel subquery : this.subqueries) { // then resolve subqueries themselves
-                if (subquery.subqueryName.isNotClassified()) {
-                    // TODO but column names are not backwards-visible still 
+                // TODO but column names are not backwards-visible still
+                if (subquery.source != null) {
                     context = subquery.source.propagateContext(aggregatedContext, statistics).hideSources();
                     subquery.propagateContext(context, statistics);
                     subquery.prepareAliasDefinition();
@@ -96,18 +101,19 @@ public class SQLQueryRowsCteModel extends SQLQueryRowsSourceModel {
             }
         } else {
             for (SQLQueryRowsCteSubqueryModel subquery : this.subqueries) {
-                if (subquery.subqueryName.isNotClassified()) {
-                    SQLQueryDataContext currCtx = subquery.source.propagateContext(aggregatedContext, statistics)
-                        .hideSources()
-                        .extendWithTableAlias(subquery.subqueryName.getSymbol(), subquery);
-                    
-                    subquery.prepareAliasDefinition();
-                    
-                    // TODO error on mismatch number of columns and hide unmapped columns
-                    currCtx = SQLQueryRowsCorrelatedSourceModel.prepareColumnsCorrelation(currCtx, subquery.columNames, subquery);
-                    subquery.propagateContext(currCtx, statistics);
-                    aggregatedContext = aggregatedContext.combine(currCtx);
-                }
+                SQLQueryDataContext subqueryResult = (
+                    subquery.source == null ? aggregatedContext.overrideResultTuple(Collections.emptyList())
+                                            : subquery.source.propagateContext(aggregatedContext, statistics)
+                ).hideSources();
+                SQLQueryDataContext currCtx = subquery.subqueryName == null ? subqueryResult
+                    : subqueryResult.extendWithTableAlias(subquery.subqueryName.getSymbol(), subquery);
+
+                subquery.prepareAliasDefinition();
+
+                // TODO error on mismatch number of columns and hide unmapped columns
+                currCtx = SQLQueryRowsCorrelatedSourceModel.prepareColumnsCorrelation(currCtx, subquery.columNames, subquery);
+                subquery.propagateContext(currCtx, statistics);
+                aggregatedContext = aggregatedContext.combine(currCtx);
             }
         }
         

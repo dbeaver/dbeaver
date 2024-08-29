@@ -151,12 +151,12 @@ public class SQLQueryTableConstraintSpec extends SQLQueryNodeModel {
 
     @NotNull
     public static SQLQueryTableConstraintSpec recognize(@NotNull SQLQueryModelRecognizer recognizer, @NotNull STMTreeNode node) {
-        SQLQueryQualifiedName constraintName = Optional.ofNullable(node.findChildOfName(STMKnownRuleNames.constraintNameDefinition))
-            .map(n -> n.findChildOfName(STMKnownRuleNames.constraintName))
+        SQLQueryQualifiedName constraintName = Optional.ofNullable(node.findFirstChildOfName(STMKnownRuleNames.constraintNameDefinition))
+            .map(n -> n.findFirstChildOfName(STMKnownRuleNames.constraintName))
             .map(recognizer::collectQualifiedName).orElse(null);
 
-        STMTreeNode constraintNode = Optional.ofNullable(node.findChildOfName(STMKnownRuleNames.tableConstraint))
-            .map(n -> n.getStmChild(0)).orElse(null);
+        STMTreeNode constraintNode = Optional.ofNullable(node.findFirstChildOfName(STMKnownRuleNames.tableConstraint))
+            .map(n -> n.findFirstNonErrorChild()).orElse(null);
 
         SQLQueryTableConstraintKind constraintKind;
         List<SQLQuerySymbolEntry> tupleColumnsList = null;
@@ -169,7 +169,7 @@ public class SQLQueryTableConstraintSpec extends SQLQueryNodeModel {
 
             tupleColumnsList = switch (constraintKind) {
                 case UNIQUE -> recognizer.collectColumnNameList(constraintNode);
-                case REFERENCES -> Optional.ofNullable(constraintNode.findChildOfName(STMKnownRuleNames.referencingColumns))
+                case REFERENCES -> Optional.ofNullable(constraintNode.findFirstChildOfName(STMKnownRuleNames.referencingColumns))
                     .map(recognizer::collectColumnNameList).orElse(null);
                 default -> null;
             };
@@ -177,8 +177,8 @@ public class SQLQueryTableConstraintSpec extends SQLQueryNodeModel {
             switch (constraintKind) {
                 case CHECK -> checkExpression = recognizer.collectValueExpression(constraintNode);
                 case REFERENCES -> {
-                    STMTreeNode refNode = Optional.ofNullable(constraintNode.findChildOfName(STMKnownRuleNames.referencesSpecification))
-                        .map(n -> n.findChildOfName(STMKnownRuleNames.referencedTableAndColumns))
+                    STMTreeNode refNode = Optional.ofNullable(constraintNode.findFirstChildOfName(STMKnownRuleNames.referencesSpecification))
+                        .map(n -> n.findFirstChildOfName(STMKnownRuleNames.referencedTableAndColumns))
                         .orElse(null);
                     if (refNode != null) {
                         referencedTable = recognizer.collectTableReference(refNode);

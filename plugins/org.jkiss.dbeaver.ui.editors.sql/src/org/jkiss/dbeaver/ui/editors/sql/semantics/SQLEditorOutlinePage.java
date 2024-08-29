@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerToggleOutlineView;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -739,7 +740,9 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         @Nullable
         @Override
         public Object visitRowsCteSubquery(@NotNull SQLQueryRowsCteSubqueryModel cteSubquery, @NotNull OutlineQueryNode node) {
-            this.makeNode(node, cteSubquery, cteSubquery.subqueryName.getRawName(), DBIcon.TREE_TABLE_LINK, cteSubquery.source);
+            String text = cteSubquery.subqueryName == null ? SQLConstants.QUESTION : cteSubquery.subqueryName.getRawName();
+            SQLQueryRowsSourceModel[] children = Stream.of(cteSubquery.source).filter(Objects::nonNull).toArray(SQLQueryRowsSourceModel[]::new);
+            this.makeNode(node, cteSubquery, text, DBIcon.TREE_TABLE_LINK, children);
             return null;
         }
 
@@ -1319,7 +1322,8 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         @Nullable
         @Override
         public Object visitCreateTable(@NotNull SQLQueryTableCreateModel createTable, OutlineQueryNode node) {
-            String nodeName =  "CREATE TABLE " + createTable.getTableName().toIdentifierString();
+            SQLQueryQualifiedName tableName = createTable.getTableName();
+            String nodeName = "CREATE TABLE " + (tableName == null ? SQLConstants.QUESTION : tableName.toIdentifierString());
             this.makeNode(
                 node, createTable, nodeName, UIIcon.ACTION_OBJECT_ADD,
                 Stream.concat(createTable.getColumns().stream(), createTable.getConstraints().stream()).toArray(SQLQueryNodeModel[]::new)
@@ -1338,7 +1342,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         @Nullable
         @Override
         public Object visitColumnSpec(@NotNull SQLQueryColumnSpec columnSpec, OutlineQueryNode node) {
-            String nodeText = columnSpec.getColumnName() == null ? "?" : columnSpec.getColumnName().getName();
+            String nodeText = columnSpec.getColumnName() == null ? SQLConstants.QUESTION : columnSpec.getColumnName().getName();
             this.makeNode(
                 node, columnSpec, nodeText, " " + CommonUtils.notNull(columnSpec.getTypeName(), ""), DBIcon.TREE_COLUMN,
                 Stream.concat(

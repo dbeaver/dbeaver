@@ -1,15 +1,13 @@
 package org.jkiss.dbeaver.model.stm;
 
 import org.antlr.v4.runtime.misc.Interval;
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.TerminalNode;
+import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.Tree;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.utils.CommonUtils;
 
-import java.util.AbstractList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * The interface describing the node of the syntax tree
@@ -30,7 +28,6 @@ public interface STMTreeNode extends Tree {
      */
     int getAtnState();
 
-
     /**
      * Get the name of the syntax tree node
      */
@@ -47,33 +44,7 @@ public interface STMTreeNode extends Tree {
      * Get the text fragment covered by the node
      */
     @NotNull
-    default String getTextContent() {
-        String result = null;
-        if (this instanceof STMTreeRuleNode ruleNode) {
-            Interval textRange = ruleNode.getRealInterval();
-            result = ruleNode.getStart().getInputStream().getText(textRange);
-        } else if (this instanceof TerminalNode) {
-            Interval textRange = this.getRealInterval();
-            result = ((TerminalNode) this).getSymbol().getInputStream().getText(textRange);
-        } else if (this instanceof ParseTree) {
-            result = ((ParseTree) this).getText(); // consider extracting whitespaces but not comments
-        } else {
-            Tree first = this;
-            Tree last = this;
-
-            while (!(first instanceof TerminalNode) && first.getChildCount() > 0) {
-                first = first.getChild(0);
-            }
-            while (!(last instanceof TerminalNode) && last.getChildCount() > 0) {
-                last = last.getChild(last.getChildCount() - 1);
-            }
-            if (first instanceof TerminalNode a && last instanceof TerminalNode b) {
-                Interval textRange = Interval.of(a.getSymbol().getStartIndex(), b.getSymbol().getStopIndex());
-                result = b.getSymbol().getTokenSource().getInputStream().getText(textRange);
-            }
-        }
-        return CommonUtils.notEmpty(result);
-    }
+    String getTextContent();
 
     /**
      * Get the text fragment provided by antlr (without hidden channel tokens)
@@ -82,32 +53,56 @@ public interface STMTreeNode extends Tree {
     String getText();
 
     @Nullable
-    default STMTreeNode getStmParent() {
+    default STMTreeNode getParentNode() {
         return getParent() instanceof STMTreeNode parent ? parent : null;
     }
 
     /**
      * Returns child node by index
      */
-    default STMTreeNode getStmChild(int index) {
+    default STMTreeNode getChildNode(int index) {
         throw new UnsupportedOperationException();
     }
 
-    default STMTreeNode getFirstStmChild() {
-        return getStmChild(0);
+    boolean hasErrorChildren();
+
+    @Nullable
+    default STMTreeNode findFirstNonErrorChild() {
+        if (this.hasErrorChildren()) {
+            for (int i = 0; i < this.getChildCount(); i++) {
+                STMTreeNode cn = this.getChildNode(i);
+                if (cn != null && !(cn instanceof ErrorNode)) {
+                    return cn;
+                }
+            }
+        } else if (this.getChildCount() > 0) {
+            return this.getChildNode(0);
+        }
+        return null;
     }
 
-    default STMTreeNode getLastStmtChild() {
-        return getStmChild(getChildCount() - 1);
+    @Nullable
+    default STMTreeNode findLastNonErrorChild() {
+        if (this.hasErrorChildren()) {
+            for (int i = this.getChildCount() - 1; i >= 0; i--) {
+                STMTreeNode cn = this.getChildNode(i);
+                if (cn != null && !(cn instanceof ErrorNode)) {
+                    return cn;
+                }
+            }
+        } else if (this.getChildCount() > 0) {
+            return this.getChildNode(this.getChildCount() - 1);
+        }
+        return null;
     }
 
     /**
      * Returns child node by name
      */
     @Nullable
-    default STMTreeNode findChildOfName(@NotNull String nodeName) {
+    default STMTreeNode findFirstChildOfName(@NotNull String nodeName) {
         for (int i = 0; i < this.getChildCount(); i++) {
-            STMTreeNode cn = this.getStmChild(i);
+            STMTreeNode cn = this.getChildNode(i);
             if (cn != null && cn.getNodeName().equals(nodeName)) {
                 return cn;
             }
@@ -115,11 +110,23 @@ public interface STMTreeNode extends Tree {
         return null;
     }
 
+    @Nullable
+    default STMTreeNode findLastChildOfName(@NotNull String nodeName) {
+        for (int i = this.getChildCount(); i >= 0; i--) {
+            STMTreeNode cn = this.getChildNode(i);
+            if (cn != null && cn.getNodeName().equals(nodeName)) {
+                return cn;
+            }
+        }
+        return null;
+    }
+
+    @NotNull
     default List<STMTreeNode> getChildren() {
         return new AbstractList<>() {
             @Override
             public STMTreeNode get(int index) {
-                return getStmChild(index);
+                return getChildNode(index);
             }
 
             @Override
@@ -129,4 +136,43 @@ public interface STMTreeNode extends Tree {
         };
     }
 
+    @NotNull
+    default List<STMTreeNode> findChildrenOfName(@NotNull String nodeName) {
+        List<STMTreeNode> children = new ArrayList<>(this.getChildCount());
+        for (int i = 0; i < this.getChildCount(); i++) {
+            STMTreeNode cn = this.getChildNode(i);
+            if (cn != null && cn.getNodeName().equals(nodeName)) {
+                children.add(cn);
+            }
+        }
+        return children;
+    }
+
+    @NotNull
+    default List<STMTreeNode> findNonErrorChildren() {
+        if (this.hasErrorChildren()) {
+            List<STMTreeNode> children = new ArrayList<>(this.getChildCount());
+            for (int i = 0; i < this.getChildCount(); i++) {
+                STMTreeNode cn = this.getChildNode(i);
+                if (cn != null && !(cn instanceof ErrorNode)) {
+                    children.add(cn);
+                }
+            }
+            return children;
+        } else {
+            return this.getChildren();
+        }
+    }
+
+    @NotNull
+    default Map<String, List<STMTreeNode>> classifyChildren() {
+        Map<String, List<STMTreeNode>> childrenByName = new HashMap<>(this.getChildCount());
+        for (int i = 0; i < this.getChildCount(); i++) {
+            STMTreeNode cn = this.getChildNode(i);
+            if (cn != null) {
+                childrenByName.computeIfAbsent(cn.getNodeName(), k -> new ArrayList<>()).add(cn);
+            }
+        }
+        return childrenByName;
+    }
 }
