@@ -999,6 +999,11 @@ public class SQLQueryJob extends DataSourceJob
         session.getProgressMonitor().subTask(CommonUtils.truncateString(query.getText(), 512));
 
         boolean result = executeSingleQuery(session, query, fireEvents);
+
+        if (listener != null) {
+            listener.onEndSqlJob(session, getSqlJobResult());
+        }
+
         if (!result && lastError != null) {
             if (lastError instanceof DBCException dbce) {
                 throw dbce;
@@ -1007,10 +1012,6 @@ public class SQLQueryJob extends DataSourceJob
             }
         } else if (result && statistics.getStatementsCount() > 0) {
             showExecutionResult(session);
-        }
-
-        if (listener != null) {
-            listener.onEndSqlJob(session, getSqlJobResult());
         }
     }
 
