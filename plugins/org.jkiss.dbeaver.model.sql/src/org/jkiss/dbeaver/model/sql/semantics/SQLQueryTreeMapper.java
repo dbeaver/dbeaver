@@ -63,9 +63,10 @@ class SQLQueryTreeMapper<T, C> {
             if (translation != null) {
                 stack.push(aggregator);
             }
-            for (int i = node.getChildCount() - 1; i >= 0; i--) {
+            List<STMTreeNode> children = node.findNonErrorChildren();
+            for (int i = children.size() - 1; i >= 0; i--) {
                 if (transparentNodeNames.contains(node.getNodeName())) {
-                    stack.push(new MapperQueuedNodeFrame((STMTreeNode) node.getChild(i), aggregator));
+                    stack.push(new MapperQueuedNodeFrame(children.get(i), aggregator));
                 }
             }
         }

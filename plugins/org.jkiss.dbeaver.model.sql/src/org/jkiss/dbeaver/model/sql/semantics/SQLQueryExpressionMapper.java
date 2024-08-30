@@ -19,16 +19,21 @@ package org.jkiss.dbeaver.model.sql.semantics;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueTupleReferenceExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.*;
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
+import org.jkiss.dbeaver.model.stm.STMTreeTermErrorNode;
 
 import java.util.*;
 
 class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceModel, SQLQueryModelRecognizer> {
+
+    private static final Log log = Log.getLog( SQLQueryExpressionMapper.class);
+
     public SQLQueryExpressionMapper(@NotNull SQLQueryModelRecognizer recognizer) {
         super(SQLQueryRowsSourceModel.class, queryExpressionSubtreeNodeNames, translations, recognizer);
     }
@@ -235,58 +240,62 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
         },
         STMKnownRuleNames.querySpecification, (n, cc, r) -> {
             STMTreeNode selectListNode = n.findFirstChildOfName(STMKnownRuleNames.selectList);
-            SQLQuerySelectionResultModel resultModel = new SQLQuerySelectionResultModel(
-                selectListNode, (selectListNode.getChildCount() + 1) / 2
-            );
+            if (selectListNode == null) {
+                log.debug("Invalid querySpecification: missing selectList");
+                return makeEmptyRowsModel(n);
+            }
+
+            List<STMTreeNode> selectSublists = selectListNode.findChildrenOfName(STMKnownRuleNames.selectSublist);
+            SQLQuerySelectionResultModel resultModel = new SQLQuerySelectionResultModel(selectListNode, selectSublists.size());
 
             SQLQueryLexicalScope selectListScope;
             STMTreeNode selectKeywordNode;
             try (SQLQueryModelRecognizer.LexicalScopeHolder selectListScopeHolder = r.openScope()) {
                 selectListScope = selectListScopeHolder.lexicalScope;
-                selectKeywordNode = n.getStmChild(0); // SELECT keyword
+                selectKeywordNode = n.findFirstChildOfName("SELECT"); // SELECT keyword
+                if (selectKeywordNode == null) {
+                    log.debug("SELECT keyword is missing");
+                    return makeEmptyRowsModel(n);
+                }
 
-                for (int i = 0; i < selectListNode.getChildCount(); i += 2) {
-                    STMTreeNode selectSublist = selectListNode.getStmChild(i);
-                    if (selectSublist.getChildCount() > 0) {
-                        STMTreeNode sublistNode = selectSublist.getStmChild(0);
-                        if (sublistNode != null) {
-                            switch (sublistNode.getNodeKindId()) { // selectSublist: (Asterisk|derivedColumn|qualifier Period Asterisk
-                                case SQLStandardParser.RULE_derivedColumn -> {
-                                    // derivedColumn: valueExpression (asClause)?; asClause: (AS)? columnName;
-                                    SQLQueryValueExpression expr = r.collectValueExpression(sublistNode.getStmChild(0));
-                                    if (expr instanceof SQLQueryValueTupleReferenceExpression tupleRef) {
-                                        resultModel.addTupleSpec(sublistNode, tupleRef);
+                for (STMTreeNode selectSublist: selectSublists) {
+                    STMTreeNode sublistNode = selectSublist.findFirstNonErrorChild();
+                    if (sublistNode != null) {
+                        switch (sublistNode.getNodeKindId()) { // selectSublist: (Asterisk|derivedColumn|qualifier Period Asterisk
+                            case SQLStandardParser.RULE_derivedColumn -> {
+                                // derivedColumn: valueExpression (asClause)?; asClause: (AS)? columnName;
+                                STMTreeNode exprNode = sublistNode.findFirstChildOfName(STMKnownRuleNames.valueExpression);
+                                SQLQueryValueExpression expr = exprNode == null ? null : r.collectValueExpression(exprNode);
+                                if (expr instanceof SQLQueryValueTupleReferenceExpression tupleRef) {
+                                    resultModel.addTupleSpec(sublistNode, tupleRef);
+                                } else {
+                                    STMTreeNode asClauseNode = sublistNode.findLastChildOfName(STMKnownRuleNames.asClause);
+                                    if (asClauseNode != null) {
+                                        STMTreeNode columnNameNode = asClauseNode.findLastChildOfName(STMKnownRuleNames.columnName);
+                                        SQLQuerySymbolEntry asColumnName = columnNameNode == null ? null : r.collectIdentifier(columnNameNode);
+                                        resultModel.addColumnSpec(sublistNode, expr, asColumnName);
                                     } else {
-                                        if (sublistNode.getChildCount() > 1) {
-                                            STMTreeNode asClause = sublistNode.getStmChild(1);
-                                            SQLQuerySymbolEntry asColumnName = r.collectIdentifier(
-                                                asClause.getStmChild(asClause.getChildCount() - 1)
-                                            );
-                                            resultModel.addColumnSpec(sublistNode, expr, asColumnName);
-                                        } else {
-                                            resultModel.addColumnSpec(sublistNode, expr);
-                                        }
+                                        resultModel.addColumnSpec(sublistNode, expr);
                                     }
                                 }
-                                case SQLStandardParser.RULE_anyUnexpected -> {
-                                    // TODO register these pieces in the lexical scope
-                                    // error in query text, ignoring it
-                                }
-                                default -> {
-                                    resultModel.addCompleteTupleSpec(sublistNode);
-                                }
+                            }
+                            case SQLStandardParser.RULE_anyUnexpected -> {
+                                // TODO register these pieces in the lexical scope
+                                // error in query text, ignoring it
+                            }
+                            default -> {
+                                resultModel.addCompleteTupleSpec(sublistNode);
                             }
                         }
                     }
                 }
             }
 
-            SQLQueryRowsSourceModel source = cc.isEmpty() ? r.getQueryDataContext().getDefaultTable(n) : cc.get(0);
+            SQLQueryRowsSourceModel source = cc.isEmpty() ? makeEmptyRowsModel(n) : cc.get(0);
             STMTreeNode tableExpr = n.findFirstChildOfName(STMKnownRuleNames.tableExpression);
             SQLQueryRowsProjectionModel projectionModel;
             if (tableExpr != null) {
-                STMTreeNode fromKeywordNode = tableExpr.getStmChild(0);
-                selectListScope.setInterval(Interval.of(selectKeywordNode.getRealInterval().a, fromKeywordNode.getRealInterval().b));
+                selectListScope.setInterval(Interval.of(selectKeywordNode.getRealInterval().a, tableExpr.getRealInterval().a));
 
                 SQLQueryLexicalScope fromScope = new SQLQueryLexicalScope();
 

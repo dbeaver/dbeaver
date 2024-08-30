@@ -77,48 +77,46 @@ public class SQLQueryUpdateModel extends SQLQueryModelContent {
         STMTreeNode setClauseListNode = node.findFirstChildOfName(STMKnownRuleNames.setClauseList);
         if (setClauseListNode != null) {
             for (STMTreeNode setClauseNode: setClauseListNode.findChildrenOfName(STMKnownRuleNames.setClause)) {
-                if (setClauseNode.getChildCount() > 0) {
-                    STMTreeNode setTargetNode = setClauseNode.findFirstNonErrorChild();
-                    List<SQLQueryValueExpression> targets = setTargetNode == null ? Collections.emptyList()
-                        : switch (setTargetNode.getNodeKindId()) {
-                        case SQLStandardParser.RULE_setTarget -> {
-                            STMTreeNode targetReferenceNode = setTargetNode.findFirstNonErrorChild();
-                            yield targetReferenceNode == null ? Collections.emptyList()
-                                : List.of(recognizer.collectKnownValueExpression(targetReferenceNode));
-                        }
-                        case SQLStandardParser.RULE_setTargetList ->
-                            STMUtils.expandSubtree(
-                                setTargetNode,
-                                Set.of(STMKnownRuleNames.setTargetList),
-                                Set.of(STMKnownRuleNames.valueReference)
-                            ).stream().map(recognizer::collectValueExpression).collect(Collectors.toList());
-                        case SQLStandardParser.RULE_anyUnexpected ->
-                            // error in query text, ignoring it
-                            Collections.emptyList();
-                        default -> throw new UnsupportedOperationException(
-                            "Set target list expected while facing with " + setTargetNode.getNodeName()
-                        );
-                    };
-                    STMTreeNode updateSourceNode = setClauseNode.findFirstChildOfName(STMKnownRuleNames.updateSource);
-                    List<SQLQueryValueExpression> sources = updateSourceNode == null ? Collections.emptyList()
-                        : STMUtils.expandSubtree(
-                            updateSourceNode,
-                            Set.of(STMKnownRuleNames.updateSource),
-                            Set.of(STMKnownRuleNames.updateValue)
-                        ).stream()
-                        .map(STMTreeNode::findFirstNonErrorChild)
-                        .filter(Objects::nonNull)
-                        .map(recognizer::collectValueExpression)
-                        .collect(Collectors.toList());
-                    setClauseList.add(
-                        new SQLQueryUpdateSetClauseModel(
-                            setClauseNode,
-                            targets,
-                            sources,
-                            setClauseNode.getTextContent()
-                        )
+                STMTreeNode setTargetNode = setClauseNode.findFirstNonErrorChild();
+                List<SQLQueryValueExpression> targets = setTargetNode == null ? Collections.emptyList()
+                    : switch (setTargetNode.getNodeKindId()) {
+                    case SQLStandardParser.RULE_setTarget -> {
+                        STMTreeNode targetReferenceNode = setTargetNode.findFirstNonErrorChild();
+                        yield targetReferenceNode == null ? Collections.emptyList()
+                            : List.of(recognizer.collectKnownValueExpression(targetReferenceNode));
+                    }
+                    case SQLStandardParser.RULE_setTargetList ->
+                        STMUtils.expandSubtree(
+                            setTargetNode,
+                            Set.of(STMKnownRuleNames.setTargetList),
+                            Set.of(STMKnownRuleNames.valueReference)
+                        ).stream().map(recognizer::collectValueExpression).collect(Collectors.toList());
+                    case SQLStandardParser.RULE_anyUnexpected ->
+                        // error in query text, ignoring it
+                        Collections.emptyList();
+                    default -> throw new UnsupportedOperationException(
+                        "Set target list expected while facing with " + setTargetNode.getNodeName()
                     );
-                }
+                };
+                STMTreeNode updateSourceNode = setClauseNode.findFirstChildOfName(STMKnownRuleNames.updateSource);
+                List<SQLQueryValueExpression> sources = updateSourceNode == null ? Collections.emptyList()
+                    : STMUtils.expandSubtree(
+                        updateSourceNode,
+                        Set.of(STMKnownRuleNames.updateSource),
+                        Set.of(STMKnownRuleNames.updateValue)
+                    ).stream()
+                    .map(STMTreeNode::findFirstNonErrorChild)
+                    .filter(Objects::nonNull)
+                    .map(recognizer::collectValueExpression)
+                    .collect(Collectors.toList());
+                setClauseList.add(
+                    new SQLQueryUpdateSetClauseModel(
+                        setClauseNode,
+                        targets,
+                        sources,
+                        setClauseNode.getTextContent()
+                    )
+                );
             }
         }
 

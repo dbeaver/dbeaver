@@ -342,10 +342,8 @@ public class SQLQueryModelRecognizer {
         // TODO maybe replace loop with streams?
         // return node.findChildrenOfName(STMKnownRuleNames.columnName).stream().map(this::collectIdentifier).toList();
 
-        List<SQLQuerySymbolEntry> result = new ArrayList<>(node.getChildCount());
-        for (STMTreeNode columnNameNode : node.findChildrenOfName(STMKnownRuleNames.columnName)) {
-            result.add(collectIdentifier(columnNameNode));
-        }
+        List<SQLQuerySymbolEntry> result = node.findChildrenOfName(STMKnownRuleNames.columnName).stream()
+                                               .map(this::collectIdentifier).toList();
         return result;
     }
 
@@ -572,8 +570,8 @@ public class SQLQueryModelRecognizer {
                             } else {
                                 stack.push(n);
                                 stack.push(null);
-                                childLists.push(new ArrayList<>(rn.getChildCount()));
                                 List<STMTreeNode> children = rn.findNonErrorChildren();
+                                childLists.push(new ArrayList<>(children.size()));
                                 for (int i = children.size() - 1; i >= 0; i--) {
                                     stack.push(children.get(i));
                                 }
@@ -605,13 +603,13 @@ public class SQLQueryModelRecognizer {
 
     @NotNull
     public SQLQueryValueExpression collectKnownValueExpression(@NotNull STMTreeNode node) {
-        return switch (node.getNodeKindId()) {
+        SQLQueryValueExpression result = switch (node.getNodeKindId()) {
             case SQLStandardParser.RULE_subquery -> new SQLQueryValueSubqueryExpression(node, this.collectQueryExpression(node));
             case SQLStandardParser.RULE_valueReference -> this.collectValueReferenceExpression(node);
             case SQLStandardParser.RULE_valueExpressionPrimary -> {
                 STMTreeNode valueExprNode = node.findFirstChildOfName(STMKnownRuleNames.valueExpressionAtom);
                 if (valueExprNode == null) {
-                    yield new SQLQueryValueFlattenedExpression(node, Collections.emptyList());
+                    yield null;
                 } else {
                     SQLQueryValueExpression subexpr = this.collectValueExpression(valueExprNode);
                     STMTreeNode castSpecNode = node.findFirstChildOfName(STMKnownRuleNames.valueExpressionCastSpec);
@@ -641,7 +639,10 @@ public class SQLQueryModelRecognizer {
                             SQLQueryValueVariableExpression.VariableExpressionKind.CLIENT_VARIABLE,
                             rawName
                         );
-                        default -> throw new UnsupportedOperationException("Unsupported term variable expression: " + node.getTextContent());
+                        default -> {
+                            log.debug("Unsupported term variable expression: " + node.getTextContent());
+                            yield null;
+                        }
                     };
                 } else if (varExprNode != null) {
                     yield switch (varExprNode.getNodeKindId()) {
@@ -666,10 +667,13 @@ public class SQLQueryModelRecognizer {
                                 varExprNode.getTextContent()
                             );
                         }
-                        default -> throw new UnsupportedOperationException("Unsupported variable expression: " + node.getTextContent());
+                        default -> {
+                            log.debug("Unsupported variable expression: " + node.getTextContent());
+                            yield null;
+                        }
                     };
                 } else {
-                    yield new SQLQueryValueFlattenedExpression(node, Collections.emptyList());
+                    yield null;
                 }
             }
             case SQLStandardParser.RULE_columnIndex -> this.makeValueConstantExpression(node, SQLQueryExprType.NUMERIC);
@@ -680,6 +684,7 @@ public class SQLQueryModelRecognizer {
             case SQLStandardParser.RULE_datetimeLiteral -> this.makeValueConstantExpression(node, SQLQueryExprType.DATETIME);
             default -> throw new UnsupportedOperationException("Unknown expression kind " + node.getNodeName());
         };
+        return result != null ? result : new SQLQueryValueFlattenedExpression(node, Collections.emptyList());
     }
 
     @NotNull
@@ -689,59 +694,72 @@ public class SQLQueryModelRecognizer {
 
     @NotNull
     private SQLQueryValueExpression collectValueReferenceExpression(@NotNull STMTreeNode node) {
-        STMTreeNode head = node.findFirstNonErrorChild();
-        SQLQueryValueExpression expr = head == null ? null : switch (head.getNodeKindId()) {
-            case SQLStandardParser.RULE_columnReference -> {
-                STMTreeNode tableNameNode = head.findFirstNonErrorChild();
-                SQLQueryQualifiedName tableName = tableNameNode == null ? null : this.collectTableName(tableNameNode);
-                STMTreeNode nameNode = head.findFirstChildOfName(STMKnownRuleNames.columnName);
-                if (nameNode != null) {
-                    SQLQuerySymbolEntry columnName = this.collectIdentifier(nameNode);
-                    if  (columnName != null) {
-                        yield tableName == null ? new SQLQueryValueColumnReferenceExpression(head, columnName)
-                            : new SQLQueryValueColumnReferenceExpression(head, tableName, columnName);
+        List<STMTreeNode> subnodes = node.findNonErrorChildren();
+        SQLQueryValueExpression expr;
+        if (subnodes.size() > 0) {
+            STMTreeNode head = subnodes.get(0);
+            expr = switch (head.getNodeKindId()) {
+                case SQLStandardParser.RULE_columnReference -> {
+                    STMTreeNode tableNameNode = head.findFirstNonErrorChild();
+                    SQLQueryQualifiedName tableName = tableNameNode == null ? null : this.collectTableName(tableNameNode);
+                    STMTreeNode nameNode = head.findFirstChildOfName(STMKnownRuleNames.columnName);
+                    if (nameNode != null) {
+                        SQLQuerySymbolEntry columnName = this.collectIdentifier(nameNode);
+                        if (columnName != null) {
+                            yield tableName == null ? new SQLQueryValueColumnReferenceExpression(head, columnName)
+                                : new SQLQueryValueColumnReferenceExpression(head, tableName, columnName);
+                        } else {
+                            yield null;
+                        }
+                    } else {
+                        yield new SQLQueryValueTupleReferenceExpression(head, tableName != null ? tableName : new SQLQueryQualifiedName(
+                            head, new SQLQuerySymbolEntry(head, SQLConstants.QUESTION, SQLConstants.QUESTION)
+                        ));
                     }
-                } else {
-                    yield new SQLQueryValueTupleReferenceExpression(head,  tableName != null ? tableName : new SQLQueryQualifiedName(
-                        head, new SQLQuerySymbolEntry(head, SQLConstants.QUESTION, SQLConstants.QUESTION)
-                    ));
                 }
-            }
-            case SQLStandardParser.RULE_valueRefNestedExpr -> {
-                STMTreeNode valueRefNode = head.findFirstChildOfName(STMKnownRuleNames.valueReference);
-                yield valueRefNode == null ? null : this.collectValueReferenceExpression(valueRefNode);
-            }
-            default -> throw new UnsupportedOperationException(
-                "Value reference expression expected while facing with " + head.getNodeName()
-            );
-        };
-        
-        int rangeStart = node.getRealInterval().a;
-        boolean[] slicingFlags = new boolean[node.getChildCount()];
-        for (int i = 1; i < node.getChildCount();) {
-            STMTreeNode step = node.getStmChild(i);
-            Interval range = new Interval(rangeStart, step.getRealInterval().b);
-            expr = switch (step.getNodeKindId()) {
-                case SQLStandardParser.RULE_valueRefIndexingStep -> {
-                    int s = i;
-                    for (; i < node.getChildCount() && step.getNodeKindId() == SQLStandardParser.RULE_valueRefIndexingStep; i++) {
-                        step = node.getStmChild(i);
-                        slicingFlags[i] = step.getStmChild(1).getNodeKindId() == SQLStandardParser.RULE_valueRefIndexingStepSlice;
-                    }
-                    boolean[] slicingSpec = Arrays.copyOfRange(slicingFlags, s, i);
-                    yield new SQLQueryValueIndexingExpression(range, node, expr, slicingSpec);
+                case SQLStandardParser.RULE_valueRefNestedExpr -> {
+                    STMTreeNode valueRefNode = head.findFirstChildOfName(STMKnownRuleNames.valueReference);
+                    yield valueRefNode == null ? null : this.collectValueReferenceExpression(valueRefNode);
                 }
-                case SQLStandardParser.RULE_valueRefMemberStep -> {
-                    i++;
-                    yield new SQLQueryValueMemberExpression(range, node, expr, this.collectIdentifier(step.getStmChild(1)));
+                default -> {
+                    log.debug("Value reference expression expected while facing with " + head.getNodeName());
+                    yield null;
                 }
-                default -> throw new UnsupportedOperationException(
-                    "Value member expression expected while facing with " + node.getNodeName()
-                );
             };
+        } else {
+            expr = null;
         }
-        
-        return expr;
+
+        if (expr != null && subnodes.size() > 1) {
+            int rangeStart = node.getRealInterval().a;
+            boolean[] slicingFlags = new boolean[subnodes.size()];
+            for (int i = 1; i < subnodes.size(); ) {
+                STMTreeNode step = subnodes.get(i);
+                Interval range = new Interval(rangeStart, step.getRealInterval().b);
+                expr = switch (step.getNodeKindId()) {
+                    case SQLStandardParser.RULE_valueRefIndexingStep -> {
+                        int s = i;
+                        for (; i < subnodes.size() && step.getNodeKindId() == SQLStandardParser.RULE_valueRefIndexingStep; i++) {
+                            step = subnodes.get(i);
+                            slicingFlags[i] = step.findFirstChildOfName(STMKnownRuleNames.valueRefIndexingStepSlice) != null;
+                        }
+                        boolean[] slicingSpec = Arrays.copyOfRange(slicingFlags, s, i);
+                        yield new SQLQueryValueIndexingExpression(range, node, expr, slicingSpec);
+                    }
+                    case SQLStandardParser.RULE_valueRefMemberStep -> {
+                        i++;
+                        STMTreeNode memberNameNode = step.findLastChildOfName(STMKnownRuleNames.identifier);
+                        SQLQuerySymbolEntry memberName = memberNameNode == null ? null : this.collectIdentifier(memberNameNode);
+                        yield new SQLQueryValueMemberExpression(range, node, expr, memberName);
+                    }
+                    default -> throw new UnsupportedOperationException(
+                        "Value member expression expected while facing with " + node.getNodeName()
+                    );
+                };
+            }
+        }
+
+        return expr != null ? expr : new SQLQueryValueFlattenedExpression(node, Collections.emptyList());
     }
 
     /**

@@ -131,6 +131,12 @@ public class STMKnownRuleNames {
     public static final String dynamicParameterSpecification = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dynamicParameterSpecification];
     public static final String columnReference = SQLStandardParser.ruleNames[SQLStandardParser.RULE_columnReference];
     public static final String valueReference = SQLStandardParser.ruleNames[SQLStandardParser.RULE_valueReference];
+
+    public static final String valueRefNestedExpr = SQLStandardParser.ruleNames[SQLStandardParser.RULE_valueRefNestedExpr];
+    public static final String valueRefIndexingStep = SQLStandardParser.ruleNames[SQLStandardParser.RULE_valueRefIndexingStep];
+    public static final String valueRefIndexingStepDirect = SQLStandardParser.ruleNames[SQLStandardParser.RULE_valueRefIndexingStepDirect];
+    public static final String valueRefIndexingStepSlice = SQLStandardParser.ruleNames[SQLStandardParser.RULE_valueRefIndexingStepSlice];
+
     public static final String valueExpressionCastSpec = SQLStandardParser.ruleNames[SQLStandardParser.RULE_valueExpressionCastSpec];
     public static final String variableExpression = SQLStandardParser.ruleNames[SQLStandardParser.RULE_variableExpression];
 

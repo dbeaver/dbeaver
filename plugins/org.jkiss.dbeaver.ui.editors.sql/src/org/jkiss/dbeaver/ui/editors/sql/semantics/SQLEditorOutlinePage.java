@@ -1105,7 +1105,8 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         @Override
         public Object visitSelectColumnSpec(@NotNull SQLQuerySelectionResultColumnSpec columnSpec, @NotNull OutlineQueryNode arg) {
             SQLQuerySymbolEntry alias = columnSpec.getAlias();
-            SQLQuerySymbol mayBeColumnName = columnSpec.getValueExpression().getColumnNameIfTrivialExpression();
+            SQLQueryValueExpression mayBeExpr = columnSpec.getValueExpression();
+            SQLQuerySymbol mayBeColumnName = mayBeExpr == null ? null : mayBeExpr.getColumnNameIfTrivialExpression();
             
             String text;
             if (alias != null) {
@@ -1118,9 +1119,10 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
                         .substring(columnSpec.getInterval().a, columnSpec.getInterval().b + 1);
                 }
             }
-            String extraText = this.obtainExprTypeNameString(columnSpec.getValueExpression());
-            
-            this.makeNode(arg, columnSpec, text, extraText, DBIcon.TREE_COLUMN, columnSpec.getValueExpression());
+            String extraText = mayBeExpr == null ? null : this.obtainExprTypeNameString(mayBeExpr);
+
+            SQLQueryNodeModel[] subnodes = Stream.of(mayBeExpr).filter(Objects::nonNull).toArray(SQLQueryNodeModel[]::new);
+            this.makeNode(arg, columnSpec, text, extraText, DBIcon.TREE_COLUMN, subnodes);
             return null;
         }
 
