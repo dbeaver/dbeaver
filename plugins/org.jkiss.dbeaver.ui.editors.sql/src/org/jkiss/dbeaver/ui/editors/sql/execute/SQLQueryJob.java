@@ -318,6 +318,10 @@ public class SQLQueryJob extends DataSourceJob
                     QMUtils.getDefaultHandler().handleScriptEnd(session);
                 }
 
+                if (listener != null) {
+                    listener.onEndSqlJob(session, getSqlJobResult());
+                }
+
                 // Return success
                 return new Status(
                     Status.OK,
@@ -342,6 +346,17 @@ public class SQLQueryJob extends DataSourceJob
                     log.error(e);
                 }
             }
+        }
+    }
+
+    @NotNull
+    private SqlJobResult getSqlJobResult() {
+        if (queries.get(queries.size() - 1) == lastGoodQuery) {
+            return SqlJobResult.SUCCESS;
+        } else if (lastGoodQuery != null) {
+            return SqlJobResult.PARTIAL_SUCCESS;
+        } else {
+            return SqlJobResult.FAILURE;
         }
     }
 
@@ -549,13 +564,7 @@ public class SQLQueryJob extends DataSourceJob
             curResult.setQueryTime(System.currentTimeMillis() - startTime);
 
             if (fireEvents && listener != null && startQueryAlerted) {
-                // The context should be refreshed if:
-                // - the current query is the last query in the script and succeeded, or
-                // - an exception occurred during the execution of the script after the first query.
-                boolean isLastQueryAndSucceeded = queries.get(queries.size() - 1) == element && lastError == null;
-                boolean hasExecutionException = queries.size() > 1 && queries.get(0) != element && lastError != null;
-
-                notifyQueryExecutionEnd(session, curResult, isLastQueryAndSucceeded || hasExecutionException);
+                notifyQueryExecutionEnd(session, curResult);
             }
 
             monitor.done();
@@ -583,10 +592,10 @@ public class SQLQueryJob extends DataSourceJob
         return true;
     }
 
-    public void notifyQueryExecutionEnd(DBCSession session, SQLQueryResult curResult, boolean refreshContext) {
+    public void notifyQueryExecutionEnd(DBCSession session, SQLQueryResult curResult) {
         // Notify query end
         try {
-            listener.onEndQuery(session, curResult, statistics, refreshContext);
+            listener.onEndQuery(session, curResult, statistics);
         } catch (Exception e) {
             log.error(e);
         }
@@ -998,6 +1007,10 @@ public class SQLQueryJob extends DataSourceJob
             }
         } else if (result && statistics.getStatementsCount() > 0) {
             showExecutionResult(session);
+        }
+
+        if (listener != null) {
+            listener.onEndSqlJob(session, getSqlJobResult());
         }
     }
 

@@ -4407,7 +4407,7 @@ public class SQLEditor extends SQLEditorBase implements
                         currentQueryResult = new SQLQueryResult(new SQLQuery(null, ""));
                     }
                     currentQueryResult.setError(error);
-                    job.notifyQueryExecutionEnd(null, currentQueryResult, true);
+                    job.notifyQueryExecutionEnd(null, currentQueryResult);
                 }
             }
         }
@@ -4839,11 +4839,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         @Override
-        public void onEndQuery(final DBCSession session, final SQLQueryResult result, DBCStatistics statistics, boolean refreshContext) {
-            if (refreshContext) {
-                refreshContextDefaults(session, result);
-            }
-
+        public void onEndQuery(final DBCSession session, final SQLQueryResult result, DBCStatistics statistics) {
             try {
                 synchronized (runningQueries) {
                     runningQueries.remove(result.getStatement());
@@ -4874,12 +4870,12 @@ public class SQLEditor extends SQLEditorBase implements
                 });
             } finally {
                 if (extListener != null) {
-                    extListener.onEndQuery(session, result, statistics, refreshContext);
+                    extListener.onEndQuery(session, result, statistics);
                 }
             }
         }
 
-        private void refreshContextDefaults(DBCSession session, SQLQueryResult result) {
+        private void refreshContextDefaults(DBCSession session) {
             final DBCExecutionContext executionContext = getExecutionContext();
             if (executionContext != null && session != null) {
                 // Refresh active object
@@ -5034,6 +5030,11 @@ public class SQLEditor extends SQLEditorBase implements
                 if (extListener != null) extListener.onEndScript(statistics, hasErrors);
             }
 
+        }
+
+        @Override
+        public void onEndSqlJob(DBCSession session, SqlJobResult result) {
+            refreshContextDefaults(session);
         }
     }
 

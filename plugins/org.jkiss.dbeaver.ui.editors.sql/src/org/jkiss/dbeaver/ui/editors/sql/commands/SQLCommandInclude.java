@@ -156,7 +156,7 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         }
 
         @Override
-        public void onEndQuery(DBCSession session, SQLQueryResult result, DBCStatistics statistics, boolean refreshContext) {
+        public void onEndQuery(DBCSession session, SQLQueryResult result, DBCStatistics statistics) {
 
         }
 
@@ -166,6 +166,11 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
                 UIUtils.syncExec(() -> workbenchWindow.getActivePage().closeEditor(editor, false));
             }
             statusFlag[0] = true;
+        }
+
+        @Override
+        public void onEndSqlJob(DBCSession session, SqlJobResult result) {
+
         }
     }
 
