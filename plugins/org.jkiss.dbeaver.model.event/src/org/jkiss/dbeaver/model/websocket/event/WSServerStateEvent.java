@@ -19,26 +19,21 @@ package org.jkiss.dbeaver.model.websocket.event;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-public class WSLicenseEvent extends WSAbstractEvent {
+public class WSServerStateEvent extends WSAbstractEvent {
     @NotNull
-    private final WSLicenseAction licenseAction;
+    private final String action;
 
-    public enum WSLicenseAction {
-        ADDED,
-        DELETED
-    }
-
-    public WSLicenseEvent(
+    public WSServerStateEvent(
         @Nullable String sessionId,
         @Nullable String userId,
-        @NotNull WSLicenseAction licenseAction
+        @NotNull String action
     ) {
-        super(WSEventType.LICENSE_UPDATED, sessionId, userId);
-        this.licenseAction = licenseAction;
+        super(WSEventType.SERVER_STATE, sessionId, userId);
+        this.action = action;
     }
 
     @NotNull
-    public WSLicenseAction getLicenseAction() {
-        return licenseAction;
+    public String getAction() {
+        return action;
     }
 }
