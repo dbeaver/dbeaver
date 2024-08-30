@@ -351,9 +351,7 @@ public class SQLQueryJob extends DataSourceJob
 
     @NotNull
     private SqlJobResult getSqlJobResult() {
-        if (lastGoodQuery == null && lastError == null) {
-            return SqlJobResult.NOT_RUN;
-        } else if (queries.get(queries.size() - 1) == lastGoodQuery && lastError == null) {
+        if (queries.get(queries.size() - 1) == lastGoodQuery && lastError == null) {
             return SqlJobResult.SUCCESS;
         } else if (lastGoodQuery != null) {
             return SqlJobResult.PARTIAL_SUCCESS;
