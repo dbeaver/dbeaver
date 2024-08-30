@@ -2413,8 +2413,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
                 return value;
             }
-
-            if (isShowAsExpander(null, attr, value)) {
+            if (value instanceof DBDCollection)
+                return "<collection>";
+            if (value instanceof DBDComposite)
+                return "<composite>";
+            /*if (isShowAsExpander(null, attr, value)) {
                 if (spreadsheet.isCellExpanded(gridRow, gridColumn) && value instanceof DBDCollection collection) {
                     return COLLECTION_SIZE_FORMAT.format(new Object[]{collection.size()});
                 }
@@ -2429,7 +2432,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     return value;
                 }
                 return formatValue(gridColumn, gridRow, child);
-            } else if (attr.getDataKind() == DBPDataKind.STRUCT && value instanceof DBDComposite && !DBUtils.isNullValue(value)) {
+            } else */if (attr.getDataKind() == DBPDataKind.STRUCT && value instanceof DBDComposite && !DBUtils.isNullValue(value)) {
                 return "[" + ((DBDComposite) value).getDataType().getName() + "]";
             }
             try {

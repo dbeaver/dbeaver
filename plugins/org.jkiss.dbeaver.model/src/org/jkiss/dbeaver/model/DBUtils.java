@@ -722,78 +722,48 @@ public final class DBUtils {
             return null;
         }
 
+        Deque<DBDAttributeBinding> pendingAttributes = new ArrayDeque<>();
+        Deque<Integer> pendingIndices = new ArrayDeque<>();
         Object curValue = row[index];
-        int curNestedIndex = 0;
 
         for (int i = 0; i < depth; i++) {
+            pendingAttributes.offer(Objects.requireNonNull(attribute.getParent(depth - i - 1)));
+        }
+
+        for (int i = 0; nestedIndexes != null && i < nestedIndexes.length; i++) {
+            pendingIndices.offer(nestedIndexes[i]);
+        }
+
+        while (!pendingAttributes.isEmpty() || !pendingIndices.isEmpty()) {
             if (curValue == null) {
                 break;
             }
-            final DBDAttributeBinding parent = Objects.requireNonNull(attribute.getParent(depth - i - 1));
 
-            try {
-                int fixedNestedIndex = curNestedIndex;
-                if (nestedIndexes != null && fixedNestedIndex >= nestedIndexes.length) {
-                    fixedNestedIndex = nestedIndexes.length - 1;
-                    //return DBDVoid.INSTANCE;
+            if (!(curValue instanceof DBDCollection)) {
+                if (pendingAttributes.isEmpty()) {
+                    return DBDVoid.INSTANCE;
                 }
-                if (!isIndexedValue(parent, curValue)) {
+                DBDAttributeBinding parent = pendingAttributes.pop();
+                try {
                     curValue = parent.extractNestedValue(curValue, 0);
-                } else if (nestedIndexes != null && isValidIndex(curValue, nestedIndexes[fixedNestedIndex])) {
-                    curValue = parent.extractNestedValue(curValue, nestedIndexes[fixedNestedIndex]);
-                    curNestedIndex++;
-                } else {
-                    curValue = parent.extractNestedValue(curValue, 0);
-                    continue;
+                } catch (DBException e) {
+                    return new DBDValueError(e);
                 }
-            } catch (Throwable e) {
-                return new DBDValueError(e);
             }
 
-            /*if (nestedIndexes == null || curNestedIndex >= nestedIndexes.length) {
-                break;
-            }*/
-        }
-
-        while (nestedIndexes != null && curNestedIndex < nestedIndexes.length) {
-            if (curValue != null && isIndexedValue(attribute, curValue) && isValidIndex(curValue, nestedIndexes[curNestedIndex])) {
-                curValue = getValueElement(curValue, nestedIndexes[curNestedIndex]);
-                curNestedIndex++;
-            } else {
-                return DBDVoid.INSTANCE;
+            while (curValue instanceof DBDCollection collection) {
+                if (pendingIndices.isEmpty()) {
+                    return curValue;
+                }
+                int itemIndex = pendingIndices.pop();
+                if (itemIndex >= collection.getItemCount()) {
+                    return DBDVoid.INSTANCE;
+                }
+                curValue = collection.get(itemIndex);
             }
         }
 
         return curValue;
-    }
-
-    private static boolean isIndexedValue(@NotNull DBDAttributeBinding attr, @NotNull Object value) {
-        return value instanceof List<?>
-            || value instanceof DBDComposite && !(value instanceof DBDDocument) && attr.getDataKind() == DBPDataKind.STRUCT;
-    }
-
-    private static boolean isValidIndex(@NotNull Object value, int index) {
-        return (!(value instanceof List<?>) || ((List<?>) value).size() > index)
-            && (!(value instanceof DBDComposite) || ((DBDComposite) value).getAttributeCount() > index);
-    }
-
-    @Nullable
-    private static Object getValueElement(@NotNull Object value, int index) {
-        if (value instanceof DBDComposite composite) {
-            final DBSAttributeBase attribute = composite.getAttributes()[index];
-
-            try {
-                return composite.getAttributeValue(attribute);
-            } catch (DBCException e) {
-                return new DBDValueError(e);
-            }
-        }
-
-        if (value instanceof List<?> && ((List<?>) value).size() > index) {
-            return ((List<?>) value).get(index);
-        }
-
-        return null;
     }
 
     @NotNull
