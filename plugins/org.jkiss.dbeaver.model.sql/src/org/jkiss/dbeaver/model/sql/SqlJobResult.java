@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.sql;
 
 public enum SqlJobResult {
+    NOT_RUN,
     SUCCESS,
     PARTIAL_SUCCESS,
     FAILURE,

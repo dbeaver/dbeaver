@@ -5034,7 +5034,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public void onEndSqlJob(DBCSession session, SqlJobResult result) {
-            if (result != SqlJobResult.FAILURE) {
+            if (result == SqlJobResult.SUCCESS || result == SqlJobResult.PARTIAL_SUCCESS) {
                 refreshContextDefaults(session);
             }
         }
