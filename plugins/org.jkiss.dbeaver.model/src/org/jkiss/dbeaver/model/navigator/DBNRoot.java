@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.registry.DBNRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -43,10 +42,12 @@ import java.util.List;
 public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable, DBPProjectListener {
     private final DBNModel model;
     private DBNProject[] projects = new DBNProject[0];
+    private final DBPPlatform platform;
     private final List<DBNNode> extraNodes = new ArrayList<>();
 
-    public DBNRoot(DBNModel model) {
+    public DBNRoot(@NotNull DBPPlatform platform, @NotNull DBNModel model) {
         super();
+        this.platform = platform;
         this.model = model;
         List<? extends DBPProject> globalProjects = model.getModelProjects();
         if (globalProjects != null) {
@@ -54,12 +55,11 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
                 addProject(project, false);
             }
         } else {
-            for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
+            for (DBPProject project : platform.getWorkspace().getProjects()) {
                 addProject(project, false);
             }
         }
         if (model.isGlobal()) {
-            DBPPlatform platform = DBWorkbench.getPlatform();
             if (platform instanceof DBPPlatformDesktop) {
                 ((DBPPlatformDesktop)platform).getWorkspace().addProjectListener(this);
             }
@@ -79,7 +79,6 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
         extraNodes.clear();
 
         if (model.isGlobal()) {
-            DBPPlatform platform = DBWorkbench.getPlatform();
             if (platform instanceof DBPPlatformDesktop) {
                 ((DBPPlatformDesktop)platform).getWorkspace().removeProjectListener(this);
             }
@@ -200,7 +199,6 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
     }
 
     public DBNProject addProject(DBPProject project, boolean reflect) {
-        DBPPlatform platform = DBWorkbench.getPlatform();
         DBNProject projectNode = new DBNProject(
             this,
             project,
