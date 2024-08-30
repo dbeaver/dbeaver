@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.websocket.event;
 //TODO: implement event registry and describe possible events in plugin.xml
 public enum WSEventTopic {
     SERVER_CONFIG("cb_config"),
+    LICENSE("cb_license"),
     WORKSPACE_CONFIG("cb_workspace_configuration"),
     SESSION_LOG("cb_session_log"),
     DB_OUTPUT_LOG("cb_database_output_log"),

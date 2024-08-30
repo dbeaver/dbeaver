@@ -41,7 +41,7 @@ public enum WSEventType {
         WSEventTopic.SESSION_LOG,
         WSSessionLogUpdatedEvent.class
     ),
-
+    LICENSE_UPDATED("cb_license_updated", WSEventTopic.LICENSE, WSLicenseEvent.class),
     SESSION_WEBSOCKET_CONNECTED("cb_session_websocket_connected", WSEventTopic.SESSION, WSSocketConnectedEvent.class),
     SESSION_STATE("cb_session_state", WSEventTopic.SESSION, WSSessionStateEvent.class),
     SESSION_EXPIRED("cb_session_expired", WSEventTopic.SESSION, WSSessionExpiredEvent.class),
