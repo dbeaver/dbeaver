@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.cubrid.ui.config;
+package org.jkiss.dbeaver.ext.cubrid.ui.internal;
 
 public class CubridMessages {
     public static String dialog_struct_create_procedure_container = "Owner";
