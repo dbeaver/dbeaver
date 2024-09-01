@@ -32,6 +32,9 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.Comparator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Interval value handler.
@@ -43,6 +46,21 @@ public class PostgreIntervalValueHandler extends JDBCStringValueHandler {
     public static final PostgreIntervalValueHandler INSTANCE = new PostgreIntervalValueHandler();
 
     private static final DecimalFormat SECONDS_FORMAT;
+
+    private static final long MILLISECONDS_IN_SECOND = 1000;
+    private static final long MILLISECONDS_IN_MINUTE = 60 * MILLISECONDS_IN_SECOND;
+    private static final long MILLISECONDS_IN_HOUR = 60 * MILLISECONDS_IN_MINUTE;
+    private static final long MILLISECONDS_IN_DAY = 24 * MILLISECONDS_IN_HOUR;
+    private static final long MILLISECONDS_IN_MONTH = 30 * MILLISECONDS_IN_DAY;
+    private static final long MILLISECONDS_IN_YEAR = 365 * MILLISECONDS_IN_DAY;
+
+    // parsing values like: 3 mons 15 days, 00:00:00.12, -9 days
+    private static final String intervalRegex = "(?i)(?<sign>-)?\\s*" +
+        "(?:(?<years>\\d+)\\s+years?)?\\s*" +
+        "(?:(?<months>\\d+)\\s+mon(?:s|ths)?)?\\s*" +
+        "(?:(?<days>\\d+)\\s+days?)?\\s*" +
+        "(?:(?<time>\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?))?\\b";
+    private static final Pattern pattern = Pattern.compile(intervalRegex);
 
     static {
         SECONDS_FORMAT = new DecimalFormat("0.00####");
@@ -96,5 +114,51 @@ public class PostgreIntervalValueHandler extends JDBCStringValueHandler {
             }
         }
         return super.getValueDisplayString(column, value, format);
+    }
+
+
+    @Override
+    public Comparator<Object> getComparator() {
+        return (o1, o2) -> {
+            long leftInterval = getSecondsFromInterval((String) o1);
+            long rightInterval = getSecondsFromInterval((String) o2);
+            return Long.compare(leftInterval, rightInterval);
+        };
+    }
+
+    private long getSecondsFromInterval(String interval) {
+
+        Matcher matcher = pattern.matcher(interval);
+        long totalSeconds = 0;
+        if (matcher.find()) {
+            String sign = matcher.group("sign") != null ? "-" : "";
+            String years = matcher.group("years");
+            String months = matcher.group("months");
+            String days = matcher.group("days");
+            String time = matcher.group("time");
+
+            if (years != null) {
+                totalSeconds += Long.parseLong(years) * MILLISECONDS_IN_YEAR;
+            }
+            if (months != null) {
+                totalSeconds += Long.parseLong(months) * MILLISECONDS_IN_MONTH;
+            }
+            if (days != null) {
+                totalSeconds += Long.parseLong(days) * MILLISECONDS_IN_DAY;
+            }
+            if (time != null) {
+                String[] timeParts = time.split(":");
+                totalSeconds += (long) Integer.parseInt(timeParts[0]) * MILLISECONDS_IN_HOUR;
+                totalSeconds += (long) Integer.parseInt(timeParts[1]) * MILLISECONDS_IN_MINUTE;
+                long intValue = (long) Double.parseDouble(timeParts[2]);
+                totalSeconds += intValue * MILLISECONDS_IN_SECOND;
+                totalSeconds += (long) (Double.parseDouble(timeParts[2]) - intValue);
+            }
+            if ("-".equals(sign)) {
+                totalSeconds = -totalSeconds;
+            }
+        }
+
+        return totalSeconds;
     }
 }
