@@ -19,7 +19,14 @@ package org.jkiss.dbeaver.ext.cubrid.ui.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class CubridMessages extends NLS {
-    public static String dialog_struct_create_procedure_container = "Owner";
-    public static String dialog_struct_create_procedure_label_name = "Name";
-    public static String dialog_struct_create_procedure_combo_type = "Type";
+
+    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.cubrid.ui.internal.CubridMessages";
+
+    static {
+        NLS.initializeMessages(BUNDLE_NAME, CubridMessages.class);
+    }
+
+    public static String dialog_struct_create_procedure_container;
+    public static String dialog_struct_create_procedure_label_name;
+    public static String dialog_struct_create_procedure_combo_type;
 }
