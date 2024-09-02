@@ -380,29 +380,28 @@ public class ResultSetModel {
 
     @Nullable
     public Object getCellValue(@NotNull ResultSetCellLocation cellLocation) {
-        return DBUtils.getAttributeValue(
-            cellLocation.getAttribute(),
-            attributes,
-            cellLocation.getRow().values,
-            cellLocation.getRowIndexes());
+        return getCellValue(cellLocation.getAttribute(), cellLocation.getRow(), cellLocation.getRowIndexes(), false);
     }
 
     @Nullable
     public Object getCellValue(@NotNull DBDAttributeBinding attribute, @NotNull ResultSetRow row) {
-        return DBUtils.getAttributeValue(
-            attribute,
-            attributes,
-            row.values,
-            null);
+        return getCellValue(attribute, row, null, false);
     }
 
     @Nullable
-    public Object getCellValue(@NotNull DBDAttributeBinding attribute, @NotNull ResultSetRow row, @Nullable int[] rowIndexes) {
+    public Object getCellValue(
+        @NotNull DBDAttributeBinding attribute,
+        @NotNull ResultSetRow row,
+        @Nullable int[] rowIndexes,
+        boolean retrieveDeepestCollectionElement
+    ) {
         return DBUtils.getAttributeValue(
             attribute,
             attributes,
             row.values,
-            rowIndexes);
+            rowIndexes,
+            retrieveDeepestCollectionElement
+        );
     }
 
     /**

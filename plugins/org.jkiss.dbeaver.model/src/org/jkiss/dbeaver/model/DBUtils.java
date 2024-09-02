@@ -688,9 +688,10 @@ public final class DBUtils {
     @Nullable
     public static Object getAttributeValue(
         @NotNull DBDAttributeBinding attribute,
-        DBDAttributeBinding[] allAttributes,
-        Object[] row) {
-        return getAttributeValue(attribute, allAttributes, row, null);
+        @NotNull DBDAttributeBinding[] allAttributes,
+        @NotNull Object[] row
+    ) {
+        return getAttributeValue(attribute, allAttributes, row, null, false);
     }
 
     @Nullable
@@ -698,7 +699,8 @@ public final class DBUtils {
         @NotNull DBDAttributeBinding attribute,
         @NotNull DBDAttributeBinding[] allAttributes,
         @NotNull Object[] row,
-        @Nullable int[] nestedIndexes
+        @Nullable int[] nestedIndexes,
+        boolean retrieveDeepestCollectionElement
     ) {
         if (attribute.isCustom()) {
             try {
@@ -734,7 +736,7 @@ public final class DBUtils {
             pendingIndices.offer(nestedIndexes[i]);
         }
 
-        while (!pendingAttributes.isEmpty() || !pendingIndices.isEmpty()) {
+        while (!pendingAttributes.isEmpty() || !pendingIndices.isEmpty() || retrieveDeepestCollectionElement) {
             if (curValue == null) {
                 break;
             }
@@ -752,14 +754,22 @@ public final class DBUtils {
             }
 
             while (curValue instanceof DBDCollection collection) {
-                if (pendingIndices.isEmpty()) {
+                int itemIndex;
+                if (!pendingIndices.isEmpty()) {
+                    itemIndex = pendingIndices.pop();
+                } else if (retrieveDeepestCollectionElement) {
+                    itemIndex = 0;
+                } else {
                     return curValue;
                 }
-                int itemIndex = pendingIndices.pop();
                 if (itemIndex >= collection.getItemCount()) {
                     return DBDVoid.INSTANCE;
                 }
                 curValue = collection.get(itemIndex);
+            }
+
+            if (retrieveDeepestCollectionElement && pendingAttributes.isEmpty()) {
+                return curValue;
             }
         }
 

@@ -2312,7 +2312,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         if (cellValue instanceof Number) {
                             cellValue = ((Number) cellValue).byteValue() != 0;
                         }
-                        if (DBUtils.isNullValue(cellValue) || cellValue instanceof Boolean) {
+                        if (cellValue instanceof Boolean || cellValue == null) {
                             info.image = booleanStyles.getStyle((Boolean) cellValue).getIcon();
                         }
                     }
@@ -2358,7 +2358,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         @Nullable
         @Override
         public Object getCellValue(IGridColumn gridColumn, IGridRow gridRow, boolean formatString) {
-            final Object value = getCellValue(gridColumn, gridRow, getRowNestedIndexes(gridRow));
+            final Object value = getCellValue(gridColumn, gridRow, getRowNestedIndexes(gridRow), false);
             if (formatString) {
                 return formatValue(gridColumn, gridRow, value);
             } else {
@@ -2367,7 +2367,12 @@ public class SpreadsheetPresentation extends AbstractPresentation
         }
 
         @Nullable
-        public Object getCellValue(@NotNull IGridColumn gridColumn, @NotNull IGridRow gridRow, @Nullable int[] rowIndexes) {
+        public Object getCellValue(
+            @NotNull IGridColumn gridColumn,
+            @NotNull IGridRow gridRow,
+            @Nullable int[] rowIndexes,
+            boolean retrieveDeepestCollectionElement
+        ) {
             if (gridRow.getParent() != null && !spreadsheet.isCellExpanded(gridRow.getParent(), gridColumn)) {
                 return DBDVoid.INSTANCE;
             }
@@ -2376,7 +2381,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             if (attr == null || row == null) {
                 return null;
             }
-            return controller.getModel().getCellValue(attr, row, rowIndexes);
+            return controller.getModel().getCellValue(attr, row, rowIndexes, retrieveDeepestCollectionElement);
         }
 
         @Nullable
@@ -2386,6 +2391,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             if (attr == null || row == null) {
                 return null;
             }
+
             if (DBUtils.isNullValue(value) && row.getState() == ResultSetRow.STATE_ADDED) {
                 // New row and no value. Let's try to show default value
                 DBSEntityAttribute entityAttribute = attr.getEntityAttribute();
@@ -2413,27 +2419,17 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
                 return value;
             }
-            if (value instanceof DBDCollection)
-                return "<collection>";
-            if (value instanceof DBDComposite)
-                return "<composite>";
-            /*if (isShowAsExpander(null, attr, value)) {
+            if (isShowAsExpander(null, attr, value)) {
                 if (spreadsheet.isCellExpanded(gridRow, gridColumn) && value instanceof DBDCollection collection) {
                     return COLLECTION_SIZE_FORMAT.format(new Object[]{collection.size()});
                 }
-                int count = 0;
-                for (DBDAttributeBinding cur = attr; cur != null; cur = cur.getParentObject()) {
-                    if (cur.getDataKind() == DBPDataKind.ARRAY) {
-                        count++;
-                    }
-                }
-                Object child = getCellValue(gridColumn, gridRow, new int[count]);
+                Object child = getCellValue(gridColumn, gridRow, getRowNestedIndexes(gridRow), true);
                 if (child == value) {
                     return value;
                 }
                 return formatValue(gridColumn, gridRow, child);
-            } else */if (attr.getDataKind() == DBPDataKind.STRUCT && value instanceof DBDComposite && !DBUtils.isNullValue(value)) {
-                return "[" + ((DBDComposite) value).getDataType().getName() + "]";
+            } else if (value instanceof DBDComposite composite && !DBUtils.isNullValue(value)) {
+                return "[" + composite.getDataType().getName() + "]";
             }
             try {
                 return attr.getValueRenderer().getValueDisplayString(
@@ -2756,9 +2752,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
     }
 
     private boolean isShowAsExpander(@Nullable IGridRow rowElement, @NotNull DBDAttributeBinding attr, @Nullable Object value) {
-        return spreadsheet.getColumnCount() > 1
-            && isAttributeExpandable(rowElement, attr)
-            && value instanceof DBDCollection collection && !collection.isNull();
+        return value instanceof DBDCollection collection && !collection.isNull() && isAttributeExpandable(rowElement, attr);
     }
 
     private class GridLabelProvider implements IGridLabelProvider {
