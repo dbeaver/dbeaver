@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.model.sql.semantics;
 
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
@@ -26,7 +25,6 @@ import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueTupl
 import org.jkiss.dbeaver.model.sql.semantics.model.select.*;
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
-import org.jkiss.dbeaver.model.stm.STMTreeTermErrorNode;
 
 import java.util.*;
 
@@ -87,13 +85,13 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
 
                 STMTreeNode withNode = n.findFirstChildOfName(STMKnownRuleNames.withClause);
                 if (withNode != null) {
-                    boolean isRecursive = withNode.findNonErrorChildren().size() > 2; // is RECURSIVE keyword presented; TODO use term name
+                    boolean isRecursive = withNode.findFirstChildOfName(STMKnownRuleNames.RECURSIVE_TERM) != null;
                     List<SQLQueryRowsCteSubqueryModel> cteSubqueries = new ArrayList<>();
 
                     STMTreeNode cteListNode = withNode.findLastChildOfName(STMKnownRuleNames.cteList);
                     if (cteListNode != null) {
 
-                        Map<STMTreeNode, SQLQueryRowsSourceModel> subqueryByNode = prepareSubqueriesMap(subqueries, cteListNode);
+                        SubsourcesMap subsources = new SubsourcesMap(subqueries, cteListNode);
 
                         for (STMTreeNode cteSubqueryNode : cteListNode.findChildrenOfName(STMKnownRuleNames.with_list_element)) {
                             STMTreeNode subqueryNameNode = cteSubqueryNode.findFirstChildOfName(STMKnownRuleNames.queryName);
@@ -104,7 +102,7 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
                                 ? Collections.emptyList()
                                 : r.collectColumnNameList(columnListNode);
 
-                            SQLQueryRowsSourceModel subquerySource = subqueryByNode.get(cteSubqueryNode);
+                            SQLQueryRowsSourceModel subquerySource = subsources.getOrEmpty(cteSubqueryNode);
                             cteSubqueries.add(new SQLQueryRowsCteSubqueryModel(cteSubqueryNode, subqueryName, columnList, subquerySource));
                         }
                     }
@@ -118,18 +116,12 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
             if (cc.isEmpty()) {
                 return makeEmptyRowsModel(n);
             } else {
-                Map<STMTreeNode, SQLQueryRowsSourceModel> subqueryByNode = prepareSubqueriesMap(cc, n);
+                SubsourcesMap subsources = new SubsourcesMap(cc, n);
                 List<STMTreeNode> childNodes = n.findNonErrorChildren();
-                SQLQueryRowsSourceModel source = subqueryByNode.get(childNodes.get(0));
-                if (source == null) {
-                    source = makeEmptyRowsModel(childNodes.get(0));
-                }
+                SQLQueryRowsSourceModel source = subsources.getOrEmpty(childNodes.get(0));
                 for (STMTreeNode childNode : childNodes.subList(1, childNodes.size())) {
                     List<SQLQuerySymbolEntry> corresponding = r.collectColumnNameList(childNode);
-                    SQLQueryRowsSourceModel nextSource = subqueryByNode.get(childNode);
-                    if (nextSource == null) {
-                        nextSource = makeEmptyRowsModel(childNode);
-                    }
+                    SQLQueryRowsSourceModel nextSource = subsources.getOrEmpty(childNode);
                     Interval range = Interval.of(n.getRealInterval().a, childNode.getRealInterval().b);
                     SQLQueryRowsSetCorrespondingOperationKind opKind = switch (childNode.getNodeKindId()) {
                         case SQLStandardParser.RULE_exceptTerm -> SQLQueryRowsSetCorrespondingOperationKind.EXCEPT;
@@ -146,18 +138,12 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
             if (cc.isEmpty()) {
                 return makeEmptyRowsModel(n);
             } else {
-                Map<STMTreeNode, SQLQueryRowsSourceModel> subqueryByNode = prepareSubqueriesMap(cc, n);
+                SubsourcesMap subsources = new SubsourcesMap(cc, n);
                 List<STMTreeNode> childNodes = n.findNonErrorChildren();
-                SQLQueryRowsSourceModel source = subqueryByNode.get(childNodes.get(0));
-                if (source == null) {
-                    source = makeEmptyRowsModel(childNodes.get(0));
-                }
+                SQLQueryRowsSourceModel source = subsources.getOrEmpty(childNodes.get(0));
                 for (STMTreeNode childNode : childNodes.subList(1, childNodes.size())) {
                     List<SQLQuerySymbolEntry> corresponding = r.collectColumnNameList(childNode);
-                    SQLQueryRowsSourceModel nextSource = subqueryByNode.get(childNode);
-                    if (nextSource == null) {
-                        nextSource = makeEmptyRowsModel(childNode);
-                    }
+                    SQLQueryRowsSourceModel nextSource = subsources.getOrEmpty(childNode);
                     Interval range = Interval.of(n.getRealInterval().a, childNode.getRealInterval().b);
                     SQLQueryRowsSetCorrespondingOperationKind opKind = switch (childNode.getNodeKindId()) {
                         case SQLStandardParser.RULE_intersectTerm ->
@@ -175,32 +161,25 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
             if (cc.isEmpty()) {
                 return makeEmptyRowsModel(n);
             } else {
-                Map<STMTreeNode, SQLQueryRowsSourceModel> subqueryByNode = prepareSubqueriesMap(cc, n);
+                SubsourcesMap subsources = new SubsourcesMap(cc, n);
                 List<STMTreeNode> childNodes = n.findNonErrorChildren();
-                SQLQueryRowsSourceModel source = subqueryByNode.get(childNodes.get(0));
-                if (source == null) {
-                    source = makeEmptyRowsModel(childNodes.get(0));
-                }
+                SQLQueryRowsSourceModel source = subsources.getOrEmpty(childNodes.get(0));
                 for (STMTreeNode childNode : childNodes.subList(1, childNodes.size())) {
                     final SQLQueryRowsSourceModel currSource = source;
-                    SQLQueryRowsSourceModel nextSource1 = subqueryByNode.get(childNode);
-                    if (nextSource1 == null) {
-                        nextSource1 = makeEmptyRowsModel(childNode);
-                    }
-                    final SQLQueryRowsSourceModel nextSource = nextSource1;
+                    final SQLQueryRowsSourceModel nextSource = subsources.getOrEmpty(childNode);
                     // TODO see second case of the first source if parens are correctly ignored here
                     Interval range = Interval.of(n.getRealInterval().a, childNode.getRealInterval().b);
                     source = switch (childNode.getNodeKindId()) {
                         case SQLStandardParser.RULE_naturalJoinTerm -> {
                             Optional<STMTreeNode> joinConditionNode = Optional.ofNullable(childNode.findFirstChildOfName(STMKnownRuleNames.joinSpecification))
-                                    .map(cn -> cn.findFirstChildOfName(STMKnownRuleNames.joinCondition));
+                                .map(cn -> cn.findFirstChildOfName(STMKnownRuleNames.joinCondition));
                             if (joinConditionNode.isPresent()) {
                                 try (SQLQueryModelRecognizer.LexicalScopeHolder condScope = r.openScope()) {
                                     condScope.lexicalScope.registerSyntaxNode(joinConditionNode.get());
                                     yield joinConditionNode.map(cn -> cn.findFirstChildOfName(STMKnownRuleNames.searchCondition))
-                                            .map(r::collectValueExpression)
-                                            .map(e -> new SQLQueryRowsNaturalJoinModel(range, childNode, currSource, nextSource, e, condScope.lexicalScope))
-                                            .orElseGet(() -> new SQLQueryRowsNaturalJoinModel(range, childNode, currSource, nextSource, Collections.emptyList()));
+                                        .map(r::collectValueExpression)
+                                        .map(e -> new SQLQueryRowsNaturalJoinModel(range, childNode, currSource, nextSource, e, condScope.lexicalScope))
+                                        .orElseGet(() -> new SQLQueryRowsNaturalJoinModel(range, childNode, currSource, nextSource, Collections.emptyList()));
                                 }
                             } else {
                                 yield new SQLQueryRowsNaturalJoinModel(range, childNode, currSource, nextSource, r.collectColumnNameList(childNode));
@@ -219,17 +198,11 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
             if (cc.isEmpty()) {
                 return makeEmptyRowsModel(n);
             } else {
-                Map<STMTreeNode, SQLQueryRowsSourceModel> subqueryByNode = prepareSubqueriesMap(cc, n);
+                SubsourcesMap subsources = new SubsourcesMap(cc, n);
                 List<STMTreeNode> childNodes = n.findNonErrorChildren();
-                SQLQueryRowsSourceModel source = subqueryByNode.get(childNodes.get(0));
-                if (source == null) {
-                    source = makeEmptyRowsModel(childNodes.get(0));
-                }
+                SQLQueryRowsSourceModel source = subsources.getOrEmpty(childNodes.get(0));
                 for (STMTreeNode childNode : childNodes.subList(1, childNodes.size())) {
-                    SQLQueryRowsSourceModel nextSource = subqueryByNode.get(childNode);
-                    if (nextSource == null) {
-                        nextSource = makeEmptyRowsModel(childNode);
-                    }
+                    SQLQueryRowsSourceModel nextSource = subsources.getOrEmpty(childNode);
                     Interval range = Interval.of(n.getRealInterval().a, childNode.getRealInterval().b);
                     source = switch (childNode.getNodeKindId()) {
                         case SQLStandardParser.RULE_tableReference ->
@@ -254,7 +227,7 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
             STMTreeNode selectKeywordNode;
             try (SQLQueryModelRecognizer.LexicalScopeHolder selectListScopeHolder = r.openScope()) {
                 selectListScope = selectListScopeHolder.lexicalScope;
-                selectKeywordNode = n.findFirstChildOfName("SELECT"); // SELECT keyword
+                selectKeywordNode = n.findFirstChildOfName(STMKnownRuleNames.SELECT_TERM);
                 if (selectKeywordNode == null) {
                     log.debug("SELECT keyword is missing");
                     return makeEmptyRowsModel(n);
@@ -369,21 +342,30 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
         STMKnownRuleNames.tableValueConstructor, (n, cc, r) -> {
             List<SQLQueryValueExpression> values = n.findChildrenOfName(STMKnownRuleNames.rowValueConstructor).stream()
                 .map(r::collectValueExpression).toList();
-            return new SQLQueryRowsTableValueModel(n, values);
+            boolean isIncomplete = n.getChildCount() != values.size() * 2 || n.hasErrorChildren();
+            return new SQLQueryRowsTableValueModel(n, values, isIncomplete);
         }
     );
 
-    @NotNull
-    private static Map<STMTreeNode, SQLQueryRowsSourceModel> prepareSubqueriesMap(
-        List<SQLQueryRowsSourceModel> subqueries,
-        STMTreeNode subroot
-    ) {
-        Map<STMTreeNode, SQLQueryRowsSourceModel> subqueryByNode = new HashMap<>(subqueries.size());
-        for (SQLQueryRowsSourceModel subquery : subqueries) {
-            STMTreeNode subrootChild = findImmediateChild(subroot, subquery.getSyntaxNode());
-            subqueryByNode.put(subrootChild, subquery);
+    private static class SubsourcesMap {
+        private final Map<STMTreeNode, SQLQueryRowsSourceModel> subsourceByNode;
+
+        public SubsourcesMap(@NotNull List<SQLQueryRowsSourceModel> subqueries, @NotNull STMTreeNode subroot) {
+            this.subsourceByNode = new HashMap<>(subqueries.size());
+            for (SQLQueryRowsSourceModel subquery : subqueries) {
+                STMTreeNode subrootChild = findImmediateChild(subroot, subquery.getSyntaxNode());
+                this.subsourceByNode.put(subrootChild, subquery);
+            }
         }
-        return subqueryByNode;
+
+        @NotNull
+        public SQLQueryRowsSourceModel getOrEmpty(STMTreeNode subrootsChild) {
+            SQLQueryRowsSourceModel source = this.subsourceByNode.get(subrootsChild);
+            if (source == null) {
+                source = makeEmptyRowsModel(subrootsChild);
+            }
+            return source;
+        }
     }
 
     private static STMTreeNode findImmediateChild(STMTreeNode subroot, STMTreeNode deeperChild) {
@@ -399,7 +381,7 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
     /**
      * Prepare fake table rows source used to represent invalid query fragments when the adequate semantic model item cannot be constructed
      */
-    private static SQLQueryRowsSourceModel makeEmptyRowsModel(STMTreeNode n) {
-        return new SQLQueryRowsTableValueModel(n, Collections.emptyList());
+    public static SQLQueryRowsSourceModel makeEmptyRowsModel(STMTreeNode n) {
+        return new SQLQueryRowsTableValueModel(n, Collections.emptyList(), true);
     }
 }

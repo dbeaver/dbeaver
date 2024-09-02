@@ -35,12 +35,15 @@ import java.util.List;
 public class SQLQueryRowsTableValueModel extends SQLQueryRowsSourceModel {
     @NotNull
     private final List<SQLQueryValueExpression> values;
+    private final boolean isIncomplete;
     
     public SQLQueryRowsTableValueModel(
         @NotNull STMTreeNode syntaxNode,
-        @NotNull List<SQLQueryValueExpression> values) {
+        @NotNull List<SQLQueryValueExpression> values,
+        boolean isIncomplete) {
         super(syntaxNode);
         this.values = values;
+        this.isIncomplete = isIncomplete;
     }
 
     @NotNull
@@ -59,7 +62,13 @@ public class SQLQueryRowsTableValueModel extends SQLQueryRowsSourceModel {
             value.propagateContext(context, statistics);
             resultColumns.addLast(new SQLQueryResultColumn(resultColumns.size(), new SQLQuerySymbol("?"), this, null, null, SQLQueryExprType.UNKNOWN));
         }
-        return context.hideSources().overrideResultTuple(List.copyOf(resultColumns));
+        context = context.hideSources().overrideResultTuple(List.copyOf(resultColumns));
+
+        if (this.isIncomplete) {
+            context = context.markHasUnresolvedSource();
+        }
+
+        return context;
     }
 
     @Override

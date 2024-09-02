@@ -90,7 +90,7 @@ public class SQLQueryTableCreateModel extends SQLQueryModelContent {
                 this.tableName.setSymbolClass(SQLQuerySymbolClass.TABLE);
             }
 
-            SQLQueryRowsTableValueModel virtualTableRows = new SQLQueryRowsTableValueModel(this.getSyntaxNode(), Collections.emptyList());
+            SQLQueryRowsTableValueModel virtualTableRows = new SQLQueryRowsTableValueModel(this.getSyntaxNode(), Collections.emptyList(), false);
 
             List<SQLQueryResultColumn> columns = new ArrayList<>(this.columns.size());
             for (SQLQueryColumnSpec columnSpec : this.columns) {
@@ -150,11 +150,13 @@ public class SQLQueryTableCreateModel extends SQLQueryModelContent {
         if (elementsNode != null) {
             for (STMTreeNode elementNode : elementsNode.findChildrenOfName(STMKnownRuleNames.tableElement)) {
                 STMTreeNode payloadNode = elementNode.findFirstNonErrorChild();
-                switch (payloadNode.getNodeKindId()) {
-                    case SQLStandardParser.RULE_columnDefinition ->
-                        columns.addLast(SQLQueryColumnSpec.recognize(recognizer, payloadNode));
-                    case SQLStandardParser.RULE_tableConstraintDefinition ->
-                        constraints.addLast(SQLQueryTableConstraintSpec.recognize(recognizer, payloadNode));
+                if (payloadNode != null) {
+                    switch (payloadNode.getNodeKindId()) {
+                        case SQLStandardParser.RULE_columnDefinition ->
+                            columns.addLast(SQLQueryColumnSpec.recognize(recognizer, payloadNode));
+                        case SQLStandardParser.RULE_tableConstraintDefinition ->
+                            constraints.addLast(SQLQueryTableConstraintSpec.recognize(recognizer, payloadNode));
+                    }
                 }
             }
         }

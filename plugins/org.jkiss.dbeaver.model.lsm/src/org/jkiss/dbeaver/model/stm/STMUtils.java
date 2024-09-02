@@ -54,47 +54,45 @@ public class STMUtils {
         return result;
     }
 
-//    // shouldn't loops here be backward as well as above?..
-//
-//    @NotNull
-//    public static List<STMTreeTerminalNode> expandTerms(@NotNull STMTreeNode root) {
-//        List<STMTreeTerminalNode> result = new ArrayList<>();
-//        Stack<STMTreeNode> stack = new Stack<>();
-//        stack.add(root);
-//
-//        while (stack.size() > 0) {
-//            STMTreeNode node = stack.pop();
-//
-//            if (node instanceof STMTreeTerminalNode term) {
-//                result.add(term);
-//            } else {
-//                for (int i = 0; i < node.getChildCount(); i++) {
-//                    stack.push((STMTreeNode) node.getChild(i));
-//                }
-//            }
-//        }
-//        return result;
-//    }
-//
-//    @NotNull
-//    public static List<String> expandTermStrings(@NotNull STMTreeNode root) {
-//        List<String> result = new ArrayList<>();
-//        Stack<STMTreeNode> stack = new Stack<>();
-//        stack.add(root);
-//
-//        while (stack.size() > 0) {
-//            STMTreeNode node = stack.pop();
-//
-//            if (node instanceof STMTreeTerminalNode term) {
-//                result.add(term.getText());
-//            } else {
-//                for (int i = 0; i < node.getChildCount(); i++) {
-//                    stack.push((STMTreeNode) node.getChild(i));
-//                }
-//            }
-//        }
-//        return result;
-//    }
+    @NotNull
+    public static List<STMTreeTermNode> expandTerms(@NotNull STMTreeNode root) {
+        List<STMTreeTermNode> result = new ArrayList<>();
+        Stack<STMTreeNode> stack = new Stack<>();
+        stack.add(root);
+
+        while (stack.size() > 0) {
+            STMTreeNode node = stack.pop();
+
+            if (node instanceof STMTreeTermNode term) {
+                result.add(term);
+            } else {
+                for (int i = 0; i < node.getChildCount(); i++) {
+                    stack.push((STMTreeNode) node.getChild(i));
+                }
+            }
+        }
+        return result;
+    }
+
+    @NotNull
+    public static List<String> expandTermStrings(@NotNull STMTreeNode root) {
+        List<String> result = new ArrayList<>();
+        Stack<STMTreeNode> stack = new Stack<>();
+        stack.add(root);
+
+        while (stack.size() > 0) {
+            STMTreeNode node = stack.pop();
+
+            if (node instanceof STMTreeTermNode term) {
+                result.add(term.getText());
+            } else {
+                for (int i = 0; i < node.getChildCount(); i++) {
+                    stack.push((STMTreeNode) node.getChild(i));
+                }
+            }
+        }
+        return result;
+    }
 
 
     /**
