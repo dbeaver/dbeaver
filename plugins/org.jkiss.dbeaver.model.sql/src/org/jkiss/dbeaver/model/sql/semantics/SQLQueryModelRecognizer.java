@@ -340,9 +340,6 @@ public class SQLQueryModelRecognizer {
             }
         }
 
-        // TODO maybe replace loop with streams?
-        // return node.findChildrenOfName(STMKnownRuleNames.columnName).stream().map(this::collectIdentifier).toList();
-
         List<SQLQuerySymbolEntry> result = node.findChildrenOfName(STMKnownRuleNames.columnName).stream()
             .map(this::collectIdentifier).toList();
         return result;

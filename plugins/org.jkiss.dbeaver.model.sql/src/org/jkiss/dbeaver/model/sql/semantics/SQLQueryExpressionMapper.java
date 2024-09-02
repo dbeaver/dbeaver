@@ -193,14 +193,14 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
                     source = switch (childNode.getNodeKindId()) {
                         case SQLStandardParser.RULE_naturalJoinTerm -> {
                             Optional<STMTreeNode> joinConditionNode = Optional.ofNullable(childNode.findFirstChildOfName(STMKnownRuleNames.joinSpecification))
-                                    .map(cn -> cn.findFirstChildOfName(STMKnownRuleNames.joinCondition));
+                                .map(cn -> cn.findFirstChildOfName(STMKnownRuleNames.joinCondition));
                             if (joinConditionNode.isPresent()) {
                                 try (SQLQueryModelRecognizer.LexicalScopeHolder condScope = r.openScope()) {
                                     condScope.lexicalScope.registerSyntaxNode(joinConditionNode.get());
                                     yield joinConditionNode.map(cn -> cn.findFirstChildOfName(STMKnownRuleNames.searchCondition))
-                                            .map(r::collectValueExpression)
-                                            .map(e -> new SQLQueryRowsNaturalJoinModel(range, childNode, currSource, nextSource, e, condScope.lexicalScope))
-                                            .orElseGet(() -> new SQLQueryRowsNaturalJoinModel(range, childNode, currSource, nextSource, Collections.emptyList()));
+                                        .map(r::collectValueExpression)
+                                        .map(e -> new SQLQueryRowsNaturalJoinModel(range, childNode, currSource, nextSource, e, condScope.lexicalScope))
+                                        .orElseGet(() -> new SQLQueryRowsNaturalJoinModel(range, childNode, currSource, nextSource, Collections.emptyList()));
                                 }
                             } else {
                                 yield new SQLQueryRowsNaturalJoinModel(range, childNode, currSource, nextSource, r.collectColumnNameList(childNode));
