@@ -724,17 +724,17 @@ public final class DBUtils {
             return null;
         }
 
-        Deque<DBDAttributeBinding> pendingAttributes = new ArrayDeque<>();
-        Deque<Integer> pendingIndices = new ArrayDeque<>();
-        Object curValue = row[index];
-
+        Deque<DBDAttributeBinding> pendingAttributes = new ArrayDeque<>(depth);
         for (int i = 0; i < depth; i++) {
             pendingAttributes.offer(Objects.requireNonNull(attribute.getParent(depth - i - 1)));
         }
 
+        Deque<Integer> pendingIndices = new ArrayDeque<>(nestedIndexes != null ? nestedIndexes.length : 0);
         for (int i = 0; nestedIndexes != null && i < nestedIndexes.length; i++) {
             pendingIndices.offer(nestedIndexes[i]);
         }
+
+        Object curValue = row[index];
 
         while (!pendingAttributes.isEmpty() || !pendingIndices.isEmpty() || retrieveDeepestCollectionElement) {
             if (curValue == null) {
