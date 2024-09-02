@@ -84,13 +84,17 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
             // Semantic analyser should never be used for databases, which doesn't support table lookup
             // It's managed by LSMDialectRegistry (see org.jkiss.dbeaver.lsm.dialectSyntax extension point)
             // so that analyzers could be created only for supported dialects.
-            throw new UnsupportedOperationException("Should never happen");
+            throw new UnsupportedOperationException("Semantic analyser should never be used for databases, which doesn't support table lookup");
         }
     }
 
     @Nullable
     @Override
-    public DBSObject findRealObject(DBRProgressMonitor monitor, DBSObjectType objectType, List<String> objectName) {
+    public DBSObject findRealObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObjectType objectType,
+        @NotNull List<String> objectName
+    ) {
         if (this.executionContext.getDataSource() instanceof DBSObjectContainer container) {
             List<String> objectName2 = new ArrayList<>(objectName);
             DBSObject obj = SQLSearchUtils.findObjectByFQN(
@@ -106,7 +110,7 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
             // Semantic analyser should never be used for databases, which doesn't support table lookup
             // It's managed by LSMDialectRegistry (see org.jkiss.dbeaver.lsm.dialectSyntax extension point)
             // so that analyzers could be created only for supported dialects.
-            throw new UnsupportedOperationException("Should never happen");
+            throw new UnsupportedOperationException("Semantic analyser should never be used for databases, which doesn't support table lookup");
         }
     }
 

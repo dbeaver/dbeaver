@@ -74,7 +74,11 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
     /**
      * Propagate semantics context and establish relations through the query model for column definition
      */
-    public static void propagateColumnDefinition(@NotNull SQLQuerySymbolEntry columnName, @Nullable SQLQueryResultColumn resultColumn, @NotNull SQLQueryRecognitionContext statistics) {
+    public static void propagateColumnDefinition(
+        @NotNull SQLQuerySymbolEntry columnName,
+        @Nullable SQLQueryResultColumn resultColumn,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
         // TODO consider ambiguity
         if (resultColumn != null) {
             columnName.setDefinition(resultColumn.symbol.getDefinition());
@@ -92,7 +96,8 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
             SourceResolutionResult rr = context.resolveSource(statistics.getMonitor(), this.tableName.toListOfStrings());
             if (rr != null) {
                 this.tableName.setDefinition(rr);
-                SQLQueryResultColumn resultColumn = rr.source.getResultDataContext().resolveColumn(statistics.getMonitor(), this.columnName.getName());
+                SQLQueryResultColumn resultColumn = rr.source.getResultDataContext()
+                    .resolveColumn(statistics.getMonitor(), this.columnName.getName());
                 if (resultColumn != null || !rr.source.getResultDataContext().hasUndresolvedSource()) {
                     propagateColumnDefinition(this.columnName, resultColumn, statistics);
                 }

@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDummyDataSourceContext;
@@ -41,9 +40,9 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryObjectDropModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryTableAlterModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryTableCreateModel;
-import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryObjectDropModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryTableDropModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryDeleteModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryInsertModel;
@@ -138,7 +137,7 @@ public class SQLQueryModelRecognizer {
                         SQLQueryTableDropModel.recognize(this, stmtBodyNode, true);
                     case SQLStandardParser.RULE_dropProcedureStatement ->
                         SQLQueryObjectDropModel.recognize(this, stmtBodyNode, RelationalObjectType.TYPE_PROCEDURE);
-                    case SQLStandardParser.RULE_alterTableStatement->
+                    case SQLStandardParser.RULE_alterTableStatement ->
                         SQLQueryTableAlterModel.recognize(this, stmtBodyNode);
                     default -> null;
                 };
@@ -157,11 +156,13 @@ public class SQLQueryModelRecognizer {
                 SQLQueryLexicalScope nodeScope = tailNode.findLexicalScope(actualTailPosition);
                 SQLQueryLexicalScope tailScope = new SQLQueryLexicalScope();
                 tailScope.setInterval(Interval.of(actualTailPosition, Integer.MAX_VALUE));
-                tailScope.setContext(nodeScope != null && nodeScope.getContext() != null ? nodeScope.getContext() : tailNode.getGivenDataContext());
+                tailScope.setContext(nodeScope != null && nodeScope.getContext() != null
+                    ? nodeScope.getContext()
+                    : tailNode.getGivenDataContext());
                 model.registerLexicalScope(tailScope);
             }
 
-            for (SQLQuerySymbolEntry symbolEntry: this.symbolEntries) {
+            for (SQLQuerySymbolEntry symbolEntry : this.symbolEntries) {
                 if (symbolEntry.isNotClassified() && this.reservedWords.contains(symbolEntry.getRawName().toUpperCase())) {
                     // (keywords are uppercased in dialect)
                     // if non-reserved keyword was not classified as identifier, then highlight it as reserved
@@ -343,7 +344,7 @@ public class SQLQueryModelRecognizer {
         // return node.findChildrenOfName(STMKnownRuleNames.columnName).stream().map(this::collectIdentifier).toList();
 
         List<SQLQuerySymbolEntry> result = node.findChildrenOfName(STMKnownRuleNames.columnName).stream()
-                                               .map(this::collectIdentifier).toList();
+            .map(this::collectIdentifier).toList();
         return result;
     }
 
@@ -363,7 +364,9 @@ public class SQLQueryModelRecognizer {
     
     @Nullable
     private SQLQuerySymbolEntry collectIdentifier(@NotNull STMTreeNode node, boolean forceUnquotted) {
-        STMTreeNode identifierNode = identifierDirectWrapperNames.contains(node.getNodeName()) ? node.findFirstChildOfName(STMKnownRuleNames.identifier) : node;
+        STMTreeNode identifierNode = identifierDirectWrapperNames.contains(node.getNodeName())
+            ? node.findFirstChildOfName(STMKnownRuleNames.identifier)
+            : node;
         if (identifierNode == null) {
             return null;
         } else if (!identifierNode.getNodeName().equals(STMKnownRuleNames.identifier)) {
@@ -468,7 +471,9 @@ public class SQLQueryModelRecognizer {
 
     @Nullable
     private SQLQueryQualifiedName collectQualifiedName(@NotNull STMTreeNode node, boolean forceUnquotted) { // qualifiedName
-        STMTreeNode qualifiedNameNode = qualifiedNameDirectWrapperNames.contains(node.getNodeName()) ? node.findFirstChildOfName(STMKnownRuleNames.qualifiedName) : node;
+        STMTreeNode qualifiedNameNode = qualifiedNameDirectWrapperNames.contains(node.getNodeName())
+            ? node.findFirstChildOfName(STMKnownRuleNames.qualifiedName)
+            : node;
         if (qualifiedNameNode == null) {
             return null;
         } else if (!qualifiedNameNode.getNodeName().equals(STMKnownRuleNames.qualifiedName)) {
@@ -582,8 +587,8 @@ public class SQLQueryModelRecognizer {
                         STMTreeNode content = stack.pop();
                         List<SQLQueryValueExpression> children = childLists.pop();
                         if (!children.isEmpty()) {
-                            SQLQueryValueExpression e = children.size() == 1 && children.get(0) instanceof SQLQueryValueFlattenedExpression c 
-                                ? c 
+                            SQLQueryValueExpression e = children.size() == 1 && children.get(0) instanceof SQLQueryValueFlattenedExpression child
+                                ? child
                                 : new SQLQueryValueFlattenedExpression(content, children);
                             childLists.peek().add(e);
                         }
@@ -706,7 +711,8 @@ public class SQLQueryModelRecognizer {
                     if (nameNode != null) {
                         SQLQuerySymbolEntry columnName = this.collectIdentifier(nameNode);
                         if (columnName != null) {
-                            yield tableName == null ? new SQLQueryValueColumnReferenceExpression(head, columnName)
+                            yield tableName == null
+                                ? new SQLQueryValueColumnReferenceExpression(head, columnName)
                                 : new SQLQueryValueColumnReferenceExpression(head, tableName, columnName);
                         } else {
                             yield null;

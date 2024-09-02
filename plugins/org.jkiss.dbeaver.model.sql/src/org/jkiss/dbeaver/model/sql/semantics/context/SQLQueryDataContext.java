@@ -59,7 +59,11 @@ public abstract class SQLQueryDataContext {
      * Find real object of given type referenced by its name in the database
      */
     @Nullable
-    public abstract DBSObject findRealObject(DBRProgressMonitor monitor, DBSObjectType objectType, List<String> objectName);
+    public abstract DBSObject findRealObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObjectType objectType,
+        @NotNull List<String> objectName
+    );
 
     /**
      * Find column referenced by its name in the result tuple

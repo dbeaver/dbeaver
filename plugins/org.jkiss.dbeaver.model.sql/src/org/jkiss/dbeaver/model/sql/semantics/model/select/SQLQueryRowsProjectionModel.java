@@ -43,7 +43,9 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
         private static final FiltersData<?> EMPTY = new FiltersData<>(null, null, null, null);
 
         @SuppressWarnings("unchecked")
-        public static <T> FiltersData<T> empty() { return (FiltersData<T>)EMPTY; }
+        public static <T> FiltersData<T> empty() {
+            return (FiltersData<T>) EMPTY;
+        }
 
         @NotNull
         public static <T> FiltersData<T> of(T where, T groupBy, T having, T orderBy) {

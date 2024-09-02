@@ -24,8 +24,8 @@ import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
-import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
+import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.stm.STMUtils;
@@ -76,30 +76,33 @@ public class SQLQueryUpdateModel extends SQLQueryModelContent {
         List<SQLQueryUpdateSetClauseModel> setClauseList = new ArrayList<>();
         STMTreeNode setClauseListNode = node.findFirstChildOfName(STMKnownRuleNames.setClauseList);
         if (setClauseListNode != null) {
-            for (STMTreeNode setClauseNode: setClauseListNode.findChildrenOfName(STMKnownRuleNames.setClause)) {
+            for (STMTreeNode setClauseNode : setClauseListNode.findChildrenOfName(STMKnownRuleNames.setClause)) {
                 STMTreeNode setTargetNode = setClauseNode.findFirstNonErrorChild();
-                List<SQLQueryValueExpression> targets = setTargetNode == null ? Collections.emptyList()
+                List<SQLQueryValueExpression> targets = setTargetNode == null
+                    ? Collections.emptyList()
                     : switch (setTargetNode.getNodeKindId()) {
-                    case SQLStandardParser.RULE_setTarget -> {
-                        STMTreeNode targetReferenceNode = setTargetNode.findFirstNonErrorChild();
-                        yield targetReferenceNode == null ? Collections.emptyList()
-                            : List.of(recognizer.collectKnownValueExpression(targetReferenceNode));
-                    }
-                    case SQLStandardParser.RULE_setTargetList ->
-                        STMUtils.expandSubtree(
-                            setTargetNode,
-                            Set.of(STMKnownRuleNames.setTargetList),
-                            Set.of(STMKnownRuleNames.valueReference)
-                        ).stream().map(recognizer::collectValueExpression).collect(Collectors.toList());
-                    case SQLStandardParser.RULE_anyUnexpected ->
-                        // error in query text, ignoring it
-                        Collections.emptyList();
-                    default -> throw new UnsupportedOperationException(
-                        "Set target list expected while facing with " + setTargetNode.getNodeName()
-                    );
-                };
+                        case SQLStandardParser.RULE_setTarget -> {
+                            STMTreeNode targetReferenceNode = setTargetNode.findFirstNonErrorChild();
+                            yield targetReferenceNode == null
+                                ? Collections.emptyList()
+                                : List.of(recognizer.collectKnownValueExpression(targetReferenceNode));
+                        }
+                        case SQLStandardParser.RULE_setTargetList ->
+                            STMUtils.expandSubtree(
+                                setTargetNode,
+                                Set.of(STMKnownRuleNames.setTargetList),
+                                Set.of(STMKnownRuleNames.valueReference)
+                            ).stream().map(recognizer::collectValueExpression).collect(Collectors.toList());
+                        case SQLStandardParser.RULE_anyUnexpected ->
+                            // error in query text, ignoring it
+                            Collections.emptyList();
+                        default -> throw new UnsupportedOperationException(
+                            "Set target list expected while facing with " + setTargetNode.getNodeName()
+                        );
+                    };
                 STMTreeNode updateSourceNode = setClauseNode.findFirstChildOfName(STMKnownRuleNames.updateSource);
-                List<SQLQueryValueExpression> sources = updateSourceNode == null ? Collections.emptyList()
+                List<SQLQueryValueExpression> sources = updateSourceNode == null
+                    ? Collections.emptyList()
                     : STMUtils.expandSubtree(
                         updateSourceNode,
                         Set.of(STMKnownRuleNames.updateSource),

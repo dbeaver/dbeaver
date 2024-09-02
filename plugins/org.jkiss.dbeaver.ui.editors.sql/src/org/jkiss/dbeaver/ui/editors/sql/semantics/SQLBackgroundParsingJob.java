@@ -101,7 +101,7 @@ public class SQLBackgroundParsingJob {
             }
         }
     };
-    private CompletableFuture<Long> lastParsingFinishStamp = new CompletableFuture<>() { { this.complete(0l); } };
+    private CompletableFuture<Long> lastParsingFinishStamp = new CompletableFuture<>() { { this.complete(0L); } };
 
     private volatile boolean isRunning = false;
     private volatile int knownRegionStart = 0;
@@ -269,7 +269,7 @@ public class SQLBackgroundParsingJob {
                     for (int i = index; i >= 0; i--) {
                         STMTreeTermNode term = allTerms.get(i);
                         if (knownIdentifierPartTerms.contains(term.symbol.getType())
-                                || (term.getStmParent() != null && term.getStmParent().getNodeKindId() == SQLStandardParser.RULE_nonReserved)
+                            || (term.getParentNode() != null && term.getParentNode().getNodeKindId() == SQLStandardParser.RULE_nonReserved)
                         ) {
                             nameNodes.addFirst(term);
                             i--;
@@ -535,7 +535,8 @@ public class SQLBackgroundParsingJob {
                 return;
             }
             
-            SQLParserContext parserContext = new SQLParserContext(this.editor.getDataSource(), this.editor.getSyntaxManager(), this.editor.getRuleManager(), this.document);
+            SQLParserContext parserContext =
+                new SQLParserContext(this.editor.getDataSource(), this.editor.getSyntaxManager(), this.editor.getRuleManager(), this.document);
             List<SQLScriptElement> elements = SQLScriptParser.extractScriptQueries(parserContext, workOffset, workLength, false, false, false);
             if (elements.isEmpty()) {
                 if (DEBUG) {

@@ -460,7 +460,11 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
 
     @Nullable
     @Override
-    public DBSObject findRealObject(DBRProgressMonitor monitor, DBSObjectType objectType, List<String> objectName) {
+    public DBSObject findRealObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObjectType objectType,
+        @NotNull List<String> objectName
+    ) {
         return null;
     }
 

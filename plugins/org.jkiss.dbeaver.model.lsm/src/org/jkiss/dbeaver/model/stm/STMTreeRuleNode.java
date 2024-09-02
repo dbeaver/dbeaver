@@ -139,6 +139,9 @@ public class STMTreeRuleNode extends ParserRuleContext implements STMTreeNode {
         return (STMTreeNode) super.getChild(index);
     }
 
+    /**
+     * Returns true, if some parsing errors happen, while analysing this node
+     */
     public boolean hasErrorChildren() {
         return this.hasErrorChildren;
     }

@@ -19,9 +19,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model.select;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
@@ -102,10 +100,12 @@ public class SQLQueryRowsCteModel extends SQLQueryRowsSourceModel {
         } else {
             for (SQLQueryRowsCteSubqueryModel subquery : this.subqueries) {
                 SQLQueryDataContext subqueryResult = (
-                    subquery.source == null ? aggregatedContext.overrideResultTuple(Collections.emptyList())
-                                            : subquery.source.propagateContext(aggregatedContext, statistics)
+                    subquery.source == null
+                        ? aggregatedContext.overrideResultTuple(Collections.emptyList())
+                        : subquery.source.propagateContext(aggregatedContext, statistics)
                 ).hideSources();
-                SQLQueryDataContext currCtx = subquery.subqueryName == null ? subqueryResult
+                SQLQueryDataContext currCtx = subquery.subqueryName == null
+                    ? subqueryResult
                     : subqueryResult.extendWithTableAlias(subquery.subqueryName.getSymbol(), subquery);
 
                 subquery.prepareAliasDefinition();

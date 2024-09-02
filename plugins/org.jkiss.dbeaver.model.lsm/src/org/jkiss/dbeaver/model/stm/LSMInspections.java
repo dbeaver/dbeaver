@@ -83,7 +83,7 @@ public class LSMInspections {
     private static Pair<STMTreeNode, Boolean> findChildBeforeOrAtPosition(@NotNull STMTreeNode node, int position) {
         STMTreeNode nodeBefore = null;
         Interval nodeBeforeRange = null;
-        for (STMTreeNode cn: node.getChildren()) {
+        for (STMTreeNode cn : node.getChildren()) {
             Interval range = cn.getRealInterval();
             if (range.a <= position && range.b >= position) {
                 return Pair.of(cn, true);
@@ -172,7 +172,7 @@ public class LSMInspections {
             if (node instanceof STMTreeTermNode term) {
                 return term;
             } else {
-                for (STMTreeNode child: node.getChildren()) {
+                for (STMTreeNode child : node.getChildren()) {
                     stack = ListNode.push(stack, child);
                 }
             }

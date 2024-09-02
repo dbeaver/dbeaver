@@ -148,7 +148,7 @@ public class SQLQueryTableCreateModel extends SQLQueryModelContent {
 
         STMTreeNode elementsNode = node.findFirstChildOfName(STMKnownRuleNames.tableElementList);
         if (elementsNode != null) {
-            for (STMTreeNode elementNode: elementsNode.findChildrenOfName(STMKnownRuleNames.tableElement)) {
+            for (STMTreeNode elementNode : elementsNode.findChildrenOfName(STMKnownRuleNames.tableElement)) {
                 STMTreeNode payloadNode = elementNode.findFirstNonErrorChild();
                 switch (payloadNode.getNodeKindId()) {
                     case SQLStandardParser.RULE_columnDefinition ->

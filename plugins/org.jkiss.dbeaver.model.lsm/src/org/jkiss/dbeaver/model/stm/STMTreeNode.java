@@ -7,7 +7,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * The interface describing the node of the syntax tree
@@ -97,7 +96,7 @@ public interface STMTreeNode extends Tree {
     }
 
     /**
-     * Returns child node by name
+     * Returns first found child node by name
      */
     @Nullable
     default STMTreeNode findFirstChildOfName(@NotNull String nodeName) {
@@ -110,6 +109,10 @@ public interface STMTreeNode extends Tree {
         return null;
     }
 
+    /**
+     *
+     * Returns last found child node by name
+     */
     @Nullable
     default STMTreeNode findLastChildOfName(@NotNull String nodeName) {
         for (int i = this.getChildCount(); i >= 0; i--) {
@@ -136,6 +139,10 @@ public interface STMTreeNode extends Tree {
         };
     }
 
+    /**
+     *
+     * Returns all child nodes by name
+     */
     @NotNull
     default List<STMTreeNode> findChildrenOfName(@NotNull String nodeName) {
         List<STMTreeNode> children = new ArrayList<>(this.getChildCount());
@@ -148,6 +155,9 @@ public interface STMTreeNode extends Tree {
         return children;
     }
 
+    /**
+     * Return all child nodes, except error nodes
+     */
     @NotNull
     default List<STMTreeNode> findNonErrorChildren() {
         if (this.hasErrorChildren()) {
@@ -164,15 +174,4 @@ public interface STMTreeNode extends Tree {
         }
     }
 
-    @NotNull
-    default Map<String, List<STMTreeNode>> classifyChildren() {
-        Map<String, List<STMTreeNode>> childrenByName = new HashMap<>(this.getChildCount());
-        for (int i = 0; i < this.getChildCount(); i++) {
-            STMTreeNode cn = this.getChildNode(i);
-            if (cn != null) {
-                childrenByName.computeIfAbsent(cn.getNodeName(), k -> new ArrayList<>()).add(cn);
-            }
-        }
-        return childrenByName;
-    }
 }

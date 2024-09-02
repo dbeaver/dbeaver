@@ -107,7 +107,7 @@ public class SQLQueryTableAlterModel extends SQLQueryModelContent {
 
         LinkedList<SQLQueryTableAlterActionSpec> alterActions = new LinkedList<>();
 
-        for (STMTreeNode subnode: node.findChildrenOfName(STMKnownRuleNames.alterTableAction)) {
+        for (STMTreeNode subnode : node.findChildrenOfName(STMKnownRuleNames.alterTableAction)) {
             STMTreeNode actionNode = subnode.findFirstNonErrorChild();
             if (actionNode != null) {
                 SQLQueryTableAlterActionKind actionKind = alterActionKindByNodeName.get(actionNode.getNodeName());

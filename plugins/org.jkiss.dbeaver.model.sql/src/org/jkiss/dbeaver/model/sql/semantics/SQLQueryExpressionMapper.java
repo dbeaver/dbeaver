@@ -32,7 +32,7 @@ import java.util.*;
 
 class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceModel, SQLQueryModelRecognizer> {
 
-    private static final Log log = Log.getLog( SQLQueryExpressionMapper.class);
+    private static final Log log = Log.getLog(SQLQueryExpressionMapper.class);
 
     public SQLQueryExpressionMapper(@NotNull SQLQueryModelRecognizer recognizer) {
         super(SQLQueryRowsSourceModel.class, queryExpressionSubtreeNodeNames, translations, recognizer);
@@ -95,12 +95,14 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
 
                         Map<STMTreeNode, SQLQueryRowsSourceModel> subqueryByNode = prepareSubqueriesMap(subqueries, cteListNode);
 
-                        for (STMTreeNode cteSubqueryNode:  cteListNode.findChildrenOfName(STMKnownRuleNames.with_list_element)) {
+                        for (STMTreeNode cteSubqueryNode : cteListNode.findChildrenOfName(STMKnownRuleNames.with_list_element)) {
                             STMTreeNode subqueryNameNode = cteSubqueryNode.findFirstChildOfName(STMKnownRuleNames.queryName);
                             SQLQuerySymbolEntry subqueryName = subqueryNameNode == null ? null : r.collectIdentifier(subqueryNameNode);
 
                             STMTreeNode columnListNode = cteSubqueryNode.findFirstChildOfName(STMKnownRuleNames.columnNameList);
-                            List<SQLQuerySymbolEntry> columnList = columnListNode == null ? Collections.emptyList() : r.collectColumnNameList(columnListNode);
+                            List<SQLQuerySymbolEntry> columnList = columnListNode == null
+                                ? Collections.emptyList()
+                                : r.collectColumnNameList(columnListNode);
 
                             SQLQueryRowsSourceModel subquerySource = subqueryByNode.get(cteSubqueryNode);
                             cteSubqueries.add(new SQLQueryRowsCteSubqueryModel(cteSubqueryNode, subqueryName, columnList, subquerySource));
@@ -122,7 +124,7 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
                 if (source == null) {
                     source = makeEmptyRowsModel(childNodes.get(0));
                 }
-                for (STMTreeNode childNode: childNodes.subList(1, childNodes.size())) {
+                for (STMTreeNode childNode : childNodes.subList(1, childNodes.size())) {
                     List<SQLQuerySymbolEntry> corresponding = r.collectColumnNameList(childNode);
                     SQLQueryRowsSourceModel nextSource = subqueryByNode.get(childNode);
                     if (nextSource == null) {
@@ -150,7 +152,7 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
                 if (source == null) {
                     source = makeEmptyRowsModel(childNodes.get(0));
                 }
-                for (STMTreeNode childNode: childNodes.subList(1, childNodes.size())) {
+                for (STMTreeNode childNode : childNodes.subList(1, childNodes.size())) {
                     List<SQLQuerySymbolEntry> corresponding = r.collectColumnNameList(childNode);
                     SQLQueryRowsSourceModel nextSource = subqueryByNode.get(childNode);
                     if (nextSource == null) {
@@ -179,7 +181,7 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
                 if (source == null) {
                     source = makeEmptyRowsModel(childNodes.get(0));
                 }
-                for (STMTreeNode childNode: childNodes.subList(1, childNodes.size())) {
+                for (STMTreeNode childNode : childNodes.subList(1, childNodes.size())) {
                     final SQLQueryRowsSourceModel currSource = source;
                     SQLQueryRowsSourceModel nextSource1 = subqueryByNode.get(childNode);
                     if (nextSource1 == null) {
@@ -223,7 +225,7 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
                 if (source == null) {
                     source = makeEmptyRowsModel(childNodes.get(0));
                 }
-                for (STMTreeNode childNode: childNodes.subList(1, childNodes.size())) {
+                for (STMTreeNode childNode : childNodes.subList(1, childNodes.size())) {
                     SQLQueryRowsSourceModel nextSource = subqueryByNode.get(childNode);
                     if (nextSource == null) {
                         nextSource = makeEmptyRowsModel(childNode);
@@ -258,7 +260,7 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
                     return makeEmptyRowsModel(n);
                 }
 
-                for (STMTreeNode selectSublist: selectSublists) {
+                for (STMTreeNode selectSublist : selectSublists) {
                     STMTreeNode sublistNode = selectSublist.findFirstNonErrorChild();
                     if (sublistNode != null) {
                         switch (sublistNode.getNodeKindId()) { // selectSublist: (Asterisk|derivedColumn|qualifier Period Asterisk
@@ -363,12 +365,10 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
             }
             return source;
         },
-        STMKnownRuleNames.explicitTable, (n, cc, r) -> {
-            return r.collectTableReference(n);
-        },
+        STMKnownRuleNames.explicitTable, (n, cc, r) -> r.collectTableReference(n),
         STMKnownRuleNames.tableValueConstructor, (n, cc, r) -> {
             List<SQLQueryValueExpression> values = n.findChildrenOfName(STMKnownRuleNames.rowValueConstructor).stream()
-                                                    .map(r::collectValueExpression).toList();
+                .map(r::collectValueExpression).toList();
             return new SQLQueryRowsTableValueModel(n, values);
         }
     );

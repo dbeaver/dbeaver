@@ -63,7 +63,11 @@ public abstract class SQLQuerySyntaxContext extends SQLQueryDataContext {
 
     @Nullable
     @Override
-    public DBSObject findRealObject(DBRProgressMonitor monitor, DBSObjectType objectType, List<String> objectName) {
+    public DBSObject findRealObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObjectType objectType,
+        @NotNull List<String> objectName
+    ) {
         return this.parent.findRealObject(monitor, objectType, objectName);
     }
 

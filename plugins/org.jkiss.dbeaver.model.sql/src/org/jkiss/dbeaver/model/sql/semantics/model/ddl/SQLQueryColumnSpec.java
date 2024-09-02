@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.model.sql.semantics.model.ddl;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryQualifiedName;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
@@ -40,11 +39,11 @@ import java.util.Optional;
 public class SQLQueryColumnSpec extends SQLQueryNodeModel {
 
     private static final Map<String, SQLQueryColumnConstraintKind> constraintKindByNodeName = Map.of(
-            STMKnownRuleNames.columnConstraintNotNull, SQLQueryColumnConstraintKind.NOT_NULL,
-            STMKnownRuleNames.columnConstraintUnique, SQLQueryColumnConstraintKind.UNIQUE,
-            STMKnownRuleNames.columnConstraintPrimaryKey, SQLQueryColumnConstraintKind.PRIMARY_KEY,
-            STMKnownRuleNames.referencesSpecification, SQLQueryColumnConstraintKind.REFERENCES,
-            STMKnownRuleNames.checkConstraintDefinition, SQLQueryColumnConstraintKind.CHECK
+        STMKnownRuleNames.columnConstraintNotNull, SQLQueryColumnConstraintKind.NOT_NULL,
+        STMKnownRuleNames.columnConstraintUnique, SQLQueryColumnConstraintKind.UNIQUE,
+        STMKnownRuleNames.columnConstraintPrimaryKey, SQLQueryColumnConstraintKind.PRIMARY_KEY,
+        STMKnownRuleNames.referencesSpecification, SQLQueryColumnConstraintKind.REFERENCES,
+        STMKnownRuleNames.checkConstraintDefinition, SQLQueryColumnConstraintKind.CHECK
     );
 
     @Nullable
@@ -133,20 +132,21 @@ public class SQLQueryColumnSpec extends SQLQueryNodeModel {
         SQLQuerySymbolEntry columnName = Optional.ofNullable(node.findFirstChildOfName(STMKnownRuleNames.columnName))
             .map(recognizer::collectIdentifier)
             .orElse(null);
-        String typeName = Optional.ofNullable(node.findFirstChildOfName(STMKnownRuleNames.dataType)).map(n -> n.getTextContent()).orElse(null);
+        String typeName = Optional.ofNullable(node.findFirstChildOfName(STMKnownRuleNames.dataType))
+            .map(STMTreeNode::getTextContent).orElse(null);
 
         STMTreeNode defaultValueNode = node.findFirstChildOfName(STMKnownRuleNames.defaultClause);
         SQLQueryValueExpression defaultValueExpr = defaultValueNode == null ? null : recognizer.collectValueExpression(defaultValueNode);
 
         LinkedList<SQLQueryColumnConstraintSpec> constraints = new LinkedList<>();
-        for (STMTreeNode subnode: node.findChildrenOfName(STMKnownRuleNames.columnConstraintDefinition)) {
+        for (STMTreeNode subnode : node.findChildrenOfName(STMKnownRuleNames.columnConstraintDefinition)) {
             SQLQueryQualifiedName constraintName = Optional.ofNullable(subnode.findFirstChildOfName(STMKnownRuleNames.constraintNameDefinition))
                 .map(n -> n.findFirstChildOfName(STMKnownRuleNames.constraintName))
                 .map(recognizer::collectQualifiedName)
                 .orElse(null);
 
             STMTreeNode constraintNode = Optional.ofNullable(subnode.findFirstChildOfName(STMKnownRuleNames.columnConstraint))
-                .map(n -> n.findFirstNonErrorChild()).orElse(null);
+                .map(STMTreeNode::findFirstNonErrorChild).orElse(null);
             SQLQueryColumnConstraintKind constraintKind;
             SQLQueryRowsTableDataModel referencedTable = null;
             List<SQLQuerySymbolEntry> referencedColumns = null;
