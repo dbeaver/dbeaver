@@ -77,7 +77,8 @@ public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericS
             @NotNull Map<String, Object> options) {
         CubridPrivilage user = (CubridPrivilage) command.getObject();
         StringBuilder builder = new StringBuilder();
-        builder.append("CREATE USER " + this.getUserName(user, command.getProperties()));
+        builder.append("CREATE USER ");
+        builder.append(this.getUserName(user, command.getProperties()));
         buildBody(user, builder, command.getProperties());
         actions.add(new SQLDatabasePersistAction("Create User", builder.toString()));
     }
@@ -86,11 +87,22 @@ public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericS
         Object password = properties.get("PASSWORD");
         Object description = properties.get("DESCRIPTION");
         Object group = properties.get("GROUPS");
-        builder.append(password != null ?" PASSWORD " + SQLUtils.quoteString(user, password.toString()):"");
-        if(group != null && !CommonUtils.isEmpty((List<String>) properties.get("GROUPS"))) {
-            builder.append(" GROUPS " + String.join(", ",(List<String>) properties.get("GROUPS")));
+        builder.append(password != null ?"" + SQLUtils.quoteString(user, password.toString()):"");
+        if(password != null && CommonUtils.isNotEmpty(password.toString())) {
+            builder.append(" PASSWORD ");
+            builder.append(SQLUtils.quoteString(user, password.toString()));
         }
-        builder.append(description != null ?" COMMENT " + SQLUtils.quoteString(user, description.toString()):"");
+        if(group != null && !CommonUtils.isEmpty((List<String>) properties.get("GROUPS"))) {
+            builder.append(" GROUPS ");
+            builder.append(String.join(", ",(List<String>) properties.get("GROUPS")));
+        }
+        
+        if(description != null && CommonUtils.isNotEmpty(description.toString())) {
+            builder.append(" COMMENT ");
+            builder.append(SQLUtils.quoteString(user, description.toString()));
+        }
+        
+        
     }
 
     @Override

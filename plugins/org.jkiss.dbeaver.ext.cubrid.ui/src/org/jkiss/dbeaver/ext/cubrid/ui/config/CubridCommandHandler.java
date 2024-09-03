@@ -42,7 +42,8 @@ public class CubridCommandHandler extends DBECommandComposite <CubridPrivilage, 
         List<DBEPersistAction> actions = new ArrayList<>();
         StringBuilder builder = new StringBuilder();
         if(getObject().isPersisted()) {
-            builder.append("ALTER USER " + this.getObject().getName());
+            builder.append("ALTER USER ");
+            builder.append(this.getObject().getName());
         }
         buildBody(builder);
         actions.add(new SQLDatabasePersistAction("Update User", builder.toString()));
