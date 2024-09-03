@@ -724,28 +724,21 @@ public final class DBUtils {
             return null;
         }
 
-        Deque<DBDAttributeBinding> pendingAttributes = new ArrayDeque<>(depth);
-        for (int i = 0; i < depth; i++) {
-            pendingAttributes.offer(Objects.requireNonNull(attribute.getParent(depth - i - 1)));
-        }
-
-        Deque<Integer> pendingIndices = new ArrayDeque<>(nestedIndexes != null ? nestedIndexes.length : 0);
-        for (int i = 0; nestedIndexes != null && i < nestedIndexes.length; i++) {
-            pendingIndices.offer(nestedIndexes[i]);
-        }
-
+        int remainingIndices = nestedIndexes != null ? nestedIndexes.length : 0;
+        int remainingAttributes = depth;
         Object curValue = row[index];
 
-        while (!pendingAttributes.isEmpty() || !pendingIndices.isEmpty() || retrieveDeepestCollectionElement) {
+        while (remainingAttributes > 0 || remainingIndices > 0 || retrieveDeepestCollectionElement) {
             if (curValue == null) {
                 break;
             }
 
             if (!(curValue instanceof DBDCollection)) {
-                if (pendingAttributes.isEmpty()) {
+                if (remainingAttributes == 0) {
                     return DBDVoid.INSTANCE;
                 }
-                DBDAttributeBinding parent = pendingAttributes.pop();
+                remainingAttributes -= 1;
+                DBDAttributeBinding parent = Objects.requireNonNull(attribute.getParent(remainingAttributes));
                 try {
                     curValue = parent.extractNestedValue(curValue, 0);
                 } catch (DBException e) {
@@ -755,8 +748,9 @@ public final class DBUtils {
 
             while (curValue instanceof DBDCollection collection) {
                 int itemIndex;
-                if (!pendingIndices.isEmpty()) {
-                    itemIndex = pendingIndices.pop();
+                if (remainingIndices > 0) {
+                    itemIndex = nestedIndexes[nestedIndexes.length - remainingIndices];
+                    remainingIndices -= 1;
                 } else if (retrieveDeepestCollectionElement) {
                     itemIndex = 0;
                 } else {
@@ -768,7 +762,7 @@ public final class DBUtils {
                 curValue = collection.get(itemIndex);
             }
 
-            if (retrieveDeepestCollectionElement && pendingAttributes.isEmpty()) {
+            if (retrieveDeepestCollectionElement && remainingAttributes == 0) {
                 return curValue;
             }
         }
