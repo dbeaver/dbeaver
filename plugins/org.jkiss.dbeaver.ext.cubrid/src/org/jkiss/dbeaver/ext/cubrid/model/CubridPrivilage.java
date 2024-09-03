@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -53,7 +54,7 @@ public class CubridPrivilage implements DBSObject{
                         
                     }
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    new DBException("Load group name failed", e);
                 }
             }
         }
