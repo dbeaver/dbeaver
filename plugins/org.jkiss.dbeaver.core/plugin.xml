@@ -1315,4 +1315,12 @@
         <notification id="agent.notify" name="Long-time operations" description="This is a notification for long-time operations.&#10;It will be shown for all operations that have exceeded the specified timeout." soundEnabled="true"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.clearHistoryHandler">
+        <handler
+            id="clearBrowserCookies"
+            name="%handler.clearBrowserCookies.name"
+            description="%handler.clearBrowserCookies.description"
+            handler="org.jkiss.dbeaver.ui.browser.handlers.BrowserClearCookiesHandler"/>
+    </extension>
+
 </plugin>
