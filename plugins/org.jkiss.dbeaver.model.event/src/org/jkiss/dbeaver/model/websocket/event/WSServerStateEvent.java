@@ -36,4 +36,9 @@ public class WSServerStateEvent extends WSAbstractEvent {
     public String getAction() {
         return action;
     }
+
+    @Override
+    public boolean isForceProcessed() {
+        return true;
+    }
 }
