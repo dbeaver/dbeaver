@@ -83,6 +83,18 @@ public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericS
         actions.add(new SQLDatabasePersistAction("Create User", builder.toString()));
     }
     
+    @Override
+    protected void addObjectDeleteActions(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBCExecutionContext executionContext,
+            @NotNull List<DBEPersistAction> actions,
+            @NotNull ObjectDeleteCommand command,
+            @NotNull Map<String, Object> options) {
+        actions.add(
+            new SQLDatabasePersistAction("Drop schema",
+                "DROP USER " + DBUtils.getQuotedIdentifier(command.getObject())));
+    }
+    
     private void buildBody(CubridPrivilage user, StringBuilder builder, Map<Object, Object> properties) {
         Object password = properties.get("PASSWORD");
         Object description = properties.get("DESCRIPTION");
@@ -105,19 +117,8 @@ public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericS
         
     }
 
-    @Override
-    protected void addObjectDeleteActions(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext,
-            @NotNull List<DBEPersistAction> actions,
-            @NotNull ObjectDeleteCommand command,
-            @NotNull Map<String, Object> options) {
-        actions.add(
-            new SQLDatabasePersistAction("Drop schema",
-                "DROP USER " + DBUtils.getQuotedIdentifier(command.getObject())));
-    }
-    
-    public String getUserName(CubridPrivilage user, Map<Object, Object> properties) {
+    @NotNull
+    private String getUserName(CubridPrivilage user, Map<Object, Object> properties) {
         Object name = properties.get(CubridPrivilageHandler.NAME.getId());
         if(name != null) {
             user.setName(name.toString());
