@@ -2342,6 +2342,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     {
                         info.font = spreadsheet.getFont(booleanStyles.getStyle((Boolean) cellValue).getFontStyle());
                     }
+                } else if (isShowAsCollection(rowElement, colElement, cellValue)) {
+                    info.font = spreadsheet.getFont(UIElementFontStyle.ITALIC);
                 }
             }
             return info;
@@ -2420,7 +2422,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 return value;
             }
             if (isShowAsExpander(null, attr, value)) {
-                if (spreadsheet.isCellExpanded(gridRow, gridColumn) && value instanceof DBDCollection collection) {
+                if (isShowAsCollection(gridRow, gridColumn, value) && value instanceof DBDCollection collection) {
                     return COLLECTION_SIZE_FORMAT.format(new Object[]{collection.size()});
                 }
                 Object child = getCellValue(gridColumn, gridRow, getRowNestedIndexes(gridRow), true);
@@ -2751,8 +2753,16 @@ public class SpreadsheetPresentation extends AbstractPresentation
         return showBooleanAsCheckbox && attr.getPresentationAttribute().getDataKind() == DBPDataKind.BOOLEAN;
     }
 
-    private boolean isShowAsExpander(@Nullable IGridRow rowElement, @NotNull DBDAttributeBinding attr, @Nullable Object value) {
-        return value instanceof DBDCollection collection && !collection.isNull() && isAttributeExpandable(rowElement, attr);
+    private boolean isShowAsExpander(@Nullable IGridRow row, @NotNull DBDAttributeBinding attr, @Nullable Object value) {
+        return value instanceof DBDCollection collection
+            && !collection.isNull()
+            && isAttributeExpandable(row, attr);
+    }
+
+    private boolean isShowAsCollection(@NotNull IGridRow row, @NotNull IGridColumn column, @Nullable Object value) {
+        return value instanceof DBDCollection collection
+            && !collection.isNull()
+            && (collection.isEmpty() || spreadsheet.isCellExpanded(row, column));
     }
 
     private class GridLabelProvider implements IGridLabelProvider {

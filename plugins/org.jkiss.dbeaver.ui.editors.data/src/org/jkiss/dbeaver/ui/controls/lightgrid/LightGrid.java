@@ -4724,14 +4724,11 @@ public abstract class LightGrid extends Canvas {
 
     @NotNull
     public Font getFont(@NotNull UIElementFontStyle style) {
-        switch (style) {
-            case ITALIC:
-                return italicFont;
-            case BOLD:
-                return boldFont;
-            default:
-                return normalFont;
-        }
+        return switch (style) {
+            case ITALIC -> italicFont;
+            case BOLD -> boldFont;
+            case NORMAL -> normalFont;
+        };
     }
 
     public String getCellText(IGridColumn colElement, IGridRow rowElement) {
