@@ -4079,7 +4079,9 @@ public class ResultSetViewer extends Viewer
     }
 
     public void updateRowCount() {
-        rowCountLabel.executeAction();
+        if (rowCountLabel != null) {
+            rowCountLabel.executeAction();
+        }
     }
 
     public void setSelectionStatistics(String stats) {

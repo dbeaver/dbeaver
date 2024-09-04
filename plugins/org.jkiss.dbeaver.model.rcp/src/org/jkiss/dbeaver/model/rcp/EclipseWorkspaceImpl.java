@@ -14,17 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.model.rcp;
 
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.access.DBAPermissionRealm;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
+import org.jkiss.dbeaver.model.impl.app.BaseProjectImpl;
+import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.registry.internal.RegistryMessages;
@@ -33,8 +39,7 @@ import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Arrays;
-import java.util.Comparator;
+import java.util.*;
 
 /**
  * DBeaver workspace.
@@ -49,11 +54,15 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
 
     private final String workspaceId;
     private final ProjectListener projectListener;
+    private final IWorkspace eclipseWorkspace;
+    protected final Map<IProject, LocalProjectImpl> projects = new LinkedHashMap<>();
+
+    private final List<DBPProjectListener> projectListeners = new ArrayList<>();
 
     public EclipseWorkspaceImpl(DBPPlatform platform, IWorkspace eclipseWorkspace) {
-        super(platform, eclipseWorkspace);
-
-        workspaceId = initWorkspaceId();
+        super(platform, eclipseWorkspace.getRoot().getLocation().toPath());
+        this.eclipseWorkspace = eclipseWorkspace;
+        this.workspaceId = initWorkspaceId();
 
         if (!isReadOnly()) {
             this.projectListener = new ProjectListener();
@@ -61,6 +70,13 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
         } else {
             this.projectListener = null;
         }
+    }
+
+
+    @NotNull
+    @Override
+    public IWorkspace getEclipseWorkspace() {
+        return eclipseWorkspace;
     }
 
     @Override
@@ -93,14 +109,77 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
         }
     }
 
+
+    @Override
+    public void setActiveProject(@NotNull DBPProject project) {
+        DBPProject oldActiveProject = this.activeProject;
+        this.activeProject = project;
+
+        if (!CommonUtils.equalObjects(oldActiveProject, project)) {
+            platform.getPreferenceStore().setValue(
+                PROP_PROJECT_ACTIVE, project == null ? "" : project.getName());
+
+            fireActiveProjectChange(oldActiveProject, this.activeProject);
+        }
+    }
+
+    @NotNull
+    @Override
+    public List<DBPProject> getProjects() {
+        return new ArrayList<>(projects.values());
+    }
+
+    @Nullable
+    @Override
+    public DBPProject getProject(@NotNull IProject project) {
+        return projects.get(project);
+    }
+
+    @Nullable
+    @Override
+    public DBPProject getProject(@NotNull String projectName) {
+        IProject eProject = eclipseWorkspace.getRoot().getProject(projectName);
+        if (!eProject.exists()) {
+            return null;
+        }
+        return getProject(eProject);
+    }
+
     protected boolean isDefaultProjectNeeded() {
         return DBWorkbench.getPlatform().getApplication().getDefaultProjectName() != null;
+    }
+
+    @Override
+    public void addProjectListener(@NotNull DBPProjectListener listener) {
+        synchronized (projectListeners) {
+            projectListeners.add(listener);
+        }
+    }
+
+    @Override
+    public void removeProjectListener(@NotNull DBPProjectListener listener) {
+        synchronized (projectListeners) {
+            projectListeners.remove(listener);
+        }
     }
 
     @Override
     public void dispose() {
         if (projectListener != null) {
             this.getEclipseWorkspace().removeResourceChangeListener(projectListener);
+        }
+
+        if (!projectListeners.isEmpty()) {
+            log.warn("Some project listeners are still register: " + projectListeners);
+            projectListeners.clear();
+        }
+
+        synchronized (projects) {
+            // Dispose all DS registries
+            for (BaseProjectImpl project : this.projects.values()) {
+                project.dispose();
+            }
+            this.projects.clear();
         }
 
         super.dispose();
@@ -174,6 +253,43 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
         return workspaceId;
     }
 
+    public void save(DBRProgressMonitor monitor) throws DBException {
+        try {
+            eclipseWorkspace.save(true, monitor.getNestedMonitor());
+        } catch (CoreException e) {
+            throw new DBException("Error saving Eclipse workspace", e);
+        }
+    }
+
+
+    protected void fireProjectAdd(BaseProjectImpl project) {
+        for (DBPProjectListener listener : getListenersCopy()) {
+            listener.handleProjectAdd(project);
+        }
+    }
+
+    protected void fireProjectRemove(BaseProjectImpl project) {
+        for (DBPProjectListener listener : getListenersCopy()) {
+            listener.handleProjectRemove(project);
+        }
+    }
+
+    protected void fireActiveProjectChange(DBPProject oldActiveProject, DBPProject activeProject) {
+        for (DBPProjectListener listener : getListenersCopy()) {
+            listener.handleActiveProjectChange(oldActiveProject, activeProject);
+        }
+    }
+
+    @NotNull
+    private DBPProjectListener[] getListenersCopy() {
+        DBPProjectListener[] listeners;
+        synchronized (projectListeners) {
+            listeners = projectListeners.toArray(new DBPProjectListener[0]);
+        }
+        return listeners;
+    }
+
+
     private class ProjectListener implements IResourceChangeListener {
         @Override
         public void resourceChanged(IResourceChangeEvent event) {
@@ -237,6 +353,10 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
 
     protected String initWorkspaceId() {
         return readWorkspaceId();
+    }
+
+    public boolean isAdmin() {
+        return hasRealmPermission(DBAPermissionRealm.PERMISSION_ADMIN);
     }
 
 }

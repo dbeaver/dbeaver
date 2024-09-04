@@ -68,6 +68,8 @@ public interface DBPWorkspace extends SMAuthSpace, DBAPermissionRealm
     @NotNull
     SMSessionContext getAuthContext();
 
+    void initializeProjects();
+
     void dispose();
 
     @Nullable

@@ -16,15 +16,24 @@
  */
 package org.jkiss.dbeaver.tools.sql.task;
 
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
-import org.jkiss.dbeaver.model.rm.RMUtils;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
+import org.jkiss.dbeaver.model.rm.RMControllerProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.SQLScriptCommitType;
@@ -37,10 +46,12 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.tools.sql.SQLScriptExecuteSettings;
+import org.jkiss.utils.IOUtils;
 
-import java.io.PrintStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Locale;
 
@@ -108,7 +119,7 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
         for (String filePath : settings.getScriptFiles()) {
             try {
                 for (DBPDataSourceContainer dataSourceContainer : dataSources) {
-                    var sqlScriptContent = RMUtils.readScriptContents(monitor, task.getProject(), filePath);
+                    var sqlScriptContent = readScriptContents(monitor, task.getProject(), filePath);
                     if (!dataSourceContainer.isConnected()) {
                         dataSourceContainer.connect(monitor, true, true);
                     }
@@ -157,6 +168,57 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
         scriptProcessor.runScript(monitor);
 
         totalStatistics.accumulate(scriptProcessor.getTotalStatistics());
+    }
+
+    public static String readScriptContents(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPProject project,
+        @NotNull String filePath
+    ) throws DBException, IOException {
+        java.nio.file.Path nioPath = DBFUtils.resolvePathFromString(monitor, project, filePath);
+        if (!IOUtils.isLocalPath(nioPath)) {
+            // Remote file
+            return Files.readString(nioPath);
+        }
+
+        RMControllerProvider rmControllerProvider = DBUtils.getAdapter(RMControllerProvider.class, project);
+        if (rmControllerProvider != null) {
+            var rmController = rmControllerProvider.getResourceController();
+            return new String(rmController.getResourceContents(project.getId(), filePath), StandardCharsets.UTF_8);
+        }
+        var sqlFile = findEclipseProjectFile(project, filePath);
+        if (sqlFile == null) {
+            throw new DBException("File " + filePath + " is not found in project " + project.getId());
+        }
+        try (InputStream sqlStream = sqlFile.getContents(true)) {
+            try (Reader fileReader = new InputStreamReader(sqlStream, sqlFile.getCharset())) {
+                return IOUtils.readToString(fileReader);
+            }
+        } catch (CoreException e) {
+            throw new IOException(e);
+        }
+    }
+
+    public static IFile findEclipseProjectFile(@NotNull DBPProject project, @NotNull String filePath) {
+        if (!(project instanceof RCPProject rcpProject)) {
+            return null;
+        }
+        IContainer rootResource = rcpProject.getRootResource();
+        if (rootResource == null) {
+            return null;
+        }
+        var file = rootResource.findMember(filePath);
+        if (file != null && file.exists() && file instanceof IFile) {
+            return (IFile) file;
+        }
+        DBPWorkspace workspace = project.getWorkspace();
+        if (workspace instanceof DBPWorkspaceEclipse) {
+            file = ((DBPWorkspaceEclipse) workspace).getEclipseWorkspace().getRoot().getFile(new org.eclipse.core.runtime.Path(filePath));
+            if (file.exists()) {
+                return (IFile) file;
+            }
+        }
+        return null;
     }
 
 }
