@@ -14,17 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.oracle.ui.tools.sqldeveloper;
+package org.jkiss.dbeaver.ext.config.migration.wizards;
 
-import org.jkiss.dbeaver.ext.config.migration.wizards.ConfigImportWizard;
+public class ImportConfigurationException extends RuntimeException{
 
-public class ConfigImportWizardSqlDeveloper extends ConfigImportWizard {
-	
-    @Override
-    protected ConfigImportWizardPageSqlDeveloper createMainPage()
-    {
-        return new ConfigImportWizardPageSqlDeveloper();
+    public ImportConfigurationException(String message) {
+        super(message);
     }
-
-
 }
