@@ -2611,14 +2611,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     public void exportDataFromQuery(@Nullable SQLScriptContext sqlScriptContext)
     {
-        List<SQLScriptElement> elements;
-        ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
-        if (selection.getLength() > 1) {
-            elements = extractScriptQueries(selection.getOffset(), selection.getLength(), true, false, true);
-        } else {
-            elements = new ArrayList<>();
-            elements.add(extractActiveQuery());
-        }
+        List<SQLScriptElement> elements = getSelectedQueries();
 
         if (!elements.isEmpty()) {
             processQueries(elements, false, false, true, true, null, sqlScriptContext);
@@ -2627,6 +2620,23 @@ public class SQLEditor extends SQLEditorBase implements
                     "Extract data",
                     "Choose one or more queries to export from");
         }
+    }
+
+    @NotNull
+    public List<SQLScriptElement> getSelectedQueries() {
+        List<SQLScriptElement> elements = new ArrayList<>();
+        ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
+
+        if (selection.getLength() > 1) {
+            elements.addAll(extractScriptQueries(selection.getOffset(), selection.getLength(), true, false, true));
+        } else {
+            SQLScriptElement query = extractActiveQuery();
+            if (query != null) {
+                elements.add(query);
+            }
+        }
+
+        return elements;
     }
 
     public boolean processQueries(@NotNull final List<SQLScriptElement> queries, final boolean forceScript,
@@ -4830,8 +4840,6 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public void onEndQuery(final DBCSession session, final SQLQueryResult result, DBCStatistics statistics) {
-            refreshContextDefaults(session, result);
-
             try {
                 synchronized (runningQueries) {
                     runningQueries.remove(result.getStatement());
@@ -4867,14 +4875,11 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
-        private void refreshContextDefaults(DBCSession session, SQLQueryResult result) {
+        private void refreshContextDefaults(DBCSession session) {
             final DBCExecutionContext executionContext = getExecutionContext();
             if (executionContext != null && session != null) {
                 // Refresh active object
-                if ((result == null || !result.hasError()) &&
-                    executionContext.getDataSource().getContainer().isExtraMetadataReadEnabled() &&
-                    getActivePreferenceStore().getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)
-                ) {
+                if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)) {
                     DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
                     if (contextDefaults != null) {
                         try {
@@ -5025,6 +5030,13 @@ public class SQLEditor extends SQLEditorBase implements
                 if (extListener != null) extListener.onEndScript(statistics, hasErrors);
             }
 
+        }
+
+        @Override
+        public void onEndSqlJob(DBCSession session, SqlJobResult result) {
+            if (result == SqlJobResult.SUCCESS || result == SqlJobResult.PARTIAL_SUCCESS) {
+                refreshContextDefaults(session);
+            }
         }
     }
 

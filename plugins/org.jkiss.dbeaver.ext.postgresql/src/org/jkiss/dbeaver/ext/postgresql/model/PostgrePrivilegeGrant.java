@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 
 import java.sql.ResultSet;
@@ -37,8 +38,8 @@ public class PostgrePrivilegeGrant {
     }
 
     private Kind kind;
-    private String grantor;
-    private String grantee;
+    private PostgreRoleReference grantor;
+    private PostgreRoleReference grantee;
     private String objectCatalog;
     private String objectSchema;
     private String objectName;
@@ -46,12 +47,14 @@ public class PostgrePrivilegeGrant {
     private boolean isGrantable;
     private boolean withHierarchy;
 
-    public PostgrePrivilegeGrant(Kind kind, ResultSet dbResult)
-        throws SQLException
-    {
+    public PostgrePrivilegeGrant(
+        @NotNull PostgreDatabase database,
+        @NotNull Kind kind,
+        @NotNull ResultSet dbResult
+    ) throws SQLException {
         this.kind = kind;
-        this.grantor = JDBCUtils.safeGetString(dbResult, "grantor");
-        this.grantee = JDBCUtils.safeGetString(dbResult, "grantee");
+        this.grantor = obtainRoleReference(database, dbResult, "grantor");
+        this.grantee = obtainRoleReference(database, dbResult, "grantee");
         this.privilegeType = PostgrePrivilegeType.fromString(JDBCUtils.safeGetString(dbResult, "privilege_type"));
         this.isGrantable = JDBCUtils.safeGetBoolean(dbResult, "is_grantable");
 
@@ -76,7 +79,12 @@ public class PostgrePrivilegeGrant {
         }
     }
 
-    public PostgrePrivilegeGrant(String grantor, String grantee, String objectCatalog, String objectSchema, String objectName, PostgrePrivilegeType privilegeType, boolean isGrantable, boolean withHierarchy) {
+    private static PostgreRoleReference obtainRoleReference(PostgreDatabase database, ResultSet dbResult, String columnName) {
+        String roleName = JDBCUtils.safeGetString(dbResult, columnName);
+        return roleName == null ? null : new PostgreRoleReference(database, roleName, null);
+    }
+
+    public PostgrePrivilegeGrant(PostgreRoleReference grantor, PostgreRoleReference grantee, String objectCatalog, String objectSchema, String objectName, PostgrePrivilegeType privilegeType, boolean isGrantable, boolean withHierarchy) {
         this.grantor = grantor;
         this.grantee = grantee;
         this.objectCatalog = objectCatalog;
@@ -95,11 +103,11 @@ public class PostgrePrivilegeGrant {
         this.kind = kind;
     }
 
-    public String getGrantor() {
+    public PostgreRoleReference getGrantor() {
         return grantor;
     }
 
-    public String getGrantee() {
+    public PostgreRoleReference getGrantee() {
         return grantee;
     }
 

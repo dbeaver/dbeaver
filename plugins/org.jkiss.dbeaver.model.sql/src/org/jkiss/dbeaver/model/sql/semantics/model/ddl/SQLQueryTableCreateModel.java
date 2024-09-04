@@ -151,7 +151,7 @@ public class SQLQueryTableCreateModel extends SQLQueryModelContent {
         if (elementsNode != null) {
             for (int i = 1; i < elementsNode.getChildCount(); i += 2) {
                 STMTreeNode elementNode = elementsNode.getStmChild(i);
-                if (!(elementNode instanceof STMTreeTermErrorNode)) {
+                if (elementNode.getChildCount() > 0) {
                     STMTreeNode payloadNode = elementNode.getStmChild(0);
                     switch (payloadNode.getNodeKindId()) {
                         case SQLStandardParser.RULE_columnDefinition ->
