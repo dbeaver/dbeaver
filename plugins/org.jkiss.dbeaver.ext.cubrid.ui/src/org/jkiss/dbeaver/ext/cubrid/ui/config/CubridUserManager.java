@@ -90,9 +90,10 @@ public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericS
             @NotNull List<DBEPersistAction> actions,
             @NotNull ObjectDeleteCommand command,
             @NotNull Map<String, Object> options) {
-        actions.add(
-                new SQLDatabasePersistAction("Drop schema",
-                        "DROP USER " + DBUtils.getQuotedIdentifier(command.getObject())));
+        StringBuilder builder = new StringBuilder();
+        builder.append("DROP USER ");
+        builder.append(DBUtils.getQuotedIdentifier(command.getObject()));
+        actions.add(new SQLDatabasePersistAction("Drop User", builder.toString()));
     }
 
     private void buildBody(CubridPrivilage user, StringBuilder builder, Map<Object, Object> properties) {
