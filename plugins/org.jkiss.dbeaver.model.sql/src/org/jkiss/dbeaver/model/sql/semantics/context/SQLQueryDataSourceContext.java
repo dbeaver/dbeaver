@@ -56,8 +56,8 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
     public SQLQueryDataSourceContext(
         @NotNull SQLDialect dialect,
         @NotNull DBCExecutionContext executionContext,
-        Map<String, SQLQueryResultPseudoColumn> globalPseudoColumns,
-        Function<SQLQueryRowsSourceModel, List<SQLQueryResultPseudoColumn>> rowsetPseudoColumnsProvider
+        @NotNull Map<String, SQLQueryResultPseudoColumn> globalPseudoColumns,
+        @NotNull Function<SQLQueryRowsSourceModel, List<SQLQueryResultPseudoColumn>> rowsetPseudoColumnsProvider
     ) {
         this.dialect = dialect;
         this.executionContext = executionContext;

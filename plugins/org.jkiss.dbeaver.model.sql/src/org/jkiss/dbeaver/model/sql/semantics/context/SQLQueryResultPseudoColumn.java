@@ -20,14 +20,16 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolDefinition;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
-public class SQLQueryResultPseudoColumn {
+public class SQLQueryResultPseudoColumn implements SQLQuerySymbolDefinition {
     @NotNull
     public final SQLQuerySymbol symbol;
-    @NotNull
+    @Nullable
     public final SQLQueryRowsSourceModel source;
     @Nullable
     public final DBSEntity realSource;
@@ -35,19 +37,29 @@ public class SQLQueryResultPseudoColumn {
     public final SQLQueryExprType type;
     @NotNull
     public final DBDPseudoAttribute.PropagationPolicy propagationPolicy;
+    @Nullable
+    public final String description;
 
     public SQLQueryResultPseudoColumn(
         @NotNull SQLQuerySymbol symbol,
-        @NotNull SQLQueryRowsSourceModel source,
+        @Nullable SQLQueryRowsSourceModel source,
         @Nullable DBSEntity realSource,
         @NotNull SQLQueryExprType type,
-        @NotNull DBDPseudoAttribute.PropagationPolicy propagationPolicy
+        @NotNull DBDPseudoAttribute.PropagationPolicy propagationPolicy,
+        @Nullable String description
     ) {
         this.symbol = symbol;
         this.source = source;
         this.realSource = realSource;
         this.type = type;
         this.propagationPolicy = propagationPolicy;
+        this.description = description;
+    }
+
+    @NotNull
+    @Override
+    public SQLQuerySymbolClass getSymbolClass() {
+        return SQLQuerySymbolClass.COLUMN;
     }
 }
 

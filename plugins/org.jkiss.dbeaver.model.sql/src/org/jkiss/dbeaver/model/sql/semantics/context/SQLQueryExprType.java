@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolDefinition;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.struct.*;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -40,11 +41,17 @@ import java.util.stream.Collectors;
  */
 public abstract class SQLQueryExprType {
 
-    public static final SQLQueryExprType UNKNOWN = new SQLQueryExprPredefinedType("UNKNOWN", DBPDataKind.UNKNOWN);
-    public static final SQLQueryExprType STRING = new SQLQueryExprPredefinedType("STRING", DBPDataKind.STRING);
-    public static final SQLQueryExprType BOOLEAN = new SQLQueryExprPredefinedType("BOOLEAN", DBPDataKind.BOOLEAN);
-    public static final SQLQueryExprType NUMERIC = new SQLQueryExprPredefinedType("NUMERIC", DBPDataKind.NUMERIC);
-    public static final SQLQueryExprType DATETIME = new SQLQueryExprPredefinedType("DATETIME", DBPDataKind.DATETIME);
+    private static final Map<DBPDataKind, SQLQueryExprType>  PREDEFINED_TYPES = Arrays.stream(DBPDataKind.values()).collect(Collectors.toMap(
+        k -> k,
+        k -> new SQLQueryExprPredefinedType(k.name().toUpperCase(), k)
+    ));
+
+    public static final SQLQueryExprType UNKNOWN = forPredefined(DBPDataKind.UNKNOWN);
+    public static final SQLQueryExprType STRING = forPredefined(DBPDataKind.STRING);
+    public static final SQLQueryExprType BOOLEAN = forPredefined(DBPDataKind.BOOLEAN);
+    public static final SQLQueryExprType NUMERIC = forPredefined(DBPDataKind.NUMERIC);
+    public static final SQLQueryExprType DATETIME = forPredefined(DBPDataKind.DATETIME);
+
     public static final SQLQueryExprType DUMMY = new SQLQueryExprDummyType(null);
     private static final SQLQueryExprType DUMMY_FIELD = new SQLQueryExprDummyType(() -> SQLQuerySymbolClass.COMPOSITE_FIELD);
 
@@ -100,6 +107,13 @@ public abstract class SQLQueryExprType {
         @Nullable boolean[] slicingSpec
     ) throws DBException {
         return null;
+    }
+
+    @NotNull
+    public static SQLQueryExprType forPredefined(DBPDataKind dataKind) {
+        SQLQueryExprType result = PREDEFINED_TYPES.get(dataKind);
+        assert result != null;
+        return result;
     }
 
     /**

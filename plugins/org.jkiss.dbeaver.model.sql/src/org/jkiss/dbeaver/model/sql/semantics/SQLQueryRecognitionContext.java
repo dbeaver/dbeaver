@@ -135,7 +135,7 @@ public class SQLQueryRecognitionContext {
     }
 
     public void appendError(@NotNull STMTreeNode treeNode, @NotNull String error, @NotNull DBException ex) {
-        this.problems.addLast(SQLQueryRecognitionProblemInfo.makeError(treeNode, null, error, ex));
+        this.problems.addLast(this.makeError(treeNode, null, error, ex));
     }
 
     public void reset() {

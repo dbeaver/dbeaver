@@ -257,29 +257,30 @@ public class SQLQueryModelRecognizer {
         if (this.recognitionContext.useRealMetadata()
             && this.executionContext != null
             && this.executionContext.getDataSource() instanceof DBSObjectContainer
-            && this.executionContext.getDataSource().getSQLDialect() instanceof BasicSQLDialect
+            && this.executionContext.getDataSource().getSQLDialect() instanceof BasicSQLDialect basicSQLDialect
         ) {
-            Map<String, SQLQueryResultPseudoColumn> globalPseudoColumns;
+            Map<String, SQLQueryResultPseudoColumn> globalPseudoColumns = Stream.of(basicSQLDialect.getGlobalVariables())
+                .map(v -> new SQLQueryResultPseudoColumn(
+                    new SQLQuerySymbol(SQLUtils.identifierToCanonicalForm(basicSQLDialect, v.name(), false, false)),
+                    null, null, SQLQueryExprType.forPredefined(v.type()),
+                    DBDPseudoAttribute.PropagationPolicy.GLOBAL_VARIABLE, v.description()
+                )).collect(Collectors.toMap(c -> c.symbol.getName(), c -> c));;
+
             Function<SQLQueryRowsSourceModel, List<SQLQueryResultPseudoColumn>> rowsetPseudoColumns;
             if (this.executionContext.getDataSource() instanceof DBDPseudoAttributeContainer pac) {
                 try {
                     DBDPseudoAttribute[] pc = pac.getAllPseudoAttributes(this.recognitionContext.getMonitor());
-                    globalPseudoColumns = SQLQueryRowsTableDataModel.prepareResultPseudoColumnsList(
-                        this.dialect, null, null, Stream.of(pc).filter(a -> a.getPropagationPolicy().providedByEnvironment)
-                    ).stream().collect(Collectors.toMap(c -> c.symbol.getName(), c -> c));
                     List<DBDPseudoAttribute> rowsetsPc = Stream.of(pc).filter(a -> a.getPropagationPolicy().providedByRowset).toList();
                     rowsetPseudoColumns = rowsetsPc.isEmpty() ? s -> Collections.emptyList() : (
                         s -> SQLQueryRowsTableDataModel.prepareResultPseudoColumnsList(
                             this.dialect, s, null, rowsetsPc.stream()
-                        ).stream().collect(Collectors.toList())
+                        )
                     );
                 } catch (DBException e) {
                     this.recognitionContext.appendError(root, "Failed to obtain global pseudo-columns information", e);
-                    globalPseudoColumns = Collections.emptyMap();
                     rowsetPseudoColumns = s -> Collections.emptyList();
                 }
             } else {
-                globalPseudoColumns = Collections.emptyMap();
                 rowsetPseudoColumns = s -> Collections.emptyList();
             }
             return new SQLQueryDataSourceContext(this.dialect, this.executionContext, globalPseudoColumns, rowsetPseudoColumns);

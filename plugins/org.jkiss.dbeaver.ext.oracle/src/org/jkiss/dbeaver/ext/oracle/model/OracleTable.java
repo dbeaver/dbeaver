@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.oracle.internal.OracleMessages;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
@@ -58,7 +59,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         "ORA_ROWSCN",
         null,
         null,
-        "System Change Number",
+        OracleMessages.pseudo_column_ora_rowscn_description,
         true,
         DBDPseudoAttribute.PropagationPolicy.TABLE_LOCAL
     );

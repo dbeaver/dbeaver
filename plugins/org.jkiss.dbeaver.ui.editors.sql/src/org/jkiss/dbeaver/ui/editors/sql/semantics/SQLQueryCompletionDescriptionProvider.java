@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItem.*;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItemVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultPseudoColumn;
 
 public class SQLQueryCompletionDescriptionProvider implements SQLQueryCompletionItemVisitor<String> {
 
@@ -45,7 +46,9 @@ public class SQLQueryCompletionDescriptionProvider implements SQLQueryCompletion
             if (columnName.columnInfo.realAttr != null) {
                 return columnName.columnInfo.realAttr.getDescription();
             } else if (columnName.columnInfo.realSource != null) {
-                return "Column of the " +  DBUtils.getObjectFullName(columnName.columnInfo.realSource, DBPEvaluationContext.DML);
+                return "Column of the " + DBUtils.getObjectFullName(columnName.columnInfo.realSource, DBPEvaluationContext.DML);
+            } else if(columnName.columnInfo.symbol.getDefinition() instanceof SQLQueryResultPseudoColumn pseudoColumn) {
+                return pseudoColumn.description;
             } else {
                 return "Computed column "; // TODO deliver the column expression to the model
             }

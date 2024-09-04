@@ -118,6 +118,11 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
     }
 
     @NotNull
+    public GlobalVariableInfo[] getGlobalVariables() {
+        return GlobalVariableInfo.EMPTY_ARRAY;
+    }
+
+    @NotNull
     @Override
     public String getSearchStringEscape() {
         return "";

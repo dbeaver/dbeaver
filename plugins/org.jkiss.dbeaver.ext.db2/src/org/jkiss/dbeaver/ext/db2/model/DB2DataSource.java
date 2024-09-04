@@ -73,29 +73,7 @@ import java.util.*;
  * 
  * @author Denis Forveille
  */
-public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DBPAdaptable, DBPObjectStatisticsCollector,
-    DBDPseudoAttributeContainer {
-
-    private static final DBDPseudoAttribute[] KNOWN_GLOBAL_PSEUDO_ATTRS = new DBDPseudoAttribute[] {
-        new DBDPseudoAttribute(
-            DBDPseudoAttributeType.OTHER,
-            "CLIENT_IPADDR",
-            null,
-            null,
-            "Contains the value of the client IP address for the connection.",
-            true,
-            DBDPseudoAttribute.PropagationPolicy.GLOBAL_VARIABLE
-        ),
-        new DBDPseudoAttribute(
-            DBDPseudoAttributeType.OTHER,
-            "DATASLICEID",
-            null,
-            null,
-            "Determines the the database partition number where a specific row of the distributed relational database is stored.",
-            true,
-            DBDPseudoAttribute.PropagationPolicy.GLOBAL_VARIABLE
-        )
-    };
+public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DBPAdaptable, DBPObjectStatisticsCollector {
 
     private static final Log log = Log.getLog(DB2DataSource.class);
 
@@ -814,15 +792,5 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
         } finally {
             hasStatistics = true;
         }
-    }
-
-    @Override
-    public DBDPseudoAttribute[] getPseudoAttributes() throws DBException {
-        return DBDPseudoAttribute.EMPTY_ARRAY;
-    }
-
-    @Override
-    public DBDPseudoAttribute[] getAllPseudoAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return KNOWN_GLOBAL_PSEUDO_ATTRS;
     }
 }

@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
+import org.jkiss.dbeaver.ext.sqlite.internal.SQLiteMessages;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -50,7 +51,7 @@ public class SQLiteTable extends GenericTable implements DBDPseudoAttributeConta
         "rowid",
         "$alias.rowid",
         null,
-        "Unique row identifier",
+        SQLiteMessages.pseudo_column_rowid_description,
         true,
         DBDPseudoAttribute.PropagationPolicy.TABLE_LOCAL
     );
@@ -61,7 +62,7 @@ public class SQLiteTable extends GenericTable implements DBDPseudoAttributeConta
             name,
             null,
             null,
-            "Unique row identifier",
+            SQLiteMessages.pseudo_column_rowid_description,
             true,
             DBDPseudoAttribute.PropagationPolicy.TABLE_LOCAL
         )).toList();

@@ -30,11 +30,11 @@ public interface DBDPseudoAttributeContainer {
      * Returns collection of pseudo-attributes to use during query generation and attributes binding in resultset visualization (apparently)
      */
     DBDPseudoAttribute[] getPseudoAttributes()
-            throws DBException;
+        throws DBException;
 
     /**
      * Returns collection of pseudo-attributes handled by the database engine while querying this object or objects in this context
      */
     DBDPseudoAttribute[] getAllPseudoAttributes(@NotNull DBRProgressMonitor monitor)
-            throws DBException;
+        throws DBException;
 }

@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 /**
@@ -85,13 +86,13 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
     protected void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         SQLDialect dialect = context.getDialect();
         SQLQueryExprType type;
+        SQLQueryResultColumn resultColumn;
         if (this.tableName != null && this.tableName.isNotClassified() && this.columnName.isNotClassified()) {
             SourceResolutionResult rr = context.resolveSource(statistics.getMonitor(), this.tableName.toListOfStrings());
             if (rr != null) {
                 this.tableName.setDefinition(rr);
-                SQLQueryResultColumn resultColumn = rr.source.getResultDataContext().resolveColumn(statistics.getMonitor(), this.columnName.getName());
+                resultColumn = rr.source.getResultDataContext().resolveColumn(statistics.getMonitor(), this.columnName.getName());
                 propagateColumnDefinition(this.columnName, resultColumn, statistics);
-                this.column = resultColumn;
                 type = resultColumn != null ? resultColumn.type : SQLQueryExprType.UNKNOWN;
             } else {
                 this.tableName.setSymbolClass(SQLQuerySymbolClass.ERROR);
@@ -99,6 +100,7 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
                     this.tableName.entityName,
                     "Table or subquery " + this.tableName.toIdentifierString() + " not found"
                 );
+                resultColumn = null;
                 type = SQLQueryExprType.UNKNOWN;
             }
         } else if (this.tableName == null && this.columnName.isNotClassified()) {
@@ -108,15 +110,11 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
                 pseudoColumn = context.resolvePseudoColumn(statistics.getMonitor(), this.columnName.getName());
             }
             if (pseudoColumn != null) {
+                resultColumn = null; // not a real column, so we don't need to propagate its source at don't have real entity attribute
                 type = pseudoColumn.type;
-                if (this.columnName.isNotClassified()) {
-                    this.columnName.getSymbol().setSymbolClass(SQLQuerySymbolClass.COLUMN);
-                }
-                this.column = new SQLQueryResultColumn(
-                    -1, pseudoColumn.symbol, pseudoColumn.source, pseudoColumn.realSource, null, pseudoColumn.type
-                );
+                this.columnName.setDefinition(pseudoColumn);
             } else {
-                SQLQueryResultColumn resultColumn = context.resolveColumn(statistics.getMonitor(), this.columnName.getName());
+                resultColumn = context.resolveColumn(statistics.getMonitor(), this.columnName.getName());
 
                 SQLQuerySymbolClass forcedClass = null;
                 if (resultColumn == null) {
@@ -124,10 +122,8 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
                     if (dialect.isQuotedString(rawString)) {
                         forcedClass = SQLQuerySymbolClass.STRING;
                     } else {
-                        forcedClass = SQLQueryModelRecognizer.tryFallbackSymbolForStringLiteral(dialect, this.columnName, resultColumn != null);
+                        forcedClass = SQLQueryModelRecognizer.tryFallbackSymbolForStringLiteral(dialect, this.columnName, false);
                     }
-                } else {
-                    this.column = resultColumn;
                 }
 
                 if (forcedClass != null) {
@@ -139,8 +135,10 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
                 }
             }
         } else {
+            resultColumn = null;
             type = SQLQueryExprType.UNKNOWN;
         }
+        this.column = resultColumn;
         this.type = type;
     }
 

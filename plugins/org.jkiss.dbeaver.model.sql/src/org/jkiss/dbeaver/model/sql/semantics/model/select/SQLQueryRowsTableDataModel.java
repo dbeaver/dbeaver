@@ -33,11 +33,8 @@ import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.Pair;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -183,7 +180,7 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
                 }
             } else {
                 SourceResolutionResult rr = context.resolveSource(statistics.getMonitor(), nameStrings);
-                if (rr != null && rr.tableOrNull == null && rr.source != null && rr.aliasOrNull != null && nameStrings.size() == 1) {
+                if (rr != null && rr.tableOrNull == null && rr.aliasOrNull != null && nameStrings.size() == 1) {
                     // seems cte reference resolved
                     this.name.entityName.setDefinition(rr.aliasOrNull.getDefinition());
                     context = context.overrideResultTuple(this, rr.source.getResultDataContext().getColumnsList(), Collections.emptyList());
@@ -205,9 +202,9 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
         @Nullable DBSEntity table,
         @NotNull Stream<DBDPseudoAttribute> pseudoAttributes
     ) {
-        return pseudoAttributes == null ? Collections.emptyList() : pseudoAttributes.map(a -> new SQLQueryResultPseudoColumn(
+        return pseudoAttributes.map(a -> new SQLQueryResultPseudoColumn(
             new SQLQuerySymbol(SQLUtils.identifierToCanonicalForm(dialect, a.getName(), false, false)),
-            source, table, SQLQueryExprType.UNKNOWN, a.getPropagationPolicy()
+            source, table, SQLQueryExprType.UNKNOWN, a.getPropagationPolicy(), a.getDescription()
         )).collect(Collectors.toList());
     }
 

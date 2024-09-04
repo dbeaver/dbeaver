@@ -52,7 +52,7 @@ public class ExasolConstants {
         "ROWID",
         "$alias.ROWID",
         null,
-        "Unique row identifier",
+        ExasolMessages.pseudo_column_rowid_description,
         true,
         DBDPseudoAttribute.PropagationPolicy.TABLE_LOCAL
     );

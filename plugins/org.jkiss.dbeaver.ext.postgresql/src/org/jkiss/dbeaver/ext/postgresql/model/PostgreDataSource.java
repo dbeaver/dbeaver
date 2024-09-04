@@ -76,7 +76,7 @@ import java.util.regex.Pattern;
  * PostgreDataSource
  */
 public class PostgreDataSource extends JDBCDataSource implements DBSInstanceContainer, DBPAdaptable,
-    DBPObjectStatisticsCollector, DBDPseudoAttributeContainer {
+    DBPObjectStatisticsCollector {
 
     private static final Log log = Log.getLog(PostgreDataSource.class);
     private static final PostgrePrivilegeType[] SUPPORTED_PRIVILEGE_TYPES = new PostgrePrivilegeType[]{
@@ -93,14 +93,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         PostgrePrivilegeType.EXECUTE,
         PostgrePrivilegeType.USAGE
     };
-
-    private static final DBDPseudoAttribute[] KNOWN_GLOBAL_PSEUDO_ATTRS = createGlobalPseudoAttributes(List.of(
-        Pair.of("current_date", "Contains the value of the current date."),
-        Pair.of("current_time", "Contains the value of the current time."),
-        Pair.of("current_timestamp", "Contains the value of the current date and time."),
-        Pair.of("localtime", "Contains the value of the local time."),
-        Pair.of("localtimestamp", "Contains the value of the local date and time.")
-    ));
 
     private DatabaseCache databaseCache;
     private SettingCache settingCache;
@@ -922,31 +914,5 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
      */
     public boolean isSupportsReltypeColumn() {
         return supportsReltypeColumn;
-    }
-
-    @Override
-    public DBDPseudoAttribute[] getPseudoAttributes() throws DBException {
-        return DBDPseudoAttribute.EMPTY_ARRAY;
-    }
-
-    @Override
-    public DBDPseudoAttribute[] getAllPseudoAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return KNOWN_GLOBAL_PSEUDO_ATTRS;
-    }
-
-    private static DBDPseudoAttribute[] createGlobalPseudoAttributes(List<Pair<String, String>> pseudoAttributesDescr) {
-        DBDPseudoAttribute[] pseudoAttributes = new DBDPseudoAttribute[pseudoAttributesDescr.size()];
-        for (int i = 0; i < pseudoAttributesDescr.size(); i++) {
-            pseudoAttributes[i] = new DBDPseudoAttribute(
-                DBDPseudoAttributeType.OTHER,
-                pseudoAttributesDescr.get(i).getFirst(),
-                null,
-                null,
-                pseudoAttributesDescr.get(i).getSecond(),
-                true,
-                DBDPseudoAttribute.PropagationPolicy.GLOBAL_VARIABLE
-            );
-        }
-        return pseudoAttributes;
     }
 }

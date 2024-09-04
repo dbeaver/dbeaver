@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.ext.postgresql.internal.PostgreSQLMessages;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
@@ -65,14 +66,14 @@ public abstract class PostgreTable extends PostgreTableReal
      */
     private static final Map<DBDPseudoAttributeType, List<Pair<String, String>>> ALWAYS_PRESENTED_PSEUDO_ATTR_ENTRIES = Map.of(
         DBDPseudoAttributeType.OTHER, List.of(
-            Pair.of("tableoid", "The OID of the table containing this row."),
-            Pair.of("xmin", "The identity (transaction ID) of the inserting transaction for this row version. "),
-            Pair.of("cmin", "The command identifier (starting at zero) within the inserting transaction."),
-            Pair.of("xmax", "The identity (transaction ID) of the deleting transaction, or zero for an undeleted row version."),
-            Pair.of("cmax", "The command identifier within the deleting transaction, or zero.")
+            Pair.of("tableoid", PostgreSQLMessages.pseudo_column_tableoid_description),
+            Pair.of("xmin", PostgreSQLMessages.pseudo_column_xmin_description),
+            Pair.of("cmin", PostgreSQLMessages.pseudo_column_cmin_description),
+            Pair.of("xmax", PostgreSQLMessages.pseudo_column_xmax_description),
+            Pair.of("cmax", PostgreSQLMessages.pseudo_column_cmax_description)
         ),
         DBDPseudoAttributeType.ROWID, List.of(
-            Pair.of("ctid",  "The physical location of the row version within its table.")
+            Pair.of("ctid",  PostgreSQLMessages.pseudo_column_ctid_description)
         )
     );
     private static final List<DBDPseudoAttribute> ALWAYS_PRESENTED_PSEUDO_ATTRS = ALWAYS_PRESENTED_PSEUDO_ATTR_ENTRIES.entrySet().stream()

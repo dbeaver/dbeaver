@@ -47,6 +47,8 @@ public class ExasolMessages extends NLS {
     public static String exasol_security_policy_description;
     public static String manager_consumer_alter;
 
+    public static String pseudo_column_rowid_description;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, ExasolMessages.class);

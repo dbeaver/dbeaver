@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.dbeaver.ext.oracle.internal.OracleMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeType;
@@ -160,7 +161,7 @@ public class OracleConstants {
         "ROWID",
         "$alias.ROWID",
         null,
-        "Unique row identifier",
+        OracleMessages.pseudo_column_rowid_description,
         true,
         DBDPseudoAttribute.PropagationPolicy.TABLE_LOCAL
     );

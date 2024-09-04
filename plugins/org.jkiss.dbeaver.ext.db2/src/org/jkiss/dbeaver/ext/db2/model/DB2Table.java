@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
+import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.editors.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.editors.DB2TableTablespaceListProvider;
@@ -81,7 +82,7 @@ public class DB2Table extends DB2TableBase
             "DATASLICEID",
             null,
             null,
-            "The database partition number for a row (Netezza Platform Software compatibility).",
+            DB2Messages.pseudo_column_datasliceid_description,
             true,
             DBDPseudoAttribute.PropagationPolicy.TABLE_NORMAL
         )

@@ -80,7 +80,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
             "rownum",
             null,
             null,
-            "Unique row identifier",
+            OracleMessages.pseudo_column_rowid_description,
             true,
             DBDPseudoAttribute.PropagationPolicy.ROWSET_LOCAL
         )
