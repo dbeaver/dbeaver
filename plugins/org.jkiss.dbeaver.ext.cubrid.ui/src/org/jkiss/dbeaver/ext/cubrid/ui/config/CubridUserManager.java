@@ -37,7 +37,8 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
-public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericStructContainer> /*implements DBEObjectRenamer<OracleSchema>*/ {
+public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericStructContainer> /*implements DBEObjectRenamer<OracleSchema>*/
+{
 
     @Override
     public long getMakerOptions(DBPDataSource dataSource) {
@@ -61,12 +62,11 @@ public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericS
             @NotNull final Object container,
             @Nullable Object copyFrom,
             @NotNull Map<String, Object> options) {
-        
+
         CubridPrivilage user = new CubridPrivilage((CubridDataSource) container, "NEW_USER", null);
         return user;
     }
-    
-    
+
 
     @Override
     protected void addObjectCreateActions(
@@ -82,7 +82,7 @@ public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericS
         buildBody(user, builder, command.getProperties());
         actions.add(new SQLDatabasePersistAction("Create User", builder.toString()));
     }
-    
+
     @Override
     protected void addObjectDeleteActions(
             @NotNull DBRProgressMonitor monitor,
@@ -91,42 +91,39 @@ public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericS
             @NotNull ObjectDeleteCommand command,
             @NotNull Map<String, Object> options) {
         actions.add(
-            new SQLDatabasePersistAction("Drop schema",
-                "DROP USER " + DBUtils.getQuotedIdentifier(command.getObject())));
+                new SQLDatabasePersistAction("Drop schema",
+                        "DROP USER " + DBUtils.getQuotedIdentifier(command.getObject())));
     }
-    
+
     private void buildBody(CubridPrivilage user, StringBuilder builder, Map<Object, Object> properties) {
         Object password = properties.get("PASSWORD");
         Object description = properties.get("DESCRIPTION");
         Object group = properties.get("GROUPS");
-        builder.append(password != null ?"" + SQLUtils.quoteString(user, password.toString()):"");
-        if(password != null && CommonUtils.isNotEmpty(password.toString())) {
+        builder.append(password != null ? "" + SQLUtils.quoteString(user, password.toString()) : "");
+        if (password != null && CommonUtils.isNotEmpty(password.toString())) {
             builder.append(" PASSWORD ");
             builder.append(SQLUtils.quoteString(user, password.toString()));
         }
-        if(group != null && !CommonUtils.isEmpty((List<String>) properties.get("GROUPS"))) {
+        if (group != null && !CommonUtils.isEmpty((List<String>) properties.get("GROUPS"))) {
             builder.append(" GROUPS ");
-            builder.append(String.join(", ",(List<String>) properties.get("GROUPS")));
+            builder.append(String.join(", ", (List<String>) properties.get("GROUPS")));
         }
-        
-        if(description != null && CommonUtils.isNotEmpty(description.toString())) {
+
+        if (description != null && CommonUtils.isNotEmpty(description.toString())) {
             builder.append(" COMMENT ");
             builder.append(SQLUtils.quoteString(user, description.toString()));
         }
-        
-        
     }
 
     @NotNull
     private String getUserName(CubridPrivilage user, Map<Object, Object> properties) {
         Object name = properties.get(CubridPrivilageHandler.NAME.getId());
-        if(name != null) {
+        if (name != null) {
             user.setName(name.toString());
         }
         return user.getName();
-        
+
     }
-    
-   
+
 
 }

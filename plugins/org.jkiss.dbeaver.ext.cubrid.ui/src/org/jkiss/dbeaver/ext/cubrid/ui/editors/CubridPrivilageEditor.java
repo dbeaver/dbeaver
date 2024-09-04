@@ -47,32 +47,27 @@ import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.dbeaver.ui.editors.ControlPropertyCommandListener;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.utils.CommonUtils;
-public class CubridPrivilageEditor  extends AbstractDatabaseObjectEditor<CubridPrivilage>{
-    
+
+public class CubridPrivilageEditor extends AbstractDatabaseObjectEditor<CubridPrivilage>
+{
+    UserPageControl pageControl;
     private CubridPrivilage user;
     private Table table;
     private List<String> groups = new ArrayList<>();
-    UserPageControl pageControl;
-    
+
     @Override
     public RefreshResult refreshPart(Object source, boolean force) {
         return RefreshResult.REFRESHED;
     }
-    
-    
+
     @Override
     public void createPartControl(Composite parent) {
         pageControl = new UserPageControl(parent, this);
         Composite container = UIUtils.createPlaceholder(pageControl, 2, 10);
-        
         this.user = this.getDatabaseObject();
         GridData gds = new GridData(GridData.FILL_BOTH);
         container.setLayoutData(gds);
-        
-        
-
         {
-            
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.heightHint = 30;
             Text t = UIUtils.createLabelText(container, "Name ", user.getName(), SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
@@ -80,16 +75,12 @@ public class CubridPrivilageEditor  extends AbstractDatabaseObjectEditor<CubridP
             gd1.widthHint = 400;
             t.setLayoutData(gd1);
             t.setEditable(!this.getDatabaseObject().isPersisted());
-            
             ControlPropertyCommandListener.create(this, t, CubridPrivilageHandler.NAME);
-            
         }
         {
-            
             String loginedUser = user.getDataSource().getContainer().getConnectionConfiguration().getUserName().toUpperCase();
             boolean allowEditPassword = new ArrayList<>(Arrays.asList("DBA", user.getName())).contains(loginedUser);
-            
-            Text t = UIUtils.createLabelText(container, "Password ","",  SWT.BORDER | SWT.PASSWORD);
+            Text t = UIUtils.createLabelText(container, "Password ", "", SWT.BORDER | SWT.PASSWORD);
             GridData gd1 = new GridData();
             gd1.widthHint = 400;
             t.setLayoutData(gd1);
@@ -97,40 +88,27 @@ public class CubridPrivilageEditor  extends AbstractDatabaseObjectEditor<CubridP
             ControlPropertyCommandListener.create(this, t, CubridPrivilageHandler.PASSWORD);
         }
         {
-            
             UIUtils.createControlLabel(container, "Groups", 1);
             table = new Table(container, SWT.BORDER | SWT.CHECK);
             GridData gd = new GridData();
             gd.heightHint = 150;
             gd.widthHint = 390;
-            
             table.setLayoutData(gd);
             loadGroups();
-            new TableCommandListener(this, table,  CubridPrivilageHandler.GROUPS, groups);
-            if(getDatabaseObject().isPersisted()) {
+            new TableCommandListener(this, table, CubridPrivilageHandler.GROUPS, groups);
+            if (getDatabaseObject().isPersisted()) {
                 table.setEnabled(false);
-             }
-           
-
-            
+            }
         }
-        
         {
-          Text t = UIUtils.createLabelText(container, "Description", user.getDescription(), SWT.BORDER|SWT.WRAP|SWT.MULTI|SWT.V_SCROLL);
-          GridData gd1 = new GridData(SWT.BEGINNING, SWT.CENTER, true, false);
-          gd1.heightHint = 3 * t.getLineHeight();
-          gd1.widthHint = 400;
-          
-          t.setLayoutData(gd1);
-          ControlPropertyCommandListener.create(this, t, CubridPrivilageHandler.DESCRIPTION);
-
-         
-      }
-        
-          
-       pageControl.createProgressPanel();
-       
-       
+            Text t = UIUtils.createLabelText(container, "Description", user.getDescription(), SWT.BORDER | SWT.WRAP | SWT.MULTI | SWT.V_SCROLL);
+            GridData gd1 = new GridData(SWT.BEGINNING, SWT.CENTER, true, false);
+            gd1.heightHint = 3 * t.getLineHeight();
+            gd1.widthHint = 400;
+            t.setLayoutData(gd1);
+            ControlPropertyCommandListener.create(this, t, CubridPrivilageHandler.DESCRIPTION);
+        }
+        pageControl.createProgressPanel();
     }
 
     @Override
@@ -138,42 +116,42 @@ public class CubridPrivilageEditor  extends AbstractDatabaseObjectEditor<CubridP
         if (pageControl != null) {
             this.pageControl.setFocus();
         }
-        
     }
-    
+
     private void loadGroups() {
-        
-        new AbstractJob("Load groups") {
+
+        new AbstractJob("Load groups")
+        {
 
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
                 List<CubridPrivilage> cubridUsers;
                 try {
                     cubridUsers = user.getDataSource().getCubridPrivilages(monitor);
-                
+
                     UIUtils.syncExec(
                             () -> {
                                 table.removeAll();
                                 groups.clear();
                                 for (CubridPrivilage privilage : cubridUsers) {
-                                    if(!privilage.getName().equals(user.getName())) {
+                                    if (!privilage.getName().equals(user.getName())) {
                                         TableItem item = new TableItem(table, SWT.BREAK);
                                         item.setImage(DBeaverIcons.getImage(DBIcon.TREE_USER_GROUP));
                                         item.setText(0, privilage.getName());
-                                        
-                                        if(user.getRoles().contains(privilage.getName())) {
+
+                                        if (user.getRoles().contains(privilage.getName())) {
                                             groups.add(privilage.getName());
                                             item.setChecked(true);
-                                            
-                                            
+
+
                                         }
-                                        
-                                        
+
+
                                     }
-                                   
+
                                 }
-                            
-                        });
+
+                            });
                 } catch (DBException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -182,14 +160,19 @@ public class CubridPrivilageEditor  extends AbstractDatabaseObjectEditor<CubridP
             }
         }.schedule();
     }
-    
 
-    protected class UserPageControl extends ObjectEditorPageControl {
+    @Override
+    public boolean isSaveAsAllowed() {
+        return true;
+    }
+
+    protected class UserPageControl extends ObjectEditorPageControl
+    {
 
         public UserPageControl(Composite parent, CubridPrivilageEditor object) {
-            super(parent,SWT.NONE, object);
+            super(parent, SWT.NONE, object);
         }
-        
+
         @Override
         public void fillCustomActions(IContributionManager contributionManager) {
             super.fillCustomActions(contributionManager);
@@ -202,56 +185,45 @@ public class CubridPrivilageEditor  extends AbstractDatabaseObjectEditor<CubridP
             }
         }
     }
-    
-    @Override
-    public boolean isSaveAsAllowed()
+
+    private class TableCommandListener
     {
-        return true;
-    }
-    
-    private class TableCommandListener{
         final private CubridPrivilageEditor editor;
         final private Table widget;
         final private CubridPrivilageHandler handler;
         private List<String> values;
         private DBECommandProperty<CubridPrivilage> command;
         private List<String> oldValue;
-        
-        public TableCommandListener(CubridPrivilageEditor editor, Table widget, CubridPrivilageHandler handler, List<String> oldValue){
+
+        public TableCommandListener(CubridPrivilageEditor editor, Table widget, CubridPrivilageHandler handler, List<String> oldValue) {
             this.editor = editor;
             this.widget = widget;
             this.handler = handler;
             this.oldValue = oldValue;
-            
             addEventListener();
-            
-            
         }
-        
+
         private void addEventListener() {
             widget.addListener(
                     SWT.Selection,
                     event -> {
                         TableItem item = (TableItem) event.item;
-                        if(values == null) {
+                        if (values == null) {
                             values = new ArrayList<>(oldValue);
                         }
-                        
                         if (item != null) {
-                            
                             if (item.getChecked()) {
                                 values.add(item.getText());
-                            }else {
-                                values.removeIf(value->value == item.getText());
+                            } else {
+                                values.removeIf(value -> value == item.getText());
                             }
                         }
-                        
-                        
-                        DBECommandReflector<CubridPrivilage, DBECommandProperty<CubridPrivilage>> commandReflector = new DBECommandReflector<CubridPrivilage, DBECommandProperty<CubridPrivilage>>() {
+                        DBECommandReflector<CubridPrivilage, DBECommandProperty<CubridPrivilage>> commandReflector = new DBECommandReflector<CubridPrivilage, DBECommandProperty<CubridPrivilage>>()
+                        {
 
                             @Override
                             public void redoCommand(DBECommandProperty<CubridPrivilage> command) {
-                                if(!table.isDisposed()) {
+                                if (!table.isDisposed()) {
                                     editor.loadGroups();
                                     values = new ArrayList<String>(oldValue);
                                 }
@@ -259,16 +231,15 @@ public class CubridPrivilageEditor  extends AbstractDatabaseObjectEditor<CubridP
 
                             @Override
                             public void undoCommand(DBECommandProperty<CubridPrivilage> cp) {
-                               
-                                if(!table.isDisposed()) {
+
+                                if (!table.isDisposed()) {
                                     editor.loadGroups();
                                     values = new ArrayList<String>(oldValue);
                                 }
-                           
+
                             }
-                      
+
                         };
-                        
                         if (command == null) {
                             if (!CommonUtils.equalObjects(values, oldValue)) {
                                 command = new DBECommandProperty<CubridPrivilage>(editor.getDatabaseObject(), handler, oldValue, values);
@@ -278,7 +249,6 @@ public class CubridPrivilageEditor  extends AbstractDatabaseObjectEditor<CubridP
                             if (CommonUtils.equalObjects(values, oldValue)) {
                                 editor.removeChangeCommand(command);
                                 command = null;
-                                
                             } else {
                                 command.setNewValue(values);
                                 editor.updateChangeCommand(command, commandReflector);
@@ -286,11 +256,5 @@ public class CubridPrivilageEditor  extends AbstractDatabaseObjectEditor<CubridP
                         }
                     });
         }
-        
     }
-
-  
-   
-    
-    
 }

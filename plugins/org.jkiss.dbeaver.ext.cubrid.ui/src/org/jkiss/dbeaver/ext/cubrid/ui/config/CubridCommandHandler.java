@@ -29,48 +29,43 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 
-public class CubridCommandHandler extends DBECommandComposite <CubridPrivilage, CubridPrivilageHandler>{
+public class CubridCommandHandler extends DBECommandComposite<CubridPrivilage, CubridPrivilageHandler>
+{
 
     protected CubridCommandHandler(CubridPrivilage object) {
-        super(object,"Update User");
+        super(object, "Update User");
     }
-    
+
     @NotNull
     @Override
-    public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options)
-    {
+    public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options) {
         List<DBEPersistAction> actions = new ArrayList<>();
         StringBuilder builder = new StringBuilder();
-        if(getObject().isPersisted()) {
+        if (getObject().isPersisted()) {
             builder.append("ALTER USER ");
             builder.append(this.getObject().getName());
         }
         buildBody(builder);
         actions.add(new SQLDatabasePersistAction("Update User", builder.toString()));
         return actions.toArray(new DBEPersistAction[0]);
-        
+
     }
-    
-    
-    
+
+
     private void buildBody(StringBuilder builder) {
         for (Object key : getProperties().keySet()) {
-            switch(key.toString()){
+            switch (key.toString()) {
                 case "PASSWORD":
                     builder.append(" PASSWORD ").append(SQLUtils.quoteString(getObject(), key.toString()));
                     break;
-                case "DESCRIPTION": 
+                case "DESCRIPTION":
                     builder.append(" COMMENT ").append(SQLUtils.quoteString(getObject(), key.toString()));
                 default:
                     break;
-                
+
             }
         }
     }
-    
 
 
-
-    
-    
 }

@@ -21,17 +21,18 @@ import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;
 import org.jkiss.dbeaver.model.edit.prop.DBEPropertyReflector;
 
-public enum CubridPrivilageHandler implements DBEPropertyHandler<CubridPrivilage>, DBEPropertyReflector<CubridPrivilage>{
+public enum CubridPrivilageHandler implements DBEPropertyHandler<CubridPrivilage>, DBEPropertyReflector<CubridPrivilage>
+{
     NAME,
     PASSWORD,
     DESCRIPTION, GROUPS;
+
     @Override
     public void reflectValueChange(CubridPrivilage object, Object oldValue, Object newValue) {
         // TODO Auto-generated method stub
-        if(this == NAME) {
+        if (this == NAME) {
             object.setName(newValue.toString());
         }
-        
     }
 
     @Override
@@ -45,7 +46,6 @@ public enum CubridPrivilageHandler implements DBEPropertyHandler<CubridPrivilage
         // TODO Auto-generated method stub
         return new CubridCommandHandler(object);
     }
-    
-    
-    
+
+
 }
