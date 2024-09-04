@@ -108,7 +108,9 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
     DBPDataSourceRegistry getDataSourceRegistry();
 
     @NotNull
-    DBTTaskManager getTaskManager();
+    default DBTTaskManager getTaskManager() {
+        throw new IllegalStateException("Task manager is not supported by " + getClass().getSimpleName());
+    }
 
     @Nullable
     default DBTTaskManager getTaskManager(boolean create) {

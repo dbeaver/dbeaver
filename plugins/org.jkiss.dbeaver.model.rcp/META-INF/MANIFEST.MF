@@ -12,6 +12,8 @@ Export-Package: org.jkiss.dbeaver.model.navigator,
  org.jkiss.dbeaver.registry
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.core.expressions,
+ org.eclipse.core.filesystem;visibility:=reexport,
+ org.eclipse.core.resources;visibility:=reexport,
  org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.registry
 Bundle-Localization: OSGI-INF/l10n/bundle
