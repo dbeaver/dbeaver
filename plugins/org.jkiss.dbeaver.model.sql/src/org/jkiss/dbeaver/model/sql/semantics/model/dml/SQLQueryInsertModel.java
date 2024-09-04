@@ -93,7 +93,9 @@ public class SQLQueryInsertModel extends SQLQueryDMLStatementModel {
             for (SQLQuerySymbolEntry columnName : this.columnNames) {
                 if (columnName.isNotClassified()) {
                     SQLQueryResultColumn column = context.resolveColumn(statistics.getMonitor(), columnName.getName());
-                    SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(columnName, column, statistics);
+                    if (column != null || !context.hasUndresolvedSource()) {
+                        SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(columnName, column, statistics);
+                    }
                 }
             }
         }
