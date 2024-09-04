@@ -122,7 +122,9 @@ public class SQLQueryColumnConstraintSpec extends SQLQueryNodeModel {
         @NotNull SQLQueryDataContext dataContext,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
+        statistics.setTreatErrorAsWarnings(true);
         SQLQueryDataContext referencedContext = referencedTable.propagateContext(dataContext, statistics);
+        statistics.setTreatErrorAsWarnings(false);
         DBSEntity realTable = referencedTable.getTable();
         SQLQueryDataContext resultContext;
 
@@ -151,7 +153,8 @@ public class SQLQueryColumnConstraintSpec extends SQLQueryNodeModel {
                 // table reference resolution failed, so cannot resolve its columns as well
                 statistics.appendWarning(
                     referencedTable.getName().entityName,
-                    "Failed to resolve table " + referencedTable.getName().toIdentifierString() + " to validate compound foreign key columns"
+                    "Failed to validate " + (referencedColumns.size() > 1 ? "compound " : "") +
+                    "foreign key columns of table " + referencedTable.getName().toIdentifierString()
                 );
                 for (SQLQuerySymbolEntry columnRef : referencedColumns) {
                     if (columnRef.isNotClassified()) {

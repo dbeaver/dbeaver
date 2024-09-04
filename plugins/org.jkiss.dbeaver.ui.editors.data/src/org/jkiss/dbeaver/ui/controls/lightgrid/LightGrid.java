@@ -1990,6 +1990,7 @@ public abstract class LightGrid extends Canvas {
      */
     private void computeHeaderSizes(GC gc, boolean decreaseSize)
     {
+        bottomIndex = -1;
         int oldRowHeaderWidth = rowHeaderWidth;
         // Item height
         itemHeight = fontMetrics.getHeight() + 3;

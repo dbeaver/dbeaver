@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableTrigger;
@@ -47,24 +48,24 @@ public class OracleTableTriggerManager extends SQLTriggerManager<OracleTableTrig
     }
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return container instanceof OracleTableBase;
     }
 
     @Override
-    protected OracleTableTrigger createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options) {
+    protected OracleTableTrigger createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, final Object container, Object copyFrom, @NotNull Map<String, Object> options) {
         OracleTableBase table = (OracleTableBase) container;
         return new OracleTableTrigger(table, "NEW_TRIGGER");
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options) {
         actions.add(
             new SQLDatabasePersistAction("Drop trigger", "DROP TRIGGER " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-2$
         );
     }
 
-    protected void createOrReplaceTriggerQuery(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, OracleTableTrigger trigger, boolean create) {
+    protected void createOrReplaceTriggerQuery(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull OracleTableTrigger trigger, boolean create) {
         String source = OracleUtils.normalizeSourceName(trigger, false);
         if (source == null) {
             return;

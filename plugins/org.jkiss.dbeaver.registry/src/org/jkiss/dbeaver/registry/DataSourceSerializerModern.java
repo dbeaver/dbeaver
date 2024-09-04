@@ -381,9 +381,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
         Map<String, Object> configurationMap = null;
 
         // process projectConfiguration
-        if (CommonUtils.toBoolean(registry.getProject().getProjectProperty(ENCRYPTED_CONFIGURATION))
-            && (!DBWorkbench.getPlatform().getApplication().isHeadlessMode())
-            && DBWorkbench.getPlatform().getApplication().isCommunity()) {
+        if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode()
+            && DBWorkbench.getPlatform().getApplication().isCommunity()
+            && CommonUtils.toBoolean(registry.getProject().getProjectProperty(ENCRYPTED_CONFIGURATION))
+        ) {
             DBWorkbench.getPlatformUI().showWarningMessageBox(
                 RegistryMessages.project_open_cannot_read_configuration_title,
                 NLS.bind(RegistryMessages.project_open_cannot_read_configuration_message,
@@ -398,9 +399,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
             log.error(e);
         }
         // process project credential
-        if (CommonUtils.toBoolean(registry.getProject().getProjectProperty(USE_PROJECT_PASSWORD))
-            && (!DBWorkbench.getPlatform().getApplication().isHeadlessMode())
-            && (DBWorkbench.getPlatform().getApplication().isCommunity())) {
+        if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode()
+            && DBWorkbench.getPlatform().getApplication().isCommunity() &&
+            CommonUtils.toBoolean(registry.getProject().getProjectProperty(USE_PROJECT_PASSWORD))
+        ) {
             if (DBWorkbench.getPlatformUI().confirmAction(
                 RegistryMessages.project_open_cannot_read_credentials_title,
                 NLS.bind(RegistryMessages.project_open_cannot_read_credentials_message,

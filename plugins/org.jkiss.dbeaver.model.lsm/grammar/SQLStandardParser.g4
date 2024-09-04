@@ -87,8 +87,8 @@ identifier: (Introducer characterSetSpecification)? actualIdentifier;
 actualIdentifier: (Identifier|DelimitedIdentifier|nonReserved|Quotted);
 
 // data types
-dataType: (datetimeType|intervalType|anyWordsWithProperty (CHARACTER SET characterSetSpecification)?);
-datetimeType: (DATE|TIME (LeftParen UnsignedInteger RightParen)? (WITH TIME ZONE)?|TIMESTAMP (LeftParen UnsignedInteger RightParen)? (WITH TIME ZONE)?);
+dataType: (datetimeType|intervalType|qualifiedName|anyWordsWithProperty (CHARACTER SET characterSetSpecification)?);
+datetimeType: DATE|TIME (LeftParen UnsignedInteger RightParen)? (WITH TIME ZONE)?|TIMESTAMP (LeftParen UnsignedInteger RightParen)? (WITH TIME ZONE)?;
 intervalType: INTERVAL intervalQualifier;
 intervalQualifier: (startField TO endField|singleDatetimeField);
 startField: nonSecondDatetimeField (LeftParen intervalLeadingFieldPrecision RightParen)?;
@@ -331,7 +331,7 @@ schemaCharacterSetSpecification: DEFAULT CHARACTER SET characterSetSpecification
 schemaElement: createTableStatement|createViewStatement;
 
 createTableStatement: createTableHead tableName createTableExtraHead tableElementList createTableTail;
-createTableHead: CREATE (OR REPLACE)? ((GLOBAL|LOCAL) (TEMPORARY|TEMP))? TABLE (IF NOT EXISTS)? ;// here orReplace is MariaDB-specific only
+createTableHead: CREATE (OR REPLACE)? (GLOBAL|LOCAL)? (TEMPORARY|TEMP)? TABLE (IF NOT EXISTS)? ;// here orReplace is MariaDB-specific only
 createTableExtraHead: (OF identifier)?;
 tableElementList: LeftParen tableElement (Comma tableElement)* RightParen;
 tableElement: (columnDefinition|tableConstraintDefinition) anyUnexpected??;
@@ -420,7 +420,7 @@ anyValue: rowValueConstructor|searchCondition;
 anyWordWithAnyValue: anyWord anyValue;
 anyProperty: LeftParen (anyValue (Comma anyValue)*) RightParen;
 anyWordsWithProperty: anyWord+ anyProperty?;
-anyWordsWithProperty2: anyWord+ anyProperty overClause?;
+anyWordsWithProperty2: (anyWord|IF)+ anyProperty overClause?; // to handle if as function like IF(c.tipo_cliente='F','Física','Jurídica')
 
 aggregateExpression: actualIdentifier LeftParen aggregateExprParam+ RightParen (WITHIN GROUP LeftParen orderByClause RightParen)? (FILTER LeftParen WHERE searchCondition RightParen)?;
 aggregateExprParam: DISTINCT|ALL|ORDER|BY|ASC|DESC|LIMIT|SEPARATOR|OFFSET|rowValueConstructor;
@@ -440,7 +440,7 @@ nonReserved: COMMITTED | REPEATABLE | SERIALIZABLE | TYPE | UNCOMMITTED |
     CURRENT_USER | SESSION_USER | SYSTEM_USER | USER | VALUE | RIGHT | LEFT |
     DATE | YEAR | MONTH | DAY | HOUR | MINUTE | SECOND | ZONE |
     ACTION | ADD | AUTHORIZATION | BY | CASCADE | CASCADED | CATALOG | COALESCE | COMMIT |
-    CONSTRAINT | CONSTRAINTS | CORRESPONDING | COUNT | DEFERRABLE | DEFERRED | IMMEDIATE |
+    CONSTRAINTS | CORRESPONDING | COUNT | DEFERRABLE | DEFERRED | IMMEDIATE |
     EXTRACT | FULL | GLOBAL | LOCAL | INDICATOR | INITIALLY | INTERVAL | ISOLATION | KEY | LEVEL |
     NAMES | NO | NULLIF| ONLY | OVERLAPS| PARTIAL | PRESERVE | READ | RESTRICT | ROLLBACK | SCHEMA |
     SESSION | SET | TEMPORARY | TIME | TIMESTAMP | TIMEZONE_HOUR | TIMEZONE_MINUTE | TRANSACTION |
