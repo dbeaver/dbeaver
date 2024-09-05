@@ -41,9 +41,9 @@ import org.jkiss.utils.AlphanumericComparator;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -200,9 +200,9 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
         if (resource != null) {
             IPath location = resource.getLocation();
             if (location != null) {
-                File localFile = location.toFile();
+                Path localFile = location.toPath();
                 if (localFile != null) {
-                    return localFile.getAbsolutePath();
+                    return localFile.toString();
                 }
             }
         }
@@ -504,7 +504,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
         getModel().fireNodeEvent(new DBNEvent(source, DBNEvent.Action.UPDATE, this));
     }
 
-    protected void handleResourceChange(IResourceDelta delta) {
+    public void handleResourceChange(IResourceDelta delta) {
         if (delta.getKind() == IResourceDelta.CHANGED) {
             // Update this node in navigator
             refreshResourceState(delta);
