@@ -7,7 +7,8 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Release-Date: 20240923
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
-Export-Package: org.jkiss.dbeaver.model.navigator,
+Export-Package: org.jkiss.dbeaver.model.app,
+ org.jkiss.dbeaver.model.navigator,
  org.jkiss.dbeaver.model.rcp,
  org.jkiss.dbeaver.registry
 Bundle-ClassPath: .
