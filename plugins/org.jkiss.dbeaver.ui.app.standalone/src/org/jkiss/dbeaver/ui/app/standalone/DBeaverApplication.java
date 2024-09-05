@@ -23,6 +23,7 @@ import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.service.datalocation.Location;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Resource;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MessageBox;
@@ -565,6 +566,10 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             if (display == null) {
                 display = PlatformUI.createDisplay();
             }
+
+            // Check for resource leaks
+            Resource.setNonDisposeHandler(originStack -> log.warn("SWT resource leak detected", originStack));
+            
             addIdleListeners();
         }
         return display;
