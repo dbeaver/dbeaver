@@ -19,25 +19,26 @@ package org.jkiss.dbeaver.model.websocket.event;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-public interface WSEvent {
+public class WSServerStateEvent extends WSAbstractEvent {
     @NotNull
-    String getId();
+    private final String action;
 
-    @Nullable
-    String getSessionId();
+    public WSServerStateEvent(
+        @Nullable String sessionId,
+        @Nullable String userId,
+        @NotNull String action
+    ) {
+        super(WSEventType.SERVER_STATE, sessionId, userId);
+        this.action = action;
+    }
 
     @NotNull
-    String getTopicId();
+    public String getAction() {
+        return action;
+    }
 
-    @Nullable
-    String getUserId();
-
-    long getTimestamp();
-
-    /**
-     * flag that indicates that the event should be processed forcibly regardless of the server settings and user filters
-     */
-    default boolean isForceProcessed() {
-        return false;
+    @Override
+    public boolean isForceProcessed() {
+        return true;
     }
 }
