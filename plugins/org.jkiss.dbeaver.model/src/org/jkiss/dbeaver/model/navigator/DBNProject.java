@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.navigator.registry.DBNRegistry;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
@@ -36,6 +37,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -256,6 +258,21 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
             resNode = resNode.getChild(res);
             if (resNode == null) {
                 return null;
+            }
+        }
+        return resNode;
+    }
+
+    public DBNResource findResource(DBRProgressMonitor monitor, Path path) throws DBException {
+        Path relativePath = getProject().getAbsolutePath().relativize(path);
+
+        DBNResource resNode = this;
+        for (Path fileName : relativePath) {
+            DBNNode node = DBUtils.findObject(resNode.getChildren(monitor), fileName.toString());
+            if (node instanceof DBNResource resource) {
+                resNode = resource;
+            } else {
+                break;
             }
         }
         return resNode;

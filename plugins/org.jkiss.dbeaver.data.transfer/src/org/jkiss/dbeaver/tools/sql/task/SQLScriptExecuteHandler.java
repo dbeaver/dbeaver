@@ -16,9 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.sql.task;
 
-import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -26,13 +23,10 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.app.DBPWorkspace;
-import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
-import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.rm.RMControllerProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -46,9 +40,13 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.tools.sql.SQLScriptExecuteSettings;
+import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.utils.IOUtils;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -186,39 +184,13 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
             var rmController = rmControllerProvider.getResourceController();
             return new String(rmController.getResourceContents(project.getId(), filePath), StandardCharsets.UTF_8);
         }
-        var sqlFile = findEclipseProjectFile(project, filePath);
+        var sqlFile = DTUtils.findProjectFile(project, filePath);
         if (sqlFile == null) {
             throw new DBException("File " + filePath + " is not found in project " + project.getId());
         }
-        try (InputStream sqlStream = sqlFile.getContents(true)) {
-            try (Reader fileReader = new InputStreamReader(sqlStream, sqlFile.getCharset())) {
-                return IOUtils.readToString(fileReader);
-            }
-        } catch (CoreException e) {
-            throw new IOException(e);
+        try (Reader fileReader = Files.newBufferedReader(sqlFile)) {
+            return IOUtils.readToString(fileReader);
         }
-    }
-
-    public static IFile findEclipseProjectFile(@NotNull DBPProject project, @NotNull String filePath) {
-        if (!(project instanceof RCPProject rcpProject)) {
-            return null;
-        }
-        IContainer rootResource = rcpProject.getRootResource();
-        if (rootResource == null) {
-            return null;
-        }
-        var file = rootResource.findMember(filePath);
-        if (file != null && file.exists() && file instanceof IFile) {
-            return (IFile) file;
-        }
-        DBPWorkspace workspace = project.getWorkspace();
-        if (workspace instanceof DBPWorkspaceEclipse) {
-            file = ((DBPWorkspaceEclipse) workspace).getEclipseWorkspace().getRoot().getFile(new org.eclipse.core.runtime.Path(filePath));
-            if (file.exists()) {
-                return (IFile) file;
-            }
-        }
-        return null;
     }
 
 }

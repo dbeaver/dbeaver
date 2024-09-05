@@ -43,7 +43,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.sql.SQLScriptExecuteSettings;
-import org.jkiss.dbeaver.tools.sql.task.SQLScriptExecuteHandler;
+import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -56,6 +56,8 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.*;
 
@@ -430,8 +432,8 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
             List<String> scriptFiles = settings.getScriptFiles();
             for (String filePath : scriptFiles) {
                 if (IOUtils.isLocalFile(filePath)) {
-                    IFile workspaceFile = SQLScriptExecuteHandler.findEclipseProjectFile(project, filePath);
-                    if (workspaceFile == null) {
+                    Path workspaceFile = DTUtils.findProjectFile(project, filePath);
+                    if (workspaceFile == null || !Files.exists(workspaceFile)) {
                         log.debug("Script file '" + filePath + "' not found");
                         continue;
                     }
