@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.dbeaver.model.runtime.OSDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -46,10 +48,15 @@ public class ProductBundleRegistry {
     private ProductBundleRegistry(IExtensionRegistry registry)
     {
         // Load datasource providers from external plugins
+        OSDescriptor localSystem = DBWorkbench.getPlatform().getLocalSystem();
+
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor(EXTENSION_ID);
         for (IConfigurationElement ext : extElements) {
             if ("bundle".equals(ext.getName())) {
                 ProductBundleDescriptor bundle = new ProductBundleDescriptor(ext);
+                if (!bundle.matchesOS(localSystem)) {
+                    continue;
+                }
                 bundles.put(bundle.getId(), bundle);
             }
         }
