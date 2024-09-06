@@ -185,10 +185,9 @@ public class SQLQueryColumnConstraintSpec extends SQLQueryNodeModel {
                                 "Failed to obtain primary key attribute of the referenced table " + referencedTable.getName().toIdentifierString());
                             resultContext = null;
                         } else {
-                            List<SQLQueryResultColumn> resultColumns = SQLQueryRowsTableDataModel.prepareResultColumnsList(
+                            resultContext = referencedContext.overrideResultTuple(null, SQLQueryRowsTableDataModel.prepareResultColumnsList(
                                 referencedTable.getName().entityName, referencedTable, realTable, referencedContext, statistics, pkAttrs
-                            );
-                            resultContext = referencedContext.overrideResultTuple(null, resultColumns, Collections.emptyList());
+                            ));
                         }
                     } else {
                         statistics.appendWarning(

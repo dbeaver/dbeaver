@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.stm.STMUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
+import org.jkiss.utils.Pair;
 
 import java.util.*;
 import java.util.function.Function;
@@ -113,6 +114,15 @@ public abstract class SQLQueryDataContext {
             : STMUtils.combineLists(this.prepareRowsetPseudoColumns(source), pseudoColumns);
         return new SQLQueryResultTupleContext(this, columns, allPseudoColumns);
     }
+
+    @NotNull
+    public final SQLQueryDataContext overrideResultTuple(
+        @Nullable SQLQueryRowsSourceModel source,
+        @NotNull Pair<List<SQLQueryResultColumn>, List<SQLQueryResultPseudoColumn>> columnsAndPseudoColumns
+    ) {
+        return this.overrideResultTuple(source, columnsAndPseudoColumns.getFirst(), columnsAndPseudoColumns.getSecond());
+    }
+
 
     /**
      * Prepare new semantic context by combining this context with the other given context

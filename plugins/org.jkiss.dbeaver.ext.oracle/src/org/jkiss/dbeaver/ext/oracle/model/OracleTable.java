@@ -394,10 +394,12 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     public DBDPseudoAttribute[] getAllPseudoAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (this.allPseudoAttributes == null) {
             // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/Pseudocolumns.html
-            this.allPseudoAttributes = Stream.<List<DBDPseudoAttribute>>of(
-                this.hasRowIdPseudoAttribute() ? List.of(OracleConstants.PSEUDO_ATTR_ROWID) : Collections.emptyList(),
-                List.of(ROWSCN_PSEUDO_ATTRIBUTE)
-            ).flatMap(Collection::stream).toArray(DBDPseudoAttribute[]::new);
+            List<DBDPseudoAttribute> attrs = new ArrayList<>(2);
+            if (this.hasRowIdPseudoAttribute()) {
+                attrs.add(OracleConstants.PSEUDO_ATTR_ROWID);
+            }
+            attrs.add(ROWSCN_PSEUDO_ATTRIBUTE);
+            this.allPseudoAttributes = attrs.toArray(DBDPseudoAttribute.EMPTY_ARRAY);
         }
         return this.allPseudoAttributes;
     }

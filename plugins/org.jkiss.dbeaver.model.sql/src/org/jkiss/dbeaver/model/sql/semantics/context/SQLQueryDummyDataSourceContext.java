@@ -516,10 +516,9 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
             try {
                 List<? extends DBSEntityAttribute> attributes = defaultDummyTable.getAttributes(statistics.getMonitor());
                 if (attributes != null) {
-                    List<SQLQueryResultColumn> columns = this.prepareResultColumnsList(
+                    context = context.overrideResultTuple(this, this.prepareResultColumnsList(
                         this.getName().entityName, context, statistics, attributes
-                    );
-                    context = context.overrideResultTuple(this, columns, Collections.emptyList());
+                    ));
                 }
             } catch (DBException ex) {
                 statistics.appendError(this.getName().entityName, "Failed to resolve table " + this.getName().toIdentifierString(), ex);

@@ -33,8 +33,10 @@ import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.utils.Pair;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -83,36 +85,42 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
     }
 
     @NotNull
-    protected List<SQLQueryResultColumn> prepareResultColumnsList(
-            @NotNull SQLQuerySymbolEntry cause,
-            @NotNull SQLQueryDataContext attrsContext,
-            @NotNull SQLQueryRecognitionContext statistics,
-            @NotNull List<? extends DBSEntityAttribute> attributes
+    protected Pair<List<SQLQueryResultColumn>, List<SQLQueryResultPseudoColumn>> prepareResultColumnsList(
+        @NotNull SQLQuerySymbolEntry cause,
+        @NotNull SQLQueryDataContext attrsContext,
+        @NotNull SQLQueryRecognitionContext statistics,
+        @NotNull List<? extends DBSEntityAttribute> attributes
     ) {
         return prepareResultColumnsList(cause, this, this.table, attrsContext, statistics, attributes);
     }
 
     @NotNull
-    public static List<SQLQueryResultColumn> prepareResultColumnsList(
-            @NotNull SQLQuerySymbolEntry cause,
-            @NotNull SQLQueryRowsSourceModel rowsSourceModel,
-            @Nullable DBSEntity table,
-            @NotNull SQLQueryDataContext attrsContext,
-            @NotNull SQLQueryRecognitionContext statistics,
-            @NotNull List<? extends DBSEntityAttribute> attributes
+    public static Pair<List<SQLQueryResultColumn>, List<SQLQueryResultPseudoColumn>> prepareResultColumnsList(
+        @NotNull SQLQuerySymbolEntry cause,
+        @NotNull SQLQueryRowsSourceModel rowsSourceModel,
+        @Nullable DBSEntity table,
+        @NotNull SQLQueryDataContext attrsContext,
+        @NotNull SQLQueryRecognitionContext statistics,
+        @NotNull List<? extends DBSEntityAttribute> attributes
     ) {
         List<SQLQueryResultColumn> columns = new ArrayList<>(attributes.size());
+        List<SQLQueryResultPseudoColumn> pseudoColumns = new ArrayList<>(attributes.size());
         for (DBSEntityAttribute attr : attributes) {
-            if (!DBUtils.isHiddenObject(attr)) {
+            if (DBUtils.isHiddenObject(attr)) {
+                pseudoColumns.add(new SQLQueryResultPseudoColumn(
+                    prepareColumnSymbol(attrsContext, attr),
+                    rowsSourceModel, table, obtainColumnType(cause, statistics, attr), DBDPseudoAttribute.PropagationPolicy.TABLE_LOCAL, attr.getDescription()
+                ));
+            } else {
                 columns.add(new SQLQueryResultColumn(
-                        columns.size(),
-                        prepareColumnSymbol(attrsContext, attr),
-                        rowsSourceModel, table, attr,
-                        obtainColumnType(cause, statistics, attr)
+                    columns.size(),
+                    prepareColumnSymbol(attrsContext, attr),
+                    rowsSourceModel, table, attr,
+                    obtainColumnType(cause, statistics, attr)
                 ));
             }
         }
-        return columns;
+        return Pair.of(columns, pseudoColumns);
     }
 
     @NotNull
@@ -155,13 +163,13 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
                 try {
                     List<? extends DBSEntityAttribute> attributes = this.table.getAttributes(statistics.getMonitor());
                     if (attributes != null) {
-                        List<SQLQueryResultColumn> columns = this.prepareResultColumnsList(
+                        Pair<List<SQLQueryResultColumn>, List<SQLQueryResultPseudoColumn>> columns = this.prepareResultColumnsList(
                             this.name.entityName,
                             context,
                             statistics,
                             attributes
                         );
-                        List<SQLQueryResultPseudoColumn> pseudoColumns = table instanceof DBDPseudoAttributeContainer pac
+                        List<SQLQueryResultPseudoColumn> inferredPseudoColumns = table instanceof DBDPseudoAttributeContainer pac
                             ? prepareResultPseudoColumnsList(
                                 context.getDialect(),
                                 this,
@@ -169,7 +177,10 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
                                 Stream.of(pac.getAllPseudoAttributes(statistics.getMonitor()))
                                     .filter(a -> a.getPropagationPolicy().providedByTable)
                             ) : Collections.emptyList();
-                        context = context.overrideResultTuple(this, columns, pseudoColumns);
+                        List<SQLQueryResultPseudoColumn> pseudoColumns = Stream.of(
+                            columns.getSecond(), inferredPseudoColumns
+                        ).flatMap(Collection::stream).collect(Collectors.toList());
+                        context = context.overrideResultTuple(this, columns.getFirst(), pseudoColumns);
                     }
                 } catch (DBException ex) {
                     statistics.appendError(

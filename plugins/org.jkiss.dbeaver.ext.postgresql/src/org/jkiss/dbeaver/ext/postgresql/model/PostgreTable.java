@@ -60,35 +60,6 @@ public abstract class PostgreTable extends PostgreTableReal
 {
     private static final Log log = Log.getLog(PostgreTable.class);
 
-    /**
-     * see https://www.postgresql.org/docs/8.2/ddl-system-columns.html
-     * 'oid' described at {@link PostgreConstants#PSEUDO_ATTR_OID}
-     */
-    private static final Map<DBDPseudoAttributeType, List<Pair<String, String>>> ALWAYS_PRESENTED_PSEUDO_ATTR_ENTRIES = Map.of(
-        DBDPseudoAttributeType.OTHER, List.of(
-            Pair.of("tableoid", PostgreSQLMessages.pseudo_column_tableoid_description),
-            Pair.of("xmin", PostgreSQLMessages.pseudo_column_xmin_description),
-            Pair.of("cmin", PostgreSQLMessages.pseudo_column_cmin_description),
-            Pair.of("xmax", PostgreSQLMessages.pseudo_column_xmax_description),
-            Pair.of("cmax", PostgreSQLMessages.pseudo_column_cmax_description)
-        ),
-        DBDPseudoAttributeType.ROWID, List.of(
-            Pair.of("ctid",  PostgreSQLMessages.pseudo_column_ctid_description)
-        )
-    );
-    private static final List<DBDPseudoAttribute> ALWAYS_PRESENTED_PSEUDO_ATTRS = ALWAYS_PRESENTED_PSEUDO_ATTR_ENTRIES.entrySet().stream()
-        .flatMap(e -> e.getValue().stream().map(p -> new DBDPseudoAttribute(
-            e.getKey(),
-            p.getFirst(),
-            null,
-            null,
-            p.getSecond(),
-            true,
-            DBDPseudoAttribute.PropagationPolicy.TABLE_LOCAL
-        ))).toList();
-
-    private DBDPseudoAttribute[] allPseudoAttributes = null;
-
     private final SimpleObjectCache<PostgreTable, PostgreTableForeignKey> foreignKeys = new SimpleObjectCache<>();
     //private List<PostgreTablePartition>  partitions  = null;
 
@@ -274,13 +245,7 @@ public abstract class PostgreTable extends PostgreTableReal
 
     @Override
     public DBDPseudoAttribute[] getAllPseudoAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (this.allPseudoAttributes == null) {
-            this.allPseudoAttributes = Stream.<List<DBDPseudoAttribute>>of(
-                this.hasOidPseudoAttribute() ? List.of(PostgreConstants.PSEUDO_ATTR_OID) : Collections.emptyList(),
-                ALWAYS_PRESENTED_PSEUDO_ATTRS
-            ).flatMap(Collection::stream).toArray(DBDPseudoAttribute[]::new);
-        }
-        return this.allPseudoAttributes;
+        return DBDPseudoAttribute.EMPTY_ARRAY;
     }
 
     @Association
