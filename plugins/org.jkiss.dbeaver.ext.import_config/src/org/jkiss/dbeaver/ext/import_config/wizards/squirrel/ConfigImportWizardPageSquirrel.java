@@ -44,9 +44,9 @@ public class ConfigImportWizardPageSquirrel extends ConfigImportWizardPage {
 
     protected ConfigImportWizardPageSquirrel()
     {
-        super("SQL Squirrel");
-        setTitle("SQL Squirrel");
-        setDescription("Import SQL Squirrel connections");
+        super(ImportConfigMessages.config_import_wizard_squirrel_name);
+        setTitle(ImportConfigMessages.config_import_wizard_squirrel_name);
+        setDescription(ImportConfigMessages.config_import_wizard_squirrel_description);
         setImageDescriptor(Activator.getImageDescriptor("icons/squirrel_big.png"));
     }
 

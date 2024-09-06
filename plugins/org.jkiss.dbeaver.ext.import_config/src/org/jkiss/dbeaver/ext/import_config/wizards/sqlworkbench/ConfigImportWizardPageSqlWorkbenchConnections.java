@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.import_config.wizards.sqlworkbench;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.import_config.ImportConfigMessages;
 import org.jkiss.dbeaver.ext.import_config.wizards.*;
 
 import java.io.*;
@@ -31,9 +32,9 @@ public class ConfigImportWizardPageSqlWorkbenchConnections extends ConfigImportW
         SqlWorkbenchImportConfigurationService.INSTANCE;
 
     protected ConfigImportWizardPageSqlWorkbenchConnections() {
-        super("Connections");
-        setTitle("Connections");
-        setDescription("Import connections");
+        super(ImportConfigMessages.config_import_wizard_page_caption_connections);
+        setTitle(ImportConfigMessages.config_import_wizard_page_caption_connections);
+        setDescription(ImportConfigMessages.config_import_wizard_header_import_configuration);
     }
 
     @Override

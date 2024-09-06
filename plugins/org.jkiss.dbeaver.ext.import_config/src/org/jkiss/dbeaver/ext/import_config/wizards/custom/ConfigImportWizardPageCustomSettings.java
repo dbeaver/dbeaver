@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.import_config.wizards.custom;
 
 import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -26,6 +27,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.ext.import_config.ImportConfigMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -42,9 +44,9 @@ public class ConfigImportWizardPageCustomSettings extends WizardPage {
 
     protected ConfigImportWizardPageCustomSettings()
     {
-        super("Settings");
-        setTitle("Input settings");
-        setDescription("Connections file format settings");
+        super(ImportConfigMessages.config_import_wizard_custom_driver_settings);
+        setTitle(ImportConfigMessages.config_import_wizard_custom_driver_import_settings_name);
+        setDescription(ImportConfigMessages.config_import_wizard_custom_driver_import_settings_file_format_description);
     }
 
     @Override
@@ -53,16 +55,16 @@ public class ConfigImportWizardPageCustomSettings extends WizardPage {
         Composite placeholder = new Composite(parent, SWT.NONE);
         placeholder.setLayout(new GridLayout(1, true));
 
-        Composite typeGroup = UIUtils.createControlGroup(placeholder, "Input type", 2, GridData.FILL_HORIZONTAL,
-                SWT.DEFAULT);
+        Composite typeGroup = UIUtils.createControlGroup(placeholder,  ImportConfigMessages.config_import_wizard_custom_input_type,
+            2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
         xmlButton = new Button(typeGroup, SWT.RADIO);
         xmlButton.setText("XML");
         xmlButton.setSelection(true);
         csvButton = new Button(typeGroup, SWT.RADIO);
         csvButton.setText("CSV");
 
-        UIUtils.createControlLabel(placeholder, "Input file");
-        filePathText = new TextWithOpenFile(placeholder, "Configuration Input File",
+        UIUtils.createControlLabel(placeholder, ImportConfigMessages.config_import_wizard_custom_input_file);
+        filePathText = new TextWithOpenFile(placeholder, ImportConfigMessages.config_import_wizard_custom_input_file_configuration,
                 new String[] { "*", "*.csv", "*.xml", "*.*" });
         filePathText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         filePathText.getTextControl().addModifyListener(new ModifyListener() {
@@ -71,7 +73,7 @@ public class ConfigImportWizardPageCustomSettings extends WizardPage {
             {
                 inputFile = new File(filePathText.getText());
                 if (!inputFile.exists()) {
-                    setErrorMessage("File '" + inputFile.getAbsolutePath() + "' doesn't exist");
+                    setErrorMessage(NLS.bind(ImportConfigMessages.config_import_wizard_file_doesnt_exist_error, inputFile.getAbsolutePath()));
                 } else {
                     setErrorMessage(null);
                 }
@@ -79,7 +81,7 @@ public class ConfigImportWizardPageCustomSettings extends WizardPage {
             }
         });
 
-        UIUtils.createControlLabel(placeholder, "File encoding");
+        UIUtils.createControlLabel(placeholder, ImportConfigMessages.config_import_wizard_file_encoding);
         encodingCombo = UIUtils.createEncodingCombo(placeholder, GeneralUtils.DEFAULT_ENCODING);
 
         /*
