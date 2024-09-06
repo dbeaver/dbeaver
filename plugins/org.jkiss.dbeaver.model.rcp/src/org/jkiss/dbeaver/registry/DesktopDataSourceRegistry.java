@@ -28,15 +28,15 @@ import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
 import org.jkiss.utils.ArrayUtils;
 
-public class DataSourceRegistryRCP extends DataSourceRegistry {
+public class DesktopDataSourceRegistry extends DataSourceRegistry {
 
-    private static final Log log = Log.getLog(DataSourceRegistryRCP.class);
+    private static final Log log = Log.getLog(DesktopDataSourceRegistry.class);
 
-    public DataSourceRegistryRCP(DBPProject project) {
+    public DesktopDataSourceRegistry(DBPProject project) {
         super(project);
     }
 
-    public DataSourceRegistryRCP(@NotNull DBPProject project, DataSourceConfigurationManager configurationManager, @NotNull DBPPreferenceStore preferenceStore) {
+    public DesktopDataSourceRegistry(@NotNull DBPProject project, DataSourceConfigurationManager configurationManager, @NotNull DBPPreferenceStore preferenceStore) {
         super(project, configurationManager, preferenceStore);
     }
 

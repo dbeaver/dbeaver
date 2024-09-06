@@ -128,7 +128,7 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
         }
         if (handler == null && resource instanceof IFolder) {
             final IProject eclipseProject = resource.getProject();
-            LocalProjectImpl project = projects.get(eclipseProject);
+            DesktopProjectImpl project = projects.get(eclipseProject);
             IPath relativePath = resource.getFullPath().makeRelativeTo(project.getRootResource().getFullPath());
             while (relativePath.segmentCount() > 0) {
                 String folderPath = relativePath.toString();

@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.impl.app.BaseApplicationImpl;
 import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
-import org.jkiss.dbeaver.model.navigator.DBNModelRCP;
+import org.jkiss.dbeaver.model.navigator.DesktopNavigatorModel;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMRegistry;
 import org.jkiss.dbeaver.model.qm.QMUtils;
@@ -153,7 +153,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
 
     @Override
     protected DBNModel createNavigatorModel() {
-        return new DBNModelRCP(this, null);
+        return new DesktopNavigatorModel(this, null);
     }
 
     public synchronized void dispose() {

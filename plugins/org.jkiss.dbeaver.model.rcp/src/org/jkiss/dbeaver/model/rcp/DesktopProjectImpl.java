@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.model.impl.app.BaseProjectImpl;
 import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
-import org.jkiss.dbeaver.registry.DataSourceRegistryRCP;
+import org.jkiss.dbeaver.registry.DesktopDataSourceRegistry;
 import org.jkiss.dbeaver.registry.task.TaskConstants;
 import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -49,9 +49,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class LocalProjectImpl extends BaseProjectImpl implements RCPProject {
+public class DesktopProjectImpl extends BaseProjectImpl implements RCPProject {
 
-    private static final Log log = Log.getLog(LocalProjectImpl.class);
+    private static final Log log = Log.getLog(DesktopProjectImpl.class);
 
     private static final String SETTINGS_FOLDER = ".settings";
     private static final String PROJECT_FILE = ".project";
@@ -75,7 +75,7 @@ public class LocalProjectImpl extends BaseProjectImpl implements RCPProject {
 
     private volatile boolean projectInvalidated;
 
-    public LocalProjectImpl(@NotNull BaseWorkspaceImpl workspace, @NotNull IProject project, @Nullable SMSessionContext sessionContext) {
+    public DesktopProjectImpl(@NotNull BaseWorkspaceImpl workspace, @NotNull IProject project, @Nullable SMSessionContext sessionContext) {
         super(workspace, sessionContext);
         this.project = project;
     }
@@ -178,7 +178,7 @@ public class LocalProjectImpl extends BaseProjectImpl implements RCPProject {
 
     @NotNull
     protected DBPDataSourceRegistry createDataSourceRegistry() {
-        return new DataSourceRegistryRCP(this);
+        return new DesktopDataSourceRegistry(this);
     }
 
     @Nullable

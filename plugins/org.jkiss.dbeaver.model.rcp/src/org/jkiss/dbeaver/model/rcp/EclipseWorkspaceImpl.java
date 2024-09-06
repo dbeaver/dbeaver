@@ -55,7 +55,7 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
     private final String workspaceId;
     private final ProjectListener projectListener;
     private final IWorkspace eclipseWorkspace;
-    protected final Map<IProject, LocalProjectImpl> projects = new LinkedHashMap<>();
+    protected final Map<IProject, DesktopProjectImpl> projects = new LinkedHashMap<>();
 
     private final List<DBPProjectListener> projectListeners = new ArrayList<>();
 
@@ -200,7 +200,7 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
         }
         for (IProject project : allProjects) {
             if (project.exists() && !project.isHidden() && isProjectAccessible(project)) {
-                LocalProjectImpl projectMetadata = projects.get(project);
+                DesktopProjectImpl projectMetadata = projects.get(project);
                 if (projectMetadata == null) {
                     projectMetadata = createProjectFrom(project);
                 }
@@ -222,8 +222,8 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
         return true;
     }
 
-    protected LocalProjectImpl createProjectFrom(IProject project) {
-        return new LocalProjectImpl(this, project, this.getAuthContext());
+    protected DesktopProjectImpl createProjectFrom(IProject project) {
+        return new DesktopProjectImpl(this, project, this.getAuthContext());
     }
 
     private IProject createDefaultProject() throws CoreException {
@@ -303,7 +303,7 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
                         IProject project = (IProject) delta.getResource();
                         if (!projects.containsKey(project)) {
                             if (delta.getKind() == IResourceDelta.ADDED) {
-                                LocalProjectImpl projectMetadata = createProjectFrom(project);
+                                DesktopProjectImpl projectMetadata = createProjectFrom(project);
                                 projects.put(project, projectMetadata);
                                 fireProjectAdd(projectMetadata);
                                 if (activeProject == null) {
@@ -314,7 +314,7 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
                         } else {
                             if (delta.getKind() == IResourceDelta.REMOVED) {
                                 // Project deleted
-                                LocalProjectImpl projectMetadata = projects.remove(project);
+                                DesktopProjectImpl projectMetadata = projects.remove(project);
                                 projectMetadata.dispose();
                                 fireProjectRemove(projectMetadata);
                                 if (projectMetadata == activeProject) {
@@ -323,7 +323,7 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
                                 }
                             } else {
                                 // Some changes within project - reflect them in metadata cache
-                                LocalProjectImpl projectMetadata = projects.get(project);
+                                DesktopProjectImpl projectMetadata = projects.get(project);
                                 if (projectMetadata != null) {
                                     handleResourceChange(projectMetadata, delta);
                                 }
@@ -334,7 +334,7 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
         }
     }
 
-    private void handleResourceChange(LocalProjectImpl projectMetadata, IResourceDelta delta) {
+    private void handleResourceChange(DesktopProjectImpl projectMetadata, IResourceDelta delta) {
         if (delta.getKind() == IResourceDelta.REMOVED) {
             IPath movedToPath = delta.getMovedToPath();
             if (movedToPath != null) {

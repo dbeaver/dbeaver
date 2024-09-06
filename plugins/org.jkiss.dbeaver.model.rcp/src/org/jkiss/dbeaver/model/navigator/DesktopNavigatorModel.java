@@ -25,11 +25,11 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.List;
 
-public class DBNModelRCP extends DBNModel {
+public class DesktopNavigatorModel extends DBNModel {
 
     private NavigatorResourceListener resourceListener;
 
-    public DBNModelRCP(DBPPlatform platform, @Nullable List<? extends DBPProject> modelProjects) {
+    public DesktopNavigatorModel(DBPPlatform platform, @Nullable List<? extends DBPProject> modelProjects) {
         super(platform, modelProjects);
     }
 

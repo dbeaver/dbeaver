@@ -28,9 +28,9 @@ public class NavigatorResourceListener implements IResourceChangeListener {
 
     private static final Log log = Log.getLog(NavigatorResourceListener.class);
 
-    private final DBNModel model;
+    private final DesktopNavigatorModel model;
 
-    public NavigatorResourceListener(DBNModel model) {
+    public NavigatorResourceListener(DesktopNavigatorModel model) {
         this.model = model;
     }
 
@@ -40,8 +40,7 @@ public class NavigatorResourceListener implements IResourceChangeListener {
         if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
             IResourceDelta delta = event.getDelta();
             for (IResourceDelta childDelta : delta.getAffectedChildren()) {
-                if (childDelta.getResource() instanceof IProject) {
-                    IProject project = (IProject) childDelta.getResource();
+                if (childDelta.getResource() instanceof IProject project) {
                     DBNProject projectNode = NavigatorResources.getProjectNode(model.getRoot(), project);
                     if (projectNode == null) {
                         if (childDelta.getKind() == IResourceDelta.ADDED) {

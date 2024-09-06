@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
 import org.jkiss.dbeaver.model.impl.app.BaseApplicationImpl;
 
 /**
- * EclipseApplicationImpl
+ * DesktopApplicationImpl
  */
 public abstract class DesktopApplicationImpl extends BaseApplicationImpl implements DBPApplicationDesktop {
 
