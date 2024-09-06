@@ -71,6 +71,7 @@ import java.util.stream.Collectors;
 
 public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
     private static final Log log = Log.getLog(StreamProducerPageSettings.class);
+    private static final String HELP_DATA_TRANSFER_LINK = "Data-transfer#import-data";
 
     private PropertyTreeViewer propsEditor;
     private PropertySourceCustom propertySource;
@@ -194,6 +195,12 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             UIUtils.createControlLabel(exporterSettings, DTMessages.data_transfer_wizard_settings_group_importer);
 
             propsEditor = new PropertyTreeViewer(exporterSettings, SWT.BORDER);
+
+            UIUtils.createInfoLink(
+                exporterSettings,
+                DTUIMessages.stream_producer_page_input_files_hint,
+                () -> ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(HELP_DATA_TRANSFER_LINK))
+            );
         }
         settingsDivider.setWeights(400, 600);
 
