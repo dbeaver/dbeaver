@@ -128,10 +128,9 @@ public class DBNModel implements IResourceChangeListener {
         if (this.root != null) {
             throw new IllegalStateException("Can't initialize navigator model more than once");
         }
-        this.root = new DBNRoot(this);
+        this.root = new DBNRoot(platform, this);
 
         if (isGlobal()) {
-            DBPPlatform platform = DBWorkbench.getPlatform();
             if (platform instanceof DBPPlatformDesktop) {
                 ((DBPPlatformDesktop)platform).getWorkspace().getEclipseWorkspace().addResourceChangeListener(this);
             }
@@ -142,7 +141,6 @@ public class DBNModel implements IResourceChangeListener {
     public void dispose()
     {
         if (isGlobal()) {
-            DBPPlatform platform = DBWorkbench.getPlatform();
             if (platform instanceof DBPPlatformDesktop) {
                 ((DBPPlatformDesktop)platform).getWorkspace().getEclipseWorkspace().removeResourceChangeListener(this);
             }

@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.model.navigator.registry.DBNRegistry;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -52,7 +51,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     public DBNProject(DBNNode parentNode, DBPProject project, DBPResourceHandler handler) {
         super(parentNode, project.getEclipseProject(), handler);
         this.project = project;
-        if (DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+        if (getModel().getPlatform().getApplication().isMultiuser()) {
             DBNRegistry.getInstance().extendNode(this, false);
         }
     }
@@ -189,7 +188,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
         children.add(new DBNProjectDatabases(this, dataSourceRegistry));
         children.addAll(List.of(super.readChildNodes(monitor)));
 
-        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS)) {
+        if (!getModel().getPlatform().getPreferenceStore().getBoolean(ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS)) {
             // Remove non-existing resources (placeholders)
             children.removeIf(node -> node instanceof DBNResource && !((DBNResource) node).isResourceExists());
         }

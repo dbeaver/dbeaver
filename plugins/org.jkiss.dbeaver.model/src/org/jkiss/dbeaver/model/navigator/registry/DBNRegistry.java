@@ -48,6 +48,9 @@ public class DBNRegistry {
     private DBNModelExtenderDescriptor defaultApplication;
 
     private DBNRegistry(IExtensionRegistry registry) {
+        if (registry == null) {
+            return;
+        }
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor(EXTENSION_ID);
         for (IConfigurationElement ext : extElements) {
             if (ext.getName().equals("extender")) {
