@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObjectLocalized;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSEntityElement;
@@ -43,7 +44,7 @@ public class TaskTypeDescriptor extends DataSourceBindingDescriptor implements D
 
     private final TaskCategoryDescriptor category;
     private final IConfigurationElement config;
-    private final ObjectType handlerImplType;
+    private final AbstractDescriptor.ObjectType handlerImplType;
     private final DBPPropertyDescriptor[] properties;
     private Boolean matchesEntityElements;
 
@@ -53,7 +54,7 @@ public class TaskTypeDescriptor extends DataSourceBindingDescriptor implements D
         this.category.addTask(this);
         this.config = config;
 
-        this.handlerImplType = new ObjectType(config, "handler");
+        this.handlerImplType = new AbstractDescriptor.ObjectType(config, "handler");
 
         this.properties = PropertyDescriptor.extractPropertyGroups(config);
     }
@@ -101,7 +102,7 @@ public class TaskTypeDescriptor extends DataSourceBindingDescriptor implements D
     @Override
     public Class<?>[] getInputTypes() {
         List<Class<?>> objClasses = new ArrayList<>();
-        for (ObjectType objectType : getObjectTypes()) {
+        for (AbstractDescriptor.ObjectType objectType : getObjectTypes()) {
             Class<?> aClass = objectType.getObjectClass();
             if (aClass != null) {
                 objClasses.add(aClass);
@@ -158,7 +159,7 @@ public class TaskTypeDescriptor extends DataSourceBindingDescriptor implements D
         if (matchesEntityElements != null) {
             return matchesEntityElements;
         }
-        for (ObjectType ot : getObjectTypes()) {
+        for (AbstractDescriptor.ObjectType ot : getObjectTypes()) {
             if (DBSEntityElement.class.isAssignableFrom(ot.getObjectClass())) {
                 matchesEntityElements = true;
                 break;
