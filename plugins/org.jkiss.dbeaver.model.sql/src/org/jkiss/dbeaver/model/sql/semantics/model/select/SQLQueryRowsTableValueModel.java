@@ -17,13 +17,13 @@
 package org.jkiss.dbeaver.model.sql.semantics.model.select;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.LinkedList;
@@ -37,10 +37,9 @@ public class SQLQueryRowsTableValueModel extends SQLQueryRowsSourceModel {
     private final List<SQLQueryValueExpression> values;
     
     public SQLQueryRowsTableValueModel(
-        @NotNull SQLQueryModelContext context,
         @NotNull STMTreeNode syntaxNode,
         @NotNull List<SQLQueryValueExpression> values) {
-        super(context, syntaxNode);
+        super(syntaxNode);
         this.values = values;
     }
 

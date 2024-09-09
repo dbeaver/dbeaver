@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+  <extension point="org.jkiss.dbeaver.dataSourceView">
+    <view id="org.jkiss.dbeaver.ext.postgresql.dataSourceWizardView" dataSource="gaussdb" targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard" label="%dialog.connection.header" class="org.jkiss.dbeaver.ext.gaussdb.ui.views.GaussDBConnectionPage" icon="platform:/plugin/org.jkiss.dbeaver.ext.gaussdb/icons/gaussdb_icon.png"/>
+    <view id="org.jkiss.dbeaver.ext.postgresql.dataSourceEditorView" dataSource="gaussdb" targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog" label="%dialog.connection.header" class="org.jkiss.dbeaver.ext.gaussdb.ui.views.GaussDBConnectionPage" icon="platform:/plugin/org.jkiss.dbeaver.ext.gaussdb/icons/gaussdb_icon.png"/>
+  </extension>
+  <extension point="org.jkiss.dbeaver.databaseEditor">
+    <editor id="postgresql.source.view" class="org.jkiss.dbeaver.ext.gaussdb.ui.editors.GaussDBPackageDeclareViewEditor" label="%db.editor.declare.name" description="%db.editor.source.description" icon="#sql_text" position="additions_middle" contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="false">
+      <objectType name="org.jkiss.dbeaver.ext.gaussdb.model.GaussDBPackage"/>
+    </editor>
+    <editor id="postgresql.source.view" class="org.jkiss.dbeaver.ext.gaussdb.ui.editors.GaussDBPackageBodyViewEditor" label="%db.editor.body.name" description="%db.editor.source.description" icon="#sql_text" position="additions_middle" contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="false">
+      <objectType name="org.jkiss.dbeaver.ext.gaussdb.model.GaussDBPackage"/>
+    </editor>
+    <configurator class="org.jkiss.dbeaver.ext.gaussdb.ui.config.GaussDBDatabaseConfigurator">
+      <objectType name="org.jkiss.dbeaver.ext.gaussdb.model.GaussDBDatabase"/>
+    </configurator>
+    <configurator class="org.jkiss.dbeaver.ext.gaussdb.ui.config.GaussDBPackageConfigurator">
+      <objectType name="org.jkiss.dbeaver.ext.gaussdb.model.GaussDBPackage"/>
+    </configurator>
+    <configurator class="org.jkiss.dbeaver.ext.gaussdb.ui.config.GaussDBProcedureConfigurator">
+      <objectType name="org.jkiss.dbeaver.ext.gaussdb.model.GaussDBProcedure"/>
+    </configurator>
+    <configurator class="org.jkiss.dbeaver.ext.gaussdb.ui.config.GaussDBFunctionConfigurator">
+      <objectType name="org.jkiss.dbeaver.ext.gaussdb.model.GaussDBFunction"/>
+    </configurator>
+  </extension>
+</plugin>

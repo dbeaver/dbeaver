@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class StandardSQLDialectQueryGenerator implements SQLDialectQueryGenerator {
-    private Log log = Log.getLog(StandardSQLDialectQueryGenerator.class);
+    private static final Log log = Log.getLog(StandardSQLDialectQueryGenerator.class);
     private static final String NESTED_QUERY_AlIAS = "z_q";
 
     public static StandardSQLDialectQueryGenerator INSTANCE = new StandardSQLDialectQueryGenerator();
@@ -134,14 +134,12 @@ public class StandardSQLDialectQueryGenerator implements SQLDialectQueryGenerato
             // and generate full/quoted name for it.
             String attrName;
             DBSAttributeBase cAttr = constraint.getAttribute();
-            if (cAttr instanceof DBDAttributeBinding) {
-                DBDAttributeBinding binding = (DBDAttributeBinding) cAttr;
+            if (cAttr instanceof DBDAttributeBinding binding) {
                 if (binding.getEntityAttribute() != null &&
                     binding.getMetaAttribute() != null &&
                     binding.getEntityAttribute().getName().equals(binding.getMetaAttribute().getName()) ||
                     binding instanceof DBDAttributeBindingType) {
-                    if (binding.getEntityAttribute() instanceof DBSContextBoundAttribute) {
-                        DBSContextBoundAttribute entityAttribute = (DBSContextBoundAttribute) binding.getEntityAttribute();
+                    if (binding.getEntityAttribute() instanceof DBSContextBoundAttribute entityAttribute) {
                         attrName = entityAttribute.formatMemberReference(true, conditionTable, DBPAttributeReferencePurpose.DATA_SELECTION);
                     } else {
                         attrName = DBUtils.getObjectFullName(
@@ -164,6 +162,8 @@ public class StandardSQLDialectQueryGenerator implements SQLDialectQueryGenerato
                             // Second option for some databases (like Firebird)
                             attrName = binding.getMetaAttribute().getLabel();
                         }
+                        // We must quote it because aliases/column names may contain spaces
+                        attrName = DBUtils.getQuotedIdentifier(dataSource, attrName);
                     }
                 }
             } else if (cAttr != null) {
@@ -174,14 +174,16 @@ public class StandardSQLDialectQueryGenerator implements SQLDialectQueryGenerato
                 attrName = DBUtils.getQuotedIdentifier(dataSource, constraint.getAttributeName());
             }
 
-            query.append(attrName).append(' ').append(getConstraintCondition(dataSource, constraint, conditionTable, inlineCriteria));
+            query.append(attrName)
+                .append(' ')
+                .append(getConstraintCondition(dataSource, constraint, conditionTable, inlineCriteria));
             if (constraints.size() > 1) {
                 query.append(')');
             }
         }
 
         if (!CommonUtils.isEmpty(filter.getWhere())) {
-            if (constraints.size() > 0) {
+            if (!constraints.isEmpty()) {
                 query.append(operator).append('(').append(filter.getWhere()).append(')');
             } else {
                 query.append(filter.getWhere());
@@ -251,11 +253,9 @@ public class StandardSQLDialectQueryGenerator implements SQLDialectQueryGenerato
                 String orderColumn = subQuery ? co.getAttributeLabel() : co.getAttributeName();
                 if (canOrderByName(dataSource, co, orderColumn) && !filter.hasNameDuplicates(orderColumn)) {
                     DBSAttributeBase attr = co.getAttribute();
-                    if (attr instanceof DBDAttributeBinding
-                        && ((DBDAttributeBinding) attr).getEntityAttribute() instanceof DBSContextBoundAttribute
+                    if (attr instanceof DBDAttributeBinding attrBinding
+                        && attrBinding.getEntityAttribute() instanceof DBSContextBoundAttribute entityAttribute
                     ) {
-                        DBDAttributeBinding attrBinding = (DBDAttributeBinding) attr;
-                        DBSContextBoundAttribute entityAttribute = (DBSContextBoundAttribute) attrBinding.getEntityAttribute();
                         orderString = entityAttribute.formatMemberReference(
                             true, conditionTable, DBPAttributeReferencePurpose.DATA_SELECTION
                         );
@@ -344,10 +344,9 @@ public class StandardSQLDialectQueryGenerator implements SQLDialectQueryGenerato
             }
             if (operator.getArgumentCount() > 0) {
 
-                if (operator.equals(DBCLogicalOperator.EQUALS) && value instanceof Object[]) {
+                if (operator.equals(DBCLogicalOperator.EQUALS) && value instanceof Object[] array) {
                     // Special case for multiple values for IN
                     // Generate series of ORed conditions
-                    Object[] array = ((Object[]) value);
                     for (int i = 0; i < array.length; i++) {
                         if (i > 0) {
                             conString.append(" OR ");
@@ -392,11 +391,9 @@ public class StandardSQLDialectQueryGenerator implements SQLDialectQueryGenerato
                 if (hasNull) {
                     conString.append("IS NULL OR ");
                     DBSAttributeBase attr = constraint.getAttribute();
-                    if (attr instanceof DBDAttributeBinding
-                        && ((DBDAttributeBinding) attr).getEntityAttribute() instanceof DBSContextBoundAttribute
+                    if (attr instanceof DBDAttributeBinding attrBinding
+                        && attrBinding.getEntityAttribute() instanceof DBSContextBoundAttribute entityAttribute
                     ) {
-                        DBDAttributeBinding attrBinding = (DBDAttributeBinding) attr;
-                        DBSContextBoundAttribute entityAttribute = (DBSContextBoundAttribute) attrBinding.getEntityAttribute();
                         conString.append(entityAttribute.formatMemberReference(
                             true, conditionTable, DBPAttributeReferencePurpose.DATA_SELECTION
                         ));

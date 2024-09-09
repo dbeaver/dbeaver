@@ -450,6 +450,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                             request,
                             keyWord,
                             keyWord,
+                            false,
                             keywordType,
                             null,
                             false,
@@ -724,6 +725,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                             request,
                             tableName,
                             tableName,
+                            false,
                             DBPKeywordType.OTHER,
                             null,
                             false,
@@ -738,6 +740,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                             request,
                             tableAlias,
                             tableAlias,
+                            false,
                             DBPKeywordType.OTHER,
                             null,
                             false,
@@ -864,6 +867,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             final String objectName =
                 request.getWordDetector().isQuoted(token) ? request.getWordDetector().removeQuotes(token) :
                 DBObjectNameCaseTransformer.transformName(dataSource, token);
+            sc.cacheStructure(monitor, DBSObjectContainer.STRUCT_ENTITIES);
             childObject = objectName == null ? null : sc.getChild(monitor, objectName);
             if (!DBStructUtils.isConnectedContainer(childObject)) {
                 childObject = null;
@@ -872,6 +876,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 for (DBSObjectContainer selectedContainer : selectedContainers) {
                     if (selectedContainer != null) {
                         // Probably it is from selected object, let's try it
+                        selectedContainer.cacheStructure(monitor, DBSObjectContainer.STRUCT_ENTITIES);
                         childObject = selectedContainer.getChild(monitor, objectName);
                         if (childObject != null) {
                             sc = selectedContainer;
@@ -1236,6 +1241,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         String objectName = null;
         String replaceString = null;
         boolean isSingleObject = true;
+        boolean isFQName = false;
         SQLTableAliasInsertMode aliasMode = SQLTableAliasInsertMode.NONE;
         String prevWord = request.getWordDetector().getPrevKeyWord();
         if (SQLConstants.KEYWORD_FROM.equals(prevWord) ||
@@ -1348,6 +1354,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                             replaceString = DBUtils.getFullQualifiedName(dataSource, objectContainer, structObject);
                         } else {
                             replaceString = structObject.getFullyQualifiedName(DBPEvaluationContext.DML);
+                            isFQName = true;
                         }
                         isSingleObject = false;
                     }
@@ -1356,6 +1363,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             if (replaceString == null) {
                 if (request.getContext().isUseFQNames() && object instanceof DBPQualifiedObject qo) {
                     replaceString = qo.getFullyQualifiedName(DBPEvaluationContext.DML);
+                    isFQName = true;
                 } else {
                     replaceString = DBUtils.getQuotedIdentifier(dataSource, object.getName());
                 }
@@ -1374,6 +1382,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             request,
             replaceString,
             objectName,
+            isFQName,
             DBPKeywordType.OTHER,
             objectIcon,
             isSingleObject,
@@ -1388,6 +1397,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         SQLCompletionRequest request,
         String replaceString,
         String displayString,
+        boolean isFQName,
         DBPKeywordType proposalType,
         @Nullable DBPImage image,
         boolean isObject,
@@ -1407,7 +1417,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
 
         // If we have quoted string then ignore pref settings
         boolean quotedString = request.getWordDetector().isQuoted(replaceString);
-        if (!quotedString) {
+        if (!quotedString && !isFQName) {
             replaceString = convertKeywordCase(request, replaceString, isObject);
         }
         int cursorPos;

@@ -118,6 +118,11 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
     @NotNull
     DBTTaskManager getTaskManager();
 
+    @Nullable
+    default DBTTaskManager getTaskManager(boolean create) {
+        return getTaskManager();
+    }
+
     /**
      * Project auth context
      */

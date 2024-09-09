@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.List;
@@ -41,7 +42,6 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
     private final SQLQueryLexicalScope conditionScope;
 
     public SQLQueryRowsNaturalJoinModel(
-        @NotNull SQLQueryModelContext context,
         @NotNull Interval range,
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryRowsSourceModel left,
@@ -49,7 +49,7 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
         @NotNull SQLQueryValueExpression condition,
         @NotNull SQLQueryLexicalScope conditionScope
     ) {
-        super(context, range, syntaxNode, left, right);
+        super(range, syntaxNode, left, right);
         super.registerSubnode(condition);
         this.condition = condition;
         this.conditionScope = conditionScope;
@@ -59,14 +59,13 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
     }
 
     public SQLQueryRowsNaturalJoinModel(
-        @NotNull SQLQueryModelContext context,
         @NotNull Interval range,
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryRowsSourceModel left,
         @NotNull SQLQueryRowsSourceModel right,
         @Nullable List<SQLQuerySymbolEntry> columsToJoin
     ) {
-        super(context, range, syntaxNode, left, right);
+        super(range, syntaxNode, left, right);
         this.condition = null;
         this.conditionScope = null;
         this.columsToJoin = columsToJoin;
@@ -101,9 +100,9 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
                         symbol.setDefinition(column); // TODO multiple definitions per symbol
                     } else {
                         if (leftColumnDef != null) {
-                            statistics.appendError(column, "Column not found to the left of join");
+                            statistics.appendError(column, "Column " + column.getName() + " not found to the left of join");
                         } else {
-                            statistics.appendError(column, "Column not found to the right of join");
+                            statistics.appendError(column, "Column " + column.getName() + " not found to the right of join");
                         }
                         symbol.setSymbolClass(SQLQuerySymbolClass.ERROR);
                     }

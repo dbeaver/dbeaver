@@ -20,14 +20,16 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
+import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
+import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueTupleReferenceExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.*;
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.*;
 
-class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceModel, SQLQueryModelContext> {
-    public SQLQueryExpressionMapper(@Nullable SQLQueryModelContext recognizer) {
+class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceModel, SQLQueryModelRecognizer> {
+    public SQLQueryExpressionMapper(@Nullable SQLQueryModelRecognizer recognizer) {
         super(SQLQueryRowsSourceModel.class, queryExpressionSubtreeNodeNames, translations, recognizer);
     }
 
@@ -65,7 +67,7 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
     );
 
     @NotNull
-    private static final Map<String, TreeMapperCallback<SQLQueryRowsSourceModel, SQLQueryModelContext>> translations = Map.of(
+    private static final Map<String, TreeMapperCallback<SQLQueryRowsSourceModel, SQLQueryModelRecognizer>> translations = Map.of(
         STMKnownRuleNames.directSqlDataStatement, (n, cc, r) -> {
             if (cc.isEmpty()) {
                 return null;
@@ -78,9 +80,8 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
                 STMTreeNode withNode = n.findChildOfName(STMKnownRuleNames.withClause);
                 boolean isRecursive = withNode.getChildCount() > 2; // is RECURSIVE keyword presented
 
-                SQLQueryRowsCteModel cte = new SQLQueryRowsCteModel(r, n, isRecursive, resultQuery);
-
                 STMTreeNode cteListNode = withNode.getStmChild(withNode.getChildCount() - 1);
+                List<SQLQueryRowsCteSubqueryModel> cteSubqueries = new ArrayList<>();
                 for (int i = 0, j = 0; i < cteListNode.getChildCount() && j < subqueries.size(); i += 2, j++) {
                     STMTreeNode cteSubqueryNode = cteListNode.getStmChild(i);
 
@@ -88,12 +89,11 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
 
                     STMTreeNode columnListNode = cteSubqueryNode.findChildOfName(STMKnownRuleNames.columnNameList);
                     List<SQLQuerySymbolEntry> columnList = columnListNode != null ? r.collectColumnNameList(columnListNode) : List.of();
-
                     SQLQueryRowsSourceModel subquerySource = subqueries.get(j);
-                    cte.addSubquery(cteSubqueryNode, subqueryName, columnList, subquerySource);
+                    cteSubqueries.add(new SQLQueryRowsCteSubqueryModel(cteSubqueryNode, subqueryName, columnList, subquerySource));
                 }
 
-                return cte;
+                return new SQLQueryRowsCteModel(n, isRecursive, cteSubqueries, resultQuery);
             }
         },
         STMKnownRuleNames.queryExpression, (n, cc, r) -> {
@@ -112,7 +112,7 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
                         default ->
                             throw new UnsupportedOperationException("Unexpected child node kind at queryExpression");
                     };
-                    source = new SQLQueryRowsSetCorrespondingOperationModel(r, range, childNode, source, nextSource, corresponding, opKind);
+                    source = new SQLQueryRowsSetCorrespondingOperationModel(range, childNode, source, nextSource, corresponding, opKind);
                 }
                 return source;
             }
@@ -133,7 +133,7 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
                         default ->
                             throw new UnsupportedOperationException("Unexpected child node kind at nonJoinQueryTerm");
                     };
-                    source = new SQLQueryRowsSetCorrespondingOperationModel(r, range, childNode, source, nextSource, corresponding, opKind);
+                    source = new SQLQueryRowsSetCorrespondingOperationModel(range, childNode, source, nextSource, corresponding, opKind);
                 }
                 return source;
             }
@@ -155,19 +155,19 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
                             Optional<STMTreeNode> joinConditionNode = Optional.ofNullable(childNode.findChildOfName(STMKnownRuleNames.joinSpecification))
                                     .map(cn -> cn.findChildOfName(STMKnownRuleNames.joinCondition));
                             if (joinConditionNode.isPresent()) {
-                                try (SQLQueryModelContext.LexicalScopeHolder condScope = r.openScope()) {
+                                try (SQLQueryModelRecognizer.LexicalScopeHolder condScope = r.openScope()) {
                                     condScope.lexicalScope.registerSyntaxNode(joinConditionNode.get());
                                     yield joinConditionNode.map(cn -> cn.findChildOfName(STMKnownRuleNames.searchCondition))
                                             .map(r::collectValueExpression)
-                                            .map(e -> new SQLQueryRowsNaturalJoinModel(r, range, childNode, currSource, nextSource, e, condScope.lexicalScope))
-                                            .orElseGet(() -> new SQLQueryRowsNaturalJoinModel(r, range, childNode, currSource, nextSource, Collections.emptyList()));
+                                            .map(e -> new SQLQueryRowsNaturalJoinModel(range, childNode, currSource, nextSource, e, condScope.lexicalScope))
+                                            .orElseGet(() -> new SQLQueryRowsNaturalJoinModel(range, childNode, currSource, nextSource, Collections.emptyList()));
                                 }
                             } else {
-                                yield new SQLQueryRowsNaturalJoinModel(r, range, childNode, currSource, nextSource, r.collectColumnNameList(childNode));
+                                yield new SQLQueryRowsNaturalJoinModel(range, childNode, currSource, nextSource, r.collectColumnNameList(childNode));
                             }
                         }
                         case SQLStandardParser.RULE_crossJoinTerm ->
-                            new SQLQueryRowsCrossJoinModel(r, range, childNode, currSource, nextSource);
+                            new SQLQueryRowsCrossJoinModel(range, childNode, currSource, nextSource);
                         default ->
                             throw new UnsupportedOperationException("Unexpected child node kind at queryExpression");
                     };
@@ -186,7 +186,7 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
                     Interval range = Interval.of(n.getRealInterval().a, childNode.getRealInterval().b);
                     source = switch (childNode.getNodeKindId()) {
                         case SQLStandardParser.RULE_tableReference ->
-                            new SQLQueryRowsCrossJoinModel(r, range, childNode, source, nextSource);
+                            new SQLQueryRowsCrossJoinModel(range, childNode, source, nextSource);
                         default -> throw new UnsupportedOperationException("Unexpected child node kind at fromClause");
                     };
                 }
@@ -201,7 +201,7 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
 
             SQLQueryLexicalScope selectListScope;
             STMTreeNode selectKeywordNode;
-            try (SQLQueryModelContext.LexicalScopeHolder selectListScopeHolder = r.openScope()) {
+            try (SQLQueryModelRecognizer.LexicalScopeHolder selectListScopeHolder = r.openScope()) {
                 selectListScope = selectListScopeHolder.lexicalScope;
                 selectKeywordNode = n.getStmChild(0); // SELECT keyword
 
@@ -268,7 +268,7 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
                         STMTreeNode filterNode = filterNodes[i];
                         int scopeIndex = i + 1;
                         if (filterNode != null) {
-                            try (SQLQueryModelContext.LexicalScopeHolder exprScope = r.openScope()) {
+                            try (SQLQueryModelRecognizer.LexicalScopeHolder exprScope = r.openScope()) {
                                 filterExprs[i] = r.collectValueExpression(filterNode);
                                 nextScopeNodes[prevScopeIndex] = filterNode;
                                 scopes[scopeIndex] = exprScope.lexicalScope;
@@ -288,13 +288,13 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
                 }
 
                 projectionModel = new SQLQueryRowsProjectionModel(
-                    r, n, selectListScope, source, fromScope,
+                    n, selectListScope, source, fromScope,
                     SQLQueryRowsProjectionModel.FiltersData.of(filterExprs[0], filterExprs[1], filterExprs[2], filterExprs[3]),
                     SQLQueryRowsProjectionModel.FiltersData.of(scopes[1], scopes[2], scopes[3], scopes[4]),
                     resultModel
                 );
             } else {
-                projectionModel = new SQLQueryRowsProjectionModel(r, n, selectListScope, source, resultModel);
+                projectionModel = new SQLQueryRowsProjectionModel(n, selectListScope, source, resultModel);
             }
             return projectionModel;
         },
@@ -318,7 +318,7 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
                     SQLQuerySymbolEntry correlationName = r.collectIdentifier(
                         lastSubnode.getStmChild(lastSubnode.getChildCount() == 1 || lastSubnode.getChildCount() == 4 ? 0 : 1)
                     );
-                    source = new SQLQueryRowsCorrelatedSourceModel(r, n, source, correlationName, r.collectColumnNameList(lastSubnode));
+                    source = new SQLQueryRowsCorrelatedSourceModel(n, source, correlationName, r.collectColumnNameList(lastSubnode));
                 }
             }
             return source;
@@ -329,7 +329,7 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
             for (int i = 1; i < n.getChildCount(); i += 2) {
                 values.add(r.collectValueExpression(n.getStmChild(i)));
             }
-            return new SQLQueryRowsTableValueModel(r, n, values);
+            return new SQLQueryRowsTableValueModel(n, values);
         }
     );
 

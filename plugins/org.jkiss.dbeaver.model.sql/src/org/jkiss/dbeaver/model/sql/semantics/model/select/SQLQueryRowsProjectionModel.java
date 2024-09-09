@@ -20,11 +20,11 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.SQLDialect.ProjectionAliasVisibilityScope;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryLexicalScope;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.EnumSet;
@@ -72,17 +72,15 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
     private final FiltersData<SQLQueryLexicalScope> filterScopes;
 
     public SQLQueryRowsProjectionModel(
-        @NotNull SQLQueryModelContext context,
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryLexicalScope selectListScope,
         @NotNull SQLQueryRowsSourceModel fromSource,
         @NotNull SQLQuerySelectionResultModel result
     ) {
-        this(context, syntaxNode, selectListScope, fromSource, null, FiltersData.EMPTY, FiltersData.EMPTY, result);
+        this(syntaxNode, selectListScope, fromSource, null, FiltersData.EMPTY, FiltersData.EMPTY, result);
     }
 
     public SQLQueryRowsProjectionModel(
-        @NotNull SQLQueryModelContext context,
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryLexicalScope selectListScope,
         @NotNull SQLQueryRowsSourceModel fromSource,
@@ -91,7 +89,7 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
         @NotNull FiltersData<SQLQueryLexicalScope> filterScopes,
         @NotNull SQLQuerySelectionResultModel result
     ) {
-        super(context, syntaxNode, fromSource, result, filterExprs.whereClause, filterExprs.havingClause, filterExprs.groupByClause, filterExprs.orderByClause);
+        super(syntaxNode, fromSource, result, filterExprs.whereClause, filterExprs.havingClause, filterExprs.groupByClause, filterExprs.orderByClause);
         this.result = result;
         this.selectListScope = selectListScope;
         this.fromSource = fromSource;

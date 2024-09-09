@@ -92,6 +92,7 @@ public class SQLQueryJob extends DataSourceJob
 
     public static final Object STATS_RESULTS = new Object();
     private static final int MAX_QUERY_PREVIEW_LENGTH = 8192;
+    private static final int MAX_UPDATE_COUNT_READS = 1000;
 
     private final DBSDataContainer dataContainer;
     private final List<SQLScriptElement> queries;
@@ -317,6 +318,10 @@ public class SQLQueryJob extends DataSourceJob
                     QMUtils.getDefaultHandler().handleScriptEnd(session);
                 }
 
+                if (listener != null) {
+                    listener.onEndSqlJob(session, getSqlJobResult());
+                }
+
                 // Return success
                 return new Status(
                     Status.OK,
@@ -341,6 +346,17 @@ public class SQLQueryJob extends DataSourceJob
                     log.error(e);
                 }
             }
+        }
+    }
+
+    @NotNull
+    private SqlJobResult getSqlJobResult() {
+        if (queries.get(queries.size() - 1) == lastGoodQuery && lastError == null) {
+            return SqlJobResult.SUCCESS;
+        } else if (lastGoodQuery != null) {
+            return SqlJobResult.PARTIAL_SUCCESS;
+        } else {
+            return SqlJobResult.FAILURE;
         }
     }
 
@@ -623,6 +639,7 @@ public class SQLQueryJob extends DataSourceJob
             // Some databases (especially NoSQL) may produce a lot of
             // result sets, we should warn user because it may lead to UI freeze
             int resultSetCounter = 0;
+            int updateCountReads = 0;
             boolean confirmed = false;
             while (true) {
                 // Fetch data only if we have to fetch all results or if it is rs requested
@@ -685,6 +702,7 @@ public class SQLQueryJob extends DataSourceJob
                         if (updateCount >= 0) {
                             executeResult.setUpdateCount(updateCount);
                             statistics.addRowsUpdated(updateCount);
+                            updateCountReads++;
                         }
                     } catch (DBCException e) {
                         // In some cases we can't read update count
@@ -697,9 +715,15 @@ public class SQLQueryJob extends DataSourceJob
                     resultSetNumber++;
                     fetchResultSetNumber = resultSetNumber;
                 }
-                if (!hasResultSet && updateCount < 0) {
-                    // Nothing else to fetch
-                    break;
+                if (!hasResultSet) {
+                    if (updateCount <= 0 && updateCountReads >= MAX_UPDATE_COUNT_READS) {
+                        // Exhausted all read attempts with no success
+                        break;
+                    }
+                    if (updateCount < 0) {
+                        // Nothing else to fetch
+                        break;
+                    }
                 }
 
                 if (session.getDataSource().getInfo().supportsMultipleResults()) {
@@ -975,6 +999,11 @@ public class SQLQueryJob extends DataSourceJob
         session.getProgressMonitor().subTask(CommonUtils.truncateString(query.getText(), 512));
 
         boolean result = executeSingleQuery(session, query, fireEvents);
+
+        if (listener != null) {
+            listener.onEndSqlJob(session, getSqlJobResult());
+        }
+
         if (!result && lastError != null) {
             if (lastError instanceof DBCException dbce) {
                 throw dbce;

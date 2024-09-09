@@ -52,7 +52,7 @@ public class ExasolSchemaManager
 
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_SAVE_IMMEDIATELY;
     }
 
@@ -64,14 +64,14 @@ public class ExasolSchemaManager
     }
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return super.canCreateObject(container);
     }
 
     @Override
     protected ExasolSchema createDatabaseObject(
-        DBRProgressMonitor monitor,
-        DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBCException {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBCException {
         Object navContainer = options.get(DBEObjectManager.OPTION_CONTAINER);
         boolean virtSchema = navContainer instanceof DBNDatabaseFolder && ((DBNDatabaseFolder) navContainer).getChildrenClass() == ExasolVirtualSchema.class;
         if (virtSchema) {
@@ -97,7 +97,7 @@ public class ExasolSchemaManager
 
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options) {
         final ExasolSchema schema = command.getObject();
 
         String script = "CREATE SCHEMA " + DBUtils.getQuotedIdentifier(schema);
@@ -116,7 +116,7 @@ public class ExasolSchemaManager
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options) {
     	if (command.getObject() instanceof ExasolVirtualSchema)
     	{
             actions.add(
@@ -131,8 +131,8 @@ public class ExasolSchemaManager
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
-                                          ObjectRenameCommand command, Map<String, Object> options) {
+    protected void addObjectRenameActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
+                                          @NotNull ObjectRenameCommand command, @NotNull Map<String, Object> options) {
         ExasolSchema obj = command.getObject();
         actions.add(
             new SQLDatabasePersistAction(
@@ -143,7 +143,7 @@ public class ExasolSchemaManager
     }
 
     @Override
-    public void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
+    public void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options) {
         ExasolSchema schema = command.getObject();
 
         if (command.getProperties().size() >= 1) {

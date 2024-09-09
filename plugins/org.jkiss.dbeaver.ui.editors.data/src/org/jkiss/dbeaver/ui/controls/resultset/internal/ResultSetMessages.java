@@ -318,7 +318,7 @@ public class ResultSetMessages extends NLS {
     public static String dialog_save_script_button_delete_cascade_tip;
     public static String dialog_save_script_button_delete_deep_cascade;
     public static String dialog_save_script_button_delete_deep_cascade_tip;
-    public static String dialog_save_script_button_bar_button_persist;
+    public static String dialog_save_script_button_bar_button_execute;
     public static String dialog_save_script_button_bar_button_copy;
 
     //Preference/Properties
@@ -468,6 +468,7 @@ public class ResultSetMessages extends NLS {
     public static String copy_special_force_quote_cell_values_tip;
     public static String copy_special_copy_as_html_text;
     public static String copy_special_copy_as_html_tip;
+    public static String copy_special_hint_for_hotkey;
 
     public static String filter_panel_filters_history_text;
     public static String filter_panel_expand_panel_text;

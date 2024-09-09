@@ -597,14 +597,15 @@ public class DataSourceDescriptor
         if (filterMap.isEmpty()) {
             return null;
         }
-        // Test all super classes
-        for (Class<?> testType = type; testType != null; testType = testType.getSuperclass()) {
+        // Test all interfaces
+        for (Class<?> testType : type.getInterfaces()) {
             FilterMapping filterMapping = getTypeFilterMapping(parentObject, firstMatch, testType);
             if (filterMapping != null) {
                 return filterMapping;
             }
         }
-        for (Class<?> testType : type.getInterfaces()) {
+        // Test all super classes
+        for (Class<?> testType = type; testType != null; testType = testType.getSuperclass()) {
             FilterMapping filterMapping = getTypeFilterMapping(parentObject, firstMatch, testType);
             if (filterMapping != null) {
                 return filterMapping;
