@@ -24,14 +24,14 @@ import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 
-import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class SQLGeneratorSelectManyFromData extends SQLGeneratorResultSet {
 
     @Override
     public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, IResultSetController object) {
-        Collection<DBDAttributeBinding> keyAttributes = getKeyAttributes(monitor, object);
         sql.append("SELECT ");
         boolean hasAttr = false;
         for (DBSAttributeBase attr : getAllAttributes(monitor, object)) {
@@ -39,33 +39,32 @@ public class SQLGeneratorSelectManyFromData extends SQLGeneratorResultSet {
             sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML));
             hasAttr = true;
         }
+
         sql.append(getLineSeparator()).append("FROM ").append(getEntityName(getSingleEntity()));
+
         sql.append(getLineSeparator()).append("WHERE ");
-        boolean multiKey = keyAttributes.size() > 1;
-        if (multiKey) sql.append("(");
+        List<DBDAttributeBinding> whereAttr = getSelectedAttributes();
         hasAttr = false;
-        for (DBDAttributeBinding binding : keyAttributes) {
-            if (hasAttr) sql.append(",");
-            sql.append(DBUtils.getObjectFullName(binding.getAttribute(), DBPEvaluationContext.DML));
+        for (int i = 0; i < whereAttr.size(); i++) {
+            if (hasAttr) sql.append(" AND ");
+            appendInExpression(sql, whereAttr, i);
             hasAttr = true;
         }
-        if (multiKey) sql.append(")");
+
+        sql.append(";\n");
+    }
+
+    private void appendInExpression(StringBuilder sql, List<DBDAttributeBinding> whereAttr, int index) {
+        sql.append(DBUtils.getObjectFullName(whereAttr.get(index).getAttribute(), DBPEvaluationContext.DML));
+
         sql.append(" IN (");
-        if (multiKey) sql.append("\n");
-        List<ResultSetRow> selectedRows = getSelectedRows();
-        for (int i = 0; i < selectedRows.size(); i++) {
-            ResultSetRow firstRow = selectedRows.get(i);
-            if (multiKey) sql.append("(");
-            hasAttr = false;
-            for (DBDAttributeBinding binding : keyAttributes) {
-                if (hasAttr) sql.append(",");
-                appendAttributeValue(getController(), sql, binding, firstRow);
-                hasAttr = true;
-            }
-            if (multiKey) sql.append(")");
-            if (i < selectedRows.size() - 1) sql.append(",");
-            if (multiKey) sql.append("\n");
+        Set<String> attrValues = new HashSet<>();
+        for (ResultSetRow row : getSelectedRows()) {
+            DBDAttributeBinding binding = getController().getModel().getAttributeBinding(whereAttr.get(index));
+            String value = getAttributeValue(getController(), binding, row);
+            attrValues.add(value);
         }
-        sql.append(");\n");
+        sql.append(String.join(", ", attrValues));
+        sql.append(")");
     }
 }
