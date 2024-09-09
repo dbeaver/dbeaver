@@ -162,6 +162,8 @@ public class StandardSQLDialectQueryGenerator implements SQLDialectQueryGenerato
                             // Second option for some databases (like Firebird)
                             attrName = binding.getMetaAttribute().getLabel();
                         }
+                        // We must quote it because aliases/column names may contain spaces
+                        attrName = DBUtils.getQuotedIdentifier(dataSource, attrName);
                     }
                 }
             } else if (cAttr != null) {
@@ -172,7 +174,7 @@ public class StandardSQLDialectQueryGenerator implements SQLDialectQueryGenerato
                 attrName = DBUtils.getQuotedIdentifier(dataSource, constraint.getAttributeName());
             }
 
-            query.append(DBUtils.getQuotedIdentifier(dataSource, attrName))
+            query.append(attrName)
                 .append(' ')
                 .append(getConstraintCondition(dataSource, constraint, conditionTable, inlineCriteria));
             if (constraints.size() > 1) {

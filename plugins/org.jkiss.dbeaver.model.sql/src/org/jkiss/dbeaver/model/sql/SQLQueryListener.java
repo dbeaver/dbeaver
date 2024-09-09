@@ -34,4 +34,5 @@ public interface SQLQueryListener
 
     void onEndScript(DBCStatistics statistics, boolean hasErrors);
 
+    void onEndSqlJob(DBCSession session, SqlJobResult result);
 }
