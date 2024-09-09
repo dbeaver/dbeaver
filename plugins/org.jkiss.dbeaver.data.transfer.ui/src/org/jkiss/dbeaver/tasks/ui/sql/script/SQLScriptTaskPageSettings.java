@@ -39,11 +39,11 @@ import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystems;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
-import org.jkiss.dbeaver.model.rm.RMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.sql.SQLScriptExecuteSettings;
+import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -56,6 +56,8 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.*;
 
@@ -96,7 +98,8 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
         mainGroup.setSashWidth(5);
         mainGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 
-        DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(sqlWizard.getProject());
+        DBPProject project = sqlWizard.getProject();
+        DBNProject projectNode = project.getNavigatorModel().getRoot().getProjectNode(project);
 
         {
             Composite filesGroup = UIUtils.createControlGroup(mainGroup, DTMessages.sql_script_task_page_settings_group_files, 2, GridData.FILL_BOTH, 0);
@@ -116,7 +119,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                 public Image getImage(Object element) {
                     DBNNode node = (DBNNode) element;
                     DBPImage icon;
-                    if (node instanceof DBNPathBase path) {
+                    if (node instanceof DBNPathBase) {
                         icon = DBIcon.TREE_SCRIPT;
                     } else {
                         icon = node.getNodeIconDefault();
@@ -163,7 +166,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                     }
                 }
             });
-            if (DBFUtils.supportsMultiFileSystems(sqlWizard.getProject())) {
+            if (DBFUtils.supportsMultiFileSystems(project)) {
                 UIUtils.createToolItem(buttonsToolbar, UIMessages.text_with_open_dialog_browse_remote, UIIcon.OPEN_EXTERNAL, new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
@@ -365,7 +368,8 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
     }
 
     private void updateSelectedScripts() {
-        DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(sqlWizard.getProject());
+        DBPProject project = sqlWizard.getProject();
+        DBNProject projectNode = project.getNavigatorModel().getRoot().getProjectNode(project);
 
         Set<DBPDataSourceContainer> dataSources = new LinkedHashSet<>();
         for (DBNNodeWithResource element : selectedScripts) {
@@ -425,13 +429,13 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
         SQLScriptExecuteSettings settings = sqlWizard.getSettings();
 
         DBPProject project = getWizard().getProject();
-        DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(project);
+        DBNProject projectNode = project.getNavigatorModel().getRoot().getProjectNode(project);
         if (projectNode != null) {
             List<String> scriptFiles = settings.getScriptFiles();
             for (String filePath : scriptFiles) {
                 if (IOUtils.isLocalFile(filePath)) {
-                    IFile workspaceFile = RMUtils.findEclipseProjectFile(project, filePath);
-                    if (workspaceFile == null) {
+                    Path workspaceFile = DTUtils.findProjectFile(project, filePath);
+                    if (workspaceFile == null || !Files.exists(workspaceFile)) {
                         log.debug("Script file '" + filePath + "' not found");
                         continue;
                     }

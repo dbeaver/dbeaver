@@ -125,6 +125,24 @@
                   singleton="false">
                 <task id="altibaseToolPackageCompile"/>
             </tool>
+            <tool
+                  description="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseReplicationStart.label"
+                  id="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseToolReplicationStart"
+                  label="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseReplicationStart.label"
+                  group="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance"
+                  icon="icons/repl_start.png"
+                  singleton="false">
+                <task id="altibaseToolReplicationStart"/>
+            </tool>
+            <tool
+                  description="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseReplicationStop.label"
+                  id="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseToolReplicationStop"
+                  label="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseReplicationStop.label"
+                  group="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance"
+                  icon="icons/repl_stop.png"
+                  singleton="false">
+                <task id="altibaseToolReplicationStop"/>
+            </tool>
         </tools>
     </extension>
         

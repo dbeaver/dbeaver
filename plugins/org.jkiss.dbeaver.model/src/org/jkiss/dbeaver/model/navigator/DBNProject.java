@@ -25,8 +25,10 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.navigator.registry.DBNRegistry;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -35,6 +37,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -50,7 +53,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     private List<DBNNode> extraNodes;
 
     public DBNProject(DBNNode parentNode, DBPProject project, DBPResourceHandler handler) {
-        super(parentNode, project.getEclipseProject(), handler);
+        super(parentNode, project instanceof RCPProject rcpProject ? rcpProject.getEclipseProject() : null, handler);
         this.project = project;
         if (DBWorkbench.getPlatform().getApplication().isMultiuser()) {
             DBNRegistry.getInstance().extendNode(this, false);
@@ -60,6 +63,10 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     @NotNull
     public DBPProject getProject() {
         return project;
+    }
+
+    private IProject getEclipseProject() {
+        return project instanceof RCPProject rcpProject ? rcpProject.getEclipseProject() : null;
     }
 
     public DBNProjectDatabases getDatabases() {
@@ -92,12 +99,13 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
 
     @Override
     public String getNodeDescription() {
-        if (project.isVirtual()) {
+        IProject iProject = getEclipseProject();
+        if (iProject == null) {
             return null;
         }
         project.ensureOpen();
         try {
-            return project.getEclipseProject().getDescription().getComment();
+            return iProject.getDescription().getComment();
         } catch (CoreException e) {
             log.debug(e);
             return null;
@@ -157,7 +165,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
         project.ensureOpen();
 
         try {
-            IProject eclipseProject = project.getEclipseProject();
+            IProject eclipseProject = getEclipseProject();
             if (eclipseProject == null) {
                 throw new DBException("Eclipse project is null");
             }
@@ -233,9 +241,12 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     }
 
     public DBNResource findResource(DBRProgressMonitor monitor, IResource resource) throws DBException {
+        if (!(project instanceof RCPProject rcpProject)) {
+            return null;
+        }
         List<IResource> path = new ArrayList<>();
         for (IResource parent = resource;
-             !(parent instanceof IProject) && !CommonUtils.equalObjects(parent, project.getRootResource());
+             !(parent instanceof IProject) && !CommonUtils.equalObjects(parent, rcpProject.getRootResource());
              parent = parent.getParent())
         {
             path.add(0, parent);
@@ -252,9 +263,24 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
         return resNode;
     }
 
+    public DBNResource findResource(DBRProgressMonitor monitor, Path path) throws DBException {
+        Path relativePath = getProject().getAbsolutePath().relativize(path);
+
+        DBNResource resNode = this;
+        for (Path fileName : relativePath) {
+            DBNNode node = DBUtils.findObject(resNode.getChildren(monitor), fileName.toString());
+            if (node instanceof DBNResource resource) {
+                resNode = resource;
+            } else {
+                break;
+            }
+        }
+        return resNode;
+    }
+
     @Override
     protected void handleChildResourceChange(IResourceDelta delta) {
-        if (CommonUtils.equalObjects(delta.getResource(), project.getRootResource())) {
+        if (CommonUtils.equalObjects(delta.getResource(), ((RCPProject)project).getRootResource())) {
             // Go inside root resource
             for (IResourceDelta cChild : delta.getAffectedChildren()) {
                 handleChildResourceChange(cChild);
@@ -326,7 +352,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
 
     @Override
     protected IResource getContentLocationResource() {
-        return project.getRootResource();
+        return project instanceof RCPProject rcpProject ? rcpProject.getRootResource() : null;
     }
 
     @Override
