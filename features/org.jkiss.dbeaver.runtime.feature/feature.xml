@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.runtime.feature"
         label="%featureName"
-        version="24.1.5.qualifier"
+        version="24.2.1.qualifier"
         provider-name="%providerName"
         plugin="org.jkiss.dbeaver.model">
 
@@ -72,6 +72,5 @@
     <plugin id="org.jkiss.bundle.gis" version="0.0.0" />
     <plugin id="org.jkiss.bundle.sshj" version="0.0.0" />
     <plugin id="org.jkiss.bundle.antlr4" version="0.0.0" />
-    <plugin id="org.jkiss.bundle.jsvg" version="0.0.0" />
 
 </feature>

@@ -68,11 +68,7 @@ public class DataSourcePropertyTester extends PropertyTester {
             }
             @Nullable
             DBCExecutionContext context = contextProvider.getExecutionContext();
-            @Nullable
-            DBPProject resourceProject = receiver instanceof IEditorPart editorPart
-                ? EditorUtils.getFileProject(editorPart.getEditorInput())
-                : null;
-            
+
             switch (property) {
                 case PROP_CONNECTED:
                     boolean isConnected;
@@ -133,18 +129,30 @@ public class DataSourcePropertyTester extends PropertyTester {
                     }
                     return Boolean.FALSE.equals(expectedValue);
                 }
-                case PROP_EDITABLE:
+                case PROP_EDITABLE: {
+                    DBPProject resourceProject = getProject(receiver);
                     return resourceProject == null || resourceProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
-                case PROP_PROJECT_RESOURCE_EDITABLE:
+                }
+                case PROP_PROJECT_RESOURCE_EDITABLE: {
+                    DBPProject resourceProject = getProject(receiver);
                     return resourceProject == null || resourceProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
-                case PROP_PROJECT_RESOURCE_VIEWABLE:
+                }
+                case PROP_PROJECT_RESOURCE_VIEWABLE: {
+                    DBPProject resourceProject = getProject(receiver);
                     return resourceProject == null || resourceProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_VIEW);
+                }
             }
             return false;
         } catch (Exception e) {
             log.debug("Error testing property " + property + ": " + e.getMessage());
             return false;
         }
+    }
+
+    private static @Nullable DBPProject getProject(Object receiver) {
+        return receiver instanceof IEditorPart editorPart
+            ? EditorUtils.getFileProject(editorPart.getEditorInput())
+            : null;
     }
 
     public static void firePropertyChange(String propName)

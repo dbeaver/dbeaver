@@ -179,7 +179,7 @@ public class DirectedGraphLayoutVisitor {
             target = (Node) partToNodesMap.get(connectionPart.getTarget().getParent());
         }
         if (source == null || target == null) {
-            log.warn("Source or target node not found");
+            log.debug("Source or target node not found");
             return;
         }
 
