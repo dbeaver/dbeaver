@@ -59,6 +59,10 @@ public class PostgreSSLConfigurator extends SSLConfiguratorTrustStoreUI {
     private Button useProxyService;
     private boolean sslClassesResolved;
 
+    public PostgreSSLConfigurator() {
+        super(DBPConnectionEditIntention.DEFAULT);
+    }
+
     @Override
     public void createControl(@NotNull Composite parent, Object object, @NotNull Runnable propertyChangeListener) {
         final Composite composite = new Composite(parent, SWT.NONE);
@@ -167,7 +171,7 @@ public class PostgreSSLConfigurator extends SSLConfiguratorTrustStoreUI {
         ) throws DBException {
             return switch (intention) {
                 case DEFAULT -> new PostgreSSLConfigurator();
-                case CREDENTIALS_ONLY -> new SSLConfiguratorTrustStoreUI() {
+                case CREDENTIALS_ONLY -> new SSLConfiguratorTrustStoreUI(intention) {
                     @Override
                     protected boolean useCACertificate() {
                         return true;

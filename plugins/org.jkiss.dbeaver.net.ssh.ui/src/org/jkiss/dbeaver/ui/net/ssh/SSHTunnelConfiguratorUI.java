@@ -101,7 +101,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
         {
             Group settingsGroup = UIUtils.createControlGroup(composite, SSHUIMessages.model_ssh_configurator_group_settings, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
-            credentialsPanel = new CredentialsPanel(settingsGroup, propertyChangeListener);
+            credentialsPanel = new CredentialsPanel(settingsGroup, propertyChangeListener, DBPConnectionEditIntention.DEFAULT);
         }
 
         {
@@ -670,7 +670,11 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         private final Text passwordText;
         private final Button savePasswordCheckbox;
 
-        public CredentialsPanel(@NotNull Composite parent, @NotNull Runnable propertyChangeListener) {
+        public CredentialsPanel(
+            @NotNull Composite parent,
+            @NotNull Runnable propertyChangeListener,
+            @NotNull DBPConnectionEditIntention editIntention
+        ) {
             super(parent, SWT.NONE);
 
             setLayout(GridLayoutFactory.fillDefaults().numColumns(2).create());
@@ -740,6 +744,12 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                     }
                 });
                 savePasswordCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            }
+
+            if (editIntention == DBPConnectionEditIntention.CREDENTIALS_ONLY) {
+                hostNameText.setEditable(false);
+                hostPortText.setEditable(false);
+                authMethodCombo.setEnabled(false);
             }
         }
 
@@ -853,13 +863,13 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         }
     }
 
-    public static class Provider implements IObjectPropertyConfiguratorProvider<Object, DBWHandlerConfiguration, DBPConnectionEditIntention, SshTunnelCredsConfigurator> {
+    public static class Provider implements IObjectPropertyConfiguratorProvider<Object, DBWHandlerConfiguration, DBPConnectionEditIntention, IObjectPropertyConfigurator<Object, DBWHandlerConfiguration>> {
 
         @NotNull
         @Override
-        public SshTunnelCredsConfigurator createConfigurator(Object object, DBPConnectionEditIntention intention) throws DBException {
+        public IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> createConfigurator(Object object, DBPConnectionEditIntention intention) throws DBException {
             return switch (intention) {
-                case DEFAULT -> throw new RuntimeException("not implemented"); // TODO
+                case DEFAULT -> new SSHTunnelConfiguratorUI();
                 case CREDENTIALS_ONLY -> new SshTunnelCredsConfigurator();
             };
         }
@@ -890,7 +900,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
             this.credPanels = new ArrayList<>();
             for (ConfigurationWrapper cfg: this.configurations) {
-                CredentialsPanel credsPanel = new CredentialsPanel(this.credPanelsContainer, this.propertyChangeListener);
+                CredentialsPanel credsPanel = new CredentialsPanel(this.credPanelsContainer, this.propertyChangeListener, DBPConnectionEditIntention.CREDENTIALS_ONLY);
                 this.credPanels.add(credsPanel);
                 credsPanel.loadSettings(cfg, false);
             }

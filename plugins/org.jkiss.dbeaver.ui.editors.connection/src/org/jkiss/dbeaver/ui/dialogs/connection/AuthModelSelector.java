@@ -205,35 +205,43 @@ public class AuthModelSelector extends Composite {
         UIUtils.setControlVisible(authModelComp, authSelectorVisible);
         ((Group)modelConfigPlaceholder).setText(authSelectorVisible ? UIConnectionMessages.dialog_connection_auth_group : UIConnectionMessages.dialog_connection_auth_group + " (" + selectedAuthModel.getName() + ")");
 
-        DBAAuthModel<?> authModel = selectedAuthModel.getInstance();
-        if (authSettingsEnabled) {
+        if (this.intention == DBPConnectionEditIntention.CREDENTIALS_ONLY && this.activeDataSource.isSharedCredentials()) {
+            UIUtils.createInfoLabel(modelConfigPlaceholder, "Shared credentials cannot be edited", GridData.FILL_BOTH,1);
             authModelConfigurator = null;
-            try {
-                authModelConfigurator = UIPropertyConfiguratorRegistry.getInstance().tryCreateConfigurator(authModel, this.intention);
-                if (authModelConfigurator != null) {
-                    log.debug("No UI configurator for auth model " + selectedAuthModel.getId());
-                }
-            } catch (DBException e) {
-                log.error(e);
-            }
-        }
-
-        if (authModelConfigurator != null) {
-            authModelConfigurator.createControl(modelConfigPlaceholder, authModel, changeListener);
-            if (activeDataSource != null) {
-                if (selectedAuthModel != null) {
-                    // Set selected auth model to datasource config
-                    activeDataSource.getConnectionConfiguration().setAuthModelId(selectedAuthModel.getId());
-                }
-                authModelConfigurator.loadSettings(activeDataSource);
-            }
         } else {
-            if (selectedAuthModel != null && !CommonUtils.isEmpty(selectedAuthModel.getDescription())) {
-                Label descLabel = new Label(modelConfigPlaceholder, SWT.NONE);
-                descLabel.setText(selectedAuthModel.getDescription());
-                GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-                gd.horizontalSpan = 2;
-                descLabel.setLayoutData(gd);
+            DBAAuthModel<?> authModel = selectedAuthModel.getInstance();
+            if (authSettingsEnabled) {
+                authModelConfigurator = null;
+                try {
+                    authModelConfigurator = UIPropertyConfiguratorRegistry.getInstance().tryCreateConfigurator(authModel, this.intention);
+                    if (authModelConfigurator == null) {
+                        authModelConfigurator = UIPropertyConfiguratorRegistry.getInstance().tryCreateConfigurator(authModel, null);
+                    }
+                    if (authModelConfigurator == null) {
+                        log.debug("No UI configurator for auth model " + selectedAuthModel.getId());
+                    }
+                } catch (DBException e) {
+                    log.error(e);
+                }
+            }
+
+            if (authModelConfigurator != null) {
+                authModelConfigurator.createControl(modelConfigPlaceholder, authModel, changeListener);
+                if (activeDataSource != null) {
+                    if (selectedAuthModel != null) {
+                        // Set selected auth model to datasource config
+                        activeDataSource.getConnectionConfiguration().setAuthModelId(selectedAuthModel.getId());
+                    }
+                    authModelConfigurator.loadSettings(activeDataSource);
+                }
+            } else {
+                if (selectedAuthModel != null && !CommonUtils.isEmpty(selectedAuthModel.getDescription())) {
+                    Label descLabel = new Label(modelConfigPlaceholder, SWT.NONE);
+                    descLabel.setText(selectedAuthModel.getDescription());
+                    GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+                    gd.horizontalSpan = 2;
+                    descLabel.setLayoutData(gd);
+                }
             }
         }
 

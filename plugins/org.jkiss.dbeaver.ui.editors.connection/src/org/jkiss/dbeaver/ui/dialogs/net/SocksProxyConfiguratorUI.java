@@ -28,9 +28,12 @@ import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.connection.DBPConnectionEditIntention;
 import org.jkiss.dbeaver.model.impl.net.SocksConstants;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
+import org.jkiss.dbeaver.ui.IObjectPropertyConfiguratorProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
@@ -47,6 +50,16 @@ public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<Obj
     private Text userNameText;
     private Text passwordText;
     private Button savePasswordCheckbox;
+
+    protected final DBPConnectionEditIntention editIntention;
+
+    public SocksProxyConfiguratorUI() {
+        this(DBPConnectionEditIntention.DEFAULT);
+    }
+
+    public SocksProxyConfiguratorUI(@NotNull DBPConnectionEditIntention editIntention) {
+        this.editIntention = editIntention;
+    }
 
     @Override
     public void createControl(@NotNull Composite parent, Object object, @NotNull Runnable propertyChangeListener)
@@ -87,6 +100,11 @@ public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<Obj
                 dialog.open();
             }
         });
+
+        if (this.editIntention == DBPConnectionEditIntention.CREDENTIALS_ONLY) {
+            hostText.setEditable(false);
+            portText.setEnabled(false);
+        }
     }
 
     @Override
@@ -122,5 +140,16 @@ public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<Obj
     @Override
     public boolean isComplete() {
         return true;
+    }
+
+    public static class Provider implements IObjectPropertyConfiguratorProvider<Object, DBWHandlerConfiguration, DBPConnectionEditIntention, IObjectPropertyConfigurator<Object, DBWHandlerConfiguration>> {
+
+        @NotNull
+        @Override
+        public IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> createConfigurator(
+            Object object, DBPConnectionEditIntention intention
+        ) throws DBException {
+            return new SocksProxyConfiguratorUI(intention);
+        }
     }
 }

@@ -209,6 +209,8 @@
 
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
         <propertyConfigurator class="org.jkiss.dbeaver.ext.mysql.model.net.MySQLSSLHandlerImpl" uiClass="org.jkiss.dbeaver.ext.mysql.ui.views.MySQLSSLConfigurator"/>
+        <propertyConfiguratorProvider class="org.jkiss.dbeaver.ext.mysql.model.net.MySQLSSLHandlerImpl" uiProviderClass="org.jkiss.dbeaver.ext.mysql.ui.views.MySQLSSLConfigurator$Provider"
+            parameterClass="org.jkiss.dbeaver.model.connection.DBPConnectionEditIntention" />
     </extension>
 
     <extension point="org.jkiss.dbeaver.task.ui">

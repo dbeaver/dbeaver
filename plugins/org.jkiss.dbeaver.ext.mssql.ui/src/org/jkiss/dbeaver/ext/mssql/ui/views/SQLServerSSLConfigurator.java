@@ -22,16 +22,28 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.ui.SQLServerUIMessages;
+import org.jkiss.dbeaver.model.connection.DBPConnectionEditIntention;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
+import org.jkiss.dbeaver.ui.IObjectPropertyConfiguratorProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.net.SSLConfiguratorTrustStoreUI;
 import org.jkiss.utils.CommonUtils;
 
 public class SQLServerSSLConfigurator extends SSLConfiguratorTrustStoreUI {
     private Text keystoreHostname;
+
+    public SQLServerSSLConfigurator() {
+        super(DBPConnectionEditIntention.DEFAULT);
+    }
+
+    public SQLServerSSLConfigurator(DBPConnectionEditIntention editIntention) {
+        super(editIntention);
+    }
 
     @Override
     public void createControl(@NotNull Composite parent, Object object, @NotNull Runnable propertyChangeListener) {
@@ -86,5 +98,16 @@ public class SQLServerSSLConfigurator extends SSLConfiguratorTrustStoreUI {
         super.saveSettings(configuration);
 
         configuration.setProperty(SQLServerConstants.PROP_SSL_KEYSTORE_HOSTNAME, keystoreHostname.getText().trim());
+    }
+
+    public static class Provider implements IObjectPropertyConfiguratorProvider<Object, DBWHandlerConfiguration, DBPConnectionEditIntention, IObjectPropertyConfigurator<Object, DBWHandlerConfiguration>> {
+
+        @NotNull
+        @Override
+        public IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> createConfigurator(
+            Object object, DBPConnectionEditIntention intention
+        ) throws DBException {
+            return new SQLServerSSLConfigurator(intention);
+        }
     }
 }

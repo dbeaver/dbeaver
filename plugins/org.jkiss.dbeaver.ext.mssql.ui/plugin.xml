@@ -152,6 +152,9 @@
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
         <propertyConfigurator class="org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelAbstract" uiClass="org.jkiss.dbeaver.ext.mssql.ui.views.SQLServerAuthConfigurator"/>
         <propertyConfigurator class="org.jkiss.dbeaver.ext.mssql.model.SQLServerSSLHandlerImpl" uiClass="org.jkiss.dbeaver.ext.mssql.ui.views.SQLServerSSLConfigurator"/>
+        <propertyConfiguratorProvider class="org.jkiss.dbeaver.ext.mssql.model.SQLServerSSLHandlerImpl" uiProviderClass="org.jkiss.dbeaver.ext.mssql.ui.views.SQLServerSSLConfigurator$Provider"
+            parameterClass="org.jkiss.dbeaver.model.connection.DBPConnectionEditIntention" />
+
     </extension>
 
 </plugin>

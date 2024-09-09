@@ -23,10 +23,14 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.clickhouse.ClickhouseConstants;
 import org.jkiss.dbeaver.ext.clickhouse.ui.internal.ClickhouseMessages;
+import org.jkiss.dbeaver.model.connection.DBPConnectionEditIntention;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
+import org.jkiss.dbeaver.ui.IObjectPropertyConfiguratorProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.net.SSLConfiguratorTrustStoreUI;
 import org.jkiss.utils.CommonUtils;
@@ -40,6 +44,14 @@ public class ClickhouseSSLConfigurator extends SSLConfiguratorTrustStoreUI {
     enum SSLModes {
         STRICT,
         NONE
+    }
+
+    public ClickhouseSSLConfigurator() {
+        super(DBPConnectionEditIntention.DEFAULT);
+    }
+
+    public ClickhouseSSLConfigurator(DBPConnectionEditIntention editIntention) {
+        super(editIntention);
     }
 
     @Override
@@ -64,6 +76,9 @@ public class ClickhouseSSLConfigurator extends SSLConfiguratorTrustStoreUI {
         sslModeCombo.select(0);
         sslModeCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
+        if (this.editIntention == DBPConnectionEditIntention.CREDENTIALS_ONLY) {
+            sslModeCombo.setEnabled(false);
+        }
     }
 
     @Override
@@ -97,6 +112,18 @@ public class ClickhouseSSLConfigurator extends SSLConfiguratorTrustStoreUI {
             if (!CommonUtils.isEmpty(sslModeCombo.getText())) {
                 configuration.setProperty(ClickhouseConstants.SSL_MODE_CONF, sslModeCombo.getText());
             }
+        }
+    }
+
+
+    public static class Provider implements IObjectPropertyConfiguratorProvider<Object, DBWHandlerConfiguration, DBPConnectionEditIntention, IObjectPropertyConfigurator<Object, DBWHandlerConfiguration>> {
+
+        @NotNull
+        @Override
+        public IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> createConfigurator(
+            Object object, DBPConnectionEditIntention intention
+        ) throws DBException {
+            return new ClickhouseSSLConfigurator(intention);
         }
     }
 }

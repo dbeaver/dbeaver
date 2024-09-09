@@ -110,9 +110,8 @@ public class UIPropertyConfiguratorRegistry {
     public UIPropertyConfiguratorProviderDescriptor findProviderDescriptorByObjectType(@NotNull Object object, @Nullable Object parameter) {
         var objectConfiguratorProviders = findByKeyTypeName(this.providers, object.getClass());
         if (objectConfiguratorProviders != null) {
-            var configuratorProvider = findByKeyTypeName(objectConfiguratorProviders.getSecond(), parameter.getClass());
-            if (configuratorProvider != null) {
-                return configuratorProvider;
+            if (parameter != null) {
+                return findByKeyTypeName(objectConfiguratorProviders.getSecond(), parameter.getClass());
             } else {
                 return objectConfiguratorProviders.getFirst();
             }
@@ -125,9 +124,8 @@ public class UIPropertyConfiguratorRegistry {
     public UIPropertyConfiguratorProviderDescriptor findProviderDescriptorByExactObjectTypeName(@NotNull String className, @Nullable Object parameter) {
         var objectConfiguratorProviders = this.providers.get(className);
         if (objectConfiguratorProviders != null) {
-            var configuratorProvider = findByKeyTypeName(objectConfiguratorProviders.getSecond(), parameter.getClass());
-            if (configuratorProvider != null) {
-                return configuratorProvider;
+            if (parameter != null) {
+                return findByKeyTypeName(objectConfiguratorProviders.getSecond(), parameter.getClass());
             } else {
                 return objectConfiguratorProviders.getFirst();
             }
@@ -138,28 +136,26 @@ public class UIPropertyConfiguratorRegistry {
 
     @SuppressWarnings("unchecked")
     @Nullable
-    public <OBJECT, SETTINGS, PARAMETER, T extends IObjectPropertyConfigurator<OBJECT, SETTINGS>> T tryCreateConfigurator(@NotNull OBJECT object, PARAMETER parameter) throws DBException {
-        UIPropertyConfiguratorProviderDescriptor providerDescriptor = this.findProviderDescriptorByObjectType(object, parameter);
-        if (providerDescriptor != null) {
-            IObjectPropertyConfiguratorProvider<OBJECT, SETTINGS, PARAMETER, T> provider =  providerDescriptor.createConfiguratorProvider();
-            return provider.createConfigurator(object, parameter);
-        } else {
+    public <OBJECT, SETTINGS, PARAMETER, T extends IObjectPropertyConfigurator<OBJECT, SETTINGS>> T tryCreateConfigurator(@NotNull OBJECT object, @Nullable PARAMETER parameter) throws DBException {
+        if (parameter == null) {
             UIPropertyConfiguratorDescriptor configuratorDescriptor = this.getDescriptor(object);
             if (configuratorDescriptor != null) {
                 return configuratorDescriptor.createConfigurator();
-            } else {
-                return null;
+            }
+        } else {
+            UIPropertyConfiguratorProviderDescriptor providerDescriptor = this.findProviderDescriptorByObjectType(object, parameter);
+            if (providerDescriptor != null) {
+                IObjectPropertyConfiguratorProvider<OBJECT, SETTINGS, PARAMETER, T> provider = providerDescriptor.createConfiguratorProvider();
+                return provider.createConfigurator(object, parameter);
             }
         }
+        return null;
     }
 
     @SuppressWarnings("unchecked")
     @Nullable
-    public <OBJECT, SETTINGS, PARAMETER, T extends IObjectPropertyConfigurator<OBJECT, SETTINGS>> IObjectPropertyConfiguratorProvider<OBJECT, SETTINGS, PARAMETER, T> findConfiguratorProviderByObjectType(@NotNull Object object, PARAMETER parameter) throws DBException {
-        UIPropertyConfiguratorProviderDescriptor providerDescriptor = this.findProviderDescriptorByObjectType(object, parameter);
-        if (providerDescriptor != null) {
-            return providerDescriptor.createConfiguratorProvider();
-        } else {
+    public <OBJECT, SETTINGS, PARAMETER, T extends IObjectPropertyConfigurator<OBJECT, SETTINGS>> IObjectPropertyConfiguratorProvider<OBJECT, SETTINGS, PARAMETER, T> findConfiguratorProviderByObjectType(@NotNull Object object, @Nullable PARAMETER parameter) throws DBException {
+        if (parameter == null) {
             UIPropertyConfiguratorDescriptor configuratorDescriptor = this.getDescriptor(object);
             if (configuratorDescriptor != null) {
                 return new IObjectPropertyConfiguratorProvider<OBJECT, SETTINGS, PARAMETER, T>() {
@@ -169,19 +165,20 @@ public class UIPropertyConfiguratorRegistry {
                         return configuratorDescriptor.createConfigurator();
                     }
                 };
-            } else {
-                return null;
+            }
+        } else {
+            UIPropertyConfiguratorProviderDescriptor providerDescriptor = this.findProviderDescriptorByObjectType(object, parameter);
+            if (providerDescriptor != null) {
+                return providerDescriptor.createConfiguratorProvider();
             }
         }
+        return null;
     }
 
     @SuppressWarnings("unchecked")
     @Nullable
-    public <OBJECT, SETTINGS, PARAMETER, T extends IObjectPropertyConfigurator<OBJECT, SETTINGS>> IObjectPropertyConfiguratorProvider<OBJECT, SETTINGS, PARAMETER, T> findConfiguratorProviderByExactObjectTypeName(@NotNull String className, PARAMETER parameter) throws DBException {
-        UIPropertyConfiguratorProviderDescriptor providerDescriptor = this.findProviderDescriptorByExactObjectTypeName(className, parameter);
-        if (providerDescriptor != null) {
-            return providerDescriptor.createConfiguratorProvider();
-        } else {
+    public <OBJECT, SETTINGS, PARAMETER, T extends IObjectPropertyConfigurator<OBJECT, SETTINGS>> IObjectPropertyConfiguratorProvider<OBJECT, SETTINGS, PARAMETER, T> findConfiguratorProviderByExactObjectTypeName(@NotNull String className, @Nullable PARAMETER parameter) throws DBException {
+        if (parameter == null) {
             UIPropertyConfiguratorDescriptor configuratorDescriptor = this.getDescriptor(className);
             if (configuratorDescriptor != null) {
                 return new IObjectPropertyConfiguratorProvider<OBJECT, SETTINGS, PARAMETER, T>() {
@@ -191,9 +188,13 @@ public class UIPropertyConfiguratorRegistry {
                         return configuratorDescriptor.createConfigurator();
                     }
                 };
-            } else {
-                return null;
+            }
+        } else {
+            UIPropertyConfiguratorProviderDescriptor providerDescriptor = this.findProviderDescriptorByExactObjectTypeName(className, parameter);
+            if (providerDescriptor != null) {
+                return providerDescriptor.createConfiguratorProvider();
             }
         }
+        return null;
     }
 }

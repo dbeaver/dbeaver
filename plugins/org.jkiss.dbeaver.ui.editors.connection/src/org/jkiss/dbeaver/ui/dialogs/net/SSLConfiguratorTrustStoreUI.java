@@ -23,6 +23,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.connection.DBPConnectionEditIntention;
 import org.jkiss.dbeaver.model.impl.net.SSLConfigurationMethod;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
@@ -37,6 +38,8 @@ import org.jkiss.utils.CommonUtils;
  * CasSSLConfigurator
  */
 public class SSLConfiguratorTrustStoreUI extends SSLConfiguratorAbstractUI {
+    protected final DBPConnectionEditIntention editIntention;
+
     private Button certRadioButton;
     private Button keyStoreRadioButton;
 
@@ -49,6 +52,10 @@ public class SSLConfiguratorTrustStoreUI extends SSLConfiguratorAbstractUI {
 
     protected Composite sslCertComposite;
     protected Composite sslKeyStoreComposite;
+
+    public SSLConfiguratorTrustStoreUI(DBPConnectionEditIntention editIntention) {
+        this.editIntention = editIntention;
+    }
 
     @Override
     public void createControl(@NotNull Composite parent, Object object, @NotNull Runnable propertyChangeListener) {
