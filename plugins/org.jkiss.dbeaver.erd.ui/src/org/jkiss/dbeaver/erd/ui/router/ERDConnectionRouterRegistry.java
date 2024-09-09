@@ -28,18 +28,15 @@ import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ERDConnectionRouterRegistry {
 
     private static final String EXTENSION_ID = "org.jkiss.dbeaver.erd.ui.routing"; //$NON-NLS-1$
+    private final static Log log = Log.getLog(ERDNotationRegistry.class);
+
     private static ERDConnectionRouterRegistry instance;
-    private Map<String, ERDConnectionRouterDescriptor> connectionRouterDescriptors = new LinkedHashMap<>();
-    private DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-    private Log log = Log.getLog(ERDNotationRegistry.class);
+    private final Map<String, ERDConnectionRouterDescriptor> connectionRouterDescriptors = new LinkedHashMap<>();
     private ERDConnectionRouterDescriptor activeRouterDescriptor;
 
     private ERDConnectionRouterRegistry(IExtensionRegistry registry) {
@@ -51,6 +48,10 @@ public class ERDConnectionRouterRegistry {
                 log.error(e.getStatus());
             }
         }
+    }
+
+    private DBPPreferenceStore getPreferenceStore() {
+        return ERDUIActivator.getDefault().getPreferences();
     }
 
     private void addDescriptor(@NotNull ERDConnectionRouterDescriptor descriptor) {
@@ -107,15 +108,23 @@ public class ERDConnectionRouterRegistry {
      *
      * @return - descriptor
      */
-    public ERDConnectionRouterDescriptor getActiveDescriptor() {
+    @NotNull
+    public ERDConnectionRouterDescriptor getActiveRouter() {
         if (activeRouterDescriptor != null) {
             return activeRouterDescriptor;
         }
-        activeRouterDescriptor = getDescriptorById(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
-        if (activeRouterDescriptor != null) {
-            return activeRouterDescriptor;
+        for (ERDConnectionRouterDescriptor router : connectionRouterDescriptors.values()) {
+            if (router.isDefaultRouter()) {
+                activeRouterDescriptor = router;
+                break;
+            }
         }
-        activeRouterDescriptor = getDefaultDescriptor();
+        if (activeRouterDescriptor == null) {
+            activeRouterDescriptor = getDescriptorById(getPreferenceStore().getString(ERDUIConstants.PREF_ROUTING_TYPE));
+        }
+        if (activeRouterDescriptor == null) {
+            activeRouterDescriptor = getDefaultDescriptor();
+        }
         return activeRouterDescriptor;
     }
 
@@ -123,9 +132,9 @@ public class ERDConnectionRouterRegistry {
      * Set default router
      *
      */
-    public void setActiveDescriptor(ERDConnectionRouterDescriptor connectionRouter) {
+    public void setActiveRouter(ERDConnectionRouterDescriptor connectionRouter) {
         activeRouterDescriptor = connectionRouter;
-        store.setValue(ERDUIConstants.PREF_ROUTING_TYPE, activeRouterDescriptor.getId());
+        getPreferenceStore().setValue(ERDUIConstants.PREF_ROUTING_TYPE, activeRouterDescriptor.getId());
     }
     
     /**
@@ -133,7 +142,8 @@ public class ERDConnectionRouterRegistry {
      *
      * @return - default descriptor
      */
+    @NotNull
     public ERDConnectionRouterDescriptor getDefaultDescriptor() {
-        return getDescriptorById(ERDUIConstants.PREF_DEFAULT_ATTR_ERD_ROUTER_ID);
+        return Objects.requireNonNull(getDescriptorById(ERDUIConstants.PREF_DEFAULT_ATTR_ERD_ROUTER_ID));
     }
 }

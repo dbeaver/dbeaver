@@ -310,11 +310,16 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         // Add a "damager-repairer" for changes within one-line SQL comments.
         addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT, SQLConstants.CONFIG_COLOR_COMMENT);
         SQLEditorBase sqlEditor = this.getSQLEditor();
-        if (sqlEditor.isAdvancedHighlightingEnabled() && SQLEditorUtils.isSQLSyntaxParserApplied(sqlEditor.getEditorInput())) {
+        if (SQLEditorUtils.isSQLSyntaxParserApplied(sqlEditor.getEditorInput())) {
             // Add a "damager-repairer" for changes within string literals.
             addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_STRING);
-            // Add a "damager-repairer" for changes within quoted literals.
-            addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED);
+            if (sqlEditor.isAdvancedHighlightingEnabled()) {
+                // Add a "damager-repairer" for changes within quoted literals.
+                addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED);
+            } else {
+                // Add a "damager-repairer" for changes within quoted literals.
+                addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED, SQLConstants.CONFIG_COLOR_DATATYPE);
+            }
         } else {
             // Add a "damager-repairer" for changes within string literals.
             addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_STRING, SQLConstants.CONFIG_COLOR_STRING);

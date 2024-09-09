@@ -63,7 +63,7 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
     }
 
     @Override
-    protected PostgreTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object from, Map<String, Object> options)
+    protected PostgreTableForeignKey createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, final Object container, Object from, @NotNull Map<String, Object> options)
     {
         PostgreTableBase table = (PostgreTableBase) container;
         final PostgreTableForeignKey foreignKey = new PostgreTableForeignKey(
@@ -111,7 +111,7 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options) throws DBException
     {
         addObjectDeleteActions(monitor, executionContext, actionList, new ObjectDeleteCommand(command.getObject(), command.getTitle()), options);
         addObjectCreateActions(monitor, executionContext, actionList, makeCreateCommand(command.getObject(), options), options);
@@ -129,7 +129,7 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
+    protected void addObjectRenameActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectRenameCommand command, @NotNull Map<String, Object> options) {
         PostgreTableForeignKey foreignKey = command.getObject();
         PostgreDataSource dataSource = foreignKey.getDataSource();
         actions.add(
@@ -142,7 +142,7 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
     }
 
     @Override
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<PostgreTableForeignKey, PropertyHandler> command, Map<String, Object> options) throws DBException {
+    protected void addObjectExtraActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull NestedObjectCommand<PostgreTableForeignKey, PropertyHandler> command, @NotNull Map<String, Object> options) throws DBException {
         if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
             PostgreConstraintManager.addConstraintCommentAction(actions, command.getObject());
         }

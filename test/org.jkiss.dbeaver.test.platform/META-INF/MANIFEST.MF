@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Test Suite
 Bundle-SymbolicName: org.jkiss.dbeaver.test.platform
-Bundle-Version: 1.0.94.qualifier
-Bundle-Release-Date: 20240819
+Bundle-Version: 1.0.96.qualifier
+Bundle-Release-Date: 20240923
 Bundle-Vendor: DBeaver Corp
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
@@ -22,5 +22,4 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.ext.oracle,
  org.jkiss.dbeaver.ext.snowflake.core,
  org.jkiss.dbeaver.ext.hana,
- org.jkiss.dbeaver.ext.mssql,
- org.jkiss.bundle.jsvg
+ org.jkiss.dbeaver.ext.mssql

@@ -270,7 +270,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             }
         });
         
-        folderComposite.switchFolder(curFolderId);
+        UIUtils.syncExec(() -> folderComposite.switchFolder(curFolderId));
         
         return foldersPlaceholder;
     }

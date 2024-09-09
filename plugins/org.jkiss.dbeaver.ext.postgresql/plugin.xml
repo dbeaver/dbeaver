@@ -44,7 +44,7 @@
                 <property id="dbname" description="Database name" defaultValue="${database}"/>
             </propertyGroup>
         </fdw>
-        <fdw id="clickhouse" fdwId="clickhousedb_fdw" databases="clickhouse" name="Yandex Clickhouse" description="Clickhouse FDW by Percona Labs" docURL="https://github.com/Percona-Lab/clickhousedb_fdw">
+        <fdw id="clickhouse" fdwId="clickhousedb_fdw" databases="clickhouse" name="Clickhouse" description="Clickhouse FDW by Percona Labs" docURL="https://github.com/Percona-Lab/clickhousedb_fdw">
             <propertyGroup label="Options">
                 <property id="host" description="Host name" defaultValue="${host}"/>
                 <property id="port" description="Port number" defaultValue="${port}"/>
@@ -532,6 +532,7 @@
                     defaultPort="5439"
                     defaultDatabase="dev"
                     defaultUser="awsuser"
+                    threadSafe="false"
                     description="AWS Redshift JDBC driver"
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
