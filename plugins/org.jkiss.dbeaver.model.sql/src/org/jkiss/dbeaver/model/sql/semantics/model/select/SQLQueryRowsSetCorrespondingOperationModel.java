@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model.select;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelContext;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
+import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
@@ -42,7 +39,6 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
     private final SQLQueryRowsSetCorrespondingOperationKind kind;
 
     public SQLQueryRowsSetCorrespondingOperationModel(
-        @NotNull SQLQueryModelContext context,
         @NotNull Interval range,
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryRowsSourceModel left,
@@ -50,7 +46,7 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
         @NotNull List<SQLQuerySymbolEntry> correspondingColumnNames,
         @NotNull SQLQueryRowsSetCorrespondingOperationKind kind
     ) {
-        super(context, range, syntaxNode, left, right);
+        super(range, syntaxNode, left, right);
         this.correspondingColumnNames = correspondingColumnNames;
         this.kind = kind;
     }
@@ -94,24 +90,38 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
         if (correspondingColumnNames.isEmpty()) { // require left and right to have the same tuples
             List<SQLQueryResultColumn> leftColumns = left.getColumnsList();
             List<SQLQueryResultColumn> rightColumns = right.getColumnsList();
-            resultColumns = new ArrayList<>(Math.max(leftColumns.size(), rightColumns.size()));
-
-            for (int i = 0; i < resultColumns.size(); i++) {
+            int resultColumnsCount = Math.max(leftColumns.size(), rightColumns.size());
+            resultColumns = new ArrayList<>(resultColumnsCount);
+            for (int i = 0; i < resultColumnsCount; i++) {
                 if (i >= leftColumns.size()) {
                     resultColumns.add(rightColumns.get(i));
                     nonMatchingColumnSets = true;
                 } else if (i >= rightColumns.size()) {
                     resultColumns.add(leftColumns.get(i));
                     nonMatchingColumnSets = true;
-                } else { // TODO validate corresponding names to be the same?
-                    SQLQueryExprType type = this.obtainCommonType(leftColumns.get(i), rightColumns.get(i));
-                    SQLQuerySymbol symbol = leftColumns.get(i).symbol.merge(rightColumns.get(i).symbol);
-                    resultColumns.add(new SQLQueryResultColumn(symbol, this, null, null, type));
+                } else {
+                    SQLQueryResultColumn leftColumn = leftColumns.get(i);
+                    SQLQueryResultColumn rightColumn = rightColumns.get(i);
+                    SQLQueryExprType type = this.obtainCommonType(leftColumn, rightColumn);
+                    SQLQuerySymbol columnSymbol;
+                    if (leftColumn.symbol.getName().equals(rightColumn.symbol.getName())) {
+                        SQLQuerySymbolDefinition symbolDef = leftColumn.symbol.getDefinition();
+                        SQLQuerySymbolClass symbolClass = leftColumn.symbol.getSymbolClass();
+                        columnSymbol = leftColumns.get(i).symbol.merge(rightColumns.get(i).symbol);
+                        columnSymbol.setDefinition(symbolDef); // propagate leftmost column's metainfo
+                        if (columnSymbol.getSymbolClass() == SQLQuerySymbolClass.UNKNOWN) {
+                            columnSymbol.setSymbolClass(symbolClass);
+                        }
+                    } else {
+                        columnSymbol = leftColumn.symbol;
+                    }
+                    resultColumns.add(new SQLQueryResultColumn(i, columnSymbol, this, null, null, type));
                 }
             }
         } else { // require left and right to have columns subset as given with correspondingColumnNames
-            resultColumns = new ArrayList<>(correspondingColumnNames.size());
-            for (int i = 0; i < resultColumns.size(); i++) {
+            int resultColumnsCount = correspondingColumnNames.size();
+            resultColumns = new ArrayList<>(resultColumnsCount);
+            for (int i = 0; i < resultColumnsCount; i++) {
                 SQLQuerySymbolEntry column = correspondingColumnNames.get(i);
                 if (column.isNotClassified()) {
                     SQLQueryResultColumn leftDef = left.resolveColumn(statistics.getMonitor(), column.getName());
@@ -123,16 +133,17 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
                     SQLQueryExprType type = this.obtainCommonType(leftDef, rightDef);
 
                     column.getSymbol().setDefinition(column); // TODO combine multiple definitions
-                    resultColumns.add(new SQLQueryResultColumn(column.getSymbol(), this, null, null, type));
+                    resultColumns.add(new SQLQueryResultColumn(i, column.getSymbol(), this, null, null, type));
                 }
             }
         }
 
         if (nonMatchingColumnSets) {
-            statistics.appendError((STMTreeNode) null, "UNION, EXCEPT and INTERSECT require subsets column tuples to match"); // TODO detailed messages per column
+            // TODO detailed messages per column
+            statistics.appendError(this.getSyntaxNode(), "UNION, EXCEPT and INTERSECT require subsets column tuples to match");
         }
-
-        return correspondingColumnNames.isEmpty() ? left : context.overrideResultTuple(resultColumns); // TODO multiple definitions per symbol
+        // TODO multiple definitions per symbol
+        return correspondingColumnNames.isEmpty() ? left : context.overrideResultTuple(resultColumns);
     }
 
     @Override

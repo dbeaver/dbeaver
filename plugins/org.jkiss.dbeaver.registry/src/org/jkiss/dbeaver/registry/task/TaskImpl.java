@@ -34,6 +34,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * TaskImpl
@@ -56,7 +57,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
     private Date updateTime;
     private DBTTaskType type;
     private Map<String, Object> properties;
-    private List<DBTTaskRun> runs;
+    private volatile List<DBTTaskRun> runs;
     private DBTTaskFolder taskFolder;
     private int maxExecutionTime;
 
@@ -209,8 +210,8 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
     public void cleanRunStatistics() {
         Path statsFolder = getTaskStatsFolder(false);
         if (Files.exists(statsFolder)) {
-            try {
-                List<Path> taskFiles = Files.list(statsFolder).collect(Collectors.toList());
+            try (Stream<Path> list = Files.list(statsFolder)) {
+                List<Path> taskFiles = list.toList();
                 for (Path file : taskFiles) {
                     try {
                         Files.delete(file);

@@ -29,13 +29,13 @@
             class="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester"
             id="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester"
             namespace="org.jkiss.dbeaver.core.datasource"
-            properties="connected,transactional,synchronizable,transactionActive,supportsTransactions,editable,projectResourceEditable,projectResourceViewable"
+            properties="connected,connecting,transactional,synchronizable,transactionActive,supportsTransactions,editable,projectResourceEditable,projectResourceViewable"
             type="org.jkiss.dbeaver.model.DBPContextProvider"/>
         <propertyTester
             class="org.jkiss.dbeaver.ui.actions.DataSourceContainerPropertyTester"
             id="org.jkiss.dbeaver.ui.actions.DataSourceContainerPropertyTester"
             namespace="org.jkiss.dbeaver.core.datasourceContainer"
-            properties="driverId,driverClass,connected"
+            properties="driverId,driverClass,connected,connecting"
             type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
         <propertyTester
             class="org.jkiss.dbeaver.ui.actions.FolderPropertyTester"
@@ -225,6 +225,24 @@
             </with>
         </definition>
 
+        <definition id="org.jkiss.dbeaver.core.datasource.connecting">
+            <or>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
+                            <test property="org.jkiss.dbeaver.core.datasource.connecting"/>
+                        </adapt>
+                    </iterate>
+                </with>
+                <with variable="activePart">
+                    <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
+                        <test property="org.jkiss.dbeaver.core.datasource.connecting"/>
+                    </adapt>
+                </with>
+            </or>
+        </definition>
+
         <definition id="org.jkiss.dbeaver.core.datasource.disconnected">
             <or>
                 <with variable="selection">
@@ -314,7 +332,14 @@
         </handler>
 
         <handler commandId="org.jkiss.dbeaver.core.connect" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler">
-            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.datasource.disconnected"/></enabledWhen>
+            <enabledWhen>
+                <and>
+                    <reference definitionId="org.jkiss.dbeaver.core.datasource.disconnected"/>
+                    <not>
+                        <reference definitionId="org.jkiss.dbeaver.core.datasource.connecting"/>
+                    </not>
+                </and>
+            </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.disconnect" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceDisconnectHandler">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.datasource.connected"/></enabledWhen>
@@ -938,6 +963,7 @@
         <key commandId="org.jkiss.dbeaver.ui.tools.menu" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="cocoa" sequence="CTRL+V"/>
 
         <key commandId="org.jkiss.dbeaver.core.edit.copy.special" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+C"/>
+        <key commandId="org.jkiss.dbeaver.core.edit.copy.special.with.last.settings" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+ALT+C"/>
         <key commandId="org.jkiss.dbeaver.core.edit.paste.special" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+V"/>
         <key commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" contextId="org.jkiss.dbeaver.ui.context.navigator.view" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+SHIFT+D"/>
 

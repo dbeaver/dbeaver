@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -97,10 +98,10 @@ public class AltibaseMetaModel extends GenericMetaModel {
                 break;
             case "VIEW":
             case "SYSTEM VIEW":
-                table = new AltibaseView(owner, tableName, tableType, dbResult);
+                table = new AltibaseView(session, owner, tableName, tableType, dbResult);
                 break;
             case "MATERIALIZED VIEW":
-                table = new AltibaseMaterializedView(owner, tableName, tableType, dbResult);
+                table = new AltibaseMaterializedView(session, owner, tableName, tableType, dbResult);
                 break;
             case "QUEUE":
                 table = new AltibaseQueue(owner, tableName, tableType, dbResult);
@@ -124,12 +125,14 @@ public class AltibaseMetaModel extends GenericMetaModel {
 
             if (tableType.equalsIgnoreCase(AltibaseConstants.OBJ_TYPE_MATERIALIZED_VIEW)) {
                 return new AltibaseMaterializedView(
+                        null,
                         container,
                         tableName,
                         tableType,
                         dbResult);
             } else {
                 return new AltibaseView(
+                        null,
                         container,
                         tableName,
                         tableType,
@@ -223,10 +226,49 @@ public class AltibaseMetaModel extends GenericMetaModel {
      */
     public String getSynonymDDL(DBRProgressMonitor monitor, AltibaseSynonym sourceObject, 
             Map<String, Object> options) throws DBException {
-        return getDDLFromDbmsMetadata(monitor, sourceObject, sourceObject.getParentObject().getName(), "SYNONYM");
+        return getDDLFromDbmsMetadata(monitor, sourceObject, (String) options.get("SCHEMA"), "SYNONYM");
     }
 
-
+    /**
+     * Get a specific Replication DDL
+     */
+    public String getReplicationDDL(DBRProgressMonitor monitor, AltibaseReplication sourceObject, 
+            Map<String, Object> options) throws DBException {
+        return getDDLFromDbmsMetadata(monitor, sourceObject, null, "REPLICATION");
+    }
+    
+    /**
+     * Get a specific Job DDL
+     */
+    public String getJobDDL(DBRProgressMonitor monitor, AltibaseJob sourceObject, 
+            Map<String, Object> options) throws DBException {
+        return getDDLFromDbmsMetadata(monitor, sourceObject, null, "JOB");
+    }
+    
+    /**
+     * Get a specific DbLink DDL
+     */
+    public String getDbLinkDDL(DBRProgressMonitor monitor, AltibaseDbLink sourceObject, 
+            Map<String, Object> options) throws DBException {
+        return getDDLFromDbmsMetadata(monitor, sourceObject, (String) options.get("SCHEMA"), "DB_LINK");
+    }
+    
+    /**
+     * Get a specific Library DDL
+     */
+    public String getLibraryDDL(DBRProgressMonitor monitor, AltibaseLibrary sourceObject, 
+            Map<String, Object> options) throws DBException {
+        return getDDLFromDbmsMetadata(monitor, sourceObject, null, "LIBRARY");
+    }
+    
+    /**
+     * Get a specific Directory DDL
+     */
+    public String getDirectoryDDL(DBRProgressMonitor monitor, AltibaseDirectory sourceObject, 
+            Map<String, Object> options) throws DBException {
+        return getDDLFromDbmsMetadata(monitor, sourceObject, null, "DIRECTORY");
+    }
+    
     @Override
     public String getViewDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericView sourceObject,
                              @NotNull Map<String, Object> options) throws DBException {
@@ -290,21 +332,6 @@ public class AltibaseMetaModel extends GenericMetaModel {
         }
 
         return ddl;
-    }
-
-    @Override
-    public AltibaseProcedureStandAlone createProcedureImpl(GenericStructContainer container, String procedureName, String specificName, 
-            String remarks, DBSProcedureType procedureType, GenericFunctionResultType functionResultType) {
-        return new AltibaseProcedureStandAlone(container, procedureName, specificName, remarks, procedureType, functionResultType);
-    }
-
-    /**
-     * Get a specific Procedure or Package DDL
-     */
-    public AltibaseProcedurePackaged createProcedurePackagedImpl(GenericStructContainer container, String procedureName, 
-            String specificName, String remarks, DBSProcedureType procedureType, GenericFunctionResultType functionResultType, 
-            String pkgSchema) {
-        return new AltibaseProcedurePackaged(container, procedureName, specificName, remarks, procedureType, functionResultType, pkgSchema);
     }
 
     /**
@@ -690,25 +717,24 @@ public class AltibaseMetaModel extends GenericMetaModel {
                             break;
                         }
 
-                        String packageName = JDBCUtils.safeGetString(dbResult, "PACKAGE_NAME");
-                        String key = schemaName + "." + packageName;
-                        AltibasePackage altibasePackage = packageMap.get(key);
+                        String pkgName = JDBCUtils.safeGetString(dbResult, "PACKAGE_NAME");
+                        String key = schemaName + "." + pkgName;
+                        AltibasePackage pkg = packageMap.get(key);
 
                         // new package
-                        if (altibasePackage == null) {
-
-                            altibasePackage = createPackageImpl(container, packageName, dbResult);
-
-                            if (altibasePackage != null) {
-                                container.addPackage(altibasePackage);
-                                packageMap.put(key, altibasePackage);
+                        if (pkg == null) {
+                            pkg = createPackageImpl(container, pkgName, dbResult);
+                            if (pkg != null) {
+                                container.addPackage(pkg);
+                                packageMap.put(key, pkg);
                             } else {
                                 log.warn("Fail to create Package: " + key);
                             }
                         } else {
                             // if body found,
-                            if (JDBCUtils.safeGetInt(dbResult, "PACKAGE_TYPE") == 7) {
-                                altibasePackage.setBody(true);
+                            if (JDBCUtils.safeGetInt(dbResult, "PACKAGE_TYPE") == AltibaseConstants.PACKAGE_TYPE_BODY) {
+                                pkg.setBody(true);
+                                pkg.setStatus(JDBCUtils.safeGetBoolean(dbResult, "STATUS", "0"));
                             } else {
                                 // can't be here
                                 throw new DBException("Duplicated package name found: " + key);
@@ -742,7 +768,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
                             break;
                         }
 
-                        String packageName = JDBCUtils.safeGetString(dbResult, "PACKAGE_NAME");
+                        String pkgName = JDBCUtils.safeGetString(dbResult, "PACKAGE_NAME");
                         String procName = JDBCUtils.safeGetString(dbResult, "SUB_PROC_NAME");
                         int subType = JDBCUtils.safeGetInt(dbResult, "SUB_TYPE");
 
@@ -750,19 +776,19 @@ public class AltibaseMetaModel extends GenericMetaModel {
                             continue;
                         }
 
-                        String key = pkgSchema + "." + packageName;
+                        String key = pkgSchema + "." + pkgName;
                         AltibasePackage pkg = packageMap.get(key);
 
                         if (pkg != null) {
-                            final AltibaseProcedurePackaged procedure = createProcedurePackagedImpl(
-                                    pkg,
+                            final AltibaseProcedurePackaged procedure = new AltibaseProcedurePackaged(
+                                    container,
+                                    pkgSchema,
+                                    pkgName,
                                     procName,
-                                    procName,
-                                    "",
-                                    (subType == 0) ? DBSProcedureType.PROCEDURE : DBSProcedureType.FUNCTION,
-                                            null,
-                                            pkgSchema);
-
+                                    true, // No way to determine package-dependant procedure status from Altibase metadata
+                                    (subType == 0) ? DBSProcedureType.PROCEDURE : DBSProcedureType.FUNCTION, 
+                                    null);
+                            
                             if (procedure != null) {
                                 pkg.addProcedure(procedure);
                             }
@@ -778,67 +804,67 @@ public class AltibaseMetaModel extends GenericMetaModel {
 
     /**
      * Get Procedure/Function/Typeset
+     * 
+     * @throws DBException 
      */
     private void loadPSMs(DBRProgressMonitor monitor, @NotNull GenericObjectContainer container, 
-            JDBCSession session) throws SQLException {
+            JDBCSession session) throws SQLException, DBException {
 
-        GenericDataSource dataSource = container.getDataSource();
-        GenericMetaObject procObject = dataSource.getMetaObject(GenericConstants.OBJECT_PROCEDURE);
+        String procName;
+        boolean valid;
+        int procType;
+        GenericProcedure procedure;
 
-        try (JDBCResultSet dbResult = session.getMetaData().getProcedures(
-                container.getCatalog() == null ? null : container.getCatalog().getName(),
-                        container.getSchema() == null || DBUtils.isVirtualObject(container.getSchema()) ? 
-                                null : JDBCUtils.escapeWildCards(session, container.getSchema().getName()),
-                                dataSource.getAllObjectsPattern())) {
+        try (JDBCStatement dbStat = preparePsmLoadStatement(session, container)) {
+            dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
+            dbStat.executeStatement();
 
-            while (dbResult.next()) {
-                if (monitor.isCanceled()) {
-                    break;
-                }
-                String procedureName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.PROCEDURE_NAME);
-                String specificName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.SPECIFIC_NAME);
-                int procTypeNum = GenericUtils.safeGetInt(procObject, dbResult, JDBCConstants.PROCEDURE_TYPE);
-                String remarks = GenericUtils.safeGetString(procObject, dbResult, JDBCConstants.REMARKS);
-                DBSProcedureType procedureType;
-
-                switch (procTypeNum) {
-                    case DatabaseMetaData.procedureNoResult:
-                        procedureType = DBSProcedureType.PROCEDURE;
+            JDBCResultSet dbResult = dbStat.getResultSet();
+            try {
+                while (dbResult.next()) {
+                    if (monitor.isCanceled()) {
                         break;
-                    case DatabaseMetaData.procedureReturnsResult:
-                        procedureType = DBSProcedureType.FUNCTION;
+                    }
+
+                    procName = JDBCUtils.safeGetString(dbResult, "PROC_NAME");
+                    valid = JDBCUtils.safeGetBoolean(dbResult, "STATUS", "0");
+                    procType = JDBCUtils.safeGetInt(dbResult, "OBJECT_TYPE");
+
+                    switch (procType) {
+                    case AltibaseConstants.PSM_TYPE_PROCEDURE:
+                        procedure = new AltibaseProcedureStandAlone(
+                                container,
+                                procName,
+                                valid,
+                                DBSProcedureType.PROCEDURE,
+                                null);
                         break;
-                        // Typeset
-                    case DatabaseMetaData.procedureResultUnknown:
-                        procedureType = DBSProcedureType.UNKNOWN;
+                    case AltibaseConstants.PSM_TYPE_FUNCTION:
+                        procedure = new AltibaseProcedureStandAlone(
+                                container,
+                                procName,
+                                valid,
+                                DBSProcedureType.FUNCTION,
+                                null);
+                        break;
+                    case AltibaseConstants.PSM_TYPE_TYPESET:
+                        procedure = new AltibaseTypeset(container, procName, valid);
                         break;
 
                     default:
+                        procedure = null;
+                        // can't be here
+                        log.error("Unknown PSM type found: " + procName + ": " + procType);
                         continue;
-                }
-                if (CommonUtils.isEmpty(specificName)) {
-                    specificName = procedureName;
-                }
-
-                // Typeset
-                if (procedureType == DBSProcedureType.UNKNOWN) {
-                    final AltibaseTypeset typeset = createTypesetImpl(container, procedureName);
-                    container.addProcedure(typeset);
-                } else {
-                    // Procedure or Function
-                    final AltibaseProcedureStandAlone procedure = createProcedureImpl(
-                            container,
-                            procedureName,
-                            specificName,
-                            remarks,
-                            procedureType,
-                            null);
+                    }
 
                     if (procedure != null) {
                         container.addProcedure(procedure);
                     }
-                }
 
+                }
+            } finally {
+                dbResult.close();
             }
         } 
     }
@@ -869,13 +895,26 @@ public class AltibaseMetaModel extends GenericMetaModel {
         }
     }
 
+    //////////////////////////////////////////////////////
+    // Procedure/Function/Typeset
+    
     /**
-     * Create Altibase Typeset object
+     * Statement to load packages
      */
-    public AltibaseTypeset createTypesetImpl(GenericStructContainer container, String procedureName) {
-        return new AltibaseTypeset(container, procedureName);
+    public JDBCStatement preparePsmLoadStatement(JDBCSession session, 
+            GenericStructContainer container) throws SQLException {
+        final JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT"
+                        + " p.*"
+                        + " FROM system_.sys_procedures_ p, system_.sys_users_ u"
+                        + " WHERE"
+                        + " u.user_name = ?"
+                        + " and u.user_id = p.user_id"
+                        + " ORDER BY proc_name ASC"); 
+        dbStat.setString(1, container.getName());
+        return dbStat;
     }
-
+    
     //////////////////////////////////////////////////////
     // Packages
     
@@ -1184,5 +1223,96 @@ public class AltibaseMetaModel extends GenericMetaModel {
                 indexName,
                 indexType,
                 persisted);
+    }
+    
+    //////////////////////////////////////////////////////
+    // Database Links
+    
+    /**
+     * Statement to load DbLink
+     */
+    public JDBCStatement prepareDbLinkLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container,
+            @Nullable AltibaseDbLink object, @Nullable String objectName) throws SQLException {
+        boolean isNullObject = object == null && objectName == null;
+        final JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT u.user_name, l.* FROM system_.sys_database_links_ l, system_.sys_users_ u"
+                + " WHERE l.user_id = u.user_id AND u.user_name = ?"
+                + (isNullObject ? "" : " AND l.link_name = ?")
+                + " ORDER BY link_name ASC");
+        
+        dbStat.setString(1, container.getName());
+        if (!isNullObject) {
+            dbStat.setString(2, object != null ? object.getName() : objectName);
+        }
+        
+        return dbStat;
+    }
+    
+    /**
+     * Create DbLink implementation
+     */
+    public AltibaseDbLink createDbLinkImpl(GenericStructContainer container, JDBCResultSet resultSet) {
+        return new AltibaseDbLink(container, resultSet);
+    }
+    
+    //////////////////////////////////////////////////////
+    // Library
+    
+    /**
+     * Statement to load Library
+     */
+    public JDBCStatement prepareLibraryLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container,
+            @Nullable AltibaseLibrary object, @Nullable String objectName) throws SQLException {
+        boolean isNullObject = object == null && objectName == null;
+        final JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT l.* FROM system_.sys_users_ u, system_.sys_libraries_ l "
+                + "WHERE u.user_id = l.user_id AND u.user_name =  ? "
+                + (isNullObject ? "" : " AND l.library_name = ?")
+                + " ORDER BY library_name ASC");
+        
+        dbStat.setString(1, container.getName());
+        if (!isNullObject) {
+            dbStat.setString(2, object != null ? object.getName() : objectName);
+        }
+        
+        return dbStat;
+    }
+    
+    /**
+     * Create Library implementation
+     */
+    public AltibaseLibrary createLibraryImpl(GenericStructContainer container, JDBCResultSet resultSet) {
+        return new AltibaseLibrary(container, resultSet);
+    }
+    
+    //////////////////////////////////////////////////////
+    // Directory
+    
+    /**
+     * Statement to load Directory
+     */
+    public JDBCStatement prepareDirectoryLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container,
+            @Nullable AltibaseDirectory object, @Nullable String objectName) throws SQLException {
+        boolean isNullObject = object == null && objectName == null;
+        final JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT d.* FROM system_.sys_users_ u, system_.sys_directories_ d "
+                + "WHERE u.user_id = d.user_id AND u.user_name =  ? "
+                + (isNullObject ? "" : " AND d.directory_name = ?")
+                + " ORDER BY directory_name ASC");
+        
+        dbStat.setString(1, container.getName());
+        
+        if (!isNullObject) {
+            dbStat.setString(2, object != null ? object.getName() : objectName);
+        }
+        
+        return dbStat;
+    }
+    
+    /**
+     * Create Directory implementation
+     */
+    public AltibaseDirectory createDirectoryImpl(GenericStructContainer container, JDBCResultSet resultSet) {
+        return new AltibaseDirectory(container, resultSet);
     }
 }

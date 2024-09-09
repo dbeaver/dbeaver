@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import java.sql.SQLException;
 
 /**
- * Firebird plan parser. It interpretes tokens returned by FireBirdPlanTokenMatcher
+ * Firebird plan parser. It interprets tokens returned by FireBirdPlanTokenMatcher
  * tokenizer and creates plan node tree. When index is found it's selectivity
  * is added to index plan node.
  *

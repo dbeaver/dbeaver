@@ -21,10 +21,9 @@ import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDContent;
-import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
@@ -49,9 +48,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
- * Abstract node
+ * Data transfer utils
  */
 public class DTUtils {
+
+    private static final Log log = Log.getLog(DTUtils.class);
+    private static final int MAX_SAMPLE_ROWS = 1000;
 
     public static void addSummary(StringBuilder summary, String option, Object value) {
         summary.append("\t").append(option).append(": ").append(value).append("\n");
@@ -196,14 +198,19 @@ public class DTUtils {
     }
 
     @NotNull
-    public static List<DBSAttributeBase> getAttributes(@NotNull DBRProgressMonitor monitor, @NotNull DBSDataContainer container, @NotNull Object controller) throws DBException {
-        final List<DBSAttributeBase> attributes = new ArrayList<>();
+    @SuppressWarnings("unchecked")
+    public static <T extends DBSAttributeBase & DBSObject> List<T> getAttributes(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSDataContainer container,
+        @NotNull Object controller
+    ) throws DBException {
+        final List<T> attributes = new ArrayList<>();
         if (container instanceof DBSEntity && !(container instanceof DBSDocumentContainer)) {
             for (DBSEntityAttribute attr : CommonUtils.safeList(((DBSEntity) container).getAttributes(monitor))) {
                 if (DBUtils.isHiddenObject(attr)) {
                     continue;
                 }
-                attributes.add(attr);
+                attributes.add((T) attr);
             }
         } else {
             // Seems to be a dynamic query. Execute it to get metadata
@@ -216,7 +223,12 @@ public class DTUtils {
             DBExecUtils.tryExecuteRecover(monitor, context.getDataSource(), monitor1 -> {
                 final MetadataReceiver receiver = new MetadataReceiver(container);
                 try (DBCSession session = context.openSession(monitor1, DBCExecutionPurpose.META, "Read query meta data")) {
-                    container.readData(new AbstractExecutionSource(container, session.getExecutionContext(), controller), session, receiver, null, 0, 1, DBSDataContainer.FLAG_NONE, 1);
+                    AbstractExecutionSource executionSource = new AbstractExecutionSource(
+                        container,
+                        session.getExecutionContext(),
+                        controller
+                    );
+                    container.readData(executionSource, session, receiver, null, 0, 1, DBSDataContainer.FLAG_NONE, 1);
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
                 }
@@ -227,7 +239,7 @@ public class DTUtils {
                     if (DBUtils.isHiddenObject(attr)) {
                         continue;
                     }
-                    attributes.add(attr);
+                    attributes.add((T) attr);
                 }
             });
         }
@@ -281,6 +293,102 @@ public class DTUtils {
 
     }
 
+    /**
+     * Returns "bottom" level attributes out of resultset.
+     * For regular resultsets it is the same as getAttributeBindings, for complex types it returns only leaf attributes.
+     */
+    @NotNull
+    public static DBDAttributeBinding[] makeLeafAttributeBindings(@NotNull DBCSession session, @NotNull DBSDataContainer dataContainer, @NotNull DBCResultSet resultSet) throws DBCException {
+        List<DBDAttributeBinding> metaColumns = new ArrayList<>();
+        List<? extends DBCAttributeMetaData> attributes = resultSet.getMeta().getAttributes();
+        boolean isDocumentAttribute = attributes.size() == 1 && attributes.get(0).getDataKind() == DBPDataKind.DOCUMENT;
+        if (isDocumentAttribute) {
+            bindDocumentAttribute(session, dataContainer, resultSet, attributes, metaColumns);
+        }
+        if (metaColumns.isEmpty()) {
+            for (DBCAttributeMetaData attribute : attributes) {
+                DBDAttributeBindingMeta columnBinding = DBUtils.getAttributeBinding(dataContainer, session, attribute);
+                metaColumns.add(columnBinding);
+            }
+        }
+
+        List<DBDAttributeBinding> result = new ArrayList<>(metaColumns.size());
+        for (DBDAttributeBinding binding : metaColumns) {
+            addLeafBindings(result, binding);
+        }
+
+        if (!isDocumentAttribute) {
+            // For documents we do binding earlier
+            try {
+                DBExecUtils.bindAttributes(
+                    session,
+                    dataContainer instanceof DBSEntity entity ? entity : null,
+                    resultSet,
+                    metaColumns.toArray(new DBDAttributeBinding[0]), null);
+            } catch (Exception e) {
+                log.debug("Error binding attributes", e);
+            }
+        }
+
+        return DBUtils.injectAndFilterAttributeBindings(
+            session.getDataSource(),
+            dataContainer,
+            result.toArray(new DBDAttributeBinding[0]),
+            true);
+    }
+
+    private static void bindDocumentAttribute(
+        @NotNull DBCSession session,
+        @NotNull DBSDataContainer dataContainer,
+        @NotNull DBCResultSet resultSet,
+        List<? extends DBCAttributeMetaData> attributes,
+        List<DBDAttributeBinding> metaColumns
+    ) {
+        DBCAttributeMetaData attributeMeta = attributes.get(0);
+        DBDAttributeBindingMeta docBinding = DBUtils.getAttributeBinding(dataContainer, session, attributeMeta);
+        try {
+            List<Object[]> sampleRows = Collections.emptyList();
+            if (resultSet instanceof DBCResultSetSampleProvider rssp) {
+                session.getProgressMonitor().subTask("Read sample rows");
+                sampleRows = rssp.getSampleRows(session, MAX_SAMPLE_ROWS);
+            }
+            session.getProgressMonitor().subTask("Discover attribute structure");
+            docBinding.lateBinding(session, sampleRows);
+        } catch (Exception e) {
+            log.error("Document attribute '" + docBinding.getName() + "' binding error", e);
+        }
+        List<DBDAttributeBinding> nested = docBinding.getNestedBindings();
+        if (!CommonUtils.isEmpty(nested)) {
+            metaColumns.addAll(nested);
+        } else {
+            // No nested bindings. Try to get entity attributes
+            try {
+                DBSEntity docEntity = DBUtils.getEntityFromMetaData(session.getProgressMonitor(), session.getExecutionContext(), attributeMeta.getEntityMetaData());
+                if (docEntity != null) {
+                    Collection<? extends DBSEntityAttribute> entityAttrs = docEntity.getAttributes(session.getProgressMonitor());
+                    if (!CommonUtils.isEmpty(entityAttrs)) {
+                        for (DBSEntityAttribute ea : entityAttrs) {
+                            metaColumns.add(new DBDAttributeBindingType(docBinding, ea, metaColumns.size()));
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.debug("Error getting attributes from document entity", e);
+            }
+        }
+    }
+
+    private static void addLeafBindings(List<DBDAttributeBinding> result, DBDAttributeBinding binding) {
+        List<DBDAttributeBinding> nestedBindings = binding.getNestedBindings();
+        if (CommonUtils.isEmpty(nestedBindings)) {
+            result.add(binding);
+        } else {
+            for (DBDAttributeBinding nested : nestedBindings) {
+                addLeafBindings(result, nested);
+            }
+        }
+    }
+
     private static class MetadataReceiver implements DBDDataReceiver {
         private final DBSDataContainer container;
         private DBDAttributeBinding[] attributes;
@@ -291,15 +399,15 @@ public class DTUtils {
 
         @Override
         public void fetchStart(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, long offset, long maxRows) throws DBCException {
-            attributes = DBUtils.makeLeafAttributeBindings(session, container, resultSet);
+            attributes = makeLeafAttributeBindings(session, container, resultSet);
         }
 
         @Override
-        public void fetchRow(@NotNull DBCSession session, @NotNull DBCResultSet resultSet) throws DBCException {
+        public void fetchRow(@NotNull DBCSession session, @NotNull DBCResultSet resultSet) {
         }
 
         @Override
-        public void fetchEnd(@NotNull DBCSession session, @NotNull DBCResultSet resultSet) throws DBCException {
+        public void fetchEnd(@NotNull DBCSession session, @NotNull DBCResultSet resultSet) {
         }
 
         @Override

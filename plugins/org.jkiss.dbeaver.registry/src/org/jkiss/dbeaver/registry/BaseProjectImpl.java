@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretSubject;
+import org.jkiss.dbeaver.model.secret.DBSValueEncryptor;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.registry.task.TaskConstants;
 import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
@@ -134,6 +135,11 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     @Override
     public UUID getProjectID() {
         if (projectID == null) {
+            if (isInMemory()) {
+                // anonymous project does not have properties file, so we need to generate random uuid
+                projectID = UUID.randomUUID();
+                return projectID;
+            }
             String idStr = CommonUtils.toString(this.getProjectProperty(PROP_PROJECT_ID), null);
             if (CommonUtils.isEmpty(idStr)) {
                 projectID = UUID.randomUUID();
@@ -233,12 +239,30 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
         return taskManager;
     }
 
+    @Nullable
+    @Override
+    public DBTTaskManager getTaskManager(boolean create) {
+        if (taskManager != null) {
+            return taskManager;
+        }
+        return create ? getTaskManager() : null;
+    }
+
     ////////////////////////////////////////////////////////
     // Secure storage
 
     @NotNull
     @Override
-    public SecretKey getLocalSecretKey() {
+    public DBSValueEncryptor getValueEncryptor() throws DBException {
+        SecretKey key = getLocalSecretKey();
+        if (key == null) {
+            throw new IllegalStateException("Can't obtain secret key");
+        }
+        return new DefaultValueEncryptor(key);
+    }
+
+    @Nullable
+    protected SecretKey getLocalSecretKey() {
         return new SecretKeySpec(LOCAL_KEY_CACHE, DefaultValueEncryptor.KEY_ALGORITHM);
     }
 
@@ -317,7 +341,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
             return;
         }
 
-        Path settingsFile = getMetadataPath().resolve(SETTINGS_STORAGE_FILE);
+        Path settingsFile = getMetadataFolder(true).resolve(SETTINGS_STORAGE_FILE);
         String settingsString = METADATA_GSON.toJson(properties);
 
         try {
@@ -386,6 +410,16 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
         synchronized (resourcesSync) {
             return resourceProperties.get(resourcePath);
         }
+    }
+
+    @Override
+    public void setResourceProperties(@NotNull String resourcePath, @NotNull Map<String, Object> newProps) {
+        loadMetadata();
+        resourcePath = CommonUtils.normalizeResourcePath(resourcePath);
+        synchronized (resourcesSync) {
+            this.resourceProperties.put(resourcePath, new LinkedHashMap<>(newProps));
+        }
+        flushMetadata();
     }
 
     @Override
@@ -625,7 +659,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
             ContentUtils.makeFileBackup(getMetadataFolder(false).resolve(METADATA_STORAGE_FILE));
 
             synchronized (metadataSync) {
-                Path mdFile = getMetadataPath().resolve(METADATA_STORAGE_FILE);
+                Path mdFile = getMetadataFolder(true).resolve(METADATA_STORAGE_FILE);
                 if (CommonUtils.isEmpty(resourceProperties) && !Files.exists(mdFile)) {
                     // Nothing to save and metadata file doesn't exist
                     return Status.OK_STATUS;

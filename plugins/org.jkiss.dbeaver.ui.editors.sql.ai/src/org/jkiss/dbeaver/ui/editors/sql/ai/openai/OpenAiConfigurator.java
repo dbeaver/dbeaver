@@ -23,6 +23,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AIEngineSettings;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
@@ -36,12 +37,13 @@ import java.util.Locale;
 
 public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAICompletionEngine<?>, AIEngineSettings> {
     private static final String API_KEY_URL = "https://platform.openai.com/account/api-keys";
-    private String token = "";
+    protected String token = "";
     private String temperature = "0.0";
     private String model = "";
     private boolean logQuery = false;
 
-    private Text tokenText;
+    @Nullable
+    protected Text tokenText;
     private Text temperatureText;
     private Combo modelCombo;
     private Button logQueryCheck;
@@ -62,7 +64,7 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAIComple
         UIUtils.syncExec(this::applySettings);
     }
 
-    private void createAdditionalSettings(@NotNull Composite parent) {
+    protected void createAdditionalSettings(@NotNull Composite parent) {
         logQueryCheck = UIUtils.createCheckbox(
             parent,
             "Write GPT queries to debug log",
@@ -81,7 +83,7 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAIComple
     protected void createModelParameters(@NotNull Composite parent) {
         if (isUsesModel()) {
             modelCombo = UIUtils.createLabelCombo(parent, AIUIMessages.gpt_preference_page_combo_engine, SWT.READ_ONLY);
-            for (GPTModel model : GPTModel.values()) {
+            for (GPTModel model : getSupportedGPTModels()) {
                 if (model.getDeprecationReplacementModel() == null) {
                     modelCombo.add(model.getName());
                 }
@@ -92,13 +94,18 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAIComple
                     model = modelCombo.getText();
                 }
             });
-            UIUtils.createInfoLabel(parent, AIUIMessages.gpt_preference_page_info_model, GridData.FILL_HORIZONTAL, 2);
+            UIUtils.createInfoLabel(parent, NLS.bind(AIUIMessages.gpt_preference_page_info_model, getDefaultModel()), GridData.FILL_HORIZONTAL, 2);
         }
         temperatureText = UIUtils.createLabelText(parent, AIUIMessages.gpt_preference_page_text_temperature, "0.0");
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
         UIUtils.createInfoLabel(parent, "Lower temperatures give more precise results", GridData.FILL_HORIZONTAL, 2);
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
         temperatureText.addModifyListener((e) -> temperature = temperatureText.getText());
+    }
+
+    @NotNull
+    protected GPTModel[] getSupportedGPTModels() {
+        return GPTModel.values();
     }
 
     protected void createConnectionParameters(@NotNull Composite parent) {
@@ -137,11 +144,7 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAIComple
     @Override
     public void loadSettings(@NotNull AIEngineSettings aiSettings) {
         token = CommonUtils.toString(aiSettings.getProperties().get(AIConstants.GPT_API_TOKEN), "");
-        if (isUsesModel()) {
-            model = CommonUtils.toString(aiSettings.getProperties().get(AIConstants.GPT_MODEL),
-                GPTModel.GPT_TURBO16.getName()
-            );
-        }
+        model = isUsesModel() ? readModel(aiSettings).getName() : "";
         temperature = CommonUtils.toString(aiSettings.getProperties().get(
             AIConstants.AI_TEMPERATURE),
             "0.0"
@@ -150,8 +153,18 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAIComple
         applySettings();
     }
 
+    private GPTModel readModel(@NotNull AIEngineSettings aiSettings) {
+        return GPTModel.getByName(CommonUtils.toString(aiSettings.getProperties().get(AIConstants.GPT_MODEL), getDefaultModel()));
+    }
+
+    protected String getDefaultModel() {
+        return GPTModel.GPT_TURBO.getName();
+    }
+
     protected void applySettings() {
-        tokenText.setText(token);
+        if (tokenText != null) {
+            tokenText.setText(token);
+        }
         if (isUsesModel()) {
             modelCombo.setText(model);
         }
@@ -180,6 +193,6 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAIComple
 
     @Override
     public boolean isComplete() {
-        return !tokenText.getText().isEmpty();
+        return tokenText == null || !tokenText.getText().isEmpty();
     }
 }

@@ -202,14 +202,29 @@
                         <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseTableTrigger" id="tableTrigger" label="%tree.tableTriggers.node.name" icon="#triggers" description="%tree.tableTriggers.node.tip">
                             <items label="%tree.trigger.node.name" path="tableTrigger" property="tableTriggers" icon="#trigger"/>
                         </folder>
+                        
+                        <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseDbLink" icon="#folder_link" 
+                        label="%tree.dblinks.node.name" description="%tree.dblinks.node.description">
+                            <items label="%tree.dblink.node.name" path="dblink" property="dbLinks" icon="#link"/>
+                        </folder>
+                        
+                        <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseLibrary" icon="#folder" 
+                        label="%tree.libraries.node.name">
+                            <items label="%tree.library.node.name" path="library" property="libraries" icon="#file"/>
+                        </folder>
+                        
+                        <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseDirectory" icon="#folder" 
+                        label="%tree.directories.node.name">
+                            <items label="%tree.directory.node.name" path="directory" property="directories" icon="#file"/>
+                        </folder>
                     </items> <!--</items>-->
                 </folder> <!-- Schemas -->
-                  <folder label="%tree.global_metadata.node.name" id="globalMetadataObjects" icon="#logical" description="Global metadata objects">
+                <folder label="%tree.global_metadata.node.name" id="globalMetadataObjects" icon="#logical" description="Global metadata objects">
                     <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="%tree.dataTypes.node.tip">
                         <items label="%tree.dataType.node.name" path="dataType" property="dataTypes" icon="#data_type"/>
                     </folder>
                     
-                    <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseSynonym" label="%tree.public_synonyms.node.name" icon="#synonyms" description="Public synonyms">
+                    <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseSynonym" label="%tree.public_synonyms.node.name" icon="#synonyms" description="%tree.public_synonyms.node.description">
                         <items label="%tree.synonym.node.name" path="synonym" property="publicSynonyms" icon="#synonym"/>
                     </folder>
                     
@@ -219,6 +234,16 @@
                                 <items label="%tree.repli_item.node.name" path="replication_item" property="replicationItems" icon="#link"/>
                             </folder>
                         </items>
+                    </folder>
+                    
+                    <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseDbLink" icon="#folder_link" label="%tree.public_dblinks.node.name" 
+                    description="%tree.public_dblinks.node.description">
+                        <items label="%tree.public_dblink.node.name" path="dblink" property="publicDbLinks" icon="#link"/>
+                    </folder>
+                    
+                    <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseJob" icon="#folder" label="%tree.jobs.node.name" description="%tree.jobs.node.name">
+                        <items label="%tree.job.node.name" path="job" property="jobs" 
+                        icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/job_schedule.png"/>
                     </folder>
                 </folder> <!-- Global metadata -->
                 <folder label="%tree.storage.node.name" id="storageManagement" icon="#storage" description="Storage management">
@@ -317,6 +342,41 @@
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="altibase" parent="basic" class="org.jkiss.dbeaver.ext.altibase.model.AltibaseSQLDialect" label="Altibase" description="Altibase SQL dialect." icon="icons/altibase_icon.png">
         </dialect>
+    </extension>
+    
+    <extension point="org.jkiss.dbeaver.task">
+        <category id="altibase" name="Altibase" description="%org.jkiss.dbeaver.task.category.altibase.description" icon="icons/altibase_icon.png"/>
+        <category id="altibaseTool" parent="altibase"
+              name="Tools" 
+              description="%org.jkiss.dbeaver.task.category.altibaseTool.description"
+              icon="icons/altibase_icon.png"/>
+
+        <!-- SQL tools -->
+        <task id="altibaseToolTableTruncate" name="%tasks.table.truncate.node.name" description="%tasks.table.truncate.node.description" 
+        type="altibaseTool" handler="org.jkiss.dbeaver.ext.altibase.tasks.AltibaseToolTableTruncate">
+            <datasource id="altibase"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseTable"/>
+        </task>
+        <task id="altibaseToolMViewRefresh" name="%tasks.mview.refresh.node.name" description="%tasks.mview.refresh.node.description" 
+        type="altibaseTool" handler="org.jkiss.dbeaver.ext.altibase.tasks.AltibaseToolMViewRefresh">
+            <datasource id="altibase"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseMaterializedView"/>
+        </task>
+        <task id="altibaseToolViewCompile" name="%tasks.view.compile.node.name" description="%tasks.view.compile.node.description" 
+        type="altibaseTool" handler="org.jkiss.dbeaver.ext.altibase.tasks.AltibaseToolViewCompile">
+            <datasource id="altibase"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseView"/>
+        </task>
+        <task id="altibaseToolProcedureCompile" name="%tasks.procedure.compile.node.name" description="%tasks.procedure.compile.node.description" 
+        type="altibaseTool" handler="org.jkiss.dbeaver.ext.altibase.tasks.AltibaseToolProcedureCompile">
+            <datasource id="altibase"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseProcedureStandAlone"/>
+        </task>
+        <task id="altibaseToolPackageCompile" name="%tasks.package.compile.node.name" description="%tasks.package.compile.node.description" 
+        type="altibaseTool" handler="org.jkiss.dbeaver.ext.altibase.tasks.AltibaseToolPackageCompile">
+            <datasource id="altibase"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibasePackage"/>
+        </task>
     </extension>
 
 </plugin>

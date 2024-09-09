@@ -23,4 +23,5 @@ public class DatabaseEditorPreferences {
     public static final String PROP_TITLE_SHOW_FULL_NAME = "navigator.editor.full-name"; //$NON-NLS-1$
     public static final String PROP_SAVE_EDITORS_STATE = "ui.editors.reopen-after-restart"; //$NON-NLS-1$
     public static final String PROP_KEEP_EDITORS_ON_DISCONNECT = "ui.editors.keep-editors-on-disconnect"; //$NON-NLS-1$
+    public static final String PROP_DISCONNECT_ON_EDITORS_CLOSE = "ui.editors.disconnect-on-editors-close"; //$NON-NLS-1$
 }

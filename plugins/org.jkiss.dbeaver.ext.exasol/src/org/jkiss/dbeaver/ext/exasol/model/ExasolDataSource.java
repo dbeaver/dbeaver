@@ -453,8 +453,12 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 
 	@Override
 	protected Map<String, String> getInternalConnectionProperties(
-		DBRProgressMonitor monitor, DBPDriver driver, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException
-	{
+		@NotNull DBRProgressMonitor monitor,
+		@NotNull DBPDriver driver,
+		@NotNull JDBCExecutionContext context,
+		@NotNull String purpose,
+		@NotNull DBPConnectionConfiguration connectionInfo
+	) throws DBCException {
 		Map<String, String> props = new HashMap<>(ExasolDataSourceProvider.getConnectionsProps());
 		if (CommonUtils.getBoolean(connectionInfo.getProviderProperty(ExasolConstants.DRV_USE_LEGACY_ENCRYPTION), false)) {
 			props.put(ExasolConstants.DRV_LEGACY_ENCRYPTION, "1");
@@ -493,7 +497,7 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 
 	@NotNull
     @Override
-	public Class<? extends ExasolSchema> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException
+	public Class<? extends ExasolSchema> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException
 	{
 		return ExasolSchema.class;
 	}

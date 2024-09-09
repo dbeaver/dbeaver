@@ -129,20 +129,10 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                             break;
                         }
                     }
-                    DBPConnectionType newType = new DBPConnectionType(
-                        name.toLowerCase(),
-                        name,
-                        "255,255,255",
-                        "New type",
-                        true,
-                        false,
-                        true,
-                        false,
-                        true,
-                        true,
-                        1800,
-                        true,
-                        1800);
+                    DBPConnectionType newType = new DBPConnectionType(DBPConnectionType.DEFAULT_TYPE);
+                    newType.setId(name.toLowerCase());
+                    newType.setName("New type");
+                    newType.setColor("255,255,255");
                     addTypeToTable(newType, newType);
                     typeTable.select(typeTable.getItemCount() - 1);
                     typeTable.showSelection();
@@ -332,7 +322,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             grd.widthHint = UIUtils.getFontHeight(autoCloseTransactionsTtlText) * 6;
             autoCloseTransactionsTtlText.setLayoutData(grd);
             autoCloseTransactionsTtlText.addModifyListener(e ->
-                getSelectedType().setCloseIdleTransactionPeriod(CommonUtils.toLong(autoCloseTransactionsTtlText.getText(), 1800)));
+                getSelectedType().setCloseIdleTransactionPeriod(
+                    CommonUtils.toInt(autoCloseTransactionsTtlText.getText(), DBPConnectionType.DEFAULT_TYPE.getCloseIdleTransactionPeriod())));
             // connections
             autoCloseConnectionsCheck = UIUtils.createCheckbox(
                 placeholder,
@@ -353,7 +344,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             grdConnections.widthHint = UIUtils.getFontHeight(autoCloseTransactionsTtlText) * 6;
             autoCloseConnectionsTtlText.setLayoutData(grdConnections);
             autoCloseConnectionsTtlText.addModifyListener(e ->
-                getSelectedType().setCloseIdleConnectionPeriod(CommonUtils.toLong(autoCloseConnectionsTtlText.getText(), 1800)));
+                getSelectedType().setCloseIdleConnectionPeriod(
+                    CommonUtils.toInt(autoCloseConnectionsTtlText.getText(), DBPConnectionType.DEFAULT_TYPE.getCloseIdleConnectionPeriod())));
 
             Button epButton = UIUtils.createDialogButton(
                 placeholder,

@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
+import org.jkiss.dbeaver.model.impl.net.SSLConstants;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -144,8 +145,13 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     }
 
     @Override
-    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo)
-        throws DBCException {
+    protected Map<String, String> getInternalConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDriver driver,
+        @NotNull JDBCExecutionContext context,
+        @NotNull String purpose,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBCException {
         Map<String, String> props = new LinkedHashMap<>(MySQLDataSourceProvider.getConnectionsProps());
         final DBWHandlerConfiguration sslConfig = getContainer().getActualConnectionConfiguration().getHandler(MySQLConstants.HANDLER_SSL);
         if (sslConfig != null && sslConfig.isEnabled()) {
@@ -212,12 +218,12 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             byte[] clientCertData = SSLHandlerTrustStoreImpl.readCertificate(sslConfig, SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT, MySQLConstants.PROP_SSL_CLIENT_CERT);
             byte[] keyData = SSLHandlerTrustStoreImpl.readCertificate(sslConfig, SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY, MySQLConstants.PROP_SSL_CLIENT_KEY);
             if (caCertData != null || clientCertData != null) {
-                securityManager.addCertificate(getContainer(), "ssl", caCertData, clientCertData, keyData);
+                securityManager.addCertificate(getContainer(), SSLConstants.SSL_CERT_TYPE, caCertData, clientCertData, keyData);
             } else {
-                securityManager.deleteCertificate(getContainer(), "ssl");
+                securityManager.deleteCertificate(getContainer(), SSLConstants.SSL_CERT_TYPE);
             }
-            final String ksPath = makeKeyStorePath(securityManager.getKeyStorePath(getContainer(), "ssl"));
-            final char[] ksPass = securityManager.getKeyStorePassword(getContainer(), "ssl");
+            final String ksPath = makeKeyStorePath(securityManager.getKeyStorePath(getContainer(), SSLConstants.SSL_CERT_TYPE));
+            final char[] ksPass = securityManager.getKeyStorePassword(getContainer(), SSLConstants.SSL_CERT_TYPE);
             if (isMariaDB()) {
                 props.put("trustStore", ksPath);
                 props.put("trustStorePassword", String.valueOf(ksPass));
@@ -304,6 +310,19 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                     0,
                     0,
                     0));
+        }
+        if ((isMariaDB() && isServerVersionAtLeast(5, 4))
+            || (!isMariaDB() && isServerVersionAtLeast(5, 7))
+            && dataTypeCache.getCachedObject(MySQLConstants.TYPE_GEOMETRY) == null) {
+            addGISDatatype(MySQLConstants.TYPE_GEOMETRY);
+            addGISDatatype(MySQLConstants.TYPE_POINT);
+            addGISDatatype(MySQLConstants.TYPE_LINESTRING);
+            addGISDatatype(MySQLConstants.TYPE_POLYGON);
+            addGISDatatype(MySQLConstants.TYPE_MULTIPOINT);
+            addGISDatatype(MySQLConstants.TYPE_MULTILINESTRING);
+            addGISDatatype(MySQLConstants.TYPE_MULTIPOLYGON);
+            addGISDatatype(MySQLConstants.TYPE_GEOMETRYCOLLECTION);
+
         }
         if (isMariaDB() && isServerVersionAtLeast(10, 7) && dataTypeCache.getCachedObject(MySQLConstants.TYPE_UUID) == null) {
             // Not supported by MariaDB driver for now (3.0.8). Waiting for the driver support
@@ -427,6 +446,18 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         }
     }
 
+    private void addGISDatatype(String typeGeometry) {
+        dataTypeCache.cacheObject(new JDBCDataType<>(this,
+            Types.OTHER,
+            typeGeometry.toUpperCase(Locale.ROOT),
+            typeGeometry.toUpperCase(Locale.ROOT),
+            false,
+            true,
+            0,
+            0,
+            0));
+    }
+
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
         throws DBException {
@@ -466,7 +497,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
 
     @NotNull
     @Override
-    public Class<? extends MySQLCatalog> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) {
+    public Class<? extends MySQLCatalog> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) {
         return MySQLCatalog.class;
     }
 
@@ -735,6 +766,10 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     @Override
     public Collection<? extends DBSDataType> getLocalDataTypes() {
         return dataTypeCache.getCachedObjects();
+    }
+
+    public JDBCBasicDataTypeCache<MySQLDataSource, JDBCDataType> getDataTypeCache() {
+        return dataTypeCache;
     }
 
     @Override

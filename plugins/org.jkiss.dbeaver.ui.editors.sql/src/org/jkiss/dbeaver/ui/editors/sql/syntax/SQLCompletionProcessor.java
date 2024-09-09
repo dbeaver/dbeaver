@@ -184,7 +184,6 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                         {
                             setSystem(true);
                             setUser(false);
-                            schedule();
                         }
 
                         @Override
@@ -328,7 +327,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
         @Override
         public void assistSessionStarted(ContentAssistEvent event) {
-
+            SQLCompletionProcessor.setSimpleMode(event.isAutoActivated);
         }
 
         @Override

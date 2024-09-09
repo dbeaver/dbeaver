@@ -31,6 +31,8 @@ import java.security.spec.KeySpec;
 
 /**
  * Secured password encrypter
+ * <p>
+ * <b>Note:</b> This class does not provide a strong encryption mechanism and its usage is discouraged. It is kept for backward compatibility only.
  */
 public class SecuredPasswordEncrypter implements PasswordEncrypter {
 
@@ -73,25 +75,6 @@ public class SecuredPasswordEncrypter implements PasswordEncrypter {
             throw new EncryptionException(e);
         }
 
-    }
-
-    @Override
-    public String encrypt(String unencryptedString) throws EncryptionException
-    {
-        if (unencryptedString == null || unencryptedString.trim().length() == 0) {
-            throw new IllegalArgumentException("Empty string");
-        }
-
-        try {
-            SecretKey key = keyFactory.generateSecret(keySpec);
-            cipher.init(Cipher.ENCRYPT_MODE, key);
-            byte[] cleartext = unencryptedString.getBytes(CHARSET);
-            byte[] ciphertext = cipher.doFinal(cleartext);
-
-            return Base64.encode(ciphertext);
-        } catch (Exception e) {
-            throw new EncryptionException(e);
-        }
     }
 
     @Override

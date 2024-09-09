@@ -266,12 +266,12 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDriver driver,
-        @Nullable JDBCExecutionContext context,
+        @NotNull JDBCExecutionContext context,
         @NotNull String purpose,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBCException {
-        Map<String, String> props = new HashMap<>();
-        props.putAll(DB2DataSourceProvider.getConnectionsProps());
+        Map<String, String> props = new LinkedHashMap<>(
+            DB2DataSourceProvider.getConnectionsProps());
         if (getContainer().isConnectionReadOnly()) {
             props.put(DB2Constants.PROP_READ_ONLY, "true");
         }
@@ -356,7 +356,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
 
     @NotNull
     @Override
-    public Class<? extends DB2Schema> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException
+    public Class<? extends DB2Schema> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException
     {
         return DB2Schema.class;
     }

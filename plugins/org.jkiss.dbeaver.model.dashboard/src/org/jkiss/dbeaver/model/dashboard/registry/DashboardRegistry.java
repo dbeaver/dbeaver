@@ -45,10 +45,11 @@ import org.w3c.dom.Element;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class DashboardRegistry {
     private static final Log log = Log.getLog(DashboardRegistry.class);
-    
+
     public static final String CONFIG_FILE_NAME = "dashboards.xml";
 
     private static DashboardRegistry instance = null;
@@ -106,7 +107,7 @@ public class DashboardRegistry {
                         .loadConfigurationFile(CONFIG_FILE_NAME);
                 }
             }
-            
+
             synchronized (syncRoot) {
                 // Clear all custom dashboards
                 dashboardItems.values().removeIf(DashboardItemConfiguration::isCustom);
@@ -116,7 +117,7 @@ public class DashboardRegistry {
                         DashboardItemConfiguration dashboard = new DashboardItemConfiguration(this, dbElement);
                         dashboardItems.put(dashboard.getId(), dashboard);
                     }
-                }            
+                }
             }
         } catch (Exception e) {
             log.error("Error loading dashboard configuration", e);
@@ -145,7 +146,7 @@ public class DashboardRegistry {
             }
             xml.flush();
             out.flush();
-            
+
             DBWorkbench.getPlatform()
                 .getConfigurationController()
                 .saveConfigurationFile(CONFIG_FILE_NAME, out.getBuffer().toString());
@@ -232,6 +233,12 @@ public class DashboardRegistry {
         return new ArrayList<>(dashboardProviders.values());
     }
 
+    public List<DashboardProviderDescriptor> getDashboardProvidersWithSupportCustomDashboards() {
+        return this.getDashboardProviders().stream()
+            .filter(DashboardProviderDescriptor::isSupportsCustomDashboards)
+            .collect(Collectors.toList());
+    }
+
     public List<DashboardProviderDescriptor> getDashboardProviders(DBPDataSourceContainer dataSource) {
         if (dataSource != null) {
             return dashboardProviders.values().stream().filter(dp -> dp.appliesTo(dataSource))
@@ -306,7 +313,7 @@ public class DashboardRegistry {
                 throw new IllegalArgumentException("Only custom dashboards can be added");
             }
             dashboardItems.put(itemConfiguration.getId(), itemConfiguration);
-    
+
             saveConfigFile();
         }
 
@@ -327,7 +334,7 @@ public class DashboardRegistry {
                 throw new IllegalArgumentException("Only custom dashboards can be removed");
             }
             dashboardItems.remove(dashboard.getId());
-    
+
             saveConfigFile();
         }
 

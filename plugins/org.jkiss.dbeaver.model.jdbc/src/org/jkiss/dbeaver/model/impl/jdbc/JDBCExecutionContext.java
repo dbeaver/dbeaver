@@ -40,6 +40,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Savepoint;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * JDBCExecutionContext.
@@ -63,10 +64,22 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     private volatile Boolean autoCommit;
     private volatile Integer transactionIsolationLevel;
     private transient volatile boolean txnIsolationLevelReadInProgress;
+    private final ReentrantLock queryExecutionLock;
 
     public JDBCExecutionContext(@NotNull JDBCRemoteInstance instance, String purpose) {
         super(instance.getDataSource(), purpose);
         this.instance = instance;
+        if (!instance.getDataSource().getContainer().getDriver().isThreadSafeDriver()) {
+            queryExecutionLock = new ReentrantLock();
+        } else {
+            queryExecutionLock = null;
+        }
+    }
+
+    public JDBCExecutionContext(@NotNull JDBCRemoteInstance instance, boolean test) {
+        super(instance.getDataSource(), "Test for " + instance);
+        this.instance = instance;
+        queryExecutionLock = null;
     }
 
     @Override
@@ -199,7 +212,16 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
 
     @NotNull
     public Connection getConnection(DBRProgressMonitor monitor) throws SQLException {
-        if (connection == null) {
+        Connection result = getConnection(monitor, true);
+        if (result == null) {
+            throw new SQLException("Null connection returned");
+        }
+        return result;
+    }
+
+    @Nullable
+    public Connection getConnection(DBRProgressMonitor monitor, boolean openIfNeeded) throws SQLException {
+        if (connection == null && openIfNeeded) {
             try {
                 connect(monitor);
             } catch (DBCException e) {
@@ -477,4 +499,24 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         }
         return dataSource.getName() + " - " + instance.getName() + " - " + getContextName();
     }
+
+    /**
+     * Acquires lock on connection level.
+     * Any other thread will wait until you release lock with @unlockQueryExecution
+     */
+    public void lockQueryExecution() {
+        if (this.queryExecutionLock != null) {
+            this.queryExecutionLock.lock();
+        }
+    }
+
+    /**
+     * Release lock. Must be called in finally.
+     */
+    public void unlockQueryExecution() {
+        if (this.queryExecutionLock != null) {
+            this.queryExecutionLock.unlock();
+        }
+    }
+
 }

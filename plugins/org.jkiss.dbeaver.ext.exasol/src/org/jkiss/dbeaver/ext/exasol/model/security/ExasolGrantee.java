@@ -105,7 +105,7 @@ public abstract class ExasolGrantee
 				return grantee;
 			}
 		}
-		throw new DBException("Object disappeard after refresh");
+		throw new DBException("Object disappeared after refresh");
 	}
 
 	@Override

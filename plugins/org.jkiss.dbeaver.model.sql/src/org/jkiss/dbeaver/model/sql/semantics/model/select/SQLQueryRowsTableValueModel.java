@@ -17,17 +17,17 @@
 package org.jkiss.dbeaver.model.sql.semantics.model.select;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
+import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Describes a table constructed by VALUES clause
@@ -37,10 +37,9 @@ public class SQLQueryRowsTableValueModel extends SQLQueryRowsSourceModel {
     private final List<SQLQueryValueExpression> values;
     
     public SQLQueryRowsTableValueModel(
-        @NotNull SQLQueryModelContext context,
         @NotNull STMTreeNode syntaxNode,
         @NotNull List<SQLQueryValueExpression> values) {
-        super(context, syntaxNode);
+        super(syntaxNode);
         this.values = values;
     }
 
@@ -55,10 +54,12 @@ public class SQLQueryRowsTableValueModel extends SQLQueryRowsSourceModel {
         @NotNull SQLQueryDataContext context,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
-        this.values.forEach(v -> v.propagateContext(context, statistics));
-        return context.hideSources().overrideResultTuple(this.values.stream()
-            .map(e -> new SQLQueryResultColumn(new SQLQuerySymbol("?"), this, null, null, SQLQueryExprType.UNKNOWN))
-            .collect(Collectors.toList()));
+        LinkedList<SQLQueryResultColumn> resultColumns = new LinkedList<>();
+        for (SQLQueryValueExpression value : this.values) {
+            value.propagateContext(context, statistics);
+            resultColumns.addLast(new SQLQueryResultColumn(resultColumns.size(), new SQLQuerySymbol("?"), this, null, null, SQLQueryExprType.UNKNOWN));
+        }
+        return context.hideSources().overrideResultTuple(List.copyOf(resultColumns));
     }
 
     @Override

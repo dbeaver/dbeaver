@@ -107,7 +107,7 @@ public class DBExecUtils {
             ACTIVE_CONTEXTS.add(context);
         }
         // Set proxy auth (if required)
-        // Note: authenticator may be changed by Eclipse frameword on startup or later.
+        // Note: authenticator may be changed by Eclipse framework on startup or later.
         // That's why we set new default authenticator on connection initiation
         boolean hasProxy = false;
         for (DBWHandlerConfiguration handler : context.getConnectionConfiguration().getHandlers()) {
@@ -839,6 +839,7 @@ public class DBExecUtils {
                             // Probably it is an alias which conflicts with column name
                             // Do not update entity attribute.
                             // It is a silly workaround for PG-like databases
+                            log.debug("Cannot bind attribute '" + bindingMeta.getName() + "'");
                         } else if (bindingMeta.setEntityAttribute(tableColumn, updateColumnHandler) && rows != null) {
                             // We have new type and new value handler.
                             // We have to fix already fetched values.
@@ -922,7 +923,9 @@ public class DBExecUtils {
     private static boolean isSameDataTypes(@NotNull DBSEntityAttribute tableColumn, @NotNull DBCAttributeMetaData resultSetAttributeMeta) {
         if (tableColumn instanceof DBSTypedObjectEx) {
             DBSDataType columnDataType = ((DBSTypedObjectEx) tableColumn).getDataType();
-            return columnDataType != null && columnDataType.isStructurallyConsistentTypeWith(resultSetAttributeMeta);
+            if (columnDataType != null) {
+                return columnDataType.isStructurallyConsistentTypeWith(resultSetAttributeMeta);
+            }
         }
         return tableColumn.getDataKind().isComplex() == resultSetAttributeMeta.getDataKind().isComplex();
     }
@@ -940,6 +943,10 @@ public class DBExecUtils {
     }
 
     public static String getAttributeReadOnlyStatus(@NotNull DBDAttributeBinding attribute) {
+        return getAttributeReadOnlyStatus(attribute, true);
+    }
+
+    public static String getAttributeReadOnlyStatus(@NotNull DBDAttributeBinding attribute, boolean checkValidKey) {
         if (attribute == null || attribute.getMetaAttribute() == null) {
             return "Null meta attribute";
         }
@@ -950,6 +957,11 @@ public class DBExecUtils {
         if (rowIdentifier == null) {
             String status = attribute.getRowIdentifierStatus();
             return status != null ? status : "No row identifier found";
+        }
+        if (checkValidKey) {
+            if (rowIdentifier.isIncomplete()) {
+                return "No valid row identifier found";
+            }
         }
         DBSEntity dataContainer = rowIdentifier.getEntity();
         if (!(dataContainer instanceof DBSDataManipulator)) {

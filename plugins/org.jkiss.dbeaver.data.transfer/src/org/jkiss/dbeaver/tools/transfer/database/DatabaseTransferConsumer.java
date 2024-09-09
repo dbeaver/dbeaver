@@ -203,7 +203,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             // Document-based datasource
             rsAttributes = DBUtils.getAttributeBindings(session, sourceObject, resultSet.getMeta());
         } else {
-            rsAttributes = DBUtils.makeLeafAttributeBindings(session, sourceObject, resultSet);
+            rsAttributes = DTUtils.makeLeafAttributeBindings(session, sourceObject, resultSet);
         }
         columnMappings = new ColumnMapping[rsAttributes.length];
         sourceBindings = rsAttributes;
@@ -731,7 +731,10 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 DBSObjectContainer container = settings.getContainer();
                 DBNModel navigatorModel = DBNUtils.getNavigatorModel(container);
                 if (navigatorModel != null) {
-                    var node = DBNUtils.getNodeByObject(container);
+                    var node = DBNUtils.getNodeByObject(containerMapping.getTarget());
+                    if (node == null) {
+                        node = DBNUtils.getNodeByObject(container);
+                    }
                     if (node != null) {
                         node.refreshNode(monitor, this);
                     }

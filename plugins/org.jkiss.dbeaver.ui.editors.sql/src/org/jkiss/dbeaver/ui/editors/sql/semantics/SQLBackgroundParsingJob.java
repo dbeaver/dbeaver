@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserContext;
@@ -53,6 +54,9 @@ import java.util.ArrayDeque;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.regex.Pattern;
 
 public class SQLBackgroundParsingJob {
 
@@ -93,10 +97,14 @@ public class SQLBackgroundParsingJob {
             }
         }
     };
+    private CompletableFuture<Long> lastParsingFinishStamp = new CompletableFuture<>() { { this.complete(0l); } };
 
     private volatile boolean isRunning = false;
     private volatile int knownRegionStart = 0;
     private volatile int knownRegionEnd = 0;
+
+    private static final Pattern anyWordPattern = Pattern.compile("^\\w+$");
+
     @NotNull
     private final DocumentLifecycleListener documentListener = new DocumentLifecycleListener();
 
@@ -116,7 +124,7 @@ public class SQLBackgroundParsingJob {
         synchronized (this.syncRoot) {
             if (this.editor.getTextViewer() != null) {
                 this.editor.getTextViewer().addTextInputListener(this.documentListener);
-                this.editor.getTextViewer().addViewportListener(this.documentListener);                
+                this.editor.getTextViewer().addViewportListener(this.documentListener);
                 if (this.document == null) {
                     IDocument document = this.editor.getTextViewer().getDocument();
                     if (document != null) {
@@ -147,7 +155,6 @@ public class SQLBackgroundParsingJob {
     }
     
     private final Set<Integer> knownIdentifierPartTerms = Set.of(
-        SQLStandardLexer.Period,
         SQLStandardLexer.Identifier,
         SQLStandardLexer.DelimitedIdentifier,
         SQLStandardLexer.Quotted
@@ -159,27 +166,49 @@ public class SQLBackgroundParsingJob {
     @NotNull
     public SQLQueryCompletionContext obtainCompletionContext(int offset) {
         SQLScriptItemAtOffset scriptItem = null;
+        Position requestPosition = new Position(offset);
         do {
+            final long requestStamp = System.currentTimeMillis();
+            CompletableFuture<Long> expectedParsingSessionFinishStamp;
             synchronized (this.syncRoot) {
                 if (scriptItem == null || this.queuedForReparse.size() == 0) {
-                    scriptItem = this.context.findScriptItem(offset);
+                    scriptItem = this.context.findScriptItem(offset - 1);
                     if (scriptItem != null) { // TODO consider statements separation which is ignored for now
                         if (scriptItem.item.isDirty()) {
                             // awaiting reparse, so proceed to release lock and wait for the job to finish, then retry
                         } else {
-                            return this.prepareCompletionContext(scriptItem, offset); 
+                            return this.prepareCompletionContext(scriptItem, requestPosition.getOffset());
                         }
                     } else {
                         // no script items here, so fallback to offquery context
                         break;
                     }
                 }
+
+                try {
+                    assert this.document != null;
+                    this.document.addPosition(requestPosition);
+                } catch (BadLocationException e) {
+                    log.error(e);
+                    throw new RuntimeException(e);
+                }
+                expectedParsingSessionFinishStamp = this.lastParsingFinishStamp;
             }
             
             try {
-                this.job.join();
-            } catch (InterruptedException e) {
+                // job.join() cannot be used here because completion request is being submitted at before-change event,
+                // when the job is not scheduled yet (so join returns immediately)
+                // job.schedule() performed only after the series of keypresses at after-change event
+                if (expectedParsingSessionFinishStamp.get() < requestStamp) {
+                    return SQLQueryCompletionContext.EMPTY;
+                }
+            } catch (InterruptedException | ExecutionException e) {
                 break;
+            }
+            if (requestPosition.isDeleted()) {
+                return SQLQueryCompletionContext.EMPTY;
+            } else {
+                this.document.removePosition(requestPosition);
             }
         } while (scriptItem != null);
         return SQLQueryCompletionContext.prepareOffquery(0);
@@ -188,51 +217,75 @@ public class SQLBackgroundParsingJob {
     @NotNull
     private SQLQueryCompletionContext prepareCompletionContext(@NotNull SQLScriptItemAtOffset scriptItem, int offset) {
         int position = offset - scriptItem.offset;
-    
+
         SQLQueryModel model = scriptItem.item.getQueryModel();
         if (model != null) {
-            STMTreeNode syntaxNode = model.getSyntaxNode();
-            LSMInspections.SyntaxInspectionResult syntaxInspectionResult = LSMInspections.prepareAbstractSyntaxInspection(syntaxNode, position);
-            SQLQueryDataContext context = null;
-            SQLQueryNodeModel node = model.findNodeContaining(position);
-            SQLQueryLexicalScopeItem lexicalItem = null;
-            if (node != null) {
-                SQLQueryLexicalScope scope = node.findLexicalScope(position);
-                if (scope != null) {
-                    context = scope.getContext();
-                    lexicalItem = scope.findItem(position);
+            if (scriptItem.item.hasContextBoundaryAtLength() && position > scriptItem.item.length()) {
+                return SQLQueryCompletionContext.prepareOffquery(scriptItem.offset);
+            } else {
+                STMTreeNode syntaxNode = model.getSyntaxNode();
+                Interval realInterval = syntaxNode.getRealInterval();
+                if (scriptItem.item.getOriginalText().length() <= SQLQueryCompletionContext.getMaxKeywordLength()
+                    && anyWordPattern.matcher(scriptItem.item.getOriginalText()).matches()
+                    && position <= scriptItem.item.getOriginalText().length()
+                ) {
+                    return SQLQueryCompletionContext.prepareOffquery(scriptItem.offset);
+                }
+                LSMInspections.SyntaxInspectionResult syntaxInspectionResult = LSMInspections.prepareAbstractSyntaxInspection(syntaxNode, position);
+                SQLQueryDataContext context = null;
+                SQLQueryNodeModel node = model.findNodeContaining(position);
+                SQLQueryLexicalScopeItem lexicalItem = null;
+                if (node != null) {
+                    SQLQueryLexicalScope scope = node.findLexicalScope(position);
+                    if (scope != null) {
+                        context = scope.getContext();
+                        lexicalItem = scope.findItem(position);
+                    }
+                    if (context == null) {
+                        context = node.getGivenDataContext();
+                    }
+                } else {
+                    return SQLQueryCompletionContext.EMPTY;
                 }
                 if (context == null) {
-                    context = node.getGivenDataContext();
+                    return SQLQueryCompletionContext.EMPTY;
                 }
-            }
-            
-            ArrayDeque<STMTreeTermNode> nameNodes = new ArrayDeque<>();
-            List<STMTreeTermNode> allTerms = LSMInspections.prepareTerms(syntaxNode);
-            int index = STMUtils.binarySearchByKey(allTerms, t -> t.getRealInterval().a, position, Comparator.comparingInt(k -> k));
-            if (index < 0) {
-                index = ~index - 1;
-            }
-            if (allTerms.get(index).getRealInterval().b == position  - 1) {
-                for (int i = index; i >= 0; i--) {
-                    STMTreeTermNode term = allTerms.get(i);
-                    if (knownIdentifierPartTerms.contains(term.symbol.getType())
-                        || (term.getStmParent() != null && term.getStmParent().getNodeKindId() == SQLStandardParser.RULE_nonReserved)
-                    ) {
-                        nameNodes.addFirst(term);
-                    } else {
-                        break;
+
+                ArrayDeque<STMTreeTermNode> nameNodes = new ArrayDeque<>();
+                List<STMTreeTermNode> allTerms = LSMInspections.prepareTerms(syntaxNode);
+                int index = STMUtils.binarySearchByKey(allTerms, t -> t.getRealInterval().a, position, Comparator.comparingInt(k -> k));
+                if (index < 0) {
+                    index = ~index - 1;
+                }
+                if (index >= 0) {
+                    STMTreeTermNode immTerm = allTerms.get(index);
+                    if (immTerm.symbol.getType() == SQLStandardLexer.Period) {
+                        index--; // skip identifier separator immediately before the cursor
+                    }
+                    for (int i = index; i >= 0; i--) {
+                        STMTreeTermNode term = allTerms.get(i);
+                        if (knownIdentifierPartTerms.contains(term.symbol.getType())
+                                || (term.getStmParent() != null && term.getStmParent().getNodeKindId() == SQLStandardParser.RULE_nonReserved)
+                        ) {
+                            nameNodes.addFirst(term);
+                            i--;
+                            if (i < 0 || allTerms.get(i).symbol.getType() != SQLStandardLexer.Period) {
+                                break; // not followed by an identifier separator part
+                            }
+                        } else {
+                            break; // not an identifier part
+                        }
                     }
                 }
+                return SQLQueryCompletionContext.prepare(
+                        scriptItem,
+                        this.editor.getExecutionContext(),
+                        syntaxInspectionResult,
+                        context,
+                        lexicalItem,
+                        nameNodes.toArray(STMTreeTermNode[]::new)
+                );
             }
-            return SQLQueryCompletionContext.prepare(
-                scriptItem,
-                this.editor.getExecutionContext(),
-                syntaxInspectionResult,
-                context,
-                lexicalItem,
-                nameNodes.toArray(STMTreeTermNode[]::new)
-            );
         } else {
             return SQLQueryCompletionContext.EMPTY;
         }
@@ -297,6 +350,7 @@ public class SQLBackgroundParsingJob {
                 }
                 this.queuedForReparse.put(reparseStart, new QueuedRegionInfo(reparseLength));
             }
+            this.resetLastParsingFinishTime();
         }
     }
 
@@ -314,6 +368,15 @@ public class SQLBackgroundParsingJob {
                 region.length = Math.max(region.length, toParseStart + toParseLength - regionOffset);
             } else {
                 this.queuedForReparse.put(toParseStart, new QueuedRegionInfo(toParseLength));
+                this.resetLastParsingFinishTime();
+            }
+        }
+    }
+
+    private void resetLastParsingFinishTime() {
+        synchronized (this.syncRoot) {
+            if (this.lastParsingFinishStamp.isDone()) {
+                this.lastParsingFinishStamp = new CompletableFuture<>();
             }
         }
     }
@@ -508,6 +571,7 @@ public class SQLBackgroundParsingJob {
             monitor.worked(1);
 
             SQLSyntaxManager syntaxManager = this.editor.getSyntaxManager();
+            SQLQueryRecognitionContext recognitionContext = new SQLQueryRecognitionContext(monitor, executionContext, useRealMetadata, syntaxManager);
 
             int i = 1;
             for (SQLScriptElement element : elements) {
@@ -515,23 +579,22 @@ public class SQLBackgroundParsingJob {
                     break;
                 }
                 try {
-                    SQLQueryModelContext recognizer = new SQLQueryModelContext(executionContext, useRealMetadata, syntaxManager);
-                    SQLQueryModel queryModel = recognizer.recognizeQuery(
-                        element.getOriginalText(),
-                        monitor
-                    );
-                
+                    recognitionContext.reset();
+                    SQLQueryModel queryModel = SQLQueryModelRecognizer.recognizeQuery(recognitionContext, element.getOriginalText());
+
                     if (queryModel != null) {
                         if (DEBUG) {
                             log.debug("registering script item @" + element.getOffset() + "+" + element.getLength());
                         }
                         SQLDocumentScriptItemSyntaxContext itemContext = this.context.registerScriptItemContext(
-                            element.getOriginalText(), 
+                            element.getOriginalText(),
                             queryModel,
                             element.getOffset(),
-                            element.getLength()
+                            element.getLength(),
+                            element instanceof SQLQuery queryElement && Boolean.TRUE.equals(queryElement.isEndsWithDelimiter())
                         );
                         itemContext.clear();
+                        itemContext.setProblems(recognitionContext.getProblems());
                         for (SQLQuerySymbolEntry entry : queryModel.getAllSymbols()) {
                             itemContext.registerToken(entry.getInterval().a, entry);
                         }
@@ -560,6 +623,7 @@ public class SQLBackgroundParsingJob {
                 log.debug("known is " + knownRegionStart + "-" + knownRegionEnd);
             }
             this.isRunning = false;
+            this.lastParsingFinishStamp.complete(System.currentTimeMillis());
         }
         
         UIUtils.asyncExec(() -> {

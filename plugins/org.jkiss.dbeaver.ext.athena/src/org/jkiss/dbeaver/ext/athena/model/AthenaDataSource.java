@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.athena.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -41,12 +42,20 @@ public class AthenaDataSource extends GenericDataSource {
     }
 
     @Override
-    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
+    protected Map<String, String> getInternalConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDriver driver,
+        @NotNull JDBCExecutionContext context,
+        @NotNull String purpose,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBCException {
         Map<String, String> props = new HashMap<>();
         if (CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
             connectionInfo.setDatabaseName(connectionInfo.getProviderProperty(AthenaConstants.DRIVER_PROP_S3_OUTPUT_LOCATION));
         }
-        props.put(AthenaConstants.DRIVER_PROP_S3_OUTPUT_LOCATION, connectionInfo.getDatabaseName());
+        if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
+            props.put(AthenaConstants.DRIVER_PROP_S3_OUTPUT_LOCATION, connectionInfo.getDatabaseName());
+        }
         props.put(AthenaConstants.DRIVER_PROP_AWS_CREDENTIALS_PROVIDER_CLASS, "com.amazonaws.auth.DefaultAWSCredentialsProviderChain");
 
         boolean useCatalogs = CommonUtils.toBoolean(connectionInfo.getProviderProperty(AthenaConstants.PROP_SHOW_CATALOGS));

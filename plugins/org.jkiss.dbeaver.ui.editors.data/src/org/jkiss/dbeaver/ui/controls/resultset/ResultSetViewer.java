@@ -156,6 +156,7 @@ public class ResultSetViewer extends Viewer
     private static final DateTimeFormatter EXECUTION_TIME_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, HH:mm:ss");
 
     private static final IResultSetListener[] EMPTY_LISTENERS = new IResultSetListener[0];
+    private static final String CSS_CLASS_RESULT_SET_VIEWER = "ResultSetViewer";
 
     private IResultSetFilterManager filterManager;
     @NotNull
@@ -267,6 +268,7 @@ public class ResultSetViewer extends Viewer
         boolean supportsPanels = (decoratorFeatures & IResultSetDecorator.FEATURE_PANELS) != 0;
 
         this.mainPanel = UIUtils.createPlaceholder(parent, supportsPanels ? 3 : 2);
+        CSSUtils.setCSSClass(this.mainPanel, CSS_CLASS_RESULT_SET_VIEWER);
 
         this.autoRefreshControl = new AutoRefreshControl(
             this.mainPanel, ResultSetViewer.class.getSimpleName(), monitor -> refreshData(null));
@@ -308,9 +310,9 @@ public class ResultSetViewer extends Viewer
         this.viewerPanel = UIUtils.createPlaceholder(mainPanel, 1);
         this.viewerPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
         this.viewerPanel.setData(CONTROL_ID, this);
-        CSSUtils.setCSSClass(this.viewerPanel, DBStyles.COLORED_BY_CONNECTION_TYPE);
         UIUtils.setHelp(this.viewerPanel, IHelpContextIds.CTX_RESULT_SET_VIEWER);
         this.viewerPanel.setRedraw(false);
+        CSSUtils.setCSSClass(this.viewerPanel, CSS_CLASS_RESULT_SET_VIEWER);
 
         if (supportsPanels) {
             this.panelSwitchFolder = new VerticalFolder(mainPanel, SWT.RIGHT);
@@ -1669,7 +1671,7 @@ public class ResultSetViewer extends Viewer
             return Status.OK_STATUS;
         }
     };
-    
+
     private final IPropertyChangeListener propertyEvaluationRequestListener = ev -> {
         if (TOOLBAR_CONFIGURATION_VISIBLE_PROPERTY.equals(ev.getProperty())) { //$NON-NLS-1$
             if (!getControl().isDisposed()) {
@@ -1843,7 +1845,7 @@ public class ResultSetViewer extends Viewer
                 CSSUtils.setCSSClass(statusLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
             }
         }
-        
+
         statusBarLayoutJob.schedule(10);
     }
 
@@ -1987,14 +1989,18 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public String getAttributeReadOnlyStatus(DBDAttributeBinding attr) {
-        String dataStatus = getReadOnlyStatus();
-        if (dataStatus != null) {
-            return dataStatus;
+    public String getAttributeReadOnlyStatus(DBDAttributeBinding attr, boolean checkEntity, boolean checkKey) {
+        if (checkEntity) {
+            String dataStatus = getReadOnlyStatus();
+            if (dataStatus != null) {
+                return dataStatus;
+            }
         }
         boolean newRow = (curRow != null && curRow.getState() == ResultSetRow.STATE_ADDED);
         if (!newRow) {
-            return DBExecUtils.getAttributeReadOnlyStatus(attr);
+            return DBExecUtils.getAttributeReadOnlyStatus(
+                attr,
+                checkKey);
         }
         return null;
     }
@@ -2352,14 +2358,14 @@ public class ResultSetViewer extends Viewer
         if (serverSideOrdering) {
             this.refreshData(null);
         } else {
-            this.reorderLocally();
+            this.reorderLocally(columnElement);
         }
     }
 
-    private void reorderLocally()
+    private void reorderLocally(DBDAttributeBinding columnElement)
     {
         this.rejectChanges();
-        this.getModel().resetOrdering();
+        this.getModel().resetOrdering(columnElement);
         this.getActivePresentation().refreshData(false, false, true);
         this.updateFiltersText();
     }
@@ -2530,14 +2536,14 @@ public class ResultSetViewer extends Viewer
         if (executionContext == null || !executionContext.isConnected()) {
             return "No connection to database";
         }
-        if (!executionContext.getDataSource().getContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_DATA)) {
-            return "Data edit restricted";
+        if (executionContext.getDataSource().getContainer().isConnectionReadOnly()) {
+            return "Connection is in read-only state";
         }
         if (executionContext.getDataSource().getInfo().isReadOnlyData()) {
             return "Read-only data container";
         }
-        if (executionContext.getDataSource().getContainer().isConnectionReadOnly()) {
-            return "Connection is in read-only state";
+        if (!executionContext.getDataSource().getContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_DATA)) {
+            return "Data edit restricted";
         }
         if (isUniqueKeyUndefinedButRequired(executionContext)) {
             return "No unique key defined";

@@ -25,6 +25,7 @@ import org.eclipse.e4.ui.model.application.ui.menu.MHandledItem;
 import org.eclipse.e4.ui.workbench.renderers.swt.HandledContributionItem;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.commands.ActionHandler;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
@@ -52,6 +53,8 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowData;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.contexts.IContextService;
@@ -263,7 +266,7 @@ public class UIUtils {
             if (fit && totalWidth < clientArea.width) {
                 int sbWidth = table.getBorderWidth() * 2;
                 if (table.getVerticalBar() != null) {
-                    sbWidth = table.getVerticalBar().getSize().x;
+                    sbWidth = sbWidth + table.getVerticalBar().getSize().x;
                 }
                 if (columns.length > 0) {
                     float extraSpace = (clientArea.width - totalWidth - sbWidth) / columns.length - 1;
@@ -1025,7 +1028,14 @@ public class UIUtils {
         scrolledComposite.addControlListener(new ControlAdapter() {
             @Override
             public void controlResized(ControlEvent e) {
-                scrolledComposite.setMinSize(content.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+                Rectangle area = scrolledComposite.getClientArea();
+                Point size = content.computeSize(
+                    (scrolledComposite.getStyle() & SWT.HORIZONTAL) != 0 ? SWT.DEFAULT : area.width,
+                    (scrolledComposite.getStyle() & SWT.VERTICAL) != 0 ? SWT.DEFAULT : area.height
+                );
+
+                content.setSize(size);
+                scrolledComposite.setMinSize(size);
             }
         });
     }
@@ -1198,12 +1208,12 @@ public class UIUtils {
 
     @NotNull
     public static Button createDialogButton(@NotNull Composite parent, @Nullable String label, @Nullable SelectionListener selectionListener) {
-        return createDialogButton(parent, label, null, null, selectionListener);
+        return createDialogButton(parent, label, null, (DBPImage) null, selectionListener);
     }
 
     @NotNull
     public static Button createDialogButton(@NotNull Composite parent, @Nullable String label, @Nullable DBPImage icon, @Nullable String toolTip, @Nullable SelectionListener selectionListener) {
-        return createDialogButton(parent, label, toolTip, icon, GridData.HORIZONTAL_ALIGN_FILL, selectionListener);
+        return createDialogButton(parent, label, toolTip, icon, selectionListener);
     }
 
     @NotNull
@@ -1212,7 +1222,6 @@ public class UIUtils {
         @Nullable String label,
         @Nullable String toolTip,
         @Nullable DBPImage icon,
-        int style,
         @Nullable SelectionListener selectionListener
     ) {
         Button button = new Button(parent, SWT.PUSH);
@@ -1225,24 +1234,43 @@ public class UIUtils {
             button.setToolTipText(toolTip);
         }
 
-        // Dialog settings
-        GridData gd = new GridData(style);
-        GC gc = new GC(button);
-        int widthHint;
-        try {
-            gc.setFont(JFaceResources.getDialogFont());
-            widthHint = org.eclipse.jface.dialogs.Dialog.convertHorizontalDLUsToPixels(gc.getFontMetrics(), IDialogConstants.BUTTON_WIDTH);
-        } finally {
-            gc.dispose();
-        }
-        Point minSize = button.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
-        gd.widthHint = Math.max(widthHint, minSize.x);
-        button.setLayoutData(gd);
+        button.setLayoutData(getDialogButtonLayoutData(parent, button));
 
         if (selectionListener != null) {
             button.addSelectionListener(selectionListener);
         }
         return button;
+    }
+
+    private static Object getDialogButtonLayoutData(@NotNull Composite parent, @NotNull Button button) {
+        int buttonWidth = getDialogButtonWidth(button);
+        if (parent.getLayout() instanceof GridLayout) {
+            GridData gridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+            gridData.widthHint = buttonWidth;
+            return gridData;
+        } else if (parent.getLayout() instanceof RowLayout) {
+            return new RowData(buttonWidth, SWT.DEFAULT);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Returns the width of the button. The width is calculated based on the button font.
+     *
+     * @param button the button.
+     * @return the width of the button.
+     */
+    public static int getDialogButtonWidth(@NotNull Button button) {
+        GC gc = new GC(button);
+        try {
+            gc.setFont(JFaceResources.getDialogFont());
+            int widthHint = Dialog.convertHorizontalDLUsToPixels(gc.getFontMetrics(), IDialogConstants.BUTTON_WIDTH);
+            Point minSize = button.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
+            return Math.max(widthHint, minSize.x);
+        } finally {
+            gc.dispose();
+        }
     }
 
     @NotNull
@@ -1647,7 +1675,7 @@ public class UIUtils {
     }
 
     public static boolean isInDialog(Control control) {
-        return control.getShell().getData() instanceof org.eclipse.jface.dialogs.Dialog;
+        return control.getShell().getData() instanceof Dialog;
     }
 
     public static boolean isInWizard(Control control) {
@@ -2175,7 +2203,7 @@ public class UIUtils {
     public static void waitJobCompletion(@NotNull AbstractJob job, @Nullable IProgressMonitor monitor) {
         // Wait until job finished
         Display display = Display.getCurrent();
-        while (!job.isFinished()) {
+        while (!job.isFinished() && !DBWorkbench.getPlatform().isShuttingDown()) {
             if (monitor != null && monitor.isCanceled()) {
                 job.cancel();
             }

@@ -57,13 +57,13 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends AbstractTableCons
     public static final String OPTION_OWN_ATTRIBUTES = "ownAttributes";
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource)
+    public long getMakerOptions(@NotNull DBPDataSource dataSource)
     {
         return FEATURE_EDITOR_ON_CREATE;
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) throws DBException
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options) throws DBException
     {
         final TABLE_TYPE table = (TABLE_TYPE) command.getObject().getTable();
         actions.add(
@@ -74,7 +74,7 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends AbstractTableCons
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) throws DBException
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options) throws DBException
     {
         actions.add(
             new SQLDatabasePersistAction(
@@ -218,7 +218,7 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends AbstractTableCons
                         return refKeyClass.cast(entityConstraint);
                     }
                 } catch (DBException e) {
-                    log.debug("Error searchign constraint by attributes", e);
+                    log.debug("Error searching constraint by attributes", e);
                 }
             }
         }

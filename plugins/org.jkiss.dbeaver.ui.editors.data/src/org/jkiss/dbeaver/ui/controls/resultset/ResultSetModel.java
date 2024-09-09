@@ -462,9 +462,13 @@ public class ResultSetModel {
                 DBDAttributeBinding ownerAttr = attr.getParent(depth - i - 1);
                 assert ownerAttr != null;
                 try {
+                    int itemIndex = 0;
+                    if (rowIndexes != null && ownerValue instanceof Collection<?>) {
+                        itemIndex = rowIndexes[rowIndex++];
+                    }
                     Object nestedValue = ownerAttr.extractNestedValue(
                         ownerValue,
-                        rowIndexes == null ? 0 : rowIndexes[rowIndex++]);
+                        itemIndex);
                     if (nestedValue == null) {
                         // Try to create nested value
                         DBCExecutionContext context = DBUtils.getDefaultContext(ownerAttr, false);
@@ -501,11 +505,12 @@ public class ResultSetModel {
         }
         // Get old value
         Object oldValue = rootValue;
+        int targetValueIndex = rowIndex - 1;
         if (ownerValue != null) {
             try {
                 oldValue = attr.extractNestedValue(
                     ownerValue,
-                    rowIndexes == null ? 0 : rowIndexes[rowIndex++]);
+                    rowIndexes == null || targetValueIndex < 0 ? 0 : rowIndexes[targetValueIndex]);
             } catch (DBCException e) {
                 log.error("Error getting [" + attr.getName() + "] value", e);
             }
@@ -520,7 +525,8 @@ public class ResultSetModel {
             if (ownerValue != null) {
                 if (ownerValue instanceof DBDCollection collection) {
                     if (collection.getItemCount() > 0) {
-                        ownerValue = collection.getItem(0);
+                        ownerValue = collection.getItem(
+                            rowIndexes == null ? 0 : rowIndexes[targetValueIndex]);
                     }
                 }
                 if (!(ownerValue instanceof DBDComposite)) {
@@ -548,9 +554,19 @@ public class ResultSetModel {
                     changesCount++;
                 }
             }
-            if (ownerValue != null) {
+            if (ownerValue instanceof DBDComposite compositeValue) {
                 try {
-                    ((DBDComposite) ownerValue).setAttributeValue(attr.getAttribute(), value);
+                    if (rowIndexes != null) {
+                        int itemIndex = rowIndexes[rowIndex];
+                        Object arrayValue = compositeValue.getAttributeValue(attr.getAttribute());
+                        if (arrayValue instanceof DBDCollection collection) {
+                            collection.setItem(itemIndex, value);
+                        } else {
+                            throw new DBCException("Wrong composite: cannot update item " + itemIndex);
+                        }
+                    } else {
+                        compositeValue.setAttributeValue(attr.getAttribute(), value);
+                    }
                 } catch (DBCException e) {
                     log.debug("Error setting attribute value", e);
                 }
@@ -1047,7 +1063,7 @@ public class ResultSetModel {
                 // Also check that original visual pos is the same as current position.
                 // Otherwise this means that column was reordered visually and we must respect this change
 
-                // We check order position only when forceUpdate=true (otherwise all previosu filters will be reset, see #6311)
+                // We check order position only when forceUpdate=true (otherwise all previous filters will be reset, see #6311)
                 continue;
             }
             if (constraint.getOperator() != null) {
@@ -1104,7 +1120,7 @@ public class ResultSetModel {
         this.dataFilter.setAnyConstraint(filter.isAnyConstraint());
     }
 
-    public void resetOrdering() {
+    public void resetOrdering(@NotNull DBDAttributeBinding columnElement) {
         final boolean hasOrdering = dataFilter.hasOrdering();
 
         // First sort in original order to reset multi-column orderings
@@ -1122,7 +1138,10 @@ public class ResultSetModel {
                     }
                     Object cell1 = getCellValue(new ResultSetCellLocation(binding, row1));
                     Object cell2 = getCellValue(new ResultSetCellLocation(binding, row2));
-                    if (cell1 instanceof String && cell2 instanceof String) {
+                    Comparator<Object> comparator = columnElement.getValueHandler().getComparator();
+                    if (comparator != null) {
+                        result = comparator.compare(cell1, cell2);
+                    } else if (cell1 instanceof String && cell2 instanceof String) {
                     	result = (cell1.toString()).compareToIgnoreCase(cell2.toString());
                     } else {
                     	result = DBUtils.compareDataValues(cell1, cell2);

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.altibase.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericPackage;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
@@ -37,27 +38,27 @@ import java.util.Map;
 public class AltibasePackageManager extends SQLObjectEditor<GenericPackage, GenericStructContainer> {
     
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return false;
     }
 
     @Override
-    public boolean canDeleteObject(GenericPackage object) {
+    public boolean canDeleteObject(@NotNull GenericPackage object) {
         return true;
     }
     
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, 
-            List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext,
+                                          @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options) {
         actions.add(
             new SQLDatabasePersistAction(
-                "Drop pacakge",
+                "Drop package",
                 "DROP PACKAGE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL))
         );
     }
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return 0;
     }
 
@@ -67,16 +68,16 @@ public class AltibasePackageManager extends SQLObjectEditor<GenericPackage, Gene
     }
 
     @Override
-    protected GenericPackage createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
-            Object container, Object copyFrom, Map<String, Object> options) throws DBException {
+    protected GenericPackage createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context,
+                                                  Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
         throw new DBCFeatureNotSupportedException();
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext,
-            List<DBEPersistAction> actions,
-            SQLObjectEditor<GenericPackage, GenericStructContainer>.ObjectCreateCommand command,
-            Map<String, Object> options) throws DBException {
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext,
+                                          @NotNull List<DBEPersistAction> actions,
+                                          @NotNull SQLObjectEditor<GenericPackage, GenericStructContainer>.ObjectCreateCommand command,
+                                          @NotNull Map<String, Object> options) throws DBException {
         
     }
 }

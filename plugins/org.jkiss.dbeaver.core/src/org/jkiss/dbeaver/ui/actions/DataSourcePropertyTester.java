@@ -47,6 +47,7 @@ public class DataSourcePropertyTester extends PropertyTester {
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.core.datasource";
     public static final String PROP_CONNECTED = "connected";
+    public static final String PROP_CONNECTING = "connecting";
     public static final String PROP_TRANSACTIONAL = "transactional";
     public static final String PROP_SYNCHRONIZABLE = "synchronizable";
     public static final String PROP_SUPPORTS_TRANSACTIONS = "supportsTransactions";
@@ -59,33 +60,35 @@ public class DataSourcePropertyTester extends PropertyTester {
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
         try {
             // Get root datasource node (we don't want to
-            while (receiver instanceof DBNDatabaseNode && !(receiver instanceof DBNDataSource)) {
-                receiver = ((DBNDatabaseNode) receiver).getParentNode();
+            while (receiver instanceof DBNDatabaseNode node && !(receiver instanceof DBNDataSource)) {
+                receiver = node.getParentNode();
             }
-            if (!(receiver instanceof DBPContextProvider)) {
+            if (!(receiver instanceof DBPContextProvider contextProvider)) {
                 return false;
             }
-            DBPContextProvider contextProvider = (DBPContextProvider) receiver;
             @Nullable
             DBCExecutionContext context = contextProvider.getExecutionContext();
-            @Nullable
-            DBPProject resourceProject = receiver instanceof IEditorPart
-                ? EditorUtils.getFileProject(((IEditorPart) receiver).getEditorInput())
-                : null;
-            
+
             switch (property) {
                 case PROP_CONNECTED:
                     boolean isConnected;
                     if (context != null) {
                         isConnected = context.getDataSource().getContainer().isConnected();
-                    } else if (receiver instanceof DBPDataSourceContainerProvider) {
-                        DBPDataSourceContainer container = ((DBPDataSourceContainerProvider) receiver).getDataSourceContainer();
+                    } else if (receiver instanceof DBPDataSourceContainerProvider containerProvider) {
+                        DBPDataSourceContainer container = containerProvider.getDataSourceContainer();
                         isConnected = container != null && container.isConnected();
                     } else {
                         isConnected = false;
                     }
                     boolean checkConnected = Boolean.TRUE.equals(expectedValue);
                     return checkConnected == isConnected;
+                case PROP_CONNECTING: {
+                    if (receiver instanceof DBPDataSourceContainerProvider containerProvider) {
+                        DBPDataSourceContainer container = containerProvider.getDataSourceContainer();
+                        return container != null && container.isConnecting();
+                    }
+                    return false;
+                }
                 case PROP_TRANSACTIONAL: {
                     if (context == null) {
                         return false;
@@ -126,18 +129,30 @@ public class DataSourcePropertyTester extends PropertyTester {
                     }
                     return Boolean.FALSE.equals(expectedValue);
                 }
-                case PROP_EDITABLE:
+                case PROP_EDITABLE: {
+                    DBPProject resourceProject = getProject(receiver);
                     return resourceProject == null || resourceProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
-                case PROP_PROJECT_RESOURCE_EDITABLE:
+                }
+                case PROP_PROJECT_RESOURCE_EDITABLE: {
+                    DBPProject resourceProject = getProject(receiver);
                     return resourceProject == null || resourceProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
-                case PROP_PROJECT_RESOURCE_VIEWABLE:
+                }
+                case PROP_PROJECT_RESOURCE_VIEWABLE: {
+                    DBPProject resourceProject = getProject(receiver);
                     return resourceProject == null || resourceProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_VIEW);
+                }
             }
             return false;
         } catch (Exception e) {
             log.debug("Error testing property " + property + ": " + e.getMessage());
             return false;
         }
+    }
+
+    private static @Nullable DBPProject getProject(Object receiver) {
+        return receiver instanceof IEditorPart editorPart
+            ? EditorUtils.getFileProject(editorPart.getEditorInput())
+            : null;
     }
 
     public static void firePropertyChange(String propName)

@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.dbeaver.model.impl.app.DefaultValueEncryptor;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
@@ -51,7 +50,6 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
-import javax.crypto.SecretKey;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -329,11 +327,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         if (!decrypt) {
             return credBuffer.toString(StandardCharsets.UTF_8);
         } else {
-            SecretKey localSecretKey = registry.getProject().getLocalSecretKey();
-            if (localSecretKey == null) {
-                throw new DBInterruptedException("Error of getting user credentials (operation was canceled)");
-            }
-            DBSValueEncryptor encryptor = new DefaultValueEncryptor(localSecretKey);
+            DBSValueEncryptor encryptor = registry.getProject().getValueEncryptor();
             try {
                 return new String(encryptor.decryptValue(credBuffer.toByteArray()), StandardCharsets.UTF_8);
             } catch (Exception e) {
@@ -347,7 +341,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         if (contents != null) {
             if (encrypt) {
                 // Serialize and encrypt
-                DBSValueEncryptor valueEncryptor = new DefaultValueEncryptor(registry.getProject().getLocalSecretKey());
+                DBSValueEncryptor valueEncryptor = registry.getProject().getValueEncryptor();
                 binaryContents = valueEncryptor.encryptValue(contents.getBytes(StandardCharsets.UTF_8));
             } else {
                 binaryContents = contents.getBytes(StandardCharsets.UTF_8);
@@ -378,8 +372,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         @NotNull DBPDataSourceConfigurationStorage configurationStorage,
         @NotNull DataSourceConfigurationManager configurationManager,
         @NotNull DataSourceRegistry.ParseResults parseResults,
-        @Nullable Collection<String> dataSourceIds,
-        boolean refresh
+        @Nullable Collection<String> dataSourceIds
     ) throws DBException, IOException {
         var connectionConfigurationChanged = false;
 
@@ -388,9 +381,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
         Map<String, Object> configurationMap = null;
 
         // process projectConfiguration
-        if (CommonUtils.toBoolean(registry.getProject().getProjectProperty(ENCRYPTED_CONFIGURATION))
-            && (!DBWorkbench.getPlatform().getApplication().isHeadlessMode())
-            && DBWorkbench.getPlatform().getApplication().isCommunity()) {
+        if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode()
+            && DBWorkbench.getPlatform().getApplication().isCommunity()
+            && CommonUtils.toBoolean(registry.getProject().getProjectProperty(ENCRYPTED_CONFIGURATION))
+        ) {
             DBWorkbench.getPlatformUI().showWarningMessageBox(
                 RegistryMessages.project_open_cannot_read_configuration_title,
                 NLS.bind(RegistryMessages.project_open_cannot_read_configuration_message,
@@ -405,9 +399,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
             log.error(e);
         }
         // process project credential
-        if (CommonUtils.toBoolean(registry.getProject().getProjectProperty(USE_PROJECT_PASSWORD))
-            && (!DBWorkbench.getPlatform().getApplication().isHeadlessMode())
-            && (DBWorkbench.getPlatform().getApplication().isCommunity())) {
+        if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode()
+            && DBWorkbench.getPlatform().getApplication().isCommunity() &&
+            CommonUtils.toBoolean(registry.getProject().getProjectProperty(USE_PROJECT_PASSWORD))
+        ) {
             if (DBWorkbench.getPlatformUI().confirmAction(
                 RegistryMessages.project_open_cannot_read_credentials_title,
                 NLS.bind(RegistryMessages.project_open_cannot_read_credentials_message,
@@ -477,9 +472,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         CommonUtils.toBoolean(smartCommit),
                         CommonUtils.toBoolean(smartCommitRecover),
                         CommonUtils.toBoolean(autoCloseTransactions),
-                        CommonUtils.toLong(closeTransactionsPeriod),
+                        CommonUtils.toInt(closeTransactionsPeriod),
                         CommonUtils.toBoolean(autoCloseConnections),
-                        CommonUtils.toLong(closeConnectionsPeriod));
+                        CommonUtils.toInt(closeConnectionsPeriod));
                     DBWorkbench.getPlatform().getDataSourceProviderRegistry().addConnectionType(ct);
                 }
                 deserializeModifyPermissions(ctConfig, ct);

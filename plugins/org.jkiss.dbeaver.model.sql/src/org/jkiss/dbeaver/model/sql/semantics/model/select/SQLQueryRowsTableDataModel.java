@@ -34,8 +34,8 @@ import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 /**
@@ -49,8 +49,8 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
     @Nullable
     private DBSEntity table = null;
 
-    public SQLQueryRowsTableDataModel(SQLQueryModelContext context, @NotNull STMTreeNode syntaxNode, @NotNull SQLQueryQualifiedName name) {
-        super(context, syntaxNode);
+    public SQLQueryRowsTableDataModel(@NotNull STMTreeNode syntaxNode, @NotNull SQLQueryQualifiedName name) {
+        super(syntaxNode);
         this.name = name;
     }
 
@@ -71,7 +71,7 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
     }
 
     @NotNull
-    private SQLQuerySymbol prepareColumnSymbol(@NotNull SQLQueryDataContext context, @NotNull DBSEntityAttribute attr) {
+    private static SQLQuerySymbol prepareColumnSymbol(@NotNull SQLQueryDataContext context, @NotNull DBSEntityAttribute attr) {
         String name = SQLUtils.identifierToCanonicalForm(context.getDialect(), attr.getName(), false, true);
         SQLQuerySymbol symbol = new SQLQuerySymbol(name);
         symbol.setDefinition(new SQLQuerySymbolByDbObjectDefinition(attr, SQLQuerySymbolClass.COLUMN));
@@ -81,23 +81,39 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
 
     @NotNull
     protected List<SQLQueryResultColumn> prepareResultColumnsList(
-        @NotNull SQLQuerySymbolEntry cause,
-        @NotNull SQLQueryDataContext attrsContext,
-        @NotNull SQLQueryRecognitionContext statistics,
-        @NotNull List<? extends DBSEntityAttribute> attributes
+            @NotNull SQLQuerySymbolEntry cause,
+            @NotNull SQLQueryDataContext attrsContext,
+            @NotNull SQLQueryRecognitionContext statistics,
+            @NotNull List<? extends DBSEntityAttribute> attributes
     ) {
-        List<SQLQueryResultColumn> columns = attributes.stream()
-            .filter(a -> !DBUtils.isHiddenObject(a))
-            .map(a -> new SQLQueryResultColumn(
-                    this.prepareColumnSymbol(attrsContext, a), 
-                    this, this.table, a,
-                    obtainColumnType(cause, statistics, a)
-            )).collect(Collectors.toList());
+        return prepareResultColumnsList(cause, this, this.table, attrsContext, statistics, attributes);
+    }
+
+    @NotNull
+    public static List<SQLQueryResultColumn> prepareResultColumnsList(
+            @NotNull SQLQuerySymbolEntry cause,
+            @NotNull SQLQueryRowsSourceModel rowsSourceModel,
+            @Nullable DBSEntity table,
+            @NotNull SQLQueryDataContext attrsContext,
+            @NotNull SQLQueryRecognitionContext statistics,
+            @NotNull List<? extends DBSEntityAttribute> attributes
+    ) {
+        List<SQLQueryResultColumn> columns = new ArrayList<>(attributes.size());
+        for (DBSEntityAttribute attr : attributes) {
+            if (!DBUtils.isHiddenObject(attr)) {
+                columns.add(new SQLQueryResultColumn(
+                        columns.size(),
+                        prepareColumnSymbol(attrsContext, attr),
+                        rowsSourceModel, table, attr,
+                        obtainColumnType(cause, statistics, attr)
+                ));
+            }
+        }
         return columns;
     }
 
     @NotNull
-    private SQLQueryExprType obtainColumnType(
+    private static SQLQueryExprType obtainColumnType(
         @NotNull SQLQuerySymbolEntry reason,
         @NotNull SQLQueryRecognitionContext statistics,
         @NotNull DBSAttributeBase attr
@@ -107,7 +123,7 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
             type = SQLQueryExprType.forTypedObject(statistics.getMonitor(), attr, SQLQuerySymbolClass.COLUMN);
         } catch (DBException e) {
             log.debug(e);
-            statistics.appendError(reason, "Failed to resolve column type", e);
+            statistics.appendError(reason, "Failed to resolve column type for column " + attr.getName(), e);
             type = SQLQueryExprType.UNKNOWN;
         }
         return type;
@@ -115,7 +131,10 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
 
     @NotNull
     @Override
-    protected SQLQueryDataContext propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+    protected SQLQueryDataContext propagateContextImpl(
+        @NotNull SQLQueryDataContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
         if (this.name.isNotClassified()) {
             List<String> nameStrings = this.name.toListOfStrings();
             this.table = context.findRealTable(statistics.getMonitor(), nameStrings);
@@ -135,7 +154,11 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
                         context = context.overrideResultTuple(columns);
                     }
                 } catch (DBException ex) {
-                    statistics.appendError(this.name.entityName, "Failed to resolve table", ex);
+                    statistics.appendError(
+                        this.name.entityName,
+                        "Failed to resolve columns of the table " + this.name.toIdentifierString(),
+                        ex
+                    );
                 }
             } else {
                 SourceResolutionResult rr = context.resolveSource(statistics.getMonitor(), nameStrings);
@@ -144,8 +167,11 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
                     this.name.entityName.setDefinition(rr.aliasOrNull.getDefinition());
                     context = context.overrideResultTuple(rr.source.getResultDataContext().getColumnsList());
                 } else {
-                    this.name.setSymbolClass(SQLQuerySymbolClass.ERROR);
-                    statistics.appendError(this.name.entityName, "Table not found");
+                    SQLQuerySymbolClass tableSymbolClass = statistics.isTreatErrorsAsWarnings()
+                        ? SQLQuerySymbolClass.TABLE
+                        : SQLQuerySymbolClass.ERROR;
+                    this.name.setSymbolClass(tableSymbolClass);
+                    statistics.appendError(this.name.entityName, "Table " + this.name.toIdentifierString() + " not found");
                 }
             }
         }

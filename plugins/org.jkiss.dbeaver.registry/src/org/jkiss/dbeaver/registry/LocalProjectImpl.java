@@ -39,6 +39,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class LocalProjectImpl extends BaseProjectImpl {
 
@@ -264,4 +265,11 @@ public class LocalProjectImpl extends BaseProjectImpl {
             EMPTY_PROJECT_TEMPLATE.replace("${project-name}", project.getName()));
     }
 
+    @NotNull
+    public Map<String, Map<String, Object>> getAllResourceProperties() {
+        this.loadMetadata();
+        synchronized (resourcesSync) {
+            return new TreeMap<>(this.resourceProperties);
+        }
+    }
 }

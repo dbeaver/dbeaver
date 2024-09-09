@@ -49,7 +49,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreFeatures;
 import org.jkiss.dbeaver.core.ui.services.ApplicationPolicyService;
-import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPApplication;
@@ -58,13 +57,13 @@ import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.OperationSystemState;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIFonts;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
 import org.jkiss.dbeaver.ui.app.standalone.update.DBeaverVersionChecker;
-import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
@@ -74,6 +73,11 @@ import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseEditors;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseUserInterface;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
+import java.awt.*;
+import java.awt.desktop.SystemEventListener;
+import java.awt.desktop.SystemSleepEvent;
+import java.awt.desktop.SystemSleepListener;
+import java.util.List;
 import java.util.*;
 
 /**
@@ -104,7 +108,10 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.epp.mpc.projectnatures",
         "org.eclipse.ui.internal.console.ansi.preferences.AnsiConsolePreferencePage",
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.browser.preferencePage",
-        "org.eclipse.jsch.ui.SSHPreferences"
+        "org.eclipse.jsch.ui.SSHPreferences",
+
+        WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID,
+        WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.AutoSave",
 
         // Team preferences - not needed in CE
         //"org.eclipse.team.ui.TeamPreferences",
@@ -117,8 +124,6 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.browser.preferencePage",
             WORKBENCH_PREF_PAGE_ID + "/org.eclipse.search.preferences.SearchPreferencePage",
             WORKBENCH_PREF_PAGE_ID + "/org.eclipse.text.quicksearch.PreferencesPage",
-            WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID,
-            WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.AutoSave",
             WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.FileEditors" //"File Associations"
     };
 
@@ -139,13 +144,6 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     };
 
 
-    /**
-     * Diagram font
-     */
-    public static String DIAGRAM_FONT = ERDUIConstants.PROP_DIAGRAM_FONT;
-
-    public static String RESULTS_GRID_FONT = ThemeConstants.FONT_SQL_RESULT_SET;
-    
     private static final Set<String> fontPrefIdsToHide = Set.of(
         ApplicationWorkbenchWindowAdvisor.TEXT_EDITOR_BLOCK_SELECTION_FONT,
         ApplicationWorkbenchWindowAdvisor.TEXT_FONT,
@@ -179,6 +177,18 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     //processor must be created before we start event loop
     protected final DBPApplication application;
     private final DelayedEventsProcessor processor;
+
+    private final SystemEventListener systemSleepListener = new SystemSleepListener() {
+        @Override
+        public void systemAboutToSleep(SystemSleepEvent e) {
+            OperationSystemState.toggleSleepMode(true);
+        }
+
+        @Override
+        public void systemAwoke(SystemSleepEvent e) {
+            OperationSystemState.toggleSleepMode(false);
+        }
+    };
 
     protected ApplicationWorkbenchAdvisor(DBPApplication application) {
         this.application = application;
@@ -255,6 +265,13 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             !ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
             startVersionChecker();
         }
+        if (!GraphicsEnvironment.isHeadless() && Desktop.isDesktopSupported()) {
+            // System events
+            Desktop desktop = Desktop.getDesktop();
+            if (desktop.isSupported(Desktop.Action.APP_EVENT_SYSTEM_SLEEP)) {
+                desktop.addAppEventListener(systemSleepListener);
+            }
+        }
     }
 
     @Override
@@ -276,13 +293,14 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         
         FontPreferenceOverrides.hideFontPrefs(pm, fontPrefIdsToHide);
         
-        for (String epp : getExcludedPreferencePageIds()) {
-            pm.remove(epp);
-        }
         patchPreferencePages(pm, EDITORS_PREF_PAGES, PrefPageDatabaseEditors.PAGE_ID);
         patchPreferencePages(pm, UI_PREF_PAGES, PrefPageDatabaseUserInterface.PAGE_ID);
         patchPreferencePages(pm, GENERAL_PREF_PAGES, WORKBENCH_PREF_PAGE_ID);
         patchPreferencePages(pm, NETWORK_PREF_PAGES, PrefPageConnectionsGeneral.PAGE_ID);
+
+        for (String epp : getExcludedPreferencePageIds()) {
+            pm.remove(epp);
+        }
     }
 
     @NotNull
@@ -342,6 +360,9 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         checker.schedule(3000);
     }
 
+    ///////////////////////
+    // Shutdown
+
     @Override
     public boolean preShutdown() {
         //DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(settingsChangeListener);
@@ -358,6 +379,13 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     @Override
     public void postShutdown() {
         super.postShutdown();
+        if (!GraphicsEnvironment.isHeadless() && Desktop.isDesktopSupported()) {
+            // System events
+            Desktop desktop = Desktop.getDesktop();
+            if (desktop.isSupported(Desktop.Action.APP_EVENT_SYSTEM_SLEEP)) {
+                desktop.removeAppEventListener(systemSleepListener);
+            }
+        }
     }
 
     private boolean saveAndCleanup() {
@@ -439,7 +467,10 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             // Probably some TE user without permissions and projects
             return true;
         }
-        final DBTTaskManager manager = activeProject.getTaskManager();
+        final DBTTaskManager manager = activeProject.getTaskManager(false);
+        if (manager == null) {
+            return true;
+        }
 
         if (manager.hasRunningTasks()) {
             final boolean cancel = !confirmCancel || DBWorkbench.getPlatformUI().confirmAction(

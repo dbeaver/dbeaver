@@ -55,6 +55,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * General non-ui utility methods
@@ -70,7 +71,7 @@ public class GeneralUtils {
 
     public static final String DEFAULT_TIMESTAMP_PATTERN = "yyyyMMddHHmm";
     public static final String DEFAULT_DATE_PATTERN = "yyyyMMdd";
-    public static final String RESOURCE_NAME_FORBIDDEN_SYMBOLS_REGEX = "(?U)[^/:'\"\\\\]+";
+    public static final String RESOURCE_NAME_FORBIDDEN_SYMBOLS_REGEX = "(?U)[^/:'\"\\\\<>|?*]+";
 
     public static final String[] byteToHex = new String[256];
     public static final char[] nibbleToHex = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
@@ -415,6 +416,11 @@ public class GeneralUtils {
             }
         }
         return null;
+    }
+
+    @NotNull
+    public static String getProductEarlyAccessURL() {
+        return Platform.getProduct().getProperty("earlyAccessURL");
     }
 
     public static String getExpressionParseMessage(Exception e) {
@@ -884,15 +890,48 @@ public class GeneralUtils {
         return new UUID(target.getLong(), target.getLong());
     }
 
+    /**
+     * Validates the resource name, only if the application is running in desktop mode.
+     *
+     * @param name the resource name to validate
+     * @throws DBException if the resource name is invalid
+     */
     public static void validateResourceName(String name) throws DBException {
         if (!DBWorkbench.isDistributed() && !DBWorkbench.getPlatform().getApplication().isMultiuser()) {
             return;
         }
+        validateResourceNameUnconditionally(name);
+    }
+
+    /**
+     * Validates the resource name unconditionally.
+     *
+     * @param name resource name to validate
+     * @throws DBException if resource name is invalid
+     */
+    public static void validateResourceNameUnconditionally(String name) throws DBException {
         if (name.startsWith(".")) {
             throw new DBException("Resource name '" + name + "' can't start with dot");
         }
-        if (!name.matches(GeneralUtils.RESOURCE_NAME_FORBIDDEN_SYMBOLS_REGEX)) {
-            throw new DBException("Resource name '" + name + "' contains illegal characters:  / : ' \" \\");
+
+        String forbiddenSymbols = name.replaceAll(RESOURCE_NAME_FORBIDDEN_SYMBOLS_REGEX, "");
+        if (CommonUtils.isNotEmpty(forbiddenSymbols)) {
+            String forbiddenExplain = forbiddenSymbols.chars()
+                .mapToObj(c -> Character.toString((char) c))
+                .collect(Collectors.joining(" "));
+            throw new DBException("Resource name '" + name + "' contains illegal characters:  " + forbiddenExplain);
         }
+    }
+
+    /**
+     * Normalizes line endings by converting Windows ({@code \\r\n}) and
+     * macOS ({@code \r}) line endings to Unix ({@code \n}) line endings.
+     *
+     * @param text the text to normalize
+     * @return the normalized text
+     */
+    @NotNull
+    public static String normalizeLineEndings(@NotNull String text) {
+        return text.replaceAll("(\r\n)|\r", "\n");
     }
 }

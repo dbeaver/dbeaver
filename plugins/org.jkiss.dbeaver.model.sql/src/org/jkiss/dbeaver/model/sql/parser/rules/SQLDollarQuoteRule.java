@@ -20,15 +20,20 @@ import org.jkiss.dbeaver.model.sql.parser.tokens.SQLBlockToggleToken;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.text.parser.*;
 
+/**
+ * See <a href="https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-DOLLAR-QUOTING">documentation</a>
+ */
 public class SQLDollarQuoteRule implements TPPredicateRule {
 
     private final boolean partitionRule;
     private final boolean allowNamedQuotes;
     private final boolean fullyConsumeNamed;
     private final boolean fullyConsumeUnnamed;
-    private final TPToken stringToken, delimiterToken;
+    private final TPToken stringToken;
+    private final TPToken delimiterToken;
 
     /**
+     * Dollar quoting rule constructor
      * @param partitionRule       whether this rule is a partition rule or not
      * @param allowNamedQuotes    whether this rule supports named quotes ({@code $named$}) or not
      * @param fullyConsumeNamed   whether this rule should stop after consuming named quote
@@ -38,16 +43,11 @@ public class SQLDollarQuoteRule implements TPPredicateRule {
     public SQLDollarQuoteRule(boolean partitionRule, boolean allowNamedQuotes, boolean fullyConsumeNamed, boolean fullyConsumeUnnamed) {
         this.partitionRule = partitionRule;
         this.allowNamedQuotes = allowNamedQuotes;
-        this.fullyConsumeNamed = fullyConsumeNamed;
-        this.fullyConsumeUnnamed = fullyConsumeUnnamed;
+        this.fullyConsumeNamed = fullyConsumeNamed || partitionRule;
+        this.fullyConsumeUnnamed = fullyConsumeUnnamed || partitionRule;
 
         this.stringToken = new TPTokenDefault(SQLTokenType.T_STRING);
         this.delimiterToken = new SQLBlockToggleToken();
-    }
-
-    @Override
-    public TPToken evaluate(TPCharacterScanner scanner) {
-        return evaluate(scanner, false);
     }
 
     @Override
@@ -56,79 +56,77 @@ public class SQLDollarQuoteRule implements TPPredicateRule {
     }
 
     @Override
+    public TPToken evaluate(TPCharacterScanner scanner) {
+        return evaluate(scanner, false);
+    }
+
+    @Override
     public TPToken evaluate(TPCharacterScanner scanner, boolean resume) {
+        String start = this.tryReadDollarQuote(scanner);
+        if (start != null) {
+            if ((start.length() == 2 && this.fullyConsumeUnnamed) || (start.length() > 2 && this.fullyConsumeNamed)) {
+                int c = scanner.read();
+                int captured = 1;
+                while (c != TPCharacterScanner.EOF) {
+                    if (c == '$') {
+                        scanner.unread();
+                        captured--;
+                        String end = this.tryReadDollarQuote(scanner);
+                        if (end != null) {
+                            if (end.equals(start)) {
+                                return this.stringToken;
+                            } else {
+                                // unread ending quote in case it is the real ending
+                                scanner.unread();
+                                captured += end.length() - 1;
+                            }
+                        } else {
+                            scanner.read();
+                            captured++;
+                        }
+                    }
+                    c = scanner.read();
+                    captured++;
+                }
+                unread(scanner, captured + start.length());
+            } else {
+                if (!this.partitionRule) {
+                    return this.delimiterToken;
+                }
+            }
+        }
+
+        return TPTokenAbstract.UNDEFINED;
+    }
+
+    private String tryReadDollarQuote(TPCharacterScanner scanner) {
         int totalRead = 0;
         int c = scanner.read();
         totalRead++;
+
         if (c == '$') {
-            int charsRead = 0;
-            do {
+            if (this.allowNamedQuotes) {
+                StringBuilder qname = new StringBuilder();
+                do {
+                    qname.append((char) c);
+                    c = scanner.read();
+                    totalRead++;
+                    if (c == '$') {
+                        qname.append((char) c);
+                        return qname.toString();
+                    }
+                } while (c != TPCharacterScanner.EOF && (Character.isLetterOrDigit(c) || c == '_'));
+            } else {
                 c = scanner.read();
-                charsRead++;
                 totalRead++;
                 if (c == '$') {
-
-                    if (charsRead > 1 ? fullyConsumeNamed : fullyConsumeUnnamed) {
-                        // Here is a trick - dollar quote without preceding AS or DO and without tag is a string.
-                        // Quote with tag is just a block toggle.
-                        // I'm afraid we can't do more (#6608, #7183)
-                        boolean stringEndFound = false;
-                        //StringBuilder stringValue = new StringBuilder();
-                        for (;;) {
-                            c = scanner.read();
-                            totalRead++;
-                            if (c == TPCharacterScanner.EOF) {
-                                break;
-                            }
-                            if (c == '$') {
-                                int c2 = scanner.read();
-                                totalRead++;
-                                if (c2 == '$') {
-                                    stringEndFound = true;
-                                    break;
-                                } else {
-                                    scanner.unread();
-                                    totalRead--;
-                                }
-                            }
-                            //stringValue.append((char)c);
-                        }
-
-                        if (!stringEndFound) {
-                            if (!partitionRule) {
-                                unread(scanner, totalRead - 2);
-                                return delimiterToken;
-                            } else {
-                                break;
-                            }
-                        }
-/*
-                        String encString = stringValue.toString().toUpperCase(Locale.ENGLISH);
-                        if (encString.contains(SQLConstants.BLOCK_BEGIN) && encString.contains(SQLConstants.BLOCK_END)) {
-                            // Seems to be a code block
-                            if (!partitionRule) {
-                                unread(scanner, totalRead - 2);
-                                return delimiterToken;
-                            } else {
-                                return partCodeToken;
-                            }
-                        }
-*/
-                        // Find the end of the string
-                        return stringToken;
-                    }
-                    if (!partitionRule) {
-                        return delimiterToken;
-                    } else {
-                        break;
-                    }
+                    return  "$$";
                 }
-            } while ((Character.isLetterOrDigit(c) || c == '_') && allowNamedQuotes);
+            }
         }
 
         unread(scanner, totalRead);
-
-        return TPTokenAbstract.UNDEFINED;
+        return null;
     }
 
     private static void unread(TPCharacterScanner scanner, int totalRead) {

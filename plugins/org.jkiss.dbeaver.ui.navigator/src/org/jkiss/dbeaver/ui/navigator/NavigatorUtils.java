@@ -137,7 +137,7 @@ public class NavigatorUtils {
     /**
      * Find selected node for specified UI element
      * @param element ui element
-     * @return ndoe or null
+     * @return node or null
      */
     public static DBNNode getSelectedNode(UIElement element)
     {

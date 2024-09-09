@@ -23,6 +23,7 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.INewWizard;
 import org.jkiss.code.NotNull;
@@ -32,12 +33,10 @@ import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
-import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
+import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -45,6 +44,7 @@ import org.jkiss.dbeaver.runtime.jobs.ConnectionTestJob;
 import org.jkiss.dbeaver.ui.ConnectionFeatures;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionTester;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizard;
 import org.jkiss.dbeaver.ui.dialogs.IConnectionWizard;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -155,6 +155,20 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
         DataSourceDescriptor testDataSource = new DataSourceDescriptor(dataSource, dataSource.getRegistry());
 
         saveSettings(testDataSource);
+
+        if (testDataSource.isSharedCredentials()) {
+            if (!testDataSource.getProject().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_PROJECT_ADMIN)) {
+                UIUtils.showMessageBox(getShell(), "Credentials edit restricted",
+                    "Shared credentials edit is available for administrators only.",
+                    SWT.ICON_ERROR);
+            } else {
+                UIUtils.showMessageBox(getShell(), "Use credentials manager",
+                    "Direct connection test is not available for shared connections.\nGo to shared credentials manager dialog.",
+                    SWT.ICON_WARNING);
+            }
+            return;
+        }
+
         testDataSource.setTemporary(true);
 
         // Generate new ID to avoid session conflicts in QM
@@ -272,6 +286,12 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
 
     @NotNull
     protected DBPConnectionConfiguration getDefaultConnectionConfiguration() {
-        return new DBPConnectionConfiguration();
+        DBPConnectionType type = DBPConnectionType.getDefaultConnectionType();
+
+        DBPConnectionConfiguration config = new DBPConnectionConfiguration();
+        config.setConnectionType(type);
+        config.setCloseIdleConnection(type.isAutoCloseConnections());
+
+        return config;
     }
 }

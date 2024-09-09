@@ -142,6 +142,7 @@ public class DBConstants {
     public static final String LOCAL_DOMAIN_NAME = "local";
 
     public static final String HOST_LOCALHOST = "localhost";
+    public static final String HOST_LOCALHOST_IP = "127.0.0.1";
 
 
     public static final String DRIVER_PARAM_DISABLE_NETWORK_PARAMETERS = "disableNetworkParameters";
@@ -154,4 +155,6 @@ public class DBConstants {
     public static final String PROP_FILE = "file"; //$NON-NLS-1$
     public static final String PROP_USER = "user"; //$NON-NLS-1$
     public static final String PROP_PASSWORD = "password"; //$NON-NLS-1$
+
+    public static final String CERTIFICATE_STORAGE_FOLDER = "security";
 }
