@@ -53,7 +53,7 @@ public class SSLConfiguratorTrustStoreUI extends SSLConfiguratorAbstractUI {
     protected Composite sslCertComposite;
     protected Composite sslKeyStoreComposite;
 
-    public SSLConfiguratorTrustStoreUI(DBPConnectionEditIntention editIntention) {
+    public SSLConfiguratorTrustStoreUI(@NotNull DBPConnectionEditIntention editIntention) {
         this.editIntention = editIntention;
     }
 

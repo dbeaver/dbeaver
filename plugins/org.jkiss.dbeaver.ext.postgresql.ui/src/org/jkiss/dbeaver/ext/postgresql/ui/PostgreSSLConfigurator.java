@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
@@ -167,7 +168,8 @@ public class PostgreSSLConfigurator extends SSLConfiguratorTrustStoreUI {
         @NotNull
         @Override
         public IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> createConfigurator(
-            Object object, DBPConnectionEditIntention intention
+            @Nullable Object object,
+            @NotNull DBPConnectionEditIntention intention
         ) throws DBException {
             return switch (intention) {
                 case DEFAULT -> new PostgreSSLConfigurator();

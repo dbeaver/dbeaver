@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.connection.DBPConnectionEditIntention;
 import org.jkiss.dbeaver.model.impl.net.SocksConstants;
@@ -147,7 +148,8 @@ public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<Obj
         @NotNull
         @Override
         public IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> createConfigurator(
-            Object object, DBPConnectionEditIntention intention
+            @Nullable Object object,
+            @NotNull DBPConnectionEditIntention intention
         ) throws DBException {
             return new SocksProxyConfiguratorUI(intention);
         }

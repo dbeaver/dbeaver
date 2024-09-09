@@ -32,7 +32,6 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.forms.events.ExpansionAdapter;
 import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
-import org.eclipse.ui.forms.widgets.Section;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -867,7 +866,10 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
         @NotNull
         @Override
-        public IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> createConfigurator(Object object, DBPConnectionEditIntention intention) throws DBException {
+        public IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> createConfigurator(
+            @Nullable Object object,
+            @NotNull DBPConnectionEditIntention intention
+        ) {
             return switch (intention) {
                 case DEFAULT -> new SSHTunnelConfiguratorUI();
                 case CREDENTIALS_ONLY -> new SshTunnelCredsConfigurator();
@@ -891,16 +893,20 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         public void loadSettings(@NotNull DBWHandlerConfiguration handlerConfiguration) {
             try {
                 this.configurations = Arrays.stream(SSHUtils.loadHostConfigurations(handlerConfiguration, false))
-                                            .map(ConfigurationWrapper::new).toList();
+                    .map(ConfigurationWrapper::new).toList();
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError("SSH configuration", "Unable to load SSH configuration due to an error", e);
                 return;
             }
-            Arrays.stream(this.credPanelsContainer.getChildren()).forEach(c -> c.dispose());
+            Arrays.stream(this.credPanelsContainer.getChildren()).forEach(Widget::dispose);
 
             this.credPanels = new ArrayList<>();
             for (ConfigurationWrapper cfg: this.configurations) {
-                CredentialsPanel credsPanel = new CredentialsPanel(this.credPanelsContainer, this.propertyChangeListener, DBPConnectionEditIntention.CREDENTIALS_ONLY);
+                CredentialsPanel credsPanel = new CredentialsPanel(
+                    this.credPanelsContainer,
+                    this.propertyChangeListener,
+                    DBPConnectionEditIntention.CREDENTIALS_ONLY
+                );
                 this.credPanels.add(credsPanel);
                 credsPanel.loadSettings(cfg, false);
             }
@@ -922,7 +928,9 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
         @Override
         public boolean isComplete() {
-            return this.credPanels.stream().map(c -> c.saveSettings()).map(c -> validateConfiguration(c)).allMatch(s -> s == null);
+            return this.credPanels.stream().map(CredentialsPanel::saveSettings)
+                .map(SSHTunnelConfiguratorUI::validateConfiguration)
+                .allMatch(Objects::isNull);
         }
     }
 }

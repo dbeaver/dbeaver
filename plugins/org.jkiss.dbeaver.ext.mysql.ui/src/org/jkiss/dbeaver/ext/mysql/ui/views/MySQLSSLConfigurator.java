@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
@@ -50,7 +51,7 @@ public class MySQLSSLConfigurator extends SSLConfiguratorTrustStoreUI {
         super(DBPConnectionEditIntention.DEFAULT);
     }
 
-    public MySQLSSLConfigurator(DBPConnectionEditIntention editIntention) {
+    public MySQLSSLConfigurator(@NotNull DBPConnectionEditIntention editIntention) {
         super(editIntention);
     }
 
@@ -124,7 +125,8 @@ public class MySQLSSLConfigurator extends SSLConfiguratorTrustStoreUI {
         @NotNull
         @Override
         public IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> createConfigurator(
-            Object object, DBPConnectionEditIntention intention
+            @Nullable Object object,
+            @NotNull DBPConnectionEditIntention intention
         ) throws DBException {
             return new MySQLSSLConfigurator(intention);
         }

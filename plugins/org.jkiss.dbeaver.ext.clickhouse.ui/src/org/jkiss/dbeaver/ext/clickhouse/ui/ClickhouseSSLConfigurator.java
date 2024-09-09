@@ -50,7 +50,7 @@ public class ClickhouseSSLConfigurator extends SSLConfiguratorTrustStoreUI {
         super(DBPConnectionEditIntention.DEFAULT);
     }
 
-    public ClickhouseSSLConfigurator(DBPConnectionEditIntention editIntention) {
+    public ClickhouseSSLConfigurator(@NotNull DBPConnectionEditIntention editIntention) {
         super(editIntention);
     }
 
@@ -121,7 +121,8 @@ public class ClickhouseSSLConfigurator extends SSLConfiguratorTrustStoreUI {
         @NotNull
         @Override
         public IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> createConfigurator(
-            Object object, DBPConnectionEditIntention intention
+            @Nullable Object object,
+            @NotNull DBPConnectionEditIntention intention
         ) throws DBException {
             return new ClickhouseSSLConfigurator(intention);
         }

@@ -79,7 +79,7 @@ public class UIPropertyConfiguratorRegistry {
                                 parametrizedDescriptors.put(descriptor.getParameterTypeNameOrNull(), descriptor);
                             } else {
                                 log.warn("Ambiguous configurator providers for " + descriptor.getObjectTypeName() +
-                                         " with " + descriptor.getParameterTypeNameOrNull() + " parameter detected");
+                                    " with " + descriptor.getParameterTypeNameOrNull() + " parameter detected");
                             }
                         }
                     }
@@ -121,7 +121,10 @@ public class UIPropertyConfiguratorRegistry {
     }
 
     @Nullable
-    public UIPropertyConfiguratorProviderDescriptor findProviderDescriptorByExactObjectTypeName(@NotNull String className, @Nullable Object parameter) {
+    public UIPropertyConfiguratorProviderDescriptor findProviderDescriptorByExactObjectTypeName(
+        @NotNull String className,
+        @Nullable Object parameter
+    ) {
         var objectConfiguratorProviders = this.providers.get(className);
         if (objectConfiguratorProviders != null) {
             if (parameter != null) {
@@ -136,7 +139,10 @@ public class UIPropertyConfiguratorRegistry {
 
     @SuppressWarnings("unchecked")
     @Nullable
-    public <OBJECT, SETTINGS, PARAMETER, T extends IObjectPropertyConfigurator<OBJECT, SETTINGS>> T tryCreateConfigurator(@NotNull OBJECT object, @Nullable PARAMETER parameter) throws DBException {
+    public <OBJECT, SETTINGS, PARAMETER, T extends IObjectPropertyConfigurator<OBJECT, SETTINGS>> T tryCreateConfigurator(
+        @NotNull OBJECT object,
+        @Nullable PARAMETER parameter
+    ) throws DBException {
         if (parameter == null) {
             UIPropertyConfiguratorDescriptor configuratorDescriptor = this.getDescriptor(object);
             if (configuratorDescriptor != null) {
@@ -154,7 +160,10 @@ public class UIPropertyConfiguratorRegistry {
 
     @SuppressWarnings("unchecked")
     @Nullable
-    public <OBJECT, SETTINGS, PARAMETER, T extends IObjectPropertyConfigurator<OBJECT, SETTINGS>> IObjectPropertyConfiguratorProvider<OBJECT, SETTINGS, PARAMETER, T> findConfiguratorProviderByObjectType(@NotNull Object object, @Nullable PARAMETER parameter) throws DBException {
+    public <OBJECT, SETTINGS, PARAMETER, T extends IObjectPropertyConfigurator<OBJECT, SETTINGS>> IObjectPropertyConfiguratorProvider<OBJECT, SETTINGS, PARAMETER, T> findConfiguratorProviderByObjectType(
+        @NotNull Object object,
+        @Nullable PARAMETER parameter
+    ) throws DBException {
         if (parameter == null) {
             UIPropertyConfiguratorDescriptor configuratorDescriptor = this.getDescriptor(object);
             if (configuratorDescriptor != null) {
@@ -177,7 +186,10 @@ public class UIPropertyConfiguratorRegistry {
 
     @SuppressWarnings("unchecked")
     @Nullable
-    public <OBJECT, SETTINGS, PARAMETER, T extends IObjectPropertyConfigurator<OBJECT, SETTINGS>> IObjectPropertyConfiguratorProvider<OBJECT, SETTINGS, PARAMETER, T> findConfiguratorProviderByExactObjectTypeName(@NotNull String className, @Nullable PARAMETER parameter) throws DBException {
+    public <OBJECT, SETTINGS, PARAMETER, T extends IObjectPropertyConfigurator<OBJECT, SETTINGS>> IObjectPropertyConfiguratorProvider<OBJECT, SETTINGS, PARAMETER, T> findConfiguratorProviderByExactObjectTypeName(
+        @NotNull String className,
+        @Nullable PARAMETER parameter
+    ) throws DBException {
         if (parameter == null) {
             UIPropertyConfiguratorDescriptor configuratorDescriptor = this.getDescriptor(className);
             if (configuratorDescriptor != null) {

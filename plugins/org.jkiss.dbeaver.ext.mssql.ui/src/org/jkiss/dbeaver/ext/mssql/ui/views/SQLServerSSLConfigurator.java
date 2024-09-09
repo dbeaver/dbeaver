@@ -22,6 +22,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.ui.SQLServerUIMessages;
@@ -41,7 +42,7 @@ public class SQLServerSSLConfigurator extends SSLConfiguratorTrustStoreUI {
         super(DBPConnectionEditIntention.DEFAULT);
     }
 
-    public SQLServerSSLConfigurator(DBPConnectionEditIntention editIntention) {
+    public SQLServerSSLConfigurator(@NotNull DBPConnectionEditIntention editIntention) {
         super(editIntention);
     }
 
@@ -105,7 +106,8 @@ public class SQLServerSSLConfigurator extends SSLConfiguratorTrustStoreUI {
         @NotNull
         @Override
         public IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> createConfigurator(
-            Object object, DBPConnectionEditIntention intention
+            @Nullable Object object,
+            @NotNull DBPConnectionEditIntention intention
         ) throws DBException {
             return new SQLServerSSLConfigurator(intention);
         }
