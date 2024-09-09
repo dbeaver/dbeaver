@@ -251,8 +251,9 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         // Write version info
         writeWorkspaceInfo();
 
-        // Update splash. Do it AFTER platform startup because platform may initiate some splash shell interactions
-        if (!RuntimeUtils.isMacOsSomona()) {
+        // https://github.com/eclipse-platform/eclipse.platform.swt/issues/772
+        if (!RuntimeUtils.isMacOS() || !RuntimeUtils.isOSVersionAtLeast(14, 0, 0)) {
+            // Update splash. Do it AFTER platform startup because platform may initiate some splash shell interactions
             updateSplashHandler();
         }
 

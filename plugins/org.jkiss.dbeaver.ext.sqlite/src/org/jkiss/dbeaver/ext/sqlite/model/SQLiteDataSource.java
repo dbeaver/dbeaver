@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.sqlite.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.model.ConstraintKeysCache;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSourceInfo;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
@@ -30,7 +29,6 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -44,14 +42,13 @@ import java.util.Map;
 
 public class SQLiteDataSource extends GenericDataSource {
 
-    private SQLConstraintKeysCache constraintKeysCache;
-
     public SQLiteDataSource(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDataSourceContainer container,
         GenericMetaModel metaModel
     ) throws DBException {
         super(monitor, container, metaModel, new SQLiteSQLDialect());
+
     }
 
     public SQLiteDataSource(
@@ -63,15 +60,6 @@ public class SQLiteDataSource extends GenericDataSource {
         super(monitor, container, metaModel, dialect);
     }
 
-    // Constructor for tests
-    @ForTest
-    public SQLiteDataSource(@NotNull DBRProgressMonitor monitor,
-        @NotNull GenericMetaModel metaModel,
-        @NotNull DBPDataSourceContainer container,
-        @NotNull SQLDialect dialect
-    ) throws DBException {
-        super(monitor, metaModel, container, dialect);
-    }
 
     @Override
     protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
@@ -98,8 +86,12 @@ public class SQLiteDataSource extends GenericDataSource {
             affinity = SQLiteAffinity.BLOB;
         } else if (typeName.startsWith("REAL") || typeName.startsWith("FLOA") || typeName.startsWith("DOUB")) {
             affinity = SQLiteAffinity.REAL;
-        } else {
+        } else if (typeName.contains(SQLConstants.DATA_TYPE_INT) || typeName.contains("NUMERIC") || typeName.contains("DECIMAL") ||
+            typeName.contains("BOOL") || typeName.contains("GUID")) {
             affinity = SQLiteAffinity.NUMERIC;
+        } else {
+            // If type is unknown, let's assume it's a text. Otherwise, search and data editor doesn't work right.
+            affinity = SQLiteAffinity.TEXT;
         }
         return super.getLocalDataType(affinity.name());
     }
@@ -139,13 +131,5 @@ public class SQLiteDataSource extends GenericDataSource {
             return ErrorType.UNIQUE_KEY_VIOLATION;
         }
         return super.discoverErrorType(error);
-    }
-
-    @Override
-    public ConstraintKeysCache getConstraintKeysCache() {
-        if (constraintKeysCache == null) {
-            constraintKeysCache = new SQLConstraintKeysCache(getTableCache());
-        }
-        return constraintKeysCache;
     }
 }

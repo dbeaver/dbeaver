@@ -107,14 +107,14 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem {
                 if (schema != null) {
                     this.schemaName.setDefinition(new SQLQuerySymbolByDbObjectDefinition(schema, SQLQuerySymbolClass.SCHEMA));
                 } else {
-                    this.schemaName.getSymbol().setSymbolClass(SQLQuerySymbolClass.SCHEMA);
+                    this.schemaName.getSymbol().setSymbolClass(SQLQuerySymbolClass.ERROR);
                 }
                 if (this.catalogName != null && schema != null) {
                     DBSObject catalog = schema.getParentObject();
                     if (catalog != null) {
                         this.catalogName.setDefinition(new SQLQuerySymbolByDbObjectDefinition(catalog, SQLQuerySymbolClass.CATALOG));
                     } else {
-                        this.catalogName.getSymbol().setSymbolClass(SQLQuerySymbolClass.CATALOG);
+                        this.catalogName.getSymbol().setSymbolClass(SQLQuerySymbolClass.ERROR);
                     }
                 }
             }

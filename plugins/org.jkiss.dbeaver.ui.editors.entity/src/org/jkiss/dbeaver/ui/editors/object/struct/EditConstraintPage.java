@@ -22,9 +22,11 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraint;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
@@ -34,13 +36,14 @@ import org.jkiss.dbeaver.ui.editors.object.internal.ObjectEditorMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * EditConstraintPage
  *
  * @author Serge Rider
  */
-public class EditConstraintPage extends AttributesSelectorPage {
+public class EditConstraintPage extends AttributesSelectorPage<DBSEntity, DBSEntityAttribute> {
     private static final Log log = Log.getLog(EditConstraintPage.class);
 
     private DBSEntityConstraintType[] constraintTypes;
@@ -60,7 +63,7 @@ public class EditConstraintPage extends AttributesSelectorPage {
         super(title, constraint.getParentObject());
         this.constraint = constraint;
 
-        if (entity instanceof DBSEntityConstrainable entityConstrainable) {
+        if (object instanceof DBSEntityConstrainable entityConstrainable) {
             this.constraintTypes = entityConstrainable.getSupportedConstraints()
                 .stream()
                 .map(DBSEntityConstraintInfo::getType)
@@ -101,6 +104,15 @@ public class EditConstraintPage extends AttributesSelectorPage {
         return pageContents;
     }
 
+    @NotNull
+    @Override
+    protected List<? extends DBSEntityAttribute> getAttributes(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntity object
+    ) throws DBException {
+        return CommonUtils.safeList(object.getAttributes(monitor));
+    }
+
     private void toggleEditAreas() {
         final boolean custom = selectedConstraintType.isCustom();
         columnsGroup.setVisible(!custom);
@@ -112,7 +124,7 @@ public class EditConstraintPage extends AttributesSelectorPage {
 
     @Override
     protected void createContentsBeforeColumns(Composite panel) {
-        final Text nameText = entity != null ? UIUtils.createLabelText(
+        final Text nameText = object != null ? UIUtils.createLabelText(
             panel,
             ObjectEditorMessages.dialog_struct_edit_constrain_label_name,
             nameGenerator.getConstraintName()) : null;

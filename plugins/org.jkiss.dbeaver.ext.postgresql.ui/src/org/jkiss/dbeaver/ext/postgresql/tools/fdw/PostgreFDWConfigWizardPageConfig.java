@@ -99,11 +99,7 @@ class PostgreFDWConfigWizardPageConfig extends ActiveWizardPage<PostgreFDWConfig
                 }
             });
             UIUtils.createEmptyLabel(fdwGroup, 1, 1);
-            UIUtils.createLink(fdwGroup, "If you don't see right data wrapper in the list then try to <a>install it</a>", new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                }
-            });
+            UIUtils.createInfoLabel(fdwGroup, "If you don't see right data wrapper in the list, install it on the server first.");
         }
 
         SashForm sashForm = new SashForm(composite, SWT.HORIZONTAL);

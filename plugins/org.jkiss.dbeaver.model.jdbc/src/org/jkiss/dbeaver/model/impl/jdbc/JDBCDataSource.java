@@ -80,6 +80,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
     protected volatile DBPDataSourceInfo dataSourceInfo;
     protected final SQLDialect sqlDialect;
     protected final JDBCFactory jdbcFactory;
+    @Nullable
     private JDBCRemoteInstance defaultRemoteInstance;
 
     private int databaseMajorVersion = 0;
@@ -365,8 +366,13 @@ public abstract class JDBCDataSource extends AbstractDataSource
                             // so here we do it just in case to avoid error messages on close with open transaction
                             connection.rollback();
                         } catch (Throwable e) {
-                            // Do not write warning because connection maybe broken before the moment of close
-                            log.debug("Error closing active transaction", e);
+                            if (e instanceof SQLException se && JDBCUtils.isRollbackWarning(se)) {
+                                // ignore
+                                log.debug("Warning during active transaction close: " + e.getMessage());
+                            } else {
+                                // Do not write warning because connection maybe broken before the moment of close
+                                log.debug("Error closing active transaction", e);
+                            }
                         }
                     }
                     try {
@@ -428,7 +434,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         return jdbcFactory;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public JDBCRemoteInstance getDefaultInstance() {
         return defaultRemoteInstance;
@@ -444,8 +450,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
     }
 
     @Override
-    public void shutdown(@NotNull DBRProgressMonitor monitor)
-    {
+    public void shutdown(@NotNull DBRProgressMonitor monitor) {
         for (JDBCRemoteInstance instance : getAvailableInstances()) {
             Object exclusiveLock = instance.getExclusiveLock().acquireExclusiveLock();
             try {
@@ -475,10 +480,12 @@ public abstract class JDBCDataSource extends AbstractDataSource
     }
 
     @Override
-    public void initialize(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
-        getDefaultInstance().initializeMetaContext(monitor);
+    public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
+        JDBCRemoteInstance defaultInstance = getDefaultInstance();
+        if (defaultInstance == null) {
+            throw new DBCException("Can't obtain default instance");
+        }
+        defaultInstance.initializeMetaContext(monitor);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, ModelMessages.model_jdbc_read_database_meta_data)) {
             JDBCDatabaseMetaData metaData = session.getMetaData();
 
