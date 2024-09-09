@@ -14,25 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.sql;
+package org.jkiss.dbeaver.model.websocket.event;
 
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
-/**
- * SQLQueryListener
- *
- * @author Serge Rider
- */
-public interface SQLQueryListener
-{
-    void onStartScript();
+public class WSServerStateEvent extends WSAbstractEvent {
+    @NotNull
+    private final String action;
 
-    void onStartQuery(DBCSession session, SQLQuery query);
+    public WSServerStateEvent(
+        @Nullable String sessionId,
+        @Nullable String userId,
+        @NotNull String action
+    ) {
+        super(WSEventType.SERVER_STATE, sessionId, userId);
+        this.action = action;
+    }
 
-    void onEndQuery(DBCSession session, SQLQueryResult result, DBCStatistics statistics);
+    @NotNull
+    public String getAction() {
+        return action;
+    }
 
-    void onEndScript(DBCStatistics statistics, boolean hasErrors);
-
-    void onEndSqlJob(DBCSession session, SqlJobResult result);
+    @Override
+    public boolean isForceProcessed() {
+        return true;
+    }
 }

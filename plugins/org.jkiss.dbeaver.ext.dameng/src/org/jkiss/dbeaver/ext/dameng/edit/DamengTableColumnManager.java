@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.dameng.model.DamengTableColumn;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -32,6 +33,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -65,6 +67,17 @@ public class DamengTableColumnManager extends GenericTableColumnManager implemen
                 new SQLDatabasePersistAction(
                         "Modify column",
                         "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " MODIFY " + getNestedDeclaration(monitor, column.getTable(), command, options)));
+        if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
+            addColumnCommentAction(actionList, column, column.getTable());
+        }
 
+    }
+
+    @Override
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, SQLObjectEditor<GenericTableColumn, GenericTableBase>.ObjectCreateCommand command, Map<String, Object> options) throws DBException {
+        super.addObjectCreateActions(monitor, executionContext, actions, command, options);
+        if (CommonUtils.isNotEmpty(command.getObject().getDescription())) {
+            addColumnCommentAction(actions, command.getObject(), command.getObject().getParentObject());
+        }
     }
 }
