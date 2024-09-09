@@ -14,30 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.websocket.event;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+package org.jkiss.dbeaver.model.runtime;
 
-public interface WSEvent {
-    @NotNull
-    String getId();
+/**
+ * Operating system match descriptor
+ */
+public class OSDescriptorMatch extends OSDescriptor {
+    private final boolean exclude;
 
-    @Nullable
-    String getSessionId();
-
-    @NotNull
-    String getTopicId();
-
-    @Nullable
-    String getUserId();
-
-    long getTimestamp();
-
-    /**
-     * flag that indicates that the event should be processed forcibly regardless of the server settings and user filters
-     */
-    default boolean isForceProcessed() {
-        return false;
+    public OSDescriptorMatch(String family, String arch, boolean exclude) {
+        super(family, arch);
+        this.exclude = exclude;
     }
+
+    @Override
+    public boolean matches(OSDescriptor os) {
+        boolean matches = super.matches(os);
+        if (exclude) {
+            matches = !matches;
+        }
+        return matches;
+    }
+
 }
