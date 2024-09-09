@@ -14,25 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.sql;
+package org.jkiss.dbeaver.registry;
 
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatistics;
+public class RuntimeProjectPropertiesConstant {
 
-/**
- * SQLQueryListener
- *
- * @author Serge Rider
- */
-public interface SQLQueryListener
-{
-    void onStartScript();
-
-    void onStartQuery(DBCSession session, SQLQuery query);
-
-    void onEndQuery(DBCSession session, SQLQueryResult result, DBCStatistics statistics);
-
-    void onEndScript(DBCStatistics statistics, boolean hasErrors);
-
-    void onEndSqlJob(DBCSession session, SqlJobResult result);
+    public static final String IS_USER_DECLINE_PROJECT_DECRYPTION = "user.decline.project.decryption";
 }

@@ -59,6 +59,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
 
@@ -90,6 +91,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     private volatile DBPDataSourceRegistry dataSourceRegistry;
     private volatile DBFFileSystemManager fileSystemManager;
     protected volatile TaskManagerImpl taskManager;
+    private volatile Map<String, String> runtimeProperties = new ConcurrentHashMap<>();
     private volatile Map<String, Object> properties;
     protected volatile Map<String, Map<String, Object>> resourceProperties;
     private UUID projectID;
@@ -97,7 +99,6 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     protected final Object metadataSync = new Object();
     protected final Object resourcesSync = new Object();
     private ProjectSyncJob metadataSyncJob;
-    private boolean isUserDeclineProjectDecryption = false;
 
     private boolean inMemory;
 
@@ -644,13 +645,13 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     }
 
     @Override
-    public boolean isUserDeclineProjectDecryption() {
-        return isUserDeclineProjectDecryption;
+    public String getRuntimeProperty(String key) {
+        return runtimeProperties.get(key);
     }
 
     @Override
-    public void setIsUserDeclineProjectDecryption(boolean userDeclinePorjectDecryption) {
-        isUserDeclineProjectDecryption = userDeclinePorjectDecryption;
+    public void setRuntimeProperty(String key, String value) {
+        runtimeProperties.put(key, value);
     }
 
     @Override

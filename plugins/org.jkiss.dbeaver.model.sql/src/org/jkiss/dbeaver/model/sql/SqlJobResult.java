@@ -16,23 +16,8 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatistics;
-
-/**
- * SQLQueryListener
- *
- * @author Serge Rider
- */
-public interface SQLQueryListener
-{
-    void onStartScript();
-
-    void onStartQuery(DBCSession session, SQLQuery query);
-
-    void onEndQuery(DBCSession session, SQLQueryResult result, DBCStatistics statistics);
-
-    void onEndScript(DBCStatistics statistics, boolean hasErrors);
-
-    void onEndSqlJob(DBCSession session, SqlJobResult result);
+public enum SqlJobResult {
+    SUCCESS,
+    PARTIAL_SUCCESS,
+    FAILURE,
 }

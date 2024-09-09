@@ -21,7 +21,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -44,10 +43,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -146,7 +142,13 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
         if (allowsChildren() && Files.exists(path)) {
             try {
                 try (Stream<Path> fileList = Files.list(path)) {
-                    result = fileList.map(this::makeNode).collect(Collectors.toList());
+                    result = new ArrayList<>();
+                    for (Iterator<Path> srcFile = fileList.iterator(); srcFile.hasNext(); ) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
+                        result.add(this.makeNode(srcFile.next()));
+                    }
                 }
             } catch (IOException e) {
                 throw new DBException("Error reading directory members", e);

@@ -403,7 +403,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             && DBWorkbench.getPlatform().getApplication().isCommunity() &&
             CommonUtils.toBoolean(registry.getProject().getProjectProperty(USE_PROJECT_PASSWORD))
         ) {
-            if (registry.getProject().isUserDeclineProjectDecryption()) {
+            if (Boolean.parseBoolean(registry.getProject().getRuntimeProperty(RuntimeProjectPropertiesConstant.IS_USER_DECLINE_PROJECT_DECRYPTION))) {
                 throw new DBInterruptedException("Project secure credentials read canceled by user.");
             }
             if (DBWorkbench.getPlatformUI().confirmAction(
@@ -413,11 +413,11 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 RegistryMessages.project_open_cannot_read_credentials_button_text, true)) {
                 // in case of user agreed lost project credentials - proceed opening
                 log.info("The user agreed lost project credentials.");
-                registry.getProject().setIsUserDeclineProjectDecryption(false);
+                registry.getProject().setRuntimeProperty(RuntimeProjectPropertiesConstant.IS_USER_DECLINE_PROJECT_DECRYPTION, Boolean.FALSE.toString());
 
             } else {
                 // in case of canceling erase credentials intercept original exception
-                registry.getProject().setIsUserDeclineProjectDecryption(true);
+                registry.getProject().setRuntimeProperty(RuntimeProjectPropertiesConstant.IS_USER_DECLINE_PROJECT_DECRYPTION, Boolean.TRUE.toString());
                 throw new DBInterruptedException("Project secure credentials read canceled by user.");
             }
         }

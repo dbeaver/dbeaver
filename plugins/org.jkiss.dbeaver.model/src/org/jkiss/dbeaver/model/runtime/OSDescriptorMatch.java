@@ -14,25 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.sql;
 
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatistics;
+package org.jkiss.dbeaver.model.runtime;
 
 /**
- * SQLQueryListener
- *
- * @author Serge Rider
+ * Operating system match descriptor
  */
-public interface SQLQueryListener
-{
-    void onStartScript();
+public class OSDescriptorMatch extends OSDescriptor {
+    private final boolean exclude;
 
-    void onStartQuery(DBCSession session, SQLQuery query);
+    public OSDescriptorMatch(String family, String arch, boolean exclude) {
+        super(family, arch);
+        this.exclude = exclude;
+    }
 
-    void onEndQuery(DBCSession session, SQLQueryResult result, DBCStatistics statistics);
+    @Override
+    public boolean matches(OSDescriptor os) {
+        boolean matches = super.matches(os);
+        if (exclude) {
+            matches = !matches;
+        }
+        return matches;
+    }
 
-    void onEndScript(DBCStatistics statistics, boolean hasErrors);
-
-    void onEndSqlJob(DBCSession session, SqlJobResult result);
 }
