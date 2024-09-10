@@ -22,6 +22,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.update.configurator,
  org.jkiss.dbeaver.dpi.model,
  org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.model.rcp,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.registry
 Automatic-Module-Name: org.jkiss.dbeaver.dpi.app

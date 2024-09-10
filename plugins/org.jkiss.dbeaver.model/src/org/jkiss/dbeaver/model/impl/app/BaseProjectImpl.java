@@ -14,15 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.model.impl.app;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
@@ -35,16 +33,12 @@ import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.fs.DBFFileSystemManager;
-import org.jkiss.dbeaver.model.impl.app.DefaultValueEncryptor;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretSubject;
 import org.jkiss.dbeaver.model.secret.DBSValueEncryptor;
-import org.jkiss.dbeaver.model.task.DBTTaskManager;
-import org.jkiss.dbeaver.registry.task.TaskConstants;
-import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -89,7 +83,6 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     private volatile ProjectFormat format = ProjectFormat.UNKNOWN;
     private volatile DBPDataSourceRegistry dataSourceRegistry;
     private volatile DBFFileSystemManager fileSystemManager;
-    protected volatile TaskManagerImpl taskManager;
     private volatile Map<String, Object> properties;
     protected volatile Map<String, Map<String, Object>> resourceProperties;
     private UUID projectID;
@@ -151,12 +144,6 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
         return projectID;
     }
 
-    @Nullable
-    @Override
-    public IContainer getRootResource() {
-        return getEclipseProject();
-    }
-
     @NotNull
     @Override
     public Path getMetadataFolder(boolean create) {
@@ -206,7 +193,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
                     }
                 }
             };
-            if (DBWorkbench.isDistributed()) {
+            if (DBWorkbench.isDistributed() || DBWorkbench.getPlatform().getApplication().isMultiuser()) {
                 // Run it directly in distributed UI (because it may trigger other conflicting
                 // UI interactions which may freeze app)
                 registryOpener.run();
@@ -218,35 +205,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     }
 
     @NotNull
-    protected DBPDataSourceRegistry createDataSourceRegistry() {
-        return new DataSourceRegistry(this);
-    }
-
-    @NotNull
-    @Override
-    public DBTTaskManager getTaskManager() {
-        ensureOpen();
-        if (taskManager == null) {
-            synchronized (metadataSync) {
-                if (taskManager == null) {
-                    taskManager = new TaskManagerImpl(
-                        this,
-                        getWorkspace().getMetadataFolder().resolve(TaskConstants.TASK_STATS_FOLDER)
-                    );
-                }
-            }
-        }
-        return taskManager;
-    }
-
-    @Nullable
-    @Override
-    public DBTTaskManager getTaskManager(boolean create) {
-        if (taskManager != null) {
-            return taskManager;
-        }
-        return create ? getTaskManager() : null;
-    }
+    protected abstract DBPDataSourceRegistry createDataSourceRegistry();
 
     ////////////////////////////////////////////////////////
     // Secure storage
@@ -497,37 +456,6 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     protected void setResourceProperties(Map<String, Map<String, Object>> resourceProperties) {
         synchronized (resourcesSync) {
             this.resourceProperties = resourceProperties;
-        }
-    }
-
-    void removeResourceFromCache(IPath path) {
-        boolean cacheChanged = false;
-        synchronized (resourcesSync) {
-            if (resourceProperties != null) {
-                String resPath = CommonUtils.normalizeResourcePath(path.toString());
-                cacheChanged = (resourceProperties.remove(resPath) != null);
-            }
-        }
-        if (cacheChanged) {
-            flushMetadata();
-        }
-    }
-
-    void moveResourceCache(IPath oldPath, IPath newPath) {
-        boolean cacheChanged = false;
-        synchronized (resourcesSync) {
-            if (resourceProperties != null) {
-                String oldResPath = CommonUtils.normalizeResourcePath(oldPath.toString());
-                Map<String, Object> props = resourceProperties.remove(oldResPath);
-                if (props != null) {
-                    String newResPath = CommonUtils.normalizeResourcePath(newPath.toString());
-                    resourceProperties.put(newResPath, props);
-                    cacheChanged = true;
-                }
-            }
-        }
-        if (cacheChanged) {
-            flushMetadata();
         }
     }
 
