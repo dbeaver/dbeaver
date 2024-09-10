@@ -98,7 +98,6 @@ import org.jkiss.utils.xml.XMLUtils;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -1963,7 +1962,6 @@ public class SpreadsheetPresentation extends AbstractPresentation
     }
 
     private class ContentProvider implements IGridContentProvider {
-        private static final MessageFormat COLLECTION_SIZE_FORMAT = new MessageFormat(ResultSetMessages.controls_resultset_viewer_collection_size_text);
 
         @NotNull
         @Override
@@ -2423,13 +2421,17 @@ public class SpreadsheetPresentation extends AbstractPresentation
             }
             if (isShowAsExpander(null, attr, value)) {
                 if (isShowAsCollection(gridRow, gridColumn, value) && value instanceof DBDCollection collection) {
-                    return COLLECTION_SIZE_FORMAT.format(new Object[]{collection.size()});
+                    return "{" + collection.size() + "}";
                 }
                 Object child = getCellValue(gridColumn, gridRow, getRowNestedIndexes(gridRow), true);
                 if (child == value) {
                     return value;
                 }
-                return formatValue(gridColumn, gridRow, child);
+                Object formatted = formatValue(gridColumn, gridRow, child);
+                if (value instanceof DBDCollection collection) {
+                    formatted = formatted + " {" + collection.size() + "}";
+                }
+                return formatted;
             } else if (value instanceof DBDComposite composite && !DBUtils.isNullValue(value)) {
                 return "[" + composite.getDataType().getName() + "]";
             }

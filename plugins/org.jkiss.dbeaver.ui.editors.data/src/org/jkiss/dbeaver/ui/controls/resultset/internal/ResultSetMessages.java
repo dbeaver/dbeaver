@@ -120,7 +120,6 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_viewer_hide_columns_error_title;
     public static String controls_resultset_viewer_hide_columnss_error_text;
     public static String controls_resultset_viewer_show_hidden_columns;
-    public static String controls_resultset_viewer_collection_size_text;
 
     public static String controls_resultset_ref_menu_no_references;
     public static String controls_resultset_ref_menu_references;
