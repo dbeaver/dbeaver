@@ -31,14 +31,14 @@ public class AltibaseLock implements DBAServerLock {
     private int    waitPid;
     private int    waitTxid;
     private String waitUser;
-    private String wait_query;
-    private String obj_schema;
-    private String obj_name;
-    private int    hold_sid;
-    private int    hold_pid;
-    private int    hold_txid;
-    private String hold_user;
-    private String hold_query;
+    private String waitQuery;
+    private String objSchema;
+    private String objName;
+    private int    holdSid;
+    private int    holdPid;
+    private int    holdTxid;
+    private String holdUser;
+    private String holdQuery;
 
     private DBAServerLock hold = null;
     private List<DBAServerLock> waiters = new ArrayList<>(0);
@@ -50,16 +50,16 @@ public class AltibaseLock implements DBAServerLock {
         this.waitPid = JDBCUtils.safeGetInt(dbResult, "w_pid");
         this.waitTxid = JDBCUtils.safeGetInt(dbResult, "w_txid");
         this.waitUser = JDBCUtils.safeGetString(dbResult, "w_user_name");
-        this.wait_query = JDBCUtils.safeGetString(dbResult, "w_query");
+        this.waitQuery = JDBCUtils.safeGetString(dbResult, "w_query");
 
-        this.obj_name = JDBCUtils.safeGetString(dbResult, "w_obj_schema");
-        this.obj_schema = JDBCUtils.safeGetString(dbResult, "w_obj_name");
+        this.objName = JDBCUtils.safeGetString(dbResult, "w_obj_schema");
+        this.objSchema = JDBCUtils.safeGetString(dbResult, "w_obj_name");
 
-        this.hold_sid  = JDBCUtils.safeGetInt(dbResult, "h_sid");
-        this.hold_pid = JDBCUtils.safeGetInt(dbResult, "h_pid");
-        this.hold_txid = JDBCUtils.safeGetInt(dbResult, "h_txid");
-        this.hold_user = JDBCUtils.safeGetString(dbResult, "h_user_name");
-        this.hold_query = JDBCUtils.safeGetString(dbResult, "h_query");
+        this.holdSid  = JDBCUtils.safeGetInt(dbResult, "h_sid");
+        this.holdPid = JDBCUtils.safeGetInt(dbResult, "h_pid");
+        this.holdTxid = JDBCUtils.safeGetInt(dbResult, "h_txid");
+        this.holdUser = JDBCUtils.safeGetString(dbResult, "h_user_name");
+        this.holdQuery = JDBCUtils.safeGetString(dbResult, "h_query");
 
         this.dataSource = dataSource;
     }
@@ -90,7 +90,7 @@ public class AltibaseLock implements DBAServerLock {
 
     @Override
     public Integer getHoldID() {
-        return hold_sid;
+        return holdSid;
     }
 
     @SuppressWarnings("unchecked")
@@ -121,43 +121,43 @@ public class AltibaseLock implements DBAServerLock {
 
     @Property(viewable = true, order = 5)
     public String getWait_query() {
-        return wait_query;
+        return waitQuery;
     }
 
     @Property(viewable = true, order = 6)
     public String getOwner() {
-        return obj_schema;
+        return objSchema;
     }
 
     @Property(viewable = true, order = 7)
     public String getOname() {
-        return obj_name;
+        return objName;
     }
 
 
     @Property(viewable = true, order = 10)
     public int getHold_sid() {
-        return hold_sid;
+        return holdSid;
     }
 
     @Property(viewable = true, order = 11)
     public int getHold_pid() {
-        return hold_pid;
+        return holdPid;
     }
 
     @Property(viewable = true, order = 12)
     public int getHold_txid() {
-        return hold_txid;
+        return holdTxid;
     }
 
     @Property(viewable = true, order = 13)
     public String getHold_user() {
-        return hold_user;
+        return holdUser;
     }
 
     @Property(viewable = true, order = 14)
     public String getHold_query() {
-        return hold_query;
+        return holdQuery;
     }
 
     public AltibaseDataSource getDataSource() {
