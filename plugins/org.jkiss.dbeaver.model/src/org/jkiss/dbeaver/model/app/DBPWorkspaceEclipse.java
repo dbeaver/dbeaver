@@ -21,6 +21,8 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Desktop eclipse based workspace
@@ -38,5 +40,7 @@ public interface DBPWorkspaceEclipse extends DBPWorkspace
     void addProjectListener(@NotNull DBPProjectListener listener);
 
     void removeProjectListener(@NotNull DBPProjectListener listener);
+
+    void save(DBRProgressMonitor monitor) throws DBException;
 
 }

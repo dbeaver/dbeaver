@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
@@ -267,7 +268,8 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
 
     @Override
     public void resourceChanged(EFSNIOResource resource, Action action) {
-        if (!CommonUtils.equalObjects(getOwnerProject().getEclipseProject(), resource.getProject())) {
+        if (!(getOwnerProject() instanceof RCPProject rcpProject) ||
+            !CommonUtils.equalObjects(rcpProject.getEclipseProject(), resource.getProject())) {
             return;
         }
         if (children == null) {

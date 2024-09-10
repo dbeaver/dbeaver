@@ -95,7 +95,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
         });
 
         // Navigator model
-        this.navigatorModel = new DBNModel(this, null);
+        this.navigatorModel = createNavigatorModel();
         this.navigatorModel.setModelAuthContext(getWorkspace().getAuthContext());
         this.navigatorModel.initialize();
 
@@ -108,6 +108,10 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
                 new DataSourceMonitorJob(this).scheduleMonitor();
             }
         }
+    }
+
+    protected DBNModel createNavigatorModel() {
+        return new DBNModel(this, null);
     }
 
     protected void activatePluginServices() {

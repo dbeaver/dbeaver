@@ -22,7 +22,6 @@ Export-Package: org.jkiss.dbeaver.tools.sql,
  org.jkiss.dbeaver.tools.transfer.task
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.expressions,
- org.eclipse.core.resources,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.registry

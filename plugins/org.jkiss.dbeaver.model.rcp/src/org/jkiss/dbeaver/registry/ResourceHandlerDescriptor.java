@@ -46,7 +46,7 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor implements DBP
         this.handlerType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
     }
 
-    void dispose() {
+    public void dispose() {
         this.handler = null;
         this.handlerType = null;
     }
