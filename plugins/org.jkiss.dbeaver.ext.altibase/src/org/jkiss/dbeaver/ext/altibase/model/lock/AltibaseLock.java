@@ -93,7 +93,6 @@ public class AltibaseLock implements DBAServerLock {
         return holdSid;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void setHoldBy(DBAServerLock lock) {
         this.hold = lock;

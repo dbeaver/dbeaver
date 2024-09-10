@@ -107,12 +107,9 @@ public class AltibaseLockManager extends LockGraphManager implements DBAServerLo
 
     @Override
     public void alterSession(DBCSession session, AltibaseLock lock, Map<String, Object> options) throws DBException {
-        int closeSid = 0;
         try {
-            closeSid = lock.getWait_sid();
             String sql = String.format("ALTER DATABASE %s SESSION CLOSE %s",
-                    dataSource.getDbName((JDBCSession) session), 
-                    closeSid);
+                    dataSource.getDbName((JDBCSession) session), lock.getWait_sid());
 
             try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(sql)) {
                 dbStat.execute();
