@@ -59,7 +59,7 @@
                     <!-- In order to circumvent previous version of JDBC bug: ROLE -->
                     <parameter name="schema-filters-enabled" value="true"/>
                     <parameter name="split-procedures-and-functions" value="true"/>
-                    <parameter name="query-get-active-db"  value="SELECT user_name()"/>
+                    <parameter name="query-get-active-db"  value="SELECT db_name FROM v$database"/>
                     <parameter name="active-entity-type" value="schema"/>
                 </driver>
              </drivers>
@@ -314,7 +314,7 @@
                         </items>
                     </folder>
                 </folder>
-                <folder label="%tree.administer.node.name"  id="maintenanceSettings" icon="#folder_admin" description="Maintenance/Settings">
+                <folder id="maintenanceSettings" label="%tree.administer.node.name" description="%tree.administer.node.name" icon="#folder_admin">
                     <treeContribution category="connectionEditor"/>
                 </folder>
                 <folder label="%tree.system_info.node.name" icon="#folder_info" id="folderInfo" description="%tree.system_info.node.tip">
