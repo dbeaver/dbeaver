@@ -175,15 +175,6 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
         return "";
     }
 
-    public DBNProject getProjectNode(IProject project) {
-        for (DBNProject node : projects) {
-            if (node.getProject().getEclipseProject() == project) {
-                return node;
-            }
-        }
-        return null;
-    }
-
     @Nullable
     public DBNProject getProjectNode(@Nullable DBPProject project) {
         if (project == null) {
@@ -200,12 +191,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
     }
 
     public DBNProject addProject(DBPProject project, boolean reflect) {
-        DBPPlatform platform = DBWorkbench.getPlatform();
-        DBNProject projectNode = new DBNProject(
-            this,
-            project,
-            platform instanceof DBPPlatformDesktop ?
-                ((DBPPlatformDesktop)platform).getWorkspace().getResourceHandler(project.getEclipseProject()) : null);
+        DBNProject projectNode = getModel().createProjectNode(this, project);
         projects = ArrayUtils.add(DBNProject.class, projects, projectNode);
         Arrays.sort(projects, Comparator.comparing(DBNResource::getNodeDisplayName));
         if (reflect) {
