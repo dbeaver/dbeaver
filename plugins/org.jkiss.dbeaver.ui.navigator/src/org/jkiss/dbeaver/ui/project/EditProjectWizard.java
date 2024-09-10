@@ -23,7 +23,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizard;
 
@@ -34,9 +34,9 @@ public class EditProjectWizard extends ActiveWizard {
 
     private static final Log log = Log.getLog(EditProjectWizard.class);
 
-    private final DBPProject project;
+    private final RCPProject project;
 
-    public EditProjectWizard(DBPProject project) {
+    public EditProjectWizard(RCPProject project) {
         this.project = project;
     }
 

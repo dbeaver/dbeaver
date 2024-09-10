@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.apache.commons.jexl3.JexlContext;
-import org.eclipse.core.resources.IResource;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -174,20 +173,6 @@ public class DBNUtils {
             }
         }
         return false;
-    }
-
-    public static void refreshNavigatorResource(@NotNull DBPProject project, @NotNull IResource resource, Object source) {
-        DBNModel navigatorModel = project.getNavigatorModel();
-        if (navigatorModel == null) {
-            return;
-        }
-        final DBNProject projectNode = navigatorModel.getRoot().getProjectNode(resource.getProject());
-        if (projectNode != null) {
-            final DBNResource fileNode = projectNode.findResource(resource);
-            if (fileNode != null) {
-                fileNode.refreshResourceState(source);
-            }
-        }
     }
 
     @NotNull
