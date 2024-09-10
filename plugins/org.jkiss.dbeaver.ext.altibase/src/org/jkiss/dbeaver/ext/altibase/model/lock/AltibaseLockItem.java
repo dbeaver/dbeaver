@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 
 import java.sql.ResultSet;
 
-public class AltibaseLockItem implements DBAServerLockItem{
+public class AltibaseLockItem implements DBAServerLockItem {
 
     private String lockItemType;
     private int tbsId;

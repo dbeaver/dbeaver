@@ -27,10 +27,10 @@ import java.util.List;
 
 public class AltibaseLock implements DBAServerLock {
 
-    private int    wait_sid;
-    private int    wait_pid;
-    private int    wait_txid;
-    private String wait_user;
+    private int    waitSid;
+    private int    waitPid;
+    private int    waitTxid;
+    private String waitUser;
     private String wait_query;
     private String obj_schema;
     private String obj_name;
@@ -46,10 +46,10 @@ public class AltibaseLock implements DBAServerLock {
     private AltibaseDataSource dataSource;
 
     public AltibaseLock(ResultSet dbResult, AltibaseDataSource dataSource) {
-        this.wait_sid = JDBCUtils.safeGetInt(dbResult, "w_sid");
-        this.wait_pid = JDBCUtils.safeGetInt(dbResult, "w_pid");
-        this.wait_txid = JDBCUtils.safeGetInt(dbResult, "w_txid");
-        this.wait_user = JDBCUtils.safeGetString(dbResult, "w_user_name");
+        this.waitSid = JDBCUtils.safeGetInt(dbResult, "w_sid");
+        this.waitPid = JDBCUtils.safeGetInt(dbResult, "w_pid");
+        this.waitTxid = JDBCUtils.safeGetInt(dbResult, "w_txid");
+        this.waitUser = JDBCUtils.safeGetString(dbResult, "w_user_name");
         this.wait_query = JDBCUtils.safeGetString(dbResult, "w_query");
 
         this.obj_name = JDBCUtils.safeGetString(dbResult, "w_obj_schema");
@@ -66,7 +66,7 @@ public class AltibaseLock implements DBAServerLock {
 
     @Override
     public String getTitle() {
-        return String.valueOf(wait_sid);
+        return String.valueOf(waitSid);
     }
 
     @Override
@@ -80,7 +80,7 @@ public class AltibaseLock implements DBAServerLock {
 
     @Override
     public Integer getId() {
-        return wait_sid;
+        return waitSid;
     }
 
     @Override
@@ -101,22 +101,22 @@ public class AltibaseLock implements DBAServerLock {
 
     @Property(viewable = true, order = 1)
     public int getWait_sid() {
-        return wait_sid;
+        return waitSid;
     }
 
     @Property(viewable = true, order = 2)
     public int getWait_pid() {
-        return wait_pid;
+        return waitPid;
     }
 
     @Property(viewable = true, order = 3)
     public int getWait_txid() {
-        return wait_txid;
+        return waitTxid;
     }
 
     @Property(viewable = true, order = 4)
     public String getWait_user() {
-        return wait_user;
+        return waitUser;
     }
 
     @Property(viewable = true, order = 5)

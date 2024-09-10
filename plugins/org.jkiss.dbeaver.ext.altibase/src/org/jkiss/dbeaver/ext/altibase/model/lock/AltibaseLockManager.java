@@ -138,17 +138,14 @@ public class AltibaseLockManager extends LockGraphManager implements DBAServerLo
                 String otype = (String) options.get(LockGraphManager.keyType);
 
                 switch (otype) {
-
-                case LockGraphManager.typeWait:
-                    dbStat.setInt(1, (int) options.get(sidWait));
-                    break;
-
-                case LockGraphManager.typeHold:
-                    dbStat.setInt(1, (int) options.get(sidHold));
-                    break;
-
-                default:
-                    return locks;
+                    case LockGraphManager.typeWait:
+                        dbStat.setInt(1, (int) options.get(sidWait));
+                        break;
+                    case LockGraphManager.typeHold:
+                        dbStat.setInt(1, (int) options.get(sidHold));
+                        break;
+                    default:
+                        return locks;
                 }
 
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {

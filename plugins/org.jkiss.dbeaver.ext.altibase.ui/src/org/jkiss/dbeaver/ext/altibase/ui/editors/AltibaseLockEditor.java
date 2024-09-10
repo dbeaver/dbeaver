@@ -36,11 +36,13 @@ public class AltibaseLockEditor extends AbstractLockEditor {
     @Override
     protected LockManagerViewer createLockViewer(DBCExecutionContext executionContext, Composite parent) {
 
-        DBAServerLockManager<DBAServerLock, DBAServerLockItem> lockManager = (DBAServerLockManager) new AltibaseLockManager((AltibaseDataSource) executionContext.getDataSource());
+        DBAServerLockManager<DBAServerLock, DBAServerLockItem> lockManager = 
+                (DBAServerLockManager) new AltibaseLockManager((AltibaseDataSource) executionContext.getDataSource());
 
         return new LockManagerViewer(this, parent, lockManager) {
             @Override
-            protected void contributeToToolbar(DBAServerLockManager<DBAServerLock, DBAServerLockItem> sessionManager, IContributionManager contributionManager) {
+            protected void contributeToToolbar(DBAServerLockManager<DBAServerLock, 
+                    DBAServerLockItem> sessionManager, IContributionManager contributionManager) {
                 contributionManager.add(new Separator());
             }
 
@@ -50,9 +52,10 @@ public class AltibaseLockEditor extends AbstractLockEditor {
                 if (lock != null) {
                     final AltibaseLock pLock = (AltibaseLock) lock;
                     super.refreshDetail(new HashMap<String, Object>() {{
-                        put(AltibaseLockManager.sidHold, pLock.getHold_sid());
-                        put(AltibaseLockManager.sidWait, pLock.getWait_sid());
-                    }});
+                            put(AltibaseLockManager.sidHold, pLock.getHold_sid());
+                            put(AltibaseLockManager.sidWait, pLock.getWait_sid()); 
+                        }
+                    });
                 }
             }
         };
