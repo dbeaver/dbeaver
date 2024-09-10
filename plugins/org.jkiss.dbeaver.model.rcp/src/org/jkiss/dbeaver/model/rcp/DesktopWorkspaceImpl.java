@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.model.rcp;
 
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
@@ -24,9 +24,13 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.*;
+import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
+import org.jkiss.dbeaver.registry.ResourceHandlerDescriptor;
+import org.jkiss.dbeaver.registry.ResourceTypeDescriptor;
+import org.jkiss.dbeaver.registry.ResourceTypeRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -104,7 +108,7 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
             // Skip not accessible hidden and phantom resources
             return null;
         }
-        if (resource.getParent() instanceof IProject && resource.getName().startsWith(DataSourceRegistry.LEGACY_CONFIG_FILE_PREFIX)) {
+        if (resource.getParent() instanceof IProject && resource.getName().startsWith(DBPDataSourceRegistry.LEGACY_CONFIG_FILE_PREFIX)) {
             // Skip connections settings file
             // TODO: remove in some older version
             return null;
@@ -124,7 +128,7 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
         }
         if (handler == null && resource instanceof IFolder) {
             final IProject eclipseProject = resource.getProject();
-            DBPProject project = projects.get(eclipseProject);
+            DesktopProjectImpl project = projects.get(eclipseProject);
             IPath relativePath = resource.getFullPath().makeRelativeTo(project.getRootResource().getFullPath());
             while (relativePath.segmentCount() > 0) {
                 String folderPath = relativePath.toString();
@@ -155,7 +159,7 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
 
     @Override
     public IFolder getResourceDefaultRoot(@NotNull DBPProject project, @NotNull Class<? extends DBPResourceHandler> handlerType, boolean forceCreate) {
-        if (project == null) {
+        if (!(project instanceof RCPProject rcpProject)) {
             return null;
         }
         for (ResourceHandlerDescriptor rhd : handlerDescriptors) {
@@ -171,9 +175,9 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
                     return null;
                 }
                 org.eclipse.core.runtime.Path defaultRootPath = new org.eclipse.core.runtime.Path(defaultRoot);
-                IContainer rootResource = project.getRootResource();
+                IContainer rootResource = rcpProject.getRootResource();
                 if (rootResource == null) {
-                    rootResource = project.getEclipseProject();
+                    rootResource = rcpProject.getEclipseProject();
                 }
                 if (rootResource == null) {
                     throw new IllegalStateException("Project " + project.getName() + " doesn't have resource root");
@@ -191,12 +195,12 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
                 return realFolder;
             }
         }
-        return project.getEclipseProject().getFolder(DEFAULT_RESOURCES_ROOT);
+        return rcpProject.getEclipseProject().getFolder(BaseWorkspaceImpl.DEFAULT_RESOURCES_ROOT);
     }
 
     @Override
     public IFolder getResourceDefaultRoot(@NotNull DBPProject project, @NotNull DBPResourceHandlerDescriptor rhd, boolean forceCreate) {
-        if (project == null || project.getRootResource() == null) {
+        if (!(project instanceof RCPProject rcpProject) || rcpProject.getRootResource() == null) {
             return null;
         }
         DBPResourceTypeDescriptor resourceType = rhd.getResourceType();
@@ -208,7 +212,7 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
             // No root
             return null;
         }
-        final IFolder realFolder = project.getRootResource().getFolder(new org.eclipse.core.runtime.Path(defaultRoot));
+        final IFolder realFolder = rcpProject.getRootResource().getFolder(new org.eclipse.core.runtime.Path(defaultRoot));
 
         if (forceCreate && !realFolder.exists()) {
             try {
@@ -300,7 +304,10 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
 
     @Override
     public void deleteProject(@NotNull DBPProject project, boolean deleteContents) throws DBException {
-        IProject eclipseProject = project.getEclipseProject();
+        if (!(project instanceof RCPProject rcpProject)) {
+            throw new DBException("Project '" + project.getName() + "' is not an RCP project");
+        }
+        IProject eclipseProject = rcpProject.getEclipseProject();
         if (project.isUseSecretStorage()) {
             var secretController = DBSSecretController.getProjectSecretController(project);
             secretController.deleteProjectSecrets(project.getId());

@@ -56,7 +56,7 @@ public class TrinoDataTypeCache extends GenericDataTypeCache {
                 case SQLConstants.DATA_TYPE_VARCHAR:
                     valueType = Types.VARCHAR;
                     break;
-                case "char":
+                case "char", "uuid":
                     valueType = Types.CHAR;
                     break;
                 case "time with time zone":

@@ -32,6 +32,7 @@
       <import plugin="org.eclipse.search" version="0.0.0" match="greaterOrEqual"/>
    </requires>
 
+   <plugin id="org.jkiss.dbeaver.model.rcp" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.core" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.net.ssh.ui" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ui" version="0.0.0" />
