@@ -36,7 +36,7 @@ public class AltibaseServerSession extends AbstractServerSession {
 
     private String sessionId;
     private String txId;
-    private int stmtId;
+    private String stmtId;
     private String userName;
     private String sql;
     private String lockTarget;
@@ -66,7 +66,7 @@ public class AltibaseServerSession extends AbstractServerSession {
     public AltibaseServerSession(ResultSet dbResult) {
         this.sessionId          = JDBCUtils.safeGetString(dbResult, "session_id");
         this.txId               = JDBCUtils.safeGetString(dbResult, "tx_id");
-        this.stmtId             = JDBCUtils.safeGetInt(dbResult,    "stmt_id");
+        this.stmtId             = JDBCUtils.safeGetString(dbResult, "stmt_id");
         this.userName           = JDBCUtils.safeGetString(dbResult, "user_name");
         this.sql                = JDBCUtils.safeGetString(dbResult, "sql");
         this.lockTarget         = JDBCUtils.safeGetString(dbResult, "lock_target");
@@ -99,15 +99,20 @@ public class AltibaseServerSession extends AbstractServerSession {
     }
 
     @Property(category = CAT_SESSION, viewable = true, order = 2)
-    public String getTxId() {
-        return txId;
-    }
-
-    @Property(category = CAT_SESSION, viewable = true, order = 3)
     public String getUserName() {
         return userName;
     }
 
+    @Property(category = CAT_SESSION, viewable = true, order = 3)
+    public String getTxId() {
+        return txId;
+    }
+
+    @Property(category = CAT_SESSION, viewable = true, order = 4)
+    public String getStmtId() {
+        return stmtId;
+    }
+    
     @Property(category = CAT_SQL, viewable = true, order = 4)
     public String getSql() {
         int effectiveLength = 10;
