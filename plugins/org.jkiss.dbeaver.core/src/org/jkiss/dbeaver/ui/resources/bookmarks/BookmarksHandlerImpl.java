@@ -99,7 +99,8 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
             super.openResource(resource);
             return;
         }
-        final DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(resource.getProject());
+        final DBNProject projectNode = NavigatorResources.getProjectNode(
+            DBWorkbench.getPlatform().getNavigatorModel().getRoot(), resource.getProject());
         if (projectNode == null) {
             throw new DBException("Can't find project node for '" + resource.getProject().getName() + "'"); //$NON-NLS-2$
         }

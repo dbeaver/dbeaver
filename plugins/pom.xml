@@ -17,13 +17,14 @@
         <module>org.jkiss.dbeaver.model</module>
         <module>org.jkiss.dbeaver.model.ai</module>
         <module>org.jkiss.dbeaver.model.event</module>
+        <module>org.jkiss.dbeaver.model.dashboard</module>
         <module>org.jkiss.dbeaver.model.jdbc</module>
+        <module>org.jkiss.dbeaver.model.lsm</module>
         <module>org.jkiss.dbeaver.model.nio</module>
+        <module>org.jkiss.dbeaver.model.rcp</module>
         <module>org.jkiss.dbeaver.model.sm</module>
         <module>org.jkiss.dbeaver.model.sql</module>
         <module>org.jkiss.dbeaver.model.sql.jdbc</module>
-        <module>org.jkiss.dbeaver.model.lsm</module>
-        <module>org.jkiss.dbeaver.model.dashboard</module>
         <module>org.jkiss.dbeaver.registry</module>
         <module>org.jkiss.dbeaver.dpi.app</module>
         <module>org.jkiss.dbeaver.dpi.model</module>

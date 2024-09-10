@@ -51,7 +51,7 @@
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="%tree.indexes.node.tip">
+                                <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="%tree.indexes.node.tip">
                                     <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
                                         <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" icon="#column" navigable="false" inline="true">
                                         </items>
@@ -92,7 +92,7 @@
                                             </items>
                                         </items>
                                     </folder>
-                                    <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="%tree.indexes.node.tip">
+                                    <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="%tree.indexes.node.tip">
                                         <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
                                             <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" icon="#column" navigable="false" inline="true">
                                             </items>
@@ -127,7 +127,7 @@
                                 </items>
                             </folder>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="%tree.indexes.node.tip">
+                        <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="%tree.indexes.node.tip">
                             <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
                                 <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" icon="#column" navigable="false" inline="true">
                                 </items>
@@ -195,6 +195,7 @@
                     <file type="jar" path="drivers/cubrid" bundle="drivers.cubrid"/>
                     <replace provider="generic" driver="cubrid_jdbc"/>
                     <parameter name="ping-sql" value="SELECT 1"/>
+                    <parameter name="stored-unquoted-case" value="UPPER"/>
                     <property name="altHosts" value=""/>
                     <property name="rcTime" value="600"/>
                     <property name="loadBalance" value="false"/>
@@ -220,6 +221,7 @@
 
     <extension point="org.jkiss.dbeaver.objectManager">
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridProcedureManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridProcedure"/>
+        <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridIndexManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTableIndex"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridTableManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridPartition"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridTableManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTable"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridTableColumnManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTableColumn"/>
