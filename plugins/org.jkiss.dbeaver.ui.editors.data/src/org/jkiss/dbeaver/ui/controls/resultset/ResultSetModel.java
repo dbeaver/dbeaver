@@ -177,7 +177,10 @@ public class ResultSetModel {
             try {
                 Object origValue = row.changes.get(attr);
                 if (origValue == ATTR_CHANGE_MARKER) {
-                    origValue = row.changes.get(attr.getTopParent());
+                    row.resetChange(attr);
+                    attr = attr.getTopParent();
+                    origValue = row.changes.get(attr);
+                    cellLocation = new ResultSetCellLocation(attr.getTopParent(), cellLocation.getRow(), null);
                 }
                 updateCellValue(cellLocation, origValue, false);
             } catch (DBException e) {
