@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.app;
 
+import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 
@@ -24,6 +25,8 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
  * DB desktop application.
  */
 public interface DBPApplicationDesktop extends DBPApplication {
+
+    DBPWorkspaceDesktop createWorkspace(@NotNull DBPPlatform platform, @NotNull IWorkspace eclipseWorkspace);
 
     /**
      * Returns last user activity time

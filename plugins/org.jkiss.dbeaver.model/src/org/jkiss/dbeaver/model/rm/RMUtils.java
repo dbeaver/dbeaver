@@ -16,26 +16,11 @@
  */
 package org.jkiss.dbeaver.model.rm;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.app.DBPWorkspace;
-import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
-import org.jkiss.dbeaver.model.fs.DBFUtils;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Set;
@@ -120,58 +105,6 @@ public class RMUtils {
         project.setType(RMProjectType.USER);
         project.setProjectPermissions(RMProjectPermission.DATA_SOURCES_EDIT.getAllPermissions().toArray(new String[0]));
         return project;
-    }
-
-    public static String readScriptContents(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBPProject project,
-        @NotNull String filePath
-    ) throws DBException, IOException {
-        Path nioPath = DBFUtils.resolvePathFromString(monitor, project, filePath);
-        if (!IOUtils.isLocalPath(nioPath)) {
-            // Remote file
-            return Files.readString(nioPath);
-        }
-
-        RMControllerProvider rmControllerProvider = DBUtils.getAdapter(RMControllerProvider.class, project);
-        if (rmControllerProvider != null) {
-            var rmController = rmControllerProvider.getResourceController();
-            return new String(rmController.getResourceContents(project.getId(), filePath), StandardCharsets.UTF_8);
-        }
-        var projectRootResource = project.getRootResource();
-        if (projectRootResource == null) {
-            throw new DBException("Root resource is not found in project " + project.getId());
-        }
-        var sqlFile = findEclipseProjectFile(project, filePath);
-        if (sqlFile == null) {
-            throw new DBException("File " + filePath + " is not found in project " + project.getId());
-        }
-        try (InputStream sqlStream = sqlFile.getContents(true)) {
-            try (Reader fileReader = new InputStreamReader(sqlStream, sqlFile.getCharset())) {
-                return IOUtils.readToString(fileReader);
-            }
-        } catch (CoreException e) {
-            throw new IOException(e);
-        }
-    }
-
-    public static IFile findEclipseProjectFile(@NotNull DBPProject project, @NotNull String filePath) {
-        var rootResource = project.getRootResource();
-        if (rootResource == null) {
-            return null;
-        }
-        var file = rootResource.findMember(filePath);
-        if (file != null && file.exists() && file instanceof IFile) {
-            return (IFile) file;
-        }
-        DBPWorkspace workspace = project.getWorkspace();
-        if (workspace instanceof DBPWorkspaceEclipse) {
-            file = ((DBPWorkspaceEclipse) workspace).getEclipseWorkspace().getRoot().getFile(new org.eclipse.core.runtime.Path(filePath));
-            if (file.exists()) {
-                return (IFile) file;
-            }
-        }
-        return null;
     }
 
 }

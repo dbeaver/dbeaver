@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -156,8 +157,8 @@ public class NavigatorObjectsDeleter {
 
     public IProject getProjectToDelete() {
         for (Object obj: selection) {
-            if (obj instanceof DBNProject) {
-                return ((DBNProject) obj).getProject().getEclipseProject();
+            if (obj instanceof DBNProject project && project.getProject() instanceof RCPProject rcpProject) {
+                return rcpProject.getEclipseProject();
             }
         }
         return null;
