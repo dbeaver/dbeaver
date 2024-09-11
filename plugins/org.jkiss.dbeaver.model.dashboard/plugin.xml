@@ -2,5 +2,47 @@
 <?eclipse version="3.2"?>
 
 <plugin>
+    <extension-point id="org.jkiss.dbeaver.dashboard" name="Dashboards" schema="schema/org.jkiss.dbeaver.dashboard.exsd"/>
+
+    <extension point="org.jkiss.dbeaver.dashboard">
+        <provider id="database"
+                  class="org.jkiss.dbeaver.model.dashboard.registry.DatabaseDashboardProvider"
+                  label="Database"
+                  description="Database dashboards"
+                  icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/database.png"
+                  supportsCustomization="true"
+                  databaseRequired="true"
+                  defaultRenderer="timeseries"
+                  dataType="timeseries"/>
+        <provider id="web"
+                  class="org.jkiss.dbeaver.model.dashboard.registry.WebDashboardProvider"
+                  label="Web"
+                  description="Web dashboards"
+                  icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/browser.png"
+                  supportsCustomization="true"
+                  defaultRenderer="browser"
+                  dataType="provided"/>
+    </extension>
+
+
+    <extension point="org.eclipse.core.contenttype.contentTypes">
+        <content-type
+                base-type="org.eclipse.core.runtime.text"
+                default-charset="utf-8"
+                file-extensions="dashboard"
+                id="org.jkiss.dbeaver.dashboard"
+                name="Dashboard"
+                priority="normal"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.resourceType">
+        <type id="dashboard" name="Dashboard"
+              icon="icons/dashboard.png"
+              folderIcon="icons/dashboard_folder.png"
+              managable="true">
+            <root folder="Dashboards"/>
+            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.dashboard"/>
+        </type>
+    </extension>
 
 </plugin>
