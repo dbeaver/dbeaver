@@ -27,32 +27,29 @@ public class AltibaseMemoryModule extends AltibaseGlobalObject {
 
     private String name;
     private long allocSizeInBytes;
-    private long maxTotalSizeInBytes;
-    
+    private long allocCount;
+
     AltibaseMemoryModule(GenericStructContainer parent, JDBCResultSet dbResult) {
         super((AltibaseDataSource)parent.getDataSource(), true);
-        
-        this.name = JDBCUtils.safeGetString(dbResult, "name");
-        this.allocSizeInBytes = JDBCUtils.safeGetLong(dbResult, "alloc_size");
-        this.maxTotalSizeInBytes = JDBCUtils.safeGetLong(dbResult, "max_total_size");
+
+        this.name = JDBCUtils.safeGetString(dbResult, "NAME");
+        this.allocSizeInBytes = JDBCUtils.safeGetLong(dbResult, "ALLOC_SIZE");
+        this.allocCount = JDBCUtils.safeGetLong(dbResult, "ALLOC_COUNT");
     }
-    
+
     @NotNull
-    @Override
     @Property(viewable = true, order = 1)
     public String getName() {
         return name;
     }
-    
-    @NotNull
+
     @Property(viewable = true, order = 2, formatter = ByteNumberFormat.class)
-    public long getAllocatedSize() {
+    public long getAllocSize() {
         return allocSizeInBytes;
     }
-    
-    @NotNull
-    @Property(viewable = true, order = 3, formatter = ByteNumberFormat.class)
-    public long getMaxTotalSize() {
-        return maxTotalSizeInBytes;
+
+    @Property(viewable = true, order = 3)
+    public long getAllocCount() {
+        return allocCount;
     }
 }
