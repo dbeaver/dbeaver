@@ -2701,7 +2701,7 @@ public class DBeaverLauncher {
     }
 
     private void setupVMProperties() {
-        if (Stream.of(vmargs).noneMatch(arg -> arg.startsWith("-D" + PROP_LOG_INCLUDE_COMMAND_LINE))) {
+        if (vmargs != null && Stream.of(vmargs).noneMatch(arg -> arg.startsWith("-D" + PROP_LOG_INCLUDE_COMMAND_LINE))) {
             // Disable logging of command line by default if it's not explicitly set
             vmargs = Arrays.copyOf(vmargs, vmargs.length + 1);
             vmargs[vmargs.length - 1] = "-D" + PROP_LOG_INCLUDE_COMMAND_LINE + "=false";
