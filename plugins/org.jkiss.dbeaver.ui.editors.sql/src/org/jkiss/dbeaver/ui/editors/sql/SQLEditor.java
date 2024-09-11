@@ -2782,7 +2782,7 @@ public class SQLEditor extends SQLEditorBase implements
                             curQueryProcessor = processor;
                             break;
                         }
-                        anyNotPinnedTab = anyNotPinnedTab || processor.hasNotPinnedTabs();
+                        anyNotPinnedTab = anyNotPinnedTab || !processor.hasPinnedTabs();
                     }
                 }
                 // Just create a new query processor
@@ -3642,15 +3642,6 @@ public class SQLEditor extends SQLEditorBase implements
         public boolean hasPinnedTabs() {
             for (QueryResultsContainer container : resultContainers) {
                 if (container.isPinned()) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        public boolean hasNotPinnedTabs() {
-            for (QueryResultsContainer container : resultContainers) {
-                if (!container.isPinned()) {
                     return true;
                 }
             }
