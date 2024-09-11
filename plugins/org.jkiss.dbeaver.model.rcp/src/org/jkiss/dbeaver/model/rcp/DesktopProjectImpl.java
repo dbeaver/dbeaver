@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.model.rcp;
 
 import org.eclipse.core.internal.localstore.Bucket;
 import org.eclipse.core.internal.localstore.BucketTree;
@@ -27,11 +27,19 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
+import org.jkiss.dbeaver.model.impl.app.BaseProjectImpl;
+import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.task.DBTTaskManager;
+import org.jkiss.dbeaver.registry.DesktopDataSourceRegistry;
+import org.jkiss.dbeaver.registry.task.TaskConstants;
+import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.IOException;
@@ -41,30 +49,33 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class LocalProjectImpl extends BaseProjectImpl {
+public class DesktopProjectImpl extends BaseProjectImpl implements RCPProject {
 
-    private static final Log log = Log.getLog(LocalProjectImpl.class);
+    private static final Log log = Log.getLog(DesktopProjectImpl.class);
 
     private static final String SETTINGS_FOLDER = ".settings";
     private static final String PROJECT_FILE = ".project";
 
-    private static final String EMPTY_PROJECT_TEMPLATE = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-        "<projectDescription>\n" +
-        "<name>${project-name}</name>\n" +
-        "<comment></comment>\n" +
-        "<projects>\n" +
-        "</projects>\n" +
-        "<buildSpec>\n" +
-        "</buildSpec>\n" +
-        "<natures>\n" +
-        "</natures>\n" +
-        "</projectDescription>";
+    private static final String EMPTY_PROJECT_TEMPLATE = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <projectDescription>
+        <name>${project-name}</name>
+        <comment></comment>
+        <projects>
+        </projects>
+        <buildSpec>
+        </buildSpec>
+        <natures>
+        </natures>
+        </projectDescription>""";
 
     @NotNull
     private final IProject project;
+    protected volatile TaskManagerImpl taskManager;
+
     private volatile boolean projectInvalidated;
 
-    public LocalProjectImpl(@NotNull BaseWorkspaceImpl workspace, @NotNull IProject project, @Nullable SMSessionContext sessionContext) {
+    public DesktopProjectImpl(@NotNull BaseWorkspaceImpl workspace, @NotNull IProject project, @Nullable SMSessionContext sessionContext) {
         super(workspace, sessionContext);
         this.project = project;
     }
@@ -93,6 +104,12 @@ public class LocalProjectImpl extends BaseProjectImpl {
     @Override
     public IProject getEclipseProject() {
         return project;
+    }
+
+    @Nullable
+    @Override
+    public IContainer getRootResource() {
+        return getEclipseProject();
     }
 
     @Override
@@ -135,7 +152,7 @@ public class LocalProjectImpl extends BaseProjectImpl {
                     // Validate project structure only for local desktop apps
                     Path mdFolder = getMetadataFolder(false);
 
-                    Path dsConfig = getAbsolutePath().resolve(DataSourceRegistry.LEGACY_CONFIG_FILE_NAME);
+                    Path dsConfig = getAbsolutePath().resolve(DBPDataSourceRegistry.LEGACY_CONFIG_FILE_NAME);
                     if (!Files.exists(mdFolder) && Files.exists(dsConfig)) {
                         setFormat(ProjectFormat.LEGACY);
                     } else {
@@ -159,10 +176,41 @@ public class LocalProjectImpl extends BaseProjectImpl {
         return false;
     }
 
+    @NotNull
+    protected DBPDataSourceRegistry createDataSourceRegistry() {
+        return new DesktopDataSourceRegistry(this);
+    }
+
     @Nullable
     @Override
     public DBNModel getNavigatorModel() {
         return getWorkspace().getPlatform().getNavigatorModel();
+    }
+
+    @NotNull
+    @Override
+    public DBTTaskManager getTaskManager() {
+        ensureOpen();
+        if (taskManager == null) {
+            synchronized (metadataSync) {
+                if (taskManager == null) {
+                    taskManager = new TaskManagerImpl(
+                        this,
+                        getWorkspace().getMetadataFolder().resolve(TaskConstants.TASK_STATS_FOLDER)
+                    );
+                }
+            }
+        }
+        return taskManager;
+    }
+
+    @Nullable
+    @Override
+    public DBTTaskManager getTaskManager(boolean create) {
+        if (taskManager != null) {
+            return taskManager;
+        }
+        return create ? getTaskManager() : null;
     }
 
     /**
@@ -174,7 +222,7 @@ public class LocalProjectImpl extends BaseProjectImpl {
             return;
         }
 
-        Path mdConfig = getMetadataPath().resolve(METADATA_STORAGE_FILE);
+        Path mdConfig = getMetadataPath().resolve(BaseProjectImpl.METADATA_STORAGE_FILE);
         if (!Files.exists(mdConfig)) {
             // Migrate
             Map<String, Map<String, Object>> projectResourceProperties = extractProjectResourceProperties();
@@ -272,4 +320,36 @@ public class LocalProjectImpl extends BaseProjectImpl {
             return new TreeMap<>(this.resourceProperties);
         }
     }
+
+    void removeResourceFromCache(IPath path) {
+        boolean cacheChanged = false;
+        synchronized (resourcesSync) {
+            if (resourceProperties != null) {
+                String resPath = CommonUtils.normalizeResourcePath(path.toString());
+                cacheChanged = (resourceProperties.remove(resPath) != null);
+            }
+        }
+        if (cacheChanged) {
+            flushMetadata();
+        }
+    }
+
+    void moveResourceCache(IPath oldPath, IPath newPath) {
+        boolean cacheChanged = false;
+        synchronized (resourcesSync) {
+            if (resourceProperties != null) {
+                String oldResPath = CommonUtils.normalizeResourcePath(oldPath.toString());
+                Map<String, Object> props = resourceProperties.remove(oldResPath);
+                if (props != null) {
+                    String newResPath = CommonUtils.normalizeResourcePath(newPath.toString());
+                    resourceProperties.put(newResPath, props);
+                    cacheChanged = true;
+                }
+            }
+        }
+        if (cacheChanged) {
+            flushMetadata();
+        }
+    }
+
 }

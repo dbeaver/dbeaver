@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.sql;
 
-import org.eclipse.core.resources.IResource;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
@@ -28,6 +27,7 @@ import org.jkiss.dbeaver.model.task.DBTTaskSettings;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -36,7 +36,7 @@ import java.util.Map;
 /**
  * SQLScriptExecuteSettings
  */
-public class SQLScriptExecuteSettings implements DBTTaskSettings<IResource> {
+public class SQLScriptExecuteSettings implements DBTTaskSettings<Path> {
 
     private static final Log log = Log.getLog(SQLScriptExecuteSettings.class);
 

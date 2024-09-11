@@ -14,16 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.model.rcp;
 
 import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPApplicationDesktop;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
+import org.jkiss.dbeaver.model.impl.app.BaseApplicationImpl;
 
 /**
- * EclipseApplicationImpl
+ * DesktopApplicationImpl
  */
 public abstract class DesktopApplicationImpl extends BaseApplicationImpl implements DBPApplicationDesktop {
 
