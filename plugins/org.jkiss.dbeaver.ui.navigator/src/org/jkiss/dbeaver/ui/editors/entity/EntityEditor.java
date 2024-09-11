@@ -62,6 +62,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolbarUtils;
 import org.jkiss.dbeaver.ui.controls.CustomFormEditor;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
@@ -732,6 +733,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
         // Fire dirty flag refresh to re-enable Save-As command (which is enabled only for certain pages)
         firePropertyChange(IEditorPart.PROP_DIRTY);
+        DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTION_ACTIVE);
     }
 
     @Nullable
