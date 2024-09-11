@@ -770,6 +770,75 @@ public final class DBUtils {
         return curValue;
     }
 
+    public static void updateAttributeValue(
+        @NotNull DBDValue rootValue,
+        @NotNull DBDAttributeBinding attribute,
+        @Nullable int[] nestedIndexes,
+        @Nullable Object elementValue
+    ) throws DBCException {
+        final int depth = attribute.getLevel();
+
+        if (depth == 0 && attribute != attribute.getTopParent()) {
+            throw new DBCException("Top-level attribute '" + attribute.getName()
+                      + "' has bad top-level parent: '" + attribute.getTopParent().getName() + "'");
+        }
+
+        Object curValue = rootValue;
+
+        int remainingIndices = nestedIndexes != null ? nestedIndexes.length : 0;
+        int remainingAttributes = depth;
+
+        // Find owner value
+        // Create intermediate values if needed
+        while (remainingAttributes > 1 || remainingIndices > 1) {
+            if (curValue == null) {
+                break;
+            }
+            if (!(curValue instanceof DBDCollection)) {
+                if (remainingAttributes == 0) {
+                    throw new DBCException("Cannot update complex attribute: out of nested attributes");
+                }
+                remainingAttributes -= 1;
+                DBDAttributeBinding parent = Objects.requireNonNull(attribute.getParent(remainingAttributes));
+                try {
+                    curValue = parent.extractNestedValue(curValue, 0);
+                } catch (DBException e) {
+                    throw new DBCException("Error extracting nested value", e);
+                }
+            }
+
+            while (curValue instanceof DBDCollection collection) {
+                int itemIndex;
+                if (remainingIndices > 0) {
+                    itemIndex = nestedIndexes[nestedIndexes.length - remainingIndices];
+                    remainingIndices -= 1;
+                } else {
+                    itemIndex = 0;
+                }
+                if (itemIndex >= collection.getItemCount()) {
+                    throw new DBCException("Item index out of range " + itemIndex + ">=" + collection.getItemCount());
+                }
+                curValue = collection.get(itemIndex);
+            }
+
+            if (remainingAttributes == 1) {
+                break;
+            }
+        }
+
+        if (curValue instanceof DBDCollection collection) {
+            if (remainingIndices != 1) {
+                throw new DBCException("Cannot update collection: no indexes available");
+            } else {
+                collection.setItem(nestedIndexes[nestedIndexes.length - 1], elementValue);
+            }
+        } else if (curValue instanceof DBDComposite composite) {
+            composite.setAttributeValue(attribute, elementValue);
+        } else {
+            throw new DBCException("Don't know how to update complex value '" + curValue + "' (" + (curValue == null ? "null" : curValue.getClass().getSimpleName()) + ")");
+        }
+    }
+
     @NotNull
     public static DBDValueHandler findValueHandler(@NotNull DBCSession session, @NotNull DBSTypedObject column) {
         return findValueHandler(session.getDataSource(), session, column);

@@ -470,7 +470,11 @@ class ResultSetPersister {
                     // If new value and old value are the same - do not release it
                     if (curValue != changedValue.getValue()) {
                         DBUtils.releaseValue(curValue);
-                        model.updateCellValue(changedValue.getKey(), row, null, changedValue.getValue(), false);
+                        try {
+                            model.updateCellValue(changedValue.getKey(), row, null, changedValue.getValue(), false);
+                        } catch (DBException e) {
+                            log.error(e);
+                        }
                     }
                 }
                 row.changes = null;
