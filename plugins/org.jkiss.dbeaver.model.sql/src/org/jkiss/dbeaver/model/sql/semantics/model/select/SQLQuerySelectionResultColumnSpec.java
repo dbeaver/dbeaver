@@ -35,7 +35,7 @@ import java.util.LinkedList;
  * Describes one column of a selection result
  */
 public class SQLQuerySelectionResultColumnSpec extends SQLQuerySelectionResultSublistSpec {
-    @NotNull
+    @Nullable
     private final SQLQueryValueExpression valueExpression;
     @Nullable
     private final SQLQuerySymbolEntry alias;
@@ -43,7 +43,7 @@ public class SQLQuerySelectionResultColumnSpec extends SQLQuerySelectionResultSu
     public SQLQuerySelectionResultColumnSpec(
         @NotNull SQLQuerySelectionResultModel resultModel,
         @NotNull STMTreeNode syntaxNode,
-        @NotNull SQLQueryValueExpression valueExpression
+        @Nullable SQLQueryValueExpression valueExpression
     ) {
         this(resultModel, syntaxNode, valueExpression, null);
     }
@@ -51,17 +51,19 @@ public class SQLQuerySelectionResultColumnSpec extends SQLQuerySelectionResultSu
     public SQLQuerySelectionResultColumnSpec(
         @NotNull SQLQuerySelectionResultModel resultModel,
         @NotNull STMTreeNode syntaxNode,
-        @NotNull SQLQueryValueExpression valueExpression,
+        @Nullable SQLQueryValueExpression valueExpression,
         @Nullable SQLQuerySymbolEntry alias
     ) {
         super(resultModel, syntaxNode);
         this.valueExpression = valueExpression;
         this.alias = alias;
 
-        this.registerSubnode(valueExpression);
+        if (valueExpression != null) {
+            this.registerSubnode(valueExpression);
+        }
     }
 
-    @NotNull
+    @Nullable
     public SQLQueryValueExpression getValueExpression() {
         return this.valueExpression;
     }
@@ -71,7 +73,6 @@ public class SQLQuerySelectionResultColumnSpec extends SQLQuerySelectionResultSu
         return this.alias;
     }
 
-    @NotNull
     @Override
     protected void collectColumns(
         @NotNull SQLQueryDataContext context,
@@ -79,7 +80,9 @@ public class SQLQuerySelectionResultColumnSpec extends SQLQuerySelectionResultSu
         @NotNull SQLQueryRecognitionContext statistics,
         @NotNull LinkedList<SQLQueryResultColumn> resultColumns
     ) {
-        this.valueExpression.propagateContext(context, statistics);
+        if (this.valueExpression != null) {
+            this.valueExpression.propagateContext(context, statistics);
+        }
 
         SQLQuerySymbol columnName;
         SQLQueryResultColumn underlyingColumn;
@@ -93,14 +96,19 @@ public class SQLQuerySelectionResultColumnSpec extends SQLQuerySelectionResultSu
             }
             underlyingColumn = null;
         } else {
-            columnName = this.valueExpression.getColumnNameIfTrivialExpression();
-            underlyingColumn = this.valueExpression.getColumnIfTrivialExpression();
+            if (this.valueExpression != null) {
+                columnName = this.valueExpression.getColumnNameIfTrivialExpression();
+                underlyingColumn = this.valueExpression.getColumnIfTrivialExpression();
+            } else {
+                columnName = null;
+                underlyingColumn = null;
+            }
             if (columnName == null) {
                 columnName = new SQLQuerySymbol("?");
             }
         }
 
-        SQLQueryExprType type = valueExpression.getValueType();
+        SQLQueryExprType type = valueExpression == null ? SQLQueryExprType.UNKNOWN : valueExpression.getValueType();
         resultColumns.add(underlyingColumn == null
             ? new SQLQueryResultColumn(resultColumns.size(), columnName, rowsSourceModel, null, null, type)
             : new SQLQueryResultColumn(resultColumns.size(), columnName, rowsSourceModel, underlyingColumn.realSource, underlyingColumn.realAttr, type)

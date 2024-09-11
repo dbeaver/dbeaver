@@ -24,12 +24,15 @@ import org.eclipse.jface.text.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
@@ -46,6 +49,7 @@ import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.stm.STMTreeTermNode;
 import org.jkiss.dbeaver.model.stm.STMUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.utils.ListNode;
@@ -97,7 +101,7 @@ public class SQLBackgroundParsingJob {
             }
         }
     };
-    private CompletableFuture<Long> lastParsingFinishStamp = new CompletableFuture<>() { { this.complete(0l); } };
+    private CompletableFuture<Long> lastParsingFinishStamp = new CompletableFuture<>() { { this.complete(0L); } };
 
     private volatile boolean isRunning = false;
     private volatile int knownRegionStart = 0;
@@ -265,7 +269,7 @@ public class SQLBackgroundParsingJob {
                     for (int i = index; i >= 0; i--) {
                         STMTreeTermNode term = allTerms.get(i);
                         if (knownIdentifierPartTerms.contains(term.symbol.getType())
-                                || (term.getStmParent() != null && term.getStmParent().getNodeKindId() == SQLStandardParser.RULE_nonReserved)
+                            || (term.getParentNode() != null && term.getParentNode().getNodeKindId() == SQLStandardParser.RULE_nonReserved)
                         ) {
                             nameNodes.addFirst(term);
                             i--;
@@ -531,7 +535,8 @@ public class SQLBackgroundParsingJob {
                 return;
             }
             
-            SQLParserContext parserContext = new SQLParserContext(this.editor.getDataSource(), this.editor.getSyntaxManager(), this.editor.getRuleManager(), this.document);
+            SQLParserContext parserContext =
+                new SQLParserContext(this.editor.getDataSource(), this.editor.getSyntaxManager(), this.editor.getRuleManager(), this.document);
             List<SQLScriptElement> elements = SQLScriptParser.extractScriptQueries(parserContext, workOffset, workLength, false, false, false);
             if (elements.isEmpty()) {
                 if (DEBUG) {
@@ -571,7 +576,12 @@ public class SQLBackgroundParsingJob {
             monitor.worked(1);
 
             SQLSyntaxManager syntaxManager = this.editor.getSyntaxManager();
-            SQLQueryRecognitionContext recognitionContext = new SQLQueryRecognitionContext(monitor, executionContext, useRealMetadata, syntaxManager);
+            DBPDataSourceContainer dsContainer = EditorUtils.getInputDataSource(this.editor.getEditorInput());
+            SQLDialect dialect = executionContext != null && executionContext.getDataSource() != null
+                ? executionContext.getDataSource().getSQLDialect()
+                : dsContainer != null ? dsContainer.getScriptDialect().createInstance() : BasicSQLDialect.INSTANCE;
+
+            SQLQueryRecognitionContext recognitionContext = new SQLQueryRecognitionContext(monitor, executionContext, useRealMetadata, syntaxManager, dialect);
 
             int i = 1;
             for (SQLScriptElement element : elements) {

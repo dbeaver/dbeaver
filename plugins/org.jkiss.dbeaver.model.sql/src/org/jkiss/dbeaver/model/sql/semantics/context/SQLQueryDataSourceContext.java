@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 
@@ -60,6 +61,11 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
         return Collections.emptyList();
     }
 
+    @Override
+    public boolean hasUndresolvedSource() {
+        return false;
+    }
+
     @Nullable
     @Override
     public DBSEntity findRealTable(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
@@ -78,7 +84,33 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
             // Semantic analyser should never be used for databases, which doesn't support table lookup
             // It's managed by LSMDialectRegistry (see org.jkiss.dbeaver.lsm.dialectSyntax extension point)
             // so that analyzers could be created only for supported dialects.
-            throw new UnsupportedOperationException("Should never happen");
+            throw new UnsupportedOperationException("Semantic analyser should never be used for databases, which doesn't support table lookup");
+        }
+    }
+
+    @Nullable
+    @Override
+    public DBSObject findRealObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObjectType objectType,
+        @NotNull List<String> objectName
+    ) {
+        if (this.executionContext.getDataSource() instanceof DBSObjectContainer container) {
+            List<String> objectName2 = new ArrayList<>(objectName);
+            DBSObject obj = SQLSearchUtils.findObjectByFQN(
+                monitor,
+                container,
+                this.executionContext,
+                objectName2,
+                false,
+                identifierDetector
+            );
+            return objectType.getTypeClass().isInstance(obj) ? obj : null;
+        } else {
+            // Semantic analyser should never be used for databases, which doesn't support table lookup
+            // It's managed by LSMDialectRegistry (see org.jkiss.dbeaver.lsm.dialectSyntax extension point)
+            // so that analyzers could be created only for supported dialects.
+            throw new UnsupportedOperationException("Semantic analyser should never be used for databases, which doesn't support table lookup");
         }
     }
 
@@ -100,12 +132,6 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
         return this.dialect;
     }
 
-    @NotNull
-    @Override
-    public SQLQueryRowsSourceModel getDefaultTable(@NotNull STMTreeNode syntaxNode) {
-        return new SQLQueryRowsTableValueModel(syntaxNode, Collections.emptyList());
-    }
-    
     @Override
     protected void collectKnownSourcesImpl(@NotNull KnownSourcesInfo result) {
         // no sources have been referenced yet, so nothing to register

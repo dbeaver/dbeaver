@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.model.sql.semantics.model.select;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
@@ -32,18 +31,18 @@ import java.util.List;
  * Describes subquery of a common table expression
  */
 public class SQLQueryRowsCteSubqueryModel extends SQLQueryRowsSourceModel {
-    @NotNull
+    @Nullable
     public final SQLQuerySymbolEntry subqueryName;
     @NotNull
     public final List<SQLQuerySymbolEntry> columNames;
-    @NotNull
+    @Nullable
     public final SQLQueryRowsSourceModel source;
 
     public SQLQueryRowsCteSubqueryModel(
         @NotNull STMTreeNode syntaxNode,
-        @NotNull SQLQuerySymbolEntry subqueryName,
+        @Nullable SQLQuerySymbolEntry subqueryName,
         @NotNull List<SQLQuerySymbolEntry> columNames,
-        @NotNull SQLQueryRowsSourceModel source
+        @Nullable SQLQueryRowsSourceModel source
     ) {
         super(syntaxNode);
         this.subqueryName = subqueryName;
@@ -55,9 +54,11 @@ public class SQLQueryRowsCteSubqueryModel extends SQLQueryRowsSourceModel {
      * Associate CTE subquery alias symbol with its definition
      */
     public void prepareAliasDefinition() {
-        this.subqueryName.getSymbol().setDefinition(this.subqueryName);
-        if (this.subqueryName.isNotClassified()) {
-            this.subqueryName.getSymbol().setSymbolClass(SQLQuerySymbolClass.TABLE_ALIAS);
+        if (this.subqueryName != null) {
+            this.subqueryName.getSymbol().setDefinition(this.subqueryName);
+            if (this.subqueryName.isNotClassified()) {
+                this.subqueryName.getSymbol().setSymbolClass(SQLQuerySymbolClass.TABLE_ALIAS);
+            }
         }
     }
 
