@@ -253,13 +253,13 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
         return members;
     }
 
-    DBNResource getChild(IResource resource) {
+    public DBNResource getChild(IResource resource) {
         if (children == null) {
             return null;
         }
         for (DBNNode child : children) {
-            if (child instanceof DBNResource && resource.equals(((DBNResource) child).getResource())) {
-                return (DBNResource) child;
+            if (child instanceof DBNResource resNode && resource.equals(resNode.getResource())) {
+                return resNode;
             }
         }
         return null;
