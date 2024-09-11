@@ -71,7 +71,7 @@ import java.util.stream.Collectors;
 
 public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
     private static final Log log = Log.getLog(StreamProducerPageSettings.class);
-    private static final String HELP_DATA_TRANSFER_LINK = "Data-transfer#import-data";
+    private static final String HELP_DATA_TRANSFER_LINK = "Data-transfer#import-parameters";
 
     private PropertyTreeViewer propsEditor;
     private PropertySourceCustom propertySource;
