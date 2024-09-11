@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNNodeWithResource;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.navigator.NavigatorResources;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.NodeEditorInput;
@@ -68,7 +69,7 @@ public abstract class AbstractResourceHandler implements DBPResourceHandler {
     @Override
     public void openResource(@NotNull IResource resource) throws CoreException, DBException {
         if (resource instanceof IFolder) {
-            DBNResource node = DBWorkbench.getPlatform().getNavigatorModel().getNodeByResource(resource);
+            DBNResource node = NavigatorResources.getNodeByResource(DBWorkbench.getPlatform().getNavigatorModel(), resource);
             if (node != null) {
                 NodeEditorInput nodeInput = new NodeEditorInput(node);
                 UIUtils.getActiveWorkbenchWindow().getActivePage().openEditor(
