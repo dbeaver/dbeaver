@@ -318,6 +318,10 @@ public class SQLQueryJob extends DataSourceJob
                     QMUtils.getDefaultHandler().handleScriptEnd(session);
                 }
 
+                if (listener != null) {
+                    listener.onEndSqlJob(session, getSqlJobResult());
+                }
+
                 // Return success
                 return new Status(
                     Status.OK,
@@ -342,6 +346,17 @@ public class SQLQueryJob extends DataSourceJob
                     log.error(e);
                 }
             }
+        }
+    }
+
+    @NotNull
+    private SqlJobResult getSqlJobResult() {
+        if (queries.get(queries.size() - 1) == lastGoodQuery && lastError == null) {
+            return SqlJobResult.SUCCESS;
+        } else if (lastGoodQuery != null) {
+            return SqlJobResult.PARTIAL_SUCCESS;
+        } else {
+            return SqlJobResult.FAILURE;
         }
     }
 
@@ -984,6 +999,11 @@ public class SQLQueryJob extends DataSourceJob
         session.getProgressMonitor().subTask(CommonUtils.truncateString(query.getText(), 512));
 
         boolean result = executeSingleQuery(session, query, fireEvents);
+
+        if (listener != null) {
+            listener.onEndSqlJob(session, getSqlJobResult());
+        }
+
         if (!result && lastError != null) {
             if (lastError instanceof DBCException dbce) {
                 throw dbce;

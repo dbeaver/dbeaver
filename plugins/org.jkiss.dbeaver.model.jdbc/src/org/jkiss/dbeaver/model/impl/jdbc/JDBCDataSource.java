@@ -366,8 +366,13 @@ public abstract class JDBCDataSource extends AbstractDataSource
                             // so here we do it just in case to avoid error messages on close with open transaction
                             connection.rollback();
                         } catch (Throwable e) {
-                            // Do not write warning because connection maybe broken before the moment of close
-                            log.debug("Error closing active transaction", e);
+                            if (e instanceof SQLException se && JDBCUtils.isRollbackWarning(se)) {
+                                // ignore
+                                log.debug("Warning during active transaction close: " + e.getMessage());
+                            } else {
+                                // Do not write warning because connection maybe broken before the moment of close
+                                log.debug("Error closing active transaction", e);
+                            }
                         }
                     }
                     try {

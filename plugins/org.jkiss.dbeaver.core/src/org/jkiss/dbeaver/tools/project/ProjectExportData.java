@@ -17,9 +17,9 @@
 
 package org.jkiss.dbeaver.tools.project;
 
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.utils.xml.XMLBuilder;
 
 import java.io.File;
@@ -31,7 +31,7 @@ import java.util.zip.ZipOutputStream;
 
 class ProjectExportData {
 
-    private final List<DBPProject> projects;
+    private final List<RCPProject> projects;
     private final File outputFolder;
     private final boolean exportDrivers;
     private final String archiveFileName;
@@ -41,7 +41,7 @@ class ProjectExportData {
     ZipOutputStream archiveStream;
     Set<DBPDriver> usedDrivers = new HashSet<>();
 
-    public ProjectExportData(List<DBPProject> projects, File outputFolder, boolean exportDrivers, String archiveFileName)
+    public ProjectExportData(List<RCPProject> projects, File outputFolder, boolean exportDrivers, String archiveFileName)
     {
         this.projects = projects;
         this.outputFolder = outputFolder;
@@ -56,7 +56,7 @@ class ProjectExportData {
         this.archiveStream = archiveStream;
     }
 
-    public List<DBPProject> getProjectsToExport()
+    public List<RCPProject> getProjectsToExport()
     {
         return projects;
     }

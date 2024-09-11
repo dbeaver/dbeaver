@@ -261,10 +261,14 @@ public abstract class SQLQueryCompletionContext {
                 String tail = parts.get(parts.size() - 1);
 
                 List<SQLQueryCompletionItem> result;
-                if (syntaxInspectionResult.expectingColumnReference) {
-                    result = this.accomplishColumnReference(prefix, tail);
-                } else if (syntaxInspectionResult.expectingTableReference) {
-                    result = this.accomplishTableReference(monitor, componentType, prefix, tail);
+                if (!CommonUtils.isEmpty(tail)) {
+                    if (syntaxInspectionResult.expectingColumnReference) {
+                        result = this.accomplishColumnReference(prefix, tail);
+                    } else if (syntaxInspectionResult.expectingTableReference) {
+                        result = this.accomplishTableReference(monitor, componentType, prefix, tail);
+                    } else {
+                        result = Collections.emptyList();
+                    }
                 } else {
                     result = Collections.emptyList();
                 }

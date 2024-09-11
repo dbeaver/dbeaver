@@ -83,7 +83,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.DefaultServerOutputReader;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerCount;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
-import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.model.navigator.NavigatorResources;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMTransactionState;
 import org.jkiss.dbeaver.model.qm.QMUtils;
@@ -450,7 +450,7 @@ public class SQLEditor extends SQLEditorBase implements
 
             IFile file = EditorUtils.getFileFromInput(input);
             if (file != null && dataSourceContainer != null) {
-                DBNUtils.refreshNavigatorResource(dataSourceContainer.getProject(), file, container);
+                NavigatorResources.refreshNavigatorResource(dataSourceContainer.getProject(), file, container);
             } else {
                 // FIXME: this is a hack. We can't fire event on resource change so editor's state won't be updated in UI.
                 // FIXME: To update main toolbar and other controls we hade and show this editor
@@ -2611,14 +2611,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     public void exportDataFromQuery(@Nullable SQLScriptContext sqlScriptContext)
     {
-        List<SQLScriptElement> elements;
-        ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
-        if (selection.getLength() > 1) {
-            elements = extractScriptQueries(selection.getOffset(), selection.getLength(), true, false, true);
-        } else {
-            elements = new ArrayList<>();
-            elements.add(extractActiveQuery());
-        }
+        List<SQLScriptElement> elements = getSelectedQueries();
 
         if (!elements.isEmpty()) {
             processQueries(elements, false, false, true, true, null, sqlScriptContext);
@@ -2627,6 +2620,23 @@ public class SQLEditor extends SQLEditorBase implements
                     "Extract data",
                     "Choose one or more queries to export from");
         }
+    }
+
+    @NotNull
+    public List<SQLScriptElement> getSelectedQueries() {
+        List<SQLScriptElement> elements = new ArrayList<>();
+        ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
+
+        if (selection.getLength() > 1) {
+            elements.addAll(extractScriptQueries(selection.getOffset(), selection.getLength(), true, false, true));
+        } else {
+            SQLScriptElement query = extractActiveQuery();
+            if (query != null) {
+                elements.add(query);
+            }
+        }
+
+        return elements;
     }
 
     public boolean processQueries(@NotNull final List<SQLScriptElement> queries, final boolean forceScript,
@@ -2772,7 +2782,7 @@ public class SQLEditor extends SQLEditorBase implements
                             curQueryProcessor = processor;
                             break;
                         }
-                        anyNotPinnedTab = anyNotPinnedTab || processor.hasNotPinnedTabs();
+                        anyNotPinnedTab = anyNotPinnedTab || !processor.hasPinnedTabs();
                     }
                 }
                 // Just create a new query processor
@@ -3632,15 +3642,6 @@ public class SQLEditor extends SQLEditorBase implements
         public boolean hasPinnedTabs() {
             for (QueryResultsContainer container : resultContainers) {
                 if (container.isPinned()) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        public boolean hasNotPinnedTabs() {
-            for (QueryResultsContainer container : resultContainers) {
-                if (!container.isPinned()) {
                     return true;
                 }
             }
@@ -4830,8 +4831,6 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public void onEndQuery(final DBCSession session, final SQLQueryResult result, DBCStatistics statistics) {
-            refreshContextDefaults(session, result);
-
             try {
                 synchronized (runningQueries) {
                     runningQueries.remove(result.getStatement());
@@ -4867,14 +4866,11 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
-        private void refreshContextDefaults(DBCSession session, SQLQueryResult result) {
+        private void refreshContextDefaults(DBCSession session) {
             final DBCExecutionContext executionContext = getExecutionContext();
             if (executionContext != null && session != null) {
                 // Refresh active object
-                if ((result == null || !result.hasError()) &&
-                    executionContext.getDataSource().getContainer().isExtraMetadataReadEnabled() &&
-                    getActivePreferenceStore().getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)
-                ) {
+                if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)) {
                     DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
                     if (contextDefaults != null) {
                         try {
@@ -5025,6 +5021,13 @@ public class SQLEditor extends SQLEditorBase implements
                 if (extListener != null) extListener.onEndScript(statistics, hasErrors);
             }
 
+        }
+
+        @Override
+        public void onEndSqlJob(DBCSession session, SqlJobResult result) {
+            if (result == SqlJobResult.SUCCESS || result == SqlJobResult.PARTIAL_SUCCESS) {
+                refreshContextDefaults(session);
+            }
         }
     }
 

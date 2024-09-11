@@ -167,6 +167,11 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
             }
             statusFlag[0] = true;
         }
+
+        @Override
+        public void onEndSqlJob(DBCSession session, SqlJobResult result) {
+
+        }
     }
 
     private static class IncludeEditorInput extends StringEditorInput implements IURIEditorInput {

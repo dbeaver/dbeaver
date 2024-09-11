@@ -39,6 +39,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -119,8 +120,8 @@ public abstract class GITAbstractHandler extends AbstractHandler {
                 DBNNode rootNode = navigatorModelView.getRootNode();
                 if (rootNode != null) {
                     DBPProject ownerProject = rootNode.getOwnerProject();
-                    if (ownerProject != null) {
-                        return getRepositories(new StructuredSelection(ownerProject.getEclipseProject()));
+                    if (ownerProject instanceof RCPProject rcpProject) {
+                        return getRepositories(new StructuredSelection(rcpProject.getEclipseProject()));
                     }
                 }
             }

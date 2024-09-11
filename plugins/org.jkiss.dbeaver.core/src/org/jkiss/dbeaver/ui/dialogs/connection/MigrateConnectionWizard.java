@@ -127,7 +127,8 @@ public class MigrateConnectionWizard extends Wizard
         @Override
         public void createControl(Composite parent)
         {
-            connectionsViewer = new Table(parent, SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION | SWT.CHECK);
+            Composite composite = UIUtils.createComposite(parent, 1);
+            connectionsViewer = new Table(composite, SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION | SWT.CHECK);
             connectionsViewer.addSelectionListener(new SelectionListener() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
@@ -141,6 +142,10 @@ public class MigrateConnectionWizard extends Wizard
                     getContainer().showPage(getNextPage());
                 }
             });
+            GridData gd = new GridData(GridData.FILL_BOTH);
+            gd.widthHint = 400;
+            gd.heightHint = 400;
+            connectionsViewer.setLayoutData(gd);
             if (registry != null) {
                 for (DBPDataSourceContainer ds : registry.getDataSources()) {
                     TableItem item = new TableItem(connectionsViewer, SWT.NONE);
@@ -152,7 +157,7 @@ public class MigrateConnectionWizard extends Wizard
                     }
                 }
 			}
-            setControl(connectionsViewer);
+            setControl(composite);
         }
 
         @Override

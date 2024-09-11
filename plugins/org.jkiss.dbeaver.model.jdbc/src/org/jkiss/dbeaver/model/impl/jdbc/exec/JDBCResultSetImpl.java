@@ -43,13 +43,13 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
 
     private static final Log log = Log.getLog(JDBCResultSetImpl.class);
 
-    private ResultSet original;
+    private final ResultSet original;
     private final String description;
     private JDBCResultSetMetaData metaData;
     private long rowsFetched;
     private long maxRows = -1;
-    private boolean fake;
-    private boolean disableLogging;
+    private final boolean fake;
+    private final boolean disableLogging;
 
     public static JDBCResultSet makeResultSet(@NotNull JDBCSession session, @Nullable JDBCStatement statement, @NotNull ResultSet original, String description, boolean disableLogging)
         throws SQLException
@@ -94,10 +94,12 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
         // FIXME: starte/end block. Do we need them here?
         //this.session.getProgressMonitor().startBlock(statement, null);
         //QMUtils.getDefaultHandler().handleResultSetFetch(this);
+        this.session.getExecutionContext().lockQueryExecution();
     }
 
     protected void afterFetch()
     {
+        this.session.getExecutionContext().unlockQueryExecution();
         //this.session.getProgressMonitor().endBlock();
     }
 

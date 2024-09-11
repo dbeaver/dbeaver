@@ -186,7 +186,7 @@
                         description="Driver for MySQL 5.x+"
                         categories="sql">
 
-                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[5.1.49]"/>
+                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[5.1.49]" bundle="!drivers.mysql"/>
                     <file type="license" path="https://www.gnu.org/licenses/old-licenses/lgpl-2.0.txt" bundle="!drivers.mysql"/>
                     <file type="jar" path="drivers/mysql/mysql5" bundle="drivers.mysql"/>
                     <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>

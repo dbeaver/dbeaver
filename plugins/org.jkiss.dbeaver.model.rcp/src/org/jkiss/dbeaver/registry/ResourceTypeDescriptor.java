@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceTypeDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.service.prefs.BackingStoreException;
@@ -153,9 +154,9 @@ public class ResourceTypeDescriptor extends AbstractDescriptor implements DBPRes
                 return root;
             }
         }
-        if (project.getEclipseProject() != null) {
+        if (project instanceof RCPProject rcpProject && rcpProject.getEclipseProject() != null) {
             try {
-                IEclipsePreferences eclipsePreferences = getResourceHandlerPreferences(project, DBPResourceTypeDescriptor.RESOURCE_ROOT_FOLDER_NODE);
+                IEclipsePreferences eclipsePreferences = getResourceHandlerPreferences(rcpProject, DBPResourceTypeDescriptor.RESOURCE_ROOT_FOLDER_NODE);
                 String root = eclipsePreferences.get(id, defaultRoot);
                 boolean isInvalidRoot = root != null && CommonUtils.isEmptyTrimmed(root);
                 synchronized (projectRoots) {
@@ -182,7 +183,10 @@ public class ResourceTypeDescriptor extends AbstractDescriptor implements DBPRes
 
     @Override
     public void setDefaultRoot(@NotNull DBPProject project, @Nullable String rootPath) {
-        IEclipsePreferences resourceHandlers = getResourceHandlerPreferences(project, DBPResourceTypeDescriptor.RESOURCE_ROOT_FOLDER_NODE);
+        if (!(project instanceof RCPProject rcpProject)) {
+            return;
+        }
+        IEclipsePreferences resourceHandlers = getResourceHandlerPreferences(rcpProject, DBPResourceTypeDescriptor.RESOURCE_ROOT_FOLDER_NODE);
         resourceHandlers.put(getId(), rootPath);
         synchronized (projectRoots) {
             projectRoots.put(project.getName(), rootPath);
@@ -247,12 +251,12 @@ public class ResourceTypeDescriptor extends AbstractDescriptor implements DBPRes
         return id;
     }
 
-    private static IEclipsePreferences getResourceHandlerPreferences(DBPProject project, String node) {
+    private static IEclipsePreferences getResourceHandlerPreferences(RCPProject project, String node) {
         IEclipsePreferences projectSettings = getProjectPreferences(project);
         return (IEclipsePreferences) projectSettings.node(node);
     }
 
-    private static synchronized IEclipsePreferences getProjectPreferences(DBPProject project) {
+    private static synchronized IEclipsePreferences getProjectPreferences(RCPProject project) {
         return new ProjectScope(project.getEclipseProject()).getNode("org.jkiss.dbeaver.project.resources");
     }
 

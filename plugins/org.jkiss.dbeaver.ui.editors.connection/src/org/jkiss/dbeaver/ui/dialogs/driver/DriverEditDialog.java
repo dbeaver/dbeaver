@@ -112,6 +112,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
     private Button allowsEmptyPasswordCheck;
     private Button nonInstantiableCheck;
     private Button propagateDriverPropertiesCheck;
+    private Button threadSafeCheck;
 
     private boolean showAddFiles = false;
 
@@ -195,7 +196,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
         final Composite group = super.createDialogArea(parent);
         GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.widthHint = 500;
+        gd.widthHint = 700;
         group.setLayoutData(gd);
 
         {
@@ -320,12 +321,14 @@ public class DriverEditDialog extends HelpEnabledDialog {
         anonymousDriverCheck = UIUtils.createCheckbox(optionsPanel, UIConnectionMessages.dialog_edit_driver_anonymous_label, UIConnectionMessages.dialog_edit_driver_anonymous_tip, driver.isAnonymousAccess(), 1);
         allowsEmptyPasswordCheck = UIUtils.createCheckbox(optionsPanel, UIConnectionMessages.dialog_edit_driver_allows_empty_password_label, UIConnectionMessages.dialog_edit_driver_allows_empty_password_tip, driver.isAnonymousAccess(), 1);
         nonInstantiableCheck = UIUtils.createCheckbox(optionsPanel, UIConnectionMessages.dialog_edit_driver_use_legacy_instantiation_label, UIConnectionMessages.dialog_edit_driver_use_legacy_instantiation_tip, !driver.isInstantiable(), 1);
+        threadSafeCheck = UIUtils.createCheckbox(optionsPanel, "Thread safe driver", "Driver is thread safe (default). Otherwise DBeaver will lock all driver invocations to protect it from any data corruptions.", driver.isThreadSafeDriver(), 1);
 
         if (isReadOnly) {
             embeddedDriverCheck.setEnabled(false);
             anonymousDriverCheck.setEnabled(false);
             allowsEmptyPasswordCheck.setEnabled(false);
             nonInstantiableCheck.setEnabled(false);
+            threadSafeCheck.setEnabled(false);
         }
 
         Group infoGroup = UIUtils.createControlGroup(propsGroup, UIConnectionMessages.dialog_edit_driver_description, 4, -1, -1);
@@ -813,6 +816,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         anonymousDriverCheck.setSelection(original ? driver.isOrigAnonymousAccess() : driver.isAnonymousAccess());
         allowsEmptyPasswordCheck.setSelection(original ? driver.isOrigAllowsEmptyPassword() : driver.isAllowsEmptyPassword());
         nonInstantiableCheck.setSelection(original ? !driver.isOrigInstantiable() : !driver.isInstantiable());
+        threadSafeCheck.setSelection(driver.isThreadSafeDriver());
 
         if (original) {
             resetLibraries();
@@ -872,6 +876,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         driver.setAnonymousAccess(anonymousDriverCheck.getSelection());
         driver.setAllowsEmptyPassword(allowsEmptyPasswordCheck.getSelection());
         driver.setInstantiable(!nonInstantiableCheck.getSelection());
+        driver.setThreadSafeDriver(threadSafeCheck.getSelection());
 
 //        driver.setAnonymousAccess(anonymousCheck.getSelection());
         driver.setModified(true);

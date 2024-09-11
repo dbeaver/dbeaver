@@ -17,10 +17,12 @@
 
 package org.jkiss.dbeaver.ui.navigator;
 
+import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.swt.widgets.TreeItem;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 
 /**
@@ -28,13 +30,14 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
  */
 public interface INavigatorItemRenderer {
 
-    void drawNodeBackground(DBNNode element, Tree tree, GC gc, Event event);
-
     void paintNodeDetails(DBNNode node, Tree tree, GC gc, Event event);
-
-    void showDetailsToolTip(DBNNode node, Tree tree, Event event);
 
     void performAction(DBNNode node, Tree tree, Event event, boolean defaultAction);
 
-    void handleHover(DBNNode node, Tree tree, TreeItem item, Event event);
+    @Nullable
+    String getToolTipText(@NotNull DBNNode node, @NotNull Tree tree, @NotNull Event event);
+
+    @Nullable
+    Cursor getCursor(@NotNull DBNNode node, @NotNull Tree tree, @NotNull Event event);
+
 }

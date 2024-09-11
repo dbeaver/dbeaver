@@ -1364,7 +1364,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         } else {
             // Navigate hyperlink
             String strValue = attr.getValueHandler().getValueDisplayString(attr, value, DBDDisplayFormat.UI);
-            if (isLinkSafeToOpen(strValue)) {
+            if (isHyperlinkText(strValue)) {
                 ShellUtils.launchProgram(strValue);
             } else {
                 EditTextDialog dialog = new EditTextDialog(
@@ -2285,7 +2285,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         final String strValue = info.text != null
                             ? info.text.toString()
                             : attr.getValueHandler().getValueDisplayString(attr, cellValue, DBDDisplayFormat.UI);
-                        if (strValue != null && strValue.contains("://")) {
+                        if (strValue != null && isHyperlinkText(strValue)) {
                             try {
                                 new URL(strValue);
                                 info.state |= STATE_HYPER_LINK;
@@ -2698,6 +2698,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
             backgroundNormal = null;
             foregroundDefault = null;
         }
+    }
+
+    private static boolean isHyperlinkText(String strValue) {
+        return strValue.startsWith("http://") || strValue.startsWith("https://");
     }
 
     public ResultSetCellLocation getCurrentCellLocation() {

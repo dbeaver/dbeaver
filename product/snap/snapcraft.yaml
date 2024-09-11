@@ -65,6 +65,8 @@ parts:
       - libibus-1.0-5
       - libwebkit2gtk-4.0-37
       - libgtk-3-0
+      - fonts-noto-cjk
+      - fonts-noto-color-emoji
     override-build: |
       set -e
       snapcraftctl build

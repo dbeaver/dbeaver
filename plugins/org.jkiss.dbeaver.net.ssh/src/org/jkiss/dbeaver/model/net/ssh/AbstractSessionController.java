@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCInvalidatePhase;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -238,7 +239,7 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
             }
 
             jumpPortForward = origin.setupPortForward(new SSHPortForwardConfiguration(
-                SSHConstants.LOCAL_HOST,
+                DBConstants.HOST_LOCALHOST_IP,
                 0,
                 host.hostname(),
                 host.port()

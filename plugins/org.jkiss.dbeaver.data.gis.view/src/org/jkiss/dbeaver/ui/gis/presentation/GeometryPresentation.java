@@ -146,7 +146,7 @@ public class GeometryPresentation extends AbstractPresentation {
 
                 if (geometry != null && !(geometry.getSRID() != 0 && geometry.isEmpty())) {
                     geometries.add(geometry);
-                    GeometryDataUtils.setGeometryProperties(getController(), geomAttrs, geometry, GeometryDataUtils.makeGeometryColor(i), row);
+                    GeometryDataUtils.setGeometryProperties(getController(), geomAttrs, geometry, i, row);
                 }
             }
         }
