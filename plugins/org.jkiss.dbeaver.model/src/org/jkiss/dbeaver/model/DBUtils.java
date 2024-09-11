@@ -790,7 +790,7 @@ public final class DBUtils {
 
         // Find owner value
         // Create intermediate values if needed
-        while (remainingAttributes > 1 || remainingIndices > 1) {
+        while (remainingAttributes + remainingIndices > 1) {
             if (curValue == null) {
                 break;
             }
@@ -807,22 +807,13 @@ public final class DBUtils {
                 }
             }
 
-            while (curValue instanceof DBDCollection collection) {
-                int itemIndex;
-                if (remainingIndices > 0) {
-                    itemIndex = nestedIndexes[nestedIndexes.length - remainingIndices];
-                    remainingIndices -= 1;
-                } else {
-                    itemIndex = 0;
-                }
+            while (curValue instanceof DBDCollection collection && remainingIndices > 1) {
+                int itemIndex = nestedIndexes[nestedIndexes.length - remainingIndices];
+                remainingIndices--;
                 if (itemIndex >= collection.getItemCount()) {
                     throw new DBCException("Item index out of range " + itemIndex + ">=" + collection.getItemCount());
                 }
                 curValue = collection.get(itemIndex);
-            }
-
-            if (remainingAttributes == 1) {
-                break;
             }
         }
 

@@ -1169,7 +1169,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         ResultSetCellLocation cellLocation = new ResultSetCellLocation(attr, row, getRowNestedIndexes(spreadsheet.getFocusRow()));
         Object cellValue = getController().getModel().getCellValue(cellLocation);
-        if (cellValue instanceof DBDValueError) {
+        if (cellValue instanceof DBDValueSurrogate) {
             return null;
         }
 
@@ -1798,31 +1798,17 @@ public class SpreadsheetPresentation extends AbstractPresentation
     }
 
     private boolean isAttributeExpandable(@Nullable IGridRow row, @NotNull DBDAttributeBinding attr) {
-        return getExpandableAttribute(row, attr) != null;
-    }
-
-    @Nullable
-    private DBDAttributeBinding getExpandableAttribute(@Nullable IGridRow row, @NotNull DBDAttributeBinding attr) {
         if (attr.getDataKind() == DBPDataKind.STRUCT && controller.isRecordMode()) {
-            return attr;
+            return true;
         }
-
-        final List<DBDAttributeBinding> attributes = new ArrayList<>();
 
         for (DBDAttributeBinding cur = attr; cur != null; cur = cur.getParentObject()) {
             final DBPDataKind kind = cur.getDataKind();
             if (kind == DBPDataKind.ARRAY) {
-                attributes.add(cur);
+                return true;
             }
         }
-
-        if (attributes.isEmpty()) {
-            return null;
-        }
-
-        final int index = row != null ? row.getLevel() : 0;
-        final int upper = attributes.size() - 1;
-        return attributes.get(upper - Math.min(index, upper));
+        return false;
     }
 
     class SpreadsheetSelectionImpl implements IResultSetSelection, IResultSetSelectionExt {
@@ -2030,7 +2016,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         @Override
         public int getCollectionSize(@NotNull IGridColumn colElement, @NotNull IGridRow rowElement) {
             final ResultSetRow row = getResultRowFromGrid(colElement, rowElement);
-            final DBDAttributeBinding attr = getExpandableAttribute(rowElement, getAttributeFromGrid(colElement, rowElement));
+            final DBDAttributeBinding attr  = getAttributeFromGrid(colElement, rowElement);
 
             final ResultSetCellLocation cellLocation = new ResultSetCellLocation(attr, row, getRowNestedIndexes(rowElement));
             final Object cellValue = controller.getModel().getCellValue(cellLocation);
@@ -2205,32 +2191,19 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         @Override
         public boolean isElementExpandable(@NotNull IGridItem item) {
-            if (item instanceof IGridRow row && !controller.isRecordMode()) {
+            if (item instanceof IGridRow row) {
                 return hasExpandableElements(row);
-            } else {
-                return item.getElement() instanceof DBDAttributeBinding binding && isAttributeExpandable(null, binding);
             }
-        }
-
-        private boolean isElementExpandable(@NotNull IGridRow row, @NotNull IGridColumn column) {
-            return isAttributeExpandable(row, (DBDAttributeBinding) column.getElement());
+            return false;
         }
 
         private boolean hasExpandableElements(@NotNull IGridRow row) {
-            if (controller.isRecordMode()) {
-                for (int i = 0; i < spreadsheet.getItemCount(); i++) {
-                    if (isElementExpandable(spreadsheet.getRow(i))) {
-                        return true;
-                    }
-                }
-            } else {
-                for (int i = 0; i < spreadsheet.getColumnCount(); i++) {
-                    if (isElementExpandable(row, spreadsheet.getColumn(i))) {
-                        return true;
-                    }
+            for (int i = 0; i < spreadsheet.getColumnCount(); i++) {
+                Object cellValue = getCellValue(spreadsheet.getColumn(i), row, false);
+                if (cellValue instanceof DBDComplexValue) {
+                    return true;
                 }
             }
-
             return false;
         }
 
@@ -2275,7 +2248,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     //ResultSetRow row = (ResultSetRow) (recordMode ? colElement.getElement() : rowElement.getElement());
                     if (isShowAsCheckbox(attr)) {
                         info.state |= booleanStyles.getMode() == BooleanMode.TEXT ? STATE_TOGGLE : STATE_LINK;
-                    } else if (!CommonUtils.isEmpty(attr.getReferrers()) || isShowAsExpander(rowElement, attr, cellValue)) {
+                    } else if (!CommonUtils.isEmpty(attr.getReferrers()) || cellValue instanceof DBDCollection) {
                         if (!DBUtils.isNullValue(cellValue)) {
                             info.state |= STATE_LINK;
                         }
@@ -2316,7 +2289,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     }
                 }
                 // Collections
-                if (info.image == null && isShowAsExpander(rowElement, attr, cellValue)) {
+                if (info.image == null && cellValue instanceof DBDComplexValue cv && !cv.isNull()) {
                     final GridCell cell = new GridCell(colElement, rowElement);
                     info.image = spreadsheet.isCellExpanded(cell) ? UIIcon.TREE_COLLAPSE : UIIcon.TREE_EXPAND;
                 }
@@ -2340,9 +2313,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     {
                         info.font = spreadsheet.getFont(booleanStyles.getStyle((Boolean) cellValue).getFontStyle());
                     }
-                } else if (isShowAsCollection(rowElement, colElement, cellValue)) {
+                }/* else if (isShowAsCollection(rowElement, colElement, cellValue)) {
                     info.font = spreadsheet.getFont(UIElementFontStyle.ITALIC);
-                }
+                }*/
             }
             return info;
         }
@@ -2419,19 +2392,15 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
                 return value;
             }
-            if (isShowAsExpander(null, attr, value)) {
-                if (isShowAsCollection(gridRow, gridColumn, value) && value instanceof DBDCollection collection) {
-                    return "{" + collection.size() + "}";
+            if (value instanceof DBDCollection collection && !collection.isNull()) {
+                if (isShowAsCollection(gridRow, gridColumn, value)) {
+                    return "[" + collection.size() + "]";
                 }
                 Object child = getCellValue(gridColumn, gridRow, getRowNestedIndexes(gridRow), true);
                 if (child == value) {
                     return value;
                 }
-                Object formatted = formatValue(gridColumn, gridRow, child);
-                if (value instanceof DBDCollection collection) {
-                    formatted = formatted + " {" + collection.size() + "}";
-                }
-                return formatted;
+                return formatValue(gridColumn, gridRow, child) + "  [" + collection.size() + "]";
             } else if (value instanceof DBDComposite composite && !DBUtils.isNullValue(value)) {
                 return "[" + composite.getDataType().getName() + "]";
             }
@@ -2448,7 +2417,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         public int getCellAlign(@Nullable DBDAttributeBinding attr, ResultSetRow row, Object cellValue) {
             if (!controller.isRecordMode()) {
                 if (attr != null) {
-                    if (isShowAsExpander(null, attr, cellValue)) {
+                    if (cellValue instanceof DBDCollection) {
                         return ALIGN_LEFT;
                     }
                     if (isShowAsCheckbox(attr)) {
@@ -2753,12 +2722,6 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
     private boolean isShowAsCheckbox(DBDAttributeBinding attr) {
         return showBooleanAsCheckbox && attr.getPresentationAttribute().getDataKind() == DBPDataKind.BOOLEAN;
-    }
-
-    private boolean isShowAsExpander(@Nullable IGridRow row, @NotNull DBDAttributeBinding attr, @Nullable Object value) {
-        return value instanceof DBDCollection collection
-            && !collection.isNull()
-            && isAttributeExpandable(row, attr);
     }
 
     private boolean isShowAsCollection(@NotNull IGridRow row, @NotNull IGridColumn column, @Nullable Object value) {

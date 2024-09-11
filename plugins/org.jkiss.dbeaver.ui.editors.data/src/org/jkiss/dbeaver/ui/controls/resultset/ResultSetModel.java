@@ -48,6 +48,7 @@ import java.util.*;
 public class ResultSetModel {
 
     private static final Log log = Log.getLog(ResultSetModel.class);
+    private static final Object ATTR_CHANGE_MARKER = new Object();
 
     // Attributes
     private DBDAttributeBinding[] attributes = new DBDAttributeBinding[0];
@@ -174,7 +175,11 @@ public class ResultSetModel {
         } else if (row.changes != null && row.changes.containsKey(attr)) {
             DBUtils.resetValue(getCellValue(cellLocation));
             try {
-                updateCellValue(cellLocation, row.changes.get(attr), false);
+                Object origValue = row.changes.get(attr);
+                if (origValue == ATTR_CHANGE_MARKER) {
+                    origValue = row.changes.get(attr.getTopParent());
+                }
+                updateCellValue(cellLocation, origValue, false);
             } catch (DBException e) {
                 log.error(e);
             }
@@ -485,24 +490,26 @@ public class ResultSetModel {
                 row.changes.put(topAttribute, currentValue);
             }
         }
+        if (updateChanges && attr != topAttribute) {
+            row.changes.put(attr, ATTR_CHANGE_MARKER);
+        }
 
-        if (value instanceof DBDValue) {
+        if (value instanceof DBDValue dbValue) {
             // New value if also a complex value. Probably DBDContent
             // In this case it must be root attribute
-            if (attr != topAttribute) {
-                throw new DBException("Cannot set complex value for non-root attrbitue");
+            if (attr != topAttribute && valueToEdit instanceof DBDValue ownerValue) {
+                DBUtils.updateAttributeValue(ownerValue, attr, rowIndexes, value);
+            } else {
+                valueToEdit = value;
             }
-            valueToEdit = value;
         } else if (valueToEdit instanceof DBDValue complexValue) {
             DBUtils.updateAttributeValue(complexValue, attr, rowIndexes, value);
         } else {
             valueToEdit = value;
         }
         row.values[rootIndex] = valueToEdit;
+        changesCount++;
 
-        if (updateChanges) {
-            row.changes.put(topAttribute, currentValue);
-        }
 /*
         // Get old value
         Object oldValue = oldValue;
