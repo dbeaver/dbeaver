@@ -170,8 +170,8 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         this.setItemRenderer(new DefaultNavigatorNodeRenderer());
 
         {
-            //tree.addListener(SWT.EraseItem, event -> onEraseItem(tree, event));
             tree.addListener(SWT.PaintItem, event -> onPaintItem(tree, event));
+            tree.getHorizontalBar().addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> tree.redraw()));
             if (false) {
                 // See comments for StatisticsNavigatorNodeRenderer.PAINT_ACTION_HOVER
                 Listener mouseListener = e -> {
@@ -194,7 +194,10 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                     if (item != null) {
                         Object element = item.getData();
                         if (element instanceof DBNNode node) {
-                            itemRenderer.handleHover(node, tree, item, e);
+                            Cursor cursor = itemRenderer.getCursor(node, tree, e);
+                            if (tree.getCursor() != cursor) {
+                                tree.setCursor(cursor);
+                            }
                         }
                     }
                 };
@@ -251,15 +254,6 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
     void setItemRenderer(INavigatorItemRenderer itemRenderer) {
         this.itemRenderer = itemRenderer;
-    }
-
-    private void onEraseItem(Tree tree, Event event) {
-        if (itemRenderer != null) {
-            Object element = event.item.getData();
-            if (element instanceof DBNNode node) {
-                itemRenderer.drawNodeBackground(node, tree, event.gc, event);
-            }
-        }
     }
 
     private void onPaintItem(Tree tree, Event event) {

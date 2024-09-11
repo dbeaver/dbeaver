@@ -22,12 +22,13 @@ import org.eclipse.core.resources.IResource;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Desktop eclipse based workspace
  */
-public interface DBPWorkspaceDesktop extends DBPWorkspaceEclipse {
+public interface DBPWorkspaceDesktop extends DBPWorkspaceEclipse, DBPExternalFileManager {
 
     @NotNull
     DBPResourceHandler getDefaultResourceHandler();

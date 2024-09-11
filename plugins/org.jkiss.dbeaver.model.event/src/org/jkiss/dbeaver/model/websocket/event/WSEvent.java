@@ -33,4 +33,11 @@ public interface WSEvent {
     String getUserId();
 
     long getTimestamp();
+
+    /**
+     * flag that indicates that the event should be processed forcibly regardless of the server settings and user filters
+     */
+    default boolean isForceProcessed() {
+        return false;
+    }
 }

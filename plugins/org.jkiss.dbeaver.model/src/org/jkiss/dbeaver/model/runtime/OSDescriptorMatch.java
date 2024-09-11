@@ -14,17 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry;
 
-import org.jkiss.dbeaver.model.impl.app.AbstractApplication;
+package org.jkiss.dbeaver.model.runtime;
 
 /**
- * Base application implementation
+ * Operating system match descriptor
  */
-public abstract class BaseApplicationImpl extends AbstractApplication {
+public class OSDescriptorMatch extends OSDescriptor {
+    private final boolean exclude;
 
+    public OSDescriptorMatch(String family, String arch, boolean exclude) {
+        super(family, arch);
+        this.exclude = exclude;
+    }
 
-    protected BaseApplicationImpl() {
+    @Override
+    public boolean matches(OSDescriptor os) {
+        boolean matches = super.matches(os);
+        if (exclude) {
+            matches = !matches;
+        }
+        return matches;
     }
 
 }

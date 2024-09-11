@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
@@ -32,6 +31,7 @@ import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.fs.DBFRemoteFileStore;
 import org.jkiss.dbeaver.model.fs.nio.EFSNIOResource;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -41,9 +41,9 @@ import org.jkiss.utils.AlphanumericComparator;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -200,9 +200,9 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
         if (resource != null) {
             IPath location = resource.getLocation();
             if (location != null) {
-                File localFile = location.toFile();
+                Path localFile = location.toPath();
                 if (localFile != null) {
-                    return localFile.getAbsolutePath();
+                    return localFile.toString();
                 }
             }
         }
@@ -253,13 +253,13 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
         return members;
     }
 
-    DBNResource getChild(IResource resource) {
+    public DBNResource getChild(IResource resource) {
         if (children == null) {
             return null;
         }
         for (DBNNode child : children) {
-            if (child instanceof DBNResource && resource.equals(((DBNResource) child).getResource())) {
-                return (DBNResource) child;
+            if (child instanceof DBNResource resNode && resource.equals(resNode.getResource())) {
+                return resNode;
             }
         }
         return null;
@@ -290,8 +290,10 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
     }
 
     public boolean isRootResource(IResource resource) {
-        return CommonUtils.equalObjects(resource.getParent(), getOwnerProject().getRootResource()) ||
-            CommonUtils.equalObjects(resource.getParent(), getOwnerProject().getEclipseProject());
+        DBPProject ownerProject = getOwnerProject();
+        return ownerProject instanceof RCPProject rcpProject &&
+               (CommonUtils.equalObjects(resource.getParent(), rcpProject.getRootResource()) ||
+                CommonUtils.equalObjects(resource.getParent(), rcpProject.getEclipseProject()));
     }
 
     @Override
@@ -351,7 +353,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
         StringBuilder pathName = new StringBuilder();
 
         for (DBNNode node = this; node instanceof DBNResource; node = node.getParentNode()) {
-            if (pathName.length() > 0) {
+            if (!pathName.isEmpty()) {
                 pathName.insert(0, '/');
             }
             IResource resource = ((DBNResource) node).getResource();
@@ -502,7 +504,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
         getModel().fireNodeEvent(new DBNEvent(source, DBNEvent.Action.UPDATE, this));
     }
 
-    protected void handleResourceChange(IResourceDelta delta) {
+    public void handleResourceChange(IResourceDelta delta) {
         if (delta.getKind() == IResourceDelta.CHANGED) {
             // Update this node in navigator
             refreshResourceState(delta);

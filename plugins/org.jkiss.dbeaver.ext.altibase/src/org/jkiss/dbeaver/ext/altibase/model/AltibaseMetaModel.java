@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -232,8 +231,8 @@ public class AltibaseMetaModel extends GenericMetaModel {
     /**
      * Get a specific Replication DDL
      */
-    public String getReplicationDDL(DBRProgressMonitor monitor, AltibaseReplication sourceObject, 
-            Map<String, Object> options) throws DBException {
+    public String getReplicationDDL(@NotNull DBRProgressMonitor monitor, @NotNull  AltibaseReplication sourceObject, 
+            @NotNull Map<String, Object> options) throws DBException {
         return getDDLFromDbmsMetadata(monitor, sourceObject, null, "REPLICATION");
     }
     
