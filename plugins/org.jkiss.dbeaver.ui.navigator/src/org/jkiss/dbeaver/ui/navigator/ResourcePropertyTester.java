@@ -20,8 +20,12 @@ import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.jkiss.dbeaver.model.app.*;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
+import org.jkiss.dbeaver.model.app.DBPResourceCreator;
+import org.jkiss.dbeaver.model.app.DBPResourceHandler;
+import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
 import org.jkiss.dbeaver.model.fs.nio.EFSNIOResource;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.ui.ActionUtils;
 
 /**
@@ -68,8 +72,8 @@ public class ResourcePropertyTester extends PropertyTester
             case PROP_CAN_CREATE_LINK:
                 return (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_CREATE_FOLDER) != 0 && !resource.isLinked(IResource.CHECK_ANCESTORS);
             case PROP_CAN_SET_ACTIVE: {
-                DBPProject activeProject = workspace.getActiveProject();
-                return resource instanceof IProject && (activeProject == null || resource != activeProject.getEclipseProject());
+                return resource instanceof IProject &&
+                   (workspace.getActiveProject() instanceof RCPProject rcpProject && resource != rcpProject.getEclipseProject());
             }
             case PROP_TYPE:
                 final DBPResourceHandler resourceHandler = workspace.getResourceHandler(resource);
