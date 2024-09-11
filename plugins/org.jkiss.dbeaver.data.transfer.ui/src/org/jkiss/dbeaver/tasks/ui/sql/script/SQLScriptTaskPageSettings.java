@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
@@ -39,6 +40,7 @@ import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystems;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
+import org.jkiss.dbeaver.model.rm.RMControllerProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -56,7 +58,6 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.*;
@@ -113,7 +114,8 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                     if (element instanceof DBNPathBase path) {
                         return path.getPath().toString();
                     }
-                    return ((DBNNodeWithResource) element).getResource().getProjectRelativePath().toString();
+                    DBPProject ownerProject = ((DBNNode) element).getOwnerProject();
+                    return ownerProject.getResourcePath(((DBNNodeWithResource) element).getResource());
                 }
                 @Override
                 public Image getImage(Object element) {
@@ -434,8 +436,14 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
             List<String> scriptFiles = settings.getScriptFiles();
             for (String filePath : scriptFiles) {
                 if (IOUtils.isLocalFile(filePath)) {
-                    Path workspaceFile = DTUtils.findProjectFile(project, filePath);
-                    if (workspaceFile == null || !Files.exists(workspaceFile)) {
+                    Path workspaceFile;
+                    RMControllerProvider rmControllerProvider = DBUtils.getAdapter(RMControllerProvider.class, project);
+                    if (rmControllerProvider != null) {
+                        workspaceFile = project.getAbsolutePath().resolve(filePath);
+                    } else {
+                        workspaceFile = DTUtils.findProjectFile(project, filePath);
+                    }
+                    if (workspaceFile == null) {
                         log.debug("Script file '" + filePath + "' not found");
                         continue;
                     }
