@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.ui.editors.sql.handlers;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
@@ -123,9 +123,9 @@ public class SQLNavigatorContext implements DatabaseEditorContext {
         return null;
     }
 
-    public DBPProject getProject() {
+    public RCPProject getProject() {
         DBPDataSourceContainer ds = getDataSourceContainer();
-        return ds != null ? ds.getProject() : NavigatorUtils.getSelectedProject();
+        return (RCPProject) (ds != null ? ds.getProject() : NavigatorUtils.getSelectedProject());
     }
 
 }
