@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
@@ -39,10 +40,16 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
 
     public static class FiltersData<T> {
 
-        public static final FiltersData EMPTY = new FiltersData(null, null, null, null);;
+        private static final FiltersData<?> EMPTY = new FiltersData<>(null, null, null, null);
 
-        public static <T> FiltersData of(T where, T groupBy, T having, T orderBy) {
-            return new FiltersData(where, groupBy, having, orderBy);
+        @SuppressWarnings("unchecked")
+        public static <T> FiltersData<T> empty() {
+            return (FiltersData<T>) EMPTY;
+        }
+
+        @NotNull
+        public static <T> FiltersData<T> of(T where, T groupBy, T having, T orderBy) {
+            return new FiltersData<T>(where, groupBy, having, orderBy);
         }
 
         public final T whereClause;
@@ -77,7 +84,7 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
         @NotNull SQLQueryRowsSourceModel fromSource,
         @NotNull SQLQuerySelectionResultModel result
     ) {
-        this(syntaxNode, selectListScope, fromSource, null, FiltersData.EMPTY, FiltersData.EMPTY, result);
+        this(syntaxNode, selectListScope, fromSource, null, FiltersData.empty(), FiltersData.empty(), result);
     }
 
     public SQLQueryRowsProjectionModel(

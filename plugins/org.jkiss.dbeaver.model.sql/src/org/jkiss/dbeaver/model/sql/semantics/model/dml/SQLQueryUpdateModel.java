@@ -24,16 +24,13 @@ import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
-import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
+import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.stm.STMUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -73,18 +70,23 @@ public class SQLQueryUpdateModel extends SQLQueryModelContent {
 
     @NotNull
     public static SQLQueryModelContent recognize(@NotNull SQLQueryModelRecognizer recognizer, @NotNull STMTreeNode node) {
-        STMTreeNode targetTableNode = node.findChildOfName(STMKnownRuleNames.tableReference);
+        STMTreeNode targetTableNode = node.findFirstChildOfName(STMKnownRuleNames.tableReference);
         SQLQueryRowsSourceModel targetSet = targetTableNode == null ? null : recognizer.collectQueryExpression(targetTableNode);
 
         List<SQLQueryUpdateSetClauseModel> setClauseList = new ArrayList<>();
-        STMTreeNode setClauseListNode = node.findChildOfName(STMKnownRuleNames.setClauseList);
+        STMTreeNode setClauseListNode = node.findFirstChildOfName(STMKnownRuleNames.setClauseList);
         if (setClauseListNode != null) {
-            for (int i = 0; i < setClauseListNode.getChildCount(); i += 2) {
-                STMTreeNode setClauseNode = setClauseListNode.getStmChild(i);
-                if (setClauseNode.getChildCount() > 0) {
-                    STMTreeNode setTargetNode = setClauseNode.getStmChild(0);
-                    List<SQLQueryValueExpression> targets = switch (setTargetNode.getNodeKindId()) {
-                        case SQLStandardParser.RULE_setTarget -> List.of(recognizer.collectKnownValueExpression(setTargetNode.getStmChild(0)));
+            for (STMTreeNode setClauseNode : setClauseListNode.findChildrenOfName(STMKnownRuleNames.setClause)) {
+                STMTreeNode setTargetNode = setClauseNode.findFirstNonErrorChild();
+                List<SQLQueryValueExpression> targets = setTargetNode == null
+                    ? Collections.emptyList()
+                    : switch (setTargetNode.getNodeKindId()) {
+                        case SQLStandardParser.RULE_setTarget -> {
+                            STMTreeNode targetReferenceNode = setTargetNode.findFirstNonErrorChild();
+                            yield targetReferenceNode == null
+                                ? Collections.emptyList()
+                                : List.of(recognizer.collectKnownValueExpression(targetReferenceNode));
+                        }
                         case SQLStandardParser.RULE_setTargetList ->
                             STMUtils.expandSubtree(
                                 setTargetNode,
@@ -98,32 +100,36 @@ public class SQLQueryUpdateModel extends SQLQueryModelContent {
                             "Set target list expected while facing with " + setTargetNode.getNodeName()
                         );
                     };
-                    List<SQLQueryValueExpression> sources = setClauseNode.getChildCount() < 3
-                        ? Collections.emptyList()
-                        : STMUtils.expandSubtree(
-                        setClauseNode.getStmChild(2),
+                STMTreeNode updateSourceNode = setClauseNode.findFirstChildOfName(STMKnownRuleNames.updateSource);
+                List<SQLQueryValueExpression> sources = updateSourceNode == null
+                    ? Collections.emptyList()
+                    : STMUtils.expandSubtree(
+                        updateSourceNode,
                         Set.of(STMKnownRuleNames.updateSource),
                         Set.of(STMKnownRuleNames.updateValue)
-                    ).stream().map(v -> recognizer.collectValueExpression(v.getStmChild(0))).collect(Collectors.toList());
-                    setClauseList.add(
-                        new SQLQueryUpdateSetClauseModel(
-                            setClauseNode,
-                            targets,
-                            sources,
-                            setClauseNode.getTextContent()
-                        )
-                    );
-                }
+                    ).stream()
+                    .map(STMTreeNode::findFirstNonErrorChild)
+                    .filter(Objects::nonNull)
+                    .map(recognizer::collectValueExpression)
+                    .collect(Collectors.toList());
+                setClauseList.add(
+                    new SQLQueryUpdateSetClauseModel(
+                        setClauseNode,
+                        targets,
+                        sources,
+                        setClauseNode.getTextContent()
+                    )
+                );
             }
         }
 
-        STMTreeNode fromClauseNode = node.findChildOfName(STMKnownRuleNames.fromClause);
+        STMTreeNode fromClauseNode = node.findFirstChildOfName(STMKnownRuleNames.fromClause);
         SQLQueryRowsSourceModel sourceSet = fromClauseNode == null ? null : recognizer.collectQueryExpression(fromClauseNode);
 
-        STMTreeNode whereClauseNode = node.findChildOfName(STMKnownRuleNames.whereClause);
+        STMTreeNode whereClauseNode = node.findFirstChildOfName(STMKnownRuleNames.whereClause);
         SQLQueryValueExpression whereClauseExpr = whereClauseNode == null ? null : recognizer.collectValueExpression(whereClauseNode);
 
-        STMTreeNode orderByClauseNode = node.findChildOfName(STMKnownRuleNames.orderByClause);
+        STMTreeNode orderByClauseNode = node.findFirstChildOfName(STMKnownRuleNames.orderByClause);
         SQLQueryValueExpression orderByExpr = orderByClauseNode == null ? null : recognizer.collectValueExpression(orderByClauseNode);
 
         return new SQLQueryUpdateModel(node, targetSet, setClauseList, sourceSet, whereClauseExpr, orderByExpr);
@@ -188,8 +194,6 @@ public class SQLQueryUpdateModel extends SQLQueryModelContent {
                 }
             }
         }
-        
-        // TODO validate setClauseList
         
         if (this.whereClause != null) {
             this.whereClause.propagateContext(context, statistics);
