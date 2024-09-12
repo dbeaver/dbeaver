@@ -16,9 +16,9 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IProjectDescription;
-import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -44,9 +44,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -103,7 +101,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     // Multi-user registry:
     // - doesn't register listeners
     // -
-    private boolean isMultiUser() {
+    protected boolean isMultiUser() {
         return DBWorkbench.getPlatform().getApplication().isMultiuser();
     }
 
@@ -239,6 +237,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
             !CommonUtils.equalObjects(ds.getConnectionConfiguration().getConfigProfileSource(), profile.getProfileSource()) ||
             !CommonUtils.equalObjects(ds.getConnectionConfiguration().getConfigProfileName(), profile.getProfileName()));
         return dsCopy;
+    }
+
+    public int getDataSourceCount() {
+        return dataSources.size();
     }
 
     @NotNull
@@ -930,32 +932,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         return result;
     }
 
-    private void updateProjectNature() {
-        if (isMultiUser()) {
-            return;
-        }
-        try {
-            IProject eclipseProject = project.getEclipseProject();
-            if (eclipseProject != null) {
-                final IProjectDescription description = eclipseProject.getDescription();
-                if (description != null) {
-                    String[] natureIds = description.getNatureIds();
-                    if (!dataSources.isEmpty()) {
-                        // Add nature
-                        if (!ArrayUtils.contains(natureIds, DBeaverNature.NATURE_ID)) {
-                            description.setNatureIds(ArrayUtils.add(String.class, natureIds, DBeaverNature.NATURE_ID));
-                            try {
-                                eclipseProject.setDescription(description, new NullProgressMonitor());
-                            } catch (CoreException e) {
-                                log.debug("Can't set project nature", e);
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            log.debug(e);
-        }
+    protected void updateProjectNature() {
     }
 
     @NotNull

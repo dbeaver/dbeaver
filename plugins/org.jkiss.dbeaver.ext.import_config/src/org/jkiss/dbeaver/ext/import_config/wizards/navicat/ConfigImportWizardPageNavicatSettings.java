@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.import_config.wizards.navicat;
 
 import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -25,6 +26,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.ext.import_config.ImportConfigMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -39,9 +41,9 @@ public class ConfigImportWizardPageNavicatSettings extends WizardPage {
 	
 	protected ConfigImportWizardPageNavicatSettings()
     {
-        super("Navicat");
-        setTitle("Navicat");
-        setDescription("Import Navicat connections");
+        super(ImportConfigMessages.config_import_wizard_navicat_name);
+        setTitle(ImportConfigMessages.config_import_wizard_navicat_name);
+        setDescription(ImportConfigMessages.config_import_wizard_navicat_description);
     }
 
 	@Override
@@ -49,10 +51,10 @@ public class ConfigImportWizardPageNavicatSettings extends WizardPage {
 		Composite placeholder = new Composite(parent, SWT.NONE);
         placeholder.setLayout(new GridLayout(1, true));
         
-        UIUtils.createControlLabel(placeholder, "Navicat Connection Export (NCX) file");
+        UIUtils.createControlLabel(placeholder, ImportConfigMessages.config_import_wizard_navicat_connection_export_file);
         filePathText = new TextWithOpenFile(
             placeholder,
-            "Navicat Connection Export (NCX) file",
+            ImportConfigMessages.config_import_wizard_navicat_connection_export_file,
             new String[] {"*.ncx"});
         filePathText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         filePathText.getTextControl().addModifyListener(new ModifyListener() {
@@ -60,7 +62,7 @@ public class ConfigImportWizardPageNavicatSettings extends WizardPage {
             public void modifyText(ModifyEvent e) {
                 inputFile = new File(filePathText.getText());
                 if (!inputFile.exists()) {
-                    setErrorMessage("File '" + inputFile.getAbsolutePath() + "' doesn't exist");
+                    setErrorMessage(NLS.bind(ImportConfigMessages.config_import_wizard_file_doesnt_exist_error, inputFile.getAbsolutePath()));
                 } else {
                     setErrorMessage(null);
                 }
@@ -68,7 +70,7 @@ public class ConfigImportWizardPageNavicatSettings extends WizardPage {
             }
         });
         
-        UIUtils.createControlLabel(placeholder, "File encoding");
+        UIUtils.createControlLabel(placeholder, ImportConfigMessages.config_import_wizard_file_encoding);
         encodingCombo = UIUtils.createEncodingCombo(placeholder, GeneralUtils.DEFAULT_ENCODING);
         
         setControl(placeholder);

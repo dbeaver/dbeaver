@@ -30,6 +30,8 @@ import org.jkiss.code.NotNull;
 public class STMTreeRuleNode extends ParserRuleContext implements STMTreeNode {
     
     private String nodeName = null;
+
+    private boolean hasErrorChildren = false;
     
     public STMTreeRuleNode() {
         super();
@@ -74,6 +76,13 @@ public class STMTreeRuleNode extends ParserRuleContext implements STMTreeNode {
 
     @NotNull
     @Override
+    public String getTextContent() {
+        Interval textRange = this.getRealInterval();
+        return this.getStart().getInputStream().getText(textRange);
+    }
+
+    @NotNull
+    @Override
     public RuleContext addChild(@NotNull RuleContext ruleInvocation) {
         if (!(ruleInvocation instanceof STMTreeNode)) {
             throw new IllegalStateException();
@@ -104,6 +113,7 @@ public class STMTreeRuleNode extends ParserRuleContext implements STMTreeNode {
         if (!(t instanceof STMTreeNode)) {
             throw new IllegalStateException();
         } else {
+            this.hasErrorChildren |= t instanceof ErrorNode;
             return super.addAnyChild(t);
         }
     }
@@ -125,7 +135,14 @@ public class STMTreeRuleNode extends ParserRuleContext implements STMTreeNode {
     }
     
     @Override
-    public STMTreeNode getStmChild(int index) {
+    public STMTreeNode getChildNode(int index) {
         return (STMTreeNode) super.getChild(index);
+    }
+
+    /**
+     * Returns true, if some parsing errors happen, while analysing this node
+     */
+    public boolean hasErrorChildren() {
+        return this.hasErrorChildren;
     }
 }

@@ -35,6 +35,8 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -44,17 +46,17 @@ import java.util.List;
 public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implements SQLQuerySymbolDefinition {
 
     private static final Log log = Log.getLog(SQLQueryRowsTableDataModel.class);
-    @NotNull
+    @Nullable
     private final SQLQueryQualifiedName name;
     @Nullable
     private DBSEntity table = null;
 
-    public SQLQueryRowsTableDataModel(@NotNull STMTreeNode syntaxNode, @NotNull SQLQueryQualifiedName name) {
+    public SQLQueryRowsTableDataModel(@NotNull STMTreeNode syntaxNode, @Nullable SQLQueryQualifiedName name) {
         super(syntaxNode);
         this.name = name;
     }
 
-    @NotNull
+    @Nullable
     public SQLQueryQualifiedName getName() {
         return this.name;
     }
@@ -135,46 +137,53 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
         @NotNull SQLQueryDataContext context,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
-        if (this.name.isNotClassified()) {
-            List<String> nameStrings = this.name.toListOfStrings();
-            this.table = context.findRealTable(statistics.getMonitor(), nameStrings);
+        if (this.name != null) {
+            if (this.name.isNotClassified()) {
+                List<String> nameStrings = this.name.toListOfStrings();
+                this.table = context.findRealTable(statistics.getMonitor(), nameStrings);
 
-            if (this.table != null) {
-                this.name.setDefinition(table);
-                context = context.extendWithRealTable(this.table, this);
-                try {
-                    List<? extends DBSEntityAttribute> attributes = this.table.getAttributes(statistics.getMonitor());
-                    if (attributes != null) {
-                        List<SQLQueryResultColumn> columns = this.prepareResultColumnsList(
+                if (this.table != null) {
+                    this.name.setDefinition(table);
+                    context = context.extendWithRealTable(this.table, this);
+                    try {
+                        List<? extends DBSEntityAttribute> attributes = this.table.getAttributes(statistics.getMonitor());
+                        if (attributes != null) {
+                            List<SQLQueryResultColumn> columns = this.prepareResultColumnsList(
+                                this.name.entityName,
+                                context,
+                                statistics,
+                                attributes
+                            );
+                            context = context.overrideResultTuple(columns);
+                        }
+                    } catch (DBException ex) {
+                        statistics.appendError(
                             this.name.entityName,
-                            context,
-                            statistics,
-                            attributes
+                            "Failed to resolve columns of the table " + this.name.toIdentifierString(),
+                            ex
                         );
-                        context = context.overrideResultTuple(columns);
                     }
-                } catch (DBException ex) {
-                    statistics.appendError(
-                        this.name.entityName,
-                        "Failed to resolve columns of the table " + this.name.toIdentifierString(),
-                        ex
-                    );
-                }
-            } else {
-                SourceResolutionResult rr = context.resolveSource(statistics.getMonitor(), nameStrings);
-                if (rr != null && rr.tableOrNull == null && rr.source != null && rr.aliasOrNull != null && nameStrings.size() == 1) {
-                    // seems cte reference resolved
-                    this.name.entityName.setDefinition(rr.aliasOrNull.getDefinition());
-                    context = context.overrideResultTuple(rr.source.getResultDataContext().getColumnsList());
                 } else {
-                    SQLQuerySymbolClass tableSymbolClass = statistics.isTreatErrorsAsWarnings()
-                        ? SQLQuerySymbolClass.TABLE
-                        : SQLQuerySymbolClass.ERROR;
-                    this.name.setSymbolClass(tableSymbolClass);
-                    statistics.appendError(this.name.entityName, "Table " + this.name.toIdentifierString() + " not found");
+                    context = context.markHasUnresolvedSource();
+                    SourceResolutionResult rr = context.resolveSource(statistics.getMonitor(), nameStrings);
+                    if (rr != null && rr.tableOrNull == null && rr.source != null && rr.aliasOrNull != null && nameStrings.size() == 1) {
+                        // seems cte reference resolved
+                        this.name.entityName.setDefinition(rr.aliasOrNull.getDefinition());
+                        context = context.overrideResultTuple(rr.source.getResultDataContext().getColumnsList());
+                    } else {
+                        SQLQuerySymbolClass tableSymbolClass = statistics.isTreatErrorsAsWarnings()
+                            ? SQLQuerySymbolClass.TABLE
+                            : SQLQuerySymbolClass.ERROR;
+                        this.name.setSymbolClass(tableSymbolClass);
+                        statistics.appendError(this.name.entityName, "Table " + this.name.toIdentifierString() + " not found");
+                    }
                 }
             }
+        } else {
+            context = context.overrideResultTuple(Collections.emptyList()).markHasUnresolvedSource();
+            statistics.appendError(this.getSyntaxNode(), "Failed to resolve table reference");
         }
+
         return context;
     }
 
