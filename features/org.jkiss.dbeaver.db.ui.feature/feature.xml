@@ -29,6 +29,7 @@
    <plugin id="org.jkiss.dbeaver.ext.vertica.ui" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.athena.ui" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.clickhouse.ui" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.cubrid.ui" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.bigquery.ui" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.spanner.ui" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.snowflake.ui" version="0.0.0" />
