@@ -23,6 +23,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.ext.import_config.ImportConfigMessages;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
@@ -35,9 +36,9 @@ public class ConfigImportWizardPageNavicatDriver extends WizardPage
 
     protected ConfigImportWizardPageNavicatDriver()
     {
-        super("Driver");
-        setTitle("Driver selection");
-        setDescription("Select the driver to use for imported connections");
+        super(ImportConfigMessages.config_import_wizard_page_th_driver);
+        setTitle(ImportConfigMessages.config_import_wizard_driver_selection_name);
+        setDescription(ImportConfigMessages.config_import_wizard_driver_selection_description);
     }
 
     @Override

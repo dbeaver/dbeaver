@@ -448,7 +448,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             }
 
             if (isCustomURL() && typeURLRadio != null && !typeURLRadio.isVisible() && CommonUtils.isEmpty(connectionInfo.getUrl())) {
-                urlText.setText(dataSource.getDriver().getSampleURL());
+                urlText.setText(CommonUtils.notEmpty(dataSource.getDriver().getSampleURL()));
             } else if (connectionInfo.getUrl() != null) {
                 urlText.setText(CommonUtils.notEmpty(connectionInfo.getUrl()));
             } else {

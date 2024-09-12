@@ -129,6 +129,9 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
             } else {
                 bytes = (byte[]) object;
             }
+            if (bytes.length == 0) {
+                return new DBGeometry();
+            }
             try {
                 geometry = new DBGeometry(convertGeometryFromBinaryFormat(session, bytes));
             } catch (DBCException e) {
