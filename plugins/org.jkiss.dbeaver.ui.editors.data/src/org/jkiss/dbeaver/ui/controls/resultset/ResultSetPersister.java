@@ -767,6 +767,9 @@ class ResultSetPersister {
                 Throwable[] error = new Throwable[1];
                 DBExecUtils.tryExecuteRecover(monitor, session.getDataSource(), param -> {
                     error[0] = executeStatements(session);
+                    if (error[0] != null) {
+                        throw new InvocationTargetException(error[0]);
+                    }
                 });
                 return error[0];
 
