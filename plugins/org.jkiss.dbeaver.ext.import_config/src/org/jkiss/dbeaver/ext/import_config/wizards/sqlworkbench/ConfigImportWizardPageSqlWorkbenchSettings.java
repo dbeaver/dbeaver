@@ -18,10 +18,12 @@
 package org.jkiss.dbeaver.ext.import_config.wizards.sqlworkbench;
 
 import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.ext.import_config.ImportConfigMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -34,9 +36,9 @@ public class ConfigImportWizardPageSqlWorkbenchSettings extends WizardPage {
     private File inputFile;
 
     protected ConfigImportWizardPageSqlWorkbenchSettings() {
-        super("Settings");
-        setTitle("Input settings");
-        setDescription("Connections file settings");
+        super(ImportConfigMessages.config_import_wizard_custom_driver_settings);
+        setTitle(ImportConfigMessages.config_import_wizard_custom_driver_import_settings_name);
+        setDescription(ImportConfigMessages.config_import_wizard_custom_driver_import_settings_file_description);
     }
 
     @Override
@@ -44,8 +46,8 @@ public class ConfigImportWizardPageSqlWorkbenchSettings extends WizardPage {
         Composite placeholder = new Composite(parent, SWT.NONE);
         placeholder.setLayout(new GridLayout(1, true));
 
-        UIUtils.createControlLabel(placeholder, "Input file (e.g. connections.xml)");
-        filePathText = new TextWithOpenFile(placeholder, "Configuration Input File",
+        UIUtils.createControlLabel(placeholder, ImportConfigMessages.config_import_wizard_custom_input_file);
+        filePathText = new TextWithOpenFile(placeholder, ImportConfigMessages.config_import_wizard_custom_input_file_configuration,
             new String[]{"*.xml"});
         filePathText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         filePathText.setText(getDefaultPathToFile());
@@ -77,7 +79,7 @@ public class ConfigImportWizardPageSqlWorkbenchSettings extends WizardPage {
         }
         inputFile = new File(filePathText.getText());
         if (!inputFile.exists()) {
-            setErrorMessage("Folder '" + inputFile.getAbsolutePath() + "' doesn't exist");
+            setErrorMessage(NLS.bind(ImportConfigMessages.config_import_wizard_file_doesnt_exist_error, inputFile.getAbsolutePath()));
         } else {
             setErrorMessage(null);
             getWizard().getContainer().updateButtons();

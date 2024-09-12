@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
@@ -45,6 +46,9 @@ public class SQLQueryRecognitionContext {
     private final SQLSyntaxManager syntaxManager;
 
     @NotNull
+    private final SQLDialect dialect;
+
+    @NotNull
     private final Deque<SQLQueryRecognitionProblemInfo> problems = new LinkedList<>();
 
     private boolean errorsAsWarnings = false;
@@ -53,12 +57,14 @@ public class SQLQueryRecognitionContext {
         @NotNull DBRProgressMonitor monitor,
         @Nullable DBCExecutionContext executionContext,
         boolean useRealMetadata,
-        @NotNull SQLSyntaxManager syntaxManager
+        @NotNull SQLSyntaxManager syntaxManager,
+        @NotNull SQLDialect dialect
     ) {
         this.monitor = monitor;
         this.executionContext = executionContext;
         this.useRealMetadata = useRealMetadata;
         this.syntaxManager = syntaxManager;
+        this.dialect = dialect;
     }
 
     public void setTreatErrorAsWarnings(boolean errorsAsWarnings) {
@@ -86,6 +92,11 @@ public class SQLQueryRecognitionContext {
     @NotNull
     SQLSyntaxManager getSyntaxManager() {
         return this.syntaxManager;
+    }
+
+    @NotNull
+    SQLDialect getDialect() {
+        return this.dialect;
     }
 
     public List<SQLQueryRecognitionProblemInfo> getProblems() {
