@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.stm;
 
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 
 public class STMKnownRuleNames {
@@ -131,6 +132,12 @@ public class STMKnownRuleNames {
     public static final String dynamicParameterSpecification = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dynamicParameterSpecification];
     public static final String columnReference = SQLStandardParser.ruleNames[SQLStandardParser.RULE_columnReference];
     public static final String valueReference = SQLStandardParser.ruleNames[SQLStandardParser.RULE_valueReference];
+
+    public static final String valueRefNestedExpr = SQLStandardParser.ruleNames[SQLStandardParser.RULE_valueRefNestedExpr];
+    public static final String valueRefIndexingStep = SQLStandardParser.ruleNames[SQLStandardParser.RULE_valueRefIndexingStep];
+    public static final String valueRefIndexingStepDirect = SQLStandardParser.ruleNames[SQLStandardParser.RULE_valueRefIndexingStepDirect];
+    public static final String valueRefIndexingStepSlice = SQLStandardParser.ruleNames[SQLStandardParser.RULE_valueRefIndexingStepSlice];
+
     public static final String valueExpressionCastSpec = SQLStandardParser.ruleNames[SQLStandardParser.RULE_valueExpressionCastSpec];
     public static final String variableExpression = SQLStandardParser.ruleNames[SQLStandardParser.RULE_variableExpression];
 
@@ -349,4 +356,7 @@ public class STMKnownRuleNames {
     public static final String tableHintKeywords = SQLStandardParser.ruleNames[SQLStandardParser.RULE_tableHintKeywords];
 
     public static final String nonReserved = SQLStandardParser.ruleNames[SQLStandardParser.RULE_nonReserved];
+
+    public static final String RECURSIVE_TERM = SQLStandardLexer.VOCABULARY.getSymbolicName(SQLStandardLexer.RECURSIVE);
+    public static final String SELECT_TERM = SQLStandardLexer.VOCABULARY.getSymbolicName(SQLStandardLexer.SELECT);
 }

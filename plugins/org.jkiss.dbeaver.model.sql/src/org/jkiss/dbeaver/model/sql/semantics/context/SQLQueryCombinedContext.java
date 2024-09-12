@@ -22,6 +22,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.stm.STMUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
 import java.util.List;
 
@@ -46,6 +48,16 @@ public class SQLQueryCombinedContext extends SQLQueryResultTupleContext {
     @Override
     public DBSEntity findRealTable(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
         return anyOfTwo(parent.findRealTable(monitor, tableName), otherParent.findRealTable(monitor, tableName)); // TODO consider ambiguity
+    }
+
+    @Nullable
+    @Override
+    public DBSObject findRealObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObjectType objectType,
+        @NotNull List<String> objectName
+    ) {
+        return anyOfTwo(parent.findRealObject(monitor, objectType, objectName), otherParent.findRealObject(monitor, objectType, objectName)); // TODO consider ambiguity
     }
 
     @Nullable

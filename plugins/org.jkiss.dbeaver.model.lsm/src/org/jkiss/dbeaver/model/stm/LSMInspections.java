@@ -83,8 +83,7 @@ public class LSMInspections {
     private static Pair<STMTreeNode, Boolean> findChildBeforeOrAtPosition(@NotNull STMTreeNode node, int position) {
         STMTreeNode nodeBefore = null;
         Interval nodeBeforeRange = null;
-        for (int i = 0; i < node.getChildCount(); i++) {
-            STMTreeNode cn = node.getStmChild(i);
+        for (STMTreeNode cn : node.getChildren()) {
             Interval range = cn.getRealInterval();
             if (range.a <= position && range.b >= position) {
                 return Pair.of(cn, true);
@@ -173,8 +172,8 @@ public class LSMInspections {
             if (node instanceof STMTreeTermNode term) {
                 return term;
             } else {
-                for (int i = 0; i < node.getChildCount(); i++) {
-                    stack = ListNode.push(stack, node.getStmChild(i));
+                for (STMTreeNode child : node.getChildren()) {
+                    stack = ListNode.push(stack, child);
                 }
             }
         }
@@ -193,7 +192,7 @@ public class LSMInspections {
                 terms.add(term);
             } else {
                 for (int i = node.getChildCount() - 1; i >= 0; i--) {
-                    stack = ListNode.push(stack, node.getStmChild(i));
+                    stack = ListNode.push(stack, node.getChildNode(i));
                 }
             }
         }
@@ -205,9 +204,9 @@ public class LSMInspections {
         ListNode<Integer> stack = ListNode.of(null);
         {
             var path = new LinkedList<RuleNode>();
-            for (STMTreeNode n = node instanceof TerminalNode ? node.getStmParent() : node;
+            for (STMTreeNode n = node instanceof TerminalNode ? node.getParentNode() : node;
                  n instanceof RuleNode rn;
-                 n = n.getStmParent()) {
+                 n = n.getParentNode()) {
                 path.addFirst(rn);
             }
             for (RuleNode rn : path) {
