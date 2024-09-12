@@ -3259,7 +3259,7 @@ public class SQLEditor extends SQLEditorBase implements
                 SQLPreferenceConstants.CONFIRM_SAVE_SQL_CONSOLE,
                 ConfirmationDialog.QUESTION
             );
-            if (decision == ConfirmationDialog.OK) {
+            if (decision == IDialogConstants.YES_ID) {
                 saveAsNewScript();
             }
             return;
