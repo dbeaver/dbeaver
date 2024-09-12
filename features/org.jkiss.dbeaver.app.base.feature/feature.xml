@@ -30,7 +30,10 @@
     <includes id="org.jkiss.dbeaver.db.feature" version="0.0.0"/>
     <includes id="org.jkiss.dbeaver.db.ui.feature" version="0.0.0"/>
 
-    <plugin id="org.jkiss.dbeaver.ui.macos" os="macosx" version="0.0.0" />
+    <!-- SWT additions -->
+    <plugin id="org.jkiss.dbeaver.ui.swt.linux" os="linux" version="0.0.0" />
+    <plugin id="org.jkiss.dbeaver.ui.swt.macos" os="macosx" version="0.0.0" />
+    <plugin id="org.jkiss.dbeaver.ui.swt.windows" os="win32" version="0.0.0" />
 
     <!-- Logging -->
 

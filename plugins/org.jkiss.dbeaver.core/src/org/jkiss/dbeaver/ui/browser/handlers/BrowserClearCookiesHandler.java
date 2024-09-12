@@ -17,34 +17,44 @@
 package org.jkiss.dbeaver.ui.browser.handlers;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.SWTException;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.BeanUtils;
 
 public class BrowserClearCookiesHandler implements DBRRunnableWithProgress {
+    // BUG: Fragment can't be resolved correctly by our Intellij IDEA workspace generator
+    private static final String BROWSER_HELPER_CLASS_NAME = "org.eclipse.swt.browser.DBeaverBrowserHelper";
+    private static final String BROWSER_HELPER_CLASS_CLEAR_COOKIES_NAME = "clearCookies";
+
     private static final Log log = Log.getLog(BrowserClearCookiesHandler.class);
 
     @Override
     public void run(DBRProgressMonitor monitor) {
-        UIUtils.syncExec(() -> {
-            Shell shell = new Shell(SWT.MODELESS);
-            Browser browser = null;
+        UIUtils.syncExec(BrowserClearCookiesHandler::clearCookies);
+    }
 
-            try {
-                browser = new Browser(UIUtils.getActiveWorkbenchShell(), SWT.NONE);
-                Browser.clearSessions();
-            } catch (SWTException e) {
-                log.error("Error clearing browser cookies", e);
-            } finally {
-                if (browser != null) {
-                    browser.dispose();
-                }
-                shell.dispose();
+    private static void clearCookies() {
+        Shell shell = new Shell(SWT.MODELESS);
+        Browser browser = null;
+        try {
+            browser = new Browser(shell, SWT.NONE);
+            BeanUtils.invokeStaticMethod(
+                Class.forName(BROWSER_HELPER_CLASS_NAME),
+                BROWSER_HELPER_CLASS_CLEAR_COOKIES_NAME,
+                new Class[]{Browser.class},
+                new Object[]{browser}
+            );
+        } catch (Throwable e) {
+            log.error("Error clearing cookies", e);
+        } finally {
+            if (browser != null) {
+                browser.dispose();
             }
-        });
+            shell.dispose();
+        }
     }
 }
