@@ -516,83 +516,10 @@ public class ResultSetModel {
             valueToEdit = value;
         }
         row.values[rootIndex] = valueToEdit;
-        changesCount++;
 
-/*
-        // Get old value
-        Object oldValue = oldValue;
-        int targetValueIndex = rowIndex - 1;
-        if (ownerValue != null) {
-            try {
-                oldValue = attr.extractNestedValue(
-                    ownerValue,
-                    rowIndexes == null || targetValueIndex < 0 ? 0 : rowIndexes[targetValueIndex]);
-            } catch (DBCException e) {
-                log.error("Error getting [" + attr.getName() + "] value", e);
-            }
+        if (updateChanges && row.getState() == ResultSetRow.STATE_NORMAL) {
+            changesCount++;
         }
-        if ((value instanceof DBDValue && value == oldValue && ((DBDValue) value).isModified()) || !CommonUtils.equalObjects(oldValue, value)) {
-            // If DBDValue was updated (kind of CONTENT?) or actual value was changed
-            if (ownerValue == null && DBUtils.isNullValue(oldValue) && DBUtils.isNullValue(value)) {
-                // Both nulls - nothing to update
-                return false;
-            }
-            // Check composite type
-            if (ownerValue != null) {
-                if (ownerValue instanceof DBDCollection collection) {
-                    if (collection.getItemCount() > 0) {
-                        ownerValue = collection.getItem(
-                            rowIndexes == null ? 0 : rowIndexes[targetValueIndex]);
-                    }
-                }
-                if (!(ownerValue instanceof DBDComposite)) {
-                    log.warn("Value [" + ownerValue + "] edit is not supported");
-                    return false;
-                }
-            }
-
-            // Do not add edited cell for new/deleted rows
-            if (row.getState() == ResultSetRow.STATE_NORMAL) {
-
-                boolean cellWasEdited = row.changes != null && row.changes.containsKey(attr);
-                Object oldOldValue = !cellWasEdited ? null : row.changes.get(attr);
-                if (cellWasEdited && !CommonUtils.equalObjects(oldValue, oldOldValue) && !CommonUtils.equalObjects(oldValue, value)) {
-                    // Value rewrite - release previous stored old value
-                    DBUtils.releaseValue(oldValue);
-                } else if (updateChanges) {
-                    if (value instanceof DBDValue || !CommonUtils.equalObjects(value, oldValue)) {
-                        row.addChange(attr, oldValue);
-                    } else {
-                        updateChanges = false;
-                    }
-                }
-                if (updateChanges && row.getState() == ResultSetRow.STATE_NORMAL && !cellWasEdited) {
-                    changesCount++;
-                }
-            }
-            if (ownerValue instanceof DBDComposite compositeValue) {
-                try {
-                    if (rowIndexes != null) {
-                        int itemIndex = rowIndexes[rowIndex];
-                        Object arrayValue = compositeValue.getAttributeValue(attr.getAttribute());
-                        if (arrayValue instanceof DBDCollection collection) {
-                            collection.setItem(itemIndex, value);
-                        } else {
-                            throw new DBCException("Wrong composite: cannot update item " + itemIndex);
-                        }
-                    } else {
-                        compositeValue.setAttributeValue(attr.getAttribute(), value);
-                    }
-                } catch (DBCException e) {
-                    log.debug("Error setting attribute value", e);
-                }
-            } else {
-                row.values[rootIndex] = value;
-            }
-            return true;
-        }
-        return false;
-*/
         return true;
     }
 
