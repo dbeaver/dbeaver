@@ -42,21 +42,6 @@ public abstract class InternalDB {
 
     private static final Log log = Log.getLog(InternalDB.class);
 
-    public static final String SCHEMA_CREATE_SQL_PATH = "db/cb_schema_create.sql";
-    public static final String SCHEMA_UPDATE_SQL_PATH = "db/cb_schema_update_";
-
-    private static final int LEGACY_SCHEMA_VERSION = 1;
-    private static final int CURRENT_SCHEMA_VERSION = 21;
-
-    private static final String DEFAULT_DB_USER_NAME = "cb-data";
-    private static final String DEFAULT_DB_PWD_FILE = ".database-credentials.dat";
-    private static final String V1_DB_NAME = "cb.h2.dat";
-    private static final String V2_DB_NAME = "cb.h2v2.dat";
-
-    public static final String DATABASE_DEFAULT_DRIVER_CLASS = "org.h2.Driver";
-    public static final String EMBEDDED_DATABASE_ID = "qmdb";
-    private static final String EMPTY_DOMAIN_NAME = "*";
-
     private InternalDatabaseConfig internalDatabaseConfig;
 
     private DBPApplication dbpApplication;
@@ -70,25 +55,7 @@ public abstract class InternalDB {
 
     private transient volatile Connection exclusiveConnection;
 
-    public Connection openConnection() throws SQLException {
-        if (exclusiveConnection != null) {
-            return exclusiveConnection;
-        }
-        return dbConnection.getConnection();
-    }
-
-    public PoolingDataSource<PoolableConnection> getConnectionPool() {
-        return dbConnection;
-    }
-
-
-    public static synchronized void setInstance(@NotNull InternalDB internalDB) throws DBException {
-        if (instance != null) {
-            throw new DBException("Instance already initialized");
-        }
-        instance = internalDB;
-    }
-
+    private PoolingDataSource<PoolableConnection> cbDataSource;
 
     @NotNull
     public SQLDialect getDialect() {
@@ -116,7 +83,7 @@ public abstract class InternalDB {
         return new PoolingDataSource<>(connectionPool);
     }
 
-    private String getCurrentInstanceId() throws IOException {
+    protected String getCurrentInstanceId() throws IOException {
         // 16 chars - workspace ID
         String workspaceId = DBWorkbench.getPlatform().getWorkspace().getWorkspaceId();
         if (workspaceId.length() > 16) {
@@ -131,18 +98,6 @@ public abstract class InternalDB {
         }
         return id.toString();
     }
-
-    private void closeConnection() {
-        if (dbConnection != null) {
-            try {
-                dbConnection.close();
-            } catch (Exception e) {
-                log.warn("Error while stopping database", e);
-            }
-            dbConnection = null;
-        }
-    }
-
     @NotNull
     public String normalizeTableNames(@NotNull String sql) {
         return CommonUtils.normalizeTableNames(sql, internalDatabaseConfig.getSchema());
@@ -154,6 +109,23 @@ public abstract class InternalDB {
 
     protected DBPApplication getApplication() {
         return DBWorkbench.getPlatform().getApplication();
+    }
+
+    public void closeConnection() {
+        log.debug("Shutdown database");
+        if (cbDataSource != null) {
+            try {
+                cbDataSource.close();
+            } catch (Exception e) {
+                log.error(e);
+            }
+            dbConnection = null;
+        }
+    }
+
+
+    public boolean isInitialized() {
+        return dbConnection != null;
     }
 
 }
