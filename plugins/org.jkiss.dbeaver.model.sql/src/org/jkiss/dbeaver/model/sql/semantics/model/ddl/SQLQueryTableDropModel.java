@@ -49,10 +49,9 @@ public class SQLQueryTableDropModel extends SQLQueryModelContent {
         @NotNull STMTreeNode node,
         boolean isView
     ) {
-        List<SQLQueryRowsTableDataModel> tables =
-            node.getChildren().stream().filter(n -> n.getNodeName().equals(STMKnownRuleNames.tableName))
+        List<SQLQueryRowsTableDataModel> tables = node.findChildrenOfName(STMKnownRuleNames.tableName).stream()
                 .map(recognizer::collectTableReference).collect(Collectors.toList());
-        boolean ifExists = node.findChildOfName(STMKnownRuleNames.ifExistsSpec) != null; // "IF EXISTS" presented
+        boolean ifExists = node.findFirstChildOfName(STMKnownRuleNames.ifExistsSpec) != null; // "IF EXISTS" presented
         return new SQLQueryTableDropModel(node, tables, ifExists, isView);
     }
 
