@@ -21,7 +21,11 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPMessageType;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -50,6 +54,8 @@ import java.util.Map;
  * ResultSetValueController
  */
 public class ResultSetValueController implements IAttributeController, IRowController {
+
+    private static final Log log = Log.getLog(ResultSetValueController.class);
 
     protected final IResultSetController controller;
     protected Composite inlinePlaceholder;
@@ -105,7 +111,43 @@ public class ResultSetValueController implements IAttributeController, IRowContr
 
     @Override
     public DBSTypedObject getValueType() {
-        return getBinding().getPresentationAttribute();
+        DBSAttributeBase valueType = getBinding().getPresentationAttribute();
+        if (cellLocation.getRowIndexes() != null) {
+            if (valueType != null && valueType.getDataKind() == DBPDataKind.ARRAY) {
+                DBSDataType componentType = getComponentType(valueType);
+                if (componentType != null) {
+                    return componentType;
+                }
+            }
+        }
+        return valueType;
+    }
+
+    @Override
+    public DBDValueHandler getValueHandler() {
+        DBDValueHandler valueHandler = getBinding().getValueHandler();
+        if (cellLocation.getRowIndexes() != null) {
+            DBSTypedObject valueType = getValueType();
+            DBPDataSource dataSource = getDataController().getDataContainer().getDataSource();
+            return DBUtils.findValueHandler(dataSource, valueType);
+        }
+        return valueHandler;
+    }
+
+    @Nullable
+    private static DBSDataType getComponentType(DBSTypedObject valueType) {
+        DBSDataType dataType = DBUtils.getDataType(valueType);
+        if (dataType != null) {
+            try {
+                DBSDataType componentType = dataType.getComponentType(new VoidProgressMonitor());
+                if (componentType != null) {
+                    return componentType;
+                }
+            } catch (DBException e) {
+                log.debug(e);
+            }
+        }
+        return null;
     }
 
     @NotNull
@@ -181,24 +223,9 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     }
 
     @Override
-    public DBDValueHandler getValueHandler() {
-        return getBinding().getValueHandler();
-    }
-
-    private DBPDataSourceContainer getDataSourceContainer() {
-        final IResultSetContainer rsContainer = controller.getContainer();
-        if (rsContainer instanceof DBPDataSourceContainerProvider) {
-            return ((DBPDataSourceContainerProvider) rsContainer).getDataSourceContainer();
-        } else {
-            final DBCExecutionContext executionContext = getExecutionContext();
-            return executionContext == null ? null : executionContext.getDataSource().getContainer();
-        }
-    }
-
-    @Override
     public IValueManager getValueManager() {
-        DBSTypedObject valueType = getBinding().getPresentationAttribute();
-        DBDValueHandler valueHandler = getBinding().getValueHandler();
+        DBSTypedObject valueType = getValueType();
+        DBDValueHandler valueHandler = getValueHandler();
 
         if (cellLocation.getRowIndexes() != null && valueType != null) {
             try {

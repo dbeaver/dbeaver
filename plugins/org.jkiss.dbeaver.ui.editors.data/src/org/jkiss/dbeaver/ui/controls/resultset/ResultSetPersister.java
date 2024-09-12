@@ -395,27 +395,9 @@ class ResultSetPersister {
         throws DBException {
         // Make statements
         for (ResultSetRow row : this.rowIdentifiers.keySet()) {
-            if (row.changes == null) continue;
-
-            // Filter changes
-            // If there are changes in complex types then leave only nested elements attributes
-            // and remove root element from the list
-            Map<DBDAttributeBinding, Object> changes = new LinkedHashMap<>(row.changes.size());
-            List<DBDAttributeBinding> attrRefs = new ArrayList<>();
-            for (Map.Entry<DBDAttributeBinding, Object> change : row.changes.entrySet()) {
-                if (change.getValue() instanceof DBDAttributeBinding ab) {
-                    attrRefs.add(ab);
-                }
-            }
-            for (Map.Entry<DBDAttributeBinding, Object> change : row.changes.entrySet()) {
-                if (attrRefs.contains(change.getKey())) {
-                    continue;
-                }
-                if (change.getValue() instanceof DBDAttributeBinding ab) {
-                    changes.put(change.getKey(), row.changes.get(ab));
-                } else {
-                    changes.put(change.getKey(), change.getValue());
-                }
+            Map<DBDAttributeBinding, Object> changes = collectUpdateChanges(row);
+            if (changes == null) {
+                continue;
             }
 
             DBDRowIdentifier rowIdentifier = this.rowIdentifiers.get(row);
@@ -465,6 +447,57 @@ class ResultSetPersister {
                 updateStatements.add(statement);
             }
         }
+    }
+
+    // Filter changes
+    // Depending on attributes structure we leave only leaf elements or entire document (for document-oriented databases)
+    @Nullable
+    private static Map<DBDAttributeBinding, Object> collectUpdateChanges(ResultSetRow row) {
+        if (CommonUtils.isEmpty(row.changes)) {
+            return null;
+        }
+        Map<DBDAttributeBinding, Object> changes = new LinkedHashMap<>(row.changes.size());
+        List<DBDAttributeBinding> attrRefs = new ArrayList<>();
+        boolean hasComplexUpdates = false;
+        for (Map.Entry<DBDAttributeBinding, Object> change : row.changes.entrySet()) {
+            if (change.getValue() instanceof DBDAttributeBinding ab) {
+                attrRefs.add(ab);
+            }
+            if (!hasComplexUpdates && isComplexNestedAttribute(change.getKey())) {
+                hasComplexUpdates = true;
+            }
+        }
+        if (hasComplexUpdates && !attrRefs.isEmpty()) {
+            // If we have complex values then leave only nested elements attributes
+            for (Map.Entry<DBDAttributeBinding, Object> change : row.changes.entrySet()) {
+                if (change.getValue() instanceof DBDAttributeBinding ab && attrRefs.contains(ab)) {
+                    changes.put(ab, row.changes.get(ab));
+                }
+            }
+        } else {
+            // Otherwise remove root element from the list
+            for (Map.Entry<DBDAttributeBinding, Object> change : row.changes.entrySet()) {
+                if (attrRefs.contains(change.getKey())) {
+                    continue;
+                }
+                if (change.getValue() instanceof DBDAttributeBinding ab) {
+                    changes.put(change.getKey(), row.changes.get(ab));
+                } else {
+                    changes.put(change.getKey(), change.getValue());
+                }
+            }
+        }
+        return changes;
+    }
+
+    // Returns true only if our attribute has parent of type array
+    private static boolean isComplexNestedAttribute(DBDAttributeBinding attr) {
+        for (DBDAttributeBinding parent = attr.getParentObject(); parent != null; parent = parent.getParentObject()) {
+            if (parent.getDataKind() == DBPDataKind.ARRAY) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean execute(@Nullable DBRProgressMonitor monitor, boolean generateScript, @NotNull ResultSetSaveSettings settings, @Nullable final DataUpdateListener listener)
