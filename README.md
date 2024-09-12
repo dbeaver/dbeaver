@@ -66,7 +66,7 @@ Thank you!
 
 - <a href="https://github.com/dbeaver/dbeaver/graphs/contributors">DBeaver Team</a> (contributors)
 - [Contribution guide](https://github.com/dbeaver/dbeaver/wiki/Contribute-your-code)
-- [Help the Beaver and get prize]((https://dbeaver.com/help-beaver/))
+- [Help the Beaver and get prize](https://dbeaver.com/help-beaver/)
 
 ---------
 
