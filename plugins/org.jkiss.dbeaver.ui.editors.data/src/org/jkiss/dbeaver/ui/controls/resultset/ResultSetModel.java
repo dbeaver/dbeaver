@@ -48,7 +48,6 @@ import java.util.*;
 public class ResultSetModel {
 
     private static final Log log = Log.getLog(ResultSetModel.class);
-    private static final Object ATTR_CHANGE_MARKER = new Object();
 
     // Attributes
     private DBDAttributeBinding[] attributes = new DBDAttributeBinding[0];
@@ -176,11 +175,16 @@ public class ResultSetModel {
             DBUtils.resetValue(getCellValue(cellLocation));
             try {
                 Object origValue = row.changes.get(attr);
-                if (origValue == ATTR_CHANGE_MARKER) {
-                    row.resetChange(attr);
-                    attr = attr.getTopParent();
+                if (origValue instanceof DBDAttributeBinding refAttr) {
+                    // We reset entire row changes. Cleanup all references on the same top attribute + reset top attribute value
+                    for (var changedValues = row.changes.entrySet().iterator(); changedValues.hasNext(); ) {
+                        if (changedValues.next().getValue() == origValue) {
+                            changedValues.remove();
+                        }
+                    }
+                    attr = refAttr;
                     origValue = row.changes.get(attr);
-                    cellLocation = new ResultSetCellLocation(attr.getTopParent(), cellLocation.getRow(), null);
+                    cellLocation = new ResultSetCellLocation(attr, cellLocation.getRow(), null);
                 }
                 updateCellValue(cellLocation, origValue, false);
             } catch (DBException e) {
@@ -494,7 +498,8 @@ public class ResultSetModel {
             }
         }
         if (updateChanges && attr != topAttribute) {
-            row.changes.put(attr, ATTR_CHANGE_MARKER);
+            // Save reference on top attribute
+            row.changes.put(attr, topAttribute);
         }
 
         if (value instanceof DBDValue dbValue) {

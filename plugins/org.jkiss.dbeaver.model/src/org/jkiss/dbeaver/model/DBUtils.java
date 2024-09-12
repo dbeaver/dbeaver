@@ -784,13 +784,15 @@ public final class DBUtils {
         }
 
         Object curValue = rootValue;
+        Object ownerValue = null;
 
         int remainingIndices = nestedIndexes != null ? nestedIndexes.length : 0;
         int remainingAttributes = depth;
 
-        // Find owner value
+        // Find owner value. Iterate thru all attr and col indexes to find leaf value.
+        // Parent of leaf value is the owner value
         // Create intermediate values if needed
-        while (remainingAttributes + remainingIndices > 1) {
+        while (remainingAttributes + remainingIndices > 0) {
             if (curValue == null) {
                 break;
             }
@@ -798,35 +800,38 @@ public final class DBUtils {
                 if (remainingAttributes == 0) {
                     throw new DBCException("Cannot update complex attribute: out of nested attributes");
                 }
-                remainingAttributes -= 1;
+                remainingAttributes--;
                 DBDAttributeBinding parent = Objects.requireNonNull(attribute.getParent(remainingAttributes));
                 try {
+                    ownerValue = curValue;
                     curValue = parent.extractNestedValue(curValue, 0);
                 } catch (DBException e) {
                     throw new DBCException("Error extracting nested value", e);
                 }
             }
 
-            while (curValue instanceof DBDCollection collection && remainingIndices > 1) {
+            while (curValue instanceof DBDCollection collection) {
+                if (remainingIndices <= 0) {
+                    throw new DBCException("Out of indexes for collections");
+                }
                 int itemIndex = nestedIndexes[nestedIndexes.length - remainingIndices];
                 remainingIndices--;
                 if (itemIndex >= collection.getItemCount()) {
                     throw new DBCException("Item index out of range " + itemIndex + ">=" + collection.getItemCount());
                 }
+                ownerValue = curValue;
                 curValue = collection.get(itemIndex);
             }
         }
 
-        if (curValue instanceof DBDCollection collection) {
-            if (remainingIndices != 1) {
-                throw new DBCException("Cannot update collection: no indexes available");
-            } else {
-                collection.setItem(nestedIndexes[nestedIndexes.length - 1], elementValue);
-            }
-        } else if (curValue instanceof DBDComposite composite) {
+        if (ownerValue == null) {
+            throw new DBCException("Cannot determine owner value for update");
+        } else if (ownerValue instanceof DBDCollection collection) {
+            collection.setItem(nestedIndexes[nestedIndexes.length - 1], elementValue);
+        } else if (ownerValue instanceof DBDComposite composite) {
             composite.setAttributeValue(attribute, elementValue);
         } else {
-            throw new DBCException("Don't know how to update complex value '" + curValue + "' (" + (curValue == null ? "null" : curValue.getClass().getSimpleName()) + ")");
+            throw new DBCException("Don't know how to update complex value '" + ownerValue + "' (" + ownerValue.getClass().getSimpleName() + ")");
         }
     }
 

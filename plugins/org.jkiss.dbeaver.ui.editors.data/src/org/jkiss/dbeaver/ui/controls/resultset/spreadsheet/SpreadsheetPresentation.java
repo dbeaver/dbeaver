@@ -1321,7 +1321,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         Object value = controller.getModel().getCellValue(
             new ResultSetCellLocation(attr, row, getRowNestedIndexes(cell.row)));
-        if (isShowAsCheckbox(attr)) {
+        if ((value instanceof Boolean || value instanceof Number) && isShowAsCheckbox(attr)) {
             if (!getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_CLICK_TOGGLE_BOOLEAN)) {
                 return;
             }
@@ -1394,8 +1394,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
         if (isShowAsCheckbox(attr)) {
             // Switch boolean value
             Object cellValue = controller.getModel().getCellValue(cellLocation);
-            toggleBooleanValue(cellLocation, cellValue);
-        } if (isAttributeExpandable(rowElement, attr)) {
+            if (cellValue instanceof Boolean || cellValue instanceof Number) {
+                toggleBooleanValue(cellLocation, cellValue);
+            }
+        }
+        if (isAttributeExpandable(rowElement, attr)) {
             spreadsheet.toggleRowExpand(rowElement, columnElement);
         }
     }
@@ -2380,7 +2383,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 return ((DBDValueError) value).getErrorTitle();
             }
 
-            if (isShowAsCheckbox(attr)) {
+            if ((value instanceof Boolean || value instanceof Number) && isShowAsCheckbox(attr)) {
                 if (booleanStyles.getMode() != BooleanMode.TEXT) {
                     return "";
                 }

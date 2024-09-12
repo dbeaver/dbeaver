@@ -397,6 +397,27 @@ class ResultSetPersister {
         for (ResultSetRow row : this.rowIdentifiers.keySet()) {
             if (row.changes == null) continue;
 
+            // Filter changes
+            // If there are changes in complex types then leave only nested elements attributes
+            // and remove root element from the list
+            Map<DBDAttributeBinding, Object> changes = new LinkedHashMap<>(row.changes.size());
+            List<DBDAttributeBinding> attrRefs = new ArrayList<>();
+            for (Map.Entry<DBDAttributeBinding, Object> change : row.changes.entrySet()) {
+                if (change.getValue() instanceof DBDAttributeBinding ab) {
+                    attrRefs.add(ab);
+                }
+            }
+            for (Map.Entry<DBDAttributeBinding, Object> change : row.changes.entrySet()) {
+                if (attrRefs.contains(change.getKey())) {
+                    continue;
+                }
+                if (change.getValue() instanceof DBDAttributeBinding ab) {
+                    changes.put(change.getKey(), row.changes.get(ab));
+                } else {
+                    changes.put(change.getKey(), change.getValue());
+                }
+            }
+
             DBDRowIdentifier rowIdentifier = this.rowIdentifiers.get(row);
             DBSEntity table;
             if (rowIdentifier != null) {
@@ -412,7 +433,7 @@ class ResultSetPersister {
             {
                 DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.UPDATE, row, table);
                 // Updated columns
-                for (DBDAttributeBinding changedAttr : row.changes.keySet()) {
+                for (DBDAttributeBinding changedAttr : changes.keySet()) {
                     if (!isVirtualColumn(changedAttr)) {
                         statement.updateAttributes.add(
                             new DBDAttributeValue(
@@ -426,14 +447,15 @@ class ResultSetPersister {
                     for (DBDAttributeBinding metaColumn : idColumns) {
                         Object keyValue = model.getCellValue(metaColumn, row);
                         // Try to find old key oldValue
-                        if (row.changes != null && row.changes.containsKey(metaColumn)) {
-                            keyValue = row.changes.get(metaColumn);
-                            if (keyValue instanceof DBDContent) {
-                                if (keyValue instanceof DBDValueCloneable) {
-                                    keyValue = ((DBDValueCloneable) keyValue).cloneValue(monitor);
-                                    ((DBDContent) keyValue).resetContents();
+                        if (changes.containsKey(metaColumn)) {
+                            keyValue = changes.get(metaColumn);
+                            if (keyValue instanceof DBDContent content) {
+                                if (keyValue instanceof DBDValueCloneable vc) {
+                                    keyValue = vc.cloneValue(monitor);
+                                    content.resetContents();
                                 } else {
-                                    throw new DBCException("Column '" + metaColumn.getFullyQualifiedName(DBPEvaluationContext.UI) + "' can't be used as a key. Value clone is not supported.");
+                                    throw new DBCException("Column '" + metaColumn.getFullyQualifiedName(DBPEvaluationContext.UI) +
+                                       "' can't be used as a key. Value clone is not supported.");
                                 }
                             }
                         }
@@ -466,6 +488,9 @@ class ResultSetPersister {
         for (ResultSetRow row : changedRows) {
             if (row.changes != null) {
                 for (Map.Entry<DBDAttributeBinding, Object> changedValue : row.changes.entrySet()) {
+                    if (changedValue.getValue() instanceof DBDAttributeBinding) {
+                        continue;
+                    }
                     Object curValue = model.getCellValue(changedValue.getKey(), row);
                     // If new value and old value are the same - do not release it
                     if (curValue != changedValue.getValue()) {
