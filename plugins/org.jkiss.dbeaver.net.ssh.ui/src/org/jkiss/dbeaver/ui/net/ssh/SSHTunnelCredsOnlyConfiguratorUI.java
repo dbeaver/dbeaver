@@ -51,7 +51,7 @@ public class SSHTunnelCredsOnlyConfiguratorUI implements IObjectPropertyConfigur
     public void loadSettings(@NotNull DBWHandlerConfiguration handlerConfiguration) {
         try {
             this.configurations = Arrays.stream(SSHUtils.loadHostConfigurations(handlerConfiguration, false))
-                    .map(SSHTunnelDefaultConfiguratorUI.ConfigurationWrapper::new).toList();
+                .map(SSHTunnelDefaultConfiguratorUI.ConfigurationWrapper::new).toList();
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("SSH configuration", "Unable to load SSH configuration due to an error", e);
             return;
@@ -61,9 +61,9 @@ public class SSHTunnelCredsOnlyConfiguratorUI implements IObjectPropertyConfigur
         this.credPanels = new ArrayList<>();
         for (SSHTunnelDefaultConfiguratorUI.ConfigurationWrapper cfg: this.configurations) {
             SSHTunnelDefaultConfiguratorUI.CredentialsPanel credsPanel = new SSHTunnelDefaultConfiguratorUI.CredentialsPanel(
-                    this.credPanelsContainer,
-                    this.propertyChangeListener,
-                    DBPConnectionEditIntention.CREDENTIALS_ONLY
+                this.credPanelsContainer,
+                this.propertyChangeListener,
+                DBPConnectionEditIntention.CREDENTIALS_ONLY
             );
             this.credPanels.add(credsPanel);
             credsPanel.loadSettings(cfg, false);
@@ -74,8 +74,8 @@ public class SSHTunnelCredsOnlyConfiguratorUI implements IObjectPropertyConfigur
     @Override
     public void saveSettings(@NotNull DBWHandlerConfiguration handlerConfiguration) {
         SSHUtils.saveHostConfigurations(
-                handlerConfiguration,
-                this.credPanels.stream().map(SSHTunnelDefaultConfiguratorUI.CredentialsPanel::saveSettings).toArray(SSHHostConfiguration[]::new)
+            handlerConfiguration,
+            this.credPanels.stream().map(SSHTunnelDefaultConfiguratorUI.CredentialsPanel::saveSettings).toArray(SSHHostConfiguration[]::new)
         );
     }
 
@@ -87,7 +87,7 @@ public class SSHTunnelCredsOnlyConfiguratorUI implements IObjectPropertyConfigur
     @Override
     public boolean isComplete() {
         return this.credPanels.stream().map(SSHTunnelDefaultConfiguratorUI.CredentialsPanel::saveSettings)
-                .map(SSHTunnelDefaultConfiguratorUI::validateConfiguration)
-                .allMatch(Objects::isNull);
+            .map(SSHTunnelDefaultConfiguratorUI::validateConfiguration)
+            .allMatch(Objects::isNull);
     }
 }

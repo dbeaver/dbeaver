@@ -37,7 +37,6 @@ import org.jkiss.utils.CommonUtils;
  * MySQLSSLConfigurator
  */
 public class MySQLSSLConfigurator extends SSLConfiguratorTrustStoreUI {
-
     private Button requireSSQL;
     private Button veryServerCert;
     private Button allowPublicKeyRetrieval;
