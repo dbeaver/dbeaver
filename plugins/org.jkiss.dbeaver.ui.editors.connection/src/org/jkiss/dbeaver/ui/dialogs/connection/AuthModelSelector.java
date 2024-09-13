@@ -22,6 +22,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -67,7 +68,13 @@ public class AuthModelSelector extends Composite {
     private boolean isEnableSharedConfigurator = true;
     private final DBPConnectionEditIntention intention;
 
-    public AuthModelSelector(Composite parent, Runnable panelExtender, Runnable changeListener, boolean enableShared, DBPConnectionEditIntention intention) {
+    public AuthModelSelector(
+        Composite parent,
+        Runnable panelExtender,
+        Runnable changeListener,
+        boolean enableShared,
+        DBPConnectionEditIntention intention
+    ) {
         super(parent, SWT.NONE);
         setLayout(new FillLayout());
 
@@ -76,9 +83,16 @@ public class AuthModelSelector extends Composite {
         this.isEnableSharedConfigurator = enableShared;
         this.intention = intention;
 
-        modelConfigPlaceholder = UIUtils.createControlGroup(this, UIConnectionMessages.dialog_connection_auth_group, 2, GridData.FILL_HORIZONTAL, 0);
+        modelConfigPlaceholder = UIUtils.createControlGroup(
+            this,
+            UIConnectionMessages.dialog_connection_auth_group,
+            2,
+            GridData.FILL_HORIZONTAL,
+            0
+        );
 
-        UIPropertyConfiguratorDescriptor configDescriptor = UIPropertyConfiguratorRegistry.getInstance().getDescriptor(DBAAuthModel.class.getName());
+        UIPropertyConfiguratorDescriptor configDescriptor = UIPropertyConfiguratorRegistry.getInstance()
+            .getDescriptor(DBAAuthModel.class.getName());
         if (configDescriptor != null && isEnableSharedConfigurator) {
             try {
                 sharedConfigurator = configDescriptor.createConfigurator();
@@ -112,18 +126,22 @@ public class AuthModelSelector extends Composite {
         UIUtils.disposeChildControls(modelConfigPlaceholder);
     }
 
-    public void loadSettings(DBPDataSourceContainer dataSourceContainer, DBPAuthModelDescriptor activeAuthModel, String defaultAuthModelId) {
+    public void loadSettings(
+        DBPDataSourceContainer dataSourceContainer,
+        DBPAuthModelDescriptor activeAuthModel,
+        String defaultAuthModelId
+    ) {
         this.activeDataSource = dataSourceContainer;
         this.selectedAuthModel = activeAuthModel;
         this.authSettingsEnabled = !dataSourceContainer.isSharedCredentials();
         this.allAuthModels = activeDataSource.getDriver() == DriverDescriptor.NULL_DRIVER ?
-                DataSourceProviderRegistry.getInstance().getAllAuthModels() :
-                DataSourceProviderRegistry.getInstance().getApplicableAuthModels(activeDataSource.getDriver());
+            DataSourceProviderRegistry.getInstance().getAllAuthModels() :
+            DataSourceProviderRegistry.getInstance().getApplicableAuthModels(activeDataSource.getDriver());
         this.allAuthModels.removeIf(o -> modelFilter != null && !modelFilter.isValidElement(o));
         this.allAuthModels.sort((Comparator<DBPAuthModelDescriptor>) (o1, o2) ->
-                o1.isDefaultModel() ? -1 :
-                        o2.isDefaultModel() ? 1 :
-                                o1.getName().compareTo(o2.getName()));
+            o1.isDefaultModel() ? -1 :
+                o2.isDefaultModel() ? 1 :
+                    o1.getName().compareTo(o2.getName()));
         if ((selectedAuthModel == null || !allAuthModels.contains(selectedAuthModel)) && !CommonUtils.isEmpty(defaultAuthModelId)) {
             // Set default to native
             for (DBPAuthModelDescriptor amd : allAuthModels) {
@@ -181,7 +199,9 @@ public class AuthModelSelector extends Composite {
                     modelConfigPlaceholder.setFocus();
                     changeListener.run();
                 } finally {
-                    authModelCombo.setToolTipText(selectedAuthModel == null ? "" : CommonUtils.notEmpty(selectedAuthModel.getDescription()));
+                    authModelCombo.setToolTipText(selectedAuthModel == null
+                        ? ""
+                        : CommonUtils.notEmpty(selectedAuthModel.getDescription()));
                 }
                 UIUtils.resizeShell(authModelCombo.getShell());
             }
@@ -203,15 +223,18 @@ public class AuthModelSelector extends Composite {
         boolean authSelectorVisible = this.intention.authModelSelectionEnabled && allAuthModels.size() >= 2;
         UIUtils.setControlVisible(authModelLabel, authSelectorVisible);
         UIUtils.setControlVisible(authModelComp, authSelectorVisible);
-        ((Group)modelConfigPlaceholder).setText(authSelectorVisible ? UIConnectionMessages.dialog_connection_auth_group : UIConnectionMessages.dialog_connection_auth_group + " (" + selectedAuthModel.getName() + ")");
+        ((Group) modelConfigPlaceholder).setText(authSelectorVisible
+            ? UIConnectionMessages.dialog_connection_auth_group
+            : UIConnectionMessages.dialog_connection_auth_group + " (" + selectedAuthModel.getName() + ")");
 
         DBAAuthModel<?> authModel = selectedAuthModel.getInstance();
         if (authSettingsEnabled) {
             authModelConfigurator = null;
             if (this.intention == DBPConnectionEditIntention.CREDENTIALS_ONLY && this.activeDataSource.isSharedCredentials()) {
-                UIUtils.createInfoLabel(modelConfigPlaceholder, "Shared credentials cannot be edited", GridData.FILL_BOTH,1);
+                UIUtils.createInfoLabel(modelConfigPlaceholder, "Shared credentials cannot be edited", GridData.FILL_BOTH, 1);
             } else {
-                UIPropertyConfiguratorDescriptor uiConfiguratorDescriptor = UIPropertyConfiguratorRegistry.getInstance().getDescriptor(authModel);
+                UIPropertyConfiguratorDescriptor uiConfiguratorDescriptor = UIPropertyConfiguratorRegistry.getInstance()
+                    .getDescriptor(authModel);
                 if (uiConfiguratorDescriptor != null) {
                     try {
                         authModelConfigurator = uiConfiguratorDescriptor.createConfigurator();

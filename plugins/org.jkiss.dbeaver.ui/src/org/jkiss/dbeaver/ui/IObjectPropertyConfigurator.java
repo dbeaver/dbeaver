@@ -51,8 +51,10 @@ public interface IObjectPropertyConfigurator<OBJECT, SETTINGS> {
         return DBPConnectionEditIntention.DEFAULT;
     }
 
-    static <OBJECT, SETTINGS>  IObjectPropertyConfigurator<OBJECT, SETTINGS> createPlaceholdingConfigurator(BiConsumer<Composite, OBJECT> uiBuilder) {
-        return new IObjectPropertyConfigurator<OBJECT, SETTINGS>() {
+    static <OBJECT, SETTINGS>  IObjectPropertyConfigurator<OBJECT, SETTINGS> createPlaceholdingConfigurator(
+        BiConsumer<Composite, OBJECT> uiBuilder
+    ) {
+        return new IObjectPropertyConfigurator<>() {
             @Override
             public void createControl(@NotNull Composite parent, OBJECT object, @NotNull Runnable propertyChangeListener) {
                 uiBuilder.accept(parent, object);

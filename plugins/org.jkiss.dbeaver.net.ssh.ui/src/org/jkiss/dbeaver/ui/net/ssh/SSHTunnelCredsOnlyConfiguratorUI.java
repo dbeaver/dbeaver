@@ -59,7 +59,7 @@ public class SSHTunnelCredsOnlyConfiguratorUI implements IObjectPropertyConfigur
         Arrays.stream(this.credPanelsContainer.getChildren()).forEach(Widget::dispose);
 
         this.credPanels = new ArrayList<>();
-        for (SSHTunnelDefaultConfiguratorUI.ConfigurationWrapper cfg: this.configurations) {
+        for (SSHTunnelDefaultConfiguratorUI.ConfigurationWrapper cfg : this.configurations) {
             SSHTunnelDefaultConfiguratorUI.CredentialsPanel credsPanel = new SSHTunnelDefaultConfiguratorUI.CredentialsPanel(
                 this.credPanelsContainer,
                 this.propertyChangeListener,

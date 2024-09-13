@@ -40,7 +40,7 @@ public interface DBWHandlerDescriptor {
     String getDescription();
 
     @NotNull
-    AbstractDescriptor.ObjectType getHandlerType();
+    String getImplClassName();
 
     /**
      * Handler type

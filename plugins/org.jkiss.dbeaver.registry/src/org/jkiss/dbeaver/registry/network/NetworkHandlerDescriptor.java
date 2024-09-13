@@ -136,6 +136,12 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
         return handlerType;
     }
 
+    @NotNull
+    @Override
+    public String getImplClassName() {
+        return getHandlerType().getImplName();
+    }
+
     @Override
     public <T extends DBWNetworkHandler> T createHandler(Class<T> impl)
         throws DBException {
