@@ -26,11 +26,4 @@ public interface DBNNodeWithResource {
 
     IResource getResource();
 
-    /**
-     * True if resource is remote, false is local
-     *
-     * @return - boolean value
-     */
-    boolean isRemoteResource();
-
 }
