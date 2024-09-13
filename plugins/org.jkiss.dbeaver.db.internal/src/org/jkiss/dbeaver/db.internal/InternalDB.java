@@ -23,13 +23,21 @@ import org.apache.commons.dbcp2.PoolingDataSource;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.InternalDatabaseConfig;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectSchemaController;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -45,21 +53,12 @@ public abstract class InternalDB {
     private InternalDatabaseConfig internalDatabaseConfig;
 
     private DBPApplication dbpApplication;
-    private static InternalDB instance;
-
-    private String instanceId;
-
-    private SQLDialect dialect;
 
     private PoolingDataSource<PoolableConnection> dbConnection;
 
-    private transient volatile Connection exclusiveConnection;
-
-    private PoolingDataSource<PoolableConnection> cbDataSource;
-
-    @NotNull
-    public SQLDialect getDialect() {
-        return dialect;
+    public InternalDB(InternalDatabaseConfig internalDatabaseConfig, DBPApplication dbpApplication) {
+        this.internalDatabaseConfig = internalDatabaseConfig;
+        this.dbpApplication = dbpApplication;
     }
 
     protected PoolingDataSource<PoolableConnection> initConnectionPool(
@@ -98,6 +97,10 @@ public abstract class InternalDB {
         }
         return id.toString();
     }
+
+    /**
+     * Replaces all predefined prefixes in sql query.
+     */
     @NotNull
     public String normalizeTableNames(@NotNull String sql) {
         return CommonUtils.normalizeTableNames(sql, internalDatabaseConfig.getSchema());
@@ -113,13 +116,76 @@ public abstract class InternalDB {
 
     public void closeConnection() {
         log.debug("Shutdown database");
-        if (cbDataSource != null) {
+        if (dbConnection != null) {
             try {
-                cbDataSource.close();
+                dbConnection.close();
             } catch (Exception e) {
                 log.error(e);
             }
-            dbConnection = null;
+        }
+    }
+
+    protected static DataSourceProviderRegistry getDataSourceProviderRegistry() {
+        return DataSourceProviderRegistry.getInstance();
+    }
+
+    protected DBPDriver findDriver(DataSourceProviderRegistry dataSourceProviderRegistry) throws DBException {
+        DBPDriver driver = dataSourceProviderRegistry.findDriver(internalDatabaseConfig.getDriver());
+        if (driver == null) {
+            throw new DBException("Driver '" + internalDatabaseConfig.getDriver() + "' not found");
+        }
+        return driver;
+    }
+
+    @NotNull
+    protected static Driver getDriverInstance(DBPDriver driver, DBRProgressMonitor monitor) throws DBException {
+        return driver.getDriverInstance(monitor);
+    }
+
+    @NotNull
+    protected String getDbURL() {
+        return GeneralUtils.replaceVariables(internalDatabaseConfig.getUrl(), SystemVariablesResolver.INSTANCE);
+    }
+
+    private static boolean isSchemaExist(Connection connection, String schemaExistQuery) throws SQLException {
+        return JDBCUtils.executeQuery(connection, schemaExistQuery) != null;
+    }
+
+    protected void createSchemaIfNotExists(Connection connection, SQLDialectSchemaController schemaController, String schemaName) {
+        if (CommonUtils.isNotEmpty(schemaName)) {
+            var schemaExistQuery = schemaController.getSchemaExistQuery(schemaName);
+
+            try {
+                if (!isSchemaExist(connection, schemaExistQuery)) {
+                    log.info("Schema " + schemaName + " not exist, create new one");
+                    String createSchemaQuery = schemaController.getCreateSchemaQuery(schemaName);
+                    JDBCUtils.executeStatement(connection, createSchemaQuery);
+                }
+            } catch (SQLException e) {
+                log.error("Failed to create schema: " + schemaName, e);
+                try {
+                    connection.close();
+                } catch (SQLException ex) {
+                    log.error("Error closing connection after failure to create schema: " + schemaName, ex);
+                }
+            }
+        }
+    }
+
+    protected static void upsertSchemaInfo(Connection connection, String tableName, String schemaName, int version) throws SQLException {
+        String updateQuery = CommonUtils.normalizeTableNames(
+            "UPDATE {table_prefix}" + tableName + " SET VERSION=?, UPDATE_TIME=CURRENT_TIMESTAMP",
+            schemaName
+        );
+
+        var updateCount = JDBCUtils.executeUpdate(connection, updateQuery, version);
+
+        if (updateCount <= 0) {
+            String insertQuery = CommonUtils.normalizeTableNames(
+                "INSERT INTO {table_prefix}" + tableName + " (VERSION, UPDATE_TIME) VALUES(?, CURRENT_TIMESTAMP)",
+                schemaName
+            );
+            JDBCUtils.executeSQL(connection, insertQuery, version);
         }
     }
 
@@ -128,4 +194,7 @@ public abstract class InternalDB {
         return dbConnection != null;
     }
 
+    public void setDbConnection(PoolingDataSource<PoolableConnection> dbConnection) {
+        this.dbConnection = dbConnection;
+    }
 }
