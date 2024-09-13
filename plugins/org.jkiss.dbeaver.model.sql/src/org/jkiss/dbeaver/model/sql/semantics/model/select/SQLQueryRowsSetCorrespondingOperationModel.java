@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -103,19 +104,20 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
                     SQLQueryResultColumn leftColumn = leftColumns.get(i);
                     SQLQueryResultColumn rightColumn = rightColumns.get(i);
                     SQLQueryExprType type = this.obtainCommonType(leftColumn, rightColumn);
-                    SQLQuerySymbol columnSymbol;
-                    if (leftColumn.symbol.getName().equals(rightColumn.symbol.getName())) {
-                        SQLQuerySymbolDefinition symbolDef = leftColumn.symbol.getDefinition();
-                        SQLQuerySymbolClass symbolClass = leftColumn.symbol.getSymbolClass();
-                        columnSymbol = leftColumns.get(i).symbol.merge(rightColumns.get(i).symbol);
-                        columnSymbol.setDefinition(symbolDef); // propagate leftmost column's metainfo
-                        if (columnSymbol.getSymbolClass() == SQLQuerySymbolClass.UNKNOWN) {
-                            columnSymbol.setSymbolClass(symbolClass);
+                    SQLQuerySymbol symbol;
+                    if (leftColumn.symbol.getName().equalsIgnoreCase(rightColumn.symbol.getName())) {
+                        SQLQuerySymbolClass leftClass = leftColumn.symbol.getSymbolClass();
+                        SQLQuerySymbolDefinition leftDef = leftColumn.symbol.getDefinition();
+                        // new symbol after merge carries underlying info of the left column and combined entries set
+                        symbol = leftColumn.symbol.merge(rightColumn.symbol);
+                        symbol.setDefinition(leftDef);
+                        if (symbol.getSymbolClass() == SQLQuerySymbolClass.UNKNOWN) {
+                            symbol.setSymbolClass(leftClass);
                         }
                     } else {
-                        columnSymbol = leftColumn.symbol;
+                        symbol = leftColumn.symbol;
                     }
-                    resultColumns.add(new SQLQueryResultColumn(i, columnSymbol, this, null, null, type));
+                    resultColumns.add(new SQLQueryResultColumn(i, symbol, this, null, null, type));
                 }
             }
         } else { // require left and right to have columns subset as given with correspondingColumnNames
@@ -143,7 +145,7 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
             statistics.appendError(this.getSyntaxNode(), "UNION, EXCEPT and INTERSECT require subsets column tuples to match");
         }
         // TODO multiple definitions per symbol
-        return correspondingColumnNames.isEmpty() ? left : context.overrideResultTuple(resultColumns);
+        return context.overrideResultTuple(this, resultColumns, Collections.emptyList());
     }
 
     @Override
