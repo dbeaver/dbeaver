@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.apache.commons.jexl3.JexlContext;
+import org.eclipse.core.resources.IResource;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -130,7 +131,7 @@ public class DBNUtils {
         // and if children are not folders
         if (children.length > 0) {
             DBNNode firstChild = children[0];
-            boolean isResources = firstChild instanceof DBNNodeWithResource;
+            boolean isResources = firstChild.getAdapter(IResource.class) != null;
             {
                 if (isResources) {
                     Arrays.sort(children, NodeFolderComparator.INSTANCE);

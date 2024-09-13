@@ -29,7 +29,10 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
 import org.jkiss.dbeaver.model.fs.nio.*;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.DBNEvent;
+import org.jkiss.dbeaver.model.navigator.DBNLazyNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -50,7 +53,7 @@ import java.util.stream.Stream;
 /**
  * DBNPath
  */
-public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource, DBNLazyNode {
+public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
 
     private static final Log log = Log.getLog(DBNPath.class);
 
@@ -80,11 +83,6 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
     protected void dispose(boolean reflect) {
         this.children = null;
         super.dispose(reflect);
-    }
-
-    @Override
-    public IResource getResource() {
-        return getAdapter(IResource.class);
     }
 
     @Override
@@ -262,7 +260,10 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
     @Override
     public void dropNodes(DBRProgressMonitor monitor, Collection<DBNNode> nodes) throws DBException {
         IContainer folder;
-        IResource thisResource = getResource();
+        IResource thisResource = getAdapter(IResource.class);
+        if (thisResource == null) {
+            return;
+        }
         if (thisResource instanceof IContainer) {
             folder = (IContainer) thisResource;
         } else {
