@@ -7,10 +7,10 @@
 # DBeaver
 
 Free multi-platform database tool for developers, SQL programmers, database administrators and analysts.  
-Supports any database which has JDBC driver (which basically means - ANY database). 
-<a href="https://dbeaver.com/download/">Commercial versions</a> also support non-JDBC datasources such as 
+Supports any database which has JDBC driver (which basically means - ANY database).
+<a href="https://dbeaver.com/download/">Commercial versions</a> also support non-JDBC datasources such as
 MongoDB, Cassandra, Couchbase, Redis, BigTable, ScyllaDB, DynamoDB, etc.
-You can find the list of all databases supported in commercial versions 
+You can find the list of all databases supported in commercial versions
 <a href="https://dbeaver.com/databases/">here</a>.
 
 * Has a lot of <a href="https://github.com/dbeaver/dbeaver/wiki">features</a> including metadata editor, SQL editor, rich data editor, ERD, data export/import/migration, SQL execution plans, etc.
@@ -59,6 +59,7 @@ Hooray, we have reached 35k+ stars on GitHub and continue to grow!
 That's really cool, and we are glad that you like DBeaver.
 
 - We are actively looking for new source code contributors. We have added labels “Good first issue” and “Help wanted” to some tickets. If you want to be a part of our development team, just be brave and take a ticket.
+- [We are happy to reward](https://dbeaver.com/help-beaver/) our most active contributors every major sprint. The most significant contribution to our code for the major release 24.2.0 was made by: [GaussDB-Fans](https://github.com/GaussDB-Fans), [longhaseng52](https://github.com/longhaseng52), [rathana-pvs](https://github.com/rathana-pvs), [zennken](https://github.com/zennken), [v613](https://github.com/v613), [ask9](https://github.com/dbeaver/dbeaver/issues/created_by/ask9), [Stkai](https://github.com/Stkai), [Jean-BaptisteC](https://github.com/Jean-BaptisteC), [kai-morich](https://github.com/kai-morich), and [Sargul](https://github.com/Sargul).
 - You can buy <a href="https://dbeaver.com/buy/">one of our commercial versions</a>. They include NoSQL databases support, additional extensions, and official online support. Also, licensed users have priorities in bug fixes and the development of new features.
 
 Thank you!  
