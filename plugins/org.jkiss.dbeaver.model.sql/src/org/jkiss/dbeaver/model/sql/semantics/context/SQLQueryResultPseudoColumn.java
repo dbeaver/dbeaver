@@ -18,42 +18,48 @@ package org.jkiss.dbeaver.model.sql.semantics.context;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolDefinition;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
-public class SQLQueryResultColumn {
-    public final int index;
+public class SQLQueryResultPseudoColumn implements SQLQuerySymbolDefinition {
     @NotNull
     public final SQLQuerySymbol symbol;
-    @NotNull
+    @Nullable
     public final SQLQueryRowsSourceModel source;
     @Nullable
     public final DBSEntity realSource;
-    @Nullable
-    public final DBSEntityAttribute realAttr;
     @NotNull
     public final SQLQueryExprType type;
+    @NotNull
+    public final DBDPseudoAttribute.PropagationPolicy propagationPolicy;
+    @Nullable
+    public final String description;
 
-    public SQLQueryResultColumn(
-        int index,
+    public SQLQueryResultPseudoColumn(
         @NotNull SQLQuerySymbol symbol,
-        @NotNull SQLQueryRowsSourceModel source,
+        @Nullable SQLQueryRowsSourceModel source,
         @Nullable DBSEntity realSource,
-        @Nullable DBSEntityAttribute realAttr,
-        @NotNull SQLQueryExprType type
+        @NotNull SQLQueryExprType type,
+        @NotNull DBDPseudoAttribute.PropagationPolicy propagationPolicy,
+        @Nullable String description
     ) {
-        this.index = index;
         this.symbol = symbol;
         this.source = source;
         this.realSource = realSource;
-        this.realAttr = realAttr;
         this.type = type;
+        this.propagationPolicy = propagationPolicy;
+        this.description = description;
     }
 
-    public SQLQueryResultColumn withNewIndex(int index) {
-        return new SQLQueryResultColumn(index, this.symbol, this.source, this.realSource, this.realAttr, this.type);
+    @NotNull
+    @Override
+    public SQLQuerySymbolClass getSymbolClass() {
+        return SQLQuerySymbolClass.COLUMN;
     }
 }
 

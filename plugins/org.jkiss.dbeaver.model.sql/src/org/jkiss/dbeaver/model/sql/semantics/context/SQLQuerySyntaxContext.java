@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -47,6 +48,13 @@ public abstract class SQLQuerySyntaxContext extends SQLQueryDataContext {
     @Override
     public boolean hasUndresolvedSource() {
         return this.parent.hasUndresolvedSource();
+    }
+
+
+    @NotNull
+    @Override
+    public List<SQLQueryResultPseudoColumn> getPseudoColumnsList() {
+        return this.parent.getPseudoColumnsList();
     }
 
     @Nullable
@@ -77,6 +85,18 @@ public abstract class SQLQuerySyntaxContext extends SQLQueryDataContext {
         return this.parent.resolveColumn(monitor, columnName);
     }
 
+    @Override
+    @Nullable
+    public SQLQueryResultPseudoColumn resolvePseudoColumn(DBRProgressMonitor monitor, @NotNull String name) {
+        return this.parent.resolvePseudoColumn(monitor, name);
+    }
+
+    @Nullable
+    @Override
+    public SQLQueryResultPseudoColumn resolveGlobalPseudoColumn(@NotNull DBRProgressMonitor monitor, @NotNull String name) {
+        return this.parent.resolveGlobalPseudoColumn(monitor, name);
+    }
+
     @Nullable
     @Override
     public SourceResolutionResult resolveSource(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
@@ -93,6 +113,11 @@ public abstract class SQLQuerySyntaxContext extends SQLQueryDataContext {
     @Override
     protected void collectKnownSourcesImpl(@NotNull KnownSourcesInfo result) {
         this.parent.collectKnownSourcesImpl(result);
+    }
+
+    @Override
+    protected final List<SQLQueryResultPseudoColumn> prepareRowsetPseudoColumns(@NotNull SQLQueryRowsSourceModel source) {
+        return this.parent.prepareRowsetPseudoColumns(source);
     }
 }
 
