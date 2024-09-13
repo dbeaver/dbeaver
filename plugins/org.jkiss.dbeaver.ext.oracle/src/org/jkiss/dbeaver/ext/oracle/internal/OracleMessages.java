@@ -43,4 +43,6 @@ public class OracleMessages extends NLS {
     public static String oracle_server_session_manager_details_description;
     public static String oracle_server_session_manager_display_exec_plan_name;
     public static String oracle_server_session_manager_display_exec_plan_description;
+    public static String pseudo_column_rowid_description;
+    public static String pseudo_column_ora_rowscn_description;
 }

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.import_config.wizards;
 
 import org.eclipse.jface.dialogs.IMessageProvider;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -139,7 +140,7 @@ public abstract class ConfigImportWizardPage extends ActiveWizardPage<ConfigImpo
         }
         matchedDrivers = matchedDrivers.stream().sorted(Comparator.comparing(DriverDescriptor::getName)).collect(Collectors.toList());
         DriverDescriptor driver = ObjectListDialog.selectObject(
-            getShell(), "Choose driver for connection '" + connectionInfo.getAlias() + "'", "ImportDriverSelector", matchedDrivers);
+            getShell(), NLS.bind(ImportConfigMessages.config_import_wizard_choose_driver_for_connections, connectionInfo.getAlias()), "ImportDriverSelector", matchedDrivers);
         if (driver != null) {
             connectionInfo.setDriver(driver);
             connectionInfo.setDriverInfo(new ImportDriverInfo(

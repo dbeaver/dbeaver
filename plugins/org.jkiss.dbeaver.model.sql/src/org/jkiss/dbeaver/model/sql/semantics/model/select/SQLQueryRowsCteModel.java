@@ -101,7 +101,7 @@ public class SQLQueryRowsCteModel extends SQLQueryRowsSourceModel {
             for (SQLQueryRowsCteSubqueryModel subquery : this.subqueries) {
                 SQLQueryDataContext subqueryResult = (
                     subquery.source == null
-                        ? aggregatedContext.overrideResultTuple(Collections.emptyList())
+                        ? aggregatedContext.overrideResultTuple(null, Collections.emptyList(), Collections.emptyList())
                         : subquery.source.propagateContext(aggregatedContext, statistics)
                 ).hideSources();
                 SQLQueryDataContext currCtx = subquery.subqueryName == null

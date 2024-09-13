@@ -35,9 +35,9 @@ public class ConfigImportWizardPageDbvis extends ConfigImportWizardPage {
     public static final String DBVIS_HOME_FOLDER = ".dbvis";
     
     protected ConfigImportWizardPageDbvis() {
-        super("DBVisualizer");
-        setTitle("DBVisualizer");
-        setDescription("Import DBVisualizer connections");
+        super(ImportConfigMessages.config_import_wizard_dbvis_name);
+        setTitle(ImportConfigMessages.config_import_wizard_dbvis_name);
+        setDescription(ImportConfigMessages.config_import_wizard_dbvis_description);
         setImageDescriptor(Activator.getImageDescriptor("icons/dbvis_big.png"));
     }
 

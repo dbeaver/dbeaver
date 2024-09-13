@@ -34,7 +34,12 @@ public class SQLQueryCombinedContext extends SQLQueryResultTupleContext {
     private final SQLQueryDataContext otherParent;
 
     public SQLQueryCombinedContext(@NotNull SQLQueryDataContext left, @NotNull SQLQueryDataContext right) {
-        super(left, STMUtils.combineLists(left.getColumnsList(), right.getColumnsList()));
+        super(
+            left,
+            STMUtils.combineLists(left.getColumnsList(), right.getColumnsList()),
+            // TODO consider ambiguity and/or propagation policy of pseudo-columns here
+            STMUtils.combineLists(left.getPseudoColumnsList(), right.getPseudoColumnsList())
+        );
         this.otherParent = right;
     }
 
