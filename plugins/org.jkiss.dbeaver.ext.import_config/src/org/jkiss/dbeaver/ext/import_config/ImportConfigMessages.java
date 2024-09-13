@@ -33,6 +33,28 @@ public class ImportConfigMessages extends NLS {
     public static String config_import_wizard_btn_deselect_all;
     public static String config_import_wizard_btn_set_driver;
     public static String config_import_wizard_error;
+    public static String config_import_wizard_no_connection_found_error;
+    public static String config_import_wizard_choose_driver_for_connections;
+    public static String config_import_wizard_driver_selection_name;
+    public static String config_import_wizard_driver_selection_description;
+    public static String config_import_wizard_custom_driver_settings;
+    public static String config_import_wizard_custom_driver_import_settings_name;
+    public static String config_import_wizard_custom_driver_import_settings_file_format_description;
+    public static String config_import_wizard_custom_driver_import_settings_file_description;
+    public static String config_import_wizard_custom_input_type;
+    public static String config_import_wizard_custom_input_file;
+    public static String config_import_wizard_custom_input_file_configuration;
+    public static String config_import_wizard_file_doesnt_exist_error;
+    public static String config_import_wizard_file_encoding;
+    public static String config_import_wizard_dbvis_name;
+    public static String config_import_wizard_dbvis_description;
+    public static String config_import_wizard_navicat_name;
+    public static String config_import_wizard_navicat_description;
+    public static String config_import_wizard_navicat_connection_export_file;
+    public static String config_import_wizard_squirrel_name;
+    public static String config_import_wizard_squirrel_description;
+    public static String config_import_wizard_import_driver;
+    public static String config_import_wizard_extract_url_parameters;
 
     static {
         // initialize resource bundle
