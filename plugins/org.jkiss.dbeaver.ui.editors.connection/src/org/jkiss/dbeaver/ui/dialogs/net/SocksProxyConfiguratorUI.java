@@ -28,13 +28,10 @@ import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.registry.configurator.DBPConnectionEditIntention;
 import org.jkiss.dbeaver.model.impl.net.SocksConstants;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
-import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
-import org.jkiss.dbeaver.ui.IObjectPropertyConfiguratorProvider;
+import org.jkiss.dbeaver.registry.configurator.DBPConnectionEditIntention;
+import org.jkiss.dbeaver.ui.AbstractObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
@@ -42,7 +39,7 @@ import org.jkiss.utils.CommonUtils;
 /**
  * SOCKS proxy configuration
  */
-public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> {
+public class SocksProxyConfiguratorUI extends AbstractObjectPropertyConfigurator<Object, DBWHandlerConfiguration> {
 
     public static final String NETWORK_PREF_PAGE_ID = "org.eclipse.ui.net.NetPreferences";
 
@@ -51,16 +48,6 @@ public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<Obj
     private Text userNameText;
     private Text passwordText;
     private Button savePasswordCheckbox;
-
-    protected final DBPConnectionEditIntention editIntention;
-
-    public SocksProxyConfiguratorUI() {
-        this(DBPConnectionEditIntention.DEFAULT);
-    }
-
-    public SocksProxyConfiguratorUI(@NotNull DBPConnectionEditIntention editIntention) {
-        this.editIntention = editIntention;
-    }
 
     @Override
     public void createControl(@NotNull Composite parent, Object object, @NotNull Runnable propertyChangeListener)
@@ -102,7 +89,7 @@ public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<Obj
             }
         });
 
-        if (this.editIntention == DBPConnectionEditIntention.CREDENTIALS_ONLY) {
+        if (this.getEditIntention() == DBPConnectionEditIntention.CREDENTIALS_ONLY) {
             hostText.setEditable(false);
             portText.setEnabled(false);
         }
@@ -143,15 +130,4 @@ public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<Obj
         return true;
     }
 
-    public static class Provider implements IObjectPropertyConfiguratorProvider<Object, DBWHandlerConfiguration, DBPConnectionEditIntention, IObjectPropertyConfigurator<Object, DBWHandlerConfiguration>> {
-
-        @NotNull
-        @Override
-        public IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> createConfigurator(
-            @Nullable Object object,
-            @NotNull DBPConnectionEditIntention intention
-        ) throws DBException {
-            return new SocksProxyConfiguratorUI(intention);
-        }
-    }
 }

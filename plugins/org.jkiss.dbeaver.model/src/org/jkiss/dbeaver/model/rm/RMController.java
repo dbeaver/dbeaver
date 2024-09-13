@@ -99,7 +99,6 @@ public interface RMController extends DBPObjectController, DBPPingController {
         @NotNull String configuration,
         @Nullable List<String> dataSourceIds) throws DBException;
 
-
     /**
      * Delete datasource by Ids
      */

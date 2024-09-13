@@ -30,17 +30,13 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
-import org.jkiss.dbeaver.registry.configurator.DBPConnectionEditIntention;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
+import org.jkiss.dbeaver.registry.configurator.DBPConnectionEditIntention;
 import org.jkiss.dbeaver.registry.driver.DriverClassFindJob;
-import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
-import org.jkiss.dbeaver.ui.IObjectPropertyConfiguratorProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.net.SSLConfiguratorTrustStoreUI;
 import org.jkiss.utils.CommonUtils;
@@ -60,10 +56,6 @@ public class PostgreSSLConfigurator extends SSLConfiguratorTrustStoreUI {
     private Button useProxyService;
     private boolean sslClassesResolved;
 
-    public PostgreSSLConfigurator() {
-        super(DBPConnectionEditIntention.DEFAULT);
-    }
-
     @Override
     public void createControl(@NotNull Composite parent, Object object, @NotNull Runnable propertyChangeListener) {
         final Composite composite = new Composite(parent, SWT.NONE);
@@ -75,7 +67,7 @@ public class PostgreSSLConfigurator extends SSLConfiguratorTrustStoreUI {
         createSSLConfigHint(composite, true, 1);
         createTrustStoreConfigGroup(composite);
 
-        {
+        if (this.getEditIntention() != DBPConnectionEditIntention.CREDENTIALS_ONLY) {
             Group advGroup = UIUtils.createControlGroup(composite, PostgreMessages.dialog_connection_network_postgres_ssl_advanced, 2, GridData.FILL_HORIZONTAL, -1);
             sslModeCombo = UIUtils.createLabelCombo(advGroup, PostgreMessages.dialog_connection_network_postgres_ssl_advanced_ssl_mode, SWT.READ_ONLY | SWT.DROP_DOWN);
             sslModeCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
@@ -109,77 +101,61 @@ public class PostgreSSLConfigurator extends SSLConfiguratorTrustStoreUI {
             clientKeyPath.setText(CommonUtils.notEmpty(configuration.getStringProperty(PostgreConstants.PROP_SSL_CLIENT_KEY)));
         }
 
-        UIUtils.setComboSelection(sslModeCombo, CommonUtils.notEmpty(configuration.getStringProperty(PostgreConstants.PROP_SSL_MODE)));
-        if (ENABLE_PROXY) {
-            useProxyService.setSelection(configuration.getBooleanProperty(PostgreConstants.PROP_SSL_PROXY));
-        }
-
-        PaintListener paintListener = new PaintListener() {
-            @Override
-            public void paintControl(PaintEvent e) {
-                if (!sslClassesResolved) {
-                    sslClassesResolved = true;
-                    sslFactoryCombo.removePaintListener(this);
-                    final Job resolveJob = new Job("Find factories") {
-                        {
-                            setUser(true);
-                        }
-
-                        @Override
-                        protected IStatus run(IProgressMonitor monitor) {
-                            final DriverClassFindJob finder = new DriverClassFindJob(
-                                configuration.getDriver(),
-                                SSLSocketFactory.class.getName(),
-                                false);
-                            finder.run(new DefaultProgressMonitor(monitor));
-                            UIUtils.syncExec(() -> {
-                                sslFactoryCombo.removeAll();
-                                for (String cn : finder.getDriverClassNames()) {
-                                    sslFactoryCombo.add(cn);
-                                }
-                                final String factoryValue = configuration.getStringProperty(PostgreConstants.PROP_SSL_FACTORY);
-                                if (!CommonUtils.isEmpty(factoryValue)) {
-                                    sslFactoryCombo.setText(factoryValue);
-                                }
-                            });
-                            return Status.OK_STATUS;
-                        }
-                    };
-                    resolveJob.schedule();
-                }
+        if (this.getEditIntention() != DBPConnectionEditIntention.CREDENTIALS_ONLY) {
+            UIUtils.setComboSelection(sslModeCombo, CommonUtils.notEmpty(configuration.getStringProperty(PostgreConstants.PROP_SSL_MODE)));
+            if (ENABLE_PROXY) {
+                useProxyService.setSelection(configuration.getBooleanProperty(PostgreConstants.PROP_SSL_PROXY));
             }
-        };
-        sslFactoryCombo.addPaintListener(paintListener);
+
+            PaintListener paintListener = new PaintListener() {
+                @Override
+                public void paintControl(PaintEvent e) {
+                    if (!sslClassesResolved) {
+                        sslClassesResolved = true;
+                        sslFactoryCombo.removePaintListener(this);
+                        final Job resolveJob = new Job("Find factories") {
+                            {
+                                setUser(true);
+                            }
+
+                            @Override
+                            protected IStatus run(IProgressMonitor monitor) {
+                                final DriverClassFindJob finder = new DriverClassFindJob(
+                                        configuration.getDriver(),
+                                        SSLSocketFactory.class.getName(),
+                                        false);
+                                finder.run(new DefaultProgressMonitor(monitor));
+                                UIUtils.syncExec(() -> {
+                                    sslFactoryCombo.removeAll();
+                                    for (String cn : finder.getDriverClassNames()) {
+                                        sslFactoryCombo.add(cn);
+                                    }
+                                    final String factoryValue = configuration.getStringProperty(PostgreConstants.PROP_SSL_FACTORY);
+                                    if (!CommonUtils.isEmpty(factoryValue)) {
+                                        sslFactoryCombo.setText(factoryValue);
+                                    }
+                                });
+                                return Status.OK_STATUS;
+                            }
+                        };
+                        resolveJob.schedule();
+                    }
+                }
+            };
+            sslFactoryCombo.addPaintListener(paintListener);
+        }
     }
 
     @Override
     public void saveSettings(@NotNull DBWHandlerConfiguration configuration) {
         super.saveSettings(configuration);
 
-        configuration.setProperty(PostgreConstants.PROP_SSL_MODE, sslModeCombo.getText());
-        configuration.setProperty(PostgreConstants.PROP_SSL_FACTORY, sslFactoryCombo.getText());
-        if (ENABLE_PROXY) {
-            configuration.setProperty(PostgreConstants.PROP_SSL_PROXY, useProxyService.getSelection());
-        }
-    }
-
-    public static class Provider implements IObjectPropertyConfiguratorProvider<Object, DBWHandlerConfiguration, DBPConnectionEditIntention, IObjectPropertyConfigurator<Object, DBWHandlerConfiguration>> {
-
-        @NotNull
-        @Override
-        public IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> createConfigurator(
-            @Nullable Object object,
-            @NotNull DBPConnectionEditIntention intention
-        ) throws DBException {
-            return switch (intention) {
-                case DEFAULT -> new PostgreSSLConfigurator();
-                case CREDENTIALS_ONLY -> new SSLConfiguratorTrustStoreUI(intention) {
-                    @Override
-                    protected boolean useCACertificate() {
-                        return true;
-                    }
-                };
-            };
+        if (this.getEditIntention() != DBPConnectionEditIntention.CREDENTIALS_ONLY) {
+            configuration.setProperty(PostgreConstants.PROP_SSL_MODE, sslModeCombo.getText());
+            configuration.setProperty(PostgreConstants.PROP_SSL_FACTORY, sslFactoryCombo.getText());
+            if (ENABLE_PROXY) {
+                configuration.setProperty(PostgreConstants.PROP_SSL_PROXY, useProxyService.getSelection());
+            }
         }
     }
 }

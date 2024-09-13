@@ -24,15 +24,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
-import org.jkiss.dbeaver.registry.configurator.DBPConnectionEditIntention;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
-import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
-import org.jkiss.dbeaver.ui.IObjectPropertyConfiguratorProvider;
+import org.jkiss.dbeaver.registry.configurator.DBPConnectionEditIntention;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.net.SSLConfiguratorTrustStoreUI;
 import org.jkiss.utils.CommonUtils;
@@ -46,14 +42,6 @@ public class MySQLSSLConfigurator extends SSLConfiguratorTrustStoreUI {
     private Button veryServerCert;
     private Button allowPublicKeyRetrieval;
     private Text cipherSuitesText;
-
-    public MySQLSSLConfigurator() {
-        super(DBPConnectionEditIntention.DEFAULT);
-    }
-
-    public MySQLSSLConfigurator(@NotNull DBPConnectionEditIntention editIntention) {
-        super(editIntention);
-    }
 
     @Override
     public void createControl(@NotNull Composite parent, Object object, @NotNull Runnable propertyChangeListener) {
@@ -78,7 +66,7 @@ public class MySQLSSLConfigurator extends SSLConfiguratorTrustStoreUI {
             allowPublicKeyRetrieval = UIUtils.createLabelCheckbox(advGroup, MySQLUIMessages.mysql_ssl_configurator_checkbox_allow_public_key, MySQLUIMessages.mysql_ssl_configurator_checkbox_allow_public_key_tip, false);
         }
 
-        if (this.editIntention == DBPConnectionEditIntention.CREDENTIALS_ONLY) {
+        if (this.getEditIntention() == DBPConnectionEditIntention.CREDENTIALS_ONLY) {
             cipherSuitesText.setEditable(false);
             requireSSQL.setEnabled(false);
             veryServerCert.setEnabled(false);
@@ -117,18 +105,5 @@ public class MySQLSSLConfigurator extends SSLConfiguratorTrustStoreUI {
         configuration.setProperty(MySQLConstants.PROP_VERIFY_SERVER_SERT, String.valueOf(veryServerCert.getSelection()));
         configuration.setProperty(MySQLConstants.PROP_SSL_PUBLIC_KEY_RETRIEVE, String.valueOf(allowPublicKeyRetrieval.getSelection()));
         configuration.setProperty(MySQLConstants.PROP_SSL_CIPHER_SUITES, cipherSuitesText.getText());
-    }
-
-
-    public static class Provider implements IObjectPropertyConfiguratorProvider<Object, DBWHandlerConfiguration, DBPConnectionEditIntention, IObjectPropertyConfigurator<Object, DBWHandlerConfiguration>> {
-
-        @NotNull
-        @Override
-        public IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> createConfigurator(
-            @Nullable Object object,
-            @NotNull DBPConnectionEditIntention intention
-        ) throws DBException {
-            return new MySQLSSLConfigurator(intention);
-        }
     }
 }

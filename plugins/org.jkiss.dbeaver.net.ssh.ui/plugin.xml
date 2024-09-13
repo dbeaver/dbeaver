@@ -5,8 +5,6 @@
 
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
         <propertyConfigurator class="org.jkiss.dbeaver.model.net.ssh.SSHTunnelImpl" uiClass="org.jkiss.dbeaver.ui.net.ssh.SSHTunnelConfiguratorUI"/>
-        <propertyConfiguratorProvider class="org.jkiss.dbeaver.model.net.ssh.SSHTunnelImpl" uiProviderClass="org.jkiss.dbeaver.ui.net.ssh.SSHTunnelConfiguratorUI$Provider"
-            parameterClass="org.jkiss.dbeaver.registry.configurator.DBPConnectionEditIntention"/>
     </extension>
 
     <extension point="org.eclipse.core.runtime.adapters">

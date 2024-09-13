@@ -27,12 +27,13 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
-import org.jkiss.dbeaver.registry.configurator.DBPConnectionEditIntention;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.registry.configurator.DBPConnectionEditIntention;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.ui.AbstractObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.IElementFilter;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -116,13 +117,13 @@ public class AuthModelSelector extends Composite {
         this.selectedAuthModel = activeAuthModel;
         this.authSettingsEnabled = !dataSourceContainer.isSharedCredentials();
         this.allAuthModels = activeDataSource.getDriver() == DriverDescriptor.NULL_DRIVER ?
-            DataSourceProviderRegistry.getInstance().getAllAuthModels() :
-            DataSourceProviderRegistry.getInstance().getApplicableAuthModels(activeDataSource.getDriver());
+                DataSourceProviderRegistry.getInstance().getAllAuthModels() :
+                DataSourceProviderRegistry.getInstance().getApplicableAuthModels(activeDataSource.getDriver());
         this.allAuthModels.removeIf(o -> modelFilter != null && !modelFilter.isValidElement(o));
         this.allAuthModels.sort((Comparator<DBPAuthModelDescriptor>) (o1, o2) ->
-            o1.isDefaultModel() ? -1 :
-                o2.isDefaultModel() ? 1 :
-                    o1.getName().compareTo(o2.getName()));
+                o1.isDefaultModel() ? -1 :
+                        o2.isDefaultModel() ? 1 :
+                                o1.getName().compareTo(o2.getName()));
         if ((selectedAuthModel == null || !allAuthModels.contains(selectedAuthModel)) && !CommonUtils.isEmpty(defaultAuthModelId)) {
             // Set default to native
             for (DBPAuthModelDescriptor amd : allAuthModels) {
@@ -204,43 +205,44 @@ public class AuthModelSelector extends Composite {
         UIUtils.setControlVisible(authModelComp, authSelectorVisible);
         ((Group)modelConfigPlaceholder).setText(authSelectorVisible ? UIConnectionMessages.dialog_connection_auth_group : UIConnectionMessages.dialog_connection_auth_group + " (" + selectedAuthModel.getName() + ")");
 
-        if (this.intention == DBPConnectionEditIntention.CREDENTIALS_ONLY && this.activeDataSource.isSharedCredentials()) {
-            UIUtils.createInfoLabel(modelConfigPlaceholder, "Shared credentials cannot be edited", GridData.FILL_BOTH,1);
+        DBAAuthModel<?> authModel = selectedAuthModel.getInstance();
+        if (authSettingsEnabled) {
             authModelConfigurator = null;
-        } else {
-            DBAAuthModel<?> authModel = selectedAuthModel.getInstance();
-            if (authSettingsEnabled) {
-                authModelConfigurator = null;
-                try {
-                    authModelConfigurator = UIPropertyConfiguratorRegistry.getInstance().tryCreateConfigurator(authModel, this.intention);
-                    if (authModelConfigurator == null) {
-                        authModelConfigurator = UIPropertyConfiguratorRegistry.getInstance().tryCreateConfigurator(authModel, null);
+            if (this.intention == DBPConnectionEditIntention.CREDENTIALS_ONLY && this.activeDataSource.isSharedCredentials()) {
+                UIUtils.createInfoLabel(modelConfigPlaceholder, "Shared credentials cannot be edited", GridData.FILL_BOTH,1);
+            } else {
+                UIPropertyConfiguratorDescriptor uiConfiguratorDescriptor = UIPropertyConfiguratorRegistry.getInstance().getDescriptor(authModel);
+                if (uiConfiguratorDescriptor != null) {
+                    try {
+                        authModelConfigurator = uiConfiguratorDescriptor.createConfigurator();
+                        if (authModelConfigurator instanceof AbstractObjectPropertyConfigurator<?, ?> abstractConfigurator) {
+                            abstractConfigurator.setEditIntention(this.intention);
+                        }
+                    } catch (DBException e) {
+                        log.error(e);
                     }
-                    if (authModelConfigurator == null) {
-                        log.debug("No UI configurator for auth model " + selectedAuthModel.getId());
-                    }
-                } catch (DBException e) {
-                    log.error(e);
+                } else {
+                    log.debug("No UI configurator for auth model " + selectedAuthModel.getId());
                 }
             }
+        }
 
-            if (authModelConfigurator != null) {
-                authModelConfigurator.createControl(modelConfigPlaceholder, authModel, changeListener);
-                if (activeDataSource != null) {
-                    if (selectedAuthModel != null) {
-                        // Set selected auth model to datasource config
-                        activeDataSource.getConnectionConfiguration().setAuthModelId(selectedAuthModel.getId());
-                    }
-                    authModelConfigurator.loadSettings(activeDataSource);
+        if (authModelConfigurator != null) {
+            authModelConfigurator.createControl(modelConfigPlaceholder, authModel, changeListener);
+            if (activeDataSource != null) {
+                if (selectedAuthModel != null) {
+                    // Set selected auth model to datasource config
+                    activeDataSource.getConnectionConfiguration().setAuthModelId(selectedAuthModel.getId());
                 }
-            } else {
-                if (selectedAuthModel != null && !CommonUtils.isEmpty(selectedAuthModel.getDescription())) {
-                    Label descLabel = new Label(modelConfigPlaceholder, SWT.NONE);
-                    descLabel.setText(selectedAuthModel.getDescription());
-                    GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-                    gd.horizontalSpan = 2;
-                    descLabel.setLayoutData(gd);
-                }
+                authModelConfigurator.loadSettings(activeDataSource);
+            }
+        } else {
+            if (selectedAuthModel != null && !CommonUtils.isEmpty(selectedAuthModel.getDescription())) {
+                Label descLabel = new Label(modelConfigPlaceholder, SWT.NONE);
+                descLabel.setText(selectedAuthModel.getDescription());
+                GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+                gd.horizontalSpan = 2;
+                descLabel.setLayoutData(gd);
             }
         }
 
