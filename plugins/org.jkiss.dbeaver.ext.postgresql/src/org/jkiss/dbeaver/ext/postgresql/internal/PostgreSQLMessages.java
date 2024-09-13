@@ -32,12 +32,6 @@ public class PostgreSQLMessages extends NLS {
     public static String global_variable_session_user_description;
     public static String global_variable_system_user_description;
     public static String global_variable_user_description;
-    public static String pseudo_column_tableoid_description;
-    public static String pseudo_column_xmin_description;
-    public static String pseudo_column_cmin_description;
-    public static String pseudo_column_xmax_description;
-    public static String pseudo_column_cmax_description;
-    public static String pseudo_column_ctid_description;
 
     static {
         // initialize resource bundle
