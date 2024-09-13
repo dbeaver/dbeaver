@@ -54,8 +54,6 @@ public abstract class InternalDB {
 
     private DBPApplication dbpApplication;
 
-    private PoolingDataSource<PoolableConnection> dbConnection;
-
     public InternalDB(InternalDatabaseConfig internalDatabaseConfig, DBPApplication dbpApplication) {
         this.internalDatabaseConfig = internalDatabaseConfig;
         this.dbpApplication = dbpApplication;
@@ -112,17 +110,6 @@ public abstract class InternalDB {
 
     protected DBPApplication getApplication() {
         return DBWorkbench.getPlatform().getApplication();
-    }
-
-    public void closeConnection() {
-        log.debug("Shutdown database");
-        if (dbConnection != null) {
-            try {
-                dbConnection.close();
-            } catch (Exception e) {
-                log.error(e);
-            }
-        }
     }
 
     protected static DataSourceProviderRegistry getDataSourceProviderRegistry() {
@@ -189,12 +176,9 @@ public abstract class InternalDB {
         }
     }
 
-
-    public boolean isInitialized() {
-        return dbConnection != null;
+    public static int getVersionFromSchema(Connection connection, String tableName, String schemaName) throws SQLException {
+        String query = CommonUtils.normalizeTableNames("SELECT VERSION FROM {table_prefix}" + tableName, schemaName);
+        return CommonUtils.toInt(JDBCUtils.executeQuery(connection, query));
     }
 
-    public void setDbConnection(PoolingDataSource<PoolableConnection> dbConnection) {
-        this.dbConnection = dbConnection;
-    }
 }
