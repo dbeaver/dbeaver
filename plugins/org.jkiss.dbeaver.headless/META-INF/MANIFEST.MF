@@ -14,5 +14,6 @@ Require-Bundle: org.eclipse.osgi,
  org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.model.rcp,
  org.jkiss.dbeaver.registry
 Automatic-Module-Name: org.jkiss.dbeaver.headless

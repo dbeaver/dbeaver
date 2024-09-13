@@ -35,4 +35,9 @@ public class OSDescriptor {
         }
         return arch == null || (os.arch != null && arch.equals(os.arch));
     }
+
+    @Override
+    public String toString() {
+        return family + " " + arch;
+    }
 }

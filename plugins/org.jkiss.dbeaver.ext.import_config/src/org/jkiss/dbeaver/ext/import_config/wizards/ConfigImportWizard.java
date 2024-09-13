@@ -83,7 +83,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
             // Flush drivers configuration
             DataSourceProviderRegistry.getInstance().saveDrivers();
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Import driver", null, e);
+            DBWorkbench.getPlatformUI().showError(ImportConfigMessages.config_import_wizard_import_driver, null, e);
             return false;
         }
 
@@ -169,7 +169,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         try {
             adaptConnectionUrl(connectionInfo);
         } catch (DBException e) {
-            UIUtils.showMessageBox(getShell(), "Extract URL parameters", e.getMessage(), SWT.ICON_WARNING);
+            UIUtils.showMessageBox(getShell(), ImportConfigMessages.config_import_wizard_extract_url_parameters, e.getMessage(), SWT.ICON_WARNING);
         }
         final DBPDataSourceRegistry dataSourceRegistry = NavigatorUtils.getSelectedProject().getDataSourceRegistry();
 
@@ -213,7 +213,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         try {
             dataSourceRegistry.addDataSource(dataSource);
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Import connection", null, e);
+            DBWorkbench.getPlatformUI().showError(ImportConfigMessages.config_import_wizard_header_import_configuration, null, e);
         }
     }
 

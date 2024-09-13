@@ -437,6 +437,11 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     public List<SQLQueryResultColumn> getColumnsList() {
         return Collections.emptyList();
     }
+    @Override
+    public boolean hasUndresolvedSource() {
+        return false;
+    }
+
 
     @NotNull
     @Override
@@ -458,7 +463,17 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     public SQLQueryRowsSourceModel findRealSource(@NotNull DBSEntity table) {
         return null;
     }
-    
+
+    @Nullable
+    @Override
+    public DBSObject findRealObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObjectType objectType,
+        @NotNull List<String> objectName
+    ) {
+        return null;
+    }
+
     @Override
     public SQLQueryResultColumn resolveColumn(@NotNull DBRProgressMonitor monitor, @NotNull String simpleName) {
         return null;
@@ -480,12 +495,6 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     @Override
     public SQLDialect getDialect() {
         return this.dialect;
-    }
-    
-    @NotNull
-    @Override
-    public SQLQueryRowsSourceModel getDefaultTable(@NotNull STMTreeNode syntaxNode) {
-        return new DummyTableRowsSource(syntaxNode);
     }
     
     @Override

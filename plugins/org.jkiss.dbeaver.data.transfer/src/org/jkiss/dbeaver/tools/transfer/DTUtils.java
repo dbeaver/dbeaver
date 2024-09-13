@@ -23,6 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.*;
@@ -45,6 +46,8 @@ import org.jkiss.dbeaver.tools.transfer.serialize.SerializerRegistry;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -387,6 +390,14 @@ public class DTUtils {
                 addLeafBindings(result, nested);
             }
         }
+    }
+
+    public static Path findProjectFile(@NotNull DBPProject project, @NotNull String filePath) {
+        Path file = project.getAbsolutePath().resolve(filePath);
+        if (Files.exists(file) && Files.isRegularFile(file)) {
+            return file;
+        }
+        return null;
     }
 
     private static class MetadataReceiver implements DBDDataReceiver {

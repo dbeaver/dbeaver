@@ -177,6 +177,7 @@ public class DTUIMessages extends NLS {
     public static String stream_producer_column_mapping_error_title;
     public static String stream_producer_column_mapping_error_message;
     public static String stream_producer_select_input_file;
+    public static String stream_producer_page_input_files_hint;
     public static String stream_producer_page_preview_title_load_entity_meta;
     public static String stream_producer_page_preview_message_entity_attributes;
     public static String stream_producer_page_preview_title_preview_data;

@@ -28,10 +28,7 @@ import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ERDConnectionRouterRegistry {
 
@@ -111,6 +108,7 @@ public class ERDConnectionRouterRegistry {
      *
      * @return - descriptor
      */
+    @NotNull
     public ERDConnectionRouterDescriptor getActiveRouter() {
         if (activeRouterDescriptor != null) {
             return activeRouterDescriptor;
@@ -123,6 +121,9 @@ public class ERDConnectionRouterRegistry {
         }
         if (activeRouterDescriptor == null) {
             activeRouterDescriptor = getDescriptorById(getPreferenceStore().getString(ERDUIConstants.PREF_ROUTING_TYPE));
+        }
+        if (activeRouterDescriptor == null) {
+            activeRouterDescriptor = getDefaultDescriptor();
         }
         return activeRouterDescriptor;
     }
@@ -141,7 +142,8 @@ public class ERDConnectionRouterRegistry {
      *
      * @return - default descriptor
      */
+    @NotNull
     public ERDConnectionRouterDescriptor getDefaultDescriptor() {
-        return getDescriptorById(ERDUIConstants.PREF_DEFAULT_ATTR_ERD_ROUTER_ID);
+        return Objects.requireNonNull(getDescriptorById(ERDUIConstants.PREF_DEFAULT_ATTR_ERD_ROUTER_ID));
     }
 }

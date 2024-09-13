@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
 import java.util.Collection;
 import java.util.List;
@@ -43,6 +45,12 @@ public abstract class SQLQuerySyntaxContext extends SQLQueryDataContext {
         return this.parent.getColumnsList();
     }
 
+    @Override
+    public boolean hasUndresolvedSource() {
+        return this.parent.hasUndresolvedSource();
+    }
+
+
     @NotNull
     @Override
     public List<SQLQueryResultPseudoColumn> getPseudoColumnsList() {
@@ -59,6 +67,16 @@ public abstract class SQLQuerySyntaxContext extends SQLQueryDataContext {
     @Override
     public SQLQueryRowsSourceModel findRealSource(@NotNull DBSEntity table) {
         return this.parent.findRealSource(table);
+    }
+
+    @Nullable
+    @Override
+    public DBSObject findRealObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObjectType objectType,
+        @NotNull List<String> objectName
+    ) {
+        return this.parent.findRealObject(monitor, objectType, objectName);
     }
 
     @Nullable
@@ -90,12 +108,6 @@ public abstract class SQLQuerySyntaxContext extends SQLQueryDataContext {
     @Override
     public SQLDialect getDialect() {
         return this.parent.getDialect();
-    }
-    
-    @NotNull
-    @Override
-    public SQLQueryRowsSourceModel getDefaultTable(@NotNull STMTreeNode syntaxNode) {
-        return this.parent.getDefaultTable(syntaxNode);
     }
     
     @Override

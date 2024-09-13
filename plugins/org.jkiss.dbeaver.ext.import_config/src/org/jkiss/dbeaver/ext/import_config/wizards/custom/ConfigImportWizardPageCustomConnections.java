@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.import_config.wizards.custom;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.import_config.ImportConfigMessages;
 import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizardPage;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportConnectionInfo;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
@@ -45,9 +46,9 @@ public class ConfigImportWizardPageCustomConnections extends ConfigImportWizardP
 
     protected ConfigImportWizardPageCustomConnections()
     {
-        super("Connections");
-        setTitle("Connections");
-        setDescription("Import connections");
+        super(ImportConfigMessages.config_import_wizard_page_caption_connections);
+        setTitle(ImportConfigMessages.config_import_wizard_page_caption_connections);
+        setDescription(ImportConfigMessages.config_import_wizard_header_import_configuration);
     }
 
     @Override
@@ -79,7 +80,7 @@ public class ConfigImportWizardPageCustomConnections extends ConfigImportWizardP
         final CSVReader csvReader = new CSVReader(reader);
         final String[] header = csvReader.readNext();
         if (ArrayUtils.isEmpty(header)) {
-            setErrorMessage("No connection found");
+            setErrorMessage(ImportConfigMessages.config_import_wizard_no_connection_found_error);
             return;
         }
         for (;;) {

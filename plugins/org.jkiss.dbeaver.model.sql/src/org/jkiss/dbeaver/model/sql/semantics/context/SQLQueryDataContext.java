@@ -45,6 +45,11 @@ public abstract class SQLQueryDataContext {
     public abstract List<SQLQueryResultColumn> getColumnsList();
 
     /**
+
+     * Returns flag demonstrating whether all the rows' sources were correctly resolved or not
+     */
+    public abstract boolean hasUndresolvedSource();
+
      * Get pseudo columns of the query result tuple
      */
     @NotNull
@@ -55,6 +60,16 @@ public abstract class SQLQueryDataContext {
      */
     @Nullable
     public abstract DBSEntity findRealTable(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName);
+
+    /**
+     * Find real object of given type referenced by its name in the database
+     */
+    @Nullable
+    public abstract DBSObject findRealObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObjectType objectType,
+        @NotNull List<String> objectName
+    );
 
     /**
      * Find column referenced by its name in the result tuple
@@ -157,20 +172,17 @@ public abstract class SQLQueryDataContext {
     }
 
     /**
+     * Prepare new semantic context by introducing hasUnresolvedSource flag
+     */
+    public final SQLQueryDataContext markHasUnresolvedSource() {
+        return new SQLQueryWithUndresolvedSourceRowsContext(this);
+    }
+
+    /**
      * Get SQL dialect used adjust identifiers during semantics resolution
      */
     @NotNull
     public abstract SQLDialect getDialect();
-
-    /**
-     * Get fake table rows source used to represent invalid query fragments when the adequate semantic model item cannot be constructed
-     */
-    @NotNull
-    public abstract SQLQueryRowsSourceModel getDefaultTable(@NotNull STMTreeNode syntaxNode);
-
-    public DBSObject findRealObject(DBRProgressMonitor monitor, DBSObjectType objectType, List<String> name) {
-        return null;
-    }
 
     /**
      * Representation of the information about rows sources involved in semantic model

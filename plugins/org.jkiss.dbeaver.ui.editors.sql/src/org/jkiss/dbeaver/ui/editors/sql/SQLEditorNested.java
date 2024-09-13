@@ -291,11 +291,11 @@ public abstract class SQLEditorNested<T extends DBSObject>
 
         @Override
         public void fillCustomActions(IContributionManager contributionManager) {
-            contributeEditorCommands(contributionManager);
             IWorkbenchPartSite site = getSite();
             if (site != null) {
                 DatabaseEditorUtils.contributeStandardEditorActions(site, contributionManager);
             }
+            contributeEditorCommands(contributionManager);
         }
     }
 
