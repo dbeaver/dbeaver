@@ -45,11 +45,11 @@ public abstract class SQLQueryDataContext {
     public abstract List<SQLQueryResultColumn> getColumnsList();
 
     /**
-
      * Returns flag demonstrating whether all the rows' sources were correctly resolved or not
      */
     public abstract boolean hasUndresolvedSource();
 
+    /**
      * Get pseudo columns of the query result tuple
      */
     @NotNull

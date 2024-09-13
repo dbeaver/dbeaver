@@ -133,23 +133,16 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
                     }
                 }
 
+
                 if (forcedClass != null) {
                     this.columnName.getSymbol().setSymbolClass(forcedClass);
                     type = forcedClass == SQLQuerySymbolClass.STRING ? SQLQueryExprType.STRING : SQLQueryExprType.UNKNOWN;
                 } else {
-                    propagateColumnDefinition(this.columnName, resultColumn, statistics);
+                    if (resultColumn != null || !context.hasUndresolvedSource()) {
+                        propagateColumnDefinition(this.columnName, resultColumn, statistics);
+                    }
                     type = resultColumn != null ? resultColumn.type : SQLQueryExprType.UNKNOWN;
                 }
-            }
-
-            if (forcedClass != null) {
-                this.columnName.getSymbol().setSymbolClass(forcedClass);
-                type = forcedClass == SQLQuerySymbolClass.STRING ? SQLQueryExprType.STRING : SQLQueryExprType.UNKNOWN;
-            } else {
-                if (resultColumn != null || !context.hasUndresolvedSource()) {
-                    propagateColumnDefinition(this.columnName, resultColumn, statistics);
-                }
-                type = resultColumn != null ? resultColumn.type : SQLQueryExprType.UNKNOWN;
             }
         } else {
             resultColumn = null;
