@@ -428,6 +428,12 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
         flushMetadata();
     }
 
+    @Nullable
+    @Override
+    public <T> T adaptResource(Object rootFolder, Object object, Class<T> adapter) {
+        return null;
+    }
+
     @Override
     public void refreshProject(DBRProgressMonitor monitor) {
 

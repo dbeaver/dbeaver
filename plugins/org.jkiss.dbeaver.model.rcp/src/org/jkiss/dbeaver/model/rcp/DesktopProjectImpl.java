@@ -31,6 +31,10 @@ import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
+import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
+import org.jkiss.dbeaver.model.fs.nio.EFSNIOFile;
+import org.jkiss.dbeaver.model.fs.nio.EFSNIOFileSystemRoot;
+import org.jkiss.dbeaver.model.fs.nio.EFSNIOFolder;
 import org.jkiss.dbeaver.model.impl.app.BaseProjectImpl;
 import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
@@ -185,6 +189,26 @@ public class DesktopProjectImpl extends BaseProjectImpl implements RCPProject {
     @NotNull
     protected DBPDataSourceRegistry createDataSourceRegistry() {
         return new DesktopDataSourceRegistry(this);
+    }
+
+    @Nullable
+    @Override
+    public <T> T adaptResource(Object rootFolder, Object object, Class<T> adapter) {
+        if (rootFolder instanceof DBFVirtualFileSystemRoot fsRoot && object instanceof Path path && adapter == IResource.class) {
+            EFSNIOFileSystemRoot root = new EFSNIOFileSystemRoot(
+                getEclipseProject(),
+                fsRoot,
+                fsRoot.getFileSystem().getType() + "/" + fsRoot.getFileSystem().getId() + "/" + fsRoot.getRootId()
+            );
+            IResource resource;
+            if (Files.isDirectory(path)) {
+                resource = new EFSNIOFolder(root, path);
+            } else {
+                resource = new EFSNIOFile(root, path);
+            }
+            return adapter.cast(resource);
+        }
+        return super.adaptResource(rootFolder, object, adapter);
     }
 
     @Nullable

@@ -26,14 +26,14 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
-import org.jkiss.dbeaver.model.fs.nio.*;
+import org.jkiss.dbeaver.model.fs.nio.EFSNIOFile;
+import org.jkiss.dbeaver.model.fs.nio.EFSNIOPath;
+import org.jkiss.dbeaver.model.fs.nio.EFSNIOResource;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNLazyNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
-import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
@@ -68,12 +68,6 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
 
     protected DBNPathBase(DBNNode parentNode) {
         super(parentNode);
-    }
-
-    @NotNull
-    @Override
-    public RCPProject getOwnerProject() {
-        return (RCPProject)super.getOwnerProject();
     }
 
     public abstract Path getPath();
@@ -435,27 +429,15 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
     public <T> T getAdapter(Class<T> adapter) {
         if (adapter == Path.class) {
             return adapter.cast(getPath());
-        } else if (adapter == IResource.class) {
-            DBNFileSystemRoot rootNode = this instanceof DBNFileSystemRoot ?
-                (DBNFileSystemRoot) this :
-                DBNUtils.getParentOfType(DBNFileSystemRoot.class, this);
-            if (rootNode == null) {
-                return null;
+        }
+        DBNFileSystemRoot rootNode = this instanceof DBNFileSystemRoot ?
+            (DBNFileSystemRoot) this :
+            DBNUtils.getParentOfType(DBNFileSystemRoot.class, this);
+        if (rootNode != null) {
+            T result = getOwnerProject().adaptResource(rootNode.getRoot(), getPath(), adapter);
+            if (result != null) {
+                return result;
             }
-            DBFVirtualFileSystemRoot fsRoot = rootNode.getRoot();
-            EFSNIOFileSystemRoot root = new EFSNIOFileSystemRoot(
-                getOwnerProject().getEclipseProject(),
-                fsRoot,
-                fsRoot.getFileSystem().getType() + "/" + fsRoot.getFileSystem().getId() + "/" + fsRoot.getRootId()
-            );
-            Path path = getPath();
-            IResource resource;
-            if (allowsChildren()) {
-                resource = new EFSNIOFolder(root, path);
-            } else {
-                resource = new EFSNIOFile(root, path);
-            }
-            return adapter.cast(resource);
         }
         return super.getAdapter(adapter);
     }
