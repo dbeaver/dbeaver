@@ -113,6 +113,12 @@ public class DesktopProjectImpl extends BaseProjectImpl implements RCPProject {
     }
 
     @Override
+    @NotNull
+    public String getResourcePath(@NotNull IResource resource) {
+        return resource.getProjectRelativePath().toString();
+    }
+
+    @Override
     public boolean isOpen() {
         return project.isOpen();
     }

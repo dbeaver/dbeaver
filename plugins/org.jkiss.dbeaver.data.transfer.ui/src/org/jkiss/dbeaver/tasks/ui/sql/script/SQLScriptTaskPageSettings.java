@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystems;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.rm.RMControllerProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
@@ -115,7 +116,11 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                         return path.getPath().toString();
                     }
                     DBPProject ownerProject = ((DBNNode) element).getOwnerProject();
-                    return ownerProject.getResourcePath(((DBNNodeWithResource) element).getResource());
+                    if (ownerProject instanceof RCPProject rcpProject) {
+                        return rcpProject.getResourcePath(((DBNNodeWithResource) element).getResource());
+                    } else {
+                        return "";
+                    }
                 }
                 @Override
                 public Image getImage(Object element) {
@@ -488,8 +493,8 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                 scriptPaths.add(((DBNPathBase) resource).getPath().toString());
             } else {
                 IResource res = resource.getResource();
-                if (res instanceof IFile) {
-                    scriptPaths.add(getWizard().getProject().getResourcePath(res));
+                if (res instanceof IFile && getWizard().getProject() instanceof RCPProject rcpProject) {
+                    scriptPaths.add(rcpProject.getResourcePath(res));
                 }
             }
         }

@@ -21,11 +21,9 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
@@ -61,7 +59,6 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
     private static final ByteNumberFormat numberFormat = new ByteNumberFormat();
 
     private DBNNode[] children;
-    private DBPImage resImage;
     // Cache expensive properties
     private transient Long size;
     private transient FileTime lastModified;
@@ -70,7 +67,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
         super(parentNode);
     }
 
-    @Nullable
+    @NotNull
     @Override
     public RCPProject getOwnerProject() {
         return (RCPProject)super.getOwnerProject();
@@ -88,16 +85,6 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
     @Override
     public IResource getResource() {
         return getAdapter(IResource.class);
-    }
-
-    @Override
-    public DBPImage getResourceImage() {
-        return resImage;
-    }
-
-    @Override
-    public void setResourceImage(DBPImage resourceImage) {
-        this.resImage = resourceImage;
     }
 
     @Override
@@ -125,10 +112,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
 
     @Override
     public DBPImage getNodeIcon() {
-        if (resImage != null) {
-            return resImage;
-        }
-        return allowsChildren() ? DBIcon.TREE_FOLDER : DBIcon.TREE_FILE;
+        return getOwnerProject().getWorkspace().getResourceIcon(this);
     }
 
     @Override

@@ -143,6 +143,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
         return super.getAdapter(adapter);
     }
 
+    @NotNull
     @Override
     public DBPProject getOwnerProject() {
         return project;

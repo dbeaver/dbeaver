@@ -16,11 +16,13 @@
  */
 package org.jkiss.dbeaver.model.impl.app;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
@@ -124,6 +126,11 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace {
     @Override
     public void dispose() {
         DBVModel.checkGlobalCacheIsEmpty();
+    }
+
+    @Override
+    public DBPImage getResourceIcon(IAdaptable resourceAdapter) {
+        return null;
     }
 
     @Nullable

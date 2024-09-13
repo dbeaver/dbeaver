@@ -314,14 +314,14 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
         return null;
     }
 
-    @Nullable
+    @NotNull
     public DBPProject getOwnerProject() {
         for (DBNNode node = getParentNode(); node != null; node = node.getParentNode()) {
             if (node instanceof DBNProject) {
                 return ((DBNProject) node).getProject();
             }
         }
-        return null;
+        throw new IllegalStateException("Node doesn't have owner project");
     }
 
     public Throwable getLastLoadError() {

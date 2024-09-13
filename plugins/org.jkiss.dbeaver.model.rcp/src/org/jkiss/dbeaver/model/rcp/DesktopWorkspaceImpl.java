@@ -23,6 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -155,6 +156,16 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
     @Override
     public DBPResourceHandlerDescriptor[] getAllResourceHandlers() {
         return handlerDescriptors.toArray(new DBPResourceHandlerDescriptor[0]);
+    }
+
+
+    @Override
+    public DBPImage getResourceIcon(IAdaptable resourceAdapter) {
+        IResource resource = resourceAdapter.getAdapter(IResource.class);
+        if (resource != null) {
+            return defaultHandler.getResourceIcon(resource);
+        }
+        return null;
     }
 
     @Override

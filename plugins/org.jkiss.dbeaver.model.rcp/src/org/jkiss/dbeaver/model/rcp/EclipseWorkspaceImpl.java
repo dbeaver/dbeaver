@@ -261,7 +261,6 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
         }
     }
 
-
     protected void fireProjectAdd(BaseProjectImpl project) {
         for (DBPProjectListener listener : getListenersCopy()) {
             listener.handleProjectAdd(project);

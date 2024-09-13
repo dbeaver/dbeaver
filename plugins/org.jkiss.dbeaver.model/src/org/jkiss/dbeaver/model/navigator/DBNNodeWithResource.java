@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.resources.IResource;
-import org.jkiss.dbeaver.model.DBPImage;
 
 /**
  * DBNNodeWithImage
@@ -26,10 +25,6 @@ import org.jkiss.dbeaver.model.DBPImage;
 public interface DBNNodeWithResource {
 
     IResource getResource();
-
-    DBPImage getResourceImage();
-
-    void setResourceImage(DBPImage resourceImage);
 
     /**
      * True if resource is remote, false is local

@@ -86,7 +86,6 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
     private IResource resource;
     private DBPResourceHandler handler;
     private DBNNode[] children;
-    private DBPImage resourceImage;
 
     public DBNResource(DBNNode parentNode, IResource resource, DBPResourceHandler handler) {
         super(parentNode);
@@ -168,15 +167,6 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
 
     @NotNull
     protected DBPImage getResourceNodeIcon() {
-        if (resourceImage != null) {
-            return resourceImage;
-        }
-/*
-        if (resource instanceof IFile) {
-            final IContentDescription contentDescription = ((IFile) resource).getContentDescription();
-            contentDescription.getContentType().
-        }
-*/
         if (resource == null) {
             if (this.hasChildren(false)) {
                 return DBIcon.TREE_FOLDER;
@@ -184,14 +174,16 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
                 return DBIcon.TREE_PAGE;
             }
         }
-        switch (resource.getType()) {
-            case IResource.FOLDER:
-                return resource.isLinked() ? DBIcon.TREE_FOLDER_LINK : DBIcon.TREE_FOLDER;
-            case IResource.PROJECT:
-                return DBIcon.PROJECT;
-            default:
-                return DBIcon.TREE_PAGE;
+        DBPImage resourceImage = handler.getResourceIcon(resource);
+        if (resourceImage != null) {
+            return resourceImage;
         }
+
+        return switch (resource.getType()) {
+            case IResource.FOLDER -> resource.isLinked() ? DBIcon.TREE_FOLDER_LINK : DBIcon.TREE_FOLDER;
+            case IResource.PROJECT -> DBIcon.PROJECT;
+            default -> DBIcon.TREE_PAGE;
+        };
     }
 
     @Override
@@ -477,16 +469,6 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
         Arrays.sort(list, COMPARATOR);
     }
 
-    @Override
-    public DBPImage getResourceImage() {
-        return this.resourceImage;
-    }
-
-    @Override
-    public void setResourceImage(DBPImage resourceImage) {
-        this.resourceImage = resourceImage;
-    }
-
     public Collection<DBPDataSourceContainer> getAssociatedDataSources() {
         return handler == null ? null : handler.getAssociatedDataSources(this);
     }
@@ -495,11 +477,6 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
         DBPResourceHandler newHandler = DBPPlatformDesktop.getInstance().getWorkspace().getResourceHandler(resource);
         if (newHandler != handler) {
             handler = newHandler;
-        }
-        if (handler != null) {
-            handler.updateNavigatorNodeFromResource(this, resource);
-        } else {
-            log.error("Can't find handler for resource " + resource.getFullPath());
         }
         getModel().fireNodeEvent(new DBNEvent(source, DBNEvent.Action.UPDATE, this));
     }
