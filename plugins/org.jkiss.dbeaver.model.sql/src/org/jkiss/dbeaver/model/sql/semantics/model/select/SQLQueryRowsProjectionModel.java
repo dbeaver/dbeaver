@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.sql.semantics.SQLQueryLexicalScope;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultPseudoColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
@@ -152,7 +153,9 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
         EnumSet<ProjectionAliasVisibilityScope> aliasScope = context.getDialect().getProjectionAliasVisibilityScope();
 
         List<SQLQueryResultColumn> resultColumns = this.result.expandColumns(unresolvedResult, this, statistics);
-        SQLQueryDataContext resolvedResult = unresolvedResult.overrideResultTuple(resultColumns);
+        List<SQLQueryResultPseudoColumn> resultPseudoColumns = unresolvedResult.getPseudoColumnsList().stream()
+            .filter(s -> s.propagationPolicy.projected).toList();
+        SQLQueryDataContext resolvedResult = unresolvedResult.overrideResultTuple(this, resultColumns, resultPseudoColumns);
 
         SQLQueryDataContext filtersContext = resolvedResult.combine(unresolvedResult);
         if (this.filterExprs.whereClause != null) {
@@ -165,7 +168,7 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
             this.filterExprs.havingClause.propagateContext(clauseCtx, statistics);
             this.filterScopes.havingClause.setContext(clauseCtx);
         }
-        if (this.filterExprs.groupByClause != null) {
+        if (this.filterExprs.groupByClause != null) { // TODO consider dropping certain pseudocolumns
             SQLQueryDataContext clauseCtx = aliasScope.contains(ProjectionAliasVisibilityScope.GROUP_BY) ? filtersContext : unresolvedResult;
             this.filterExprs.groupByClause.propagateContext(clauseCtx, statistics);
             this.filterScopes.groupByClause.setContext(clauseCtx);
