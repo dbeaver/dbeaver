@@ -232,38 +232,6 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
         return this;
     }
 
-    public DBNResource findResource(IResource resource) {
-        try {
-            return findResource(new VoidProgressMonitor(), resource);
-        } catch (Exception e) {
-            log.debug(e);
-            return null;
-        }
-    }
-
-    public DBNResource findResource(DBRProgressMonitor monitor, IResource resource) throws DBException {
-        if (!(project instanceof RCPProject rcpProject)) {
-            return null;
-        }
-        List<IResource> path = new ArrayList<>();
-        for (IResource parent = resource;
-             !(parent instanceof IProject) && !CommonUtils.equalObjects(parent, rcpProject.getRootResource());
-             parent = parent.getParent())
-        {
-            path.add(0, parent);
-        }
-
-        DBNResource resNode = this;
-        for (IResource res : path) {
-            resNode.getChildren(monitor);
-            resNode = resNode.getChild(res);
-            if (resNode == null) {
-                return null;
-            }
-        }
-        return resNode;
-    }
-
     public DBNResource findResource(DBRProgressMonitor monitor, Path path) throws DBException {
         Path relativePath = getProject().getAbsolutePath().relativize(path);
 
