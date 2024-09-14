@@ -150,13 +150,6 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
 
     void moveResourceProperties(@NotNull String oldResourcePath, @NotNull String newResourcePath);
 
-    /**
-     * Adapts a resource to an interface.
-     * In fact it is an ugly workaround to disconnect DBNPath with VFS resources
-     */
-    @Nullable
-    <T> T adaptResource(Object rootFolder, Object object, Class<T> adapter);
-
     void refreshProject(DBRProgressMonitor monitor);
 
     @Nullable

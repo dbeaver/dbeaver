@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
+import org.jkiss.dbeaver.model.fs.DBFResourceAdapter;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
 import org.jkiss.dbeaver.model.fs.nio.EFSNIOFile;
 import org.jkiss.dbeaver.model.fs.nio.EFSNIOFileSystemRoot;
@@ -53,7 +54,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class DesktopProjectImpl extends BaseProjectImpl implements RCPProject {
+public class DesktopProjectImpl extends BaseProjectImpl implements RCPProject, DBFResourceAdapter {
 
     private static final Log log = Log.getLog(DesktopProjectImpl.class);
 
@@ -193,22 +194,25 @@ public class DesktopProjectImpl extends BaseProjectImpl implements RCPProject {
 
     @Nullable
     @Override
-    public <T> T adaptResource(Object rootFolder, Object object, Class<T> adapter) {
-        if (rootFolder instanceof DBFVirtualFileSystemRoot fsRoot && object instanceof Path path && adapter == IResource.class) {
-            EFSNIOFileSystemRoot root = new EFSNIOFileSystemRoot(
-                getEclipseProject(),
-                fsRoot,
-                fsRoot.getFileSystem().getType() + "/" + fsRoot.getFileSystem().getId() + "/" + fsRoot.getRootId()
-            );
-            IResource resource;
-            if (Files.isDirectory(path)) {
-                resource = new EFSNIOFolder(root, path);
-            } else {
-                resource = new EFSNIOFile(root, path);
-            }
-            return adapter.cast(resource);
+    public <T> T adaptResource(DBFVirtualFileSystemRoot fsRoot, Path path, Class<T> adapter) {
+        if (adapter == IResource.class) {
+            return adapter.cast(createResourceFromPath(fsRoot, path));
         }
-        return super.adaptResource(rootFolder, object, adapter);
+        return null;
+    }
+
+    @NotNull
+    private IResource createResourceFromPath(DBFVirtualFileSystemRoot fsRoot, Path path) {
+        EFSNIOFileSystemRoot root = new EFSNIOFileSystemRoot(
+            getEclipseProject(),
+            fsRoot,
+            fsRoot.getFileSystem().getType() + "/" + fsRoot.getFileSystem().getId() + "/" + fsRoot.getRootId()
+        );
+        if (path.toString().endsWith("/")) {
+            return new EFSNIOFolder(root, path);
+        } else {
+            return new EFSNIOFile(root, path);
+        }
     }
 
     @Nullable

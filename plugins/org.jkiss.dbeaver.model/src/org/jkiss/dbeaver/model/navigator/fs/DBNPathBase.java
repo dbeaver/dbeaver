@@ -16,18 +16,15 @@
  */
 package org.jkiss.dbeaver.model.navigator.fs;
 
-import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IResource;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.fs.nio.EFSNIOFile;
-import org.jkiss.dbeaver.model.fs.nio.EFSNIOPath;
+import org.jkiss.dbeaver.model.fs.DBFResourceAdapter;
 import org.jkiss.dbeaver.model.fs.nio.EFSNIOResource;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
@@ -40,11 +37,12 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.ByteNumberFormat;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -244,27 +242,30 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
             return getParentNode().supportsDrop(otherNode);
         }
 
-        // Drop supported only if both nodes are resource with the same handler and DROP feature is supported
-        return otherNode.getAdapter(IResource.class) != null
-            && otherNode != this
-            && otherNode.getParentNode() != this
-            && !this.isChildOf(otherNode);
+        if (getOwnerProject() instanceof DBFResourceAdapter rm) {
+            // Drop supported only if both nodes are resource with the same handler and DROP feature is supported
+            return otherNode.getAdapter(Path.class) != null
+                   && otherNode != this
+                   && otherNode.getParentNode() != this
+                   && !this.isChildOf(otherNode);
+        }
+        return false;
     }
 
     @Override
     public void dropNodes(DBRProgressMonitor monitor, Collection<DBNNode> nodes) throws DBException {
-        IContainer folder;
-        IResource thisResource = getAdapter(IResource.class);
+        Path folder;
+        Path thisResource = getPath();
         if (thisResource == null) {
             return;
         }
-        if (thisResource instanceof IContainer) {
-            folder = (IContainer) thisResource;
+        if (Files.isDirectory(thisResource)) {
+            folder = thisResource;
         } else {
             folder = thisResource.getParent();
         }
-        if (!(folder instanceof IFolder)) {
-            throw new DBException("Can't drop files into non-folder");
+        if (!Files.isDirectory(folder)) {
+            throw new DBException("Can't drop files into non-folder '" + folder + "'");
         }
         if (nodes.isEmpty()) {
             return;
@@ -276,8 +277,8 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
             String action = (doCopy ? "Copy" : "Move") + " resource(s)";
             String message =
                 action + "\n" +
-                    nodes.stream().map(DBNNode::getNodeDisplayName).collect(Collectors.joining(",")) +
-                "\ninto folder " + folder.getFullPath() + "?";
+                nodes.stream().map(DBNNode::getNodeDisplayName).collect(Collectors.joining(",")) +
+                "\ninto folder " + folder + "?";
             if (!DBWorkbench.getPlatformUI().confirmAction(action, message)) {
                 return;
             }
@@ -289,12 +290,12 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
                 if (monitor.isCanceled()) {
                     break;
                 }
-                IResource resource = node.getAdapter(IResource.class);
-                if (resource == null || !resource.exists()) {
+                Path resource = node.getAdapter(Path.class);
+                if (resource == null || !Files.exists(resource)) {
                     log.debug("Resource " + resource + " doesn't not exists");
                     continue;
                 }
-                if (!(resource instanceof IFile)) {
+                if (!Files.isRegularFile(resource)) {
                     log.debug("Resource " + resource + " is not a file");
                     continue;
                 }
@@ -302,25 +303,22 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
                     // Already in this container
                     continue;
                 }
-                boolean doCopy = !isTheSameFileSystem(node);
+               boolean doCopy = !isTheSameFileSystem(node);
                 boolean doDelete = false;
-                monitor.subTask((doCopy ? "Copy" : "Move") + " file " + resource.getName());
+                monitor.subTask((doCopy ? "Copy" : "Move") + " file " + resource);
                 try {
 
-                    IFile targetFile = ((IFolder) folder).getFile(resource.getName());
+                    Path targetFile = folder.resolve(resource.getFileName().toString());
 
                     if (!doCopy) {
                         // Try to move first
                         // Note that move is not supported by some file systems
                         boolean wasMoved = false;
-                        if (targetFile instanceof EFSNIOFile nioFile) {
-                            EFSNIOPath nioTargetPath = new EFSNIOPath(nioFile.getNioPath());
-                            try {
-                                resource.move(nioTargetPath, true, monitor.getNestedMonitor());
-                                wasMoved = true;
-                            } catch (UnsupportedOperationException e) {
-                                log.debug("Underlying FS doesn't support file move. Do copy instead");
-                            }
+                        try {
+                            Files.move(resource, targetFile);
+                            wasMoved = true;
+                        } catch (Exception e) {
+                            log.debug("Underlying FS doesn't support file move. Do copy instead");
                         }
                         if (!wasMoved) {
                             doCopy = true;
@@ -330,22 +328,22 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
 
                     // Copy files
                     if (doCopy) {
-                        try (InputStream is = ((IFile) resource).getContents()) {
-                            if (targetFile.exists()) {
-                                targetFile.setContents(is, true, false, monitor.getNestedMonitor());
-                            } else {
-                                targetFile.create(is, true, monitor.getNestedMonitor());
-                            }
+                        CopyOption[] options = new CopyOption[0];
+                        if (Files.exists(targetFile)) {
+                            options = new CopyOption[] { StandardCopyOption.REPLACE_EXISTING };
                         }
+                        Files.copy(resource, targetFile, options);
                     }
                     if (doDelete) {
                         // Delete source file after copy
-                        resource.delete(true, monitor.getNestedMonitor());
+                        Files.delete(resource);
                     }
                 } finally {
                     monitor.worked(1);
                 }
             }
+            // Refresh folder
+            refreshNode(monitor, this);
         } catch (Exception e) {
             throw new DBException("Error creating NIO resource", e);
         } finally {
@@ -430,16 +428,21 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
         if (adapter == Path.class) {
             return adapter.cast(getPath());
         }
-        DBNFileSystemRoot rootNode = this instanceof DBNFileSystemRoot ?
-            (DBNFileSystemRoot) this :
-            DBNUtils.getParentOfType(DBNFileSystemRoot.class, this);
-        if (rootNode != null) {
-            T result = getOwnerProject().adaptResource(rootNode.getRoot(), getPath(), adapter);
+        DBNFileSystemRoot rootNode = getFileSystemRoot();
+        if (rootNode != null && getOwnerProject() instanceof DBFResourceAdapter rm) {
+            T result = rm.adaptResource(rootNode.getRoot(), getPath(), adapter);
             if (result != null) {
                 return result;
             }
         }
         return super.getAdapter(adapter);
+    }
+
+    @Nullable
+    private DBNFileSystemRoot getFileSystemRoot() {
+        return this instanceof DBNFileSystemRoot ?
+            (DBNFileSystemRoot) this :
+            DBNUtils.getParentOfType(DBNFileSystemRoot.class, this);
     }
 
     @Override

@@ -554,8 +554,13 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNLazyNode {
 
     @Override
     public <T> T getAdapter(Class<T> adapter) {
-        if (resource != null && adapter.isAssignableFrom(resource.getClass())) {
-            return adapter.cast(resource);
+        if (resource != null) {
+            if (adapter.isAssignableFrom(resource.getClass())) {
+                return adapter.cast(resource);
+            }
+            if (adapter == Path.class) {
+                return adapter.cast(resource.getLocation().toPath());
+            }
         }
         return super.getAdapter(adapter);
     }
