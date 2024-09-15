@@ -34,5 +34,7 @@
 <!--    <plugin id="org.eclipse.core.filesystem.win32.x86_64" os="win32" arch="x86_64" version="0.0.0"/>-->
 <!--    <plugin id="org.eclipse.core.resources.win32.x86_64" os="win32" arch="x86_64" version="0.0.0"/>-->
 
+    <plugin id="org.apache.commons.jxpath" version="1.4.0"/>
+
 
 </feature>
