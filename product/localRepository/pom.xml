@@ -40,6 +40,8 @@
 								<artifact><id>org.bouncycastle:bcprov-jdk18on:1.78.1</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
 								<artifact><id>org.bouncycastle:bcutil-jdk18on:1.78.1</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
 
+								<artifact><id>org.apache.commons.commons-jxpath:org.apache.commons.commons-jxpath:1.4.0</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:commons-jxpath -->
+
 								<!-- ANTLR -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.antlr4:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-antlr4 -->
 
