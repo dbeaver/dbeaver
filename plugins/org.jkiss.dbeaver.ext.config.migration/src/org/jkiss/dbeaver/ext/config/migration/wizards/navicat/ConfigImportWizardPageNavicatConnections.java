@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ext.import_config.wizards.navicat;
+package org.jkiss.dbeaver.ext.config.migration.wizards.navicat;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.import_config.ImportConfigMessages;
-import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizardPage;
-import org.jkiss.dbeaver.ext.import_config.wizards.ImportConnectionInfo;
-import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
-import org.jkiss.dbeaver.ext.import_config.wizards.ImportDriverInfo;
+import org.jkiss.dbeaver.ext.config.migration.ImportConfigMessages;
+import org.jkiss.dbeaver.ext.config.migration.wizards.ConfigImportWizardPage;
+import org.jkiss.dbeaver.ext.config.migration.wizards.ImportConnectionInfo;
+import org.jkiss.dbeaver.ext.config.migration.wizards.ImportData;
+import org.jkiss.dbeaver.ext.config.migration.wizards.ImportDriverInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLException;

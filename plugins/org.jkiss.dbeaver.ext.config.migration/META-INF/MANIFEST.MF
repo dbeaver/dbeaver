@@ -15,5 +15,5 @@ Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp
 Export-Package: org.jkiss.dbeaver.ext.config.migration.wizards,
- org.jkiss.dbeaver.ext.import_config
+ org.jkiss.dbeaver.ext.config.migration
 Automatic-Module-Name: org.jkiss.dbeaver.ext.config.migration

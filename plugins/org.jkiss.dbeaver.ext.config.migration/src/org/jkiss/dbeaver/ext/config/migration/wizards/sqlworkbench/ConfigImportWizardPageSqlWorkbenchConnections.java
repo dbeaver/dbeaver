@@ -15,13 +15,14 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ext.import_config.wizards.sqlworkbench;
+package org.jkiss.dbeaver.ext.config.migration.wizards.sqlworkbench;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.import_config.ImportConfigMessages;
-import org.jkiss.dbeaver.ext.import_config.wizards.*;
+import org.jkiss.dbeaver.ext.config.migration.ImportConfigMessages;
+import org.jkiss.dbeaver.ext.config.migration.wizards.ConfigImportWizardPage;
+import org.jkiss.dbeaver.ext.config.migration.wizards.ImportData;
 
 import java.io.*;
 
