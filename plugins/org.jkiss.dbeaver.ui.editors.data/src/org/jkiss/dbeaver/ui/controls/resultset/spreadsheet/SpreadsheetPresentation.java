@@ -1999,6 +1999,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     case DOCUMENT, ANY -> !controller.isRecordMode();
                     default -> isAttributeExpandable(null, attr);
                 };
+            } else if (controller.isRecordMode()) {
+                if (item.getElement() instanceof DBDComplexValue) {
+                    return true;
+                }
             }
             return false;
         }
@@ -2008,9 +2012,17 @@ public class SpreadsheetPresentation extends AbstractPresentation
         public Object[] getChildren(@NotNull IGridItem item) {
             if (item.getElement() instanceof DBDAttributeBinding binding) {
                 if (controller.isRecordMode() && binding.getDataKind() == DBPDataKind.ARRAY && controller.getCurrentRow() != null) {
-                    Object cellValue = controller.getModel().getCellValue(binding, controller.getCurrentRow(), null, false);
+                    Object cellValue = controller.getModel().getCellValue(
+                        binding,
+                        controller.getCurrentRow(),
+                        getRowNestedIndexes(item),
+                        false);
                     if (cellValue instanceof Collection<?> col) {
                         return col.toArray();
+                    } else if (cellValue instanceof DBDComposite composite) {
+                        return null;
+                    } else {
+                        return null;
                     }
                 }
                 switch (binding.getDataKind()) {
@@ -2034,13 +2046,16 @@ public class SpreadsheetPresentation extends AbstractPresentation
             final ResultSetRow row = getResultRowFromGrid(colElement, rowElement);
             final DBDAttributeBinding attr  = getAttributeFromGrid(colElement, rowElement);
 
-            final ResultSetCellLocation cellLocation = new ResultSetCellLocation(attr, row, getRowNestedIndexes(rowElement));
+
+            // Get indexes for parent node
+            int[] nestedIndexes = getRowNestedIndexes(rowElement);
+            final ResultSetCellLocation cellLocation = new ResultSetCellLocation(attr, row, nestedIndexes);
             final Object cellValue = controller.getModel().getCellValue(cellLocation);
 
             if (cellValue instanceof List<?>) {
                 return ((List<?>) cellValue).size();
-            } else if (cellValue instanceof DBDComposite && controller.isRecordMode()) {
-                return ((DBDComposite) cellValue).getAttributeCount();
+            } else if (cellValue instanceof DBDComposite composite && controller.isRecordMode()) {
+                return composite.getAttributeCount();
             } else {
                 return 0;
             }
@@ -2420,7 +2435,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
                 return formatValue(gridColumn, gridRow, child) + "  [" + collection.size() + "]";
             } else if (value instanceof DBDComposite composite && !DBUtils.isNullValue(value)) {
-                return "[" + composite.getDataType().getName() + "]";
+                return Arrays.stream(composite.getAttributes())
+                    .map(DBPNamedObject::getName)
+                    .collect(Collectors.joining(",", "[", "]"));
+                //return "[" + composite.getDataType().getName() + "]";
             }
             try {
                 return attr.getValueRenderer().getValueDisplayString(
@@ -2705,7 +2723,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
     }
 
     @Nullable
-    private int[] getRowNestedIndexes(IGridRow gridRow) {
+    private int[] getRowNestedIndexes(IGridItem gridRow) {
         int[] nestedIndexes = null;
         if (gridRow != null && gridRow.getParent() != null) {
             nestedIndexes = new int[gridRow.getLevel()];
@@ -2713,8 +2731,12 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 // In record mode attribute hierarchy includes struct attributes too
                 // Leave only array indexes
                 int lastIndex = nestedIndexes.length;
-                for (IGridRow gr = gridRow; gr.getParent() != null; gr = gr.getParent()) {
-                    if (!(gr.getElement() instanceof DBDAttributeBinding)) {
+                for (IGridItem gr = gridRow; gr.getParent() != null; gr = gr.getParent()) {
+                    // TODO: broken in record mode for dynamic data
+                    // we need a good way to distiguish nested attributes and array items in record mode.
+                    if ((!(gr.getElement() instanceof DBDAttributeBinding binding) || binding.getDataKind() == DBPDataKind.ARRAY) ||
+                        gr.getElement() instanceof DBDCollection
+                    ) {
                         nestedIndexes[lastIndex - 1] = gr.getRelativeIndex();
                         lastIndex--;
                     }
@@ -2729,7 +2751,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     nestedIndexes = indexesCopy;
                 }
             } else {
-                for (IGridRow gr = gridRow; gr.getParent() != null; gr = gr.getParent()) {
+                for (IGridItem gr = gridRow; gr.getParent() != null; gr = gr.getParent()) {
                     nestedIndexes[gr.getLevel() - 1] = gr.getRelativeIndex();
                 }
             }

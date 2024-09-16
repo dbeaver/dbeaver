@@ -29,4 +29,8 @@ public interface IGridItem {
 
     IGridItem getParent();
 
+    int getLevel();
+
+    int getRelativeIndex();
+
 }
