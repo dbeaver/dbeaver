@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.import_config.wizards.navicat;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.import_config.ImportConfigMessages;
 import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizardPage;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportConnectionInfo;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
@@ -41,9 +42,9 @@ public class ConfigImportWizardPageNavicatConnections extends ConfigImportWizard
     
     protected ConfigImportWizardPageNavicatConnections()
     {
-        super("Navicat");
-        setTitle("Navicat");
-        setDescription("Import Navicat connections");
+        super(ImportConfigMessages.config_import_wizard_navicat_name);
+        setTitle(ImportConfigMessages.config_import_wizard_navicat_name);
+        setDescription(ImportConfigMessages.config_import_wizard_navicat_description);
         decryptor = new NavicatEncrypt();
     }
 

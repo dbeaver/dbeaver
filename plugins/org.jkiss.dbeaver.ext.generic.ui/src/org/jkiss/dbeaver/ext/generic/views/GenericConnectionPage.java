@@ -448,7 +448,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             }
 
             if (isCustomURL() && typeURLRadio != null && !typeURLRadio.isVisible() && CommonUtils.isEmpty(connectionInfo.getUrl())) {
-                urlText.setText(dataSource.getDriver().getSampleURL());
+                urlText.setText(CommonUtils.notEmpty(dataSource.getDriver().getSampleURL()));
             } else if (connectionInfo.getUrl() != null) {
                 urlText.setText(CommonUtils.notEmpty(connectionInfo.getUrl()));
             } else {
@@ -525,6 +525,8 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             }
             final Set<String> properties = metaURL.getAvailableProperties();
             boolean isSampleUrlUsable = properties.contains(DBConstants.PROP_HOST) ||
+                properties.contains(DBConstants.PROP_DATABASE) ||
+                properties.contains(DBConstants.PROP_SERVER) ||
                 properties.contains(DBConstants.PROP_FOLDER) ||
                 properties.contains(DBConstants.PROP_FILE);
             if (isSampleUrlUsable) {

@@ -45,12 +45,12 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
@@ -567,9 +567,9 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     }
 
     @Override
-    public DBPProject getProject() {
+    public RCPProject getProject() {
         DBPDataSourceRegistry registry = wizard.getDataSourceRegistry();
-        return registry == null ? null : registry.getProject();
+        return registry == null ? null : (RCPProject) registry.getProject();
     }
 
     @Override

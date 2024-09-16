@@ -21,11 +21,11 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureTracker;
-import org.jkiss.dbeaver.registry.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 

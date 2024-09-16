@@ -114,12 +114,6 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
         return cnf;
     }
 
-
-    @Override
-    protected boolean isLogInputStream() {
-        return true;
-    }
-
     private boolean isOverrideCredentials(SETTINGS settings) {
         if (settings instanceof MySQLNativeCredentialsSettings) {
             return ((MySQLNativeCredentialsSettings) settings).isOverrideCredentials();

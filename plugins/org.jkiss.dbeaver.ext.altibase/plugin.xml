@@ -59,7 +59,8 @@
                     <!-- In order to circumvent previous version of JDBC bug: ROLE -->
                     <parameter name="schema-filters-enabled" value="true"/>
                     <parameter name="split-procedures-and-functions" value="true"/>
-                    <parameter name="query-get-active-db" value="SELECT db_name FROM V$DATABASE"/>
+                    <parameter name="query-get-active-db"  value="SELECT user_name()"/>
+                    <parameter name="active-entity-type" value="schema"/>
                 </driver>
              </drivers>
              <tree
@@ -219,7 +220,9 @@
                         </folder>
                     </items> <!--</items>-->
                 </folder> <!-- Schemas -->
-                <folder label="%tree.global_metadata.node.name" id="globalMetadataObjects" icon="#logical" description="Global metadata objects">
+                <folder id="globalMetadataObjects" 
+                 label="%tree.global_metadata.node.name" description="Global metadata objects"
+                 icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/database.png" >
                     <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="%tree.dataTypes.node.tip">
                         <items label="%tree.dataType.node.name" path="dataType" property="dataTypes" icon="#data_type"/>
                     </folder>
@@ -229,9 +232,20 @@
                     </folder>
                     
                     <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseReplication" label="%tree.replications.node.name" icon="#folder_link" description="Replications">
-                        <items label="%tree.replication.node.name" path="replication" property="replications" icon="#folder_link">
-                            <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseReplicationItem" label="%tree.repl_items.node.name" icon="#link" description="Replication Items">
-                                <items label="%tree.repli_item.node.name" path="replication_item" property="replicationItems" icon="#link"/>
+                        <items label="%tree.replication.node.name" path="replication" property="replications" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sync_connection.png">
+                            <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseReplicationSender" navigable="false" 
+                            label="%tree.replication_sender.node.name" description="%tree.replication_sender.node.name"
+                            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png">
+                                <items label="%tree.replication_sender.node.name" path="replicationSender" property="replicationSenders"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseReplicationReceiver" navigable="false" 
+                             label="%tree.replication_receiver.node.name"  description="%tree.replication_receiver.node.name"
+                             icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/import.png">
+                                <items label="%tree.replication_receiver.node.name" path="replicationReceiver" property="replicationReceivers"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseReplicationItem" label="%tree.repl_items.node.name" icon="#folder_table" 
+                            description="%tree.repl_items.node.name">
+                                <items label="%tree.repl_item.node.name" path="replication_item" property="replicationItems" icon="#table_link"/>
                             </folder>
                         </items>
                     </folder>
@@ -246,17 +260,27 @@
                         icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/job_schedule.png"/>
                     </folder>
                 </folder> <!-- Global metadata -->
-                <folder label="%tree.storage.node.name" id="storageManagement" icon="#storage" description="Storage management">
-                    <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseTablespace" label="%tree.tablespaces.node.name" icon="#tablespaces" description="Tablespaces">
-                        <items label="%tree.tablespace.node.name" path="tablespace" property="tablespaces" icon="#tablespace">
-                            <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseDataFile" label="%tree.files.node.name" icon="#files" description="Data Files">
-                                <items label="%tree.file.node.name" path="file" property="files" icon="#file"/>
+                <folder id="storageManagement" label="%tree.storage.node.name"  description="%tree.storage.node.name" 
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/database_type.png">
+                    <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseTablespace" 
+                    label="%tree.tablespaces.node.name"  description="%tree.tablespaces.node.name"
+                    icon="#folder">
+                        <items label="%tree.tablespace.node.name" path="tablespace" property="tablespaces" 
+                        icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/tablespace.png">
+                            <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseDataFile" 
+                            label="%tree.files.node.name"  description="%tree.files.node.name"
+                            navigable="false">
+                                <items label="%tree.file.node.name" path="file" property="files"/>
                             </folder>
                         </items>
                     </folder>
                 </folder>
-                <folder label="%tree.security.node.name" id="securityManagement" icon="#security" description="Security management">
-                    <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseUser" label="%tree.users.node.name" icon="#folder_user" description="Users">
+                <folder id="securityManagement" 
+                label="%tree.security.node.name" description="%tree.security.node.name"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/folder_key.png" >
+                    <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseUser" 
+                    label="%tree.users.node.name" description="%tree.users.node.name" 
+                    icon="#folder_user">
                         <items label="%tree.user.node.name" path="users" property="users" icon="#user">
                             <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibasePrivSystem" label="%tree.system_privileges.node.name" icon="#permissions" description="System Privileges" navigable="false">
                                 <items label="%tree.privilege.node.name" path="sysPrivs" property="systemPrivs" icon="#privilege"/>
@@ -269,14 +293,18 @@
                             </folder>
                         </items>
                     </folder>
-                    <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseRole" label="%tree.roles.node.name" icon="#folder_role" description="Roles">
-                        <items label="%tree.role.node.name" path="roles" property="roles" icon="#user_group">
+                    <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseRole" 
+                    label="%tree.roles.node.name" description="%tree.roles.node.name" 
+                    icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/group.png" >
+                        <items label="%tree.role.node.name" path="roles" property="roles" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/group.png">
                             <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibasePrivUser" label="%tree.users.node.name" icon="#folder_user" description="Users" navigable="false">
                                 <items label="%tree.user.node.name" path="userPrivs" property="userPrivs" icon="#user"/>
                             </folder>
+                            <!-- Altibase doesn't allow it. ERR-31402 : Cannot grant a role to another role.
                             <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibasePrivRole" label="%tree.roles.node.name" icon="#folder_role" description="Roles" navigable="false">
                                 <items label="%tree.role.node.name" path="roles" property="rolePrivs" icon="#user_group"/>
                             </folder>
+                            -->
                             <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibasePrivSystem" label="%tree.system_privileges.node.name" icon="#permissions" description="System Privileges" navigable="false">
                                 <items label="%tree.privilege.node.name" path="sysPrivs" property="systemPrivs" icon="#privilege"/>
                             </folder>
@@ -347,7 +375,7 @@
     <extension point="org.jkiss.dbeaver.task">
         <category id="altibase" name="Altibase" description="%org.jkiss.dbeaver.task.category.altibase.description" icon="icons/altibase_icon.png"/>
         <category id="altibaseTool" parent="altibase"
-              name="Tools" 
+              name="%org.jkiss.dbeaver.task.category.altibaseTool.name" 
               description="%org.jkiss.dbeaver.task.category.altibaseTool.description"
               icon="icons/altibase_icon.png"/>
 
@@ -376,6 +404,16 @@
         type="altibaseTool" handler="org.jkiss.dbeaver.ext.altibase.tasks.AltibaseToolPackageCompile">
             <datasource id="altibase"/>
             <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibasePackage"/>
+        </task>
+        <task id="altibaseToolReplicationStart" name="%tasks.replication.start.node.name" description="%tasks.replication.start.node.description" 
+        type="altibaseTool" handler="org.jkiss.dbeaver.ext.altibase.tasks.AltibaseToolReplicationStart">
+            <datasource id="altibase"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseReplication"/>
+        </task>
+        <task id="altibaseToolReplicationStop" name="%tasks.replication.stop.node.name" description="%tasks.replication.stop.node.description" 
+        type="altibaseTool" handler="org.jkiss.dbeaver.ext.altibase.tasks.AltibaseToolReplicationStop">
+            <datasource id="altibase"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseReplication"/>
         </task>
     </extension>
 
