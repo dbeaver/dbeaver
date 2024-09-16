@@ -50,36 +50,18 @@ public class SQLQueryRecognitionProblemInfo {
     @Nullable
     private final DBException exception;
 
-    private SQLQueryRecognitionProblemInfo(
-            @NotNull Severity severity,
-            @NotNull STMTreeNode syntaxNode,
-            @Nullable SQLQuerySymbolEntry symbol,
-            @NotNull String message,
-            @Nullable DBException exception
+    public SQLQueryRecognitionProblemInfo(
+        @NotNull Severity severity,
+        @NotNull STMTreeNode syntaxNode,
+        @Nullable SQLQuerySymbolEntry symbol,
+        @NotNull String message,
+        @Nullable DBException exception
     ) {
         this.severity = severity;
         this.syntaxNode = syntaxNode;
         this.symbol = symbol;
         this.message = message;
         this.exception = exception;
-    }
-
-    public static SQLQueryRecognitionProblemInfo makeError(
-            @NotNull STMTreeNode syntaxNode,
-            @Nullable SQLQuerySymbolEntry symbol,
-            @NotNull String message,
-            @Nullable DBException exception
-    ) {
-        return new SQLQueryRecognitionProblemInfo(Severity.ERROR, syntaxNode, symbol, message, exception);
-    }
-
-    public static SQLQueryRecognitionProblemInfo makeWarning(
-            @NotNull STMTreeNode syntaxNode,
-            @Nullable SQLQuerySymbolEntry symbol,
-            @NotNull String message,
-            @Nullable DBException exception
-    ) {
-        return new SQLQueryRecognitionProblemInfo(Severity.WARNING, syntaxNode, symbol, message, exception);
     }
 
     @NotNull
@@ -95,6 +77,20 @@ public class SQLQueryRecognitionProblemInfo {
     @NotNull
     public Interval getInterval() {
         return this.syntaxNode.getRealInterval();
+    }
+
+    public String getExceptionMessage() {
+        Throwable ex = this.exception;
+        if (ex != null) {
+            StringBuilder sb = new StringBuilder();
+            while (ex != null) {
+                sb.append(ex.getMessage()).append("\n");
+                ex = ex.getCause();
+            }
+            return sb.toString();
+        } else {
+            return null;
+        }
     }
 
     @Override

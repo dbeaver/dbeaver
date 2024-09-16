@@ -53,7 +53,9 @@ public class AthenaDataSource extends GenericDataSource {
         if (CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
             connectionInfo.setDatabaseName(connectionInfo.getProviderProperty(AthenaConstants.DRIVER_PROP_S3_OUTPUT_LOCATION));
         }
-        props.put(AthenaConstants.DRIVER_PROP_S3_OUTPUT_LOCATION, connectionInfo.getDatabaseName());
+        if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
+            props.put(AthenaConstants.DRIVER_PROP_S3_OUTPUT_LOCATION, connectionInfo.getDatabaseName());
+        }
         props.put(AthenaConstants.DRIVER_PROP_AWS_CREDENTIALS_PROVIDER_CLASS, "com.amazonaws.auth.DefaultAWSCredentialsProviderChain");
 
         boolean useCatalogs = CommonUtils.toBoolean(connectionInfo.getProviderProperty(AthenaConstants.PROP_SHOW_CATALOGS));

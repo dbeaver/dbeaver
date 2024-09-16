@@ -17,9 +17,10 @@
 package org.jkiss.dbeaver.ui.editors.sql.util;
 
 import org.antlr.v4.runtime.misc.Interval;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.text.*;
-import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.jface.text.source.*;
 import org.eclipse.jface.util.Geometry;
 import org.eclipse.swt.SWT;
@@ -33,12 +34,17 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.events.IHyperlinkListener;
 import org.eclipse.ui.forms.widgets.Hyperlink;
+import org.eclipse.ui.texteditor.MarkerAnnotation;
 import org.eclipse.ui.texteditor.spelling.SpellingAnnotation;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLSemanticErrorAnnotation;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLProblemAnnotation;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
@@ -94,7 +100,7 @@ public class SQLAnnotationHover extends AbstractSQLEditorTextHover
         if (!(textViewer instanceof ISourceViewer)) {
             return null;
         }
-        List<IHyperlink> links = new ArrayList<>();
+        List<AnnotationHyperlinkInfo> links = new ArrayList<>();
         ISourceViewer sourceViewer = (ISourceViewer) textViewer;
         for (Iterator<Annotation> ai = sourceViewer.getAnnotationModel().getAnnotationIterator(); ai.hasNext(); ) {
             Annotation anno = ai.next();
@@ -102,37 +108,13 @@ public class SQLAnnotationHover extends AbstractSQLEditorTextHover
                 Position annoPosition = sourceViewer.getAnnotationModel().getPosition(anno);
                 if (annoPosition != null) {
                     if (annoPosition.overlapsWith(hoverRegion.getOffset(), hoverRegion.getLength())) {
-                        links.add(new IHyperlink() {
-                            @Override
-                            public IRegion getHyperlinkRegion() {
-                                return new Region(annoPosition.getOffset(), annoPosition.getLength());
-                            }
-
-                            @Override
-                            public String getTypeLabel() {
-                                return null;
-                            }
-
-                            @Override
-                            public String getHyperlinkText() {
-                                return anno.getText();
-                            }
-
-                            @Override
-                            public void open() {
-                                TextViewer textViewer = editor.getTextViewer();
-                                if (textViewer != null) {
-                                    textViewer.setSelectedRange(annoPosition.getOffset(), annoPosition.getLength());
-                                    textViewer.revealRange(annoPosition.getOffset(), annoPosition.getLength());
-                                }
-                            }
-                        });
+                        links.add(new AnnotationHyperlinkInfo(anno, annoPosition));
                     }
                 }
             }
         }
-        links.sort(Comparator.comparingInt(l -> l.getHyperlinkRegion().getOffset()));
-        return links.isEmpty() ? null : links.toArray(IHyperlink[]::new);
+        links.sort(Comparator.comparingInt(l -> l.getPosition().getOffset()));
+        return links.isEmpty() ? null : links.toArray(AnnotationHyperlinkInfo[]::new);
     }
 
     @Override
@@ -212,12 +194,37 @@ public class SQLAnnotationHover extends AbstractSQLEditorTextHover
 
         @Override
         public void setInput(Object input) {
-            for (IHyperlink hyperlink : (IHyperlink[]) input) {
+            AnnotationHyperlinkInfo[] hyperlinks = (AnnotationHyperlinkInfo[]) input;
+            for (AnnotationHyperlinkInfo hyperlink : hyperlinks) {
                 if (this.firstLinkOffset < 0) {
-                    firstLinkOffset = hyperlink.getHyperlinkRegion().getOffset();
+                    firstLinkOffset = hyperlink.getPosition().getOffset();
                 }
-                Hyperlink link = new Hyperlink(this.linksContainer, SWT.NONE);
-                link.setText(hyperlink.getHyperlinkText());
+                Composite linkContainer;
+                if (hyperlinks.length > 1) {
+                    linkContainer = UIUtils.createComposite(linksContainer, 2);
+                    if (hyperlink.getAnnotation() instanceof MarkerAnnotation ma) {
+                        IMarker m = ma.getMarker();
+                        try {
+                            int severity = m.getAttribute(IMarker.SEVERITY) instanceof Integer n ? n : IMarker.SEVERITY_INFO;
+                            DBPImage image = switch (severity) {
+                                case IMarker.SEVERITY_ERROR -> DBIcon.SMALL_ERROR;
+                                case IMarker.SEVERITY_WARNING -> DBIcon.SMALL_WARNING;
+                                case IMarker.SEVERITY_INFO -> DBIcon.SMALL_INFO;
+                                default -> DBIcon.SMALL_INFO;
+                            };
+                            UIUtils.createLabel(linkContainer, image);
+                        } catch (CoreException e) {
+                            log.error("Failed to obtain annotation marker icon", e);
+                            UIUtils.createPlaceholder(linkContainer, 1);
+                        }
+                    } else { // marker-less annotation
+                        UIUtils.createLabel(linkContainer, DBIcon.SMALL_INFO);
+                    }
+                } else {
+                    linkContainer = this.linksContainer;
+                }
+                Hyperlink link = new Hyperlink(linkContainer, SWT.NONE);
+                link.setText(hyperlink.getAnnotation().getText());
                 link.setUnderlined(true);
                 link.addHyperlinkListener(new IHyperlinkListener() {
                     private Point oldSelection = null;
@@ -225,8 +232,10 @@ public class SQLAnnotationHover extends AbstractSQLEditorTextHover
                     @Override
                     public void linkEntered(HyperlinkEvent e) {
                         oldSelection = editor.getTextViewer() != null ? editor.getTextViewer().getSelectedRange() : null;
-                        IRegion hyperlinkRegion = hyperlink.getHyperlinkRegion();
-                        editor.getTextViewer().setSelectedRange(hyperlinkRegion.getOffset(), hyperlinkRegion.getLength());
+                        Position hyperlinkRegion = hyperlink.getPosition();
+                        if (!hyperlinkRegion.isDeleted) {
+                            editor.getTextViewer().setSelectedRange(hyperlinkRegion.getOffset(), hyperlinkRegion.getLength());
+                        }
                     }
 
                     @Override
@@ -241,6 +250,12 @@ public class SQLAnnotationHover extends AbstractSQLEditorTextHover
                         hyperlink.open();
                     }
                 });
+                if (hyperlink.getAnnotation() instanceof SQLSemanticErrorAnnotation s) {
+                    String underlyingError = s.getUnderlyingErrorMessage();
+                    if (CommonUtils.isNotEmpty(underlyingError)) {
+                        link.setToolTipText(underlyingError);
+                    }
+                }
             }
             super.getShell().pack(true);
         }
@@ -285,5 +300,34 @@ public class SQLAnnotationHover extends AbstractSQLEditorTextHover
             super.setVisible(visible);
         }
     }
+    
+    private class AnnotationHyperlinkInfo {
+        @NotNull
+        private final Annotation annotation;
+        @NotNull
+        private final Position position;
 
+        private AnnotationHyperlinkInfo(@NotNull Annotation annotation, @NotNull Position position) {
+            this.annotation = annotation;
+            this.position = position;
+        }
+
+        @NotNull
+        public Annotation getAnnotation() {
+            return annotation;
+        }
+
+        @NotNull
+        public Position getPosition() {
+            return this.position;
+        }
+
+        public void open() {
+            TextViewer textViewer = editor.getTextViewer();
+            if (textViewer != null && !this.position.isDeleted) {
+                textViewer.setSelectedRange(this.position.getOffset(), this.position.getLength());
+                textViewer.revealRange(this.position.getOffset(), this.position.getLength());
+            }
+        }
+    }
 }

@@ -38,7 +38,6 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreCommandGrantPrivilege;
@@ -50,7 +49,6 @@ import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -89,7 +87,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
 
     private DBSObject[] currentObjects;
     private PostgrePrivilege[] currentPermissions;
-    private Map<String, PostgrePrivilege> permissionMap = new HashMap<>();
+    private final Map<String, PostgrePrivilege> permissionMap = new HashMap<>();
     private Text objectDescriptionText;
 
     public void createPartControl(Composite parent) {
@@ -103,7 +101,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             DBWorkbench.getPlatform().getNavigatorModel().getRoot(),
             SWT.MULTI | SWT.FULL_SELECTION,
             false,
-            isRoleEditor() ? new DatabaseObjectFilter() : null);
+            isRoleEditor() ? new DatabaseObjectFilter() : new ObjectOwnerFiler());
         roleOrObjectTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         final TreeViewer treeViewer = roleOrObjectTable.getViewer();
         treeViewer.setLabelProvider(new DatabaseNavigatorLabelProvider(roleOrObjectTable) {
@@ -147,7 +145,8 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     }
                     return PostgreTableReal.class.isAssignableFrom(childType) ||
                         PostgreSequence.class.isAssignableFrom(childType) ||
-                        PostgreProcedure.class.isAssignableFrom(childType);
+                        PostgreProcedure.class.isAssignableFrom(childType) ||
+                        PostgreRole.class.isAssignableFrom(childType);
                 }
                 return true;
             }
@@ -278,6 +277,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     continue;
                 }
                 if (isRoleEditor()) {
+                    PostgreRole role = (PostgreRole) databaseObject;
                     PostgrePrivilegeGrant.Kind kind;
                     String objectName;
                     String schemaName;
@@ -288,7 +288,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                             defaultPrivOwner = (PostgreSchema) parentObject;
                             PostgreDefaultPrivilege defaultPrivilege = new PostgreDefaultPrivilege(
                                 defaultPrivOwner,
-                                databaseObject.getName(),
+                                role.getRoleReference(),
                                 Collections.emptyList());
                             Class<? extends DBSObject> childrenClass = folder.getChildrenClass();
                             if (DBSSequence.class.isAssignableFrom(childrenClass)) {
@@ -329,10 +329,12 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                             Collections.emptyList());
                     }
                 } else {
-                    String currentUser = databaseObject.getDataSource().getContainer().getActualConnectionConfiguration().getUserName();
+                    String currentUserName = databaseObject.getDataSource().getContainer().getActualConnectionConfiguration().getUserName();
+                    PostgreRoleReference currentUserReference = new PostgreRoleReference(databaseObject.getDatabase(), currentUserName, null);
+                    PostgreRoleReference grantee = ((PostgreRole) currentObject).getRoleReference();
                     PostgrePrivilegeGrant privGrant = new PostgrePrivilegeGrant(
-                        currentUser,
-                        currentObject.getName(),
+                        currentUserReference,
+                        grantee,
                         databaseObject.getDatabase().getName(),
                         databaseObject.getSchema().getName(),
                         databaseObject.getName(),
@@ -341,7 +343,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                         false);
                     permission = new PostgreObjectPrivilege(
                         databaseObject,
-                        currentObject.getName(),
+                        grantee,
                         Collections.singletonList(privGrant));
                 }
                 if (permission != null) {
@@ -523,14 +525,20 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
         UIUtils.asyncExec(() -> UIUtils.packColumns(permissionTable, false));
 
         LoadingJob.createService(
-            new DatabaseLoadService<Collection<PostgrePrivilege>>("Load permissions", getExecutionContext()) {
+            new DatabaseLoadService<>("Load permissions", getExecutionContext()) {
                 @Override
-                public Collection<PostgrePrivilege> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException {
+                public PermissionInfo evaluate(DBRProgressMonitor monitor) throws InvocationTargetException {
                     monitor.beginTask("Load privileges from database..", 1);
                     try {
                         monitor.subTask("Load " + getDatabaseObject().getName() + " privileges");
-                        return getDatabaseObject().getPrivileges(monitor, false);
-                    } catch (DBException e) {
+                        PermissionInfo permissionInfo = new PermissionInfo();
+                        permissionInfo.privileges = getDatabaseObject().getPrivileges(monitor, false);
+                        permissionInfo.objectRootNode = DBNUtils.getNodeByObject(monitor, getDatabaseObject().getDatabase(), true);
+                        if (isRoleEditor()) {
+                            permissionInfo.objectRootNode = DBNUtils.getChildFolder(monitor, permissionInfo.objectRootNode, PostgreSchema.class);
+                        }
+                        return permissionInfo;
+                    } catch (Exception e) {
                         throw new InvocationTargetException(e);
                     } finally {
                         monitor.done();
@@ -557,11 +565,6 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
 
     private static class DatabaseObjectFilter extends DatabaseNavigatorTreeFilter {
         @Override
-        public boolean filterFolders() {
-            return false;
-        }
-
-        @Override
         public boolean isLeafObject(Object object) {
             if (object instanceof DBNDatabaseItem) {
                 DBSObject dbObject = ((DBNDatabaseItem) object).getObject();
@@ -575,11 +578,27 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             }
             return false;
         }
+    }
 
+    private static class ObjectOwnerFiler extends DatabaseNavigatorTreeFilter {
         @Override
         public boolean select(Object element) {
-            return true;
+            if (element instanceof DBNDatabaseFolder item) {
+                Class<? extends DBSObject> childrenClass = item.getChildrenClass();
+                return childrenClass != null && PostgreRole.class.isAssignableFrom(childrenClass);
+            }
+            return isLeafObject(element);
         }
+
+        @Override
+        public boolean isLeafObject(Object object) {
+            return object instanceof DBNDatabaseItem item && item.getObject() instanceof PostgreRole;
+        }
+    }
+
+    private static class PermissionInfo {
+        Collection<PostgrePrivilege> privileges;
+        DBNDatabaseNode objectRootNode;
     }
 
     private class PageControl extends ProgressPageControl {
@@ -587,33 +606,21 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             super(parent, SWT.SHEET);
         }
 
-        ProgressVisualizer<Collection<PostgrePrivilege>> createLoadVisualizer() {
+        ProgressVisualizer<PermissionInfo> createLoadVisualizer() {
             return new ProgressVisualizer<>() {
                 @Override
-                public void completeLoading(Collection<PostgrePrivilege> privs) {
+                public void completeLoading(PermissionInfo privs) {
                     super.completeLoading(privs);
                     if (privs == null) {
                         return;
                     }
                     permissionMap.clear();
-                    for (PostgrePrivilege perm : privs) {
+                    for (PostgrePrivilege perm : privs.privileges) {
                         permissionMap.put(perm.getName(), perm);
                     }
                     // Load navigator tree
-                    DBRProgressMonitor monitor = new VoidProgressMonitor();
-                    DBNDatabaseNode rootNode;
-                    DBNDatabaseNode dbNode = DBNUtils.getNodeByObject(monitor, getDatabaseObject().getDatabase(), true);
-                    if (isRoleEditor()) {
-                        rootNode = DBNUtils.getChildFolder(monitor, dbNode, PostgreSchema.class);
-                    } else {
-                        rootNode = DBNUtils.getChildFolder(monitor, dbNode, PostgreRole.class);
-                    }
-                    if (rootNode == null) {
-                        DBWorkbench.getPlatformUI().showError("Object tree", "Can't detect root node for objects tree");
-                    } else {
-                        roleOrObjectTable.reloadTree(rootNode);
-                    }
-                    //roleOrObjectTable.getViewer().getControl().setFocus();
+                    roleOrObjectTable.reloadTree(privs.objectRootNode);
+                    roleOrObjectTable.getViewer().expandToLevel(2);
                     handleSelectionChange();
                 }
             };

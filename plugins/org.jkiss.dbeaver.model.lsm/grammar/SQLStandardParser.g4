@@ -230,7 +230,7 @@ groupingColumnReferenceList: groupingColumnReference (Comma groupingColumnRefere
 groupingColumnReference: columnIndex | valueReference | anyWordsWithProperty;
 havingClause: HAVING searchCondition;
 tableValueConstructor: VALUES (rowValueConstructor (Comma rowValueConstructor)*);
-explicitTable: TABLE tableName;
+explicitTable: TABLE tableName?;
 correspondingSpec: CORRESPONDING (BY LeftParen correspondingColumnList RightParen)?;
 correspondingColumnList: columnNameList;
 caseExpression: (caseAbbreviation|simpleCase|searchedCase);
@@ -330,8 +330,8 @@ authorizationIdentifier: identifier;
 schemaCharacterSetSpecification: DEFAULT CHARACTER SET characterSetSpecification;
 schemaElement: createTableStatement|createViewStatement;
 
-createTableStatement: createTableHead tableName createTableExtraHead tableElementList createTableTail;
-createTableHead: CREATE (OR REPLACE)? ((GLOBAL|LOCAL) (TEMPORARY|TEMP))? TABLE (IF NOT EXISTS)? ;// here orReplace is MariaDB-specific only
+createTableStatement: createTableHead (tableName? createTableExtraHead tableElementList createTableTail)?;
+createTableHead: CREATE (OR REPLACE)? (GLOBAL|LOCAL)? (TEMPORARY|TEMP)? TABLE (IF NOT EXISTS)? ;// here orReplace is MariaDB-specific only
 createTableExtraHead: (OF identifier)?;
 tableElementList: LeftParen tableElement (Comma tableElement)* RightParen;
 tableElement: (columnDefinition|tableConstraintDefinition) anyUnexpected??;
@@ -358,7 +358,7 @@ levelsClause: (CASCADED|LOCAL);
 // schema ddl
 dropSchemaStatement: DROP SCHEMA schemaName dropBehaviour;
 dropBehaviour: (CASCADE|RESTRICT);
-alterTableStatement: ALTER anyWord* TABLE (IF EXISTS)? tableName alterTableAction (Comma alterTableAction)*;
+alterTableStatement: ALTER anyWord* TABLE (IF EXISTS)? (tableName (alterTableAction (Comma alterTableAction)*)?)?;
 alterTableAction: addColumnDefinition|alterColumnDefinition|renameColumnDefinition|dropColumnDefinition|addTableConstraintDefinition|dropTableConstraintDefinition|anyWordsWithProperty;
 addColumnDefinition: ADD (COLUMN)? columnDefinition;
 renameColumnDefinition: RENAME (COLUMN)? columnName TO identifier;
@@ -379,7 +379,7 @@ ifExistsSpec: IF EXISTS ;
 selectStatementSingleRow: SELECT (setQuantifier)? selectList INTO selectTargetList tableExpression;
 selectTargetList: parameterSpecification (Comma parameterSpecification)*;
 deleteStatement: DELETE FROM tableName? ((AS)? correlationName)? whereClause?;
-insertStatement: INSERT INTO tableName? insertColumnsAndSource?;
+insertStatement: INSERT INTO (tableName insertColumnsAndSource?)?;
 insertColumnsAndSource: (LeftParen (insertColumnList? | Asterisk) RightParen?)? (queryExpression | DEFAULT VALUES);
 insertColumnList: columnNameList;
 
@@ -420,7 +420,7 @@ anyValue: rowValueConstructor|searchCondition;
 anyWordWithAnyValue: anyWord anyValue;
 anyProperty: LeftParen (anyValue (Comma anyValue)*) RightParen;
 anyWordsWithProperty: anyWord+ anyProperty?;
-anyWordsWithProperty2: anyWord+ anyProperty overClause?;
+anyWordsWithProperty2: (anyWord|IF)+ anyProperty overClause?; // to handle if as function like IF(c.tipo_cliente='F','Física','Jurídica')
 
 aggregateExpression: actualIdentifier LeftParen aggregateExprParam+ RightParen (WITHIN GROUP LeftParen orderByClause RightParen)? (FILTER LeftParen WHERE searchCondition RightParen)?;
 aggregateExprParam: DISTINCT|ALL|ORDER|BY|ASC|DESC|LIMIT|SEPARATOR|OFFSET|rowValueConstructor;

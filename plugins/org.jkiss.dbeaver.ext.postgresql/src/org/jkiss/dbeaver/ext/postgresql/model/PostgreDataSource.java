@@ -35,6 +35,9 @@ import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttributeType;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.output.DBCServerOutputReader;
@@ -56,6 +59,7 @@ import org.jkiss.dbeaver.runtime.net.DefaultCallbackHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 
 import java.io.IOException;
 import java.nio.file.Path;
