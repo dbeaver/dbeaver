@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSearchUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableValueModel;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
@@ -37,6 +36,8 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 /**
  * Represents underlying database context having real tables
@@ -48,11 +49,22 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
     private final DBCExecutionContext executionContext;
     @NotNull
     private final SQLIdentifierDetector identifierDetector;
+    @NotNull
+    private final Map<String, SQLQueryResultPseudoColumn> globalPseudoColumnsByCanonicalName;
+    @NotNull
+    private final Function<SQLQueryRowsSourceModel, List<SQLQueryResultPseudoColumn>> rowsetPseudoColumnsProvider;
 
-    public SQLQueryDataSourceContext(@NotNull SQLDialect dialect, @NotNull DBCExecutionContext executionContext) {
+    public SQLQueryDataSourceContext(
+        @NotNull SQLDialect dialect,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull Map<String, SQLQueryResultPseudoColumn> globalPseudoColumns,
+        @NotNull Function<SQLQueryRowsSourceModel, List<SQLQueryResultPseudoColumn>> rowsetPseudoColumnsProvider
+    ) {
         this.dialect = dialect;
         this.executionContext = executionContext;
         this.identifierDetector = new SQLIdentifierDetector(dialect);
+        this.globalPseudoColumnsByCanonicalName = globalPseudoColumns;
+        this.rowsetPseudoColumnsProvider = rowsetPseudoColumnsProvider;
     }
 
     @NotNull
@@ -64,6 +76,13 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
     @Override
     public boolean hasUndresolvedSource() {
         return false;
+    }
+
+
+    @NotNull
+    @Override
+    public List<SQLQueryResultPseudoColumn> getPseudoColumnsList() {
+        return Collections.emptyList();
     }
 
     @Nullable
@@ -126,6 +145,18 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
         return null;
     }
 
+    @Nullable
+    @Override
+    public SQLQueryResultPseudoColumn resolvePseudoColumn(@NotNull DBRProgressMonitor monitor, @NotNull String name) {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public SQLQueryResultPseudoColumn resolveGlobalPseudoColumn(@NotNull DBRProgressMonitor monitor, @NotNull String name) {
+        return this.globalPseudoColumnsByCanonicalName.get(name);
+    }
+
     @NotNull
     @Override
     public SQLDialect getDialect() {
@@ -135,5 +166,10 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
     @Override
     protected void collectKnownSourcesImpl(@NotNull KnownSourcesInfo result) {
         // no sources have been referenced yet, so nothing to register
+    }
+
+    @Override
+    protected List<SQLQueryResultPseudoColumn> prepareRowsetPseudoColumns(@NotNull SQLQueryRowsSourceModel source) {
+        return this.rowsetPseudoColumnsProvider.apply(source);
     }
 }
