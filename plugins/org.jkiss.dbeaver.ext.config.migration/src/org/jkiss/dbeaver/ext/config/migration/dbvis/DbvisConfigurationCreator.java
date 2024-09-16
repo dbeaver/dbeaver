@@ -14,17 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.oracle.ui.tools.sqldeveloper;
 
-import org.jkiss.dbeaver.ext.config.migration.wizards.ConfigImportWizard;
+package org.jkiss.dbeaver.ext.config.migration.dbvis;
 
-public class ConfigImportWizardSqlDeveloper extends ConfigImportWizard {
-	
-    @Override
-    protected ConfigImportWizardPageSqlDeveloper createMainPage()
-    {
-        return new ConfigImportWizardPageSqlDeveloper();
-    }
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.config.migration.wizards.ImportData;
 
+import java.io.File;
+
+public interface DbvisConfigurationCreator {
+
+    ImportData create(
+        @NotNull ImportData data,
+        @NotNull File configFile) throws DBException;
+
+    File getConfigurationAsset(File folder);
+
+    String getConfigurationFolder();
+
+    String getConfigurationFile();
 
 }

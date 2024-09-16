@@ -14,17 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.oracle.ui.tools.sqldeveloper;
+package org.jkiss.dbeaver.ext.config.migration.wizards.sqlworkbench;
 
 import org.jkiss.dbeaver.ext.config.migration.wizards.ConfigImportWizard;
 
-public class ConfigImportWizardSqlDeveloper extends ConfigImportWizard {
-	
+import java.io.File;
+
+public class ConfigImportWizardSqlWorkbench extends ConfigImportWizard {
+
+    private ConfigImportWizardPageSqlWorkbenchSettings pageSettings;
+
     @Override
-    protected ConfigImportWizardPageSqlDeveloper createMainPage()
-    {
-        return new ConfigImportWizardPageSqlDeveloper();
+    protected ConfigImportWizardPageSqlWorkbenchConnections createMainPage() {
+        return new ConfigImportWizardPageSqlWorkbenchConnections();
     }
 
+    @Override
+    public void addPages() {
+        pageSettings = new ConfigImportWizardPageSqlWorkbenchSettings();
+        addPage(pageSettings);
+        super.addPages();
+    }
+
+    public File getInputFile() {
+        return pageSettings.getInputFile();
+    }
 
 }
