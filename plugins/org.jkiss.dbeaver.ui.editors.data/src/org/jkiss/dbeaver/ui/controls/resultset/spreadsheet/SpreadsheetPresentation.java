@@ -85,6 +85,7 @@ import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
 import org.jkiss.dbeaver.ui.data.editors.BaseValueEditor;
 import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
+import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.ui.properties.PropertySourceDelegate;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -731,7 +732,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     if (attr == null || row == null) {
                         continue;
                     }
-                    if (controller.getAttributeReadOnlyStatus(attr, true, true) != null) {
+                    if (controller.getAttributeReadOnlyStatus(attr, true, false) != null) {
                         // No inline editors for readonly columns
                         continue;
                     }
@@ -1363,7 +1364,26 @@ public class SpreadsheetPresentation extends AbstractPresentation
         } else {
             // Navigate hyperlink
             String strValue = attr.getValueHandler().getValueDisplayString(attr, value, DBDDisplayFormat.UI);
-            ShellUtils.launchProgram(strValue);
+            if (isHyperlinkText(strValue)) {
+                ShellUtils.launchProgram(strValue);
+            } else {
+                EditTextDialog dialog = new EditTextDialog(
+                    getSpreadsheet().getShell(),
+                    attr.getName(),
+                    strValue,
+                    true);
+                dialog.open();
+            }
+        }
+    }
+
+    private boolean isLinkSafeToOpen(String strValue) {
+        if (RuntimeUtils.isWindows()) {
+            return !strValue.startsWith("file:") &&
+                !strValue.startsWith("search:") &&
+                !strValue.startsWith("search-ms:");
+        } else {
+            return true;
         }
     }
 
@@ -2265,7 +2285,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         final String strValue = info.text != null
                             ? info.text.toString()
                             : attr.getValueHandler().getValueDisplayString(attr, cellValue, DBDDisplayFormat.UI);
-                        if (strValue != null && strValue.contains("://")) {
+                        if (strValue != null && isHyperlinkText(strValue)) {
                             try {
                                 new URL(strValue);
                                 info.state |= STATE_HYPER_LINK;
@@ -2678,6 +2698,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
             backgroundNormal = null;
             foregroundDefault = null;
         }
+    }
+
+    private static boolean isHyperlinkText(String strValue) {
+        return strValue.startsWith("http://") || strValue.startsWith("https://");
     }
 
     public ResultSetCellLocation getCurrentCellLocation() {

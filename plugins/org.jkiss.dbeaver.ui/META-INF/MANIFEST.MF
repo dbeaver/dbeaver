@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver UI
 Bundle-SymbolicName: org.jkiss.dbeaver.ui;singleton:=true
-Bundle-Version: 5.1.152.qualifier
-Bundle-Release-Date: 20240819
+Bundle-Version: 5.1.154.qualifier
+Bundle-Release-Date: 20240923
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Activator: org.jkiss.dbeaver.ui.internal.UIActivator
 Bundle-ActivationPolicy: lazy
@@ -45,7 +45,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.e4.ui.workbench.renderers.swt,
  org.eclipse.e4.ui.workbench.swt,
  org.eclipse.e4.ui.workbench,
- org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.model;visibility:=reexport,
+ org.jkiss.dbeaver.model.rcp;visibility:=reexport,
  org.eclipse.ui.forms,
  org.eclipse.ui.workbench.texteditor,
  org.eclipse.e4.ui.model.workbench

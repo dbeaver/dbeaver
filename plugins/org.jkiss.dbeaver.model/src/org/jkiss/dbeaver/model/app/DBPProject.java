@@ -17,8 +17,6 @@
 
 package org.jkiss.dbeaver.model.app;
 
-import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -76,12 +74,6 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
     @NotNull
     Path getAbsolutePath();
 
-    @Nullable
-    IProject getEclipseProject();
-
-    @Nullable
-    IContainer getRootResource();
-
     @NotNull
     Path getMetadataFolder(boolean create);
 
@@ -116,7 +108,14 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
     DBPDataSourceRegistry getDataSourceRegistry();
 
     @NotNull
-    DBTTaskManager getTaskManager();
+    default DBTTaskManager getTaskManager() {
+        throw new IllegalStateException("Task manager is not supported by " + getClass().getSimpleName());
+    }
+
+    @Nullable
+    default DBTTaskManager getTaskManager(boolean create) {
+        return getTaskManager();
+    }
 
     /**
      * Project auth context

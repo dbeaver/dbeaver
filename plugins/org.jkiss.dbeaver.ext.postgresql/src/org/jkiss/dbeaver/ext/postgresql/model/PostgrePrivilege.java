@@ -39,12 +39,12 @@ public abstract class PostgrePrivilege implements DBAPrivilege, Comparable<Postg
 
     public class ObjectPermission implements DBAPrivilegeGrant {
         @NotNull
-        private PostgrePrivilegeType privilegeType;
+        private final PostgrePrivilegeType privilegeType;
         @NotNull
-        private String grantor;
+        private final PostgreRoleReference grantor;
         private short permissions;
 
-        public ObjectPermission(@NotNull PostgrePrivilegeType privilegeType, @NotNull String grantor, short permissions) {
+        public ObjectPermission(@NotNull PostgrePrivilegeType privilegeType, @NotNull PostgreRoleReference grantor, short permissions) {
             this.privilegeType = privilegeType;
             this.grantor = grantor;
             this.permissions = permissions;
@@ -76,7 +76,7 @@ public abstract class PostgrePrivilege implements DBAPrivilege, Comparable<Postg
         }
 
         @NotNull
-        public String getGrantor() {
+        public PostgreRoleReference getGrantor() {
             return grantor;
         }
 

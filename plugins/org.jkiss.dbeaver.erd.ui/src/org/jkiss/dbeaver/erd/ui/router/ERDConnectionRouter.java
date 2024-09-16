@@ -31,7 +31,7 @@ import java.util.Map;
  */
 public abstract class ERDConnectionRouter extends AutomaticRouter {
 
-    private Map<Connection, PointList> connection2points = new HashMap<>();
+    private final Map<Connection, PointList> connection2points = new HashMap<>();
     private IFigure container;
 
     /**

@@ -46,12 +46,12 @@ import java.util.Map;
 public class PostgreEventTriggerManager extends SQLTriggerManager<PostgreEventTrigger, PostgreDatabase> implements DBEObjectRenamer<PostgreEventTrigger> {
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return true;
     }
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_EDITOR_ON_CREATE;
     }
 
@@ -61,19 +61,19 @@ public class PostgreEventTriggerManager extends SQLTriggerManager<PostgreEventTr
     }
 
     @Override
-    protected PostgreEventTrigger createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) {
+    protected PostgreEventTrigger createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options) {
         return new PostgreEventTrigger((PostgreDatabase) container, "new_event_trigger");
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectChangeCommand command, Map<String, Object> options) {
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options) {
         if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
             createOrReplaceTriggerQuery(monitor, executionContext, actions, command.getObject(), false);
         }
     }
 
     @Override
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<PostgreEventTrigger, PropertyHandler> command, Map<String, Object> options) {
+    protected void addObjectExtraActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull NestedObjectCommand<PostgreEventTrigger, PropertyHandler> command, @NotNull Map<String, Object> options) {
         if (command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
             PostgreEventTrigger trigger = command.getObject();
             actions.add(new SQLDatabasePersistAction(
@@ -84,7 +84,7 @@ public class PostgreEventTriggerManager extends SQLTriggerManager<PostgreEventTr
     }
 
     @Override
-    protected void createOrReplaceTriggerQuery(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, PostgreEventTrigger trigger, boolean create) {
+    protected void createOrReplaceTriggerQuery(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull PostgreEventTrigger trigger, boolean create) {
         if (trigger.isPersisted()) {
             actions.add(new SQLDatabasePersistAction(
                 "Drop event trigger",
@@ -96,7 +96,7 @@ public class PostgreEventTriggerManager extends SQLTriggerManager<PostgreEventTr
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options) {
         actions.add(new SQLDatabasePersistAction(
             "Drop event trigger",
             "DROP EVENT TRIGGER " + DBUtils.getQuotedIdentifier(command.getObject())
@@ -109,7 +109,7 @@ public class PostgreEventTriggerManager extends SQLTriggerManager<PostgreEventTr
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
+    protected void addObjectRenameActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectRenameCommand command, @NotNull Map<String, Object> options) {
         PostgreDataSource dataSource = command.getObject().getDataSource();
         actions.add(new SQLDatabasePersistAction(
             "Rename event trigger",

@@ -222,6 +222,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
             UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_output_label_file_name_pattern);
             fileNameText = new Text(generalSettings, SWT.BORDER);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.widthHint = 200;
             gd.horizontalSpan = 4;
             fileNameText.setLayoutData(gd);
             fileNameText.addModifyListener(e -> {
@@ -345,7 +346,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         }
 
         {
-            Group resultsSettings = UIUtils.createControlGroup(composite, DTUIMessages.stream_consumer_page_output_label_results, 1, GridData.FILL_HORIZONTAL, 0);
+            Group resultsSettings = UIUtils.createControlGroup(composite, DTUIMessages.stream_consumer_page_output_label_results, 2, GridData.FILL_HORIZONTAL, 0);
 
             showFinalMessageCheckbox = UIUtils.createCheckbox(resultsSettings, DTUIMessages.stream_consumer_page_output_label_show_finish_message, getWizard().getSettings().isShowFinalMessage());
             showFinalMessageCheckbox.addSelectionListener(new SelectionAdapter() {

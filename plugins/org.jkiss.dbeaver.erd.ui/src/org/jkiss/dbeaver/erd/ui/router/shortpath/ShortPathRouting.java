@@ -41,7 +41,7 @@ public class ShortPathRouting extends ERDConnectionRouter {
     private Map<IFigure, Rectangle> figuresToBounds;
     private Map<Connection, Path> connectionToPaths;
     private boolean isDirty;
-    private ShortestPathRouter algorithm = new ShortestPathRouter();
+    private final ShortestPathRouter algorithm = new ShortestPathRouter();
     private final Set<Connection> staleConnections = new HashSet<>();
     private final LayoutListener listener = new LayoutTracker();
     private boolean ignoreInvalidate;

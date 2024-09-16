@@ -181,6 +181,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private boolean supportsDistributedMode;
     private boolean notAvailableDriver;
     private boolean singleConnection;
+    private boolean origThreadSafe, threadSafe;
     private boolean clientRequired;
     private boolean supportsDriverProperties;
     private boolean anonymousAccess, origAnonymousAccess;
@@ -253,6 +254,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.customEndpointInformation = false;
         this.instantiable = true;
         this.promoted = 0;
+        this.origThreadSafe = true;
+        this.threadSafe = true;
         this.supportsDistributedMode = true;
         this.notAvailableDriver = false;
 
@@ -301,6 +304,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             this.embedded = copyFrom.embedded;
             this.propagateDriverProperties = copyFrom.propagateDriverProperties;
             this.singleConnection = copyFrom.singleConnection;
+            this.threadSafe = copyFrom.threadSafe;
             this.clientRequired = copyFrom.clientRequired;
             this.supportsDriverProperties = copyFrom.supportsDriverProperties;
             this.anonymousAccess = copyFrom.anonymousAccess;
@@ -372,6 +376,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.origInstantiable = this.instantiable = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_INSTANTIABLE), true);
         this.origEmbedded = this.embedded = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_EMBEDDED));
         this.singleConnection = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SINGLE_CONNECTION));
+        this.origThreadSafe = this.threadSafe = CommonUtils.getBoolean(config.getAttribute("threadSafe"), true);
         this.origAnonymousAccess = this.anonymousAccess = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_ANONYMOUS));
         this.origAllowsEmptyPassword = this.allowsEmptyPassword = CommonUtils.getBoolean("allowsEmptyPassword");
         this.origPropagateDriverProperties = this.propagateDriverProperties =
@@ -935,8 +940,17 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return singleConnection;
     }
 
-    public void setSingleConnection(boolean singleConnection) {
-        this.singleConnection = singleConnection;
+    @Override
+    public boolean isThreadSafeDriver() {
+        return threadSafe;
+    }
+
+    public void setThreadSafeDriver(boolean threadSafe) {
+        this.threadSafe = threadSafe;
+    }
+
+    public boolean isOrigThreadSafeDriver() {
+        return origThreadSafe;
     }
 
     @Override
@@ -1020,9 +1034,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @Override
     public boolean isInternalDriver() {
-        return
-                driverClassName != null &&
-                        driverClassName.contains("sun.jdbc"); //$NON-NLS-1$
+        return driverClassName != null && driverClassName.contains("sun.jdbc"); //$NON-NLS-1$
     }
 
     @NotNull
@@ -1299,6 +1311,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         driverCopy.setDriverDefaultDatabase(this.getDefaultDatabase());
         driverCopy.setDriverDefaultUser(this.getDefaultUser());
         driverCopy.setConnectionProperties(this.getOriginalConnectionProperties());
+        driverCopy.setThreadSafeDriver(this.isOrigThreadSafeDriver());
         return driverCopy;
     }
 

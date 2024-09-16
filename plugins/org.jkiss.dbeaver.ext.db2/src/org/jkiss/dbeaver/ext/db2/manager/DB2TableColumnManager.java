@@ -86,8 +86,8 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
     // ------
 
     @Override
-    protected DB2TableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container,
-                                                  Object copyFrom, Map<String, Object> options) throws DBException {
+    protected DB2TableColumn createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container,
+                                                  Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
         DB2TableColumn column = new DB2TableColumn((DB2TableBase) container);
         column.setName(getNewColumnName(monitor, context, (DB2TableBase) container));
         return column;
@@ -97,7 +97,7 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
     // Alter
     // -----
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options) {
         DB2TableColumn db2Column = command.getObject();
 
         boolean hasColumnChanges = false;
@@ -197,7 +197,7 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
+    protected void addObjectRenameActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectRenameCommand command, @NotNull Map<String, Object> options) {
         final DB2TableColumn column = command.getObject();
 
         actions.add(

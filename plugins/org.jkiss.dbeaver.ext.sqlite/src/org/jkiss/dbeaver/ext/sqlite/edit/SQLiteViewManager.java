@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.sqlite.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.edit.GenericViewManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
@@ -32,7 +33,7 @@ import java.util.Map;
 
 public class SQLiteViewManager extends GenericViewManager {
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, SQLObjectEditor<GenericTableBase, GenericStructContainer>.ObjectChangeCommand command, Map<String, Object> options) {
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull SQLObjectEditor<GenericTableBase, GenericStructContainer>.ObjectChangeCommand command, @NotNull Map<String, Object> options) {
         if (!command.hasProperty(DBConstants.PROP_ID_DESCRIPTION) || command.getProperties().size() > 1) {
             actions.add(new SQLDatabasePersistAction(
                 "Drop view",

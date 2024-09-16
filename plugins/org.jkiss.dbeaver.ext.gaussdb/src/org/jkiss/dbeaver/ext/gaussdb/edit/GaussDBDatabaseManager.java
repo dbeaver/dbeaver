@@ -17,14 +17,11 @@
 
 package org.jkiss.dbeaver.ext.gaussdb.edit;
 
-import java.util.List;
-import java.util.Map;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.gaussdb.model.GaussDBDatabase;
 import org.jkiss.dbeaver.ext.gaussdb.model.DBCompatibilityEnum;
 import org.jkiss.dbeaver.ext.gaussdb.model.GaussDBDataSource;
+import org.jkiss.dbeaver.ext.gaussdb.model.GaussDBDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -44,6 +41,9 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * GaussDBDatabaseManager
  */
@@ -51,7 +51,7 @@ public class GaussDBDatabaseManager extends SQLObjectEditor<GaussDBDatabase, Gau
     implements DBEObjectRenamer<GaussDBDatabase> {
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_SAVE_IMMEDIATELY;
     }
 
@@ -62,7 +62,7 @@ public class GaussDBDatabaseManager extends SQLObjectEditor<GaussDBDatabase, Gau
     }
 
     @Override
-    public void deleteObject(DBECommandContext commandContext, GaussDBDatabase object, Map<String, Object> options)
+    public void deleteObject(@NotNull DBECommandContext commandContext, @NotNull GaussDBDatabase object, @NotNull Map<String, Object> options)
         throws DBException {
         if (object == object.getDataSource().getDefaultInstance()) {
             throw new DBException("Cannot drop the currently open database."
@@ -78,8 +78,8 @@ public class GaussDBDatabaseManager extends SQLObjectEditor<GaussDBDatabase, Gau
     }
 
     @Override
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext,
-        List<DBEPersistAction> actions, NestedObjectCommand<GaussDBDatabase, PropertyHandler> command, Map<String, Object> options)
+    protected void addObjectExtraActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext,
+                                         @NotNull List<DBEPersistAction> actions, @NotNull NestedObjectCommand<GaussDBDatabase, PropertyHandler> command, @NotNull Map<String, Object> options)
         throws DBException {
         if (command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
             PostgreDatabase database = command.getObject();
@@ -89,14 +89,14 @@ public class GaussDBDatabaseManager extends SQLObjectEditor<GaussDBDatabase, Gau
     }
 
     @Override
-    protected GaussDBDatabase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container,
-        Object copyFrom, Map<String, Object> options) throws DBException {
+    protected GaussDBDatabase createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container,
+                                                   Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
         return ((GaussDBDataSource) container).createDatabaseImpl(monitor, "NewDatabase", null, null, null, null);
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext,
-        List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext,
+                                          @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options) {
         final GaussDBDatabase database = command.getObject();
         StringBuilder sql = new StringBuilder();
         sql.append("CREATE DATABASE ").append(DBUtils.getQuotedIdentifier(database));
@@ -119,22 +119,22 @@ public class GaussDBDatabaseManager extends SQLObjectEditor<GaussDBDatabase, Gau
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext,
-        List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext,
+                                          @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options) {
         actions.add(new DeleteDatabaseAction(command));
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext,
-        List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
+    protected void addObjectRenameActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext,
+                                          @NotNull List<DBEPersistAction> actions, @NotNull ObjectRenameCommand command, @NotNull Map<String, Object> options) {
         actions.add(new SQLDatabasePersistAction("Rename database", "ALTER DATABASE " //$NON-NLS-2$
             + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getOldName()) + " RENAME TO "
             + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName())));
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext,
-        List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext,
+                                          @NotNull List<DBEPersistAction> actionList, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options) {
         if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
             try {
                 generateAlterActions(monitor, actionList, command);

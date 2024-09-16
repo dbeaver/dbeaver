@@ -237,7 +237,7 @@ public class SQLServerDatabase
 
     private class DataTypeCache extends JDBCObjectCache<SQLServerDatabase, SQLServerDataType> {
 
-        private LongKeyMap<SQLServerDataType> dataTypeMap = new LongKeyMap<>();
+        private final LongKeyMap<SQLServerDataType> dataTypeMap = new LongKeyMap<>();
         
         @NotNull
         @Override
@@ -247,10 +247,13 @@ public class SQLServerDatabase
                 // sys.table_types is supported only for SQL Server and Azure SQL Database, not for Azure Synapse.
                 statement = "SELECT * FROM " + SQLServerUtils.getSystemTableName(database, "types") + " WHERE is_user_defined = 1";
             } else {
-                statement = "SELECT ss.*, tt.type_table_object_id FROM " + SQLServerUtils.getSystemTableName(database, "types") +
-                    " ss\nLEFT JOIN " + SQLServerUtils.getSystemTableName(database, "table_types") + " tt ON\n" +
-                    "ss.name = tt.name AND ss.user_type_id = tt.user_type_id" +
-                    "\nWHERE ss.is_user_defined = 1";
+                statement = "SELECT ss.*, tt.type_table_object_id,tto.schema_id as type_table_schema_id\n" +
+                    "FROM " + SQLServerUtils.getSystemTableName(database, "types") + " ss\n" +
+                    "LEFT JOIN " + SQLServerUtils.getSystemTableName(database, "table_types") + " tt ON " +
+                        "ss.name = tt.name AND ss.user_type_id = tt.user_type_id\n" +
+                    "LEFT OUTER JOIN " + SQLServerUtils.getSystemTableName(database, "objects") + " tto ON " +
+                        "tto.object_id = tt.type_table_object_id\n" +
+                    "WHERE ss.is_user_defined = 1";
             }
             return session.prepareStatement(statement);
         }

@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -42,7 +43,6 @@ import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorVariablesResolver;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
 import org.jkiss.dbeaver.ui.editors.sql.scripts.ScriptsHandlerImpl;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLEditorOutlinePage;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContextTypeBase;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContextTypeDriver;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContextTypeProvider;
@@ -97,7 +97,7 @@ public class SQLEditorUtils {
     }
 
     @Nullable
-    public static ResourceInfo findRecentScript(DBPProject project, @Nullable SQLNavigatorContext context) throws CoreException
+    public static ResourceInfo findRecentScript(RCPProject project, @Nullable SQLNavigatorContext context) throws CoreException
     {
         List<ResourceInfo> scripts = new ArrayList<>();
         findScriptList(
@@ -120,7 +120,7 @@ public class SQLEditorUtils {
         return recentFile;
     }
 
-    private static void findScriptList(@NotNull DBPProject project, IFolder folder, @Nullable DBPDataSourceContainer container, @NotNull List<ResourceInfo> result) {
+    private static void findScriptList(@NotNull RCPProject project, IFolder folder, @Nullable DBPDataSourceContainer container, @NotNull List<ResourceInfo> result) {
         if (folder == null || container == null) {
             return;
         }
@@ -146,7 +146,7 @@ public class SQLEditorUtils {
         }
     }
 
-    public static List<ResourceInfo> findScriptTree(DBPProject project, IFolder folder, @Nullable DBPDataSourceContainer container)
+    public static List<ResourceInfo> findScriptTree(RCPProject project, IFolder folder, @Nullable DBPDataSourceContainer container)
     {
         List<ResourceInfo> result = new ArrayList<>();
         findScriptList(project, folder, container, result);
@@ -154,7 +154,7 @@ public class SQLEditorUtils {
     }
 
     @NotNull
-    public static List<ResourceInfo> getScriptsFromProject(@NotNull DBPProject dbpProject) throws CoreException {
+    public static List<ResourceInfo> getScriptsFromProject(@NotNull RCPProject dbpProject) throws CoreException {
         IFolder resourceDefaultRoot = DBPPlatformDesktop.getInstance().getWorkspace().getResourceDefaultRoot(dbpProject, ScriptsHandlerImpl.class, false);
         if (resourceDefaultRoot != null) {
             return getScriptsFromFolder(resourceDefaultRoot);
@@ -167,13 +167,11 @@ public class SQLEditorUtils {
     private static List<ResourceInfo> getScriptsFromFolder(@NotNull IFolder folder) throws CoreException {
         List<ResourceInfo> scripts = new ArrayList<>();
         for (IResource member : folder.members()) {
-            if (member instanceof IFile) {
-                IFile iFile = (IFile) member;
+            if (member instanceof IFile iFile) {
                 ResourceInfo resourceInfo = new ResourceInfo(iFile, EditorUtils.getFileDataSource(iFile));
                 scripts.add(resourceInfo);
             }
-            if (member instanceof IFolder){
-                IFolder iFolder = (IFolder) member;
+            if (member instanceof IFolder iFolder){
                 scripts.addAll(getScriptsFromFolder(iFolder));
             }
         }
@@ -598,4 +596,5 @@ public class SQLEditorUtils {
             templateContextTypeId.equalsIgnoreCase(driverContextTypeId) ||
             templateContextTypeId.equalsIgnoreCase(providerContextTypeId);
     }
+
 }

@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.mssql.edit.generic;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.edit.GenericViewManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
@@ -35,11 +34,11 @@ public class SQLServerGenericViewManager extends GenericViewManager {
 
     @Override
     protected void addObjectModifyActions(
-        @Nullable DBRProgressMonitor monitor,
-        @Nullable DBCExecutionContext executionContext,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
         @NotNull List<DBEPersistAction> actionList,
         @NotNull SQLObjectEditor<GenericTableBase, GenericStructContainer>.ObjectChangeCommand command,
-        @Nullable Map<String, Object> options
+        @NotNull Map<String, Object> options
     ) {
         actionList.add(new SQLDatabasePersistAction(
             "Create view",

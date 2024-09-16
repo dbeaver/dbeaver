@@ -43,7 +43,7 @@ import java.util.Map;
 public class VerticaSequenceManager extends GenericSequenceManager implements DBEObjectRenamer<GenericSequence> {
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR);
     }
 
@@ -81,7 +81,7 @@ public class VerticaSequenceManager extends GenericSequenceManager implements DB
     }
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_EDITOR_ON_CREATE;
     }
 
@@ -94,8 +94,8 @@ public class VerticaSequenceManager extends GenericSequenceManager implements DB
     protected void addObjectRenameActions(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext executionContext,
-        List<DBEPersistAction> actions,
-        ObjectRenameCommand command,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectRenameCommand command,
         @NotNull Map<String, Object> options
     ) {
         GenericSequence sequence = command.getObject();
@@ -112,7 +112,7 @@ public class VerticaSequenceManager extends GenericSequenceManager implements DB
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext executionContext,
         @NotNull List<DBEPersistAction> actionList,
-        ObjectChangeCommand command,
+        @NotNull ObjectChangeCommand command,
         @NotNull Map<String, Object> options
     ) {
         GenericSequence sequence = command.getObject();

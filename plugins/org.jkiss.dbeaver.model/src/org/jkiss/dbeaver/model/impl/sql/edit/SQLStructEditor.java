@@ -116,7 +116,7 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     }
 
     @Override
-    protected final void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand objectChangeCommand, Map<String, Object> options) {
+    protected final void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand objectChangeCommand, @NotNull Map<String, Object> options) {
         throw new IllegalStateException("addObjectCreateActions should never be called in struct editor");
     }
 

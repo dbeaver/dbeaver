@@ -37,7 +37,7 @@ import java.util.Map;
 public class SQLServerDatabaseManager extends SQLObjectEditor<SQLServerDatabase, SQLServerDataSource> implements DBEObjectRenamer<SQLServerDatabase> {
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return true;
     }
 
@@ -47,12 +47,12 @@ public class SQLServerDatabaseManager extends SQLObjectEditor<SQLServerDatabase,
     }
 
     @Override
-    protected SQLServerDatabase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
+    protected SQLServerDatabase createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
         return new SQLServerDatabase((SQLServerDataSource) container);
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) throws DBException {
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options) throws DBException {
         actions.add(new SQLDatabasePersistAction(
                 "Create database",
                 "CREATE DATABASE " + DBUtils.getQuotedIdentifier(command.getObject()) + ";"
@@ -60,7 +60,7 @@ public class SQLServerDatabaseManager extends SQLObjectEditor<SQLServerDatabase,
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options) {
         if (CommonUtils.getOption(options, DBEObjectManager.OPTION_CLOSE_EXISTING_CONNECTIONS)) {
             actions.add(new SQLDatabasePersistAction(
                 "Drop database connections",
@@ -74,7 +74,7 @@ public class SQLServerDatabaseManager extends SQLObjectEditor<SQLServerDatabase,
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
+    protected void addObjectRenameActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectRenameCommand command, @NotNull Map<String, Object> options) {
         final SQLServerDataSource source = command.getObject().getDataSource();
         final String oldName = DBUtils.getQuotedIdentifier(source, command.getOldName());
         final String newName = DBUtils.getQuotedIdentifier(source, command.getNewName());
@@ -86,7 +86,7 @@ public class SQLServerDatabaseManager extends SQLObjectEditor<SQLServerDatabase,
     }
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return DBEObjectMaker.FEATURE_SAVE_IMMEDIATELY | DBEObjectMaker.FEATURE_CLOSE_EXISTING_CONNECTIONS;
     }
 

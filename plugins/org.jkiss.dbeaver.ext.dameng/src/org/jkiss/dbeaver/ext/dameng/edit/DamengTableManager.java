@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.dameng.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
@@ -58,7 +59,7 @@ public class DamengTableManager extends GenericTableManager implements DBEObject
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, SQLObjectEditor<GenericTableBase, GenericStructContainer>.ObjectRenameCommand command, Map<String, Object> options) {
+    protected void addObjectRenameActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull SQLObjectEditor<GenericTableBase, GenericStructContainer>.ObjectRenameCommand command, @NotNull Map<String, Object> options) {
         final GenericDataSource dataSource = command.getObject().getDataSource();
         actions.add(
                 new SQLDatabasePersistAction(

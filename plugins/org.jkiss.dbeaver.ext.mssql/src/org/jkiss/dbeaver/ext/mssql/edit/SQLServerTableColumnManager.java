@@ -126,7 +126,7 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
     }
 
     @Override
-    public boolean canDeleteObject(SQLServerTableColumn object) {
+    public boolean canDeleteObject(@NotNull SQLServerTableColumn object) {
         return !isTableType(object) && super.canDeleteObject(object);
     }
 
@@ -135,7 +135,7 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
     }
 
     @Override
-    protected SQLServerTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException
+    protected SQLServerTableColumn createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException
     {
         final SQLServerTableBase table = (SQLServerTableBase) container;
         final DBSDataType columnType = findBestDataType(table, "varchar"); //$NON-NLS-1$

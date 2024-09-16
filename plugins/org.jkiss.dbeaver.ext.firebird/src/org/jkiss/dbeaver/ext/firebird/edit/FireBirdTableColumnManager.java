@@ -97,11 +97,11 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
      */
     @Override
     protected void addObjectModifyActions(
-        DBRProgressMonitor monitor,
-        DBCExecutionContext executionContext,
-        List<DBEPersistAction> actionList,
-        ObjectChangeCommand command,
-        Map<String, Object> options
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actionList,
+        @NotNull ObjectChangeCommand command,
+        @NotNull Map<String, Object> options
     ) throws DBException {
         final FireBirdTableColumn column = (FireBirdTableColumn) command.getObject();
 
@@ -138,7 +138,7 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
+    protected void addObjectRenameActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectRenameCommand command, @NotNull Map<String, Object> options)
     {
         final GenericTableColumn column = command.getObject();
 
@@ -159,7 +159,7 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
     // Reorder
 
     @Override
-    protected void addObjectReorderActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectReorderCommand command, Map<String, Object> options) {
+    protected void addObjectReorderActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectReorderCommand command, @NotNull Map<String, Object> options) {
         final GenericTableColumn column = command.getObject();
         actions.add(
             new SQLDatabasePersistAction(

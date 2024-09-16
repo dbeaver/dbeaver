@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.altibase.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseSynonym;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
@@ -37,18 +38,18 @@ import java.util.Map;
 public class AltibaseSynonymManager extends SQLObjectEditor<GenericSynonym, GenericStructContainer> {
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return false;
     }
 
     @Override
-    public boolean canDeleteObject(GenericSynonym object) {
+    public boolean canDeleteObject(@NotNull GenericSynonym object) {
         return true;
     }
     
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, 
-            List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext,
+                                          @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options) {
         AltibaseSynonym object = (AltibaseSynonym) command.getObject();
         
         actions.add(
@@ -59,7 +60,7 @@ public class AltibaseSynonymManager extends SQLObjectEditor<GenericSynonym, Gene
     }
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return 0;
     }
 
@@ -73,15 +74,15 @@ public class AltibaseSynonymManager extends SQLObjectEditor<GenericSynonym, Gene
     }
 
     @Override
-    protected GenericSynonym createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
-            Object container, Object copyFrom, Map<String, Object> options) throws DBException {
+    protected GenericSynonym createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context,
+                                                  Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
         throw new DBCFeatureNotSupportedException();
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext,
-            List<DBEPersistAction> actions,
-            SQLObjectEditor<GenericSynonym, GenericStructContainer>.ObjectCreateCommand command,
-            Map<String, Object> options) throws DBException {
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext,
+                                          @NotNull List<DBEPersistAction> actions,
+                                          @NotNull SQLObjectEditor<GenericSynonym, GenericStructContainer>.ObjectCreateCommand command,
+                                          @NotNull Map<String, Object> options) throws DBException {
     }
 }

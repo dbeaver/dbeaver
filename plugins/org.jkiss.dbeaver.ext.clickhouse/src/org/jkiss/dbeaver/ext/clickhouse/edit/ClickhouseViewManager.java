@@ -50,10 +50,10 @@ public class ClickhouseViewManager extends GenericViewManager {
     @Override
     protected GenericTableBase createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
-        @Nullable DBECommandContext context,
+        @NotNull DBECommandContext context,
         @NotNull Object container,
-        @Nullable Object copyFrom, 
-        @Nullable Map<String, Object> options
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
     ) {
         GenericStructContainer structContainer = (GenericStructContainer) container;
         String tableName = getNewChildName(monitor, structContainer, SQLTableManager.BASE_VIEW_NAME);
@@ -68,11 +68,11 @@ public class ClickhouseViewManager extends GenericViewManager {
 
     @Override
     protected void addObjectModifyActions(
-        @Nullable DBRProgressMonitor monitor,
-        @Nullable DBCExecutionContext executionContext,
-        @NotNull List<DBEPersistAction> actionList, 
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actionList,
         @NotNull SQLObjectEditor<GenericTableBase, GenericStructContainer>.ObjectChangeCommand command,
-        @Nullable Map<String, Object> options
+        @NotNull Map<String, Object> options
     ) {
         final ClickhouseView view = (ClickhouseView) command.getObject();
         String sql = view.getDDL();

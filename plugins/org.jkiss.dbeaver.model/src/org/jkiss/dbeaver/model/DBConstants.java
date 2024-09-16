@@ -142,6 +142,7 @@ public class DBConstants {
     public static final String LOCAL_DOMAIN_NAME = "local";
 
     public static final String HOST_LOCALHOST = "localhost";
+    public static final String HOST_LOCALHOST_IP = "127.0.0.1";
 
 
     public static final String DRIVER_PARAM_DISABLE_NETWORK_PARAMETERS = "disableNetworkParameters";

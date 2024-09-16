@@ -66,12 +66,12 @@ public class HiveTableManager extends GenericTableManager implements DBEObjectRe
     }
 
     @Override
-    public boolean canDeleteObject(GenericTableBase object) {
+    public boolean canDeleteObject(@NotNull GenericTableBase object) {
         return !((HiveTable)object).isIndexTable();
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
+    protected void addObjectRenameActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectRenameCommand command, @NotNull Map<String, Object> options) {
         actions.add(
                 new SQLDatabasePersistAction(
                         "Rename table",
@@ -81,7 +81,7 @@ public class HiveTableManager extends GenericTableManager implements DBEObjectRe
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options) {
         GenericTableBase table = command.getObject();
         if (table.getTableType().equals("INDEX_TABLE")) {
             actions.add(

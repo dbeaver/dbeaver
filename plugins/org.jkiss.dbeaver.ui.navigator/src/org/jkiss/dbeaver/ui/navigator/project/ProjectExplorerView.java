@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
@@ -93,8 +94,10 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
         viewer.getTree().setHeaderVisible(true);
 
         UIExecutionQueue.queueExec(() -> {
-            createColumns(viewer);
-            updateTitle();
+            if (!viewer.getControl().isDisposed()) {
+                createColumns(viewer);
+                updateTitle();
+            }
         });
         // Remove all non-resource nodes
         getNavigatorTree().getViewer().addFilter(new ViewerFilter() {
@@ -322,6 +325,9 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
     
     private void updateRepresentation() {
         UIExecutionQueue.queueExec(() -> {
+            if (getNavigatorTree().isDisposed()) {
+                return;
+            }
             getNavigatorTree().reloadTree(getRootNode());
             updateTitle();
             boolean viewable = ObjectPropertyTester.nodeProjectHasPermission(getRootNode(), RMConstants.PERMISSION_PROJECT_RESOURCE_VIEW);
@@ -341,8 +347,8 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
     public void configureView() {
         //columnController.configureColumns();
         DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
-        if (activeProject != null) {
-            UIUtils.showPreferencesFor(getSite().getShell(), activeProject.getEclipseProject(), PrefPageProjectResourceSettings.PAGE_ID);
+        if (activeProject instanceof RCPProject rcpProject) {
+            UIUtils.showPreferencesFor(getSite().getShell(), rcpProject.getEclipseProject(), PrefPageProjectResourceSettings.PAGE_ID);
         }
     }
 

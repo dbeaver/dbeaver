@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver API
 Bundle-SymbolicName: org.jkiss.dbeaver.model;singleton:=true
-Bundle-Version: 1.1.30.qualifier
-Bundle-Release-Date: 20240819
+Bundle-Version: 1.1.32.qualifier
+Bundle-Release-Date: 20240923
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.bundle.ModelActivator
@@ -60,6 +60,7 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.model.qm.filters,
  org.jkiss.dbeaver.model.qm.meta,
  org.jkiss.dbeaver.model.preferences,
+ org.jkiss.dbeaver.model.rcp,
  org.jkiss.dbeaver.model.rm,
  org.jkiss.dbeaver.model.runtime,
  org.jkiss.dbeaver.model.runtime.features,
@@ -96,13 +97,13 @@ Import-Package: org.bouncycastle.asn1,
  org.bouncycastle.util.io.pem
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.equinox.security;visibility:=reexport,
- org.eclipse.core.filesystem;visibility:=reexport,
+ org.eclipse.core.filesystem,
  org.eclipse.core.runtime;visibility:=reexport,
  org.eclipse.core.expressions,
  org.apache.commons.logging,
  org.eclipse.core.commands;visibility:=reexport,
  org.eclipse.core.net,
- org.eclipse.core.resources;visibility:=reexport,
+ org.eclipse.core.resources,
  org.apache.commons.jexl;visibility:=reexport,
  com.github.jsqlparser;visibility:=reexport,
  org.jkiss.utils;visibility:=reexport,

@@ -42,12 +42,12 @@ import java.util.Map;
 public class DamengSequenceManager extends GenericSequenceManager {
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR);
     }
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_EDITOR_ON_CREATE;
     }
 

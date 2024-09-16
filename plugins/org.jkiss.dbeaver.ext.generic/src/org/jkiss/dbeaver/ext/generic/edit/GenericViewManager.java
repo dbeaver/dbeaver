@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
@@ -48,7 +49,7 @@ import java.util.Map;
 public class GenericViewManager extends SQLObjectEditor<GenericTableBase, GenericStructContainer> {
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource)
+    public long getMakerOptions(@NotNull DBPDataSource dataSource)
     {
         return FEATURE_EDITOR_ON_CREATE;
     }
@@ -73,7 +74,7 @@ public class GenericViewManager extends SQLObjectEditor<GenericTableBase, Generi
     }
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         if (container instanceof DBSObject) {
             DBPDataSource dataSource = ((DBSObject) container).getDataSource();
             if (dataSource instanceof GenericDataSource) {
@@ -84,7 +85,7 @@ public class GenericViewManager extends SQLObjectEditor<GenericTableBase, Generi
     }
 
     @Override
-    protected GenericTableBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
+    protected GenericTableBase createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options)
     {
         GenericStructContainer structContainer = (GenericStructContainer) container;
         String tableName = getNewChildName(monitor, structContainer, SQLTableManager.BASE_VIEW_NAME);
@@ -98,13 +99,13 @@ public class GenericViewManager extends SQLObjectEditor<GenericTableBase, Generi
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options)
     {
         createOrReplaceViewQuery(actions, command);
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options)
     {
         actions.add(
             new SQLDatabasePersistAction(
@@ -125,7 +126,7 @@ public class GenericViewManager extends SQLObjectEditor<GenericTableBase, Generi
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options)
     {
         final GenericView view = (GenericView)command.getObject();
         boolean hasComment = command.hasProperty(DBConstants.PROP_ID_DESCRIPTION);
@@ -136,11 +137,11 @@ public class GenericViewManager extends SQLObjectEditor<GenericTableBase, Generi
 
     @Override
     protected void addObjectExtraActions(
-        DBRProgressMonitor monitor,
-        DBCExecutionContext executionContext,
-        List<DBEPersistAction> actions,
-        NestedObjectCommand<GenericTableBase, PropertyHandler> command,
-        Map<String, Object> options
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull NestedObjectCommand<GenericTableBase, PropertyHandler> command,
+        @NotNull Map<String, Object> options
     ) {
         if (command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
             GenericTableBase object = command.getObject();

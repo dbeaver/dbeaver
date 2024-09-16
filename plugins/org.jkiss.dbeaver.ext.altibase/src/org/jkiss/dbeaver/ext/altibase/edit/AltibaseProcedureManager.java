@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.altibase.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseProcedureStandAlone;
 import org.jkiss.dbeaver.ext.generic.edit.GenericProcedureManager;
@@ -36,7 +37,7 @@ import java.util.Map;
 public class AltibaseProcedureManager extends GenericProcedureManager  {
     
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return true;
     }
     
@@ -46,15 +47,15 @@ public class AltibaseProcedureManager extends GenericProcedureManager  {
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, 
-            List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext,
+                                          @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options) {
         createOrReplaceProcedureQuery(actions, command.getObject());
     }
 
     @Override
     protected GenericProcedure createDatabaseObject(
-            DBRProgressMonitor monitor, DBECommandContext context, final Object container,
-            Object from, Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, final Object container,
+        Object from, @NotNull Map<String, Object> options) {
         return new AltibaseProcedureStandAlone(
                 (GenericStructContainer) container,
                 "NEW_PROCEDURE",
@@ -62,14 +63,14 @@ public class AltibaseProcedureManager extends GenericProcedureManager  {
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, 
-            List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext,
+                                          @NotNull List<DBEPersistAction> actionList, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options) throws DBException {
         createOrReplaceProcedureQuery(actionList, command.getObject());
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, 
-            List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext,
+                                          @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options) {
         
         final AltibaseProcedureStandAlone object = (AltibaseProcedureStandAlone) command.getObject();
 

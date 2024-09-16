@@ -27,18 +27,17 @@ import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class ERDNotationRegistry {
 
+    private static final Log log = Log.getLog(ERDNotationRegistry.class);
     private static final String EXTENSION_ID = "org.jkiss.dbeaver.erd.ui.notation.style";
     private static ERDNotationRegistry instance;
-    private Map<String, ERDNotationDescriptor> notations = new LinkedHashMap<>();
-    private DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-    private Log log = Log.getLog(ERDNotationRegistry.class);
+    private final Map<String, ERDNotationDescriptor> notations = new LinkedHashMap<>();
     private ERDNotationDescriptor activeDescriptor;
 
     private ERDNotationRegistry(IExtensionRegistry registry) {
@@ -51,6 +50,11 @@ public class ERDNotationRegistry {
             }
         }
     }
+
+    private DBPPreferenceStore getPreferenceStore() {
+        return ERDUIActivator.getDefault().getPreferences();
+    }
+
 
     /**
      * Registry instance
@@ -66,7 +70,7 @@ public class ERDNotationRegistry {
 
     @NotNull
     public List<ERDNotationDescriptor> getNotations() {
-        return notations.values().stream().collect(Collectors.toList());
+        return new ArrayList<>(notations.values());
     }
 
     /**
@@ -123,7 +127,7 @@ public class ERDNotationRegistry {
         if (activeDescriptor != null) {
             return activeDescriptor;
         }
-        activeDescriptor = getDescriptor(store.getString(ERDUIConstants.PREF_NOTATION_TYPE));
+        activeDescriptor = getDescriptor(getPreferenceStore().getString(ERDUIConstants.PREF_NOTATION_TYPE));
         if (activeDescriptor != null) {
             return activeDescriptor;
         }
@@ -133,12 +137,10 @@ public class ERDNotationRegistry {
 
     /**
      * The method designed to set and store current descriptor 
-     *
-     * @param erdNotation
      */
     public void setActiveDescriptor(ERDNotationDescriptor erdNotation) {
         activeDescriptor = erdNotation;
-        store.setValue(ERDUIConstants.PREF_NOTATION_TYPE, activeDescriptor.getId());
+        getPreferenceStore().setValue(ERDUIConstants.PREF_NOTATION_TYPE, activeDescriptor.getId());
     }
     
     /**

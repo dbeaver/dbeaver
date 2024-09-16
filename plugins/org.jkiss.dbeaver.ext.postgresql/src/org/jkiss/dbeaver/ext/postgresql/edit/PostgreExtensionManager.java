@@ -18,6 +18,7 @@
 
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreExtension;
@@ -37,7 +38,7 @@ import java.util.Map;
 public class PostgreExtensionManager extends SQLObjectEditor<PostgreExtension, PostgreDatabase>{
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_SAVE_IMMEDIATELY;
     }
 
@@ -47,16 +48,16 @@ public class PostgreExtensionManager extends SQLObjectEditor<PostgreExtension, P
     }
 
     @Override
-    protected PostgreExtension createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
-            Object container, Object copyFrom, Map<String, Object> options) throws DBException {
+    protected PostgreExtension createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context,
+                                                    Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
         return new PostgreExtension((PostgreDatabase) container);
     }
 
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
-                                          ObjectCreateCommand command,
-                                          Map<String, Object> options) {
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
+                                          @NotNull ObjectCreateCommand command,
+                                          @NotNull Map<String, Object> options) {
         final PostgreExtension extension = command.getObject();
 
         actions.add(
@@ -67,9 +68,9 @@ public class PostgreExtensionManager extends SQLObjectEditor<PostgreExtension, P
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
-                                          ObjectDeleteCommand command,
-                                          Map<String, Object> options) {
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
+                                          @NotNull ObjectDeleteCommand command,
+                                          @NotNull Map<String, Object> options) {
         
         
         actions.add(
@@ -78,12 +79,12 @@ public class PostgreExtensionManager extends SQLObjectEditor<PostgreExtension, P
     }
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
          return true;
     }
 
     @Override
-    public boolean canDeleteObject(PostgreExtension object) {
+    public boolean canDeleteObject(@NotNull PostgreExtension object) {
         return true;
     }
 
