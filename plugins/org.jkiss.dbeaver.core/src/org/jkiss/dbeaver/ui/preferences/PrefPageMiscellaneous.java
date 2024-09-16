@@ -30,7 +30,15 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
@@ -39,7 +47,11 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIElementAlignment;
+import org.jkiss.dbeaver.ui.UIElementFontStyle;
+import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.DefaultColorSelector;
 import org.jkiss.dbeaver.ui.controls.TextWithDropDown;
 import org.jkiss.dbeaver.ui.controls.bool.BooleanMode;
@@ -209,6 +221,7 @@ public class PrefPageMiscellaneous extends PrefPageMiscellaneousAbstract impleme
 
         private BooleanMode currentMode;
         private String currentText;
+        private String savedText;
         private UIElementAlignment currentAlignment;
         private UIElementFontStyle currentFontStyle;
         private RGB currentColor;
@@ -298,6 +311,9 @@ public class PrefPageMiscellaneous extends PrefPageMiscellaneousAbstract impleme
                         switch (event.getProperty()) {
                             case PROP_TEXT:
                                 text.getTextComponent().setText((String) event.getNewValue());
+                                if (savedText == null) {
+                                    savedText = (String) event.getNewValue();
+                                }
                                 break;
                             case PROP_FONT:
                                 switch ((UIElementFontStyle) event.getNewValue()) {
@@ -314,6 +330,9 @@ public class PrefPageMiscellaneous extends PrefPageMiscellaneousAbstract impleme
                                 break;
                             case PROP_MODE:
                                 UIUtils.enableWithChildren(text, event.getNewValue() == BooleanMode.TEXT);
+                                if (event.getNewValue() == BooleanMode.TEXT) {
+                                    text.getTextComponent().setText(savedText);
+                                }
                                 break;
                             case PROP_COLOR:
                                 text.getTextComponent().setForeground(UIUtils.getSharedColor((RGB) event.getNewValue()));
@@ -430,6 +449,7 @@ public class PrefPageMiscellaneous extends PrefPageMiscellaneousAbstract impleme
         @NotNull
         public BooleanStyle saveStyle() {
             if (currentMode == BooleanMode.TEXT) {
+                savedText = currentText;
                 return BooleanStyle.usingText(currentText, currentAlignment, currentColor, currentFontStyle);
             } else {
                 return BooleanStyle.usingIcon(state.getIcon(), currentAlignment);
