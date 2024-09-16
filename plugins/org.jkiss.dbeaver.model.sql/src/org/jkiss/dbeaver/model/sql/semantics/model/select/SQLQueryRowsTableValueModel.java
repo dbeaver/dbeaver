@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -62,7 +63,7 @@ public class SQLQueryRowsTableValueModel extends SQLQueryRowsSourceModel {
             value.propagateContext(context, statistics);
             resultColumns.addLast(new SQLQueryResultColumn(resultColumns.size(), new SQLQuerySymbol("?"), this, null, null, SQLQueryExprType.UNKNOWN));
         }
-        context = context.hideSources().overrideResultTuple(List.copyOf(resultColumns));
+        context = context.hideSources().overrideResultTuple(this, List.copyOf(resultColumns), Collections.emptyList());
 
         if (this.isIncomplete) {
             context = context.markHasUnresolvedSource();

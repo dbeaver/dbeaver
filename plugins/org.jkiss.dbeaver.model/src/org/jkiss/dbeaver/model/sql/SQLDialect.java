@@ -65,6 +65,10 @@ public interface SQLDialect {
         ORDER_BY;
     }
 
+    record GlobalVariableInfo(String name, String description, DBPDataKind type) {
+        public static GlobalVariableInfo[] EMPTY_ARRAY = new GlobalVariableInfo[0];
+    }
+
     @NotNull
     SQLDialectQueryGenerator getQueryGenerator();
 
