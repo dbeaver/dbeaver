@@ -55,7 +55,7 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
     }
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return container instanceof GenericTable && GenericUtils.canAlterTable((GenericTable) container);
     }
 
@@ -65,7 +65,7 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
     }
 
     @Override
-    public boolean canDeleteObject(GenericTableColumn object) {
+    public boolean canDeleteObject(@NotNull GenericTableColumn object) {
         return GenericUtils.canAlterTable(object);
     }
 

@@ -296,10 +296,11 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
         }
     }
 
-    protected void beforeExecute()
-    {
+    protected void beforeExecute() {
         this.updateCount = -1;
         this.executeError = null;
+        this.connection.getExecutionContext().lockQueryExecution();
+
         if (isQMLoggingEnabled()) {
             QMUtils.getDefaultHandler().handleStatementExecuteBegin(this);
         }
@@ -309,8 +310,9 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
         this.startBlock();
     }
 
-    protected void afterExecute()
-    {
+    protected void afterExecute() {
+        this.connection.getExecutionContext().unlockQueryExecution();
+
         this.endBlock();
         if (isQMLoggingEnabled()) {
             QMUtils.getDefaultHandler().handleStatementExecuteEnd(this, this.updateCount, this.executeError);

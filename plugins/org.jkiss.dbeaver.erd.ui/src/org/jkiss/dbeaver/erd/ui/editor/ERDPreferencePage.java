@@ -102,7 +102,7 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         for (ERDConnectionRouterDescriptor descriptor : routerDescriptors) {
             routingType.add(descriptor.getName());
         }
-        ERDConnectionRouterDescriptor defConnectionRouter = routerRegistry.getActiveDescriptor();
+        ERDConnectionRouterDescriptor defConnectionRouter = routerRegistry.getActiveRouter();
         if (defConnectionRouter != null) {
             routingType.select(routerDescriptors.indexOf(defConnectionRouter));
         } else {
@@ -216,7 +216,7 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         contentsShowViews.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS));
         contentsShowPartitions.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS));
-        routingType.select(routerDescriptors.indexOf(routerRegistry.getDefaultDescriptor()));
+        routingType.select(routerDescriptors.indexOf(routerRegistry.getActiveRouter()));
         changeBorderColors.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS));
         notationType.select(notationDescriptors.indexOf(notationRegistry.getDefaultDescriptor()));
         changeHeaderColors.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS));
@@ -250,7 +250,7 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         ERDConnectionRouterDescriptor connectionRouter = ERDConnectionRouterRegistry.getInstance()
             .getDescriptorById(routingType.getText());
         if (connectionRouter != null) {
-            ERDConnectionRouterRegistry.getInstance().setActiveDescriptor(connectionRouter);
+            ERDConnectionRouterRegistry.getInstance().setActiveRouter(connectionRouter);
         }
         ERDNotationDescriptor erdNotation = ERDNotationRegistry.getInstance().getDescriptorByName(notationType.getText());
         if (erdNotation != null) {

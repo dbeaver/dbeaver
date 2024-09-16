@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSView;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.function.Function;
@@ -260,10 +261,14 @@ public abstract class SQLQueryCompletionContext {
                 String tail = parts.get(parts.size() - 1);
 
                 List<SQLQueryCompletionItem> result;
-                if (syntaxInspectionResult.expectingColumnReference) {
-                    result = this.accomplishColumnReference(prefix, tail);
-                } else if (syntaxInspectionResult.expectingTableReference) {
-                    result = this.accomplishTableReference(monitor, componentType, prefix, tail);
+                if (!CommonUtils.isEmpty(tail)) {
+                    if (syntaxInspectionResult.expectingColumnReference) {
+                        result = this.accomplishColumnReference(prefix, tail);
+                    } else if (syntaxInspectionResult.expectingTableReference) {
+                        result = this.accomplishTableReference(monitor, componentType, prefix, tail);
+                    } else {
+                        result = Collections.emptyList();
+                    }
                 } else {
                     result = Collections.emptyList();
                 }
@@ -489,7 +494,9 @@ public abstract class SQLQueryCompletionContext {
                         if (defaults != null) {
                             DBSSchema defaultSchema = defaults.getDefaultSchema();
                             DBSCatalog defaultCatalog = defaults.getDefaultCatalog();
-                            if (request.getContext().isSearchGlobally() && defaultCatalog != null) {
+                            if (defaultCatalog == null && defaultSchema == null && dbcExecutionContext.getDataSource() instanceof DBSObjectContainer container) {
+                                this.collectTables(monitor, container, alreadyReferencedObjects, completions);
+                            } else if (request.getContext().isSearchGlobally() && defaultCatalog != null) {
                                 this.collectTables(monitor, defaultCatalog, alreadyReferencedObjects, completions);
                             } else {
                                 if (defaultSchema != null) {

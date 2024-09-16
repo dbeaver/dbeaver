@@ -44,11 +44,13 @@
             <supports dataSource="greenplum"/>
             <supports dataSource="redshift"/>
             <supports dataSource="enterprisedb"/>
+            <supports dataSource="gaussdb"/>
         </editorContribution>
         <editorContribution editorId="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreLockEditor" category="connectionEditor" label="%editor.lock_manager.name" icon="#locked" visibleIf="connected &amp;&amp; dataSource.serverType.supportsLocks()">
             <supports dataSource="postgresql"/>
             <supports dataSource="greenplum"/>
             <supports dataSource="enterprisedb"/>
+            <supports dataSource="gaussdb"/>
         </editorContribution>
     </extension>
 

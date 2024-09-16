@@ -293,6 +293,8 @@
         <setEntry value="org.jkiss.dbeaver.ext.oracle.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.oracle@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.phoenix@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.ext.gaussdb.ui@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.ext.gaussdb@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.postgresql.debug.core@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.postgresql.debug.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.postgresql.ui@default:default"/>

@@ -111,8 +111,8 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
         if (resource instanceof DBFFileStoreProvider) {
             IFileStore fileStore = ((DBFFileStoreProvider) resource).getFileStore();
             long length = fileStore.fetchInfo().getLength();
-            if (!UIUtils.confirmAction(null, "Open resource '" + resource.getFullPath() +
-                "'?\nSize = " + ByteNumberFormat.getInstance().format(length))) {
+            if (!UIUtils.confirmAction(resource.getFullPath().toString(), "Open remote resource '" + resource.getFullPath() +
+                "'?\nSize = " + ByteNumberFormat.getInstance().format(length) + " bytes")) {
                 return;
             }
 

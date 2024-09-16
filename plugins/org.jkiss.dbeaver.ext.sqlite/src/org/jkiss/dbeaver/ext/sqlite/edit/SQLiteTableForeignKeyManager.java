@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.sqlite.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.edit.GenericForeignKeyManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey;
@@ -30,7 +31,7 @@ import java.util.Map;
 
 public class SQLiteTableForeignKeyManager extends GenericForeignKeyManager {
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return true;
     }
 
@@ -40,12 +41,12 @@ public class SQLiteTableForeignKeyManager extends GenericForeignKeyManager {
     }
 
     @Override
-    public boolean canDeleteObject(GenericTableForeignKey object) {
+    public boolean canDeleteObject(@NotNull GenericTableForeignKey object) {
         return true;
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) throws DBException {
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options) throws DBException {
         SQLiteUtils.createTableAlterActions(
             monitor,
             "Create foreign key " + DBUtils.getQuotedIdentifier(command.getObject()),
@@ -55,7 +56,7 @@ public class SQLiteTableForeignKeyManager extends GenericForeignKeyManager {
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options) throws DBException {
         SQLiteUtils.createTableAlterActions(
             monitor,
             "Alter foreign key " + DBUtils.getQuotedIdentifier(command.getObject()),
@@ -65,7 +66,7 @@ public class SQLiteTableForeignKeyManager extends GenericForeignKeyManager {
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) throws DBException {
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options) throws DBException {
         SQLiteUtils.createTableAlterActions(
             monitor,
             "Drop foreign key " + DBUtils.getQuotedIdentifier(command.getObject()),

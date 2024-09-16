@@ -113,13 +113,12 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         pageControl = new ObjectEditorPageControl(parent, SWT.SHEET, this) {
             @Override
             public void fillCustomActions(IContributionManager contributionManager) {
-                createPropertyRefreshAction(contributionManager);
-
                 super.fillCustomActions(contributionManager);
                 if (propertiesPanel != null && folderComposite == null) {
                     // We have object editor and no folders - contribute default actions
                     DatabaseEditorUtils.contributeStandardEditorActions(getSite(), contributionManager);
                 }
+                createPropertyRefreshAction(contributionManager);
             }
         };
         CSSUtils.setCSSClass(pageControl, DBStyles.COLORED_BY_CONNECTION_TYPE);
@@ -270,7 +269,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             }
         });
         
-        folderComposite.switchFolder(curFolderId);
+        UIUtils.syncExec(() -> folderComposite.switchFolder(curFolderId));
         
         return foldersPlaceholder;
     }

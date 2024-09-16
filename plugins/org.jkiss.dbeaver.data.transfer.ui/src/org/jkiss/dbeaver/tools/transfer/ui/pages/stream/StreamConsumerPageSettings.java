@@ -26,6 +26,9 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.eclipse.ui.forms.events.ExpansionAdapter;
+import org.eclipse.ui.forms.events.ExpansionEvent;
+import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -96,7 +99,20 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
         Composite composite = UIUtils.createComposite(parent, 1);
 
         {
-            Composite generalSettings = UIUtils.createControlGroup(composite, DTMessages.data_transfer_wizard_settings_group_general, 5, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            final ExpandableComposite generalExpander = new ExpandableComposite(composite, SWT.NONE);
+            generalExpander.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
+            generalExpander.setText(DTMessages.data_transfer_wizard_settings_group_general);
+            generalExpander.addExpansionListener(new ExpansionAdapter() {
+                @Override
+                public void expansionStateChanged(ExpansionEvent e) {
+                    UIUtils.resizeShell(parent.getShell());
+                }
+            });
+
+            Composite generalSettings = UIUtils.createControlGroup(generalExpander, DTMessages.data_transfer_wizard_settings_group_general, 5, GridData.HORIZONTAL_ALIGN_BEGINNING, -1);
+            //generalSettings.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+
+            generalExpander.setClient(generalSettings);
             {
                 formatProfilesCombo = UIUtils.createLabelCombo(generalSettings, DTMessages.data_transfer_wizard_settings_label_formatting, SWT.DROP_DOWN | SWT.READ_ONLY);
                 GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);

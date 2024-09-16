@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.net;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -38,30 +39,32 @@ public class HTTPTunnelImpl implements DBWTunnel {
         return AuthCredentials.NONE;
     }
 
+    @NotNull
     @Override
-    public DBPConnectionConfiguration initializeHandler(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
+    public DBPConnectionConfiguration initializeHandler(@NotNull DBRProgressMonitor monitor, @NotNull DBWHandlerConfiguration configuration, @NotNull DBPConnectionConfiguration connectionInfo)
         throws DBException, IOException
     {
         return connectionInfo;
     }
 
     @Override
-    public void closeTunnel(DBRProgressMonitor monitor) throws DBException, IOException
+    public void closeTunnel(@NotNull DBRProgressMonitor monitor) throws DBException, IOException
     {
     }
 
+    @Nullable
     @Override
     public Object getImplementation() {
         return null;
     }
 
     @Override
-    public void addCloseListener(Runnable listener) {
+    public void addCloseListener(@NotNull Runnable listener) {
         // do nothing
     }
 
     @Override
-    public boolean matchesParameters(String host, int port) {
+    public boolean matchesParameters(@NotNull String host, int port) {
         return false;
     }
 

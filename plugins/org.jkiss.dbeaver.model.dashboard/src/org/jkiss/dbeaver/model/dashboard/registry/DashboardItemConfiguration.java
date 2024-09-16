@@ -32,6 +32,8 @@ import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
 import org.jkiss.dbeaver.model.dashboard.*;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.dbeaver.model.runtime.OSDescriptor;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -44,7 +46,9 @@ import org.w3c.dom.Element;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * DashboardItemDescriptor
@@ -94,6 +98,7 @@ public class DashboardItemConfiguration extends AbstractContextDescriptor implem
     private String dashboardURL;
     private String dashboardExternalURL;
     private boolean resolveVariables = true;
+    private final Set<OSDescriptor> supportedSystems = new HashSet<>();
 
     public static class QueryMapping implements DBDashboardQuery {
         private final String queryText;
@@ -183,6 +188,14 @@ public class DashboardItemConfiguration extends AbstractContextDescriptor implem
         }
 
         this.isCustom = false;
+        this.dashboardURL = config.getAttribute("url");
+        this.dashboardExternalURL = config.getAttribute("externalUrl");
+        this.resolveVariables = CommonUtils.getBoolean(config.getAttribute("resolveVariables"), true);
+        for (IConfigurationElement os : config.getChildren(RegistryConstants.TAG_OS)) {
+            supportedSystems.add(new OSDescriptor(
+                os.getAttribute(RegistryConstants.ATTR_NAME),
+                os.getAttribute(RegistryConstants.ATTR_ARCH)));
+        }
     }
 
     DashboardItemConfiguration(DashboardRegistry registry, Element config) {
@@ -603,6 +616,20 @@ public class DashboardItemConfiguration extends AbstractContextDescriptor implem
             return GeneralUtils.replaceVariables(url, variableResolver);
         }
         return url;
+    }
+
+    public boolean isSupportedByLocalSystem() {
+        if (supportedSystems.isEmpty()) {
+            // Multi-platform
+            return true;
+        }
+        OSDescriptor localSystem = DBWorkbench.getPlatform().getLocalSystem();
+        for (OSDescriptor system : supportedSystems) {
+            if (system.matches(localSystem)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     void serialize(XMLBuilder xml) throws IOException {

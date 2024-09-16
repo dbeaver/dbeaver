@@ -35,7 +35,7 @@ import java.util.Map;
 public class DuckDBSequenceManager extends GenericSequenceManager {
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         // TODO: We need to add treeInjection in the plugin.xml to work with this
         //return DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR);
         return false;

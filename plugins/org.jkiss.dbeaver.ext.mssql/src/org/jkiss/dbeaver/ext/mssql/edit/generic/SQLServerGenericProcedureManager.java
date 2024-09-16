@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.edit.generic;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.edit.GenericProcedureManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -34,7 +35,7 @@ import java.util.Map;
 public class SQLServerGenericProcedureManager extends GenericProcedureManager {
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options)
     {
         // Always DROP PROCEDURE (SQL Server doesn't support functions?)
         // Do not use database name (not supported)

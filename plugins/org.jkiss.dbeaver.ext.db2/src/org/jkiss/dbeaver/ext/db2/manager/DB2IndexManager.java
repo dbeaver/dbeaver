@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.manager;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.db2.model.DB2Index;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableBase;
@@ -49,7 +50,7 @@ public class DB2IndexManager extends SQLIndexManager<DB2Index, DB2TableBase> {
     }
 
     @Override
-    protected DB2Index createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object from, Map<String, Object> options) {
+    protected DB2Index createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, final Object container, Object from, @NotNull Map<String, Object> options) {
         DB2TableBase table = (DB2TableBase) container;
         return new DB2Index(
             (DB2TableBase) table,

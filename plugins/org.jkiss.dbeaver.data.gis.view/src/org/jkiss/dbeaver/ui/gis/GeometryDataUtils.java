@@ -86,7 +86,22 @@ public class GeometryDataUtils {
         return result;
     }
 
-    public static void setGeometryProperties(@NotNull IResultSetController controller, @NotNull GeomAttrs geomAttrs, @NotNull DBGeometry geometry, @NotNull RGB geometryColor, @NotNull ResultSetRow row) {
+    /**
+     * Set geometry properties for the given geometry.
+     *
+     * @param controller result set controller to get the model.
+     * @param geomAttrs  geometry attributes.
+     * @param geometry   geometry to set properties.
+     * @param index      index of the geometry in the result set.
+     * @param row        row of the result set.
+     */
+    public static void setGeometryProperties(
+        @NotNull IResultSetController controller,
+        @NotNull GeomAttrs geomAttrs,
+        @NotNull DBGeometry geometry,
+        int index,
+        @NotNull ResultSetRow row
+    ) {
         final ResultSetModel model = controller.getModel();
         final Map<String, String> info = new LinkedHashMap<>();
         for (DBDAttributeBinding binding : geomAttrs.descAttrs) {
@@ -97,7 +112,7 @@ public class GeometryDataUtils {
         }
         final Map<String, Object> properties = new LinkedHashMap<>();
         properties.put("id", DBUtils.getObjectFullName(geomAttrs.geomAttr, DBPEvaluationContext.UI));
-        properties.put("color", String.format("#%02x%02x%02x", geometryColor.red, geometryColor.green, geometryColor.blue));
+        properties.put("color", info.getOrDefault("color", rgbToHex(makeGeometryColor(index))));
         properties.put("info", info);
         geometry.setProperties(properties);
 
@@ -124,12 +139,17 @@ public class GeometryDataUtils {
     }
 
     @NotNull
-    public static RGB makeGeometryColor(int index) {
+    private static RGB makeGeometryColor(int index) {
         if (index == 0) {
             return Display.getCurrent().getSystemColor(SWT.COLOR_BLUE).getRGB();
         } else {
             return UIColors.getColor(index).getRGB();
         }
+    }
+
+    @NotNull
+    private static String rgbToHex(RGB rgb) {
+        return String.format("#%02x%02x%02x", rgb.red, rgb.green, rgb.blue);
     }
 
     public static int getDefaultSRID() {

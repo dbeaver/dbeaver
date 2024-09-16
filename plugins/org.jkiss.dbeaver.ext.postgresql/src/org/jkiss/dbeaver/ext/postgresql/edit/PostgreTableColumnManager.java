@@ -171,7 +171,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     }
 
     @Override
-    protected PostgreTableColumn createDatabaseObject(final DBRProgressMonitor monitor, final DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options) throws DBException {
+    protected PostgreTableColumn createDatabaseObject(@NotNull final DBRProgressMonitor monitor, @NotNull final DBECommandContext context, final Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
         PostgreTableBase table = (PostgreTableBase) container;
 
         final PostgreTableColumn column;
@@ -200,7 +200,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options)
     {
         final PostgreAttribute column = command.getObject();
         boolean isAtomic = column.getDataSource().getServerType().isAlterTableAtomic();
@@ -259,7 +259,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
+    protected void addObjectRenameActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectRenameCommand command, @NotNull Map<String, Object> options)
     {
         final PostgreAttribute column = command.getObject();
         PostgreTableBase table = (PostgreTableBase) column.getTable();
@@ -280,11 +280,11 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
 
     @Override
     protected void addObjectDeleteActions(
-        DBRProgressMonitor monitor,
-        DBCExecutionContext executionContext,
-        List<DBEPersistAction> actions,
-        ObjectDeleteCommand command,
-        Map<String, Object> options
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectDeleteCommand command,
+        @NotNull Map<String, Object> options
     ) {
         PostgreTableColumn column = command.getObject();
         PostgreTableBase table = column.getParentObject();

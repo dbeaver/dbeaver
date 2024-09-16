@@ -89,11 +89,13 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> impleme
             Group sourceSettingsGroup = UIUtils.createControlGroup(settingsGroup, DTUIMessages.data_transfer_wizard_final_group_settings_source, 1, GridData.FILL_BOTH, 0);
             sourceSettingsText = new Text(sourceSettingsGroup, SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL);
             sourceSettingsText.setLayoutData(new GridData(GridData.FILL_BOTH));
+            ((GridData) sourceSettingsText.getLayoutData()).widthHint = 150;
             ((GridData) sourceSettingsText.getLayoutData()).heightHint = 30;
 
             Group targetSettingsGroup = UIUtils.createControlGroup(settingsGroup, DTUIMessages.data_transfer_wizard_final_group_settings_target, 1, GridData.FILL_BOTH, 0);
             targetSettingsText = new Text(targetSettingsGroup, SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL);
             targetSettingsText.setLayoutData(new GridData(GridData.FILL_BOTH));
+            ((GridData) targetSettingsText.getLayoutData()).widthHint = 150;
             ((GridData) targetSettingsText.getLayoutData()).heightHint = 30;
         }
 

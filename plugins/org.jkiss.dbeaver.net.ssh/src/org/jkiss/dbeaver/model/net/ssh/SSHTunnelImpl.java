@@ -54,21 +54,23 @@ public class SSHTunnelImpl implements DBWTunnel {
     private SSHSession session;
     private final List<Runnable> listeners = new ArrayList<>();
 
+    @Nullable
     @Override
     public SSHSession getImplementation() {
         return session;
     }
 
     @Override
-    public void addCloseListener(Runnable listener) {
+    public void addCloseListener(@NotNull Runnable listener) {
         this.listeners.add(listener);
     }
 
+    @NotNull
     @Override
     public DBPConnectionConfiguration initializeHandler(
-        DBRProgressMonitor monitor,
-        DBWHandlerConfiguration configuration,
-        DBPConnectionConfiguration connectionInfo
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBWHandlerConfiguration configuration,
+        @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBException, IOException {
         this.configuration = configuration;
 
@@ -96,7 +98,7 @@ public class SSHTunnelImpl implements DBWTunnel {
     }
 
     @Override
-    public boolean matchesParameters(String host, int port) {
+    public boolean matchesParameters(@NotNull String host, int port) {
         if (host.equals(configuration.getStringProperty(DBWHandlerConfiguration.PROP_HOST))) {
             int sshPort = configuration.getIntProperty(DBWHandlerConfiguration.PROP_PORT);
             return sshPort == port;
@@ -160,7 +162,7 @@ public class SSHTunnelImpl implements DBWTunnel {
     }
 
     @Override
-    public void closeTunnel(DBRProgressMonitor monitor) throws DBException {
+    public void closeTunnel(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (session != null) {
             final DBPDataSourceContainer container = configuration.getDataSource();
             final int timeout = container != null

@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.mssql.edit.generic;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTriggerManager;
 import org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericTrigger;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -32,11 +33,17 @@ import java.util.Map;
 /**
  * SQLServerTableTriggerManager
  */
-public class SQLServerGenericTriggerManager extends GenericTriggerManager {
+public class SQLServerGenericTriggerManager extends GenericTriggerManager<SQLServerGenericTrigger> {
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
-        SQLServerGenericTrigger trigger = (SQLServerGenericTrigger) command.getObject();
+    protected void addObjectDeleteActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectDeleteCommand command,
+        @NotNull Map<String, Object> options
+    ) {
+        SQLServerGenericTrigger trigger = command.getObject();
         DBSObject defaultDatabase = DBUtils.getDefaultContext(trigger.getDataSource(), true).getContextDefaults().getDefaultCatalog();
         if (defaultDatabase != trigger.getTable().getCatalog()) {
             actions.add(new SQLDatabasePersistAction("Set current database", "USE " + DBUtils.getQuotedIdentifier(trigger.getTable().getCatalog()), false)); //$NON-NLS-2$

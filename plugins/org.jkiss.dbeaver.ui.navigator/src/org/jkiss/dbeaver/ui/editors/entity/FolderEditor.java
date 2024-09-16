@@ -57,10 +57,10 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
 
     @Override
     public void createPartControl(Composite parent) {
-        UIExecutionQueue.queueExec(() -> {
-            itemControl = new FolderListControl(parent);
-            itemControl.createProgressPanel();
+        itemControl = new FolderListControl(parent);
+        itemControl.createProgressPanel();
 
+        UIExecutionQueue.queueExec(() -> {
             final DBNNode navigatorNode = getEditorInput().getNavigatorNode();
             setTitleImage(DBeaverIcons.getImage(navigatorNode.getNodeIcon()));
             setPartName(navigatorNode.getNodeDisplayName());

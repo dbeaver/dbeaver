@@ -31,7 +31,7 @@ import java.util.Map;
 public class ImportConnectionInfo {
 
     private DriverDescriptor driver;
-    private final ImportDriverInfo driverInfo;
+    private ImportDriverInfo driverInfo;
     private final String id;
     private final String alias;
     private String url;
@@ -39,7 +39,9 @@ public class ImportConnectionInfo {
     private String port;
     private String database;
     private String user;
+    private String authModelId;
     private final String password;
+    private final Map<String, String> authProperties = new HashMap<>();
     private final Map<String, String> properties = new HashMap<>();
     private final Map<String, String> providerProperties = new HashMap<>();
     private final List<DBWHandlerConfiguration> networkHandlers = new ArrayList<>();
@@ -88,6 +90,9 @@ public class ImportConnectionInfo {
         return driverInfo;
     }
 
+    public void setDriverInfo(ImportDriverInfo driverInfo) {
+        this.driverInfo = driverInfo;
+    }
     public String getId()
     {
         return id;
@@ -186,5 +191,21 @@ public class ImportConnectionInfo {
 
     public void addNetworkHandler(DBWHandlerConfiguration handler) {
         networkHandlers.add(handler);
+    }
+
+    public void setAuthModelId(String authModelId) {
+        this.authModelId = authModelId;
+    }
+
+    public String getAuthModelId() {
+        return authModelId;
+    }
+
+    public void setAuthProperty(String name, String value) {
+        authProperties.put(name, value);
+    }
+
+    public Map<String, String> getAuthProperties() {
+        return authProperties;
     }
 }

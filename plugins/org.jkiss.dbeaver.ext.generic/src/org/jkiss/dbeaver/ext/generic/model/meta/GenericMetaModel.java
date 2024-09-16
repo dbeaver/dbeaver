@@ -688,7 +688,9 @@ public class GenericMetaModel {
         @NotNull GenericTableBase sourceObject,
         @NotNull Map<String, Object> options
     ) throws DBException {
-        return DBStructUtils.generateTableDDL(monitor, sourceObject, options, false);
+        boolean showComments = CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SOURCE);
+        return DBStructUtils.generateTableDDL(
+            monitor, sourceObject, options, false);
     }
 
     public boolean supportsTableDDLSplit(GenericTableBase sourceObject) {

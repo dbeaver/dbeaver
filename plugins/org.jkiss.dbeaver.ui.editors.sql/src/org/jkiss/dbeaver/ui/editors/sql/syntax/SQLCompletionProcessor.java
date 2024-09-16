@@ -184,7 +184,6 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                         {
                             setSystem(true);
                             setUser(false);
-                            schedule();
                         }
 
                         @Override

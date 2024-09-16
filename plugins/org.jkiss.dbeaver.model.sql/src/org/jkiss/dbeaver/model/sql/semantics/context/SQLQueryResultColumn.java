@@ -28,7 +28,6 @@ public class SQLQueryResultColumn {
     @NotNull
     public final SQLQuerySymbol symbol;
     @NotNull
-
     public final SQLQueryRowsSourceModel source;
     @Nullable
     public final DBSEntity realSource;
@@ -51,6 +50,10 @@ public class SQLQueryResultColumn {
         this.realSource = realSource;
         this.realAttr = realAttr;
         this.type = type;
+    }
+
+    public SQLQueryResultColumn withNewIndex(int index) {
+        return new SQLQueryResultColumn(index, this.symbol, this.source, this.realSource, this.realAttr, this.type);
     }
 }
 

@@ -36,8 +36,8 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.ConnectionTestJob;
@@ -152,15 +152,23 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
 
     public void testConnection() {
         DataSourceDescriptor dataSource = getPageSettings().getActiveDataSource();
-        if (dataSource.isSharedCredentials()) {
-            UIUtils.showMessageBox(getShell(), "Use credentials manager",
-                "Direct connection test is not available for shared connections.\nGo to shared credentials manager dialog.",
-                SWT.ICON_WARNING);
-            return;
-        }
         DataSourceDescriptor testDataSource = new DataSourceDescriptor(dataSource, dataSource.getRegistry());
 
         saveSettings(testDataSource);
+
+        if (testDataSource.isSharedCredentials()) {
+            if (!testDataSource.getProject().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_PROJECT_ADMIN)) {
+                UIUtils.showMessageBox(getShell(), "Credentials edit restricted",
+                    "Shared credentials edit is available for administrators only.",
+                    SWT.ICON_ERROR);
+            } else {
+                UIUtils.showMessageBox(getShell(), "Use credentials manager",
+                    "Direct connection test is not available for shared connections.\nGo to shared credentials manager dialog.",
+                    SWT.ICON_WARNING);
+            }
+            return;
+        }
+
         testDataSource.setTemporary(true);
 
         // Generate new ID to avoid session conflicts in QM
@@ -278,8 +286,12 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
 
     @NotNull
     protected DBPConnectionConfiguration getDefaultConnectionConfiguration() {
+        DBPConnectionType type = DBPConnectionType.getDefaultConnectionType();
+
         DBPConnectionConfiguration config = new DBPConnectionConfiguration();
-        config.setConnectionType(DBPConnectionType.getDefaultConnectionType());
+        config.setConnectionType(type);
+        config.setCloseIdleConnection(type.isAutoCloseConnections());
+
         return config;
     }
 }

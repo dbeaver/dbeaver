@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.clickhouse.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseTable;
@@ -79,11 +80,11 @@ public class ClickhouseTableManager extends GenericTableManager {
 
     @Override
     protected void addObjectExtraActions(
-        DBRProgressMonitor monitor,
-        DBCExecutionContext executionContext,
-        List<DBEPersistAction> actions,
-        NestedObjectCommand<GenericTableBase, PropertyHandler> command,
-        Map<String, Object> options)
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull NestedObjectCommand<GenericTableBase, PropertyHandler> command,
+        @NotNull Map<String, Object> options)
     {
         GenericTableBase tableBase = command.getObject();
         if (tableBase.isPersisted() && command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {

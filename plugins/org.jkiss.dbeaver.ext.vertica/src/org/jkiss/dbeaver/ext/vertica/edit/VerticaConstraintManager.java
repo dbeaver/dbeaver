@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.vertica.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.edit.GenericPrimaryKeyManager;
 import org.jkiss.dbeaver.ext.vertica.model.VerticaConstraint;
@@ -33,7 +34,7 @@ import java.util.Map;
 public class VerticaConstraintManager extends GenericPrimaryKeyManager {
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options) throws DBException {
         VerticaConstraint constraint = (VerticaConstraint) command.getObject();
 
         if (command.getProperties().containsKey(DBConstants.PROP_ID_ENABLED)) {

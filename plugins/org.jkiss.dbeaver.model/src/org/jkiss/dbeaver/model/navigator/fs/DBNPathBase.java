@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
 import org.jkiss.dbeaver.model.fs.nio.*;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
@@ -44,10 +45,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -70,6 +68,12 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
 
     protected DBNPathBase(DBNNode parentNode) {
         super(parentNode);
+    }
+
+    @Nullable
+    @Override
+    public RCPProject getOwnerProject() {
+        return (RCPProject)super.getOwnerProject();
     }
 
     public abstract Path getPath();
@@ -146,7 +150,13 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
         if (allowsChildren() && Files.exists(path)) {
             try {
                 try (Stream<Path> fileList = Files.list(path)) {
-                    result = fileList.map(this::makeNode).collect(Collectors.toList());
+                    result = new ArrayList<>();
+                    for (Iterator<Path> srcFile = fileList.iterator(); srcFile.hasNext(); ) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
+                        result.add(this.makeNode(srcFile.next()));
+                    }
                 }
             } catch (IOException e) {
                 throw new DBException("Error reading directory members", e);

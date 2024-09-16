@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.List;
@@ -99,9 +100,9 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
                         symbol.setDefinition(column); // TODO multiple definitions per symbol
                     } else {
                         if (leftColumnDef != null) {
-                            statistics.appendError(column, "Column not found to the left of join");
+                            statistics.appendError(column, "Column " + column.getName() + " not found to the left of join");
                         } else {
-                            statistics.appendError(column, "Column not found to the right of join");
+                            statistics.appendError(column, "Column " + column.getName() + " not found to the right of join");
                         }
                         symbol.setSymbolClass(SQLQuerySymbolClass.ERROR);
                     }

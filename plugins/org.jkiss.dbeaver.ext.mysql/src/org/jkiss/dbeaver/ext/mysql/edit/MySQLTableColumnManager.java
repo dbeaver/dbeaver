@@ -135,7 +135,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     }
 
     @Override
-    protected MySQLTableColumn createDatabaseObject(final DBRProgressMonitor monitor, final DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options) throws DBException {
+    protected MySQLTableColumn createDatabaseObject(@NotNull final DBRProgressMonitor monitor, @NotNull final DBECommandContext context, final Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
         MySQLTable table = (MySQLTable) container;
 
         MySQLTableColumn column;
@@ -160,7 +160,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options)
     {
         final MySQLTableColumn column = command.getObject();
 
@@ -176,7 +176,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
+    protected void addObjectRenameActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectRenameCommand command, @NotNull Map<String, Object> options)
     {
         final MySQLTableColumn column = command.getObject();
 
@@ -189,7 +189,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     }
 
     @Override
-    protected void addObjectReorderActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectReorderCommand command, Map<String, Object> options) {
+    protected void addObjectReorderActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectReorderCommand command, @NotNull Map<String, Object> options) {
         final MySQLTableColumn column = command.getObject();
         String order = "FIRST";
         if (column.getOrdinalPosition() > 0) {

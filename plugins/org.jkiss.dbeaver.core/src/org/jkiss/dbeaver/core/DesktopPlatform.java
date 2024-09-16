@@ -29,14 +29,19 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.*;
+import org.jkiss.dbeaver.model.impl.app.BaseApplicationImpl;
 import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.navigator.DesktopNavigatorModel;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMRegistry;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
-import org.jkiss.dbeaver.registry.*;
+import org.jkiss.dbeaver.registry.BasePlatformImpl;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.registry.GlobalEventManagerImpl;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.runtime.SecurityProviderUtils;
@@ -80,7 +85,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
     private static volatile boolean isClosing = false;
 
     private Path tempFolder;
-    private DesktopWorkspaceImpl workspace;
+    private DBPWorkspaceDesktop workspace;
     private QMRegistryImpl queryManager;
     private QMLogFileWriter qmLogWriter;
     private DBACertificateStorage certificateStorage;
@@ -131,7 +136,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
 
         // Create workspace
         getApplication().beforeWorkspaceInitialization();
-        this.workspace = (DesktopWorkspaceImpl) getApplication().createWorkspace(this, ResourcesPlugin.getWorkspace());
+        this.workspace = getApplication().createWorkspace(this, ResourcesPlugin.getWorkspace());
         // Init workspace in UI because it may need some UI interactions to initialize
         this.workspace.initializeProjects();
 
@@ -144,6 +149,11 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
         super.initialize();
 
         log.debug("Platform initialized (" + (System.currentTimeMillis() - startTime) + "ms)");
+    }
+
+    @Override
+    protected DBNModel createNavigatorModel() {
+        return new DesktopNavigatorModel(this, null);
     }
 
     public synchronized void dispose() {

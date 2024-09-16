@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreMaterializedView;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
@@ -41,7 +42,7 @@ import java.util.Map;
 public class PostgreMViewManager extends PostgreViewManager {
 
     @Override
-    protected PostgreMaterializedView createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
+    protected PostgreMaterializedView createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options)
     {
         PostgreSchema schema = (PostgreSchema)container;
         PostgreMaterializedView newMV = new PostgreMaterializedView(schema);
@@ -82,7 +83,7 @@ public class PostgreMViewManager extends PostgreViewManager {
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options) throws DBException {
         final PostgreMaterializedView mView = (PostgreMaterializedView) command.getObject();
         if (!command.hasProperty(DBConstants.PROP_ID_DESCRIPTION) || command.getProperties().size() > 1) {
             super.addObjectDeleteActions(monitor, executionContext, actionList, new ObjectDeleteCommand(mView, "Drop view"), options);

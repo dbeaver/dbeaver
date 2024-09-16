@@ -30,6 +30,8 @@ import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
+import java.util.Collection;
+
 /**
  * String value manager
  */
@@ -52,6 +54,9 @@ public class StringValueManager extends ContentValueManager {
             case INLINE:
                 // Open inline/panel editor
                 Object value = controller.getValue();
+                if (dataKind == DBPDataKind.ARRAY && !(value instanceof Collection)) {
+                    dataKind = DBPDataKind.OBJECT;
+                }
                 if (dataKind == DBPDataKind.STRING || dataKind == DBPDataKind.NUMERIC || dataKind == DBPDataKind.DATETIME || dataKind == DBPDataKind.BOOLEAN || dataKind == DBPDataKind.OBJECT) {
                     return new StringInlineEditor(controller);
                 } else if (value instanceof DBDContentCached &&

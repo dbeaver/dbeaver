@@ -178,12 +178,14 @@ public class DatabaseURL {
         return metaURL;
     }
 
+
     @NotNull
     public static Pattern getPattern(@NotNull String sampleUrl) {
         String pattern = sampleUrl;
         pattern = CommonUtils.replaceAll(pattern, "\\[(.*?)]", m -> "\\\\E(?:\\\\Q" + m.group(1) + "\\\\E)?\\\\Q");
         pattern = CommonUtils.replaceAll(pattern, "\\{(.*?)}", m -> "\\\\E(\\?<\\\\Q" + m.group(1) + "\\\\E>" + getPropertyRegex(m.group(1)) + ")\\\\Q");
-        pattern = "^\\Q" + pattern + "\\E$";
+        pattern = "^\\Q" + pattern + "\\E";
+
         return Pattern.compile(pattern);
     }
 
