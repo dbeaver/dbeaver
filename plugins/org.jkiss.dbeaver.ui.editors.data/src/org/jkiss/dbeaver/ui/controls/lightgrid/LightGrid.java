@@ -506,30 +506,33 @@ public abstract class LightGrid extends Canvas {
             result.add(row);
             index++;
 
-            int maxColLength = getNestedRowsCount(row);
-            if (maxColLength > 0) {
-                index = collectNestedRows(result, row, index, 1, maxColLength);
-            }
+            index = collectNestedRows(result, row, index, 1);
         }
     }
 
-    private int getNestedRowsCount(IGridRow row) {
+    private int collectNestedRows(List<IGridRow> result, IGridRow parentRow, int position, int level) {
         if (expandedRows.isEmpty()) {
-            return 0;
+            return position;
         }
-        final RowExpandState rowState = expandedRows.get(new RowLocation(row));
-        return rowState != null && rowState.isAnyColumnExpanded() ? rowState.getMaxLength() : 0;
-    }
+        final RowExpandState rowState = expandedRows.get(new RowLocation(parentRow));
+        if (rowState == null || !rowState.isAnyColumnExpanded()) {
+            return position;
+        }
+        int rowCount = rowState.getMaxLength();
+        Object[] children = getContentProvider().getChildren(parentRow);
 
-    private int collectNestedRows(List<IGridRow> result, IGridRow parentRow, int position, int level, int colLength) {
-        for (int i = 0; i < colLength; i++) {
-            IGridRow nestedRow = new GridRowNested(parentRow, position++, i, level);
+        for (int i = 0; i < rowCount; i++) {
+            Object element;
+            if (children != null) {
+                element = children[i];
+            } else {
+                element = parentRow.getElement();
+            }
+
+            IGridRow nestedRow = new GridRowNested(parentRow, position++, i, level, element);
             result.add(nestedRow);
 
-            int maxNestedColLength = getNestedRowsCount(nestedRow);
-            if (maxNestedColLength > 0) {
-                position = collectNestedRows(result, nestedRow, position, level + 1, maxNestedColLength);
-            }
+            position = collectNestedRows(result, nestedRow, position, level + 1);
         }
         return position;
     }

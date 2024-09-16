@@ -1786,7 +1786,14 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
     private DBDAttributeBinding getAttributeFromGrid(IGridColumn colObject, IGridRow rowObject) {
         if (controller.isRecordMode()) {
-            return rowObject == null ? null : (DBDAttributeBinding) rowObject.getElement();
+            if (rowObject == null) {
+                return null;
+            } else if (rowObject.getElement() instanceof DBDAttributeBinding attr) {
+                return attr;
+            } else if (rowObject.getParent() != null) {
+                return getAttributeFromGrid(colObject, rowObject.getParent());
+            }
+            return null;
         } else {
             return colObject == null ? null : (DBDAttributeBinding) colObject.getElement();
         }
@@ -2000,6 +2007,12 @@ public class SpreadsheetPresentation extends AbstractPresentation
         @Override
         public Object[] getChildren(@NotNull IGridItem item) {
             if (item.getElement() instanceof DBDAttributeBinding binding) {
+                if (controller.isRecordMode() && binding.getDataKind() == DBPDataKind.ARRAY && controller.getCurrentRow() != null) {
+                    Object cellValue = controller.getModel().getCellValue(binding, controller.getCurrentRow(), null, false);
+                    if (cellValue instanceof Collection<?> col) {
+                        return col.toArray();
+                    }
+                }
                 switch (binding.getDataKind()) {
                     case ARRAY:
                     case STRUCT:
@@ -2353,11 +2366,12 @@ public class SpreadsheetPresentation extends AbstractPresentation
             if (gridRow.getParent() != null && !spreadsheet.isCellExpanded(gridRow.getParent(), gridColumn)) {
                 return DBDVoid.INSTANCE;
             }
-            final DBDAttributeBinding attr = getAttributeFromGrid(gridColumn, gridRow);
-            final ResultSetRow row = getResultRowFromGrid(gridColumn, gridRow);
+            DBDAttributeBinding attr = getAttributeFromGrid(gridColumn, gridRow);
+            ResultSetRow row = getResultRowFromGrid(gridColumn, gridRow);
             if (attr == null || row == null) {
                 return null;
             }
+
             return controller.getModel().getCellValue(attr, row, rowIndexes, retrieveDeepestCollectionElement);
         }
 
@@ -2691,12 +2705,33 @@ public class SpreadsheetPresentation extends AbstractPresentation
     }
 
     @Nullable
-    static int[] getRowNestedIndexes(IGridRow gridRow) {
+    private int[] getRowNestedIndexes(IGridRow gridRow) {
         int[] nestedIndexes = null;
         if (gridRow != null && gridRow.getParent() != null) {
             nestedIndexes = new int[gridRow.getLevel()];
-            for (IGridRow gr = gridRow; gr.getParent() != null; gr = gr.getParent()) {
-                nestedIndexes[gr.getLevel() - 1] = gr.getRelativeIndex();
+            if (controller.isRecordMode()) {
+                // In record mode attribute hierarchy includes struct attributes too
+                // Leave only array indexes
+                int lastIndex = nestedIndexes.length;
+                for (IGridRow gr = gridRow; gr.getParent() != null; gr = gr.getParent()) {
+                    if (!(gr.getElement() instanceof DBDAttributeBinding)) {
+                        nestedIndexes[lastIndex - 1] = gr.getRelativeIndex();
+                        lastIndex--;
+                    }
+                }
+                if (lastIndex == nestedIndexes.length) {
+                    return null;
+                }
+                int indexesCount = gridRow.getLevel() - lastIndex;
+                if (indexesCount != nestedIndexes.length) {
+                    int[] indexesCopy = new int[indexesCount];
+                    System.arraycopy(nestedIndexes, lastIndex, indexesCopy, 0, indexesCount);
+                    nestedIndexes = indexesCopy;
+                }
+            } else {
+                for (IGridRow gr = gridRow; gr.getParent() != null; gr = gr.getParent()) {
+                    nestedIndexes[gr.getLevel() - 1] = gr.getRelativeIndex();
+                }
             }
         }
         return nestedIndexes;
@@ -2740,17 +2775,18 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
             DBDAttributeBinding attr = null;
 
-            if (item instanceof IGridRow && item.getParent() != null && controller.isRecordMode()) {
-                final DBDAttributeBinding binding = (DBDAttributeBinding) item.getElement();
-                if (binding.getDataKind() == DBPDataKind.STRUCT) {
-                    final List<DBDAttributeBinding> bindings = binding.getNestedBindings();
-                    final int index = ((IGridRow) item).getRelativeIndex();
-                    if (bindings != null && bindings.size() > index) {
-                        attr = bindings.get(index);
+            if (item.getElement() instanceof DBDAttributeBinding binding) {
+                if (item instanceof IGridRow && item.getParent() != null && controller.isRecordMode()) {
+                    if (binding.getDataKind() == DBPDataKind.STRUCT) {
+                        final List<DBDAttributeBinding> bindings = binding.getNestedBindings();
+                        final int index = ((IGridRow) item).getRelativeIndex();
+                        if (bindings != null && bindings.size() > index) {
+                            attr = bindings.get(index);
+                        }
                     }
+                } else {
+                    attr = binding;
                 }
-            } else if (item.getElement() instanceof DBDAttributeBinding ab) {
-                attr = ab;
             }
 
             if (attr != null) {
@@ -2832,22 +2868,17 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 return ResultSetMessages.controls_resultset_viewer_status_row + " #" + (rsr.getVisualNumber() + 1);
             }
 
-            if (item instanceof IGridRow && item.getParent() != null && controller.isRecordMode()) {
-                final DBDAttributeBinding binding = (DBDAttributeBinding) item.getElement();
-                if (binding.getDataKind() == DBPDataKind.STRUCT) {
-                    final List<DBDAttributeBinding> bindings = binding.getNestedBindings();
-                    final int index = ((IGridRow) item).getRelativeIndex();
-                    if (bindings != null && bindings.size() > index) {
-                        return getAttributeText(bindings.get(index));
-                    }
-                }
-            }
-
-            if (item instanceof IGridRow row && !(controller.isRecordMode() && item.getParent() == null)) {
+            if (item instanceof IGridRow row && !controller.isRecordMode()) {
                 return row.toString();
             }
 
-            return getAttributeText((DBDAttributeBinding) item.getElement());
+            if (item.getElement() instanceof DBDAttributeBinding binding) {
+                return getAttributeText(binding);
+            } else if (item instanceof IGridRow row) {
+                return String.valueOf(row.getRelativeIndex() + 1);
+            } else {
+                return String.valueOf(item.getElement());
+            }
         }
 
         @NotNull
