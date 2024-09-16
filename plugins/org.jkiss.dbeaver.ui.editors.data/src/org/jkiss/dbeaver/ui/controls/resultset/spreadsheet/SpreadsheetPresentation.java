@@ -1321,7 +1321,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         Object value = controller.getModel().getCellValue(
             new ResultSetCellLocation(attr, row, getRowNestedIndexes(cell.row)));
-        if ((value instanceof Boolean || value instanceof Number) && isShowAsCheckbox(attr)) {
+        if ((value instanceof Boolean || value instanceof Number || value == null) && isShowAsCheckbox(attr)) {
             if (!getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_CLICK_TOGGLE_BOOLEAN)) {
                 return;
             }
@@ -2251,7 +2251,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     //ResultSetRow row = (ResultSetRow) (recordMode ? colElement.getElement() : rowElement.getElement());
                     if (isShowAsCheckbox(attr)) {
                         info.state |= booleanStyles.getMode() == BooleanMode.TEXT ? STATE_TOGGLE : STATE_LINK;
-                    } else if (!CommonUtils.isEmpty(attr.getReferrers()) || cellValue instanceof DBDCollection) {
+                    } else if (!CommonUtils.isEmpty(attr.getReferrers()) || cellValue instanceof DBDCollection ||
+                           (cellValue instanceof DBDComposite && controller.isRecordMode())) {
                         if (!DBUtils.isNullValue(cellValue)) {
                             info.state |= STATE_LINK;
                         }
@@ -2426,10 +2427,6 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     if (isShowAsCheckbox(attr)) {
                         if (row.getState() == ResultSetRow.STATE_ADDED) {
                             return ALIGN_CENTER;
-                        }
-                        if (row.isChanged(attr)) {
-                            // Use alignment of an original value to prevent unexpected jumping back and forth.
-                            cellValue = row.getOriginalValue(attr);
                         }
                         if (cellValue instanceof Number) {
                             cellValue = ((Number) cellValue).byteValue() != 0;
