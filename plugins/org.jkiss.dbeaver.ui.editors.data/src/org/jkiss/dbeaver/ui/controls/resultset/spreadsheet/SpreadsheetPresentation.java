@@ -1826,15 +1826,17 @@ public class SpreadsheetPresentation extends AbstractPresentation
         }
     }
 
-    private boolean isAttributeExpandable(@Nullable IGridRow row, @NotNull DBDAttributeBinding attr) {
+        private boolean isAttributeExpandable(@Nullable IGridRow row, @NotNull DBSAttributeBase attr) {
         if (attr.getDataKind() == DBPDataKind.STRUCT && controller.isRecordMode()) {
             return true;
         }
 
-        for (DBDAttributeBinding cur = attr; cur != null; cur = cur.getParentObject()) {
-            final DBPDataKind kind = cur.getDataKind();
-            if (kind == DBPDataKind.ARRAY) {
-                return true;
+        if (attr instanceof DBDAttributeBinding binding) {
+            for (DBDAttributeBinding cur = binding; cur != null; cur = cur.getParentObject()) {
+                final DBPDataKind kind = cur.getDataKind();
+                if (kind == DBPDataKind.ARRAY) {
+                    return true;
+                }
             }
         }
         return false;
@@ -2013,7 +2015,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         @Override
         public boolean hasChildren(@NotNull IGridItem item) {
-            if (item.getElement() instanceof DBDAttributeBinding attr) {
+            if (item.getElement() instanceof DBSAttributeBase attr) {
                 return switch (attr.getDataKind()) {
                     case DOCUMENT, ANY -> !controller.isRecordMode();
                     default -> isAttributeExpandable(null, attr);
@@ -2457,7 +2459,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 if (child == value) {
                     return value;
                 }
-                return formatValue(gridColumn, gridRow, child) + "  [" + collection.size() + "]";
+                return formatValue(gridColumn, gridRow, child) + "  [+" + (collection.size() - 1) + "]";
             } else if (value instanceof DBDComposite composite && !DBUtils.isNullValue(value)) {
                 return Arrays.stream(composite.getAttributes())
                     .map(DBPNamedObject::getName)
@@ -2753,7 +2755,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
             nestedIndexes = new int[gridRow.getLevel()];
             if (controller.isRecordMode()) {
                 // In record mode attributes hierarchy includes struct attributes too
-                // Leave only array indexes
+                // Leave only array indexes. For each row we find it's array attribute
+                // and use it only once
                 int lastIndex = nestedIndexes.length;
                 for (IGridItem gr = gridRow; gr.getParent() != null; gr = gr.getParent()) {
                     if (hasParentArrayRow(gr)) {
@@ -2786,6 +2789,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
         for (IGridItem gr = item.getParent(); gr != null; gr = gr.getParent()) {
             if (gr.getElement() instanceof DBSTypedObject b) {
                 return b.getDataKind() == DBPDataKind.ARRAY;
+            } else if (gr.getElement() instanceof DBDComposite) {
+                return false;
             }
         }
         return false;
@@ -2827,15 +2832,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 return null;
             }
 
-            DBDAttributeBinding attr = null;
-
-            if (item.getElement() instanceof DBDAttributeBinding binding) {
-                attr = binding;
-            } else if (item.getElement() instanceof DBSAttributeBase attrBase) {
-                return DBeaverIcons.getImage(
-                    DBValueFormatting.getObjectImage(attrBase));
-            }
-            if (attr != null) {
+            if (item.getElement() instanceof DBDAttributeBinding attr) {
                 DBPImage image = DBValueFormatting.getObjectImage(attr.getAttribute());
 
                 if (isAttributeReadOnly(attr)) {
@@ -2843,6 +2840,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
 
                 return DBeaverIcons.getImage(image);
+            } else if (item.getElement() instanceof DBSAttributeBase attrBase) {
+                return DBeaverIcons.getImage(
+                    DBValueFormatting.getObjectImage(attrBase));
             }
 
             return null;
@@ -3066,10 +3066,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     DBDAttributeBinding attr;
                     ResultSetRow row;
                     if (controller.isRecordMode()) {
-                        attr = (DBDAttributeBinding) spreadsheet.getRowElement(pos.row);
+                        attr = getBindingFromItem(spreadsheet.getRow(pos.row));
                         row = controller.getCurrentRow();
                     } else {
-                        attr = (DBDAttributeBinding) spreadsheet.getColumnElement(pos.col);
+                        attr = getBindingFromItem(spreadsheet.getColumn(pos.col));
                         row = (ResultSetRow) spreadsheet.getRowElement(pos.row);
                     }
                     if (attr == null || row == null) {
@@ -3095,6 +3095,15 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 setBinding(origAttr);
                 setCurRow(origRow, origRowIndexes);
             }
+        }
+
+        private DBDAttributeBinding getBindingFromItem(IGridItem item) {
+            for (IGridItem i = item; i != null; i = i.getParent()) {
+                if (i.getElement() instanceof DBDAttributeBinding attr) {
+                    return attr;
+                }
+            }
+            return null;
         }
 
         void registerEditor(IValueEditorStandalone editor) {
