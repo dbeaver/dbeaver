@@ -581,11 +581,10 @@ public class UIUtils {
     /**
      * Modifies the size of the given font by applying the specified modifier to the current font size.
      *
-     * @param normalFont the original font whose size needs to be modified. Must not be null.
+     * @param normalFont the original font whose size needs to be modified.
      * @param modifier the amount by which to modify the font size. Positive values increase the size,
      *                 and negative values decrease it.
-     * @return a new {@link Font} object with the modified size. The caller is responsible for disposing of the returned Font.
-     * @throws IllegalArgumentException if {@code normalFont} is null.
+     * @return a new {@link Font} object with the modified size.
      */
     @NotNull
     public static Font modifyFontSize(@NotNull Font normalFont, int modifier) {
