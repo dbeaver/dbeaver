@@ -3,9 +3,9 @@ Fragment-Host: org.eclipse.swt
 Bundle-Name: SWT binder
 Bundle-Vendor: DBeaver Corp
 Bundle-SymbolicName: org.jkiss.dbeaver.ui.swt;singleton:=true
-Bundle-Version: 1.0.12.qualifier
+Bundle-Version: 1.0.13.qualifier
 Bundle-ManifestVersion: 2
-Bundle-Release-Date: 20240923
+Bundle-Release-Date: 20241007
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ui,
