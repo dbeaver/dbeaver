@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableValueModel;
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
-import org.jkiss.dbeaver.model.stm.STMTreeTermErrorNode;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 
 import java.util.ArrayList;
@@ -37,7 +36,7 @@ import java.util.List;
 
 public class SQLQueryTableCreateModel extends SQLQueryModelContent {
 
-    @NotNull
+    @Nullable
     private final SQLQueryQualifiedName tableName;
     @NotNull
     private final List<SQLQueryColumnSpec> columns;
@@ -49,7 +48,7 @@ public class SQLQueryTableCreateModel extends SQLQueryModelContent {
 
     public SQLQueryTableCreateModel(
         @NotNull STMTreeNode syntaxNode,
-        @NotNull SQLQueryQualifiedName tableName,
+        @Nullable SQLQueryQualifiedName tableName,
         @NotNull List<SQLQueryColumnSpec> columns,
         @NotNull List<SQLQueryTableConstraintSpec> constraints
     ) {
@@ -62,7 +61,7 @@ public class SQLQueryTableCreateModel extends SQLQueryModelContent {
         this.constraints.forEach(super::registerSubnode);
     }
 
-    @NotNull
+    @Nullable
     public SQLQueryQualifiedName getTableName() {
         return this.tableName;
     }
@@ -81,7 +80,7 @@ public class SQLQueryTableCreateModel extends SQLQueryModelContent {
     protected void applyContext(@NotNull SQLQueryDataContext dataContext, @NotNull SQLQueryRecognitionContext statistics) {
         this.dataContext = dataContext;
 
-        if (this.tableName.isNotClassified()) {
+        if (this.tableName != null && this.tableName.isNotClassified()) {
             List<String> nameStrings = this.tableName.toListOfStrings();
             DBSEntity realTable = dataContext.findRealTable(statistics.getMonitor(), nameStrings);
 
@@ -91,7 +90,7 @@ public class SQLQueryTableCreateModel extends SQLQueryModelContent {
                 this.tableName.setSymbolClass(SQLQuerySymbolClass.TABLE);
             }
 
-            SQLQueryRowsTableValueModel virtualTableRows = new SQLQueryRowsTableValueModel(this.getSyntaxNode(), Collections.emptyList());
+            SQLQueryRowsTableValueModel virtualTableRows = new SQLQueryRowsTableValueModel(this.getSyntaxNode(), Collections.emptyList(), false);
 
             List<SQLQueryResultColumn> columns = new ArrayList<>(this.columns.size());
             for (SQLQueryColumnSpec columnSpec : this.columns) {
@@ -112,7 +111,7 @@ public class SQLQueryTableCreateModel extends SQLQueryModelContent {
                     columnSpec.getDeclaredColumnType()
                 ));
             }
-            SQLQueryDataContext tableContext = dataContext.overrideResultTuple(columns);
+            SQLQueryDataContext tableContext = dataContext.overrideResultTuple(null, columns, Collections.emptyList());
 
             for (SQLQueryColumnSpec columnSpec : this.columns) {
                 columnSpec.propagateContext(dataContext, tableContext, statistics);
@@ -147,12 +146,11 @@ public class SQLQueryTableCreateModel extends SQLQueryModelContent {
         LinkedList<SQLQueryColumnSpec> columns = new LinkedList<>();
         LinkedList<SQLQueryTableConstraintSpec> constraints = new LinkedList<>();
 
-        STMTreeNode elementsNode = node.findChildOfName(STMKnownRuleNames.tableElementList);
+        STMTreeNode elementsNode = node.findFirstChildOfName(STMKnownRuleNames.tableElementList);
         if (elementsNode != null) {
-            for (int i = 1; i < elementsNode.getChildCount(); i += 2) {
-                STMTreeNode elementNode = elementsNode.getStmChild(i);
-                if (elementNode.getChildCount() > 0) {
-                    STMTreeNode payloadNode = elementNode.getStmChild(0);
+            for (STMTreeNode elementNode : elementsNode.findChildrenOfName(STMKnownRuleNames.tableElement)) {
+                STMTreeNode payloadNode = elementNode.findFirstNonErrorChild();
+                if (payloadNode != null) {
                     switch (payloadNode.getNodeKindId()) {
                         case SQLStandardParser.RULE_columnDefinition ->
                             columns.addLast(SQLQueryColumnSpec.recognize(recognizer, payloadNode));

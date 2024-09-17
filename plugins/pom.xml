@@ -110,6 +110,7 @@
                 <module>org.jkiss.dbeaver.ext.athena.ui</module>
                 <module>org.jkiss.dbeaver.ext.bigquery.ui</module>
                 <module>org.jkiss.dbeaver.ext.clickhouse.ui</module>
+                <module>org.jkiss.dbeaver.ext.cubrid.ui</module>
                 <module>org.jkiss.dbeaver.ext.dameng.ui</module>
                 <module>org.jkiss.dbeaver.ext.exasol.ui</module>
                 <module>org.jkiss.dbeaver.ext.db2.ui</module>
@@ -166,7 +167,7 @@
                 <module>org.jkiss.dbeaver.ext.sample.database</module>
                 <module>org.jkiss.dbeaver.ext.ui.locks</module>
                 <module>org.jkiss.dbeaver.ext.ui.tipoftheday</module>
-                <module>org.jkiss.dbeaver.ext.import_config</module>
+                <module>org.jkiss.dbeaver.ext.config.migration</module>
                 <module>org.jkiss.dbeaver.ext.format.sqlworkbenchj</module>
                 <module>org.jkiss.dbeaver.cmp.simple.ui</module>
 

@@ -107,7 +107,7 @@ public class SQLQueryRowsCorrelatedSourceModel extends SQLQueryRowsSourceModel {
                     columns.set(i, new SQLQueryResultColumn(i, correlatedName, columnsSource, null, null, oldColumn.type));
                 }
             }
-            context = context.overrideResultTuple(columns);
+            context = context.overrideResultTuple(columnsSource, columns, context.getPseudoColumnsList());
         }
         return context;
     }
