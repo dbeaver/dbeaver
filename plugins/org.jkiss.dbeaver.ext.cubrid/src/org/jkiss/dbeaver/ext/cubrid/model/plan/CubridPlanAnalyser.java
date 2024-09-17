@@ -23,15 +23,19 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class CubridPlanAnalyser extends AbstractExecutionPlan {
+public class CubridPlanAnalyser extends AbstractExecutionPlan
+{
 
+    private static final String SPLIT_QUERY = "Join graph segments";
     private List<CubridPlanNode> rootNodes = new ArrayList<>();
+    private String queryPlan;
     private String query;
 
     public CubridPlanAnalyser(@NotNull JDBCSession session, @NotNull String query)
@@ -41,7 +45,23 @@ public class CubridPlanAnalyser extends AbstractExecutionPlan {
             String plan =
                     CubridStatementProxy.getQueryplan(
                             session.getOriginal().createStatement(), query);
-            rootNodes.add(new CubridPlanNode(plan));
+            this.queryPlan = plan;
+            List<CubridPlanNode> tempNode = new ArrayList<>();
+            CubridPlanNode parent = new CubridPlanNode();
+            long totalCost = 0;
+            for (String fullText : plan.split(SPLIT_QUERY)) {
+                if (CommonUtils.isNotEmpty(fullText)) {
+                    CubridPlanNode node = new CubridPlanNode(String.format("%s%s", SPLIT_QUERY, fullText));
+                    totalCost = totalCost + node.getCost();
+                    tempNode.add(node);
+
+                }
+            }
+            parent.setAllNestedNode(tempNode);
+            parent.setCost(totalCost);
+            rootNodes.add(parent);
+
+
         } catch (SQLException e) {
             throw new DBCException(e, session.getExecutionContext());
         }
@@ -62,6 +82,6 @@ public class CubridPlanAnalyser extends AbstractExecutionPlan {
     @NotNull
     @Override
     public String getPlanQueryString() throws DBException {
-        return query;
+        return queryPlan;
     }
 }
