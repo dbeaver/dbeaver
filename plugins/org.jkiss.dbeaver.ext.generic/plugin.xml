@@ -859,6 +859,28 @@
                     <parameter name="identifier-quotes" value="`:`"/>
                 </driver>
 
+                <!-- DolphinDB -->
+                <driver
+                    id="DolphinDB"
+                    label="DolphinDB"
+                    class="com.dolphindb.jdbc.Driver"
+                    sampleURL="jdbc:dolphindb://{host}:{port}"
+                    defaultPort="8848"
+                    icon="icons/dolphindb_icon.png"
+                    iconBig="icons/dolphindb_icon_big.png"
+                    description="DolphinDB Driver"
+                    supportedConfigurationTypes="MANUAL,URL"
+                    webURL="https://github.com/dolphindb/jdbc"
+                    categories="sql,analytic,timeseries">
+                    <file type="jar" path="maven:/com.dolphindb:jdbc:RELEASE[3.00.1.0]" />               
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-truncate" value="true"/>
+                    <parameter name="omit-catalog" value="false"/>
+                    <parameter name="alter-table-add-column" value="true"/>
+                    <parameter name="query-get-active-db" value="getCurrentCatalog()"/>
+                    <parameter name="query-set-active-db" value="set catalog ?"/>
+                </driver>
+
                 <!-- OrientDB -->
                 <driver
                     id="orientdb_jdbc"
