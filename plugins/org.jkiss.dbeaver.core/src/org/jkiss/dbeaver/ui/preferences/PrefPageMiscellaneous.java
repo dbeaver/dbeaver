@@ -121,12 +121,35 @@ public class PrefPageMiscellaneous extends PrefPageMiscellaneousAbstract impleme
             UIUtils.createPlaceholder(group, 1);
             UIUtils.createControlLabel(group, CoreMessages.pref_page_ui_general_boolean_label_color);
 
-            booleanCheckedPanel = new BooleanPanel(group, BooleanState.CHECKED);
-            booleanUncheckedPanel = new BooleanPanel(group, BooleanState.UNCHECKED);
-            booleanNullPanel = new BooleanPanel(group, BooleanState.NULL);
-        }
+            BooleanStyleSet savedStyles = BooleanStyleSet.getDefaultStyles(DBWorkbench.getPlatform().getPreferenceStore());
+            BooleanStyleSet defaultStyles = BooleanStyleSet.getDefaultStyleSet();
 
-        notifyBooleanStylesChanged(BooleanStyleSet.getDefaultStyles(DBWorkbench.getPlatform().getPreferenceStore()));
+            booleanCheckedPanel = new BooleanPanel(
+                    group,
+                    BooleanState.CHECKED,
+                    savedStyles.getStyle(BooleanState.CHECKED).getMode() == BooleanMode.TEXT ?
+                            savedStyles.getStyle(BooleanState.CHECKED).getText() :
+                            defaultStyles.getStyle(BooleanState.CHECKED).getText()
+            );
+
+            booleanUncheckedPanel = new BooleanPanel(
+                    group,
+                    BooleanState.UNCHECKED,
+                    savedStyles.getStyle(BooleanState.UNCHECKED).getMode() == BooleanMode.TEXT ?
+                            savedStyles.getStyle(BooleanState.UNCHECKED).getText() :
+                            defaultStyles.getStyle(BooleanState.UNCHECKED).getText()
+            );
+
+            booleanNullPanel = new BooleanPanel(
+                    group,
+                    BooleanState.NULL,
+                    savedStyles.getStyle(BooleanState.NULL).getMode() == BooleanMode.TEXT ?
+                            savedStyles.getStyle(BooleanState.NULL).getText() :
+                            defaultStyles.getStyle(BooleanState.NULL).getText()
+            );
+
+            notifyBooleanStylesChanged(savedStyles);
+        }
 
         {
             final Group group = UIUtils.createControlGroup(composite, "Holiday decorations", 1, GridData.FILL_HORIZONTAL, 0);
@@ -215,9 +238,10 @@ public class PrefPageMiscellaneous extends PrefPageMiscellaneousAbstract impleme
         private RGB currentColor;
         private RGB currentDefaultColor;
 
-        public BooleanPanel(@NotNull Composite parent, @NotNull BooleanState state) {
+        public BooleanPanel(@NotNull Composite parent, @NotNull BooleanState state, @NotNull String savedText) {
             this.parent = parent;
             this.state = state;
+            this.savedText = savedText;
 
             final FontDescriptor fontDescriptor = FontDescriptor.createFrom(parent.getFont());
             this.normalFont = parent.getFont();
@@ -299,9 +323,6 @@ public class PrefPageMiscellaneous extends PrefPageMiscellaneousAbstract impleme
                         switch (event.getProperty()) {
                             case PROP_TEXT:
                                 text.getTextComponent().setText((String) event.getNewValue());
-                                if (savedText == null) {
-                                    savedText = (String) event.getNewValue();
-                                }
                                 break;
                             case PROP_FONT:
                                 switch ((UIElementFontStyle) event.getNewValue()) {
@@ -319,7 +340,9 @@ public class PrefPageMiscellaneous extends PrefPageMiscellaneousAbstract impleme
                             case PROP_MODE:
                                 UIUtils.enableWithChildren(text, event.getNewValue() == BooleanMode.TEXT);
                                 if (event.getNewValue() == BooleanMode.TEXT) {
-                                    text.getTextComponent().setText(savedText);
+                                    text.getTextComponent().setText(this.savedText);
+                                } else {
+                                    text.getTextComponent().setText("");
                                 }
                                 break;
                             case PROP_COLOR:
