@@ -518,16 +518,18 @@ public abstract class LightGrid extends Canvas {
         if (rowState == null || !rowState.isAnyColumnExpanded()) {
             return position;
         }
-        int rowCount = rowState.getMaxLength();
-        Object[] children = getContentProvider().getChildren(parentRow);
 
-        for (int i = 0; i < rowCount; i++) {
-            Object element;
-            if (children != null) {
-                element = children[i];
-            } else {
-                element = parentRow.getElement();
-            }
+        int childrenCount = rowState.getMaxLength();
+        Object[] children = getContentProvider().getChildren(parentRow);
+        if (children != null && children.length != childrenCount) {
+            log.warn("Child elements doesn't match calculated count: " + children.length + "<>" + childrenCount + ". Skip the tail.");
+            childrenCount = children.length;
+        }
+
+        for (int i = 0; i < childrenCount; i++) {
+            // In multi-column grid children elements are null (e.g. array elements)
+            // In this case use parent row element
+            Object element = children == null ? parentRow.getElement() : children[i];
 
             IGridRow nestedRow = new GridRowNested(parentRow, position++, i, level, element);
             result.add(nestedRow);
@@ -4327,6 +4329,11 @@ public abstract class LightGrid extends Canvas {
             return null;
         }
         return gridRows[focusItem];
+    }
+
+    @Nullable
+    public IGridColumn getFocusColumn() {
+        return focusColumn;
     }
 
     @Nullable

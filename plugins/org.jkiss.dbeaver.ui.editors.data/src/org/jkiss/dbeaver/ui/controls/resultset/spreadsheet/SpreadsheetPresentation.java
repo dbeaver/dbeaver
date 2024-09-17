@@ -1559,9 +1559,16 @@ public class SpreadsheetPresentation extends AbstractPresentation
     @Nullable
     @Override
     public DBDAttributeBinding getFocusAttribute() {
-        return controller.isRecordMode() ?
-            (DBDAttributeBinding) spreadsheet.getFocusRowElement() :
-            (DBDAttributeBinding) spreadsheet.getFocusColumnElement();
+        IGridItem gridItem = controller.isRecordMode() ?
+            spreadsheet.getFocusRow() :
+            spreadsheet.getFocusColumn();
+        while (gridItem != null) {
+            if (gridItem.getElement() instanceof DBDAttributeBinding ab) {
+                return ab;
+            }
+            gridItem = gridItem.getParent();
+        }
+        return null;
     }
 
     @Nullable
@@ -1790,6 +1797,18 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 return null;
             } else if (rowObject.getElement() instanceof DBDAttributeBinding attr) {
                 return attr;
+            } else if (rowObject.getElement() instanceof DBSAttributeBase attr) {
+                // This may happen in case of dynamic data types
+                // Find binding
+                for (IGridRow pr = rowObject.getParent(); pr != null; pr = pr.getParent()) {
+                    if (pr.getElement() instanceof DBDAttributeBindingType bt) {
+                        DBDAttributeBinding ab = DBUtils.findObject(bt.getNestedBindings(), attr.getName());
+                        if (ab != null) {
+                            return ab;
+                        }
+                    }
+                }
+                return controller.getModel().getAttributeBinding(attr);
             } else if (rowObject.getParent() != null) {
                 return getAttributeFromGrid(colObject, rowObject.getParent());
             }
@@ -2036,6 +2055,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         }
                         break;
                 }
+            } else if (item.getElement() instanceof Collection<?> col) {
+                return col.toArray();
+            } else if (item.getElement() instanceof DBDComposite composite) {
+                // This happens in record mode and dynamic databases
+                return composite.getAttributes();
             }
 
             return null;
@@ -2728,15 +2752,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
         if (gridRow != null && gridRow.getParent() != null) {
             nestedIndexes = new int[gridRow.getLevel()];
             if (controller.isRecordMode()) {
-                // In record mode attribute hierarchy includes struct attributes too
+                // In record mode attributes hierarchy includes struct attributes too
                 // Leave only array indexes
                 int lastIndex = nestedIndexes.length;
                 for (IGridItem gr = gridRow; gr.getParent() != null; gr = gr.getParent()) {
-                    // TODO: broken in record mode for dynamic data
-                    // we need a good way to distiguish nested attributes and array items in record mode.
-                    if ((!(gr.getElement() instanceof DBDAttributeBinding binding) || binding.getDataKind() == DBPDataKind.ARRAY) ||
-                        gr.getElement() instanceof DBDCollection
-                    ) {
+                    if (hasParentArrayRow(gr)) {
                         nestedIndexes[lastIndex - 1] = gr.getRelativeIndex();
                         lastIndex--;
                     }
@@ -2757,6 +2777,18 @@ public class SpreadsheetPresentation extends AbstractPresentation
             }
         }
         return nestedIndexes;
+    }
+
+    // Checks whether there is parent row with attribute of type array
+    // We need to check this recursively because of multi-dimensional arrays
+    // where we may have multiple levels of nested rows for a single array attribute
+    private boolean hasParentArrayRow(IGridItem item) {
+        for (IGridItem gr = item.getParent(); gr != null; gr = gr.getParent()) {
+            if (gr.getElement() instanceof DBSTypedObject b) {
+                return b.getDataKind() == DBPDataKind.ARRAY;
+            }
+        }
+        return false;
     }
 
     private DBDDisplayFormat getValueRenderFormat(DBDAttributeBinding attr, Object value) {
@@ -2798,19 +2830,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
             DBDAttributeBinding attr = null;
 
             if (item.getElement() instanceof DBDAttributeBinding binding) {
-                if (item instanceof IGridRow && item.getParent() != null && controller.isRecordMode()) {
-                    if (binding.getDataKind() == DBPDataKind.STRUCT) {
-                        final List<DBDAttributeBinding> bindings = binding.getNestedBindings();
-                        final int index = ((IGridRow) item).getRelativeIndex();
-                        if (bindings != null && bindings.size() > index) {
-                            attr = bindings.get(index);
-                        }
-                    }
-                } else {
-                    attr = binding;
-                }
+                attr = binding;
+            } else if (item.getElement() instanceof DBSAttributeBase attrBase) {
+                return DBeaverIcons.getImage(
+                    DBValueFormatting.getObjectImage(attrBase));
             }
-
             if (attr != null) {
                 DBPImage image = DBValueFormatting.getObjectImage(attr.getAttribute());
 
@@ -2896,6 +2920,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
             if (item.getElement() instanceof DBDAttributeBinding binding) {
                 return getAttributeText(binding);
+            } else if (item.getElement() instanceof DBSAttributeBase attr) {
+                return attr.getName();
             } else if (item instanceof IGridRow row) {
                 return String.valueOf(row.getRelativeIndex() + 1);
             } else {
