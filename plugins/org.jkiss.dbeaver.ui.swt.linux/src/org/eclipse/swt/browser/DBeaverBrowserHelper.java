@@ -17,10 +17,13 @@
 package org.eclipse.swt.browser;
 
 import org.eclipse.swt.internal.webkit.WebKitGTK;
+import org.jkiss.dbeaver.Log;
 
 import java.util.Objects;
 
 public class DBeaverBrowserHelper {
+    private static final Log log = Log.getLog(DBeaverBrowserHelper.class);
+
     private DBeaverBrowserHelper() {
     }
 
@@ -30,7 +33,7 @@ public class DBeaverBrowserHelper {
             return;
         }
         if (WebKitGTK.webkit_get_minor_version() < 16) {
-            System.err.println("SWT WebKit: clear sessions only supported on WebKitGtk version 2.16 and above.");
+            log.warn("SWT WebKit: clear sessions only supported on WebKitGtk version 2.16 and above.");
             return;
         }
         long context = WebKitGTK.webkit_web_context_get_default();
