@@ -221,7 +221,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
     /**
      * Refreshes node.
      * If refresh cannot be done in this level then refreshes parent node.
-     * Do not actually changes navigation tree. If some underlying object is refreshed it must fire DB model
+     * Do not actually change navigation tree. If some underlying object is refreshed it must fire DB model
      * event which will cause actual tree nodes refresh. Underlying object could present multiple times in
      * navigation model - each occurrence will be refreshed then.
      *
@@ -307,14 +307,23 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
         return null;
     }
 
-    @NotNull
-    public DBPProject getOwnerProject() {
+    @Nullable
+    public DBPProject getOwnerProjectOrNull() {
         for (DBNNode node = getParentNode(); node != null; node = node.getParentNode()) {
             if (node instanceof DBNProject) {
                 return ((DBNProject) node).getProject();
             }
         }
-        throw new IllegalStateException("Node doesn't have owner project");
+        return null;
+    }
+
+    @NotNull
+    public DBPProject getOwnerProject() {
+        DBPProject project = getOwnerProjectOrNull();
+        if (project == null) {
+            throw new IllegalStateException("Node doesn't have owner project");
+        }
+        return project;
     }
 
     public Throwable getLastLoadError() {
