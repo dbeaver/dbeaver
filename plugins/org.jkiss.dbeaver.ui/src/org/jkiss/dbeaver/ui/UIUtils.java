@@ -577,6 +577,24 @@ public class UIUtils {
         return new Font(normalFont.getDevice(), data);
     }
 
+
+    /**
+     * Modifies the size of the given font by applying the specified modifier to the current font size.
+     *
+     * @param normalFont the original font whose size needs to be modified.
+     * @param modifier the amount by which to modify the font size. Positive values increase the size,
+     *                 and negative values decrease it.
+     * @return a new {@link Font} object with the modified size.
+     */
+    @NotNull
+    public static Font modifyFontSize(@NotNull Font normalFont, int modifier) {
+        final FontData[] data = normalFont.getFontData();
+        for (FontData fd : data) {
+            fd.setHeight(fd.getHeight() + modifier);
+        }
+        return new Font(normalFont.getDevice(), data);
+    }
+
     public static Group createControlGroup(Composite parent, String label, int columns, int layoutStyle, int widthHint)
     {
         Group group = new Group(parent, SWT.NONE);
