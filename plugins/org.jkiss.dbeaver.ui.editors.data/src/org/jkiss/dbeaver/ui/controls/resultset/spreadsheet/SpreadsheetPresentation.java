@@ -1161,13 +1161,15 @@ public class SpreadsheetPresentation extends AbstractPresentation
     @Nullable
     public Control openValueEditor(final boolean inline) {
         // The control that will be the editor must be a child of the Table
-        DBDAttributeBinding attr = getFocusAttribute();
-        ResultSetRow row = getFocusRow();
+        IGridColumn focusColumn = spreadsheet.getFocusColumn();
+        IGridRow focusRow = spreadsheet.getFocusRow();
+        DBDAttributeBinding attr = getAttributeFromGrid(focusColumn, focusRow);
+        ResultSetRow row = getResultRowFromGrid(focusColumn, focusRow);
         if (attr == null || row == null) {
             return null;
         }
 
-        ResultSetCellLocation cellLocation = new ResultSetCellLocation(attr, row, getRowNestedIndexes(spreadsheet.getFocusRow()));
+        ResultSetCellLocation cellLocation = new ResultSetCellLocation(attr, row, getRowNestedIndexes(focusRow));
         Object cellValue = getController().getModel().getCellValue(cellLocation);
         if (cellValue instanceof DBDValueSurrogate) {
             return null;
@@ -1301,15 +1303,6 @@ public class SpreadsheetPresentation extends AbstractPresentation
             }
         }
         return null;
-    }
-
-    public void resetCellValue(@NotNull IGridColumn colElement, @NotNull IGridRow rowElement, boolean delete) {
-        final DBDAttributeBinding attr = getAttributeFromGrid (colElement, rowElement);
-        final ResultSetRow row = getResultRowFromGrid(colElement, rowElement);
-        controller.getModel().resetCellValue(
-            new ResultSetCellLocation(attr, row, getRowNestedIndexes(rowElement)));
-        updateValueView();
-        controller.updatePanelsContent(false);
     }
 
     ///////////////////////////////////////////////
@@ -3063,15 +3056,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
             try {
                 Collection<GridPos> ssSelection = spreadsheet.getSelection();
                 for (GridPos pos : ssSelection) {
-                    DBDAttributeBinding attr;
-                    ResultSetRow row;
-                    if (controller.isRecordMode()) {
-                        attr = getBindingFromItem(spreadsheet.getRow(pos.row));
-                        row = controller.getCurrentRow();
-                    } else {
-                        attr = getBindingFromItem(spreadsheet.getColumn(pos.col));
-                        row = (ResultSetRow) spreadsheet.getRowElement(pos.row);
-                    }
+                    GridColumn gridColumn = spreadsheet.getColumn(pos.col);
+                    IGridRow gridRow = spreadsheet.getRow(pos.row);
+                    DBDAttributeBinding attr = getAttributeFromGrid(gridColumn, gridRow);
+                    ResultSetRow row =  getResultRowFromGrid(gridColumn, gridRow);
                     if (attr == null || row == null) {
                         continue;
                     }
@@ -3095,15 +3083,6 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 setBinding(origAttr);
                 setCurRow(origRow, origRowIndexes);
             }
-        }
-
-        private DBDAttributeBinding getBindingFromItem(IGridItem item) {
-            for (IGridItem i = item; i != null; i = i.getParent()) {
-                if (i.getElement() instanceof DBDAttributeBinding attr) {
-                    return attr;
-                }
-            }
-            return null;
         }
 
         void registerEditor(IValueEditorStandalone editor) {
