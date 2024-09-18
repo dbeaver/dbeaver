@@ -18,10 +18,10 @@ package org.jkiss.dbeaver.ext.oracle.ui.tools.toad;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizardPage;
-import org.jkiss.dbeaver.ext.import_config.wizards.ImportConnectionInfo;
-import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
-import org.jkiss.dbeaver.ext.import_config.wizards.ImportDriverInfo;
+import org.jkiss.dbeaver.ext.config.migration.wizards.ConfigImportWizardPage;
+import org.jkiss.dbeaver.ext.config.migration.wizards.ImportConnectionInfo;
+import org.jkiss.dbeaver.ext.config.migration.wizards.ImportData;
+import org.jkiss.dbeaver.ext.config.migration.wizards.ImportDriverInfo;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionRole;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
