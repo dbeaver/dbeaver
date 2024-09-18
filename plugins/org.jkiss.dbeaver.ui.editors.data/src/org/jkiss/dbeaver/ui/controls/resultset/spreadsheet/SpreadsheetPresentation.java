@@ -1928,25 +1928,22 @@ public class SpreadsheetPresentation extends AbstractPresentation
             }
         }
 
-        @NotNull
-        public List<IGridRow> getSelectedGridRows() {
-            return spreadsheet.getRowSelection()
-                .stream().map(i -> spreadsheet.getRow(i)).collect(Collectors.toList());
-        }
-
         @Override
         public DBDAttributeBinding getElementAttribute(Object element) {
             GridPos pos = (GridPos) element;
-            return (DBDAttributeBinding) (controller.isRecordMode() ?
-                spreadsheet.getRowElement(pos.row) :
-                spreadsheet.getColumnElement(pos.col));
+            return getAttributeFromGrid(
+                spreadsheet.getColumn(pos.col),
+                spreadsheet.getRow(pos.row)
+            );
         }
 
         @Override
         public ResultSetRow getElementRow(Object element) {
-            return (ResultSetRow) (controller.isRecordMode() ?
-                controller.getCurrentRow() :
-                spreadsheet.getRowElement(((GridPos) element).row));
+            GridPos pos = (GridPos) element;
+            return getResultRowFromGrid(
+                spreadsheet.getColumn(pos.col),
+                spreadsheet.getRow(pos.row)
+            );
         }
 
         @Override

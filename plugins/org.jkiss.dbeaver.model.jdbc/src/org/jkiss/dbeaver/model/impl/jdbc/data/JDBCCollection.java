@@ -20,7 +20,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataTypeProvider;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -190,7 +193,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
         final DBSDataType dataType = getComponentType();
         try (DBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), dataType, "Create JDBC array")) {
             if (session instanceof Connection) {
-                String typeName = DBUtils.getObjectFullName(dataType, DBPEvaluationContext.DML);
+                String typeName = dataType.getFullTypeName();
                 return ((Connection) session).createArrayOf(typeName, attrs);
             } else {
                 return new JDBCArrayImpl(dataType.getTypeName(), dataType.getTypeID(), attrs);
