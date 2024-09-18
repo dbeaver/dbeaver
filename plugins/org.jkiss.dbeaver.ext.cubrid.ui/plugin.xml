@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+    <extension point="org.jkiss.dbeaver.databaseEditor">
+        <configurator class="org.jkiss.dbeaver.ext.cubrid.ui.config.CubridProcedureConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.cubrid.model.CubridProcedure"/>
+        </configurator>
+    </extension>
+</plugin>

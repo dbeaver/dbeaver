@@ -1589,6 +1589,13 @@
                 message="%confirm.close_result_tabs.message"
                 toggleMessage="%confirm.sql.toggleMessage"
                 group="%confirm.sql.group.name"/>
+        <confirmation
+                id="save_sql_console"
+                title="%confirm.save_sql_console.title"
+                description="%confirm.save_sql_console.tip"
+                message="%confirm.save_sql_console.message"
+                toggleMessage="%confirm.sql.toggleMessage"
+                group="%confirm.sql.group.name"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.toolBarConfiguration">
