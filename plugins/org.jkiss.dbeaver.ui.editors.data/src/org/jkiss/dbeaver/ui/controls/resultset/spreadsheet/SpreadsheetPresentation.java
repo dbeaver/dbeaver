@@ -2452,7 +2452,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 if (child == value) {
                     return value;
                 }
-                return formatValue(gridColumn, gridRow, child) + "  [+" + (collection.size() - 1) + "]";
+                Object formattedValue = formatValue(gridColumn, gridRow, child);
+                if (collection.size() > 1) {
+                    formattedValue += "  [+" + (collection.size() - 1) + "]";
+                }
+                return formattedValue;
             } else if (value instanceof DBDComposite composite && !DBUtils.isNullValue(value)) {
                 return Arrays.stream(composite.getAttributes())
                     .map(DBPNamedObject::getName)
