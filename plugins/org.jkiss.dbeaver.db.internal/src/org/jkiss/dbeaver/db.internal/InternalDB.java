@@ -54,7 +54,7 @@ public abstract class InternalDB {
 
     private DBPApplication dbpApplication;
 
-    public InternalDB(InternalDatabaseConfig internalDatabaseConfig, DBPApplication dbpApplication) {
+    public InternalDB(@NotNull InternalDatabaseConfig internalDatabaseConfig, @NotNull DBPApplication dbpApplication) {
         this.internalDatabaseConfig = internalDatabaseConfig;
         this.dbpApplication = dbpApplication;
     }
@@ -80,22 +80,6 @@ public abstract class InternalDB {
         return new PoolingDataSource<>(connectionPool);
     }
 
-    protected String getCurrentInstanceId() throws IOException {
-        // 16 chars - workspace ID
-        String workspaceId = DBWorkbench.getPlatform().getWorkspace().getWorkspaceId();
-        if (workspaceId.length() > 16) {
-            workspaceId = workspaceId.substring(0, 16);
-        }
-
-        StringBuilder id = new StringBuilder(36);
-        id.append("000000000000"); // there was mac address, but it generates dynamically when docker is used
-        id.append(":").append(workspaceId).append(":");
-        while (id.length() < 36) {
-            id.append("X");
-        }
-        return id.toString();
-    }
-
     /**
      * Replaces all predefined prefixes in sql query.
      */
@@ -109,7 +93,7 @@ public abstract class InternalDB {
     }
 
     protected DBPApplication getApplication() {
-        return DBWorkbench.getPlatform().getApplication();
+        return dbpApplication;
     }
 
     protected static DataSourceProviderRegistry getDataSourceProviderRegistry() {
