@@ -25,9 +25,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
-import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.app.DBPResourceHandler;
+import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.fs.DBFRemoteFileStore;
 import org.jkiss.dbeaver.model.fs.nio.EFSNIOResource;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -52,7 +50,7 @@ import java.util.*;
 /**
  * DBNResource
  */
-public class DBNResource extends DBNNode implements DBNStreamData, DBNLazyNode {
+public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCache, DBNLazyNode {
     private static final Log log = Log.getLog(DBNResource.class);
 
     //TODO: create real resource root node
@@ -80,7 +78,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNLazyNode {
             }
         }
 
-        return AlphanumericComparator.getInstance().compare(o1.getSortName(), o2.getSortName());
+        return AlphanumericComparator.getInstance().compare(o1.getNodeDisplayName(), o2.getNodeDisplayName());
     };
 
     private IResource resource;
@@ -93,11 +91,12 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNLazyNode {
         this.handler = handler;
     }
 
-    /**
-     * Actual content location can be changed
-     */
-    protected IResource getContentLocationResource() {
-        return resource;
+    public DBPResourceHandler getHandler() {
+        return handler;
+    }
+
+    public void setHandler(DBPResourceHandler handler) {
+        this.handler = handler;
     }
 
     @Override
@@ -207,20 +206,30 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNLazyNode {
     @Override
     public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (children == null && !monitor.isForceCacheUsage()) {
-            this.children = readChildNodes(monitor);
+            this.children = readChildNodes(monitor, this);
         }
         return children;
     }
 
-    protected DBNNode[] readChildNodes(DBRProgressMonitor monitor) throws DBException {
+    @Override
+    public DBNNode[] getCachedChildren() {
+        return children;
+    }
+
+    @Override
+    public void setCachedChildren(DBNNode[] children) {
+        this.children = children;
+    }
+
+    public static DBNNode[] readChildNodes(DBRProgressMonitor monitor, DBNNode node) throws DBException {
         List<DBNNode> result = new ArrayList<>();
         try {
-            IResource contentLocation = getContentLocationResource();
+            IResource contentLocation = node.getAdapter(IResource.class);
             if (contentLocation instanceof IContainer && contentLocation.exists()) {
                 IResource[] members = ((IContainer) contentLocation).members(false);
-                members = addImplicitMembers(members);
+                members = addImplicitMembers(node, members);
                 for (IResource member : members) {
-                    DBNNode newChild = makeNode(member);
+                    DBNNode newChild = makeNode(node, member);
                     if (newChild != null) {
                         result.add(newChild);
                     }
@@ -238,7 +247,22 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNLazyNode {
         }
     }
 
-    protected IResource[] addImplicitMembers(IResource[] members) {
+    static IResource[] addImplicitMembers(DBNNode node, IResource[] members) {
+        IResource resource = node.getAdapter(IResource.class);
+        if (resource instanceof IProject) {
+            DBPProject project = node.getOwnerProject();
+            DBPWorkspace workspace = project.getWorkspace();
+            if (workspace instanceof DBPWorkspaceDesktop) {
+                for (DBPResourceHandlerDescriptor rh : ((DBPWorkspaceDesktop)workspace).getAllResourceHandlers()) {
+                    IFolder rhDefaultRoot = ((DBPWorkspaceDesktop)workspace).getResourceDefaultRoot(project, rh, false);
+                    if (rhDefaultRoot != null && !rhDefaultRoot.exists()) {
+                        // Add as explicit member
+                        members = ArrayUtils.add(IResource.class, members, rhDefaultRoot);
+                    }
+                }
+            }
+            return members;
+        }
         return members;
     }
 
@@ -254,16 +278,22 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNLazyNode {
         return null;
     }
 
-    private DBNNode makeNode(IResource resource) {
-        boolean isRootResource = isRootResource(resource);
+    public static boolean isRootResource(DBPProject ownerProject, IResource resource) {
+        return ownerProject instanceof RCPProject rcpProject &&
+               (CommonUtils.equalObjects(resource.getParent(), rcpProject.getRootResource()) ||
+                CommonUtils.equalObjects(resource.getParent(), rcpProject.getEclipseProject()));
+    }
+
+    public static DBNNode makeNode(DBNNode parentNode, IResource resource) {
+        boolean isRootResource = isRootResource(parentNode.getOwnerProject(), resource);
         if (isRootResource && resource.getName().startsWith(".")) {
             // Skip project config
             return null;
         }
         try {
-            if (resource instanceof IFolder && !isRootResource) {
+            if (parentNode instanceof DBNResource resourceNode && resource instanceof IFolder && !isRootResource) {
                 // Sub folder
-                return handler.makeNavigatorNode(this, resource);
+                return resourceNode.getHandler().makeNavigatorNode(parentNode, resource);
             }
             DBPResourceHandler resourceHandler = DBPPlatformDesktop.getInstance().getWorkspace().getResourceHandler(resource);
             if (resourceHandler == null) {
@@ -271,19 +301,13 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNLazyNode {
                 return null;
             }
 
-            return resourceHandler.makeNavigatorNode(this, resource);
+            return resourceHandler.makeNavigatorNode(parentNode, resource);
         } catch (Exception e) {
             log.error("Error creating navigator node for resource '" + resource.getName() + "'", e);
             return null;
         }
     }
 
-    public boolean isRootResource(IResource resource) {
-        DBPProject ownerProject = getOwnerProject();
-        return ownerProject instanceof RCPProject rcpProject &&
-               (CommonUtils.equalObjects(resource.getParent(), rcpProject.getRootResource()) ||
-                CommonUtils.equalObjects(resource.getParent(), rcpProject.getEclipseProject()));
-    }
 
     @Override
     public boolean isManagable() {
@@ -298,22 +322,22 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNLazyNode {
 //            }
             children = null;
         }
-        refreshThisResource(monitor);
+        refreshThisResource(monitor, this);
         return this;
     }
 
-    protected void refreshThisResource(DBRProgressMonitor monitor) throws DBException {
+    public static void refreshThisResource(DBRProgressMonitor monitor, DBNNode resNode) throws DBException {
+        IResource resource = resNode.getAdapter(IResource.class);
         if (resource == null) {
             return;
         }
         try {
-            refreshFileStore(monitor);
-            IResource clResource = getContentLocationResource();
-            clResource.refreshLocal(IResource.DEPTH_INFINITE, monitor.getNestedMonitor());
+            refreshFileStore(monitor, resource);
+            resource.refreshLocal(IResource.DEPTH_INFINITE, monitor.getNestedMonitor());
 
-            IPath resourceLocation = clResource.getLocation();
+            IPath resourceLocation = resource.getLocation();
             if (resourceLocation != null && !resourceLocation.toFile().exists()) {
-                log.debug("Resource '" + clResource.getName() + "' doesn't exists on file system");
+                log.debug("Resource '" + resource.getName() + "' doesn't exists on file system");
                 //resource.delete(true, monitor.getNestedMonitor());
             }
         } catch (CoreException e) {
@@ -321,7 +345,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNLazyNode {
         }
     }
 
-    protected void refreshFileStore(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public static void refreshFileStore(@NotNull DBRProgressMonitor monitor, IResource resource) throws DBException {
         if (resource instanceof Resource) {
             final DBFRemoteFileStore remoteFileStore = GeneralUtils.adapt(((Resource) resource).getStore(), DBFRemoteFileStore.class);
             if (remoteFileStore != null) {
@@ -424,7 +448,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNLazyNode {
                                 true,
                                 monitor.getNestedMonitor());
                         }
-                        refreshFileStore(monitor);
+                        refreshFileStore(monitor, resource);
                         resource.refreshLocal(IResource.DEPTH_ONE, monitor.getNestedMonitor());
                     } catch (CoreException e) {
                         throw new DBException("Can't copy " + otherResource.getName() + " to " + resource.getName(), e);
@@ -452,7 +476,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNLazyNode {
         return resource;
     }
 
-    protected void sortChildren(DBNNode[] list) {
+    protected static void sortChildren(DBNNode[] list) {
         Arrays.sort(list, COMPARATOR);
     }
 
@@ -466,55 +490,6 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNLazyNode {
             handler = newHandler;
         }
         getModel().fireNodeEvent(new DBNEvent(source, DBNEvent.Action.UPDATE, this));
-    }
-
-    public void handleResourceChange(IResourceDelta delta) {
-        if (delta.getKind() == IResourceDelta.CHANGED) {
-            // Update this node in navigator
-            refreshResourceState(delta);
-        }
-        if (children == null) {
-            // Child nodes are not yet read so nothing to change here - just return
-            return;
-        }
-        //delta.getAffectedChildren(IResourceDelta.ALL_WITH_PHANTOMS, IContainer.INCLUDE_HIDDEN)
-        for (IResourceDelta childDelta : delta.getAffectedChildren(IResourceDelta.ALL_WITH_PHANTOMS, IContainer.INCLUDE_HIDDEN)) {
-            handleChildResourceChange(childDelta);
-        }
-    }
-
-    protected void handleChildResourceChange(IResourceDelta delta) {
-        final IResource deltaResource = delta.getResource();
-        DBNResource childResource = getChild(deltaResource);
-        if (childResource == null) {
-            if (delta.getKind() == IResourceDelta.ADDED || delta.getKind() == IResourceDelta.CHANGED) {
-                // New child or new "grand-child"
-                DBNNode newChild = makeNode(deltaResource);
-                if (newChild != null) {
-                    children = ArrayUtils.add(DBNNode.class, children, newChild);
-                    sortChildren(children);
-                    getModel().fireNodeEvent(new DBNEvent(delta, DBNEvent.Action.ADD, newChild));
-
-                    if (delta.getKind() == IResourceDelta.CHANGED) {
-                        // Notify just created resource
-                        // This may happen (e.g.) when first script created in just created script folder
-                        childResource = getChild(deltaResource);
-                        if (childResource != null) {
-                            childResource.handleResourceChange(delta);
-                        }
-                    }
-                }
-            }
-        } else {
-            if (delta.getKind() == IResourceDelta.REMOVED) {
-                // Node deleted
-                children = ArrayUtils.remove(DBNNode.class, children, childResource);
-                childResource.dispose(true);
-            } else {
-                // Node changed - handle it recursive
-                childResource.handleResourceChange(delta);
-            }
-        }
     }
 
     @Property(viewable = true, order = 10)
@@ -564,16 +539,6 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNLazyNode {
         }
         return super.getAdapter(adapter);
     }
-
-/*
-    @Override
-    public IResource getAdaptedResource(IAdaptable adaptable) {
-        if (adaptable instanceof DBNResource) {
-            return ((DBNResource) adaptable).resource;
-        }
-        return null;
-    }
-*/
 
     @Override
     public String toString() {

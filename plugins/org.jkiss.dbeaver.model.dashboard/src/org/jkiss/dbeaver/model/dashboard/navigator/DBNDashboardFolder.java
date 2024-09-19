@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.navigator.NavigatorResources;
 
 /**
  * DBNDashboardFolder
@@ -47,7 +48,7 @@ public class DBNDashboardFolder extends DBNResource {
     @Override
     public DBPImage getResourceNodeIcon() {
         IResource resource = getResource();
-        if (resource != null && isRootResource(resource)) {
+        if (NavigatorResources.isRootResource(getOwnerProject(), resource)) {
             if (image == null) {
                 image = FOLDER_ICON;
             }

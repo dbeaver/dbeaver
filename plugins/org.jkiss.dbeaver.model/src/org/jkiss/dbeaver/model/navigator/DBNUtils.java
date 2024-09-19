@@ -277,4 +277,9 @@ public class DBNUtils {
         return path.replace("%", "%25").replace("/", "%2F");
     }
 
+
+    public static void disposeNode(DBNNode node, boolean reflect) {
+        node.dispose(reflect);
+    }
+
 }

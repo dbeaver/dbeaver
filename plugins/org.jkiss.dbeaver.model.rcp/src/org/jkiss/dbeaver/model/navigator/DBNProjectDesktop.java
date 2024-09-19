@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
@@ -24,14 +23,14 @@ import org.eclipse.core.runtime.CoreException;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
-import org.jkiss.dbeaver.model.app.DBPResourceHandlerDescriptor;
-import org.jkiss.dbeaver.model.app.DBPWorkspace;
-import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.ArrayUtils;
+
+import java.util.List;
 
 /**
  * DBNProjectDesktop
@@ -39,8 +38,11 @@ import org.jkiss.utils.ArrayUtils;
 public class DBNProjectDesktop extends DBNProject {
     private static final Log log = Log.getLog(DBNProjectDesktop.class);
 
+    private final DBPResourceHandler handler;
+
     public DBNProjectDesktop(DBNNode parentNode, RCPProject project, DBPResourceHandler handler) {
-        super(parentNode, project, handler);
+        super(parentNode, project);
+        this.handler = handler;
     }
 
     @NotNull
@@ -97,23 +99,22 @@ public class DBNProjectDesktop extends DBNProject {
     }
 
     @Override
-    protected IResource[] addImplicitMembers(IResource[] members) {
-        DBPWorkspace workspace = getProject().getWorkspace();
-        if (workspace instanceof DBPWorkspaceDesktop) {
-            for (DBPResourceHandlerDescriptor rh : ((DBPWorkspaceDesktop)workspace).getAllResourceHandlers()) {
-                IFolder rhDefaultRoot = ((DBPWorkspaceDesktop)workspace).getResourceDefaultRoot(getProject(), rh, false);
-                if (rhDefaultRoot != null && !rhDefaultRoot.exists()) {
-                    // Add as explicit member
-                    members = ArrayUtils.add(IResource.class, members, rhDefaultRoot);
-                }
-            }
+    protected void addProjectNodes(DBRProgressMonitor monitor, List<DBNNode> children) throws DBException {
+        children.addAll(List.of(DBNResource.readChildNodes(monitor, this)));
+        super.addProjectNodes(monitor, children);
+    }
+
+    @Override
+    protected void filterChildren(List<DBNNode> children) {
+        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS)) {
+            // Remove non-existing resources (placeholders)
+            children.removeIf(node -> node instanceof DBNResource && !((DBNResource) node).isResourceExists());
         }
-        return super.addImplicitMembers(members);
     }
 
     @Override
     public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException {
-        super.refreshThisResource(monitor);
+        DBNResource.refreshThisResource(monitor, this);
         return super.refreshNode(monitor, source);
     }
 

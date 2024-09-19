@@ -16,27 +16,21 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceDelta;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.app.*;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 import org.jkiss.dbeaver.model.navigator.registry.DBNRegistry;
-import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.nio.file.Path;
@@ -48,14 +42,15 @@ import java.util.List;
 /**
  * DBNProject
  */
-public class DBNProject extends DBNResource implements DBNNodeExtendable {
+public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExtendable {
     private static final Log log = Log.getLog(DBNProject.class);
 
     private final DBPProject project;
     private List<DBNNode> extraNodes;
+    private DBNNode[] children;
 
-    public DBNProject(DBNNode parentNode, DBPProject project, DBPResourceHandler handler) {
-        super(parentNode, project instanceof RCPProject rcpProject ? rcpProject.getEclipseProject() : null, handler);
+    public DBNProject(DBNNode parentNode, DBPProject project) {
+        super(parentNode);
         this.project = project;
         if (DBWorkbench.getPlatform().getApplication().isMultiuser()) {
             DBNRegistry.getInstance().extendNode(this, false);
@@ -91,10 +86,6 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
         return project.getDisplayName();
     }
 
-    protected String getResourceNodeType() {
-        return "project";
-    }
-
     @Override
     public String getNodeDescription() {
         return null;
@@ -103,6 +94,11 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     @Override
     public String getLocalizedName(String locale) {
         return getNodeDisplayName();
+    }
+
+    @Override
+    public String getNodeType() {
+        return "project";
     }
 
     @NotNull
@@ -152,7 +148,6 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
         throw new DBCFeatureNotSupportedException("Project rename is not supported");
     }
 
-    @Override
     protected DBNNode[] readChildNodes(DBRProgressMonitor monitor) throws DBException {
         if (getModel().isGlobal() && !project.isOpen()) {
             project.ensureOpen();
@@ -170,85 +165,39 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
         final List<DBNNode> children = new ArrayList<>();
 
         children.add(new DBNProjectDatabases(this, dataSourceRegistry));
-        children.addAll(List.of(super.readChildNodes(monitor)));
-
-        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS)) {
-            // Remove non-existing resources (placeholders)
-            children.removeIf(node -> node instanceof DBNResource && !((DBNResource) node).isResourceExists());
-        }
+        addProjectNodes(monitor, children);
 
         if (!CommonUtils.isEmpty(extraNodes)) {
             children.addAll(extraNodes);
         }
-
+        filterChildren(children);
         return children.toArray(DBNNode[]::new);
     }
 
-    @Override
-    protected IResource[] addImplicitMembers(IResource[] members) {
-        DBPWorkspace workspace = project.getWorkspace();
-        if (workspace instanceof DBPWorkspaceDesktop) {
-            for (DBPResourceHandlerDescriptor rh : ((DBPWorkspaceDesktop)workspace).getAllResourceHandlers()) {
-                IFolder rhDefaultRoot = ((DBPWorkspaceDesktop)workspace).getResourceDefaultRoot(getProject(), rh, false);
-                if (rhDefaultRoot != null && !rhDefaultRoot.exists()) {
-                    // Add as explicit member
-                    members = ArrayUtils.add(IResource.class, members, rhDefaultRoot);
-                }
-            }
-        }
-        return super.addImplicitMembers(members);
+    protected void addProjectNodes(DBRProgressMonitor monitor, List<DBNNode> children) throws DBException {
+
+    }
+
+    protected void filterChildren(List<DBNNode> children) {
     }
 
     @Override
     public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException {
         project.getDataSourceRegistry().refreshConfig();
-        super.refreshThisResource(monitor);
         return this;
     }
 
-    public DBNResource findResource(DBRProgressMonitor monitor, Path path) throws DBException {
+    public DBNNode findResource(DBRProgressMonitor monitor, Path path) throws DBException {
         Path relativePath = getProject().getAbsolutePath().relativize(path);
 
-        DBNResource resNode = this;
+        DBNNode resNode = this;
         for (Path fileName : relativePath) {
-            DBNNode node = DBUtils.findObject(resNode.getChildren(monitor), fileName.toString());
-            if (node instanceof DBNResource resource) {
-                resNode = resource;
-            } else {
+            resNode = DBUtils.findObject(resNode.getChildren(monitor), fileName.toString());
+            if (resNode == null) {
                 break;
             }
         }
         return resNode;
-    }
-
-    @Override
-    protected void handleChildResourceChange(IResourceDelta delta) {
-        if (CommonUtils.equalObjects(delta.getResource(), ((RCPProject)project).getRootResource())) {
-            // Go inside root resource
-            for (IResourceDelta cChild : delta.getAffectedChildren()) {
-                handleChildResourceChange(cChild);
-            }
-            return;
-        }
-        final String name = delta.getResource().getName();
-        if (name.equals(DBPProject.METADATA_FOLDER)) {
-            // Metadata configuration changed
-            IResourceDelta[] configFiles = delta.getAffectedChildren();
-            boolean dsChanged = false;
-            if (configFiles != null) {
-                for (IResourceDelta rd : configFiles) {
-                    IResource childRes = rd.getResource();
-                    if (childRes instanceof IFile && childRes.getName().startsWith(DBPDataSourceRegistry.MODERN_CONFIG_FILE_PREFIX)) {
-                        dsChanged = true;
-                    }
-                }
-            }
-            if (dsChanged) {
-                getDatabases().getDataSourceRegistry().refreshConfig();
-            }
-        } else {
-            super.handleChildResourceChange(delta);
-        }
     }
 
     @NotNull
@@ -294,11 +243,6 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     }
 
     @Override
-    protected IResource getContentLocationResource() {
-        return project instanceof RCPProject rcpProject ? rcpProject.getRootResource() : null;
-    }
-
-    @Override
     protected void dispose(boolean reflect) {
         if (extraNodes != null) {
             for (DBNNode node : extraNodes) {
@@ -324,5 +268,34 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     @Override
     public boolean hasChildren(boolean navigableOnly) {
         return true;
+    }
+
+    @Override
+    protected boolean allowsChildren() {
+        return true;
+    }
+
+    @Override
+    public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (children != null) {
+            return children;
+        }
+        children = readChildNodes(monitor);
+        return children;
+    }
+
+    @Override
+    public boolean needsInitialization() {
+        return children == null;
+    }
+
+    @Override
+    public DBNNode[] getCachedChildren() {
+        return children;
+    }
+
+    @Override
+    public void setCachedChildren(DBNNode[] children) {
+        this.children = children;
     }
 }

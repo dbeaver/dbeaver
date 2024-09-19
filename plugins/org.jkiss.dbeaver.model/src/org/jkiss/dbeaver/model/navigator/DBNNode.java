@@ -108,10 +108,6 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
      */
     public abstract String getNodeDisplayName();
 
-    protected String getSortName() {
-        return getNodeDisplayName();
-    }
-
     @Override
     public String getLocalizedName(String locale) {
         return getName();
@@ -339,7 +335,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
             } else if (!isFolder1 && isFolder2) {
                 return 1;
             }
-            return o1.getSortName().compareToIgnoreCase(o2.getSortName());
+            return o1.getNodeDisplayName().compareToIgnoreCase(o2.getNodeDisplayName());
         });
     }
 

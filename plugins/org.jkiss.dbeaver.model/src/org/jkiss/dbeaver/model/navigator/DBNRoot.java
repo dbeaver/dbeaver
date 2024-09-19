@@ -193,7 +193,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
     public DBNProject addProject(DBPProject project, boolean reflect) {
         DBNProject projectNode = getModel().createProjectNode(this, project);
         projects = ArrayUtils.add(DBNProject.class, projects, projectNode);
-        Arrays.sort(projects, Comparator.comparing(DBNResource::getNodeDisplayName));
+        Arrays.sort(projects, Comparator.comparing(DBNNode::getNodeDisplayName));
         if (reflect) {
             model.fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, projectNode));
         }

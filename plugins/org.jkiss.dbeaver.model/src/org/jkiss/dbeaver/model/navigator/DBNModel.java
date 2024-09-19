@@ -159,7 +159,7 @@ public class DBNModel {
     }
 
     protected DBNProject createProjectNode(DBNRoot parent, DBPProject project) {
-        return new DBNProject(parent, project, null);
+        return new DBNProject(parent, project);
     }
 
     @Nullable
