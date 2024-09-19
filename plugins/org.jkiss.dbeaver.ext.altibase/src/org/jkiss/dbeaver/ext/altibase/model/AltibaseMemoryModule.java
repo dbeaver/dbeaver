@@ -30,7 +30,7 @@ public class AltibaseMemoryModule extends AltibaseGlobalObject {
     private long allocCount;
 
     AltibaseMemoryModule(GenericStructContainer parent, JDBCResultSet dbResult) {
-        super((AltibaseDataSource)parent.getDataSource(), true);
+        super((AltibaseDataSource) parent.getDataSource(), true);
 
         this.name = JDBCUtils.safeGetString(dbResult, "NAME");
         this.allocSizeInBytes = JDBCUtils.safeGetLong(dbResult, "ALLOC_SIZE");

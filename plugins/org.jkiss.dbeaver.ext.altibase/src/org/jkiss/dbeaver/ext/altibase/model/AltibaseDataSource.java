@@ -589,11 +589,12 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
 
     ///////////////////////////////////////////////
     // Modules
-    
+
     @Association
     public Collection<AltibaseMemoryModule> getMemoryModules(DBRProgressMonitor monitor) throws DBException {
         return memoryModuleCache.getAllObjects(monitor, this);
     }
+
     public MemoryModuleCache getModuleCache() {
         return memoryModuleCache;
     }
@@ -602,12 +603,14 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
 
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, 
+                @NotNull GenericStructContainer owner) throws SQLException {
             return session.prepareStatement("SELECT * FROM v$memstat ORDER BY max_total_size DESC");
         }
 
         @Override
-        protected AltibaseMemoryModule fetchObject(@NotNull JDBCSession session, GenericStructContainer owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+        protected AltibaseMemoryModule fetchObject(@NotNull JDBCSession session, 
+                @NotNull GenericStructContainer owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
             return new AltibaseMemoryModule(owner, dbResult);
         }
     }
