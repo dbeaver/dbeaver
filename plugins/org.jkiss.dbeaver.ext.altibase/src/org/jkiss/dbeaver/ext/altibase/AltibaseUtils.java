@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.altibase;
 
-import java.sql.SQLException;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -30,6 +28,8 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
+
+import java.sql.SQLException;
 
 /**
  * Altibase utils

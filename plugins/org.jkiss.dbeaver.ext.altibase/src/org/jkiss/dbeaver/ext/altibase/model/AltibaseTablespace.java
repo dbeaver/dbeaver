@@ -509,14 +509,16 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
                     + " FROM"
                         + " system_.sys_users_ u, system_.sys_tables_ t"
                     + " WHERE"
-                        + " u.user_id = t.user_id AND (t.table_type = 'T' OR t.table_type = 'Q') AND t.is_partitioned = 'F' AND t.tbs_id = ?"
+                        + " u.user_id = t.user_id AND (t.table_type = 'T' OR t.table_type = 'Q') AND "
+                        + " t.is_partitioned = 'F' AND t.tbs_id = ?"
                     + " UNION ALL"
                     + " SELECT"
                         + " u.user_name, t.table_name AS obj_name, tp.partition_name"
                     + " FROM"
                         + " system_.sys_users_ u, system_.sys_tables_ t, system_.sys_table_partitions_ tp"
                     + " WHERE"
-                        + " u.user_id = t.user_id AND (t.table_type = 'T' OR t.table_type = 'Q') AND t.is_partitioned = 'T' AND t.table_id = tp.table_id AND tp.tbs_id = ?"
+                        + " u.user_id = t.user_id AND (t.table_type = 'T' OR t.table_type = 'Q') AND "
+                        + " t.is_partitioned = 'T' AND t.table_id = tp.table_id AND tp.tbs_id = ?"
                 + " )"
                 + " ORDER BY 1,2,3";
 
@@ -532,8 +534,7 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
                 @NotNull JDBCSession session, 
                 @NotNull AltibaseTablespace owner, 
                 @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
-            
-                return new AltibaseTablespaceObj4Table(owner, resultSet);
+            return new AltibaseTablespaceObj4Table(owner, resultSet);
         }
     }
     
@@ -598,8 +599,7 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
                 @NotNull JDBCSession session, 
                 @NotNull AltibaseTablespace owner, 
                 @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
-            
-                return new AltibaseTablespaceObj4Index(owner, resultSet);
+            return new AltibaseTablespaceObj4Index(owner, resultSet);
         }
     }
 
@@ -612,10 +612,9 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
     public static class TablespaceReferenceValidator implements IPropertyCacheValidator<DBSObjectLazy<AltibaseDataSource>> {
         @Override
         public boolean isPropertyCached(DBSObjectLazy<AltibaseDataSource> object, Object propertyId) {
-            return
-                object.getLazyReference(propertyId) instanceof AltibaseTablespace ||
-                object.getLazyReference(propertyId) == null ||
-                object.getDataSource().tablespaceCache.isFullyCached();
+            return object.getLazyReference(propertyId) instanceof AltibaseTablespace ||
+                    object.getLazyReference(propertyId) == null ||
+                    object.getDataSource().tablespaceCache.isFullyCached();
         }
     }
 }
