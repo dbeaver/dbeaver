@@ -23,7 +23,6 @@ import org.apache.commons.dbcp2.PoolingDataSource;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPApplication;
@@ -31,11 +30,12 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.InternalDatabaseConfig;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDialectSchemaController;
+import org.jkiss.dbeaver.model.sql.schema.ClassLoaderScriptSource;
+import org.jkiss.dbeaver.model.sql.schema.SQLSchemaManager;
+import org.jkiss.dbeaver.model.sql.schema.SQLSchemaVersionManager;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
@@ -43,13 +43,13 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.Function;
 
 public abstract class InternalDB {
 
@@ -183,7 +183,7 @@ public abstract class InternalDB {
         }
     }
 
-    protected Map<String, String> getHostInfo() throws UnknownHostException {
+    protected Map<String, String> getHostInfo() {
         Map<String, String> hostInfo = new HashMap<>();
 
         InetAddress localHost;
@@ -208,6 +208,37 @@ public abstract class InternalDB {
         hostInfo.put("macAddress", macAddress);
 
         return hostInfo;
+    }
+
+    protected void updateSchema(String schemaId, ClassLoaderScriptSource scriptSource,
+                             Function<DBRProgressMonitor, Connection> connectionSupplier, SQLSchemaVersionManager versionManager,
+                             SQLDialect dialect, String targetDatabaseName, String schemaName,
+                             int schemaVersionActual, int schemaVersionObsolete,
+                             InternalDatabaseConfig databaseConfig, DBRProgressMonitor monitor) throws DBException {
+        SQLSchemaManager schemaManager = new SQLSchemaManager(
+            schemaId,
+            scriptSource,
+            connectionSupplier::apply,
+            versionManager,
+            dialect,
+            targetDatabaseName,
+            schemaName,
+            schemaVersionActual,
+            schemaVersionObsolete,
+            databaseConfig
+        );
+        schemaManager.updateSchema(monitor);
+    }
+
+    public void closeConnection() {
+        log.debug("Shutdown database");
+        if (getDbConnection() != null) {
+            try {
+                getDbConnection().close();
+            } catch (SQLException e) {
+                log.error(e);
+            }
+        }
     }
 
     public void setDbConnection(PoolingDataSource<PoolableConnection> dbConnection) {
