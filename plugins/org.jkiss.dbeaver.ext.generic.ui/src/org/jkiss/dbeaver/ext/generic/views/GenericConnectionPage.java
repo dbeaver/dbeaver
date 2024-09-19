@@ -525,6 +525,8 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             }
             final Set<String> properties = metaURL.getAvailableProperties();
             boolean isSampleUrlUsable = properties.contains(DBConstants.PROP_HOST) ||
+                properties.contains(DBConstants.PROP_DATABASE) ||
+                properties.contains(DBConstants.PROP_SERVER) ||
                 properties.contains(DBConstants.PROP_FOLDER) ||
                 properties.contains(DBConstants.PROP_FILE);
             if (isSampleUrlUsable) {

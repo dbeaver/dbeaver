@@ -280,7 +280,7 @@
         <setEntry value="org.jkiss.dbeaver.ext.hana@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.hive@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.hsqldb@default:default"/>
-        <setEntry value="org.jkiss.dbeaver.ext.import_config@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.ext.config.migration@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.informix@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.kognitio@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.mssql.ui@default:default"/>
