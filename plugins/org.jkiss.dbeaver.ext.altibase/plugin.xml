@@ -272,6 +272,16 @@
                             navigable="false">
                                 <items label="%tree.file.node.name" path="file" property="files"/>
                             </folder>
+                            <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseTablespaceObj4Table" 
+                            label="%tree.tables.node.name"  description="%tree.tables.node.name"
+                            navigable="false">
+                                <items label="%tree.table.node.name" path="altibaseTablespaceObj4Table" property="altibaseTablespaceObj4Tables" icon="#table"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseTablespaceObj4Index" 
+                            label="%tree.indexes.node.name"  description="%tree.indexes.node.name"
+                            navigable="false">
+                                <items label="%tree.index.node.name" path="altibaseTablespaceObj4Table" property="altibaseTablespaceObj4Indexes" icon="#index"/>
+                            </folder>
                         </items>
                     </folder>
                 </folder>
