@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
@@ -211,11 +212,11 @@ public class EditorUtils {
     // Datasource <-> resource manipulations
 
     @Nullable
-    public static Object getResourceProperty(@NotNull DBPProject project, @NotNull IResource resource, @NotNull String propName) {
+    public static Object getResourceProperty(@NotNull RCPProject project, @NotNull IResource resource, @NotNull String propName) {
         return project.getResourceProperty(project.getResourcePath(resource), propName);
     }
 
-    public static void setResourceProperty(@NotNull DBPProject project, @NotNull IResource resource, @NotNull String propName, @Nullable Object value) {
+    public static void setResourceProperty(@NotNull RCPProject project, @NotNull IResource resource, @NotNull String propName, @Nullable Object value) {
         project.setResourceProperty(project.getResourcePath(resource), propName, value);
     }
 
@@ -287,7 +288,7 @@ public class EditorUtils {
         } else {
             IFile file = getFileFromInput(editorInput);
             if (file != null) {
-                DBPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
+                RCPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
                 if (projectMeta != null) {
                     defaultDatasource = (String) EditorUtils.getResourceProperty(projectMeta, file, PROP_CONTEXT_DEFAULT_DATASOURCE);
                     defaultCatalogName = (String) EditorUtils.getResourceProperty(projectMeta, file, PROP_CONTEXT_DEFAULT_CATALOG);
@@ -315,7 +316,7 @@ public class EditorUtils {
         if (!file.exists()) {
             return null;
         }
-        DBPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
+        RCPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
         if (projectMeta != null) {
             Object dataSourceId = EditorUtils.getResourceProperty(projectMeta, file, PROP_CONTEXT_DEFAULT_DATASOURCE);
             if (dataSourceId != null) {
@@ -407,7 +408,7 @@ public class EditorUtils {
     }
 
     public static void setFileDataSource(@NotNull IFile file, @NotNull DatabaseEditorContext context) {
-        DBPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
+        RCPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
         if (projectMeta == null) {
             return;
         }

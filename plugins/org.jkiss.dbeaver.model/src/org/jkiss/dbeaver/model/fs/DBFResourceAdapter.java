@@ -15,27 +15,22 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.navigator;
+package org.jkiss.dbeaver.model.fs;
 
-import org.eclipse.core.resources.IResource;
-import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.code.Nullable;
+
+import java.nio.file.Path;
 
 /**
- * DBNNodeWithImage
+ * Resource adapter
  */
-public interface DBNNodeWithResource {
-
-    IResource getResource();
-
-    DBPImage getResourceImage();
-
-    void setResourceImage(DBPImage resourceImage);
+public interface DBFResourceAdapter {
 
     /**
-     * True if resource is remote, false is local
-     *
-     * @return - boolean value
+     * Adapts a resource to an interface.
+     * In fact, it is an ugly workaround to disconnect DBNPath with VFS resources
      */
-    boolean isRemoteResource();
+    @Nullable
+    <T> T adaptResource(DBFVirtualFileSystemRoot rootFolder, Path path, Class<T> adapter);
 
 }
