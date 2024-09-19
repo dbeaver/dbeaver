@@ -8,7 +8,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class AltibaseTablespaceObj4Index extends AltibaseTablespaceObjAbs {
-   
+
     private String tableSchema;
     private String tableName;
 
@@ -16,16 +16,16 @@ public class AltibaseTablespaceObj4Index extends AltibaseTablespaceObjAbs {
 
     AltibaseTablespaceObj4Index (AltibaseTablespace parent, JDBCResultSet resultSet) {
         super(parent, resultSet);
-        
+
         tableSchema = JDBCUtils.safeGetString(resultSet, "table_schema");
         tableName = JDBCUtils.safeGetString(resultSet, "table_name");
     }
-    
+
     @Property(viewable = true, linkPossible = true, order = 3)
     public AltibaseTableIndex getObject(DBRProgressMonitor monitor) throws DBException {
         return getTargetIndex(monitor);
     }
-    
+
     @Property(viewable = true, linkPossible = true, order = 20)
     public AltibaseSchema getTableSchema() {
         return (AltibaseSchema) getDataSource().getSchema(tableSchema);
@@ -35,7 +35,7 @@ public class AltibaseTablespaceObj4Index extends AltibaseTablespaceObjAbs {
     public GenericTable getTable(DBRProgressMonitor monitor) throws DBException {
         return getTargetTable(monitor, tableSchema, tableName);
     }
-    
+
     private AltibaseTableIndex getTargetIndex(DBRProgressMonitor monitor) throws DBException {
         if (targetIndex == null) {
             AltibaseSchema schema = (AltibaseSchema) getDataSource().getSchema(schemaName);

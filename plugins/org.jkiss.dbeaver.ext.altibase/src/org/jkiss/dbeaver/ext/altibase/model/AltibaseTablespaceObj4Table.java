@@ -11,7 +11,7 @@ public class AltibaseTablespaceObj4Table extends AltibaseTablespaceObjAbs {
     AltibaseTablespaceObj4Table (AltibaseTablespace parent, JDBCResultSet resultSet) {
         super(parent, resultSet);
     }
-    
+
     @Property(viewable = true, linkPossible = true, order = 3)
     public GenericTable getObject(DBRProgressMonitor monitor) throws DBException {
         return getTargetTable(monitor, schemaName, objName);

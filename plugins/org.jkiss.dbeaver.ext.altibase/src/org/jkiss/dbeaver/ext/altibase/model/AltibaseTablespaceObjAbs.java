@@ -7,7 +7,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.utils.CommonUtils;
 
 public abstract class AltibaseTablespaceObjAbs extends AltibaseObject<AltibaseTablespace> {
 
@@ -44,11 +43,6 @@ public abstract class AltibaseTablespaceObjAbs extends AltibaseObject<AltibaseTa
     @Property(viewable = true, order = 10)
     public String getPartnName() {
         return partnName;
-    }
-    
-    @Property(viewable = true, order = 11)
-    public boolean getPartitioned() {
-        return CommonUtils.isNotEmpty(partnName);
     }
     
     protected GenericTable getTargetTable(DBRProgressMonitor monitor, String tableSchema, String tableName) throws DBException {
