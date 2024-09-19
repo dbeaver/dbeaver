@@ -250,6 +250,15 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
             }
             extraNodes.clear();
         }
+        if (children != null) {
+            for (DBNNode child : children) {
+                DBNUtils.disposeNode(child, reflect);
+            }
+            children = null;
+        }
+        if (reflect) {
+            getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, this));
+        }
         super.dispose(reflect);
     }
 
