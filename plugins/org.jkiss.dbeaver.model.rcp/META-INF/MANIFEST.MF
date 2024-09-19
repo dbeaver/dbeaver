@@ -16,7 +16,7 @@ Export-Package: org.jkiss.dbeaver.model.app,
  org.jkiss.dbeaver.utils
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.core.expressions,
- org.eclipse.core.filesystem;visibility:=reexport,
+ org.eclipse.core.filesystem,
  org.eclipse.core.resources;visibility:=reexport,
  org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.registry
