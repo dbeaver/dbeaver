@@ -17,11 +17,15 @@
 
 package org.jkiss.dbeaver.registry;
 
-import org.eclipse.core.resources.ProjectScope;
+import org.eclipse.core.internal.preferences.AbstractScope;
+import org.eclipse.core.internal.preferences.EclipsePreferences;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.runtime.preferences.IPreferencesService;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -29,10 +33,10 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceTypeDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.service.prefs.BackingStoreException;
+import org.osgi.service.prefs.Preferences;
 
 import java.util.*;
 
@@ -152,39 +156,32 @@ public class ResourceTypeDescriptor extends AbstractDescriptor implements DBPRes
                 return root;
             }
         }
-        if (project instanceof RCPProject rcpProject && rcpProject.getEclipseProject() != null) {
-            try {
-                IEclipsePreferences eclipsePreferences = getResourceHandlerPreferences(rcpProject, DBPResourceTypeDescriptor.RESOURCE_ROOT_FOLDER_NODE);
-                String root = eclipsePreferences.get(id, defaultRoot);
-                boolean isInvalidRoot = root != null && CommonUtils.isEmptyTrimmed(root);
-                synchronized (projectRoots) {
-                    projectRoots.put(project.getName(), isInvalidRoot ? defaultRoot : root);
-                }
-                if (isInvalidRoot) {
-                    root = defaultRoot;
-                    eclipsePreferences.put(id, root);
-                    try {
-                        eclipsePreferences.flush();
-                    } catch (BackingStoreException e) {
-                        log.error(e);
-                    }
-                }
-                return root;
-            } catch (Exception e) {
-                log.error("Can't obtain resource handler preferences", e);
-                return defaultRoot;
+        try {
+            IEclipsePreferences eclipsePreferences = getResourceHandlerPreferences(project, DBPResourceTypeDescriptor.RESOURCE_ROOT_FOLDER_NODE);
+            String root = eclipsePreferences.get(id, defaultRoot);
+            boolean isInvalidRoot = root != null && CommonUtils.isEmptyTrimmed(root);
+            synchronized (projectRoots) {
+                projectRoots.put(project.getName(), isInvalidRoot ? defaultRoot : root);
             }
-        } else {
+            if (isInvalidRoot) {
+                root = defaultRoot;
+                eclipsePreferences.put(id, root);
+                try {
+                    eclipsePreferences.flush();
+                } catch (BackingStoreException e) {
+                    log.error(e);
+                }
+            }
+            return root;
+        } catch (Exception e) {
+            log.error("Can't obtain resource handler preferences", e);
             return defaultRoot;
         }
     }
 
     @Override
     public void setDefaultRoot(@NotNull DBPProject project, @Nullable String rootPath) {
-        if (!(project instanceof RCPProject rcpProject)) {
-            return;
-        }
-        IEclipsePreferences resourceHandlers = getResourceHandlerPreferences(rcpProject, DBPResourceTypeDescriptor.RESOURCE_ROOT_FOLDER_NODE);
+        IEclipsePreferences resourceHandlers = getResourceHandlerPreferences(project, DBPResourceTypeDescriptor.RESOURCE_ROOT_FOLDER_NODE);
         resourceHandlers.put(getId(), rootPath);
         synchronized (projectRoots) {
             projectRoots.put(project.getName(), rootPath);
@@ -210,13 +207,51 @@ public class ResourceTypeDescriptor extends AbstractDescriptor implements DBPRes
         return id;
     }
 
-    private static IEclipsePreferences getResourceHandlerPreferences(RCPProject project, String node) {
+    private static IEclipsePreferences getResourceHandlerPreferences(DBPProject project, String node) {
         IEclipsePreferences projectSettings = getProjectPreferences(project);
         return (IEclipsePreferences) projectSettings.node(node);
     }
 
-    private static synchronized IEclipsePreferences getProjectPreferences(RCPProject project) {
-        return new ProjectScope(project.getEclipseProject()).getNode("org.jkiss.dbeaver.project.resources");
+    private static synchronized IEclipsePreferences getProjectPreferences(DBPProject project) {
+        return new ProjectScope(project).getNode("org.jkiss.dbeaver.project.resources");
+    }
+
+    public static final class ProjectScope extends AbstractScope {
+        public static final String SCOPE = "project"; //$NON-NLS-1$
+        private final DBPProject project;
+
+        public ProjectScope(DBPProject context) {
+            super();
+            if (context == null)
+                throw new IllegalArgumentException();
+            this.project = context;
+        }
+
+        @Override
+        public IEclipsePreferences getNode(String qualifier) {
+            if (qualifier == null)
+                throw new IllegalArgumentException();
+            IPreferencesService preferencesService = Platform.getPreferencesService();
+            Preferences scopeNode = preferencesService.getRootNode().node(SCOPE);
+            Preferences projectNode = scopeNode.node(project.getName());
+            return (IEclipsePreferences) projectNode.node(qualifier);
+        }
+
+        @Override
+        public IPath getLocation() {
+            IPath location = new Path(project.getAbsolutePath().toString());
+            return location.append(EclipsePreferences.DEFAULT_PREFERENCES_DIRNAME);
+        }
+
+        @Override
+        public String getName() {
+            return SCOPE;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof ProjectScope projectScope &&  project.equals(projectScope.project);
+        }
     }
 
 }
