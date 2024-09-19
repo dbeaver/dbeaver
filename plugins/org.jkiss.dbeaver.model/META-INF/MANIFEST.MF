@@ -97,7 +97,7 @@ Bundle-ClassPath: .
 Require-Bundle: org.eclipse.equinox.security;visibility:=reexport,
  org.eclipse.core.runtime;visibility:=reexport,
  org.eclipse.core.expressions,
- org.eclipse.core.net;resolution:=optional,
+ org.eclipse.core.net,
  org.apache.commons.jexl;visibility:=reexport,
  com.github.jsqlparser;visibility:=reexport,
  com.google.gson,

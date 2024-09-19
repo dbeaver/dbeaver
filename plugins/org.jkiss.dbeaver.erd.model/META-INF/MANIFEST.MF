@@ -7,13 +7,8 @@ Bundle-Version: 1.0.100.qualifier
 Bundle-Release-Date: 20241007
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
-Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.core.resources,
- org.eclipse.core.expressions,
- org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.model.rcp,
+Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql
 Bundle-ClassPath: .
-Export-Package: org.jkiss.dbeaver.erd.model,
- org.jkiss.dbeaver.erd.model.navigator
+Export-Package: org.jkiss.dbeaver.erd.model
 Automatic-Module-Name: org.jkiss.dbeaver.erd.model
