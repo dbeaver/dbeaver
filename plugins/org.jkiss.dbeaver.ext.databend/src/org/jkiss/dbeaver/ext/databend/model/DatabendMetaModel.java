@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
+import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericView;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
@@ -34,7 +36,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -49,7 +50,6 @@ public class DatabendMetaModel extends GenericMetaModel implements DBCQueryTrans
 
     private Pattern ERROR_POSITION_PATTERN = Pattern.compile(" SQL([0-9]+)\\:([0-9]+)");
     private static final String TABLE_DDL = "SHOW CREATE TABLE ";
-    private static final String VIEW_DDL = "SHOW CREATE VIEW ";
 
     public DatabendMetaModel() {
     }
@@ -65,7 +65,28 @@ public class DatabendMetaModel extends GenericMetaModel implements DBCQueryTrans
 
     @Override
     public String getTableDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTableBase sourceObject, @NotNull Map<String, Object> options) throws DBException {
-        return getObjectDDL(monitor, sourceObject, options, TABLE_DDL);
+        GenericSchema schema =  sourceObject.getSchema();
+        GenericCatalog catalog =  sourceObject.getCatalog();
+        if (
+            (schema != null && schema.getName().equals("system"))
+            || (catalog != null && catalog.getName().equals("system"))
+        ) {
+            return super.getTableDDL(monitor, sourceObject, options);
+        }
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Databend object DDL")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                    TABLE_DDL + " " + sourceObject.getFullyQualifiedName(DBPEvaluationContext.DDL))) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    StringBuilder sql = new StringBuilder();
+                    while (dbResult.nextRow()) {
+                        sql.append(dbResult.getString(2)).append("\n");
+                    }
+                    return sql.toString();
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBDatabaseException(e, sourceObject.getDataSource());
+        }
     }
 
     @Override
@@ -75,7 +96,7 @@ public class DatabendMetaModel extends GenericMetaModel implements DBCQueryTrans
 
     @Override
     public String getViewDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericView sourceObject, @NotNull Map<String, Object> options) throws DBException {
-        return getObjectDDL(monitor, sourceObject, options, TABLE_DDL);
+        return getTableDDL(monitor, sourceObject, options);
     }
 
     @Override
@@ -96,23 +117,5 @@ public class DatabendMetaModel extends GenericMetaModel implements DBCQueryTrans
     @Override
     public boolean isSchemasOptional() {
         return false;
-    }
-
-    private String getObjectDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTableBase sourceObject, @NotNull Map<String, Object> options, String ddlStatement)
-            throws DBException {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Databend object DDL")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    ddlStatement + " " + sourceObject.getFullyQualifiedName(DBPEvaluationContext.DDL))) {
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    StringBuilder sql = new StringBuilder();
-                    while (dbResult.nextRow()) {
-                        sql.append(dbResult.getString(2)).append("\n");
-                    }
-                    return sql.toString();
-                }
-            }
-        } catch (SQLException e) {
-            throw new DBDatabaseException(e, sourceObject.getDataSource());
-        }
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,12 +21,8 @@ import org.eclipse.osgi.util.NLS;
 public class DatabendMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.databend.ui.internal.DatabendMessages"; //$NON-NLS-1$
 
-    public static String dialog_connection_page_advanced_settings;
-
     public static String dialog_connection_page_checkbox_use_ssl;
     public static String dialog_connection_page_checkbox_tip_use_ssl;
-    public static String dialog_connection_page_text_ssl_mode;
-    public static String dialog_connection_page_text_ssl_mode_tip;
     public static String dialog_connection_page_text_ssl_group;
 
     static {
