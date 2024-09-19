@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceTypeDescriptor;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.navigator.NavigatorResources;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.registry.ResourceTypeRegistry;
@@ -90,7 +91,7 @@ public class SQLEditorHandlerShowScripts extends SQLEditorHandlerOpenEditor {
     }
 
     private static boolean showResourceInExplorer(ExecutionEvent event, DBNProject projectNode, IResource resource1) throws PartInitException {
-        DBNResource resource = projectNode.findResource(resource1);
+        DBNResource resource = NavigatorResources.findResource(projectNode, resource1);
         if (resource != null) {
             ProjectExplorerView projectExplorer = getProjectExplorerView(event);
             if (projectExplorer != null) {

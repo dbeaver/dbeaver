@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.model.rcp;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPProject;
 
@@ -32,5 +34,11 @@ public interface RCPProject extends DBPProject {
 
     @Nullable
     IContainer getRootResource();
+
+    /**
+     * Returns logical resource path
+     */
+    @NotNull
+    String getResourcePath(@NotNull IResource resource);
 
 }
