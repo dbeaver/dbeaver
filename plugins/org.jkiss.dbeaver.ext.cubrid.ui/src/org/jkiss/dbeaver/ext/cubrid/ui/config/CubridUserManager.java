@@ -100,7 +100,6 @@ public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericS
         Object password = properties.get("PASSWORD");
         Object description = properties.get("DESCRIPTION");
         Object group = properties.get("GROUPS");
-        builder.append(password != null ? "" + SQLUtils.quoteString(user, password.toString()) : "");
         if (password != null && CommonUtils.isNotEmpty(password.toString())) {
             builder.append(" PASSWORD ");
             builder.append(SQLUtils.quoteString(user, password.toString()));

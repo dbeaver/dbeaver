@@ -19,6 +19,12 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.dbeaver.model.runtime.OSDescriptor;
+import org.jkiss.dbeaver.model.runtime.OSDescriptorMatch;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * ProductBundleDescriptor
@@ -28,6 +34,7 @@ public class ProductBundleDescriptor extends AbstractDescriptor {
     private final String id;
     private final String label;
     private final String description;
+    private final List<OSDescriptorMatch> osMatches = new ArrayList<>();
 
     public ProductBundleDescriptor(IConfigurationElement config)
     {
@@ -35,6 +42,12 @@ public class ProductBundleDescriptor extends AbstractDescriptor {
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
+        for (IConfigurationElement os : config.getChildren(RegistryConstants.TAG_OS)) {
+            this.osMatches.add(new OSDescriptorMatch(
+                os.getAttribute(RegistryConstants.ATTR_NAME),
+                os.getAttribute(RegistryConstants.ATTR_ARCH),
+                CommonUtils.toBoolean(os.getAttribute("exclude"))));
+        }
     }
 
     public String getId() {
@@ -49,4 +62,17 @@ public class ProductBundleDescriptor extends AbstractDescriptor {
         return description;
     }
 
+    public boolean matchesOS(OSDescriptor os) {
+        for (OSDescriptorMatch match : osMatches) {
+            if (!match.matches(os)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return id + " (" + label + ")";
+    }
 }

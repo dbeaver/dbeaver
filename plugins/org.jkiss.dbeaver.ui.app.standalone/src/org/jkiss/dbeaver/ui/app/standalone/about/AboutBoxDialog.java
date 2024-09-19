@@ -59,14 +59,11 @@ public class AboutBoxDialog extends InformationDialog
     public static final String PRODUCT_PROP_SUB_TITLE = "subTitle"; //$NON-NLS-1$
     public static final String PRODUCT_PROP_COPYRIGHT = "copyright"; //$NON-NLS-1$
     public static final String PRODUCT_PROP_WEBSITE = "website"; //$NON-NLS-1$
-    public static final String PRODUCT_PROP_EMAIL = "email"; //$NON-NLS-1$
+    //public static final String PRODUCT_PROP_EMAIL = "email"; //$NON-NLS-1$
 
     private final Font NAME_FONT,TITLE_FONT;
     private static final Log log = Log.getLog(AboutBoxDialog.class);
 
-    private Image ABOUT_IMAGE = AbstractUIPlugin.imageDescriptorFromPlugin(
-        Platform.getProduct().getDefiningBundle().getSymbolicName(),
-        "icons/dbeaver_about.png").createImage();
     private Image splashImage;
 
     public AboutBoxDialog(Shell shell)
@@ -103,12 +100,6 @@ public class AboutBoxDialog extends InformationDialog
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
         newShell.setText(CoreMessages.dialog_about_title);
-    }
-
-    @Override
-    protected boolean isResizable()
-    {
-        return true;
     }
 
     @Override
@@ -193,7 +184,12 @@ public class AboutBoxDialog extends InformationDialog
         }
 
         {
-            final Image image = splashImage != null ? splashImage : ABOUT_IMAGE;
+            Image aboutImage = AbstractUIPlugin.imageDescriptorFromPlugin(
+                Platform.getProduct().getDefiningBundle().getSymbolicName(),
+            "icons/dbeaver_about.png").createImage();
+            parent.addDisposeListener(e -> aboutImage.dispose());
+
+            final Image image = splashImage != null ? splashImage : aboutImage;
             final Canvas canvas = new Canvas(group, SWT.DOUBLE_BUFFERED | SWT.NO_BACKGROUND) {
                 @Override
                 public Point computeSize(int wHint, int hHint, boolean changed) {
@@ -209,7 +205,7 @@ public class AboutBoxDialog extends InformationDialog
         Text versionLabel = new Text(group, SWT.NONE);
         versionLabel.setEditable(false);
         versionLabel.setBackground(background);
-        versionLabel.setText(CoreMessages.dialog_about_label_version + GeneralUtils.getProductVersion().toString());
+        versionLabel.setText(CoreMessages.dialog_about_label_version + GeneralUtils.getProductVersion());
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalAlignment = GridData.CENTER;
         versionLabel.setLayoutData(gd);

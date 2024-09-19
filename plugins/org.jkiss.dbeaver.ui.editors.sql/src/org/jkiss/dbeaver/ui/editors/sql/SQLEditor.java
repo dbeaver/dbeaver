@@ -83,7 +83,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.DefaultServerOutputReader;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerCount;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
-import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.model.navigator.NavigatorResources;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMTransactionState;
 import org.jkiss.dbeaver.model.qm.QMUtils;
@@ -450,7 +450,7 @@ public class SQLEditor extends SQLEditorBase implements
 
             IFile file = EditorUtils.getFileFromInput(input);
             if (file != null && dataSourceContainer != null) {
-                DBNUtils.refreshNavigatorResource(dataSourceContainer.getProject(), file, container);
+                NavigatorResources.refreshNavigatorResource(dataSourceContainer.getProject(), file, container);
             } else {
                 // FIXME: this is a hack. We can't fire event on resource change so editor's state won't be updated in UI.
                 // FIXME: To update main toolbar and other controls we hade and show this editor
@@ -863,6 +863,16 @@ public class SQLEditor extends SQLEditorBase implements
         }
         if (QMUtils.isTransactionActive(executionContext)) {
             return true;
+        }
+        if (isNonPersistentEditor()) {
+            Boolean state = ConfirmationDialog.getPersistedState(
+                SQLPreferenceConstants.CONFIRM_SAVE_SQL_CONSOLE,
+                ConfirmationDialog.QUESTION
+            );
+            if (state == Boolean.FALSE) {
+                // If the user chose not to save SQL consoles, then it's never considered dirty
+                return false;
+            }
         }
         if (extraPresentationManager.activePresentation instanceof ISaveablePart && ((ISaveablePart) extraPresentationManager.activePresentation).isDirty()) {
             return true;
@@ -2782,7 +2792,7 @@ public class SQLEditor extends SQLEditorBase implements
                             curQueryProcessor = processor;
                             break;
                         }
-                        anyNotPinnedTab = anyNotPinnedTab || processor.hasNotPinnedTabs();
+                        anyNotPinnedTab = anyNotPinnedTab || !processor.hasPinnedTabs();
                     }
                 }
                 // Just create a new query processor
@@ -3243,7 +3253,15 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     public void doSave(IProgressMonitor monitor) {
         if (isNonPersistentEditor()) {
-            saveAsNewScript();
+            int decision = ConfirmationDialog.confirmAction(
+                getSite().getShell(),
+                ConfirmationDialog.INFORMATION,
+                SQLPreferenceConstants.CONFIRM_SAVE_SQL_CONSOLE,
+                ConfirmationDialog.QUESTION
+            );
+            if (decision == IDialogConstants.YES_ID) {
+                saveAsNewScript();
+            }
             return;
         }
 
@@ -3642,15 +3660,6 @@ public class SQLEditor extends SQLEditorBase implements
         public boolean hasPinnedTabs() {
             for (QueryResultsContainer container : resultContainers) {
                 if (container.isPinned()) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        public boolean hasNotPinnedTabs() {
-            for (QueryResultsContainer container : resultContainers) {
-                if (!container.isPinned()) {
                     return true;
                 }
             }
@@ -4840,8 +4849,6 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public void onEndQuery(final DBCSession session, final SQLQueryResult result, DBCStatistics statistics) {
-            refreshContextDefaults(session, result);
-
             try {
                 synchronized (runningQueries) {
                     runningQueries.remove(result.getStatement());
@@ -4877,14 +4884,11 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
-        private void refreshContextDefaults(DBCSession session, SQLQueryResult result) {
+        private void refreshContextDefaults(DBCSession session) {
             final DBCExecutionContext executionContext = getExecutionContext();
             if (executionContext != null && session != null) {
                 // Refresh active object
-                if ((result == null || !result.hasError()) &&
-                    executionContext.getDataSource().getContainer().isExtraMetadataReadEnabled() &&
-                    getActivePreferenceStore().getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)
-                ) {
+                if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)) {
                     DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
                     if (contextDefaults != null) {
                         try {
@@ -5035,6 +5039,13 @@ public class SQLEditor extends SQLEditorBase implements
                 if (extListener != null) extListener.onEndScript(statistics, hasErrors);
             }
 
+        }
+
+        @Override
+        public void onEndSqlJob(DBCSession session, SqlJobResult result) {
+            if (result == SqlJobResult.SUCCESS || result == SqlJobResult.PARTIAL_SUCCESS) {
+                refreshContextDefaults(session);
+            }
         }
     }
 

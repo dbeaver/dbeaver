@@ -34,6 +34,9 @@ import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.data.DBDAttributeContentTypeProvider;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttributeType;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputWriter;
@@ -68,8 +71,20 @@ import java.util.regex.Pattern;
 /**
  * GenericDataSource
  */
-public class OracleDataSource extends JDBCDataSource implements DBPObjectStatisticsCollector, DBPAdaptable {
+public class OracleDataSource extends JDBCDataSource implements DBPObjectStatisticsCollector, DBPAdaptable, DBDPseudoAttributeContainer {
     private static final Log log = Log.getLog(OracleDataSource.class);
+
+    public static final DBDPseudoAttribute[] KNOWN_GLOBAL_PSEUDO_ATTRS = new DBDPseudoAttribute[] {
+        new DBDPseudoAttribute(
+            DBDPseudoAttributeType.ROWID,
+            "rownum",
+            null,
+            null,
+            OracleMessages.pseudo_column_rowid_description,
+            true,
+            DBDPseudoAttribute.PropagationPolicy.ROWSET_LOCAL
+        )
+    };
 
     final public SchemaCache schemaCache = new SchemaCache();
     final DataTypeCache dataTypeCache = new DataTypeCache();
@@ -1101,5 +1116,15 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
             case ROWID: return OracleConstants.TYPE_NAME_ROWID;
             default: return OracleConstants.TYPE_NAME_VARCHAR2;
         }
+    }
+
+    @Override
+    public DBDPseudoAttribute[] getPseudoAttributes() throws DBException {
+        return DBDPseudoAttribute.EMPTY_ARRAY;
+    }
+
+    @Override
+    public DBDPseudoAttribute[] getAllPseudoAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return KNOWN_GLOBAL_PSEUDO_ATTRS;
     }
 }

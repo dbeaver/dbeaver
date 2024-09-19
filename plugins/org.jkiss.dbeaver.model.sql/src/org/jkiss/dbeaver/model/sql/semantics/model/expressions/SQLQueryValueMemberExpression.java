@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model.expressions;
 
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
@@ -39,14 +40,14 @@ public class SQLQueryValueMemberExpression extends SQLQueryValueExpression {
 
     @NotNull
     private final SQLQueryValueExpression owner;
-    @NotNull
+    @Nullable
     private final SQLQuerySymbolEntry identifier;
 
     public SQLQueryValueMemberExpression(
         @NotNull Interval range,
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryValueExpression owner,
-        @NotNull SQLQuerySymbolEntry identifier
+        @Nullable SQLQuerySymbolEntry identifier
     ) {
         super(range, syntaxNode, owner);
         this.owner = owner;
@@ -58,22 +59,24 @@ public class SQLQueryValueMemberExpression extends SQLQueryValueExpression {
         return this.owner;
     }
 
-    @NotNull
+    @Nullable
     public SQLQuerySymbolEntry getMemberIdentifier() {
         return this.identifier;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public SQLQuerySymbol getColumnNameIfTrivialExpression() {
-        return this.identifier.getSymbol();
+        return this.identifier == null ? null : this.identifier.getSymbol();
     }
     
     @Override
     protected void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         this.owner.propagateContext(context, statistics);
 
-        if (this.identifier.isNotClassified()) {
+        if (this.identifier == null) {
+            this.type = SQLQueryExprType.UNKNOWN;
+        } else if (this.identifier.isNotClassified()) {
             SQLQueryExprType type;
             try {
                 type = this.owner.getValueType().findNamedMemberType(statistics.getMonitor(), this.identifier.getName());
