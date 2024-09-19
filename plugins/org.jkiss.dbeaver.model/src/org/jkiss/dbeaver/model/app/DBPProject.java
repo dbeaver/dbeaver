@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.model.app;
 
-import org.eclipse.core.resources.IResource;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -134,12 +133,6 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
     void setProjectProperty(@NotNull String propName, @Nullable Object propValue);
 
     /**
-     * Returns logical resource path
-     */
-    @NotNull
-    String getResourcePath(@NotNull IResource resource);
-
-    /**
      * Finds resources that match the supplied {@code properties} map.
      */
     @NotNull
@@ -169,4 +162,5 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
      * close project and all related resources
      */
     void dispose();
+
 }
