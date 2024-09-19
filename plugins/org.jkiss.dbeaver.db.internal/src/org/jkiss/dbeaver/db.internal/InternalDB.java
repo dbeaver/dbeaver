@@ -37,22 +37,31 @@ import org.jkiss.dbeaver.model.sql.SQLDialectSchemaController;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 public abstract class InternalDB {
 
     private static final Log log = Log.getLog(InternalDB.class);
 
-    private InternalDatabaseConfig internalDatabaseConfig;
+    private final InternalDatabaseConfig internalDatabaseConfig;
 
-    private DBPApplication dbpApplication;
+    private final DBPApplication dbpApplication;
+
+    private PoolingDataSource<PoolableConnection> dbConnection;
+
+    private SQLDialect dialect;
 
     public InternalDB(@NotNull InternalDatabaseConfig internalDatabaseConfig, @NotNull DBPApplication dbpApplication) {
         this.internalDatabaseConfig = internalDatabaseConfig;
@@ -165,4 +174,63 @@ public abstract class InternalDB {
         return CommonUtils.toInt(JDBCUtils.executeQuery(connection, query));
     }
 
+
+    protected void createSchema(DBPDriver driver, String schemaName, Connection connection) throws DBException {
+        setDialect(driver.getScriptDialect().createInstance());
+
+        if (dialect instanceof SQLDialectSchemaController dialectSchemaController && CommonUtils.isNotEmpty(schemaName)) {
+            createSchemaIfNotExists(connection, dialectSchemaController, schemaName);
+        }
+    }
+
+    protected Map<String, String> getHostInfo() throws UnknownHostException {
+        Map<String, String> hostInfo = new HashMap<>();
+
+        InetAddress localHost;
+        String hostName;
+        String hostIP;
+        byte[] hardwareAddress;
+
+        localHost = RuntimeUtils.getLocalHostOrLoopback();
+        hostName = localHost.getHostName();
+        hostIP = localHost.getHostAddress();
+
+        try {
+            hardwareAddress = RuntimeUtils.getLocalMacAddress();
+        } catch (IOException e) {
+            hardwareAddress = new byte[8];
+        }
+
+        String macAddress = CommonUtils.toHexString(hardwareAddress);
+
+        hostInfo.put("hostName", hostName);
+        hostInfo.put("hostIP", hostIP);
+        hostInfo.put("macAddress", macAddress);
+
+        return hostInfo;
+    }
+
+    public void setDbConnection(PoolingDataSource<PoolableConnection> dbConnection) {
+        this.dbConnection = dbConnection;
+    }
+
+    public InternalDatabaseConfig getInternalDatabaseConfig() {
+        return internalDatabaseConfig;
+    }
+
+    public DBPApplication getDbpApplication() {
+        return dbpApplication;
+    }
+
+    public PoolingDataSource<PoolableConnection> getDbConnection() {
+        return dbConnection;
+    }
+
+    public SQLDialect getDialect() {
+        return dialect;
+    }
+
+    public void setDialect(SQLDialect dialect) {
+        this.dialect = dialect;
+    }
 }
