@@ -35,7 +35,7 @@ public interface DBPWorkspaceEclipse extends DBPWorkspace
     void setActiveProject(@NotNull DBPProject project);
 
     @Nullable
-    DBPProject getProject(@NotNull IProject project);
+    <T extends DBPProject> T getProject(@NotNull IProject project);
 
     void addProjectListener(@NotNull DBPProjectListener listener);
 

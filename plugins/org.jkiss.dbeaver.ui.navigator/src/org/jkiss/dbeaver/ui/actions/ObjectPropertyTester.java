@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.actions;
 
 import org.eclipse.core.expressions.PropertyTester;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.NotNull;
@@ -26,7 +27,6 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPOrderedObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.navigator.*;
@@ -159,7 +159,7 @@ public class ObjectPropertyTester extends PropertyTester {
                 if (DBNUtils.isReadOnly(node)) {
                     return false;
                 }
-                if (node instanceof DBNNodeWithResource && !nodeProjectHasPermission(node, RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
+                if (isResourceNode(node) && !nodeProjectHasPermission(node, RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
                     return false;
                 }
 
@@ -176,7 +176,7 @@ public class ObjectPropertyTester extends PropertyTester {
                     if ((((DBNResource) node).getFeatures() & DBPResourceHandler.FEATURE_DELETE) != 0) {
                         return true;
                     }
-                } else if (node instanceof DBNNodeWithResource) {
+                } else if (isResourceNode(node)) {
                     return true;
                 }
                 break;
@@ -185,7 +185,7 @@ public class ObjectPropertyTester extends PropertyTester {
                 if (node instanceof DBNDataSource || node instanceof DBNLocalFolder) {
                     return nodeProjectHasPermission(node, RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
                 }
-                if (node instanceof DBNNodeWithResource && !nodeProjectHasPermission(node, RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
+                if (isResourceNode(node) && !nodeProjectHasPermission(node, RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
                     return false;
                 }
                 if (node.supportsRename()) {
@@ -267,12 +267,15 @@ public class ObjectPropertyTester extends PropertyTester {
         return false;
     }
 
+    private static boolean isResourceNode(DBNNode node) {
+        return node.getAdapter(IResource.class) != null;
+    }
+
     /**
      * Check whether the owner project of the specified node has required permissions
      */
     public static boolean nodeProjectHasPermission(@NotNull DBNNode node, @NotNull String permissionName) {
-        DBPProject project = node.getOwnerProject();
-        return project == null || project.hasRealmPermission(permissionName);        
+        return node.getOwnerProject().hasRealmPermission(permissionName);
     }
 
     public static boolean canCreateObject(DBNNode node, Boolean onlySingle) {
