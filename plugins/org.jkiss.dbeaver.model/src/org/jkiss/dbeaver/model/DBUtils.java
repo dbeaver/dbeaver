@@ -1773,20 +1773,23 @@ public final class DBUtils {
      * @return array of the default table containers. First - default catalog, second - default schema. If they exist.
      */
     @NotNull
-    public static DBSObject[] getSelectedObjects(@NotNull DBCExecutionContext context) {
-        DBCExecutionContextDefaults<?,?> contextDefaults = context.getContextDefaults();
-        if (contextDefaults != null) {
-            DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
-            DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
-            if (defaultCatalog != null && defaultSchema != null) {
-                return new DBSObject[]{defaultCatalog, defaultSchema};
-            } else if (defaultCatalog != null) {
-                return new DBSObject[]{defaultCatalog};
-            } else if (defaultSchema != null) {
-                return new DBSObject[]{defaultSchema};
-            }
+    public static DBSObject[] getSelectedObjects(@Nullable DBCExecutionContext context) {
+        if (context == null || context.getContextDefaults() == null) {
+            return new DBSObject[0];
         }
-        return new DBSObject[0];
+
+        DBCExecutionContextDefaults<?, ?> contextDefaults = context.getContextDefaults();
+        DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
+        DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
+        if (defaultCatalog != null && defaultSchema != null) {
+            return new DBSObject[]{defaultCatalog, defaultSchema};
+        } else if (defaultCatalog != null) {
+            return new DBSObject[]{defaultCatalog};
+        } else if (defaultSchema != null) {
+            return new DBSObject[]{defaultSchema};
+        } else {
+            return new DBSObject[0];
+        }
     }
 
     /**
