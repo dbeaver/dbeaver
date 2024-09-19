@@ -23,11 +23,15 @@ import org.eclipse.core.resources.IResource;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
 
 /**
  * RCP project
  */
 public interface RCPProject extends DBPProject {
+
+//    @NotNull
+//    DBPWorkspaceDesktop getWorkspace();
 
     @Nullable
     IProject getEclipseProject();

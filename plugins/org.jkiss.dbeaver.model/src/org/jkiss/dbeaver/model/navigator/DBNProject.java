@@ -16,8 +16,10 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
-import org.eclipse.core.resources.*;
-import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceDelta;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -27,13 +29,13 @@ import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.*;
+import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 import org.jkiss.dbeaver.model.navigator.registry.DBNRegistry;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -65,15 +67,11 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
         return project;
     }
 
-    private IProject getEclipseProject() {
-        return project instanceof RCPProject rcpProject ? rcpProject.getEclipseProject() : null;
-    }
-
     public DBNProjectDatabases getDatabases() {
         try {
             for (DBNNode db : getChildren(new VoidProgressMonitor())) {
-                if (db instanceof DBNProjectDatabases) {
-                    return (DBNProjectDatabases) db;
+                if (db instanceof DBNProjectDatabases databases) {
+                    return databases;
                 }
             }
         } catch (DBException e) {
@@ -99,17 +97,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
 
     @Override
     public String getNodeDescription() {
-        IProject iProject = getEclipseProject();
-        if (iProject == null) {
-            return null;
-        }
-        project.ensureOpen();
-        try {
-            return iProject.getDescription().getComment();
-        } catch (CoreException e) {
-            log.debug(e);
-            return null;
-        }
+        return null;
     }
 
     @Override
@@ -161,21 +149,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
 
     @Override
     public void rename(DBRProgressMonitor monitor, String newName) throws DBException {
-        GeneralUtils.validateResourceNameUnconditionally(newName);
-
-        project.ensureOpen();
-
-        try {
-            IProject eclipseProject = getEclipseProject();
-            if (eclipseProject == null) {
-                throw new DBException("Eclipse project is null");
-            }
-            final IProjectDescription description = eclipseProject.getDescription();
-            description.setName(newName);
-            eclipseProject.move(description, true, monitor.getNestedMonitor());
-        } catch (Exception e) {
-            throw new DBException("Can't rename project: " + e.getMessage(), e);
-        }
+        throw new DBCFeatureNotSupportedException("Project rename is not supported");
     }
 
     @Override
