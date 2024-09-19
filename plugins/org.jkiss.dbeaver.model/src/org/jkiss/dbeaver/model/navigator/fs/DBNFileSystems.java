@@ -19,25 +19,16 @@ package org.jkiss.dbeaver.model.navigator.fs;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.fs.DBFFileSystemManager;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystem;
-import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
-import org.jkiss.dbeaver.model.fs.nio.EFSNIOListener;
-import org.jkiss.dbeaver.model.fs.nio.EFSNIOMonitor;
-import org.jkiss.dbeaver.model.fs.nio.EFSNIOResource;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.navigator.DBNEvent;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNProject;
-import org.jkiss.dbeaver.model.rcp.RCPProject;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.utils.CommonUtils;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -47,23 +38,18 @@ import java.util.List;
 /**
  * DBNFileSystems
  */
-public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOListener {
-
-    private static final Log log = Log.getLog(DBNFileSystems.class);
+public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHiddenObject {
 
     private DBNFileSystem[] children;
 
     public DBNFileSystems(DBNProject parentNode) {
         super(parentNode);
-        EFSNIOMonitor.addListener(this);
     }
 
     @Override
     protected void dispose(boolean reflect) {
         super.dispose(reflect);
         this.disposeFileSystems();
-
-        EFSNIOMonitor.removeListener(this);
     }
 
     @Override
@@ -249,7 +235,7 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
     private void disposeFileSystems() {
         if (children != null) {
             for (DBNFileSystem fs : children) {
-                fs.dispose(false);
+                DBNUtils.disposeNode(fs, false);
             }
             children = null;
         }
@@ -267,48 +253,6 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
     }
 
     @Override
-    public void resourceChanged(EFSNIOResource resource, Action action) {
-        if (!(getOwnerProject() instanceof RCPProject rcpProject) ||
-            !CommonUtils.equalObjects(rcpProject.getEclipseProject(), resource.getProject())) {
-            return;
-        }
-        if (children == null) {
-            return;
-        }
-        DBFVirtualFileSystemRoot dbfRoot = resource.getRoot().getRoot();
-
-        for (DBNFileSystem fs : children) {
-            if (CommonUtils.equalObjects(fs.getFileSystem(), dbfRoot.getFileSystem())) {
-                DBNFileSystemRoot rootNode = fs.getRoot(dbfRoot);
-                if (rootNode != null) {
-                    String[] pathSegments = fs.getFileSystem().getURISegments(resource.getFileStore().getPath().toUri());
-                    //String[] pathSegments = getPathSegments(resource);
-
-                    DBNPathBase parentNode = rootNode;
-                    // NIO path format /[config-id]/root-id/folder1/file1
-                    for (int i = 1; i < pathSegments.length - 1; i++) {
-                        String itemName = pathSegments[i];
-                        DBNPathBase childNode = parentNode.getChild(itemName);
-                        if (childNode == null) {
-                            log.debug("Cannot find child node '" + itemName + "' in '" + parentNode.getNodeUri() + "'");
-                            return;
-                        }
-                        parentNode = childNode;
-                    }
-
-                    switch (action) {
-                        case CREATE -> parentNode.addChildResource(resource.getNioPath());
-                        case DELETE -> parentNode.removeChildResource(resource.getNioPath());
-                        default -> {
-                        }
-                    }
-                }
-                break;
-            }
-        }
-    }
-
-    @Override
     public boolean isHidden() {
         return true;
     }
@@ -316,5 +260,20 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
     @Override
     public String toString() {
         return "FileSystems(" + getOwnerProject().getName()  +")";
+    }
+
+    @Override
+    public boolean needsInitialization() {
+        return children == null;
+    }
+
+    @Override
+    public DBNFileSystem[] getCachedChildren() {
+        return children;
+    }
+
+    @Override
+    public void setCachedChildren(DBNNode[] children) {
+        // ignore
     }
 }

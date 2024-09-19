@@ -616,10 +616,6 @@ public class DBNModel {
         return true;
     }
 
-    public static void disposeNode(DBNNode node, boolean reflect) {
-        node.dispose(reflect);
-    }
-
     private class EventProcessingJob extends Job {
 
         EventProcessingJob() {

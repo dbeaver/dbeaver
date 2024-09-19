@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBFileController;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.app.DBPApplicationConfigurator;
+import org.jkiss.dbeaver.model.app.DBPDataFormatterRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
@@ -39,6 +40,7 @@ import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadataRegistry;
 import org.jkiss.dbeaver.model.task.DBTTaskController;
 import org.jkiss.dbeaver.registry.datatype.DataTypeProviderRegistry;
+import org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry;
 import org.jkiss.dbeaver.registry.fs.FileSystemProviderRegistry;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.runtime.IPluginService;
@@ -300,6 +302,12 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
             iniFile = configPath.resolve(APP_CONFIG_FILE);
         }
         return iniFile;
+    }
+
+    @NotNull
+    @Override
+    public DBPDataFormatterRegistry getDataFormatterRegistry() {
+        return DataFormatterRegistry.getInstance();
     }
 
     @NotNull

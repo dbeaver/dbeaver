@@ -100,7 +100,7 @@ public class DBNProjectDesktop extends DBNProject {
 
     @Override
     protected void addProjectNodes(DBRProgressMonitor monitor, List<DBNNode> children) throws DBException {
-        children.addAll(List.of(DBNResource.readChildNodes(monitor, this)));
+        children.addAll(List.of(DBNResource.readChildResourceNodes(monitor, this)));
         super.addProjectNodes(monitor, children);
     }
 
@@ -114,7 +114,7 @@ public class DBNProjectDesktop extends DBNProject {
 
     @Override
     public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException {
-        DBNResource.refreshThisResource(monitor, this);
+        NavigatorResources.refreshThisResource(monitor, this);
         return super.refreshNode(monitor, source);
     }
 

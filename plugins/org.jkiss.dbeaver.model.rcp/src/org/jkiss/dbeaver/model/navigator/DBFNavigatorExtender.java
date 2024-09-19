@@ -14,17 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.navigator.fs;
+package org.jkiss.dbeaver.model.navigator;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.navigator.DBNModelExtender;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNProject;
+import org.jkiss.dbeaver.model.fs.nio.EFSNIOMonitor;
+import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystems;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 
 public class DBFNavigatorExtender implements DBNModelExtender {
+
+    private DBFResourceListener resourceListener;
+
     @Nullable
     @Override
     public DBNNode[] getExtraNodes(@NotNull DBNNode parentNode) {
@@ -32,8 +34,20 @@ public class DBFNavigatorExtender implements DBNModelExtender {
             if (ArrayUtils.isEmpty(DBWorkbench.getPlatform().getFileSystemRegistry().getFileSystemProviders())) {
                 return null;
             }
-            return new DBNNode[]{new DBNFileSystems((DBNProject) parentNode)};
+            DBNFileSystems fsNode = new DBNFileSystems((DBNProject) parentNode) {
+                @Override
+                protected void dispose(boolean reflect) {
+                    super.dispose(reflect);
+                    EFSNIOMonitor.removeListener(resourceListener);
+                    resourceListener = null;
+                }
+            };
+            resourceListener = new DBFResourceListener(fsNode);
+            EFSNIOMonitor.addListener(resourceListener);
+            return new DBNNode[]{ fsNode };
         }
         return null;
     }
+
+
 }

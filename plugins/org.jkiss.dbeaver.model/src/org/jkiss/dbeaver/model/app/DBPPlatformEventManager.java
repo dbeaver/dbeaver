@@ -18,30 +18,13 @@
 package org.jkiss.dbeaver.model.app;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPExternalFileManager;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 /**
- * DBPPlatform
+ * DBPPlatformEventManager
  */
-public interface DBPPlatformDesktop extends DBPPlatform {
-
-    @NotNull
-    DBPWorkspaceDesktop getWorkspace();
-
-    @NotNull
-    DBPPlatformLanguage getLanguage();
-
-    @NotNull
-    DBPExternalFileManager getExternalFileManager();
+public interface DBPPlatformEventManager {
 
     @NotNull
     DBPGlobalEventManager getGlobalEventManager();
 
-    @NotNull
-    DBPDataFormatterRegistry getDataFormatterRegistry();
-
-    static DBPPlatformDesktop getInstance() {
-        return DBWorkbench.getPlatform(DBPPlatformDesktop.class);
-    }
 }

@@ -246,7 +246,7 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
     protected void dispose(boolean reflect) {
         if (extraNodes != null) {
             for (DBNNode node : extraNodes) {
-                node.dispose(reflect);
+                DBNUtils.disposeNode(node, reflect);
             }
             extraNodes.clear();
         }

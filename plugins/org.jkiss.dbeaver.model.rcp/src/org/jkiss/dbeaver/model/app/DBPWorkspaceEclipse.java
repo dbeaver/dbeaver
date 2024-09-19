@@ -15,34 +15,28 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.rcp;
+package org.jkiss.dbeaver.model.app;
 
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
- * RCP project
+ * Desktop eclipse based workspace
  */
-public interface RCPProject extends DBPProject {
-
-//    @NotNull
-//    DBPWorkspaceDesktop getWorkspace();
-
-    @Nullable
-    IProject getEclipseProject();
-
-    @Nullable
-    IContainer getRootResource();
-
-    /**
-     * Returns logical resource path
-     */
+public interface DBPWorkspaceEclipse extends DBPWorkspace, DBPProjectManager
+{
     @NotNull
-    String getResourcePath(@NotNull IResource resource);
+    IWorkspace getEclipseWorkspace();
+
+    void setActiveProject(@NotNull DBPProject project);
+
+    @Nullable
+    <T extends DBPProject> T getProject(@NotNull IProject project);
+
+    void save(DBRProgressMonitor monitor) throws DBException;
 
 }

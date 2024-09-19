@@ -17,13 +17,9 @@
 
 package org.jkiss.dbeaver.registry;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ProjectScope;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.jkiss.code.NotNull;
@@ -135,10 +131,12 @@ public class ResourceTypeDescriptor extends AbstractDescriptor implements DBPRes
         return extensions.toArray(new String[0]);
     }
 
+    @Override
     public Collection<IContentType> getContentTypes() {
         return contentTypes;
     }
 
+    @Override
     public Collection<ObjectType> getResourceTypes() {
         return resourceTypes;
     }
@@ -201,45 +199,6 @@ public class ResourceTypeDescriptor extends AbstractDescriptor implements DBPRes
     @Override
     public boolean isManagable() {
         return managable;
-    }
-
-    @Override
-    public boolean isApplicableTo(@NotNull IResource resource, boolean testContent) {
-        if (!contentTypes.isEmpty() && resource instanceof IFile) {
-            if (testContent) {
-                try {
-                    IContentDescription contentDescription = ((IFile) resource).getContentDescription();
-                    if (contentDescription != null) {
-                        IContentType fileContentType = contentDescription.getContentType();
-                        if (fileContentType != null && contentTypes.contains(fileContentType)) {
-                            return true;
-                        }
-                    }
-                } catch (CoreException e) {
-                    log.debug("Can't obtain content description for '" + resource.getName() + "'", e);
-                }
-            }
-            // Check for file extension
-            String fileExtension = resource.getFileExtension();
-            for (IContentType contentType : contentTypes) {
-                String[] ctExtensions = contentType.getFileSpecs(IContentType.FILE_EXTENSION_SPEC);
-                if (!ArrayUtils.isEmpty(ctExtensions)) {
-                    for (String ext : ctExtensions) {
-                        if (ext.equalsIgnoreCase(fileExtension)) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        if (!resourceTypes.isEmpty()) {
-            for (ObjectType objectType : resourceTypes) {
-                if (objectType.appliesTo(resource, null)) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     public List<String> getRoots() {

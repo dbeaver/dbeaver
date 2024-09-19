@@ -15,26 +15,33 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.app;
+package org.jkiss.dbeaver.model.rcp;
 
-import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.app.DBPProject;
 
 /**
- * DB desktop application.
+ * RCP project
  */
-public interface DBPApplicationDesktop extends DBPApplication {
+public interface RCPProject extends DBPProject {
 
-    DBPWorkspaceDesktop createWorkspace(@NotNull DBPPlatform platform, @NotNull IWorkspace eclipseWorkspace);
+//    @NotNull
+//    DBPWorkspaceDesktop getWorkspace();
+
+    @Nullable
+    IProject getEclipseProject();
+
+    @Nullable
+    IContainer getRootResource();
 
     /**
-     * Returns last user activity time
-     * @return -1 by default
+     * Returns logical resource path
      */
-    long getLastUserActivityTime();
-
     @NotNull
-    DBPPreferenceStore getPreferenceStore();
+    String getResourcePath(@NotNull IResource resource);
 
 }

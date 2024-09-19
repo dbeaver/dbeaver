@@ -17,30 +17,18 @@
 
 package org.jkiss.dbeaver.model.app;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 
 /**
- * Desktop eclipse based workspace
+ * DB desktop application.
  */
-public interface DBPWorkspaceEclipse extends DBPWorkspace
-{
+public interface DBPApplicationDesktop extends DBPApplication {
+
+    DBPWorkspaceDesktop createWorkspace(@NotNull DBPPlatform platform, @NotNull IWorkspace eclipseWorkspace);
+
     @NotNull
-    IWorkspace getEclipseWorkspace();
-
-    void setActiveProject(@NotNull DBPProject project);
-
-    @Nullable
-    <T extends DBPProject> T getProject(@NotNull IProject project);
-
-    void addProjectListener(@NotNull DBPProjectListener listener);
-
-    void removeProjectListener(@NotNull DBPProjectListener listener);
-
-    void save(DBRProgressMonitor monitor) throws DBException;
+    DBPPreferenceStore getPreferenceStore();
 
 }

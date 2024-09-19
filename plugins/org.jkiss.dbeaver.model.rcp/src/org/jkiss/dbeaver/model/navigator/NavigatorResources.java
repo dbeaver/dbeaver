@@ -16,9 +16,12 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
+import org.eclipse.core.internal.resources.Resource;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -26,9 +29,11 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
+import org.jkiss.dbeaver.model.fs.DBFRemoteFileStore;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.AlphanumericComparator;
 import org.jkiss.utils.CommonUtils;
 
@@ -38,7 +43,7 @@ public class NavigatorResources {
 
     private static final Log log = Log.getLog(NavigatorResources.class);
 
-    private static final Comparator<DBNNode> COMPARATOR = (o1, o2) -> {
+    static final Comparator<DBNNode> COMPARATOR = (o1, o2) -> {
         if (o1 instanceof DBNProjectDatabases) {
             return -1;
         } else if (o2 instanceof DBNProjectDatabases) {
@@ -191,5 +196,33 @@ public class NavigatorResources {
             }
         }
         return null;
+    }
+
+    public static void refreshThisResource(DBRProgressMonitor monitor, DBNNode resNode) throws DBException {
+        IResource resource = resNode.getAdapter(IResource.class);
+        if (resource == null) {
+            return;
+        }
+        try {
+            refreshFileStore(monitor, resource);
+            resource.refreshLocal(IResource.DEPTH_INFINITE, monitor.getNestedMonitor());
+
+            IPath resourceLocation = resource.getLocation();
+            if (resourceLocation != null && !resourceLocation.toFile().exists()) {
+                log.debug("Resource '" + resource.getName() + "' doesn't exists on file system");
+                //resource.delete(true, monitor.getNestedMonitor());
+            }
+        } catch (CoreException e) {
+            throw new DBException("Can't refresh resource", e);
+        }
+    }
+
+    public static void refreshFileStore(@NotNull DBRProgressMonitor monitor, IResource resource) throws DBException {
+        if (resource instanceof Resource) {
+            final DBFRemoteFileStore remoteFileStore = GeneralUtils.adapt(((Resource) resource).getStore(), DBFRemoteFileStore.class);
+            if (remoteFileStore != null) {
+                remoteFileStore.refresh(monitor);
+            }
+        }
     }
 }

@@ -14,34 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.runtime.resource;
 
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IProjectNature;
-import org.eclipse.core.runtime.CoreException;
+package org.jkiss.dbeaver.model.app;
+
+import org.jkiss.code.NotNull;
 
 /**
- * DBeaver project nature
+ * Project container
  */
-public class DBeaverNature implements IProjectNature {
+public interface DBPProjectManager {
+    void addProjectListener(@NotNull DBPProjectListener listener);
 
-    public static final String NATURE_ID = "org.jkiss.dbeaver.DBeaverNature";
+    void removeProjectListener(@NotNull DBPProjectListener listener);
 
-    private IProject project;
-
-    public void configure() throws CoreException {
-
-    }
-
-    public void deconfigure() throws CoreException {
-
-    }
-
-    public IProject getProject() {
-        return project;
-    }
-
-    public void setProject(IProject value) {
-        project = value;
-    }
 }

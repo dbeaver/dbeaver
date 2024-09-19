@@ -8,9 +8,12 @@ Bundle-Release-Date: 20241007
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Export-Package: org.jkiss.dbeaver.model.app,
+ org.jkiss.dbeaver.model.fs.nio,
  org.jkiss.dbeaver.model.navigator,
  org.jkiss.dbeaver.model.rcp,
- org.jkiss.dbeaver.registry
+ org.jkiss.dbeaver.registry,
+ org.jkiss.dbeaver.runtime,
+ org.jkiss.dbeaver.utils
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.core.expressions,
  org.eclipse.core.filesystem;visibility:=reexport,
