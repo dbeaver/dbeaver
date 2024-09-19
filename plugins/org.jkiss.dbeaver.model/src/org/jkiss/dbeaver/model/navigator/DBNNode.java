@@ -282,10 +282,6 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
                 pathBuilder.insert(0, '/');
             }
             String nodeId = DBNUtils.encodeNodePath(currentNode.getNodeId());
-            if (currentNode instanceof DBNResource && currentNode.getParentNode() instanceof DBNProject) {
-                //FIXME: remove after migration to the real resource root node
-                nodeId = DBNResource.FAKE_RESOURCE_ROOT_NODE + "/" + nodeId;
-            }
             pathBuilder.insert(0, nodeId);
             if (currentNode instanceof DBNLocalFolder folder) {
                 // FIXME: When traversing to root, nested folders are skipped. This is a workaround so that we don't skip them.
