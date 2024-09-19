@@ -54,7 +54,7 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
     private long row;
     private CubridPlanNode parent;
     private List<CubridPlanNode> nested = new ArrayList<>();
-    ;
+    
 
 
     public CubridPlanNode() {
