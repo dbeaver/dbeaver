@@ -320,6 +320,7 @@ public abstract class LightGrid extends Canvas {
     Font normalFont;
     Font boldFont;
     Font italicFont;
+    Font commentFont;
 
     @NotNull
     private Color lineColor;
@@ -438,6 +439,7 @@ public abstract class LightGrid extends Canvas {
         normalFont = getFont();
         boldFont = UIUtils.makeBoldFont(normalFont);
         italicFont = UIUtils.modifyFont(normalFont, SWT.ITALIC);
+        commentFont = UIUtils.modifyFontSize(italicFont, -1);
 
         columnHeaderRenderer = new GridColumnRenderer(this);
         rowHeaderRenderer = new GridRowRenderer(this);
@@ -3129,6 +3131,7 @@ public abstract class LightGrid extends Canvas {
 
         UIUtils.dispose(boldFont);
         UIUtils.dispose(italicFont);
+        UIUtils.dispose(commentFont);
     }
 
     /**
@@ -4717,8 +4720,12 @@ public abstract class LightGrid extends Canvas {
         normalFont = font;
         UIUtils.dispose(boldFont);
         UIUtils.dispose(italicFont);
+        UIUtils.dispose(commentFont);
+
         boldFont = UIUtils.makeBoldFont(normalFont);
         italicFont = UIUtils.modifyFont(normalFont, SWT.ITALIC);
+        commentFont = UIUtils.modifyFontSize(italicFont, -1);
+
         redraw();
     }
 

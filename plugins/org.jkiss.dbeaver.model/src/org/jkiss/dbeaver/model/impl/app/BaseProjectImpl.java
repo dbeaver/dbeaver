@@ -20,7 +20,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
@@ -445,12 +444,6 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
             flushMetadata();
         }
         return hadProperties;
-    }
-
-    @Override
-    @NotNull
-    public String getResourcePath(@NotNull IResource resource) {
-        return resource.getProjectRelativePath().toString();
     }
 
     protected void setResourceProperties(Map<String, Map<String, Object>> resourceProperties) {

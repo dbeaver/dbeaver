@@ -30,7 +30,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
-import org.jkiss.dbeaver.model.navigator.DBNNodeWithResource;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
@@ -51,7 +51,7 @@ class SQLScriptTaskScriptSelectorDialog extends BaseDialog {
 
     private final DBNProject projectNode;
     private DatabaseNavigatorTree scriptsTree;
-    private final List<DBNNodeWithResource> selectedScripts = new ArrayList<>();
+    private final List<DBNNode> selectedScripts = new ArrayList<>();
 
     SQLScriptTaskScriptSelectorDialog(Shell parentShell, DBNProject projectNode) {
         super(parentShell, DTMessages.sql_script_task_page_settings_group_files, null);
@@ -117,21 +117,21 @@ class SQLScriptTaskScriptSelectorDialog extends BaseDialog {
     private void updateSelectedScripts() {
         selectedScripts.clear();
         for (Object element : scriptsTree.getCheckboxViewer().getCheckedElements()) {
-            if (element instanceof DBNResource && ((DBNResource) element).getResource() instanceof IFile) {
-                selectedScripts.add((DBNResource) element);
+            if (element instanceof DBNResource dbnResource && dbnResource.getResource() instanceof IFile) {
+                selectedScripts.add(dbnResource);
             }
         }
-        getButton(IDialogConstants.OK_ID).setEnabled(!selectedScripts.isEmpty());
+        enableButton(IDialogConstants.OK_ID, !selectedScripts.isEmpty());
     }
 
-    public List<DBNNodeWithResource> getSelectedScripts() {
+    public List<DBNNode> getSelectedScripts() {
         return selectedScripts;
     }
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         super.createButtonsForButtonBar(parent);
-        getButton(IDialogConstants.OK_ID).setEnabled(false);
+        enableButton(IDialogConstants.OK_ID, false);
     }
 
     static void createScriptColumns(ColumnViewer viewer) {
@@ -164,7 +164,7 @@ class SQLScriptTaskScriptSelectorDialog extends BaseDialog {
                     if (!CommonUtils.isEmpty(containers)) {
                         StringBuilder text = new StringBuilder();
                         for (DBPDataSourceContainer container : containers) {
-                            if (text.length() > 0) {
+                            if (!text.isEmpty()) {
                                 text.append(", ");
                             }
                             text.append(container.getName());
@@ -175,10 +175,6 @@ class SQLScriptTaskScriptSelectorDialog extends BaseDialog {
                 return "";
             }
 
-            @Override
-            public Image getImage(Object element) {
-                return null;
-            }
         });
         columnController.createColumns(true);
     }
