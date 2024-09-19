@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.sql.semantics.model.expressions;
 
+
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -23,12 +24,17 @@ import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
+
+import java.util.List;
+
 
 /**
  * Describes column reference specified by column nae and optionally table name
  */
 public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpression {
+    private final boolean rowRefAllowed;
     @Nullable
     private final SQLQueryQualifiedName tableName;
     @NotNull
@@ -36,18 +42,14 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
     @Nullable
     private SQLQueryResultColumn column = null;
     
-    public SQLQueryValueColumnReferenceExpression(@NotNull STMTreeNode syntaxNode, @NotNull SQLQuerySymbolEntry columnName) {
-        super(syntaxNode);
-        this.tableName = null;
-        this.columnName = columnName;
-    }
-
     public SQLQueryValueColumnReferenceExpression(
         @NotNull STMTreeNode syntaxNode,
-        @NotNull SQLQueryQualifiedName tableName,
+        boolean rowRefAllowed,
+        @Nullable SQLQueryQualifiedName tableName,
         @NotNull SQLQuerySymbolEntry columnName
     ) {
         super(syntaxNode);
+        this.rowRefAllowed = rowRefAllowed;
         this.tableName = tableName;
         this.columnName = columnName;
     }
@@ -56,6 +58,9 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
     public SQLQueryQualifiedName getTableName() {
         return this.tableName;
     }
+
+    @NotNull
+    public SQLQuerySymbolEntry getColumnName() { return this.columnName; }
 
     @NotNull
     @Override
@@ -123,18 +128,41 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
             } else {
                 resultColumn = context.resolveColumn(statistics.getMonitor(), this.columnName.getName());
 
+                SourceResolutionResult rowsSourceIfAllowed;
+                SQLQuerySymbolDefinition rowsSourceDef;
                 SQLQuerySymbolClass forcedClass = null;
                 if (resultColumn == null) {
-                    String rawString = columnName.getRawName();
-                    if (dialect.isQuotedString(rawString)) {
-                        forcedClass = SQLQuerySymbolClass.STRING;
+                     rowsSourceIfAllowed = this.rowRefAllowed
+                        ? context.resolveSource(statistics.getMonitor(), List.of(this.columnName.getName()))
+                        : null;
+                    if (rowsSourceIfAllowed != null) {
+                        rowsSourceDef = rowsSourceIfAllowed.aliasOrNull != null
+                            ? rowsSourceIfAllowed.aliasOrNull.getDefinition()
+                            : rowsSourceIfAllowed.source instanceof SQLQueryRowsTableDataModel tableModel && tableModel.getName() != null
+                            ? tableModel.getName().entityName
+                            : null;
                     } else {
-                        forcedClass = SQLQueryModelRecognizer.tryFallbackSymbolForStringLiteral(dialect, this.columnName, false);
+                        rowsSourceDef = null;
                     }
+
+                    if (rowsSourceDef == null && this.columnName.isNotClassified()) {
+                        String rawString = columnName.getRawName();
+                        if (dialect.isQuotedString(rawString)) {
+                            forcedClass = SQLQuerySymbolClass.STRING;
+                        } else {
+                            forcedClass = SQLQueryModelRecognizer.tryFallbackSymbolForStringLiteral(dialect, this.columnName, false);
+                        }
+                    }
+                } else {
+                    rowsSourceDef = null; // TODO check actual priority between columnRef and tableRef
+                    rowsSourceIfAllowed = null;
                 }
 
 
-                if (forcedClass != null) {
+                if (rowsSourceDef != null) {
+                    this.columnName.setDefinition(rowsSourceDef);
+                    type = SQLQueryExprType.forReferencedRow(this.columnName, rowsSourceIfAllowed);
+                } else if (forcedClass != null) {
                     this.columnName.getSymbol().setSymbolClass(forcedClass);
                     type = forcedClass == SQLQuerySymbolClass.STRING ? SQLQueryExprType.STRING : SQLQueryExprType.UNKNOWN;
                 } else {

@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueTupl
 import org.jkiss.dbeaver.model.sql.semantics.model.select.*;
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
+import org.jkiss.dbeaver.model.stm.STMTreeTermNode;
 
 import java.util.*;
 
@@ -127,7 +128,7 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
                         case SQLStandardParser.RULE_exceptTerm -> SQLQueryRowsSetCorrespondingOperationKind.EXCEPT;
                         case SQLStandardParser.RULE_unionTerm -> SQLQueryRowsSetCorrespondingOperationKind.UNION;
                         default ->
-                            throw new UnsupportedOperationException("Unexpected child node kind at queryExpression");
+                            throw new UnsupportedOperationException("Unexpected child node kind at queryExpression: " + childNode.getNodeName());
                     };
                     source = new SQLQueryRowsSetCorrespondingOperationModel(range, childNode, source, nextSource, corresponding, opKind);
                 }
@@ -149,7 +150,7 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
                         case SQLStandardParser.RULE_intersectTerm ->
                             SQLQueryRowsSetCorrespondingOperationKind.INTERSECT;
                         default ->
-                            throw new UnsupportedOperationException("Unexpected child node kind at nonJoinQueryTerm");
+                            throw new UnsupportedOperationException("Unexpected child node kind at nonJoinQueryTerm: " + childNode.getNodeName());
                     };
                     source = new SQLQueryRowsSetCorrespondingOperationModel(range, childNode, source, nextSource, corresponding, opKind);
                 }
@@ -165,31 +166,37 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
                 List<STMTreeNode> childNodes = n.findNonErrorChildren();
                 SQLQueryRowsSourceModel source = subsources.getOrEmpty(childNodes.get(0));
                 for (STMTreeNode childNode : childNodes.subList(1, childNodes.size())) {
-                    final SQLQueryRowsSourceModel currSource = source;
-                    final SQLQueryRowsSourceModel nextSource = subsources.getOrEmpty(childNode);
-                    // TODO see second case of the first source if parens are correctly ignored here
-                    Interval range = Interval.of(n.getRealInterval().a, childNode.getRealInterval().b);
-                    source = switch (childNode.getNodeKindId()) {
-                        case SQLStandardParser.RULE_naturalJoinTerm -> {
-                            Optional<STMTreeNode> joinConditionNode = Optional.ofNullable(childNode.findFirstChildOfName(STMKnownRuleNames.joinSpecification))
-                                .map(cn -> cn.findFirstChildOfName(STMKnownRuleNames.joinCondition));
-                            if (joinConditionNode.isPresent()) {
-                                try (SQLQueryModelRecognizer.LexicalScopeHolder condScope = r.openScope()) {
-                                    condScope.lexicalScope.registerSyntaxNode(joinConditionNode.get());
-                                    yield joinConditionNode.map(cn -> cn.findFirstChildOfName(STMKnownRuleNames.searchCondition))
-                                        .map(r::collectValueExpression)
-                                        .map(e -> new SQLQueryRowsNaturalJoinModel(range, childNode, currSource, nextSource, e, condScope.lexicalScope))
-                                        .orElseGet(() -> new SQLQueryRowsNaturalJoinModel(range, childNode, currSource, nextSource, Collections.emptyList()));
+                    if (!(childNode instanceof STMTreeTermNode)) {
+                        final SQLQueryRowsSourceModel currSource = source;
+                        final SQLQueryRowsSourceModel nextSource = subsources.getOrEmpty(childNode);
+                        // TODO see second case of the first source if parens are correctly ignored here
+                        Interval range = Interval.of(n.getRealInterval().a, childNode.getRealInterval().b);
+                        source = switch (childNode.getNodeKindId()) {
+                            case SQLStandardParser.RULE_naturalJoinTerm -> {
+                                Optional<STMTreeNode> joinConditionNode =
+                                    Optional.ofNullable(childNode.findFirstChildOfName(STMKnownRuleNames.joinSpecification))
+                                        .map(cn -> cn.findFirstChildOfName(STMKnownRuleNames.joinCondition));
+                                if (joinConditionNode.isPresent()) {
+                                    try (SQLQueryModelRecognizer.LexicalScopeHolder condScope = r.openScope()) {
+                                        condScope.lexicalScope.registerSyntaxNode(joinConditionNode.get());
+                                        yield joinConditionNode.map(cn -> cn.findFirstChildOfName(STMKnownRuleNames.searchCondition))
+                                            .map(r::collectValueExpression)
+                                            .map(e -> new SQLQueryRowsNaturalJoinModel(range, childNode, currSource, nextSource, e,
+                                                condScope.lexicalScope))
+                                            .orElseGet(() -> new SQLQueryRowsNaturalJoinModel(range, childNode, currSource, nextSource,
+                                                Collections.emptyList()));
+                                    }
+                                } else {
+                                    yield new SQLQueryRowsNaturalJoinModel(range, childNode, currSource, nextSource,
+                                        r.collectColumnNameList(childNode));
                                 }
-                            } else {
-                                yield new SQLQueryRowsNaturalJoinModel(range, childNode, currSource, nextSource, r.collectColumnNameList(childNode));
                             }
-                        }
-                        case SQLStandardParser.RULE_crossJoinTerm ->
-                            new SQLQueryRowsCrossJoinModel(range, childNode, currSource, nextSource);
-                        default ->
-                            throw new UnsupportedOperationException("Unexpected child node kind at queryExpression");
-                    };
+                            case SQLStandardParser.RULE_crossJoinTerm ->
+                                new SQLQueryRowsCrossJoinModel(range, childNode, currSource, nextSource);
+                            default -> throw new UnsupportedOperationException(
+                                "Unexpected child node kind at queryExpression: " + childNode.getNodeName());
+                        };
+                    }
                 }
                 return source;
             }
@@ -199,16 +206,21 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
                 return makeEmptyRowsModel(n);
             } else {
                 SubsourcesMap subsources = new SubsourcesMap(cc, n);
-                List<STMTreeNode> childNodes = n.findNonErrorChildren();
+                List<STMTreeNode> childNodes = n.findChildrenOfName(STMKnownRuleNames.tableReference);
                 SQLQueryRowsSourceModel source = subsources.getOrEmpty(childNodes.get(0));
                 for (STMTreeNode childNode : childNodes.subList(1, childNodes.size())) {
                     SQLQueryRowsSourceModel nextSource = subsources.getOrEmpty(childNode);
-                    Interval range = Interval.of(n.getRealInterval().a, childNode.getRealInterval().b);
-                    source = switch (childNode.getNodeKindId()) {
-                        case SQLStandardParser.RULE_tableReference ->
-                            new SQLQueryRowsCrossJoinModel(range, childNode, source, nextSource);
-                        default -> throw new UnsupportedOperationException("Unexpected child node kind at fromClause");
-                    };
+                    if (nextSource != null) {
+                        Interval range = Interval.of(n.getRealInterval().a, childNode.getRealInterval().b);
+                        source = switch (childNode.getNodeKindId()) {
+                            case SQLStandardParser.RULE_tableReference ->
+                                new SQLQueryRowsCrossJoinModel(range, childNode, source, nextSource);
+                            default -> throw new UnsupportedOperationException(
+                                "Unexpected child node kind at fromClause: " + childNode.getNodeName());
+                        };
+                    } else {
+                        // certain tableReference subtree was not recognized correctly, consider error message
+                    }
                 }
                 return source;
             }

@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -28,6 +29,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolByDbObjectDefinition;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolDefinition;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.struct.*;
 
@@ -131,6 +133,10 @@ public abstract class SQLQueryExprType {
     @NotNull
     public static SQLQueryExprType forExplicitTypeRef(@NotNull String typeRefString) {
         return new SQLQueryExprPredefinedType(typeRefString, DBPDataKind.UNKNOWN);
+    }
+
+    public static SQLQueryExprType forReferencedRow(SQLQuerySymbolEntry reference, SourceResolutionResult referencedSource) {
+        return new SQLQueryExprRowType(reference, referencedSource);
     }
 
     /**
@@ -260,7 +266,35 @@ public abstract class SQLQueryExprType {
                 a.equals(b)
             );
     }
-    
+
+    private static class SQLQueryExprRowType extends SQLQueryExprType {
+        private final SQLQuerySymbolEntry reference;
+        private final SourceResolutionResult referencedSource;
+
+        public SQLQueryExprRowType(SQLQuerySymbolEntry reference, SourceResolutionResult referencedSource) {
+            super(reference.getDefinition(), DBPDataKind.ANY);
+            this.reference = reference;
+            this.referencedSource = referencedSource;
+        }
+
+        @NotNull
+        @Override
+        public String getDisplayName() {
+            return this.referencedSource.tableOrNull != null ? DBUtils.getObjectTypeName(this.referencedSource.tableOrNull) : this.reference.getName();
+        }
+
+        @Override
+        public SQLQueryExprType findNamedMemberType(@NotNull DBRProgressMonitor monitor, @NotNull String memberName) throws DBException {
+            SQLQueryResultColumn column = this.referencedSource.source.getResultDataContext().resolveColumn(monitor, memberName);
+            return column == null ? null : column.type;
+        }
+
+        @Override
+        public String toString() {
+            return "RowType[" + this.getDisplayName() + "]";
+        }
+    }
+
     private static class SQLQueryExprComplexType<T extends DBSEntity & DBSTypedObject> extends SQLQueryExprType {
         private final T complexType;
         private final Map<String, DBSAttributeBase> attrs;

@@ -416,10 +416,14 @@ public abstract class SQLQueryCompletionContext {
                     Interval nameRange;
                     Interval schemaRange;
                     Interval catalogRange;
+                    // TODO consider deeper hierarchy
+                    SQLQuerySymbolEntry schemaName = qname.scopeName.size() <= 0 ? null : qname.scopeName.get(qname.scopeName.size() - 1);
+                    SQLQuerySymbolEntry catalogName = qname.scopeName.size() <= 1 ? null : qname.scopeName.get(qname.scopeName.size() - 2);
+
                     if ((nameRange = qname.entityName.getSyntaxNode().getRealInterval()).properlyContains(pos)) {
                         String part = qname.entityName.getRawName().substring(0, position - nameRange.a);
-                        if (qname.schemaName != null) {
-                            SQLQuerySymbolDefinition scopeDef = this.unrollSymbolDefinition(qname.schemaName.getDefinition());
+                        if (schemaName != null) {
+                            SQLQuerySymbolDefinition scopeDef = this.unrollSymbolDefinition(schemaName.getDefinition());
                             if (scopeDef instanceof SQLQuerySymbolByDbObjectDefinition byObjDef) {
                                 return this.prepareObjectComponentCompletions(monitor, byObjDef.getDbObject(), part, DBSEntity.class);
                             } else {
@@ -429,12 +433,12 @@ public abstract class SQLQueryCompletionContext {
                         } else {
                             return this.prepareIdentifierCompletions(monitor, List.of(part), DBSEntity.class);
                         }
-                    } else if (qname.schemaName != null
-                        && (schemaRange = qname.schemaName.getSyntaxNode().getRealInterval()).properlyContains(pos)
+                    } else if (schemaName != null
+                        && (schemaRange = schemaName.getSyntaxNode().getRealInterval()).properlyContains(pos)
                     ) {
-                        String part = qname.schemaName.getRawName().substring(0, position - schemaRange.a);
-                        if (qname.catalogName != null) {
-                            SQLQuerySymbolDefinition scopeDef = this.unrollSymbolDefinition(qname.schemaName.getDefinition());
+                        String part = schemaName.getRawName().substring(0, position - schemaRange.a);
+                        if (catalogName != null) {
+                            SQLQuerySymbolDefinition scopeDef = this.unrollSymbolDefinition(schemaName.getDefinition());
                             if (scopeDef instanceof SQLQuerySymbolByDbObjectDefinition byObjDef) {
                                 return this.prepareObjectComponentCompletions(monitor, byObjDef.getDbObject(), part, DBSSchema.class);
                             } else {
@@ -449,10 +453,10 @@ public abstract class SQLQueryCompletionContext {
                                 DBSSchema.class
                             );
                         }
-                    } else if (qname.catalogName != null
-                        && (catalogRange = qname.catalogName.getSyntaxNode().getRealInterval()).properlyContains(pos)
+                    } else if (catalogName != null
+                        && (catalogRange = catalogName.getSyntaxNode().getRealInterval()).properlyContains(pos)
                     ) {
-                        String part = qname.catalogName.getRawName().substring(0, position - catalogRange.a);
+                        String part = catalogName.getRawName().substring(0, position - catalogRange.a);
                         return this.prepareObjectComponentCompletions(monitor, dbcExecutionContext.getDataSource(), part, DBSCatalog.class);
                     } else {
                         throw new UnsupportedOperationException("Illegal SQLQueryQualifiedName");
@@ -516,12 +520,12 @@ public abstract class SQLQueryCompletionContext {
                             DBSSchema defaultSchema = defaults.getDefaultSchema();
                             DBSCatalog defaultCatalog = defaults.getDefaultCatalog();
                             if (defaultCatalog == null && defaultSchema == null && dbcExecutionContext.getDataSource() instanceof DBSObjectContainer container) {
-                                this.collectTables(monitor, container, alreadyReferencedObjects, completions);
+                                this.collectTables(monitor, container, completions);
                             } else if (request.getContext().isSearchGlobally() && defaultCatalog != null) {
-                                this.collectTables(monitor, defaultCatalog, alreadyReferencedObjects, completions);
+                                this.collectTables(monitor, defaultCatalog, completions);
                             } else {
                                 if (defaultSchema != null) {
-                                    this.collectTables(monitor, defaultSchema, alreadyReferencedObjects, completions);
+                                    this.collectTables(monitor, defaultSchema, completions);
                                 }
                             }
                             if (defaultCatalog != null) {
@@ -544,12 +548,11 @@ public abstract class SQLQueryCompletionContext {
             private void collectTables(
                 @NotNull DBRProgressMonitor monitor,
                 @NotNull DBSObjectContainer container,
-                @NotNull Set<DBSObject> alreadyReferencedTables,
                 @NotNull LinkedList<SQLQueryCompletionItem> accumulator
             ) throws DBException {
                 this.collectObjectsRecursively(
                     monitor, container, new HashSet<>(), accumulator,
-                    List.of(DBSTable.class, DBSView.class), o -> SQLQueryCompletionItem.forRealTable(o, alreadyReferencedTables.contains(o))
+                    List.of(DBSTable.class, DBSView.class), o -> SQLQueryCompletionItem.forRealTable(o, alreadyReferencedObjects.contains(o))
                 );
             }
 

@@ -16,68 +16,55 @@
  */
 package org.jkiss.dbeaver.model.sql.semantics;
 
+import com.google.gson.internal.Streams;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.semantics.context.SourceResolutionResult;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Describes database entity name
  */
 public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem {
-    @Nullable
-    public final SQLQuerySymbolEntry catalogName;
-    @Nullable
-    public final SQLQuerySymbolEntry schemaName;
+    @NotNull
+    public final List<SQLQuerySymbolEntry> scopeName;
     @NotNull
     public final SQLQuerySymbolEntry entityName;
 
-    public SQLQueryQualifiedName(@NotNull STMTreeNode syntaxNode, @NotNull SQLQuerySymbolEntry entityName) {
-        this(syntaxNode, null, null, entityName);
-    }
+    public final boolean isValid;
 
-    public SQLQueryQualifiedName(
-        @NotNull STMTreeNode syntaxNode,
-        @Nullable SQLQuerySymbolEntry schemaName,
-        @NotNull SQLQuerySymbolEntry entityName
-    ) {
-        this(syntaxNode, null, schemaName, entityName);
-    }
-
-    public SQLQueryQualifiedName(
-        @NotNull STMTreeNode syntaxNode,
-        @Nullable SQLQuerySymbolEntry catalogName,
-        @Nullable SQLQuerySymbolEntry schemaName,
-        @NotNull SQLQuerySymbolEntry entityName
-    ) {
+    public SQLQueryQualifiedName(@NotNull STMTreeNode syntaxNode, @NotNull List<SQLQuerySymbolEntry> scopeName, @NotNull SQLQuerySymbolEntry entityName, boolean isValid) {
         super(syntaxNode);
-        this.catalogName = catalogName;
-        this.schemaName = schemaName;
+        this.scopeName = scopeName;
         this.entityName = entityName;
+        this.isValid = isValid;
     }
 
     @NotNull
     @Override
     public STMTreeNode[] getSyntaxComponents() {
-        if (catalogName != null && schemaName != null) {
+        if (this.scopeName.isEmpty()) {
             return new STMTreeNode[] {
-                this.catalogName.getSyntaxNode(),
-                this.schemaName.getSyntaxNode(), 
-                this.entityName.getSyntaxNode() 
-            };
-        } else if (schemaName != null) {
-            return new STMTreeNode[] {
-                this.schemaName.getSyntaxNode(), 
-                this.entityName.getSyntaxNode() 
+                this.entityName.getSyntaxNode()
             };
         } else {
-            return new STMTreeNode[] { 
-                this.entityName.getSyntaxNode() 
-            };
+            return Stream.of(
+                this.scopeName.stream().map(SQLQueryLexicalScopeItem::getSyntaxNode),
+                Stream.of(this.entityName.getSyntaxNode())
+            ).flatMap(s -> s).toList().toArray(new STMTreeNode[0]);
         }
     }
 
@@ -85,39 +72,31 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem {
      * Set the class to the qualified name components
      */
     public void setSymbolClass(@NotNull SQLQuerySymbolClass symbolClass) {
-        if (this.entityName != null) {
-            this.entityName.getSymbol().setSymbolClass(symbolClass);
-        }
-        if (this.schemaName != null) {
-            this.schemaName.getSymbol().setSymbolClass(symbolClass);
-        }
-        if (this.catalogName != null) {
-            this.catalogName.getSymbol().setSymbolClass(symbolClass);
-        }
+        this.entityName.getSymbol().setSymbolClass(symbolClass);
+        this.scopeName.forEach(e -> e.getSymbol().setSymbolClass(symbolClass));
     }
 
     /**
      * Set the definition to the qualified name components based on the database metadata
      */
-    public void setDefinition(@NotNull DBSObject realTable) {
-        if (this.entityName != null) {
-            this.entityName.setDefinition(new SQLQuerySymbolByDbObjectDefinition(realTable, SQLQuerySymbolClass.TABLE));
-            if (this.schemaName != null) {
-                DBSObject schema = realTable.getParentObject();
-                if (schema != null) {
-                    this.schemaName.setDefinition(new SQLQuerySymbolByDbObjectDefinition(schema, SQLQuerySymbolClass.SCHEMA));
-                } else {
-                    this.schemaName.getSymbol().setSymbolClass(SQLQuerySymbolClass.ERROR);
+    public void setDefinition(@NotNull DBSObject realObject) {
+        if (realObject instanceof DBSTable || realObject instanceof DBSView) {
+            this.entityName.getSymbol().setSymbolClass(SQLQuerySymbolClass.TABLE);
+        }
+        DBSObject object = realObject.getParentObject();
+        int scopeNameIndex = this.scopeName.size() - 1;
+        while (object != null && scopeNameIndex >= 0) {
+            SQLQuerySymbolEntry nameEntry = this.scopeName.get(scopeNameIndex);
+            String objectName = SQLUtils.identifierToCanonicalForm(object.getDataSource().getSQLDialect(), DBUtils.getQuotedIdentifier(object), false, true);
+            if (objectName.equalsIgnoreCase(nameEntry.getName())) {
+                if (object instanceof DBSSchema) {
+                    nameEntry.getSymbol().setSymbolClass(SQLQuerySymbolClass.SCHEMA);
+                } else if (object instanceof DBSCatalog) {
+                    nameEntry.getSymbol().setSymbolClass(SQLQuerySymbolClass.CATALOG);
                 }
-                if (this.catalogName != null && schema != null) {
-                    DBSObject catalog = schema.getParentObject();
-                    if (catalog != null) {
-                        this.catalogName.setDefinition(new SQLQuerySymbolByDbObjectDefinition(catalog, SQLQuerySymbolClass.CATALOG));
-                    } else {
-                        this.catalogName.getSymbol().setSymbolClass(SQLQuerySymbolClass.ERROR);
-                    }
-                }
+                scopeNameIndex--;
             }
+            object = object.getParentObject();
         }
     }
 
@@ -126,19 +105,19 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem {
      */
     public void setDefinition(@NotNull SourceResolutionResult rr) {
         if (rr.aliasOrNull != null) {
-            this.entityName.merge(rr.aliasOrNull);
+            this.entityName.setDefinition(rr.aliasOrNull.getDefinition());
         } else if (rr.source instanceof SQLQueryRowsTableDataModel tableModel) {
-            if (this.entityName != null) {
-                SQLQueryQualifiedName tableName = tableModel.getName();
-                this.entityName.setDefinition(tableName.entityName);
-                if (this.schemaName != null) {
-                    SQLQuerySymbolEntry schemaDef = tableName.schemaName != null ? tableName.schemaName : tableName.entityName;
-                    this.schemaName.setDefinition(schemaDef);
-                    
-                    if (this.catalogName != null) {
-                        SQLQuerySymbolEntry catalogDef = tableName.catalogName != null ? tableName.catalogName : schemaDef;
-                        this.catalogName.setDefinition(catalogDef);
-                    }
+            SQLQueryQualifiedName tableName = tableModel.getName();
+            if (tableName != null) {
+                SQLQuerySymbolEntry lastDefSymbolEntry = tableName.entityName;
+                this.entityName.setDefinition(lastDefSymbolEntry);
+                int i = this.scopeName.size() - 1, j = tableName.scopeName.size() - 1;
+                for (; i >= 0 && j >= 0; i--, j--) {
+                    this.scopeName.get(i).setDefinition(lastDefSymbolEntry = tableName.scopeName.get(j));
+                }
+                while (i >= 0) {
+                    this.scopeName.get(i).setDefinition(lastDefSymbolEntry);
+                    i--;
                 }
             }
         }
@@ -149,12 +128,13 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem {
      */
     @NotNull
     public List<String> toListOfStrings() {
-        if (catalogName != null && schemaName != null) {
-            return List.of(catalogName.getName(), schemaName.getName(), entityName.getName());
-        } else if (schemaName != null) {
-            return List.of(schemaName.getName(), entityName.getName());
+        if (this.scopeName.isEmpty()) {
+            return List.of(this.entityName.getName());
         } else {
-            return List.of(entityName.getName());
+            return Stream.of(
+                this.scopeName.stream().map(SQLQuerySymbolEntry::getName),
+                Stream.of(this.entityName.getName())
+            ).flatMap(s -> s).toList();
         }
     }
 
@@ -163,12 +143,10 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem {
      */
     @NotNull
     public String toIdentifierString() {
-        if (catalogName != null && schemaName != null) {
-            return String.join(".", catalogName.getRawName(), schemaName.getRawName(), entityName.getRawName());
-        } else if (schemaName != null) {
-            return String.join(".", schemaName.getRawName(), entityName.getRawName());
+        if (this.scopeName.isEmpty()) {
+            return this.entityName.getRawName();
         } else {
-            return entityName.getRawName();
+            return String.join(".", this.toListOfStrings());
         }
     }
 
@@ -188,8 +166,6 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem {
     }
 
     public boolean isNotClassified() {
-        return this.entityName.isNotClassified()
-            && (this.schemaName == null || this.schemaName.isNotClassified())
-            && (this.catalogName == null || this.catalogName.isNotClassified());
+        return this.entityName.isNotClassified() && this.scopeName.stream().allMatch(SQLQuerySymbolEntry::isNotClassified);
     }
 }
