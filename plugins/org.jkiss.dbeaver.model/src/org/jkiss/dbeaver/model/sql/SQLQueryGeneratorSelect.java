@@ -16,15 +16,13 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
-import org.jkiss.code.Nullable;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-public interface SQLBlockCompletions {
-    String ONE_INDENT_COMPLETION_PART = "\t";
-    String NEW_LINE_COMPLETION_PART = null;
-    int KNOWN_TOKEN_ID_BASE = 100;
+/**
+ *  Helps to create "SELECT * FROM table_name" statement or analogue for non-relational databases
+ */
+public interface SQLQueryGeneratorSelect {
 
-    @Nullable
-    Integer findTokenId(String str);
-    @Nullable
-    SQLBlockCompletionInfo findCompletionByHead(int headTokenId);
+    void createSelectStatement(@NotNull DBRProgressMonitor monitor, @NotNull StringBuilder sql);
 }

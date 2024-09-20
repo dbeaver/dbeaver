@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
-import org.jkiss.dbeaver.model.impl.sql.RelationalSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRFinder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -336,10 +335,10 @@ public final class SQLUtils {
         if (value.contains("%") || value.contains("_")) {
             if (not) sql.append(" NOT");
             sql.append(" LIKE ?");
-            if (dialect instanceof RelationalSQLDialect &&
-                ((RelationalSQLDialect) dialect).getLikeEscapeClause(SQLConstants.DEFAULT_LIKE_ESCAPE) != null)
+            if (dialect instanceof SQLDialectRelational &&
+                ((SQLDialectRelational) dialect).getLikeEscapeClause(SQLConstants.DEFAULT_LIKE_ESCAPE) != null)
             {
-                sql.append(((RelationalSQLDialect) dialect).getLikeEscapeClause(SQLConstants.DEFAULT_LIKE_ESCAPE));
+                sql.append(((SQLDialectRelational) dialect).getLikeEscapeClause(SQLConstants.DEFAULT_LIKE_ESCAPE));
             }
         } else {
             sql.append(not ? "<>?" : "=?");

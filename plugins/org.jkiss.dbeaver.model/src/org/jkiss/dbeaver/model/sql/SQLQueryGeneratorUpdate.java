@@ -14,15 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.impl.sql;
+package org.jkiss.dbeaver.model.sql;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+public interface SQLQueryGeneratorUpdate {
 
-/**
- *  Helps to create "SELECT * FROM table_name" statement or analogue for non-relational databases
- */
-public interface SelectTableGenerator {
+    String generateTableUpdateBegin(String tableName);
 
-    void createSelectStatement(@NotNull DBRProgressMonitor monitor, @NotNull StringBuilder sql);
+    String generateTableUpdateSet();
+
+    String generateTableDeleteFrom(String tableName);
 }

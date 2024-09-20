@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.impl.sql;
+package org.jkiss.dbeaver.model.sql.transformers;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
@@ -46,7 +46,7 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
     public SQLQuery transformQuery(DBPDataSource dataSource, SQLSyntaxManager syntaxManager, SQLQuery query) throws DBException {
         try {
             SQLDialect sqlDialect = dataSource.getSQLDialect();
-            if (!sqlDialect.supportsSubqueries() || (sqlDialect instanceof RelationalSQLDialect && ((RelationalSQLDialect)sqlDialect).isAmbiguousCountBroken())) {
+            if (!sqlDialect.supportsSubqueries() || (sqlDialect instanceof SQLDialectRelational && ((SQLDialectRelational)sqlDialect).isAmbiguousCountBroken())) {
                 return tryInjectCount(dataSource, query);
             }
         } catch (Throwable e) {

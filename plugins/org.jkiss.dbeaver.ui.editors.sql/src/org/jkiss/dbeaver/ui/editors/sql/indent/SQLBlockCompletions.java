@@ -14,33 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.impl.sql;
+package org.jkiss.dbeaver.ui.editors.sql.indent;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
 
-/**
- * Relational SQL Dialect
- */
-public interface RelationalSQLDialect extends SQLDialect {
-
-    /**
-     * Standard SQL (SQL2003)
-     */
-    boolean isStandardSQL();
-
-    boolean supportsOrderBy();
-
-    boolean supportsGroupBy();
-
-    /**
-     * @return true if `select count(*) from (select 1,1) z` fails because of duplicate column name
-     */
-    boolean isAmbiguousCountBroken();
+public interface SQLBlockCompletions {
+    String ONE_INDENT_COMPLETION_PART = "\t";
+    String NEW_LINE_COMPLETION_PART = null;
+    int KNOWN_TOKEN_ID_BASE = 100;
 
     @Nullable
-    default String getLikeEscapeClause(@NotNull String escapeChar) {
-        return null;
-    }
+    Integer findTokenId(String str);
+    @Nullable
+    SQLBlockCompletionInfo findCompletionByHead(int headTokenId);
 }

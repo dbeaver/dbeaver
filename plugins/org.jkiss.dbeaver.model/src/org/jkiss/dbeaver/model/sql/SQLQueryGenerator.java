@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.impl.sql;
+package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -30,7 +30,7 @@ import java.util.List;
  * Contains methods used for query generation
  */
 @DPIObject
-public interface SQLDialectQueryGenerator {
+public interface SQLQueryGenerator {
 
     /**
      * Appends filter statement to query

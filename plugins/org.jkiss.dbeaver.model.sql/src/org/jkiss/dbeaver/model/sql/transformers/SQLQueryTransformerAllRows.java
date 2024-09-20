@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.impl.sql;
+package org.jkiss.dbeaver.model.sql.transformers;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -23,17 +23,13 @@ import org.jkiss.dbeaver.model.sql.SQLQueryTransformer;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 
 /**
- * SQLQueryTransformerExpression.
- * Transforms SQL expression into something like SELECT <expression> FROM DUAL.
+ * SQLQueryTransformerAllRows.
 */
-public class SQLQueryTransformerExpression implements SQLQueryTransformer {
+public class SQLQueryTransformerAllRows implements SQLQueryTransformer {
     @Override
     public SQLQuery transformQuery(DBPDataSource dataSource, SQLSyntaxManager syntaxManager, SQLQuery query) throws DBException {
-        String dualTableName = dataSource.getSQLDialect().getDualTableName();
-        String newQuery = "SELECT " + query.getText();
-        if (dualTableName != null) {
-            newQuery += " FROM " + dualTableName;
-        }
-        return new SQLQuery(dataSource, newQuery, query, false);
+        SQLQuery allRowsQuery = new SQLQuery(dataSource, query.getText(), query);
+        allRowsQuery.setResultSetLimit(0, 0);
+        return allRowsQuery;
     }
 }

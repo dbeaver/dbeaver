@@ -14,13 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.impl.sql;
+package org.jkiss.dbeaver.model.sql;
 
-public interface ChangeTableDataStatement {
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
-    String generateTableUpdateBegin(String tableName);
+/**
+ * Relational SQL Dialect
+ */
+public interface SQLDialectRelational extends SQLDialect {
 
-    String generateTableUpdateSet();
+    /**
+     * Standard SQL (SQL2003)
+     */
+    boolean isStandardSQL();
 
-    String generateTableDeleteFrom(String tableName);
+    boolean supportsOrderBy();
+
+    boolean supportsGroupBy();
+
+    /**
+     * @return true if `select count(*) from (select 1,1) z` fails because of duplicate column name
+     */
+    boolean isAmbiguousCountBroken();
+
+    @Nullable
+    default String getLikeEscapeClause(@NotNull String escapeChar) {
+        return null;
+    }
 }
