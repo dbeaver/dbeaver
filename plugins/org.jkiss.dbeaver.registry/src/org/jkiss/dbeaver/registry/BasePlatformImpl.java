@@ -140,7 +140,12 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
 
         // Dispose navigator model first
         // It is a part of UI
-        if (this.navigatorModel != null) {
+        disposeNavigatorModel();
+    }
+
+    public void disposeNavigatorModel() {
+        if (this.navigatorModel != null && this.navigatorModel.getRoot() != null) {
+            log.debug("Dispose navigator model");
             this.navigatorModel.dispose();
             //this.navigatorModel = null;
         }
