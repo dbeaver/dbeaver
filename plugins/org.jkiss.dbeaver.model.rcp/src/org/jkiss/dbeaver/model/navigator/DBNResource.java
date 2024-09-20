@@ -177,7 +177,9 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
     public static DBNNode[] readChildResourceNodes(DBRProgressMonitor monitor, DBNNode node) throws DBException {
         List<DBNNode> result = new ArrayList<>();
         try {
-            IResource contentLocation = node.getAdapter(IResource.class);
+            IResource contentLocation = node instanceof DBNProjectDesktop projectDesktop ?
+                projectDesktop.getProject().getRootResource() :
+                node.getAdapter(IResource.class);
             if (contentLocation instanceof IContainer && contentLocation.exists()) {
                 IResource[] members = ((IContainer) contentLocation).members(false);
                 members = addImplicitMembers(node, members);
@@ -416,7 +418,8 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
                 return adapter.cast(resource);
             }
             if (adapter == Path.class) {
-                return adapter.cast(resource.getLocation().toPath());
+                IPath location = resource.getLocation();
+                return location == null ? null : adapter.cast(location.toPath());
             }
         }
         return super.getAdapter(adapter);

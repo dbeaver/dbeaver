@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -127,9 +128,9 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
         return super.getAdapter(adapter);
     }
 
-    @NotNull
+    @Nullable
     @Override
-    public DBPProject getOwnerProject() {
+    public DBPProject getOwnerProjectOrNull() {
         return project;
     }
 
