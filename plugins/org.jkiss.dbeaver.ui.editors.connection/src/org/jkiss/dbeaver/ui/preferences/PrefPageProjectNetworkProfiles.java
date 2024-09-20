@@ -27,9 +27,12 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
@@ -41,6 +44,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -70,11 +75,27 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
 
     @Override
     protected void updateNetworkProfiles(List<DBWNetworkProfile> allProfiles) {
+        DBPDataSourceRegistry dataSourceRegistry = projectMeta.getDataSourceRegistry();
+        Map<String, DBWNetworkProfile> profileIdToProfile = allProfiles.stream()
+            .collect(Collectors.toMap(DBWNetworkProfile::getProfileId, Function.identity()));
         for (DBWNetworkProfile profile : allProfiles) {
             saveSettings(profile);
-            projectMeta.getDataSourceRegistry().updateNetworkProfile(profile);
+            dataSourceRegistry.updateNetworkProfile(profile);
         }
-        projectMeta.getDataSourceRegistry().flushConfig();
+        String sshTunnel = "ssh_tunnel";
+        for (DBPDataSourceContainer dataSource : dataSourceRegistry.getDataSources()) {
+            DBPConnectionConfiguration connectionConfiguration = dataSource.getConnectionConfiguration();
+            String configProfileName = connectionConfiguration.getConfigProfileName();
+            DBWNetworkProfile networkProfileForUpdate = profileIdToProfile.get(configProfileName);
+            if (networkProfileForUpdate != null) {
+                DBWHandlerConfiguration oldConfiguration = connectionConfiguration.getHandler(sshTunnel);
+                DBWHandlerConfiguration newConfiguration = networkProfileForUpdate.getConfiguration(sshTunnel);
+                if (oldConfiguration != null && newConfiguration != null) {
+                    oldConfiguration.setProperties(newConfiguration.getProperties());
+                }
+            }
+        }
+        dataSourceRegistry.flushConfig();
     }
 
     @Override
