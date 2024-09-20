@@ -97,8 +97,13 @@ public class DPIPlatform extends BasePlatformImpl {
         }
 
         // Register properties adapter
-        this.workspace = new DPIWorkspace(this);
-        this.workspace.initializeProjects();
+        try {
+            Path workspacePath = Path.of(Platform.getInstanceLocation().getURL().toURI());
+            this.workspace = new DPIWorkspace(this, workspacePath);
+            this.workspace.initializeProjects();
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot initialize DPI workspace", e);
+        }
 
         QMUtils.initApplication(this);
         this.qmController = new QMRegistryImpl();
