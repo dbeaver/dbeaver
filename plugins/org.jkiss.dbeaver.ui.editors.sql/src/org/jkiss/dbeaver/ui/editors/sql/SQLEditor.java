@@ -864,6 +864,16 @@ public class SQLEditor extends SQLEditorBase implements
         if (QMUtils.isTransactionActive(executionContext)) {
             return true;
         }
+        if (isNonPersistentEditor()) {
+            Boolean state = ConfirmationDialog.getPersistedState(
+                SQLPreferenceConstants.CONFIRM_SAVE_SQL_CONSOLE,
+                ConfirmationDialog.QUESTION
+            );
+            if (state == Boolean.FALSE) {
+                // If the user chose not to save SQL consoles, then it's never considered dirty
+                return false;
+            }
+        }
         if (extraPresentationManager.activePresentation instanceof ISaveablePart && ((ISaveablePart) extraPresentationManager.activePresentation).isDirty()) {
             return true;
         }
@@ -2782,7 +2792,7 @@ public class SQLEditor extends SQLEditorBase implements
                             curQueryProcessor = processor;
                             break;
                         }
-                        anyNotPinnedTab = anyNotPinnedTab || processor.hasNotPinnedTabs();
+                        anyNotPinnedTab = anyNotPinnedTab || !processor.hasPinnedTabs();
                     }
                 }
                 // Just create a new query processor
@@ -3243,7 +3253,15 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     public void doSave(IProgressMonitor monitor) {
         if (isNonPersistentEditor()) {
-            saveAsNewScript();
+            int decision = ConfirmationDialog.confirmAction(
+                getSite().getShell(),
+                ConfirmationDialog.INFORMATION,
+                SQLPreferenceConstants.CONFIRM_SAVE_SQL_CONSOLE,
+                ConfirmationDialog.QUESTION
+            );
+            if (decision == IDialogConstants.YES_ID) {
+                saveAsNewScript();
+            }
             return;
         }
 
@@ -3642,15 +3660,6 @@ public class SQLEditor extends SQLEditorBase implements
         public boolean hasPinnedTabs() {
             for (QueryResultsContainer container : resultContainers) {
                 if (container.isPinned()) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        public boolean hasNotPinnedTabs() {
-            for (QueryResultsContainer container : resultContainers) {
-                if (!container.isPinned()) {
                     return true;
                 }
             }

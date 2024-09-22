@@ -167,10 +167,11 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
     }
 
     public String[][] getIdentifierQuoteStrings() {
-        if (dataSource == null || (!isSqlServer && !dataSource.isServerVersionAtLeast(12, 6))) {
+        if (dataSource != null && !isSqlServer && !dataSource.isServerVersionAtLeast(12, 6)) {
             // Old Sybase doesn't support square brackets - #7755
             return SYBASE_LEGACY_QUOTE_STRINGS;
         }
+        // allow wider syntax by default
         return SQLSERVER_QUOTE_STRINGS;
     }
 

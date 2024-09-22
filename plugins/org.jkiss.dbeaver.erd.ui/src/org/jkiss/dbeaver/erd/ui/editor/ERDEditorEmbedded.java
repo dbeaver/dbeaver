@@ -106,8 +106,8 @@ public class ERDEditorEmbedded extends ERDEditorPart
 
     @Override
     protected void fillDefaultEditorContributions(IContributionManager toolBarManager) {
-        toolBarManager.add(new Separator(GROUP_SAVE));
         DatabaseEditorUtils.contributeStandardEditorActions(getSite(), toolBarManager);
+        toolBarManager.add(new Separator(GROUP_SAVE));
         toolBarManager.add(ActionUtils.makeActionContribution(new DiagramTogglePersistAction(this), true));
 
         toolBarManager.add(new Separator());
