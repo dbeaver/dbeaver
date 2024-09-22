@@ -351,12 +351,12 @@
                     <count value="+"/>
                     <iterate operator="and">
                         <or>
-                            <adapt type="org.jkiss.dbeaver.model.navigator.DBNNodeWithResource">
+                            <adapt type="org.jkiss.dbeaver.model.navigator.DBNNode">
                                 <test property="org.jkiss.dbeaver.core.object.projectResourceViewable"/>
                             </adapt>
                             <adapt type="org.jkiss.dbeaver.model.navigator.DBNNode">
                                 <not>
-                                    <adapt type="org.jkiss.dbeaver.model.navigator.DBNNodeWithResource"/>
+                                    <adapt type="org.eclipse.core.resources.IResource"/>
                                 </not>
                             </adapt>
                         </or>
