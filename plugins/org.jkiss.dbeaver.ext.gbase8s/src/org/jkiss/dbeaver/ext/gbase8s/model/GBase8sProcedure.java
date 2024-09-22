@@ -10,20 +10,20 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
 public class GBase8sProcedure extends GenericProcedure {
 
-	public GBase8sProcedure(GenericStructContainer container, String procedureName, String specificName,
-			String description, DBSProcedureType procedureType, GenericFunctionResultType functionResultType) {
-		super(container, procedureName, specificName, description, procedureType, functionResultType);
-	}
+    public GBase8sProcedure(GenericStructContainer container, String procedureName, String specificName,
+            String description, DBSProcedureType procedureType, GenericFunctionResultType functionResultType) {
+        super(container, procedureName, specificName, description, procedureType, functionResultType);
+    }
 
-	@Property(hidden = true, order = 3)
-	@Override
-	public GenericCatalog getCatalog() {
-		return getContainer().getCatalog();
-	}
+    @Property(hidden = true, order = 3)
+    @Override
+    public GenericCatalog getCatalog() {
+        return getContainer().getCatalog();
+    }
 
-	@Property(hidden = true, order = 5)
-	@Override
-	public GenericPackage getPackage() {
-		return getContainer() instanceof GenericPackage ? (GenericPackage) getContainer() : null;
-	}
+    @Property(hidden = true, order = 5)
+    @Override
+    public GenericPackage getPackage() {
+        return getContainer() instanceof GenericPackage ? (GenericPackage) getContainer() : null;
+    }
 }

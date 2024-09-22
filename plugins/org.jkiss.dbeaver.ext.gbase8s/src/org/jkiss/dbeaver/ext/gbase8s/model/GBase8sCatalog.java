@@ -26,14 +26,14 @@ import org.jkiss.dbeaver.model.DBPSystemObject;
  */
 public class GBase8sCatalog extends GenericCatalog implements DBPSystemObject {
 
-	public GBase8sCatalog(GenericDataSource dataSource, String catalogName) {
-		super(dataSource, catalogName);
-	}
+    public GBase8sCatalog(GenericDataSource dataSource, String catalogName) {
+        super(dataSource, catalogName);
+    }
 
-	@Override
-	public boolean isSystem() {
-		return getName().equals("sys") || getName().equals("sysadmin") || getName().equalsIgnoreCase("sysmaster")
-				|| getName().equals("sysuser") || getName().equals("sysutils");
-	}
+    @Override
+    public boolean isSystem() {
+        return getName().equals("sys") || getName().equals("sysadmin") || getName().equalsIgnoreCase("sysmaster")
+                || getName().equals("sysuser") || getName().equals("sysutils");
+    }
 
 }

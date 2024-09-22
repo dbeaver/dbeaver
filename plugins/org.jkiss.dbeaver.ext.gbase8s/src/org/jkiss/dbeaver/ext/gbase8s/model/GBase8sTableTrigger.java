@@ -31,46 +31,46 @@ import org.jkiss.utils.CommonUtils;
  */
 public class GBase8sTableTrigger extends GenericTableTrigger {
 
-	public enum TriggerEventType {
-		D("DELETE"), I("INSERT"), U("UPDATE"), S("SELECT"), d("INSTEAD OF Delete"), i("INSTEAD OF Insert"),
-		u("INSTEAD OF Update");
+    public enum TriggerEventType {
+        D("DELETE"), I("INSERT"), U("UPDATE"), S("SELECT"), d("INSTEAD OF Delete"), i("INSTEAD OF Insert"),
+        u("INSTEAD OF Update");
 
-		private final String eventType;
+        private final String eventType;
 
-		private TriggerEventType(String eventType) {
-			this.eventType = eventType;
-		}
+        private TriggerEventType(String eventType) {
+            this.eventType = eventType;
+        }
 
-		public String getEventType() {
-			return eventType;
-		}
-	}
+        public String getEventType() {
+            return eventType;
+        }
+    }
 
-	private TriggerEventType eventType;
-	private final String collation;
+    private TriggerEventType eventType;
+    private final String collation;
 
-	public GBase8sTableTrigger(@NotNull GenericTableBase container, String name, @NotNull JDBCResultSet resultSet) {
-		super(container, name, null);
-		String eventTypeLetter = JDBCUtils.safeGetString(resultSet, "event");
-		if (CommonUtils.isNotEmpty(eventTypeLetter)) {
-			this.eventType = CommonUtils.valueOf(TriggerEventType.class, eventTypeLetter);
-		}
-		this.collation = JDBCUtils.safeGetString(resultSet, "collation");
-	}
+    public GBase8sTableTrigger(@NotNull GenericTableBase container, String name, @NotNull JDBCResultSet resultSet) {
+        super(container, name, null);
+        String eventTypeLetter = JDBCUtils.safeGetString(resultSet, "event");
+        if (CommonUtils.isNotEmpty(eventTypeLetter)) {
+            this.eventType = CommonUtils.valueOf(TriggerEventType.class, eventTypeLetter);
+        }
+        this.collation = JDBCUtils.safeGetString(resultSet, "collation");
+    }
 
-	@Property(viewable = true, order = 5)
-	public String getEventType() {
-		return eventType.getEventType();
-	}
+    @Property(viewable = true, order = 5)
+    public String getEventType() {
+        return eventType.getEventType();
+    }
 
-	@Property(viewable = true, order = 6)
-	public String getCollation() {
-		return collation;
-	}
+    @Property(viewable = true, order = 6)
+    public String getCollation() {
+        return collation;
+    }
 
-	@Nullable
-	@Override
-	public String getDescription() {
-		return super.getDescription();
-	}
+    @Nullable
+    @Override
+    public String getDescription() {
+        return super.getDescription();
+    }
 }

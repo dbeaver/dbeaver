@@ -31,10 +31,10 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public class GBase8sDataSourceProvider extends GenericDataSourceProvider {
 
-	@NotNull
-	@Override
-	public DBPDataSource openDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container)
-			throws DBException {
-		return new GBase8sDataSource(monitor, container, new GBase8sMetaModel());
-	}
+    @NotNull
+    @Override
+    public DBPDataSource openDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container)
+            throws DBException {
+        return new GBase8sDataSource(monitor, container, new GBase8sMetaModel());
+    }
 }

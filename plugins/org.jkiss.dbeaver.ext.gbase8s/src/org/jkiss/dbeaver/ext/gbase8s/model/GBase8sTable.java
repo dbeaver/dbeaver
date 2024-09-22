@@ -27,14 +27,14 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
  */
 public class GBase8sTable extends GenericTable {
 
-	public GBase8sTable(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType,
-			@Nullable JDBCResultSet dbResult) {
-		super(container, tableName, tableType, dbResult);
-	}
+    public GBase8sTable(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType,
+            @Nullable JDBCResultSet dbResult) {
+        super(container, tableName, tableType, dbResult);
+    }
 
-	public GBase8sTable(GenericStructContainer container, String tableName, String tableCatalogName,
-			String tableSchemaName) {
-		super(container, tableName, tableCatalogName, tableSchemaName);
-	}
+    public GBase8sTable(GenericStructContainer container, String tableName, String tableCatalogName,
+            String tableSchemaName) {
+        super(container, tableName, tableCatalogName, tableSchemaName);
+    }
 
 }

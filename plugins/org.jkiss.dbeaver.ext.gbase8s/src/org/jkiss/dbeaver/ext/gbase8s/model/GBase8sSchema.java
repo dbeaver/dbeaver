@@ -26,13 +26,13 @@ import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
  */
 public class GBase8sSchema extends GenericSchema {
 
-	public GBase8sSchema(GenericDataSource dataSource, GenericCatalog catalog, String schemaName) {
-		super(dataSource, catalog, schemaName);
-	}
+    public GBase8sSchema(GenericDataSource dataSource, GenericCatalog catalog, String schemaName) {
+        super(dataSource, catalog, schemaName);
+    }
 
-	@Override
-	public boolean isSystem() {
-		return getName().equals("sys") || getName().equals("sysadmin") || getName().equalsIgnoreCase("sysmaster")
-				|| getName().equals("sysuser") || getName().equals("sysutils");
-	}
+    @Override
+    public boolean isSystem() {
+        return getName().equals("sys") || getName().equals("sysadmin") || getName().equalsIgnoreCase("sysmaster")
+                || getName().equals("sysuser") || getName().equals("sysutils");
+    }
 }

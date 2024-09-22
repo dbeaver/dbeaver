@@ -39,35 +39,36 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 /**
  * @author Chao Tian
  */
-public class GBase8sTableColumnManager extends GenericTableColumnManager implements DBEObjectRenamer<GenericTableColumn> {
+public class GBase8sTableColumnManager extends GenericTableColumnManager
+        implements DBEObjectRenamer<GenericTableColumn> {
 
-	@Override
-	protected void addObjectRenameActions(@NotNull DBRProgressMonitor monitor,
-			@NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
-			@NotNull SQLObjectEditor<GenericTableColumn, GenericTableBase>.ObjectRenameCommand command,
-			@NotNull Map<String, Object> options) {
-		final GenericTableColumn column = command.getObject();
-		actions.add(new SQLDatabasePersistAction("Rename column",
-				"ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " RENAME "
-						+ "COLUMN " + DBUtils.getQuotedIdentifier(column.getDataSource(), command.getOldName()) + " TO "
-						+ DBUtils.getQuotedIdentifier(column.getDataSource(), command.getNewName())));
-	}
+    @Override
+    protected void addObjectRenameActions(@NotNull DBRProgressMonitor monitor,
+            @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
+            @NotNull SQLObjectEditor<GenericTableColumn, GenericTableBase>.ObjectRenameCommand command,
+            @NotNull Map<String, Object> options) {
+        final GenericTableColumn column = command.getObject();
+        actions.add(new SQLDatabasePersistAction("Rename column",
+                "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " RENAME "
+                        + "COLUMN " + DBUtils.getQuotedIdentifier(column.getDataSource(), command.getOldName()) + " TO "
+                        + DBUtils.getQuotedIdentifier(column.getDataSource(), command.getNewName())));
+    }
 
-	@Override
-	public void renameObject(DBECommandContext commandContext, GenericTableColumn object, Map<String, Object> options,
-			String newName) throws DBException {
-		processObjectRename(commandContext, object, options, newName);
-	}
+    @Override
+    public void renameObject(DBECommandContext commandContext, GenericTableColumn object, Map<String, Object> options,
+            String newName) throws DBException {
+        processObjectRename(commandContext, object, options, newName);
+    }
 
-	@Override
-	protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor,
-			@NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList,
-			@NotNull SQLObjectEditor<GenericTableColumn, GenericTableBase>.ObjectChangeCommand command,
-			@NotNull Map<String, Object> options) throws DBException {
-		final GBase8sTableColumn column = (GBase8sTableColumn) command.getObject();
-		actionList.add(new SQLDatabasePersistAction("Modify column",
-				"ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " MODIFY "
-						+ getNestedDeclaration(monitor, column.getTable(), command, options)));
+    @Override
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor,
+            @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList,
+            @NotNull SQLObjectEditor<GenericTableColumn, GenericTableBase>.ObjectChangeCommand command,
+            @NotNull Map<String, Object> options) throws DBException {
+        final GBase8sTableColumn column = (GBase8sTableColumn) command.getObject();
+        actionList.add(new SQLDatabasePersistAction("Modify column",
+                "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " MODIFY "
+                        + getNestedDeclaration(monitor, column.getTable(), command, options)));
 
-	}
+    }
 }

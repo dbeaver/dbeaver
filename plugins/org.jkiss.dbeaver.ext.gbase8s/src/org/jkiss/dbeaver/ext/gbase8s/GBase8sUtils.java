@@ -41,91 +41,91 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public class GBase8sUtils {
 
-	static final Log log = Log.getLog(GBase8sUtils.class);
+    static final Log log = Log.getLog(GBase8sUtils.class);
 
-	public static List<String> getSource(DBRProgressMonitor monitor, String sqlStatement, String dbObjectName,
-			GenericDataSource datasource) throws DBException {
-		try (JDBCSession session = DBUtils.openMetaSession(monitor, datasource, "Load source code")) {
-			try (JDBCPreparedStatement dbStat = session.prepareStatement(sqlStatement)) {
-				List<String> result = new ArrayList<>();
-				try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-					boolean firstPart = true;
-					while (dbResult.nextRow()) {
-						String procBodyPart = dbResult.getString(1);
-						if (procBodyPart.startsWith("create") && !firstPart) {
-							procBodyPart = "\n" + procBodyPart;
-						}
-						firstPart = false;
-						result.add(procBodyPart);
-					}
-				}
-				return result;
-			}
-		} catch (Exception e) {
-			throw new DBException("Can't read source code of '" + dbObjectName + "'", e);
-		}
-	}
+    public static List<String> getSource(DBRProgressMonitor monitor, String sqlStatement, String dbObjectName,
+            GenericDataSource datasource) throws DBException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, datasource, "Load source code")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(sqlStatement)) {
+                List<String> result = new ArrayList<>();
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    boolean firstPart = true;
+                    while (dbResult.nextRow()) {
+                        String procBodyPart = dbResult.getString(1);
+                        if (procBodyPart.startsWith("create") && !firstPart) {
+                            procBodyPart = "\n" + procBodyPart;
+                        }
+                        firstPart = false;
+                        result.add(procBodyPart);
+                    }
+                }
+                return result;
+            }
+        } catch (Exception e) {
+            throw new DBException("Can't read source code of '" + dbObjectName + "'", e);
+        }
+    }
 
-	public static boolean isOracleSqlMode(DBPDataSourceContainer container) {
-		final DBPDriver driver = container.getDriver();
-		Map<String, Object> cprops = driver.getConnectionProperties();
-		for (Map.Entry<String, Object> entry : cprops.entrySet()) {
-			if (Objects.equals(entry.getKey().toLowerCase(), "sqlmode")) {
-				if (Objects.equals(entry.getValue().toString().trim().toLowerCase(), "oracle")) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
+    public static boolean isOracleSqlMode(DBPDataSourceContainer container) {
+        final DBPDriver driver = container.getDriver();
+        Map<String, Object> cprops = driver.getConnectionProperties();
+        for (Map.Entry<String, Object> entry : cprops.entrySet()) {
+            if (Objects.equals(entry.getKey().toLowerCase(), "sqlmode")) {
+                if (Objects.equals(entry.getValue().toString().trim().toLowerCase(), "oracle")) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
-	public static String listToString(List<String> value, String delimiter) {
-		StringBuilder sbResult = new StringBuilder();
-		for (String o : value) {
-			// NOT APPLY .TRIM IN 'O' VARIABLE, PROBLEM TO RENDERIZE PROCEDURE BECAUSE LINE
-			// DELIMITED CRLF and LF generate 'Syntax error'
-			sbResult.append(o);
-			if (delimiter != null && !delimiter.isEmpty())
-				sbResult.append(delimiter);
-		}
-		return sbResult.toString();
-	}
+    public static String listToString(List<String> value, String delimiter) {
+        StringBuilder sbResult = new StringBuilder();
+        for (String o : value) {
+            // NOT APPLY .TRIM IN 'O' VARIABLE, PROBLEM TO RENDERIZE PROCEDURE BECAUSE LINE
+            // DELIMITED CRLF and LF generate 'Syntax error'
+            sbResult.append(o);
+            if (delimiter != null && !delimiter.isEmpty())
+                sbResult.append(delimiter);
+        }
+        return sbResult.toString();
+    }
 
-	public static String getProcedureSource(DBRProgressMonitor monitor, GenericProcedure procedure) throws DBException {
-		String sqlProcedure = String.format(
-				"select b.data " + "from sysprocbody b " + "join sysprocedures p on b.procid=p.procid "
-						+ "where datakey='T' and p.procname = '%s'" + "order by b.procid, b.seqno",
-				procedure.getName());
-		return listToString(getSource(monitor, sqlProcedure, procedure.getName(), procedure.getDataSource()), null);
-	}
+    public static String getProcedureSource(DBRProgressMonitor monitor, GenericProcedure procedure) throws DBException {
+        String sqlProcedure = String.format(
+                "select b.data " + "from sysprocbody b " + "join sysprocedures p on b.procid=p.procid "
+                        + "where datakey='T' and p.procname = '%s'" + "order by b.procid, b.seqno",
+                procedure.getName());
+        return listToString(getSource(monitor, sqlProcedure, procedure.getName(), procedure.getDataSource()), null);
+    }
 
-	public static String getViewDDL(DBRProgressMonitor monitor, GenericTableBase view) throws DBException {
-		String sqlView = String.format("select v.viewtext " + "from sysviews v "
-				+ "join systables s on s.tabid = v.tabid " + "where s.tabname = '%s'", view.getName());
-		return listToString(getSource(monitor, sqlView, view.getName(), view.getDataSource()), null);
-	}
+    public static String getViewDDL(DBRProgressMonitor monitor, GenericTableBase view) throws DBException {
+        String sqlView = String.format("select v.viewtext " + "from sysviews v "
+                + "join systables s on s.tabid = v.tabid " + "where s.tabname = '%s'", view.getName());
+        return listToString(getSource(monitor, sqlView, view.getName(), view.getDataSource()), null);
+    }
 
-	// Triggers
-	public static String getTriggerDDL(DBRProgressMonitor monitor, GenericTableBase table) throws DBException {
-		String sqlTrigger = String.format("select tb.data " + "from systables ta "
-				+ "join systriggers tr on tr.tabid = ta.tabid " + "join systrigbody tb on tb.trigid = tr.trigid "
-				+ "where ta.tabname = '%s' and ta.tabtype='T' " + "and tb.datakey IN ('A', 'D') "
-				+ "order by tr.trigname, datakey desc, seqno ", table.getName());
-		return listToString(getSource(monitor, sqlTrigger, table.getName(), table.getDataSource()), "\n");
-		// systriggers.event:
-		// D = Delete trigger, I = Insert, U = Update trigger,S = Select,
-		// d = INSTEAD OF Delete, i = INSTEAD OF Insert,u = INSTEAD OF Update
-	}
+    // Triggers
+    public static String getTriggerDDL(DBRProgressMonitor monitor, GenericTableBase table) throws DBException {
+        String sqlTrigger = String.format("select tb.data " + "from systables ta "
+                + "join systriggers tr on tr.tabid = ta.tabid " + "join systrigbody tb on tb.trigid = tr.trigid "
+                + "where ta.tabname = '%s' and ta.tabtype='T' " + "and tb.datakey IN ('A', 'D') "
+                + "order by tr.trigname, datakey desc, seqno ", table.getName());
+        return listToString(getSource(monitor, sqlTrigger, table.getName(), table.getDataSource()), "\n");
+        // systriggers.event:
+        // D = Delete trigger, I = Insert, U = Update trigger,S = Select,
+        // d = INSTEAD OF Delete, i = INSTEAD OF Insert,u = INSTEAD OF Update
+    }
 
-	public static String getTriggerDDL(DBRProgressMonitor monitor, GenericTrigger trigger) throws DBException {
-		assert trigger.getTable() != null;
-		String sqlTrigger = String.format(
-				"select tb.data from systables ta " + "join systriggers tr on tr.tabid = ta.tabid "
-						+ "join systrigbody tb on tb.trigid = tr.trigid "
-						+ "where ta.tabname = '%s' and ta.tabtype='T' " + "and tb.datakey IN ('A', 'D') "
-						+ "and tr.trigname = '%s'" + "order by tr.trigname, datakey desc, seqno ",
-				trigger.getTable().getName(), trigger.getName());
-		return listToString(getSource(monitor, sqlTrigger, trigger.getName(), trigger.getDataSource()), "\n");
-	}
+    public static String getTriggerDDL(DBRProgressMonitor monitor, GenericTrigger trigger) throws DBException {
+        assert trigger.getTable() != null;
+        String sqlTrigger = String.format(
+                "select tb.data from systables ta " + "join systriggers tr on tr.tabid = ta.tabid "
+                        + "join systrigbody tb on tb.trigid = tr.trigid "
+                        + "where ta.tabname = '%s' and ta.tabtype='T' " + "and tb.datakey IN ('A', 'D') "
+                        + "and tr.trigname = '%s'" + "order by tr.trigname, datakey desc, seqno ",
+                trigger.getTable().getName(), trigger.getName());
+        return listToString(getSource(monitor, sqlTrigger, trigger.getName(), trigger.getDataSource()), "\n");
+    }
 
 }

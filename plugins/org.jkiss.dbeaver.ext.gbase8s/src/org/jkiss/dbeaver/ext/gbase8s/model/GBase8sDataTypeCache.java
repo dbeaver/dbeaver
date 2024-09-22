@@ -29,20 +29,18 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
  */
 public class GBase8sDataTypeCache extends GenericDataTypeCache {
 
-	public GBase8sDataTypeCache(GenericStructContainer owner) {
-		super(owner);
-	}
+    public GBase8sDataTypeCache(GenericStructContainer owner) {
+        super(owner);
+    }
 
-	@Override
-	protected GenericDataType makeDataType(JDBCResultSet dbResult, String name, int valueType) {
-		return new GBase8sDataType(owner,
-				valueType,
-				name,
-				JDBCUtils.safeGetString(dbResult, JDBCConstants.LOCAL_TYPE_NAME),
-				JDBCUtils.safeGetBoolean(dbResult, JDBCConstants.UNSIGNED_ATTRIBUTE),
-				JDBCUtils.safeGetInt(dbResult, JDBCConstants.SEARCHABLE) != 0,
-				JDBCUtils.safeGetInt(dbResult, JDBCConstants.PRECISION),
-				JDBCUtils.safeGetInt(dbResult, JDBCConstants.MINIMUM_SCALE),
-				JDBCUtils.safeGetInt(dbResult, JDBCConstants.MAXIMUM_SCALE));
-	}
+    @Override
+    protected GenericDataType makeDataType(JDBCResultSet dbResult, String name, int valueType) {
+        return new GBase8sDataType(owner, valueType, name,
+                JDBCUtils.safeGetString(dbResult, JDBCConstants.LOCAL_TYPE_NAME),
+                JDBCUtils.safeGetBoolean(dbResult, JDBCConstants.UNSIGNED_ATTRIBUTE),
+                JDBCUtils.safeGetInt(dbResult, JDBCConstants.SEARCHABLE) != 0,
+                JDBCUtils.safeGetInt(dbResult, JDBCConstants.PRECISION),
+                JDBCUtils.safeGetInt(dbResult, JDBCConstants.MINIMUM_SCALE),
+                JDBCUtils.safeGetInt(dbResult, JDBCConstants.MAXIMUM_SCALE));
+    }
 }

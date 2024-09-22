@@ -33,31 +33,31 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public class GBase8sSynonym extends GenericSynonym {
 
-	private String owner;
+    private String owner;
 
-	private String targetObjName;
+    private String targetObjName;
 
-	private String targetObjOwner;
+    private String targetObjOwner;
 
-	public GBase8sSynonym(@NotNull GenericStructContainer container, @NotNull String name, @Nullable String description,
-			@NotNull JDBCResultSet dbResult) {
-		super(container, name, description);
-		this.owner = JDBCUtils.safeGetString(dbResult, "TABLE_SCHEM");
-		this.targetObjName = JDBCUtils.safeGetString(dbResult, "OBJECT_NAME");
-		this.targetObjOwner = JDBCUtils.safeGetString(dbResult, "OBJECT_OWNER");
-	}
+    public GBase8sSynonym(@NotNull GenericStructContainer container, @NotNull String name, @Nullable String description,
+            @NotNull JDBCResultSet dbResult) {
+        super(container, name, description);
+        this.owner = JDBCUtils.safeGetString(dbResult, "TABLE_SCHEM");
+        this.targetObjName = JDBCUtils.safeGetString(dbResult, "OBJECT_NAME");
+        this.targetObjOwner = JDBCUtils.safeGetString(dbResult, "OBJECT_OWNER");
+    }
 
-	@NotNull
-	@Property(viewable = true, order = 2)
-	public String getOwner() {
-		return owner;
-	}
+    @NotNull
+    @Property(viewable = true, order = 2)
+    public String getOwner() {
+        return owner;
+    }
 
-	@Nullable
-	@Override
-	@Property(viewable = true, editable = false, order = 3)
-	public DBSObject getTargetObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-		return getDataSource().findTable(monitor, null, this.targetObjOwner, this.targetObjName);
-	}
+    @Nullable
+    @Override
+    @Property(viewable = true, editable = false, order = 3)
+    public DBSObject getTargetObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return getDataSource().findTable(monitor, null, this.targetObjOwner, this.targetObjName);
+    }
 
 }

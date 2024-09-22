@@ -39,36 +39,36 @@ import org.jkiss.utils.CommonUtils;
  */
 public class GBase8sDataSource extends GenericDataSource {
 
-	private static final Log log = Log.getLog(GBase8sDataType.class);
+    private static final Log log = Log.getLog(GBase8sDataType.class);
 
-	public GBase8sDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
-			throws DBException {
-		super(monitor, container, metaModel, new GenericSQLDialect());
-	}
+    public GBase8sDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
+            throws DBException {
+        super(monitor, container, metaModel, new GenericSQLDialect());
+    }
 
-	@Override
-	protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
-		// replace the connector of the database/table in queryGetActiveDB
-		replaceConnector4GetActiveDB(container);
-		return new GenericExecutionContext(instance, type);
-	}
+    @Override
+    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+        // replace the connector of the database/table in queryGetActiveDB
+        replaceConnector4GetActiveDB(container);
+        return new GenericExecutionContext(instance, type);
+    }
 
-	void replaceConnector4GetActiveDB(DBPDataSourceContainer container) {
-		final DBPDriver driver = container.getDriver();
-		String getActiveDBQuery = CommonUtils
-				.toString(driver.getDriverParameter(GenericConstants.PARAM_QUERY_GET_ACTIVE_DB));
-		if (GBase8sUtils.isOracleSqlMode(container)) {
-			getActiveDBQuery = getActiveDBQuery.replaceFirst("\\?", ".");
-		} else {
-			getActiveDBQuery = getActiveDBQuery.replaceFirst("\\?", ":");
-		}
-		Field field;
-		try {
-			field = this.getClass().getSuperclass().getDeclaredField("queryGetActiveDB");
-			field.setAccessible(true);
-			field.set(this, getActiveDBQuery);
-		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-			log.error("Failed to replace the connector of the database/table in queryGetActiveDB .");
-		}
-	}
+    void replaceConnector4GetActiveDB(DBPDataSourceContainer container) {
+        final DBPDriver driver = container.getDriver();
+        String getActiveDBQuery = CommonUtils
+                .toString(driver.getDriverParameter(GenericConstants.PARAM_QUERY_GET_ACTIVE_DB));
+        if (GBase8sUtils.isOracleSqlMode(container)) {
+            getActiveDBQuery = getActiveDBQuery.replaceFirst("\\?", ".");
+        } else {
+            getActiveDBQuery = getActiveDBQuery.replaceFirst("\\?", ":");
+        }
+        Field field;
+        try {
+            field = this.getClass().getSuperclass().getDeclaredField("queryGetActiveDB");
+            field.setAccessible(true);
+            field.set(this, getActiveDBQuery);
+        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+            log.error("Failed to replace the connector of the database/table in queryGetActiveDB .");
+        }
+    }
 }

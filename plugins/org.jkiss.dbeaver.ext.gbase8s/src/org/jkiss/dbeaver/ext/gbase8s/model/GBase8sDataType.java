@@ -28,25 +28,25 @@ import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
  */
 public class GBase8sDataType extends GenericDataType {
 
-	private static final Log log = Log.getLog(GBase8sDataType.class);
+    private static final Log log = Log.getLog(GBase8sDataType.class);
 
-	// [JDBC: GBase 8s - VARCHAR2]
-	public static final int VARCHAR2 = 63;
+    // [JDBC: GBase 8s - VARCHAR2]
+    public static final int VARCHAR2 = 63;
 
-	// [JDBC: GBase 8s - NVARCHAR2]
-	public static final int NVARCHAR2 = 64;
+    // [JDBC: GBase 8s - NVARCHAR2]
+    public static final int NVARCHAR2 = 64;
 
-	public GBase8sDataType(GenericStructContainer owner, int valueType, String name, String remarks, boolean unsigned,
-			boolean searchable, int precision, int minScale, int maxScale) {
-		super(owner, valueType, name, remarks, unsigned, searchable, precision, minScale, maxScale);
+    public GBase8sDataType(GenericStructContainer owner, int valueType, String name, String remarks, boolean unsigned,
+            boolean searchable, int precision, int minScale, int maxScale) {
+        super(owner, valueType, name, remarks, unsigned, searchable, precision, minScale, maxScale);
 
-		// Check for VARCHAR2/NVARCHAR2 type for strings
-		if (valueType == VARCHAR2 || valueType == NVARCHAR2) {
-			log.warn("Inconsistent string data type name/id: " + name + "(" + valueType + "). Setting to "
-					+ Types.VARCHAR);
-			setTypeID(Types.VARCHAR);
-		}
+        // Check for VARCHAR2/NVARCHAR2 type for strings
+        if (valueType == VARCHAR2 || valueType == NVARCHAR2) {
+            log.warn("Inconsistent string data type name/id: " + name + "(" + valueType + "). Setting to "
+                    + Types.VARCHAR);
+            setTypeID(Types.VARCHAR);
+        }
 
-	}
+    }
 
 }

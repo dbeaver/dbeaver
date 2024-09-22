@@ -40,44 +40,44 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public class GBase8sTableManager extends GenericTableManager implements DBEObjectRenamer<GenericTableBase> {
 
-	@Override
-	public boolean canEditObject(GenericTableBase object) {
-		return true;
-	}
+    @Override
+    public boolean canEditObject(GenericTableBase object) {
+        return true;
+    }
 
-	@Override
-	public boolean canRenameObject(GenericTableBase object) {
-		return false;
-	}
+    @Override
+    public boolean canRenameObject(GenericTableBase object) {
+        return false;
+    }
 
-	@Override
-	protected boolean isIncludeDropInDDL(GenericTableBase table) {
-		return false;
-	}
+    @Override
+    protected boolean isIncludeDropInDDL(GenericTableBase table) {
+        return false;
+    }
 
-	@Override
-	public void renameObject(DBECommandContext commandContext, GenericTableBase object, Map<String, Object> options,
-			String newName) throws DBException {
-		if (object.isView()) {
-			throw new DBException("View rename is not supported");
-		}
-		processObjectRename(commandContext, object, options, newName);
-	}
+    @Override
+    public void renameObject(DBECommandContext commandContext, GenericTableBase object, Map<String, Object> options,
+            String newName) throws DBException {
+        if (object.isView()) {
+            throw new DBException("View rename is not supported");
+        }
+        processObjectRename(commandContext, object, options, newName);
+    }
 
-	@Override
-	protected void addObjectRenameActions(@NotNull DBRProgressMonitor monitor,
-			@NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
-			@NotNull SQLObjectEditor<GenericTableBase, GenericStructContainer>.ObjectRenameCommand command,
-			@NotNull Map<String, Object> options) {
-		final GenericDataSource dataSource = command.getObject().getDataSource();
-		actions.add(
-				new SQLDatabasePersistAction("Rename table",
-						"ALTER TABLE "
-								+ (command.getObject().getSchema() != null
-										? DBUtils.getQuotedIdentifier(dataSource,
-												command.getObject().getSchema().getName()) + "."
-										: "")
-								+ DBUtils.getQuotedIdentifier(dataSource, command.getOldName()) + " RENAME TO "
-								+ DBUtils.getQuotedIdentifier(dataSource, command.getNewName())));
-	}
+    @Override
+    protected void addObjectRenameActions(@NotNull DBRProgressMonitor monitor,
+            @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
+            @NotNull SQLObjectEditor<GenericTableBase, GenericStructContainer>.ObjectRenameCommand command,
+            @NotNull Map<String, Object> options) {
+        final GenericDataSource dataSource = command.getObject().getDataSource();
+        actions.add(
+                new SQLDatabasePersistAction("Rename table",
+                        "ALTER TABLE "
+                                + (command.getObject().getSchema() != null
+                                        ? DBUtils.getQuotedIdentifier(dataSource,
+                                                command.getObject().getSchema().getName()) + "."
+                                        : "")
+                                + DBUtils.getQuotedIdentifier(dataSource, command.getOldName()) + " RENAME TO "
+                                + DBUtils.getQuotedIdentifier(dataSource, command.getNewName())));
+    }
 }
