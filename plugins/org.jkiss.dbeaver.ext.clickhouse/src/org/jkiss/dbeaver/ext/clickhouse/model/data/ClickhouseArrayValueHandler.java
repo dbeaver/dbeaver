@@ -25,6 +25,11 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
     public static final ClickhouseArrayValueHandler INSTANCE = new ClickhouseArrayValueHandler();
 
     @Override
+    protected boolean convertSingleValueToArray() {
+        return false;
+    }
+
+    @Override
     protected boolean useGetArray(@NotNull DBCSession session, @NotNull DBSTypedObject type) {
         return true;
     }

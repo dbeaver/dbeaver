@@ -14,41 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.data;
+
+package org.jkiss.dbeaver.model.fs;
+
+import org.jkiss.code.Nullable;
+
+import java.nio.file.Path;
 
 /**
- * Not a value.
+ * Resource adapter
  */
-public class DBDVoid implements DBDValue, DBDValueSurrogate {
+public interface DBFResourceAdapter {
 
-    public static final DBDVoid INSTANCE = new DBDVoid();
-
-    private DBDVoid() {
-    }
-
-    @Override
-    public Object getRawValue() {
-        return null;
-    }
-
-    @Override
-    public boolean isNull() {
-        return false;
-    }
-
-    @Override
-    public boolean isModified() {
-        return false;
-    }
-
-    @Override
-    public void release() {
-
-    }
-
-    @Override
-    public String toString() {
-        return "";
-    }
+    /**
+     * Adapts a resource to an interface.
+     * In fact, it is an ugly workaround to disconnect DBNPath with VFS resources
+     */
+    @Nullable
+    <T> T adaptResource(DBFVirtualFileSystemRoot rootFolder, Path path, Class<T> adapter);
 
 }

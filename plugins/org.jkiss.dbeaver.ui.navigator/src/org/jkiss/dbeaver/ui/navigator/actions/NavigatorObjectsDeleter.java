@@ -176,12 +176,15 @@ public class NavigatorObjectsDeleter {
                         if (obj instanceof DBNDatabaseNode) {
                             dbrMonitor.subTask("Delete database object '" + ((DBNDatabaseNode) obj).getNodeDisplayName() + "'");
                             UIUtils.asyncExec(() -> deleteDatabaseNode((DBNDatabaseNode)obj));
-                        } else if (obj instanceof DBNNodeWithResource) {
-                            dbrMonitor.subTask("Delete resource '" + ((DBNNodeWithResource) obj).getResource().getName() + "'");
-                            deleteResource(dbrMonitor, ((DBNNodeWithResource) obj).getResource());
                         } else if (obj instanceof DBNLocalFolder) {
                             dbrMonitor.subTask("Delete folder '" + ((DBNLocalFolder) obj).getNodeDisplayName() + "'");
                             deleteLocalFolder((DBNLocalFolder) obj);
+                        } else if (obj instanceof DBNNode node) {
+                            IResource resource = node.getAdapter(IResource.class);
+                            if (resource != null) {
+                                dbrMonitor.subTask("Delete resource '" + resource.getName() + "'");
+                                deleteResource(dbrMonitor, resource);
+                            }
                         } else {
                             log.warn("Don't know how to delete element '" + obj + "'"); //$NON-NLS-1$ //$NON-NLS-2$
                         }
