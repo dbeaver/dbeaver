@@ -66,7 +66,7 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
         i = 0;
         this.fullText = queryPlan;
         this.getSegments();
-        parsObject();
+        parseObject();
     }
 
     private CubridPlanNode(CubridPlanNode parent, String type, String param) {
@@ -75,7 +75,7 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
 
         switch (type) {
             case NORMAL:
-                parsObject();
+                parseObject();
                 break;
             case SINGLE:
                 String[] values = segments.get(i - 1).split(SEPARATOR);
@@ -202,21 +202,21 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
         nested.add(new CubridPlanNode(this, type, param));
     }
 
-    void parsNode() {
+    void parseNode() {
         addNested(NORMAL, null);
         while (i < segments.size()) {
             String key = segments.get(i).split(SEPARATOR)[0];
             if (parentNode.contains(key)) {
                 addNested(NORMAL, null);
             } else {
-                parsObject();
+                parseObject();
                 break;
             }
         }
 
     }
 
-    void parsObject() {
+    void parseObject() {
 
         while (i < segments.size()) {
             String[] values = segments.get(i).split(SEPARATOR);
@@ -247,7 +247,7 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
             if (parentNode.contains(key)) {
                 name = value;
                 if (!parentExcept.contains(value)) {
-                    parsNode();
+                    parseNode();
                     break;
                 }
             } else if ("sargs".equals(key)) {
