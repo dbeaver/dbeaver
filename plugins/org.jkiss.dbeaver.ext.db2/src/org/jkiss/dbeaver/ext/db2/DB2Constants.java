@@ -133,8 +133,15 @@ public class DB2Constants {
         "TRIGGER", "TYPE", "UNDO", "UNTIL", "VALIDPROC", "VARIABLE", "VARIANT", "VCAT", "VOLATILE", "VOLUMES", "WHILE", "WLM",
         "IMPLICITLY", "HIDDEN" };
 
-    public static final DBDPseudoAttribute PSEUDO_ATTR_RID_BIT         = new DBDPseudoAttribute(DBDPseudoAttributeType.ROWID,
-        "RID_BIT()", "RID_BIT($alias)", "RID_BIT", "Unique physical row identifier", false);
+    public static final DBDPseudoAttribute PSEUDO_ATTR_RID_BIT = new DBDPseudoAttribute(
+        DBDPseudoAttributeType.ROWID,
+        "RID_BIT()",
+        "RID_BIT($alias)",
+        "RID_BIT",
+        DB2Messages.pseudo_column_rid_bit_description,
+        false,
+        DBDPseudoAttribute.PropagationPolicy.TABLE_NORMAL
+    );
 
     static final String[] ROUTINES = {
         "ABS",

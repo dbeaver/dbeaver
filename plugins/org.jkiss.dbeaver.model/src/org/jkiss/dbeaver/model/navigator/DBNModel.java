@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
-import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -29,7 +28,6 @@ import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
-import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -56,7 +54,7 @@ import java.util.stream.Collectors;
  * It will work but some actions will not work well
  * (e.g. TreeViewer sometimes update only first TreeItem corresponding to model certain model object).
  */
-public class DBNModel implements IResourceChangeListener {
+public class DBNModel {
 
     private static final Log log = Log.getLog(DBNModel.class);
 
@@ -131,22 +129,11 @@ public class DBNModel implements IResourceChangeListener {
         this.root = new DBNRoot(this);
 
         if (isGlobal()) {
-            DBPPlatform platform = DBWorkbench.getPlatform();
-            if (platform instanceof DBPPlatformDesktop) {
-                ((DBPPlatformDesktop)platform).getWorkspace().getEclipseWorkspace().addResourceChangeListener(this);
-            }
             new EventProcessingJob().schedule();
         }
     }
 
-    public void dispose()
-    {
-        if (isGlobal()) {
-            DBPPlatform platform = DBWorkbench.getPlatform();
-            if (platform instanceof DBPPlatformDesktop) {
-                ((DBPPlatformDesktop)platform).getWorkspace().getEclipseWorkspace().removeResourceChangeListener(this);
-            }
-        }
+    public void dispose() {
 
         if (root != null) {
             this.root.dispose(false);
@@ -169,6 +156,10 @@ public class DBNModel implements IResourceChangeListener {
     public DBNRoot getRoot()
     {
         return root;
+    }
+
+    protected DBNProject createProjectNode(DBNRoot parent, DBPProject project) {
+        return new DBNProject(parent, project, null);
     }
 
     @Nullable
@@ -205,7 +196,7 @@ public class DBNModel implements IResourceChangeListener {
             }
             if (nodeList.size() > 1) {
                 for (DBNDatabaseNode node : nodeList) {
-                    if (node instanceof DBNDatabaseItem && !((DBNDatabaseItem)node).getMeta().isVirtual()) {
+                    if (node instanceof DBNDatabaseItem && !node.getMeta().isVirtual()) {
                         return node;
                     }
                 }
@@ -385,31 +376,6 @@ public class DBNModel implements IResourceChangeListener {
             return findNodeByPath(monitor, detectedNode, nodePath, currentLevel + 1);
         }
     }
-
-    public DBNResource getNodeByResource(IResource resource) {
-        final IProject project = resource.getProject();
-        if (project == null) {
-            return null;
-        }
-        final DBNProject projectNode = getRoot().getProjectNode(project);
-        if (projectNode == null) {
-            return null;
-        }
-        List<IResource> path = new ArrayList<>();
-        for (IResource parent = resource; parent != null && parent != project; parent = parent.getParent()) {
-            path.add(0, parent);
-        }
-        DBNResource curResNode = projectNode;
-        for (IResource res : path) {
-            curResNode = curResNode.getChild(res);
-            if (curResNode == null) {
-                return null;
-            }
-        }
-        return curResNode;
-    }
-
-
 
 
     private boolean cacheNodeChildren(DBRProgressMonitor monitor, DBNDatabaseNode node, DBSObject objectToCache, boolean addFiltered) throws DBException
@@ -591,48 +557,6 @@ public class DBNModel implements IResourceChangeListener {
         }
         synchronized (eventCache) {
             eventCache.add(event);
-        }
-    }
-
-    @Override
-    public void resourceChanged(IResourceChangeEvent event)
-    {
-        if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
-            IResourceDelta delta = event.getDelta();
-            for (IResourceDelta childDelta : delta.getAffectedChildren()) {
-                if (childDelta.getResource() instanceof IProject) {
-                    IProject project = (IProject) childDelta.getResource();
-                    DBNProject projectNode = getRoot().getProjectNode(project);
-                    if (projectNode == null) {
-                        if (childDelta.getKind() == IResourceDelta.ADDED) {
-                            // New projectNode
-                            DBPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(project);
-                            if (projectMeta == null) {
-                                log.error("Can't find project '" + project.getName() + "' metadata");
-                            } else {
-                                getRoot().addProject(projectMeta, true);
-                            }
-                        } else if (childDelta.getKind() != IResourceDelta.REMOVED) {
-                            // Project not found - report an error
-                            log.error("Project '" + childDelta.getResource().getName() + "' not found in navigator");
-                        }
-                    } else {
-                        if (childDelta.getKind() == IResourceDelta.REMOVED) {
-                            // Project deleted
-                            DBPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(project);
-                            if (projectMeta == null) {
-                                log.error("Can't find project '" + project.getName() + "' metadata");
-                            } else {
-                                getRoot().removeProject(projectMeta);
-                            }
-                        } else {
-                            // Some resource changed within the projectNode
-                            // Let it handle this event itself
-                            projectNode.handleResourceChange(childDelta);
-                        }
-                    }
-                }
-            }
         }
     }
 

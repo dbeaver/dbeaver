@@ -22,7 +22,7 @@ body:
     attributes:
       label: DBeaver Version
       description: What version of DBeaver are you running?
-      placeholder: ex. Community Edition 22.1.0
+      placeholder: ex. Community Edition 24.1.0
     validations:
       required: true
   - type: input
