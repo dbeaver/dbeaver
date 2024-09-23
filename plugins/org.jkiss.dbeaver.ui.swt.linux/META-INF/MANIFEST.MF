@@ -13,5 +13,5 @@ SWT-OS: linux
 Eclipse-PlatformFilter: (& (osgi.ws=gtk) (osgi.os=linux) )
 Export-Package: org.eclipse.swt.browser
 Require-Bundle: org.eclipse.swt,
- org.jkiss.utils
+ org.jkiss.dbeaver.model
 Automatic-Module-Name: org.jkiss.dbeaver.ui.swt.linux
