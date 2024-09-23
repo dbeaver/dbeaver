@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.hana.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -27,6 +28,8 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
+import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -42,23 +45,20 @@ import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
-
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLWarning;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
 public class HANADataSource extends GenericDataSource implements DBCQueryPlanner {
 
     private static final Log log = Log.getLog(HANADataSource.class);
-    private static final String PROP_APPLICATION_NAME = "SESSIONVARIABLE:APPLICATION";
-    private static final String PROP_READONLY = "READONLY";
-    private static final String PROP_SPATIAL_OUTPUT_REPRESENTATION = "SESSIONVARIABLE:SPATIAL_OUTPUT_REPRESENTATION";
-    private static final String VALUE_SPATIAL_OUTPUT_REPRESENTATION = "EWKB";
-    private static final String PROP_SPATIAL_WKB_EMPTY_POINT_REPRESENTATION = "SESSIONVARIABLE:SPATIAL_WKB_EMPTY_POINT_REPRESENTATION";
-    private static final String VALUE_SPATIAL_WKB_EMPTY_POINT_REPRESENTATION = "NAN_COORDINATES";
-    
 
     private HashMap<String, String> sysViewColumnUnits; 
+    private boolean isPasswordExpireWarningShown;
     
     public HANADataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
         throws DBException
@@ -86,8 +86,11 @@ public class HANADataSource extends GenericDataSource implements DBCQueryPlanner
      */
     @Override
     public <T> T getAdapter(Class<T> adapter) {
-        if (adapter == DBSStructureAssistant.class)
+        if (adapter == DBSStructureAssistant.class) {
             return adapter.cast(new HANAStructureAssistant(this));
+        } else if (adapter == DBAUserPasswordManager.class) {
+            return adapter.cast(new HANAUserPasswordManager(this));
+        }
         return super.getAdapter(adapter);
     }
     
@@ -128,18 +131,73 @@ public class HANADataSource extends GenericDataSource implements DBCQueryPlanner
         Map<String, String> props = new HashMap<>();
         if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
             String appName = DBUtils.getClientApplicationName(getContainer(), context, purpose);
-            props.put(PROP_APPLICATION_NAME, appName);
+            props.put(HANAConstants.CONN_PROP_APPLICATION_NAME, appName);
         }
         if (getContainer().isConnectionReadOnly()) {
-            props.put(PROP_READONLY, "TRUE");
+            props.put(HANAConstants.CONN_PROP_READONLY, "TRUE");
         }
         // Represent geometries as EWKB (instead of as WKB) so that we can extract the SRID
-        props.put(PROP_SPATIAL_OUTPUT_REPRESENTATION, VALUE_SPATIAL_OUTPUT_REPRESENTATION);
+        props.put(HANAConstants.CONN_PROP_SPATIAL_OUTPUT_REPRESENTATION, HANAConstants.CONN_VALUE_SPATIAL_OUTPUT_REPRESENTATION);
         // Represent empty points using NaN-coordinates
-        props.put(PROP_SPATIAL_WKB_EMPTY_POINT_REPRESENTATION, VALUE_SPATIAL_WKB_EMPTY_POINT_REPRESENTATION);
+        props.put(HANAConstants.CONN_PROP_SPATIAL_WKB_EMPTY_POINT_REPRESENTATION, HANAConstants.CONN_VALUE_SPATIAL_WKB_EMPTY_POINT_REPRESENTATION);
         return props;
     }
-    
+
+    @Override
+    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context,
+                                        @NotNull String purpose) throws DBCException {
+        Connection connection = super.openConnection(monitor, context, purpose);
+        try {
+            Statement statement = connection.createStatement();
+            statement.execute("SELECT * FROM SYS.DUMMY");
+        } catch (SQLException e) {
+            if (e.getErrorCode() == HANAConstants.ERR_SQL_ALTER_PASSWORD_NEEDED) {
+                if (changeExpiredPassword(monitor, context, purpose)) {
+                    return openConnection(monitor, context, purpose);
+                }
+            } else {
+                log.debug("password expired check failed ", e);
+            }
+        }
+
+        try {
+            for (SQLWarning warning = connection.getWarnings(); warning != null; warning = warning.getNextWarning()) {
+                if (warning.getErrorCode() == HANAConstants.WRN_SQL_NEARLY_EXPIRED_PASSWORD && !isPasswordExpireWarningShown) {
+                    isPasswordExpireWarningShown = true;
+                    DBWorkbench.getPlatformUI().showWarningMessageBox("Warning", warning.getMessage());
+                }
+            }
+        } catch (SQLException e) {
+            log.debug("password expire check failed", e);
+        }
+        return connection;
+    }    
+
+    private boolean changeExpiredPassword(DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose) {
+        DBPConnectionConfiguration connectionInfo = getContainer().getActualConnectionConfiguration();
+        DBAPasswordChangeInfo passwordInfo = DBWorkbench.getPlatformUI().promptUserPasswordChange(
+                "Password has expired. Set new password.", connectionInfo.getUserName(), connectionInfo.getUserPassword(), false, false);
+        if (passwordInfo == null) {
+            return false;
+        }
+        try {
+            if (passwordInfo.getNewPassword() == null) {
+                throw new DBException("You can't set empty password");
+            }
+            Connection connection = super.openConnection(monitor, context, purpose);
+            Statement statement = connection.createStatement();
+            statement.execute("ALTER USER " + connectionInfo.getUserName() + " PASSWORD " + DBUtils.getQuotedIdentifier(this, passwordInfo.getNewPassword()));
+            
+            connectionInfo.setUserPassword(passwordInfo.getNewPassword());
+            getContainer().getConnectionConfiguration().setUserPassword(passwordInfo.getNewPassword());
+            getContainer().persistConfiguration();
+        } catch (Exception e) {
+            DBWorkbench.getPlatformUI().showError("Error changing password", "Error changing expired password", e);
+            return false;
+        }
+        return true;
+    }
+
     /*
      * column unit for views in SYS schema
      */
