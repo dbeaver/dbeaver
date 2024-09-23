@@ -327,7 +327,6 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
         return null;
     }
 
-    @Nullable
     private void getNameValue(String value) {
 
         String[] values = value.split(SPACE);
@@ -343,7 +342,6 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
         }
     }
 
-    @Nullable
     private void getTotalValue(String value) {
 
         if (CommonUtils.isNotEmpty(value)) {
