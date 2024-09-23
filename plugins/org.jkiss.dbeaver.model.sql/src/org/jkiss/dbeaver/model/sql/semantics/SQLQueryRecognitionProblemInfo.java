@@ -28,6 +28,8 @@ import java.io.Serializable;
 
 public class SQLQueryRecognitionProblemInfo {
 
+    public static final int PER_QUERY_LIMIT = 50;
+
     public enum Severity {
         ERROR(IMarker.SEVERITY_ERROR),
         WARNING(IMarker.SEVERITY_WARNING);
