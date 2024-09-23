@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.db2.model.DB2Routine;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
@@ -59,6 +60,10 @@ public class DB2SQLDialect extends JDBCSQLDialect implements TPRuleProvider {
 
     public static final String[] EXEC_KEYWORDS = new String[]{"CALL"};
 
+    private static final GlobalVariableInfo[] GLOBAL_VARIABLES = {
+        new GlobalVariableInfo("CLIENT_IPADDR", DB2Messages.global_variable_client_ipaddr_description, DBPDataKind.STRING)
+    };
+
     private static final boolean LOAD_ROUTINES_FROM_SYSCAT = false;
     private static final String[][] BEGIN_END_BLOCK = new String[][]{
         {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END},
@@ -93,6 +98,12 @@ public class DB2SQLDialect extends JDBCSQLDialect implements TPRuleProvider {
     @Override
     public String[] getExecuteKeywords() {
         return EXEC_KEYWORDS;
+    }
+
+    @NotNull
+    @Override
+    public GlobalVariableInfo[] getGlobalVariables() {
+        return GLOBAL_VARIABLES;
     }
 
     @Override
