@@ -180,8 +180,8 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
             IResource contentLocation = node instanceof DBNProjectDesktop projectDesktop ?
                 projectDesktop.getProject().getRootResource() :
                 node.getAdapter(IResource.class);
-            if (contentLocation instanceof IContainer && contentLocation.exists()) {
-                IResource[] members = ((IContainer) contentLocation).members(false);
+            if (contentLocation instanceof IContainer container && contentLocation.exists()) {
+                IResource[] members = container.members(false);
                 members = addImplicitMembers(node, members);
                 for (IResource member : members) {
                     DBNNode newChild = NavigatorResources.makeNode(node, member);
@@ -207,9 +207,9 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
         if (resource instanceof IProject) {
             DBPProject project = node.getOwnerProject();
             DBPWorkspace workspace = project.getWorkspace();
-            if (workspace instanceof DBPWorkspaceDesktop) {
-                for (DBPResourceHandlerDescriptor rh : ((DBPWorkspaceDesktop)workspace).getAllResourceHandlers()) {
-                    IFolder rhDefaultRoot = ((DBPWorkspaceDesktop)workspace).getResourceDefaultRoot(project, rh, false);
+            if (workspace instanceof DBPWorkspaceDesktop workspaceDesktop) {
+                for (DBPResourceHandlerDescriptor rh : workspaceDesktop.getAllResourceHandlers()) {
+                    IFolder rhDefaultRoot = workspaceDesktop.getResourceDefaultRoot(project, rh, false);
                     if (rhDefaultRoot != null && !rhDefaultRoot.exists()) {
                         // Add as explicit member
                         members = ArrayUtils.add(IResource.class, members, rhDefaultRoot);
@@ -306,9 +306,9 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
         monitor.beginTask("Copy files", nodes.size());
         try {
             if (!resource.exists()) {
-                if (resource instanceof IFolder) {
+                if (resource instanceof IFolder folder) {
                     try {
-                        ((IFolder) resource).create(true, true, new NullProgressMonitor());
+                        folder.create(true, true, new NullProgressMonitor());
                     } catch (CoreException e) {
                         throw new DBException("Error creating folder " + resource.getName(), e);
                     }
@@ -443,9 +443,9 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
 
     @Override
     public InputStream openInputStream() throws DBException, IOException {
-        if (resource instanceof IFile) {
+        if (resource instanceof IFile file) {
             try {
-                return ((IFile) resource).getContents();
+                return file.getContents();
             } catch (CoreException e) {
                 throw new IOException(e);
             }
