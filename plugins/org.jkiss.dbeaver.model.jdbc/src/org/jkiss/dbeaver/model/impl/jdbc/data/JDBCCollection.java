@@ -20,7 +20,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataTypeProvider;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -141,7 +144,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
         //     return valueHandler.getValueDisplayString(type, contents[0], format);
         // } else {
         StringBuilder str = new StringBuilder(contents.length * 32);
-        str.append("[");
+        str.append("{");
         for (int i = 0; i < contents.length; i++) {
             Object item = contents[i];
             if (i > 0) str.append(','); //$NON-NLS-1$
@@ -149,7 +152,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
             SQLUtils.appendValue(str, type, itemString);
         }
         // }
-        str.append("]");
+        str.append("}");
         return str.toString();
     }
 
@@ -190,7 +193,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
         final DBSDataType dataType = getComponentType();
         try (DBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), dataType, "Create JDBC array")) {
             if (session instanceof Connection) {
-                String typeName = DBUtils.getObjectFullName(dataType, DBPEvaluationContext.DML);
+                String typeName = dataType.getFullTypeName();
                 return ((Connection) session).createArrayOf(typeName, attrs);
             } else {
                 return new JDBCArrayImpl(dataType.getTypeName(), dataType.getTypeID(), attrs);
