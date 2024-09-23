@@ -40,6 +40,10 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
     private static Map<String, String> terms = new HashMap<>();
     private static int i;
     private static List<String> segments;
+    private Pattern totalPattern = Pattern.compile("\\d+\\/\\d+");
+    private Pattern termPattern = Pattern.compile("node\\[\\d\\]");
+    private Pattern subNodePattern = Pattern.compile("term\\[\\d\\]");
+    private Pattern segmentPattern = Pattern.compile("(inner|outer|class|cost|follow|head|subplan|index|filtr|sort|sargs|edge|Query plan|term\\[..|node\\[..):\\s*([^\\n\\r]*)");
     List<String> parentNode = List.of("subplan", "head", "outer", "inner", "Query plan");
     List<String> parentExcept = List.of("iscan", "sscan");
     List<String> singleNode = List.of("sargs", "filtr", "edge");
@@ -282,9 +286,8 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
 
     private boolean subNode(CubridPlanNode node, String key, String value) {
         if (value.contains(" AND ")) {
-            String regex = "term\\[\\d\\]";
-            Pattern p = Pattern.compile(regex);
-            Matcher m = p.matcher(value);
+            
+            Matcher m = subNodePattern.matcher(value);
             int count = 1;
             while (m.find()) {
                 node.addNested(MULTIPLE, String.format("%s %s:%s", key, count, m.group()));
@@ -300,9 +303,7 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
     private String getTermValue(String value) {
         if (CommonUtils.isNotEmpty(value)) {
             if (value.contains("node[")) {
-                String regex = "node\\[\\d\\]";
-                Pattern p = Pattern.compile(regex);
-                Matcher m = p.matcher(value);
+                Matcher m = termPattern.matcher(value);
                 while (m.find()) {
                     return value.replace(m.group(), classNode.get(m.group()));
                 }
@@ -346,8 +347,8 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
     private void getTotalValue(String value) {
 
         if (CommonUtils.isNotEmpty(value)) {
-            Pattern p = Pattern.compile("\\d+\\/\\d+");
-            Matcher m = p.matcher(value);
+            
+            Matcher m = totalPattern.matcher(value);
             if (m.find()) {
                 totalValue = m.group(0);
             }
@@ -356,10 +357,8 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
 
     @NotNull
     private List<String> getSegments() {
-        Pattern pattern =
-                Pattern.compile(
-                        "(inner|outer|class|cost|follow|head|subplan|index|filtr|sort|sargs|edge|Query plan|term\\[..|node\\[..):\\s*([^\\n\\r]*)");
-        Matcher matcher = pattern.matcher(fullText);
+        
+        Matcher matcher = segmentPattern.matcher(fullText);
         segments = new ArrayList<String>();
         while (matcher.find()) {
             String segment = matcher.group().trim();
