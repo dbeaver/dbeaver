@@ -29,6 +29,7 @@ import java.nio.file.Paths;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.*;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -224,6 +225,7 @@ public class DBeaverLauncher {
     private static final String PROP_EXITDATA = "eclipse.exitdata"; //$NON-NLS-1$
     private static final String PROP_LAUNCHER = "eclipse.launcher"; //$NON-NLS-1$
     private static final String PROP_LAUNCHER_NAME = "eclipse.launcher.name"; //$NON-NLS-1$
+    private static final String PROP_LOG_INCLUDE_COMMAND_LINE = "eclipse.log.include.commandline"; //$NON-NLS-1$
 
     private static final String PROP_VM = "eclipse.vm"; //$NON-NLS-1$
     private static final String PROP_VMARGS = "eclipse.vmargs"; //$NON-NLS-1$
@@ -2699,6 +2701,11 @@ public class DBeaverLauncher {
     }
 
     private void setupVMProperties() {
+        if (vmargs != null && Stream.of(vmargs).noneMatch(arg -> arg.startsWith("-D" + PROP_LOG_INCLUDE_COMMAND_LINE))) {
+            // Disable logging of command line by default if it's not explicitly set
+            vmargs = Arrays.copyOf(vmargs, vmargs.length + 1);
+            vmargs[vmargs.length - 1] = "-D" + PROP_LOG_INCLUDE_COMMAND_LINE + "=false";
+        }
         if (vm != null)
             System.setProperty(PROP_VM, vm);
         setMultiValueProperty(PROP_VMARGS, vmargs);

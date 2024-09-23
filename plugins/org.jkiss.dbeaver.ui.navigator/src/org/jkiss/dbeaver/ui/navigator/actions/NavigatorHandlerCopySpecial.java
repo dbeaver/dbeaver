@@ -17,11 +17,12 @@
 
 package org.jkiss.dbeaver.ui.navigator.actions;
 
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
-import org.jkiss.dbeaver.model.navigator.DBNNodeWithResource;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.CopyMode;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -39,9 +40,13 @@ public class NavigatorHandlerCopySpecial extends NavigatorHandlerCopyAbstract {
         DBPQualifiedObject adapted = RuntimeUtils.getObjectAdapter(object, DBPQualifiedObject.class);
         if (adapted != null) {
             return adapted.getFullyQualifiedName(DBPEvaluationContext.UI);
-        } else if (object instanceof DBNNodeWithResource nwr) {
-            return nwr.getResource().getFullPath().toString();
-        } else if (object instanceof DBPNamedObject no) {
+        } else if (object instanceof DBNNode nwr) {
+            IResource resource = nwr.getAdapter(IResource.class);
+            if (resource != null) {
+                return resource.getFullPath().toString();
+            }
+        }
+        if (object instanceof DBPNamedObject no) {
             return no.getName();
         } else {
             return object == null ? null : object.toString();
