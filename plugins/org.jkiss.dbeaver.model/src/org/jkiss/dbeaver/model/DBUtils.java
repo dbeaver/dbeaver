@@ -72,8 +72,8 @@ public final class DBUtils {
 
     @NotNull
     public static String getQuotedIdentifier(@NotNull DBPNamedObject object) {
-        if (object instanceof DBSContextBoundAttribute) {
-            return ((DBSContextBoundAttribute) object).formatMemberReference(false, null, DBPAttributeReferencePurpose.UNSPECIFIED);
+        if (object instanceof DBSContextBoundAttribute cba) {
+            return cba.formatMemberReference(false, null, DBPAttributeReferencePurpose.UNSPECIFIED);
         } else {
             return object instanceof DBSObject dbo
                 ? getQuotedIdentifier(dbo.getDataSource(), object.getName())
@@ -569,9 +569,9 @@ public final class DBUtils {
                 }
                 if (child instanceof DBSObjectContainer oc) {
                     sc = oc;
-                } else if (child instanceof DBSEntity && i == names.length - 2) {
+                } else if (child instanceof DBSEntity entity && i == names.length - 2) {
                     sc = null;
-                    finalEntity = (DBSEntity) child;
+                    finalEntity = entity;
                     break;
                 } else {
                     log.debug("Child object '" + name + "' is not a container or entity");
@@ -607,8 +607,8 @@ public final class DBUtils {
                         return index;
                     }
                 }
-                if (finalEntity instanceof DBSPartitionContainer) {
-                    Collection<? extends DBSTablePartition> partitions = ((DBSPartitionContainer) finalEntity).getPartitions(monitor);
+                if (finalEntity instanceof DBSPartitionContainer partitionContainer) {
+                    Collection<? extends DBSTablePartition> partitions = partitionContainer.getPartitions(monitor);
                     if (!CommonUtils.isEmpty(partitions)) {
                         DBSTablePartition partition = DBUtils.findObject(partitions, objectName);
                         if (partition != null) {
