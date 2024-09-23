@@ -49,11 +49,11 @@ public class NavigatorResources {
         } else if (o2 instanceof DBNProjectDatabases) {
             return 1;
         } else if (o1 instanceof DBNResource && o2 instanceof DBNResource) {
-            IResource res1 = ((DBNResource) o1).getResource();
-            IResource res2 = ((DBNResource) o2).getResource();
-            if (res1 instanceof IFolder && !(res2 instanceof IFolder)) {
+            boolean folder1 = DBNUtils.isFolderNode(o1);
+            boolean folder2 = DBNUtils.isFolderNode(o2);
+            if (folder1 && !folder2) {
                 return -1;
-            } else if (res2 instanceof IFolder && !(res1 instanceof IFolder)) {
+            } else if (folder2 && !folder1) {
                 return 1;
             }
         }

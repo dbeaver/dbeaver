@@ -185,6 +185,10 @@ public class DBNUtils {
             !dbNode.getDataSourceContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA);
     }
 
+    public static boolean isFolderNode(DBNNode node) {
+        return node.allowsChildren();
+    }
+
     private static class NodeNameComparator implements Comparator<DBNNode> {
         static NodeNameComparator INSTANCE = new NodeNameComparator();
         @Override
