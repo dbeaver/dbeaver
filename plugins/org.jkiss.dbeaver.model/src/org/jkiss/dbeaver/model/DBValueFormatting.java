@@ -79,46 +79,36 @@ public final class DBValueFormatting {
     @NotNull
     public static DBPImage getDefaultTypeImage(DBSTypedObject typedObject) {
         String typeName = typedObject.getTypeName();
-        switch (typedObject.getDataKind()) {
-            case BOOLEAN:
-                return DBIcon.TYPE_BOOLEAN;
-            case STRING:
-                return DBIcon.TYPE_STRING;
-            case NUMERIC:
-                return DBIcon.TYPE_NUMBER;
-            case DATETIME:
-                return DBIcon.TYPE_DATETIME;
-            case BINARY:
-                return DBIcon.TYPE_BINARY;
-            case CONTENT:
+        return switch (typedObject.getDataKind()) {
+            case BOOLEAN -> DBIcon.TYPE_BOOLEAN;
+            case STRING -> DBIcon.TYPE_STRING;
+            case NUMERIC -> DBIcon.TYPE_NUMBER;
+            case DATETIME -> DBIcon.TYPE_DATETIME;
+            case BINARY -> DBIcon.TYPE_BINARY;
+            case CONTENT -> {
                 if (typeNameContains(typeName, DBConstants.TYPE_NAME_XML, DBConstants.TYPE_NAME_XML2)) {
-                    return DBIcon.TYPE_XML;
+                    yield DBIcon.TYPE_XML;
                 } else if (typeNameContains(typeName, DBConstants.TYPE_NAME_CHAR, DBConstants.TYPE_NAME_CHAR2)) {
-                    return DBIcon.TYPE_TEXT;
+                    yield DBIcon.TYPE_TEXT;
                 }
-                return DBIcon.TYPE_LOB;
-            case ARRAY:
-                return DBIcon.TYPE_ARRAY;
-            case STRUCT:
-                return DBIcon.TYPE_STRUCT;
-            case DOCUMENT:
-                return DBIcon.TYPE_DOCUMENT;
-            case REFERENCE:
-                return DBIcon.TYPE_REFERENCE;
-            case ROWID:
-                return DBIcon.TYPE_ROWID;
-            case OBJECT:
+                yield DBIcon.TYPE_LOB;
+            }
+            case ARRAY -> DBIcon.TYPE_ARRAY;
+            case STRUCT -> DBIcon.TYPE_STRUCT;
+            case DOCUMENT -> DBIcon.TYPE_DOCUMENT;
+            case REFERENCE -> DBIcon.TYPE_REFERENCE;
+            case ROWID -> DBIcon.TYPE_ROWID;
+            case OBJECT -> {
                 if (typeNameContains(typeName, DBConstants.TYPE_NAME_UUID, DBConstants.TYPE_NAME_UUID2)) {
-                    return DBIcon.TYPE_UUID;
+                    yield DBIcon.TYPE_UUID;
                 } else if (typeNameContains(typeName, DBConstants.TYPE_NAME_JSON, DBConstants.TYPE_NAME_JSON2)) {
-                    return DBIcon.TYPE_JSON;
+                    yield DBIcon.TYPE_JSON;
                 }
-                return DBIcon.TYPE_OBJECT;
-            case ANY:
-                return DBIcon.TYPE_ANY;
-            default:
-                return DBIcon.TYPE_UNKNOWN;
-        }
+                yield DBIcon.TYPE_OBJECT;
+            }
+            case ANY -> DBIcon.TYPE_ANY;
+            default -> DBIcon.TYPE_UNKNOWN;
+        };
     }
 
     private static boolean typeNameContains(String typeName, String patternLC, String patternUC) {
@@ -164,7 +154,7 @@ public final class DBValueFormatting {
                     } else {
                         image = DBIcon.TREE_SCHEMA;
                     }
-                } else if (object instanceof DBSCatalog c) {
+                } else if (object instanceof DBSCatalog) {
                     image = DBIcon.TREE_DATABASE;
                 } else {
                     image = DBIcon.TYPE_OBJECT;
@@ -211,7 +201,7 @@ public final class DBValueFormatting {
     @Nullable
     public static Object convertStringToNumber(String text, Class<?> hintType, @NotNull DBDDataFormatter formatter, boolean validateValue) throws DBCException
     {
-        if (text == null || text.length() == 0) {
+        if (text == null || text.isEmpty()) {
             return null;
         }
         try {
@@ -300,16 +290,12 @@ public final class DBValueFormatting {
                 return formatter.parseValue(date.toString(), hintType);
             } catch (ParseException e1) {
                 if (validateValue) {
-                    throw new DBCException("Can't parse numeric value [" + date.toString() + "] using formatter", e);
+                    throw new DBCException("Can't parse numeric value [" + date + "] using formatter", e);
                 }
-                log.debug("Can't parse numeric value [" + date.toString() + "] using formatter: " + e.getMessage());
+                log.debug("Can't parse numeric value [" + date + "] using formatter: " + e.getMessage());
                 return date;
             }
         }
-    }
-
-    public static String getBooleanString(boolean propertyValue) {
-        return propertyValue ? DBConstants.BOOLEAN_PROP_YES : DBConstants.BOOLEAN_PROP_NO;
     }
 
     public static String formatBinaryString(@NotNull DBPDataSource dataSource, @NotNull byte[] data, @NotNull DBDDisplayFormat format) {
@@ -367,8 +353,7 @@ public final class DBValueFormatting {
                 str.append("]");
                 return str.toString();
             }
-        } else if (value instanceof DBDComposite) {
-            DBDComposite composite = (DBDComposite) value;
+        } else if (value instanceof DBDComposite composite) {
             DBSAttributeBase[] attributes = composite.getAttributes();
             StringBuilder str = new StringBuilder("{");
             try {
