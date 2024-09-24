@@ -207,14 +207,20 @@ public class SQLQueryModelRecognizer {
             e -> {
                 DBSEntity table = null;
                 if (e.isNotClassified() || !tryFallbackForStringLiteral.test(e.entityName)) {
-                    DBSObject object = this.queryDataContext.findRealObject(recognitionContext.getMonitor(), RelationalObjectType.TYPE_UNKNOWN, e.toListOfStrings());
-                    if (object != null) {
-                        if (object instanceof DBSTable realTable) {
-                            table = realTable;
-                        } else if (object instanceof DBSView realView) {
-                            table = realView;
+                    if (e.invalidPartsCount == 0) {
+                        DBSObject object = this.queryDataContext.findRealObject(
+                            recognitionContext.getMonitor(), RelationalObjectType.TYPE_UNKNOWN, e.toListOfStrings()
+                        );
+                        if (object != null) {
+                            if (object instanceof DBSTable realTable) {
+                                table = realTable;
+                            } else if (object instanceof DBSView realView) {
+                                table = realView;
+                            }
+                            e.setDefinition(object);
                         }
-                        e.setDefinition(object);
+                    } else {
+                        SQLQueryQualifiedName.performPartialResolution(this.queryDataContext, this.recognitionContext, e);
                     }
                 }
                 return table;
@@ -483,7 +489,7 @@ public class SQLQueryModelRecognizer {
             } else {
                 SQLQuerySymbolEntry nameEntry = collectIdentifier(node, forceUnquotted);
                 return nameEntry == null ? null : this.registerScopeItem(
-                    new SQLQueryQualifiedName(node, Collections.emptyList(), nameEntry, true)
+                    new SQLQueryQualifiedName(node, Collections.emptyList(), nameEntry, 0)
                 );
             }
         }
@@ -504,22 +510,22 @@ public class SQLQueryModelRecognizer {
 
     @Nullable
     private SQLQueryQualifiedName collectQualifiedName(@NotNull STMTreeNode node, boolean forceUnquotted) { // qualifiedName
-        Pair<List<SQLQuerySymbolEntry>, Boolean> nameInfo = collectQualifiedNameParts(node, forceUnquotted);
+        Pair<List<SQLQuerySymbolEntry>, Integer> nameInfo = collectQualifiedNameParts(node, forceUnquotted);
         if (nameInfo == null) {
             return null;
         } else {
             List<SQLQuerySymbolEntry> nameParts = nameInfo.getFirst();
-            boolean isValid = nameInfo.getSecond();
+            int invalidPartsCount = nameInfo.getSecond();
 
             List<SQLQuerySymbolEntry> scopeName = nameParts.subList(0, nameParts.size() - 1);
             SQLQuerySymbolEntry entityName = nameParts.get(nameParts.size() - 1);
 
-            return entityName == null ? null : this.registerScopeItem(new SQLQueryQualifiedName(node, scopeName, entityName, isValid));
+            return entityName == null ? null : this.registerScopeItem(new SQLQueryQualifiedName(node, scopeName, entityName, invalidPartsCount));
         }
     }
 
     @Nullable
-    private Pair<List<SQLQuerySymbolEntry>, Boolean> collectQualifiedNameParts(@NotNull STMTreeNode node, boolean forceUnquotted) {
+    private Pair<List<SQLQuerySymbolEntry>, Integer> collectQualifiedNameParts(@NotNull STMTreeNode node, boolean forceUnquotted) {
         STMTreeNode qualifiedNameNode = qualifiedNameDirectWrapperNames.contains(node.getNodeName())
                 ? node.findFirstChildOfName(STMKnownRuleNames.qualifiedName)
                 : node;
@@ -531,14 +537,14 @@ public class SQLQueryModelRecognizer {
         }
 
         List<SQLQuerySymbolEntry> nameParts;
-        boolean isValid;
+        int invalidPartsCount;
 
         if (qualifiedNameNode.getChildCount() == 1 && !qualifiedNameNode.hasErrorChildren()) {
             SQLQuerySymbolEntry entityName = this.collectIdentifier(qualifiedNameNode.getChildNode(0), forceUnquotted);
-            isValid = entityName != null;
+            invalidPartsCount = entityName == null ? 1 : 0;
             nameParts = Collections.singletonList(entityName);
         } else {
-            isValid = true;
+            invalidPartsCount = 0;
             nameParts = new ArrayList<>(qualifiedNameNode.getChildCount());
             {
                 boolean expectingName = true;
@@ -553,20 +559,24 @@ public class SQLQueryModelRecognizer {
                             expectingName = false;
                         }
                         nameParts.add(namePart);
-                        isValid &= namePart != null;
+                        invalidPartsCount += namePart == null ? 1 : 0;
                     } else {
                         if (partNode.getNodeName().equals(STMKnownRuleNames.PERIOD_TERM)) {
                             expectingName = true;
                         } else {
                             nameParts.add(null);
-                            isValid = false;
+                            invalidPartsCount++;
                         }
                     }
+                }
+                if (expectingName) { // qualified name ends with PERIOD_TERM, so it is incomplete
+                    nameParts.add(null);
+                    invalidPartsCount++;
                 }
             }
         }
 
-        return Pair.of(nameParts, isValid);
+        return Pair.of(nameParts, invalidPartsCount);
     }
 
     private static final Set<String> knownValueExpressionRootNames = Set.of(
@@ -821,26 +831,27 @@ public class SQLQueryModelRecognizer {
         } else if (nameNode == null) {
             return null;
         } else {
-            Pair<List<SQLQuerySymbolEntry>, Boolean> nameInfo = this.collectQualifiedNameParts(nameNode, false);
+            Pair<List<SQLQuerySymbolEntry>, Integer> nameInfo = this.collectQualifiedNameParts(nameNode, false);
             if (nameInfo == null) {
                 return null;
             } else {
                 List<SQLQuerySymbolEntry> nameParts = nameInfo.getFirst();
+                int invalidPartsCount = nameInfo.getSecond();
                 SQLQuerySymbolEntry columnName = nameParts.get(nameParts.size() - 1);
                 if (nameParts.size() == 1) {
-                    if (columnName == null) {
-                        return null;
-                    } else {
+                    if (columnName != null && invalidPartsCount == 0) {
                         return new SQLQueryValueColumnReferenceExpression(head, rowRefAllowed, null, columnName);
+                    } else {
+                        return null;
                     }
                 } else {
-                    boolean isValid = nameInfo.getSecond();
                     List<SQLQuerySymbolEntry> tableScopeName = nameParts.subList(0, nameParts.size() - 2);
                     SQLQuerySymbolEntry tableEntityName = nameParts.get(nameParts.size() - 2);
 
+                    int tableInvalidParts = columnName == null ? invalidPartsCount - 1 : invalidPartsCount;
                     SQLQueryQualifiedName tableName = tableEntityName == null
                         ? this.makeUnknownTableName(head)
-                        : this.registerScopeItem(new SQLQueryQualifiedName(nameNode, tableScopeName, tableEntityName, isValid));
+                        : this.registerScopeItem(new SQLQueryQualifiedName(nameNode, tableScopeName, tableEntityName, tableInvalidParts));
 
                     return new SQLQueryValueColumnReferenceExpression(head, rowRefAllowed, tableName, columnName);
                 }
@@ -851,7 +862,7 @@ public class SQLQueryModelRecognizer {
     @NotNull
     private SQLQueryQualifiedName makeUnknownTableName(@NotNull STMTreeNode node) {
         return new SQLQueryQualifiedName(
-            node, Collections.emptyList(), new SQLQuerySymbolEntry(node, SQLConstants.QUESTION, SQLConstants.QUESTION), false
+            node, Collections.emptyList(), new SQLQuerySymbolEntry(node, SQLConstants.QUESTION, SQLConstants.QUESTION), 0
         );
     }
 

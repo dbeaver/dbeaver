@@ -515,7 +515,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         
         public DummyTableRowsSource(@NotNull STMTreeNode syntaxNode) {
             super(syntaxNode, new SQLQueryQualifiedName(
-                syntaxNode, Collections.emptyList(), new SQLQuerySymbolEntry(syntaxNode, "DummyTable", "DummyTable"), true
+                syntaxNode, Collections.emptyList(), new SQLQuerySymbolEntry(syntaxNode, "DummyTable", "DummyTable"), 0
             ));
         }
 

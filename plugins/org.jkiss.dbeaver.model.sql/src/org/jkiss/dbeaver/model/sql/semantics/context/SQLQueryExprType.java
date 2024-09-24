@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -298,7 +299,7 @@ public abstract class SQLQueryExprType {
     private static class SQLQueryExprComplexType<T extends DBSEntity & DBSTypedObject> extends SQLQueryExprType {
         private final T complexType;
         private final Map<String, DBSAttributeBase> attrs;
-        
+
         public SQLQueryExprComplexType(
             @Nullable SQLQuerySymbolDefinition declaratorDefinition,
             @NotNull T complexType,
@@ -318,6 +319,20 @@ public abstract class SQLQueryExprType {
         @Override
         public SQLQueryExprType findNamedMemberType(@NotNull DBRProgressMonitor monitor, @NotNull String memberName) throws DBException {
             DBSAttributeBase attr = attrs.get(memberName);
+            SQLDialect dialect = this.complexType.getDataSource().getSQLDialect();
+            if (attr == null) {
+                String unquoted = dialect.getUnquotedIdentifier(memberName);
+                attr = this.complexType.getAttribute(monitor, unquoted);
+                if (attr == null) {
+                    // "some" database plugins "intentionally" doesn't implement data type's attribute lookup, so try to mimic its logic
+                    boolean isQuoted = DBUtils.isQuotedIdentifier(this.complexType.getDataSource(), memberName);
+                    if ((!isQuoted && dialect.storesUnquotedCase() == DBPIdentifierCase.MIXED) || dialect.useCaseInsensitiveNameLookup()) {
+                        attr = attrs.entrySet().stream()
+                            .filter(e -> e.getKey().equalsIgnoreCase(unquoted))
+                            .findFirst().map(Map.Entry::getValue).orElse(null);
+                    }
+                }
+            }
             return attr == null ? null : forTypedObject(monitor, attr, SQLQuerySymbolClass.COMPOSITE_FIELD);
         }
         

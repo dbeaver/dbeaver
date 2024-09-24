@@ -81,7 +81,7 @@ characterSetSpecification: qualifiedName;
 characterSetName: qualifiedName;
 schemaName: qualifiedName;
 
-qualifiedName: identifier (Period identifier)*;
+qualifiedName: identifier (Period identifier)* Period??;
 identifier: (Introducer characterSetSpecification)? actualIdentifier;
 actualIdentifier: (Identifier|DelimitedIdentifier|nonReserved|Quotted);
 

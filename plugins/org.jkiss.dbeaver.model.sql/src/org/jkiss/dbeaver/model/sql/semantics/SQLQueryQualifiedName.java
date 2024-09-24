@@ -16,23 +16,22 @@
  */
 package org.jkiss.dbeaver.model.sql.semantics;
 
-import com.google.gson.internal.Streams;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SourceResolutionResult;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -44,13 +43,18 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem {
     @NotNull
     public final SQLQuerySymbolEntry entityName;
 
-    public final boolean isValid;
+    public final int invalidPartsCount;
 
-    public SQLQueryQualifiedName(@NotNull STMTreeNode syntaxNode, @NotNull List<SQLQuerySymbolEntry> scopeName, @NotNull SQLQuerySymbolEntry entityName, boolean isValid) {
+    public SQLQueryQualifiedName(
+        @NotNull STMTreeNode syntaxNode,
+        @NotNull List<SQLQuerySymbolEntry> scopeName,
+        @NotNull SQLQuerySymbolEntry entityName,
+        int invalidPartsCount
+    ) {
         super(syntaxNode);
         this.scopeName = scopeName;
         this.entityName = entityName;
-        this.isValid = isValid;
+        this.invalidPartsCount = invalidPartsCount;
     }
 
     @NotNull
@@ -167,5 +171,25 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem {
 
     public boolean isNotClassified() {
         return this.entityName.isNotClassified() && this.scopeName.stream().allMatch(SQLQuerySymbolEntry::isNotClassified);
+    }
+
+    public static void performPartialResolution(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics, SQLQueryQualifiedName name) {
+        List<String> nameParts = new ArrayList<>(name.scopeName.size());
+        boolean closed = false;
+        for (SQLQuerySymbolEntry entry : name.scopeName) {
+            if (entry != null) {
+                nameParts.add(entry.getName());
+            } else {
+                closed = true;
+                break;
+            }
+        }
+        if (!closed && name.entityName != null) {
+            nameParts.add(name.entityName.getName());
+        }
+        DBSObject object = context.findRealObject(statistics.getMonitor(), RelationalObjectType.TYPE_UNKNOWN, nameParts);
+        if (object != null) {
+            name.setDefinition(object);
+        }
     }
 }
