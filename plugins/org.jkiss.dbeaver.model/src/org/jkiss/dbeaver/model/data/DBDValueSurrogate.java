@@ -14,41 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.model.data;
 
 /**
- * Not a value.
+ * Surrogate value
  */
-public class DBDVoid implements DBDValue, DBDValueSurrogate {
+public interface DBDValueSurrogate extends DBDValue {
 
-    public static final DBDVoid INSTANCE = new DBDVoid();
-
-    private DBDVoid() {
-    }
-
-    @Override
-    public Object getRawValue() {
-        return null;
-    }
-
-    @Override
-    public boolean isNull() {
-        return false;
-    }
-
-    @Override
-    public boolean isModified() {
-        return false;
-    }
-
-    @Override
-    public void release() {
-
-    }
-
-    @Override
-    public String toString() {
-        return "";
-    }
 
 }
