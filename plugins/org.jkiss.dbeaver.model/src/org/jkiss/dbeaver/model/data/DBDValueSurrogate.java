@@ -15,27 +15,12 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.navigator;
-
-import org.eclipse.core.resources.IResource;
-import org.jkiss.dbeaver.model.DBPImage;
+package org.jkiss.dbeaver.model.data;
 
 /**
- * DBNNodeWithImage
+ * Surrogate value
  */
-public interface DBNNodeWithResource {
+public interface DBDValueSurrogate extends DBDValue {
 
-    IResource getResource();
-
-    DBPImage getResourceImage();
-
-    void setResourceImage(DBPImage resourceImage);
-
-    /**
-     * True if resource is remote, false is local
-     *
-     * @return - boolean value
-     */
-    boolean isRemoteResource();
 
 }

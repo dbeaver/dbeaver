@@ -17,24 +17,23 @@
 package org.jkiss.dbeaver.ui.resources;
 
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
-import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNNodeWithResource;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.navigator.NavigatorResources;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.ProgramInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.NodeEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.FolderEditor;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
@@ -58,12 +57,6 @@ public abstract class AbstractResourceHandler implements DBPResourceHandler {
     @Override
     public DBNResource makeNavigatorNode(@NotNull DBNNode parentNode, @NotNull IResource resource) throws CoreException, DBException {
         return new DBNResource(parentNode, resource, this);
-    }
-
-    @Override
-    public void updateNavigatorNodeFromResource(@NotNull DBNNodeWithResource node, @NotNull IResource resource) {
-        // Reset icon
-        node.setResourceImage(null);
     }
 
     @Override
@@ -104,13 +97,16 @@ public abstract class AbstractResourceHandler implements DBPResourceHandler {
         return resource.getName();
     }
 
-    protected IFolder getDefaultRoot(DBPProject project) {
-        return DBPPlatformDesktop.getInstance().getWorkspace().getResourceDefaultRoot(project, getClass(), false);
-    }
-
-    protected IFolder getDefaultRoot(IProject project) {
-        return getDefaultRoot(
-            DBPPlatformDesktop.getInstance().getWorkspace().getProject(project));
+    @Override
+    public DBPImage getResourceIcon(@NotNull IResource resource) {
+        String fileExtension = resource.getFileExtension();
+        if (!CommonUtils.isEmpty(fileExtension)) {
+            ProgramInfo program = ProgramInfo.getProgram(fileExtension);
+            if (program != null && program.getImage() != null) {
+                return program.getImage();
+            }
+        }
+        return null;
     }
 
 }

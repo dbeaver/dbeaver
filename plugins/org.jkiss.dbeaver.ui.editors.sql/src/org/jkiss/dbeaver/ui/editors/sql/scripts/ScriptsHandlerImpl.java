@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql.scripts;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -30,10 +31,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPResourceCreator;
 import org.jkiss.dbeaver.model.fs.DBFFileStoreProvider;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNNodeWithResource;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -81,24 +81,16 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler implements DBPRe
         return SQLEditorUtils.getResourceDescription(resource);
     }
 
-    @NotNull
     @Override
-    public DBNResource makeNavigatorNode(@NotNull DBNNode parentNode, @NotNull IResource resource) throws CoreException, DBException
-    {
-        DBNResource node = super.makeNavigatorNode(parentNode, resource);
-        updateNavigatorNodeFromResource(node, resource);
-        return node;
-    }
-
-    @Override
-    public void updateNavigatorNodeFromResource(@NotNull DBNNodeWithResource node, @NotNull IResource resource) {
-        super.updateNavigatorNodeFromResource(node, resource);
+    public DBPImage getResourceIcon(@NotNull IResource resource) {
         if (resource instanceof IFolder) {
-            if (node instanceof DBNResource && ((DBNResource)node).isRootResource(resource)) {
-                node.setResourceImage(DBIcon.TREE_SCRIPT_FOLDER);
+            if (resource.getParent() instanceof IProject) {
+                return DBIcon.TREE_SCRIPT_FOLDER;
+            } else {
+                return DBIcon.TREE_FOLDER;
             }
         } else {
-            node.setResourceImage(DBIcon.TREE_SCRIPT);
+            return DBIcon.TREE_SCRIPT;
         }
     }
 

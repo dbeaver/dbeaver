@@ -80,17 +80,17 @@ public class MapAttributeTransformer implements DBDAttributeTransformer {
                 }
             }
 
-            if (value instanceof DBDComposite) {
+            if (value instanceof DBDComposite composite) {
                 // Fill value attributes for all rows
-                DBSAttributeBase[] attributes = ((DBDComposite) value).getAttributes();
+                DBSAttributeBase[] attributes = composite.getAttributes();
                 for (DBSAttributeBase attr : attributes) {
                     Pair<DBSAttributeBase, Object[]> attrValue = findAttributeValue(attr, valueAttributes);
                     if (attrValue != null) {
                         // Update attr value
-                        attrValue.getSecond()[i] = ((DBDComposite) value).getAttributeValue(attr);
+                        attrValue.getSecond()[i] = composite.getAttributeValue(attr);
                     } else {
                         Object[] valueList = new Object[rows.size()];
-                        valueList[i] = ((DBDComposite) value).getAttributeValue(attr);
+                        valueList[i] = composite.getAttributeValue(attr);
                         if (valueAttributes == null) {
                             valueAttributes = new ArrayList<>();
                         }
