@@ -17,8 +17,12 @@
 
 package org.jkiss.dbeaver.registry;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.content.IContentDescription;
+import org.eclipse.core.runtime.content.IContentType;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -26,6 +30,7 @@ import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.app.DBPResourceHandlerDescriptor;
 import org.jkiss.dbeaver.model.app.DBPResourceTypeDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.utils.ArrayUtils;
 
 /**
  * ResourceHandlerDescriptor
@@ -91,7 +96,7 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor implements DBP
         }
         DBPResourceTypeDescriptor resourceType = getResourceType();
 
-        if (resourceType != null && resourceType.isApplicableTo(resource, testContent)) {
+        if (resourceType != null && isApplicableTo(resourceType, resource, testContent)) {
             return true;
         }
         return false;
@@ -101,5 +106,44 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor implements DBP
     public String toString() {
         return typeId;
     }
+
+    public boolean isApplicableTo(DBPResourceTypeDescriptor resourceType, @NotNull IResource resource, boolean testContent) {
+        if (!resourceType.getContentTypes().isEmpty() && resource instanceof IFile) {
+            if (testContent) {
+                try {
+                    IContentDescription contentDescription = ((IFile) resource).getContentDescription();
+                    if (contentDescription != null) {
+                        IContentType fileContentType = contentDescription.getContentType();
+                        if (fileContentType != null && resourceType.getContentTypes().contains(fileContentType)) {
+                            return true;
+                        }
+                    }
+                } catch (CoreException e) {
+                    log.debug("Can't obtain content description for '" + resource.getName() + "'", e);
+                }
+            }
+            // Check for file extension
+            String fileExtension = resource.getFileExtension();
+            for (IContentType contentType : resourceType.getContentTypes()) {
+                String[] ctExtensions = contentType.getFileSpecs(IContentType.FILE_EXTENSION_SPEC);
+                if (!ArrayUtils.isEmpty(ctExtensions)) {
+                    for (String ext : ctExtensions) {
+                        if (ext.equalsIgnoreCase(fileExtension)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        if (!resourceType.getResourceTypes().isEmpty()) {
+            for (ObjectType objectType : resourceType.getResourceTypes()) {
+                if (objectType.appliesTo(resource, null)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 
 }

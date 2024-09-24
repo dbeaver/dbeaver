@@ -22,7 +22,6 @@ import org.eclipse.osgi.storage.BundleInfo;
 import org.eclipse.osgi.storage.bundlefile.BundleFile;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.dpi.model.DPIConstants;
-import org.jkiss.dbeaver.model.app.DBPApplicationDesktop;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
@@ -241,7 +240,7 @@ class BundleProcessConfig {
         cmd.add(workspaceDir.toString());
 
         cmd.add(DPIConstants.ARG_ENABLE_ENV);
-        cmd.add(String.valueOf(DBWorkbench.getPlatform().getApplication() instanceof DBPApplicationDesktop));
+        cmd.add(String.valueOf(!DBWorkbench.getPlatform().getApplication().isHeadlessMode()));
 
         ProcessBuilder pb = new ProcessBuilder();
         pb.directory(dataPath.toFile());

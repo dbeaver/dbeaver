@@ -13,7 +13,6 @@ Export-Package: org.jkiss.dbeaver.model.net.ssh,
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.core.runtime,
- org.eclipse.core.resources,
  org.eclipse.jsch.core,
  org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.registry,
