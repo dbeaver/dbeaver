@@ -19,13 +19,21 @@ package org.jkiss.dbeaver.model.navigator;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class NavigatorResources {
+
+    private static final Log log = Log.getLog(NavigatorResources.class);
 
     //////////////////////////////////
     // RCP resources
@@ -72,11 +80,47 @@ public class NavigatorResources {
             return;
         }
         final DBNProject projectNode = getProjectNode(navigatorModel.getRoot(), resource.getProject());
-        if (projectNode != null) {
-            final DBNResource fileNode = projectNode.findResource(resource);
-            if (fileNode != null) {
-                fileNode.refreshResourceState(source);
-            }
+        final DBNResource fileNode = NavigatorResources.findResource(projectNode, resource);
+        if (fileNode != null) {
+            fileNode.refreshResourceState(source);
         }
     }
+
+    public static DBNResource findResource(@Nullable DBNResource node, @NotNull IResource resource) {
+        try {
+            return findResource(new VoidProgressMonitor(), node, resource);
+        } catch (Exception e) {
+            log.debug(e);
+            return null;
+        }
+    }
+
+    public static DBNResource findResource(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBNResource node,
+        @NotNull IResource resource
+    ) throws DBException {
+        if (node == null || !(node.getOwnerProject() instanceof RCPProject rcpProject)) {
+            return null;
+        }
+        List<IResource> path = new ArrayList<>();
+        for (IResource parent = resource;
+             !(parent instanceof IProject) && !CommonUtils.equalObjects(parent, rcpProject.getRootResource());
+             parent = parent.getParent())
+        {
+            path.add(0, parent);
+        }
+
+        DBNResource resNode = node;
+        for (IResource res : path) {
+            resNode.getChildren(monitor);
+            resNode = resNode.getChild(res);
+            if (resNode == null) {
+                return null;
+            }
+        }
+        return resNode;
+    }
+
+
 }

@@ -400,7 +400,7 @@ public class SQLEditorUtils {
         @Nullable
         @Override
         public Object getPropertyValue(@NotNull String propertyName) {
-            DBPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(projectFile.getProject());
+            RCPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(projectFile.getProject());
             if (project == null) {
                 log.debug("Project '" + projectFile.getProject() + "' not recognized (property read)");
                 return null;
@@ -410,7 +410,7 @@ public class SQLEditorUtils {
         
         @Override
         public void setPropertyValue(@NotNull String propertyName, @NotNull Object value) {
-            DBPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(projectFile.getProject());
+            RCPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(projectFile.getProject());
             if (project == null) {
                 log.debug("Project '" + projectFile.getProject() + "' not recognized (property write)");
                 return;
