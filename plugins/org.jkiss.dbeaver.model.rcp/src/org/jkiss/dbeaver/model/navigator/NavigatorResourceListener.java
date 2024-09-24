@@ -16,13 +16,15 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResourceChangeEvent;
-import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.*;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPResourceHandler;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
+import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 public class NavigatorResourceListener implements IResourceChangeListener {
 
@@ -67,7 +69,7 @@ public class NavigatorResourceListener implements IResourceChangeListener {
                         } else {
                             // Some resource changed within the projectNode
                             // Let it handle this event itself
-                            projectNode.handleResourceChange(childDelta);
+                            handleResourceChange(projectNode, childDelta);
                         }
                     }
                 }
@@ -75,5 +77,109 @@ public class NavigatorResourceListener implements IResourceChangeListener {
         }
     }
 
+    public void refreshResourceState(DBNNode node, Object source) {
+        if (node instanceof DBNResource resourceNode) {
+            DBPResourceHandler newHandler = DBPPlatformDesktop.getInstance().getWorkspace().getResourceHandler(resourceNode.getResource());
+            if (newHandler != resourceNode.getHandler()) {
+                resourceNode.setHandler(newHandler);
+            }
+            model.fireNodeEvent(new DBNEvent(source, DBNEvent.Action.UPDATE, node));
+        }
+    }
+
+    public void handleResourceChange(DBNNode node, IResourceDelta delta) {
+        if (delta.getKind() == IResourceDelta.CHANGED) {
+            // Update this node in navigator
+            refreshResourceState(node, delta);
+        }
+        if (node instanceof DBNLazyNode lazyNode && lazyNode.needsInitialization()) {
+            // Child nodes are not yet read so nothing to change here - just return
+            return;
+        }
+        //delta.getAffectedChildren(IResourceDelta.ALL_WITH_PHANTOMS, IContainer.INCLUDE_HIDDEN)
+        for (IResourceDelta childDelta : delta.getAffectedChildren(IResourceDelta.ALL_WITH_PHANTOMS, IContainer.INCLUDE_HIDDEN)) {
+            handleChildResourceChange(node, childDelta);
+        }
+    }
+
+    public void handleChildResourceChange(DBNNode parentNode, IResourceDelta delta) {
+        if (parentNode instanceof DBNProject project) {
+            if (handleProjectChanges(project, delta)) {
+                return;
+            }
+        }
+        if (!(parentNode instanceof DBNNodeWithCache nodeWithCache) || nodeWithCache.needsInitialization()) {
+            return;
+        }
+        final IResource deltaResource = delta.getResource();
+        DBNNode childResource = NavigatorResources.getChild(parentNode, deltaResource);
+        if (childResource == null) {
+            if (delta.getKind() == IResourceDelta.ADDED || delta.getKind() == IResourceDelta.CHANGED) {
+                // New child or new "grand-child"
+                DBNNode newChild = NavigatorResources.getChild(parentNode, deltaResource);
+                if (newChild == null) {
+                    newChild = NavigatorResources.makeNode(parentNode, deltaResource);
+                    if (newChild != null) {
+                        DBNNode[] children = nodeWithCache.getCachedChildren();
+                        children = ArrayUtils.add(DBNNode.class, children, newChild);
+                        NavigatorResources.sortChildren(children);
+                        nodeWithCache.setCachedChildren(children);
+                        model.fireNodeEvent(new DBNEvent(delta, DBNEvent.Action.ADD, newChild));
+
+                        if (delta.getKind() == IResourceDelta.CHANGED) {
+                            // Notify just created resource
+                            // This may happen (e.g.) when first script created in just created script folder
+                            childResource = NavigatorResources.getChild(parentNode, deltaResource);
+                            if (childResource != null) {
+                                handleResourceChange(childResource, delta);
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            if (delta.getKind() == IResourceDelta.REMOVED) {
+                // Node deleted
+                DBNNode[] children = nodeWithCache.getCachedChildren();
+                children = ArrayUtils.remove(DBNNode.class, children, childResource);
+                nodeWithCache.setCachedChildren(children);
+                DBNUtils.disposeNode(childResource, true);
+            } else {
+                // Node changed - handle it recursive
+                handleResourceChange(childResource, delta);
+            }
+        }
+    }
+
+    private boolean handleProjectChanges(DBNProject projectNode, IResourceDelta delta) {
+        if (projectNode.getProject() instanceof RCPProject rcpProject &&
+            CommonUtils.equalObjects(delta.getResource(), rcpProject.getRootResource())) {
+            // Go inside root resource
+            for (IResourceDelta cChild : delta.getAffectedChildren()) {
+                handleChildResourceChange(projectNode, cChild);
+            }
+            return true;
+        }
+        final String name = delta.getResource().getName();
+        if (name.equals(DBPProject.METADATA_FOLDER)) {
+            // Metadata configuration changed
+            IResourceDelta[] configFiles = delta.getAffectedChildren();
+            boolean dsChanged = false;
+            if (configFiles != null) {
+                for (IResourceDelta rd : configFiles) {
+                    IResource childRes = rd.getResource();
+                    if (childRes instanceof IFile && childRes.getName().startsWith(DBPDataSourceRegistry.MODERN_CONFIG_FILE_PREFIX)) {
+                        dsChanged = true;
+                    }
+                }
+            }
+            if (dsChanged) {
+                projectNode.getDatabases().getDataSourceRegistry().refreshConfig();
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
 
 }

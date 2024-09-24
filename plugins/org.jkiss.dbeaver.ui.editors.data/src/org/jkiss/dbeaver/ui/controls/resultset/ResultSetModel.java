@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.trace.DBCTrace;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVColorOverride;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
@@ -172,7 +173,23 @@ public class ResultSetModel {
             row.setState(ResultSetRow.STATE_NORMAL);
         } else if (row.changes != null && row.changes.containsKey(attr)) {
             DBUtils.resetValue(getCellValue(cellLocation));
-            updateCellValue(cellLocation, row.changes.get(attr), false);
+            try {
+                Object origValue = row.changes.get(attr);
+                if (origValue instanceof DBDAttributeBinding refAttr) {
+                    // We reset entire row changes. Cleanup all references on the same top attribute + reset top attribute value
+                    for (var changedValues = row.changes.entrySet().iterator(); changedValues.hasNext(); ) {
+                        if (changedValues.next().getValue() == origValue) {
+                            changedValues.remove();
+                        }
+                    }
+                    attr = refAttr;
+                    origValue = row.changes.get(attr);
+                    cellLocation = new ResultSetCellLocation(attr, cellLocation.getRow(), null);
+                }
+                updateCellValue(cellLocation, origValue, false);
+            } catch (DBException e) {
+                log.error(e);
+            }
             row.resetChange(attr);
             if (row.getState() == ResultSetRow.STATE_NORMAL) {
                 changesCount--;
@@ -380,29 +397,28 @@ public class ResultSetModel {
 
     @Nullable
     public Object getCellValue(@NotNull ResultSetCellLocation cellLocation) {
-        return DBUtils.getAttributeValue(
-            cellLocation.getAttribute(),
-            attributes,
-            cellLocation.getRow().values,
-            cellLocation.getRowIndexes());
+        return getCellValue(cellLocation.getAttribute(), cellLocation.getRow(), cellLocation.getRowIndexes(), false);
     }
 
     @Nullable
     public Object getCellValue(@NotNull DBDAttributeBinding attribute, @NotNull ResultSetRow row) {
-        return DBUtils.getAttributeValue(
-            attribute,
-            attributes,
-            row.values,
-            null);
+        return getCellValue(attribute, row, null, false);
     }
 
     @Nullable
-    public Object getCellValue(@NotNull DBDAttributeBinding attribute, @NotNull ResultSetRow row, @Nullable int[] rowIndexes) {
+    public Object getCellValue(
+        @NotNull DBDAttributeBinding attribute,
+        @NotNull ResultSetRow row,
+        @Nullable int[] rowIndexes,
+        boolean retrieveDeepestCollectionElement
+    ) {
         return DBUtils.getAttributeValue(
             attribute,
             attributes,
             row.values,
-            rowIndexes);
+            rowIndexes,
+            retrieveDeepestCollectionElement
+        );
     }
 
     /**
@@ -414,15 +430,15 @@ public class ResultSetModel {
      */
     public boolean updateCellValue(
         @NotNull ResultSetCellLocation cellLocation,
-        @Nullable Object value)
-    {
+        @Nullable Object value) throws DBException {
         return updateCellValue(cellLocation, value, true);
     }
 
     public boolean updateCellValue(
         @NotNull ResultSetCellLocation cellLocation,
         @Nullable Object value,
-        boolean updateChanges) {
+        boolean updateChanges
+    ) throws DBException {
         return updateCellValue(
             cellLocation.getAttribute(),
             cellLocation.getRow(),
@@ -436,146 +452,78 @@ public class ResultSetModel {
         @NotNull ResultSetRow row,
         @Nullable int[] rowIndexes,
         @Nullable Object value,
-        boolean updateChanges)
-    {
+        boolean updateChanges
+    ) throws DBException {
+        // 1. Update root attribute
+        // 2. Save old value in history (if it is complex then save root element)
+        //
+        // For complex values we save original value in history only once.
+        // Then copy it into a new value and edit new value
         int depth = attr.getLevel();
         int rootIndex;
+        DBDAttributeBinding topAttribute;
         if (depth == 0) {
+            topAttribute = attr;
             rootIndex = attr.getOrdinalPosition();
         } else {
-            rootIndex = attr.getTopParent().getOrdinalPosition();
+            topAttribute = attr.getTopParent();
+            rootIndex = topAttribute.getOrdinalPosition();
         }
-        int rowIndex = 0;
-        Object rootValue = row.values[rootIndex];
-        Object ownerValue = depth > 0 ? rootValue : null;
-        {
-            // Obtain owner value and create all intermediate values
-            for (int i = 0; i < depth; i++) {
-                if (ownerValue == null) {
-                    // Create new owner object
-                    log.warn("Null owner value for '" + attr.getName() + "', row " + row.getVisualNumber());
-                    return false;
-                }
-                if (i == depth - 1) {
-                    break;
-                }
-                DBDAttributeBinding ownerAttr = attr.getParent(depth - i - 1);
-                assert ownerAttr != null;
-                try {
-                    int itemIndex = 0;
-                    if (rowIndexes != null && ownerValue instanceof Collection<?>) {
-                        itemIndex = rowIndexes[rowIndex++];
-                    }
-                    Object nestedValue = ownerAttr.extractNestedValue(
-                        ownerValue,
-                        itemIndex);
-                    if (nestedValue == null) {
-                        // Try to create nested value
-                        DBCExecutionContext context = DBUtils.getDefaultContext(ownerAttr, false);
-                        nestedValue = DBUtils.createNewAttributeValue(context, ownerAttr.getValueHandler(), ownerAttr.getAttribute(), DBDComplexValue.class);
-                        if (ownerValue instanceof DBDComposite) {
-                            ((DBDComposite) ownerValue).setAttributeValue(ownerAttr, nestedValue);
-                        }
-                        if (ownerAttr.getDataKind() == DBPDataKind.ARRAY) {
-                            // That's a tough case. Collection of elements. We need to create first element in this collection
-                            if (nestedValue instanceof DBDCollection) {
-                                Object elemValue = null;
-                                try {
-                                    DBSDataType componentType = ((DBDCollection) nestedValue).getComponentType();
-                                    DBDValueHandler elemValueHandler = DBUtils.findValueHandler(context.getDataSource(), componentType);
-                                    elemValue = DBUtils.createNewAttributeValue(context, elemValueHandler, componentType, DBDComplexValue.class);
-                                } catch (DBException e) {
-                                    log.warn("Error while getting component type name", e);
-                                }
-                                ((DBDCollection) nestedValue).setContents(new Object[] { elemValue } );
-                            } else {
-                                log.warn("Attribute '" + ownerAttr.getName() + "' has collection type but attribute value is not a collection: " + nestedValue);
-                            }
-                        }
-                        if (ownerValue instanceof DBDComposite) {
-                            ((DBDComposite) ownerValue).setAttributeValue(ownerAttr, nestedValue);
-                        }
-                    }
-                    ownerValue = nestedValue;
-                } catch (DBCException e) {
-                    log.warn("Error getting field [" + ownerAttr.getName() + "] value", e);
-                    return false;
-                }
-            }
+        if (row.getState() != ResultSetRow.STATE_NORMAL) {
+            updateChanges = false;
         }
-        // Get old value
-        Object oldValue = rootValue;
-        int targetValueIndex = rowIndex - 1;
-        if (ownerValue != null) {
-            try {
-                oldValue = attr.extractNestedValue(
-                    ownerValue,
-                    rowIndexes == null || targetValueIndex < 0 ? 0 : rowIndexes[targetValueIndex]);
-            } catch (DBCException e) {
-                log.error("Error getting [" + attr.getName() + "] value", e);
-            }
+        if (updateChanges && row.changes == null) {
+            row.changes = new HashMap<>();
         }
-        if ((value instanceof DBDValue && value == oldValue && ((DBDValue) value).isModified()) || !CommonUtils.equalObjects(oldValue, value)) {
-            // If DBDValue was updated (kind of CONTENT?) or actual value was changed
-            if (ownerValue == null && DBUtils.isNullValue(oldValue) && DBUtils.isNullValue(value)) {
-                // Both nulls - nothing to update
-                return false;
-            }
-            // Check composite type
-            if (ownerValue != null) {
-                if (ownerValue instanceof DBDCollection collection) {
-                    if (collection.getItemCount() > 0) {
-                        ownerValue = collection.getItem(
-                            rowIndexes == null ? 0 : rowIndexes[targetValueIndex]);
-                    }
-                }
-                if (!(ownerValue instanceof DBDComposite)) {
-                    log.warn("Value [" + ownerValue + "] edit is not supported");
-                    return false;
-                }
-            }
 
-            // Do not add edited cell for new/deleted rows
-            if (row.getState() == ResultSetRow.STATE_NORMAL) {
+        Object oldHistoricValue = updateChanges ? row.changes.get(topAttribute) : null;
+        Object currentValue = row.values[rootIndex];
+        Object valueToEdit = currentValue;
 
-                boolean cellWasEdited = row.changes != null && row.changes.containsKey(attr);
-                Object oldOldValue = !cellWasEdited ? null : row.changes.get(attr);
-                if (cellWasEdited && !CommonUtils.equalObjects(oldValue, oldOldValue) && !CommonUtils.equalObjects(oldValue, value)) {
-                    // Value rewrite - release previous stored old value
-                    DBUtils.releaseValue(oldValue);
-                } else if (updateChanges) {
-                    if (value instanceof DBDValue || !CommonUtils.equalObjects(value, oldValue)) {
-                        row.addChange(attr, oldValue);
-                    } else {
-                        updateChanges = false;
+        if (currentValue instanceof DBDValue) {
+            // It is complex
+            if (updateChanges && oldHistoricValue == null) {
+                // Save original to history and create a copy
+                if (currentValue instanceof DBDValueCloneable vc) {
+                    try {
+                        valueToEdit = vc.cloneValue(new VoidProgressMonitor());
+                    } catch (DBCException e) {
+                        log.error("Error copying cell value", e);
                     }
+                } else {
+                    log.debug("Cannot copy complex value. Undo is not possible!");
                 }
-                if (updateChanges && row.getState() == ResultSetRow.STATE_NORMAL && !cellWasEdited) {
-                    changesCount++;
-                }
+                row.changes.put(topAttribute, currentValue);
             }
-            if (ownerValue instanceof DBDComposite compositeValue) {
-                try {
-                    if (rowIndexes != null) {
-                        int itemIndex = rowIndexes[rowIndex];
-                        Object arrayValue = compositeValue.getAttributeValue(attr.getAttribute());
-                        if (arrayValue instanceof DBDCollection collection) {
-                            collection.setItem(itemIndex, value);
-                        } else {
-                            throw new DBCException("Wrong composite: cannot update item " + itemIndex);
-                        }
-                    } else {
-                        compositeValue.setAttributeValue(attr.getAttribute(), value);
-                    }
-                } catch (DBCException e) {
-                    log.debug("Error setting attribute value", e);
-                }
+        } else {
+            if (updateChanges && oldHistoricValue == null) {
+                row.changes.put(topAttribute, currentValue);
+            }
+        }
+        if (updateChanges && attr != topAttribute) {
+            // Save reference on top attribute
+            row.changes.put(attr, topAttribute);
+        }
+
+        if (value instanceof DBDValue dbValue) {
+            // New value if also a complex value. Probably DBDContent
+            // In this case it must be root attribute
+            if (attr != topAttribute && valueToEdit instanceof DBDValue ownerValue) {
+                DBUtils.updateAttributeValue(ownerValue, attr, rowIndexes, value);
             } else {
-                row.values[rootIndex] = value;
+                valueToEdit = value;
             }
-            return true;
+        } else if (valueToEdit instanceof DBDValue complexValue) {
+            DBUtils.updateAttributeValue(complexValue, attr, rowIndexes, value);
+        } else {
+            valueToEdit = value;
         }
-        return false;
+        row.values[rootIndex] = valueToEdit;
+
+        if (updateChanges && row.getState() == ResultSetRow.STATE_NORMAL) {
+            changesCount++;
+        }
+        return true;
     }
 
     boolean isDynamicMetadata() {

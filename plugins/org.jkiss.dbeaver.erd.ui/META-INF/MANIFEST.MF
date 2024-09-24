@@ -9,6 +9,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Activator: org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.core.filesystem,
  org.eclipse.core.resources,
  org.eclipse.core.expressions,
  org.eclipse.ui,
@@ -16,6 +17,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.views,
  org.eclipse.gef;visibility:=reexport,
  org.jkiss.dbeaver.model;visibility:=reexport,
+ org.jkiss.dbeaver.model.rcp,
  org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.erd.model;visibility:=reexport,
  org.jkiss.dbeaver.ui,
