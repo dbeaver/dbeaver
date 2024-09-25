@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.BasePlatformImpl;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.GlobalEventManagerImpl;
-import org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.runtime.qm.QMRegistryImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -159,12 +158,6 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
     @Override
     public DBPGlobalEventManager getGlobalEventManager() {
         return GlobalEventManagerImpl.getInstance();
-    }
-
-    @NotNull
-    @Override
-    public DBPDataFormatterRegistry getDataFormatterRegistry() {
-        return DataFormatterRegistry.getInstance();
     }
 
     @NotNull

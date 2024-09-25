@@ -583,13 +583,15 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
         return false;
     }
 
+    @NotNull
     @Override
-    public String getSchemaExistQuery(String schemaName) {
+    public String getSchemaExistQuery(@NotNull String schemaName) {
         return "SELECT 1 FROM SYSTEM_.SYS_USERS_ WHERE USER_NAME='" + schemaName + "'";
     }
 
+    @NotNull
     @Override
-    public String getCreateSchemaQuery(String schemaName) {
+    public String getCreateSchemaQuery(@NotNull String schemaName) {
         return "CREATE USER \"" + schemaName + "\" IDENTIFIED BY \"" + schemaName + "\"";
     }
     
