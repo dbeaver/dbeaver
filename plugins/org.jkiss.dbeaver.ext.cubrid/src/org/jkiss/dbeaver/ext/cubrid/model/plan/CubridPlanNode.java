@@ -38,7 +38,6 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
     
     private List<String> parentNode = List.of("subplan", "head", "outer", "inner", "Query plan");
     private List<String> parentExcept = List.of("iscan", "sscan");
-    private String previousSegment;
     private Pattern totalPattern = Pattern.compile("\\d+\\/\\d+");
     private Pattern termPattern = Pattern.compile("node\\[\\d\\]");
     private Pattern subNodePattern = Pattern.compile("term\\[\\d\\]");
@@ -210,8 +209,8 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
 
         while (segments.size() > 0) {
 
-            previousSegment = segments.remove(0);
-            String[] values = previousSegment.split(SEPARATOR);
+            String segment = segments.remove(0);
+            String[] values = segment.split(SEPARATOR);
             String key = values[0].trim();
             String value = values[1].trim();
 
@@ -243,7 +242,7 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
                 }
             } else if ("sargs".equals(key)) {
                 if (!subNode(this, key, value) && !name.equals("sscan")) {
-                    addNested(false, previousSegment);
+                    addNested(false, segment);
                 } else {
                     term = this.getTermValue(value);
                     extra = this.getExtraValue(value);
@@ -255,13 +254,13 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
                     parent.extra = this.getTermValue(value);
 
                 } else if (!parent.name.startsWith("nl-join")) {
-                    parent.addNested(false, previousSegment);
+                    parent.addNested(false, segment);
                 } else {
                     parent.term = this.getTermValue(value);
                     parent.extra = this.getExtraValue(value);
                 }
             } else if ("filtr".equals(key)) {
-                addNested(false, previousSegment);
+                addNested(false, segment);
             } else if (key.contains("cost")) {
                 String[] costs = value.split(" card ");
                 this.cost = Long.parseLong(costs[0]);
