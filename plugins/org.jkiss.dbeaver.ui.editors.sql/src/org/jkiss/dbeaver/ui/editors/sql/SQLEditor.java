@@ -3228,26 +3228,32 @@ public class SQLEditor extends SQLEditorBase implements
                             break;
                     }
                     updateExecutionContext(null);
-                    
-                    boolean contextChanged = false;
-                    if (event.getAction().equals(DBPEvent.Action.OBJECT_SELECT)
-                        && event.getData() == this.getExecutionContext()
-                        && event.getEnabled()
-                    ) {
-                        DBCExecutionContext execContext = this.getExecutionContext();
-                        DBCExecutionContextDefaults<DBSCatalog, DBSSchema> ctxDefault = execContext == null
-                            ? null
-                            : execContext.getContextDefaults();
-                        if (ctxDefault != null
-                            && (event.getObject() == ctxDefault.getDefaultCatalog() || event.getObject() == ctxDefault.getDefaultSchema())
-                        ) {
-                            contextChanged = true;
-                        }
-                    }
+
+                    boolean contextChanged = isContextChanged(event);
                     onDataSourceChange(contextChanged);
                 }
             );
         }
+    }
+
+    private boolean isContextChanged(DBPEvent event) {
+        DBPEvent.Action eventAction = event.getAction();
+        boolean contextChanged = eventAction.equals(DBPEvent.Action.OBJECT_UPDATE); // update highlighting on connect/disconnect
+        if (!contextChanged && eventAction.equals(DBPEvent.Action.OBJECT_SELECT)
+            && event.getData() == this.getExecutionContext()
+            && event.getEnabled()
+        ) {
+            DBCExecutionContext execContext = this.getExecutionContext();
+            DBCExecutionContextDefaults<?, ?> ctxDefault = execContext == null
+                ? null
+                : execContext.getContextDefaults();
+            if (ctxDefault != null
+                && (event.getObject() == ctxDefault.getDefaultCatalog() || event.getObject() == ctxDefault.getDefaultSchema())
+            ) {
+                contextChanged = true;
+            }
+        }
+        return contextChanged;
     }
 
     @Override
