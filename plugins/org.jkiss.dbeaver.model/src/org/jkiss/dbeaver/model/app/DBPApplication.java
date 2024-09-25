@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.model.app;
 
-import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -33,9 +32,6 @@ import java.nio.file.Path;
 public interface DBPApplication {
 
     default void beforeWorkspaceInitialization() {}
-
-    @NotNull
-    DBPWorkspace createWorkspace(@NotNull DBPPlatform platform, @NotNull IWorkspace eclipseWorkspace);
 
     boolean isStandalone();
 
@@ -149,4 +145,14 @@ public interface DBPApplication {
     default boolean isStatisticsCollectionRequired() {
         return false;
     }
+
+
+    /**
+     * Returns last user activity time
+     * @return -1 by default
+     */
+    default long getLastUserActivityTime() {
+        return -1;
+    }
+
 }

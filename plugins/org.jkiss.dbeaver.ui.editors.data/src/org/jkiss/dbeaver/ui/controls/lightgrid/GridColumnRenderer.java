@@ -187,8 +187,8 @@ class GridColumnRenderer extends AbstractRenderer {
             if (!CommonUtils.isEmpty(text)) {
                 text = UITextUtils.getShortString(grid.fontMetrics, text, bounds.width);
                 bounds.y += TOP_MARGIN + fontHeight;
-                gc.setForeground(grid.getLabelProvider().getHeaderBorder(element));
-                gc.setFont(grid.normalFont);
+                gc.setForeground(grid.getLabelProvider().getHeaderForeground(element, selected || hovering));
+                gc.setFont(grid.commentFont);
                 gc.setClipping(bounds.x, bounds.y, bounds.width, fontHeight);
                 gc.drawString(text, bounds.x, bounds.y, isTransparent);
                 gc.setClipping((Rectangle) null);

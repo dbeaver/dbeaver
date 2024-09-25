@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -156,8 +157,8 @@ public class NavigatorObjectsDeleter {
 
     public IProject getProjectToDelete() {
         for (Object obj: selection) {
-            if (obj instanceof DBNProject) {
-                return ((DBNProject) obj).getProject().getEclipseProject();
+            if (obj instanceof DBNProject project && project.getProject() instanceof RCPProject rcpProject) {
+                return rcpProject.getEclipseProject();
             }
         }
         return null;
@@ -175,12 +176,15 @@ public class NavigatorObjectsDeleter {
                         if (obj instanceof DBNDatabaseNode) {
                             dbrMonitor.subTask("Delete database object '" + ((DBNDatabaseNode) obj).getNodeDisplayName() + "'");
                             UIUtils.asyncExec(() -> deleteDatabaseNode((DBNDatabaseNode)obj));
-                        } else if (obj instanceof DBNNodeWithResource) {
-                            dbrMonitor.subTask("Delete resource '" + ((DBNNodeWithResource) obj).getResource().getName() + "'");
-                            deleteResource(dbrMonitor, ((DBNNodeWithResource) obj).getResource());
                         } else if (obj instanceof DBNLocalFolder) {
                             dbrMonitor.subTask("Delete folder '" + ((DBNLocalFolder) obj).getNodeDisplayName() + "'");
                             deleteLocalFolder((DBNLocalFolder) obj);
+                        } else if (obj instanceof DBNNode node) {
+                            IResource resource = node.getAdapter(IResource.class);
+                            if (resource != null) {
+                                dbrMonitor.subTask("Delete resource '" + resource.getName() + "'");
+                                deleteResource(dbrMonitor, resource);
+                            }
                         } else {
                             log.warn("Don't know how to delete element '" + obj + "'"); //$NON-NLS-1$ //$NON-NLS-2$
                         }

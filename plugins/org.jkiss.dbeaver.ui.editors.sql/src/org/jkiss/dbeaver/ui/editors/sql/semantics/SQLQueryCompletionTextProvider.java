@@ -117,7 +117,6 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
             suffix = "";
         }
 
-        // TODO if for table reference (after FROM), then generate alias
         return this.prepareObjectName(object) + suffix;
     }
 

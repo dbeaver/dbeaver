@@ -169,6 +169,7 @@ public abstract class SQLQueryCompletionContext {
             private final Map<SQLQueryRowsSourceModel, SourceResolutionResult> referencedSources
                 = context.collectKnownSources().getResolutionResults();
             private Set<String> aliasesInUse = null;
+            private final Set<DBSObject> alreadyReferencedObjects = fillAlreadyReferenceTables();
 
             @NotNull
             @Override
@@ -210,24 +211,25 @@ public abstract class SQLQueryCompletionContext {
                     nameNodes.length > 1
                         ? Collections.emptyList()
                         : prepareKeywordCompletions(syntaxInspectionResult.predictedWords, currentWord);
+
+                List<SQLQueryCompletionItem> columnRefCompletions = syntaxInspectionResult.expectingColumnReference && nameNodes.length == 0
+                    ? this.prepareColumnCompletions(null)
+                    : Collections.emptyList();
+
+                List<SQLQueryCompletionItem> tableRefCompletions = syntaxInspectionResult.expectingTableReference && nameNodes.length == 0
+                    ? this.prepareTableCompletions(monitor, request)
+                    : Collections.emptyList();
                 
-                List<SQLQueryCompletionItem> columnRefCompletions = 
-                    syntaxInspectionResult.expectingColumnReference && nameNodes.length == 0
-                        ? this.prepareColumnCompletions(null) : Collections.emptyList();
-                
-                List<SQLQueryCompletionItem> tableRefCompletions = 
-                    syntaxInspectionResult.expectingTableReference && nameNodes.length == 0
-                        ? this.prepareTableCompletions(monitor, request) : Collections.emptyList();
-                
-                List<SQLQueryCompletionItem> lexicalItemCompletions = 
-                    lexicalItem != null ? this.prepareLexicalItemCompletions(monitor, lexicalItem, position) :
-                    syntaxInspectionResult.expectingIdentifier || nameNodes.length > 0
+                List<SQLQueryCompletionItem> lexicalItemCompletions = lexicalItem != null
+                    ? this.prepareLexicalItemCompletions(monitor, lexicalItem, position)
+                    : syntaxInspectionResult.expectingIdentifier || nameNodes.length > 0
                         ? this.prepareIdentifierCompletions(monitor, position)
                         : Collections.emptyList();
                 
                 List<SQLQueryCompletionItem> completionItems = Stream.of(
-                        columnRefCompletions, tableRefCompletions, lexicalItemCompletions, keywordCompletions
-                ).flatMap(Collection::stream).collect(Collectors.toList());
+                    columnRefCompletions, tableRefCompletions, lexicalItemCompletions, keywordCompletions)
+                    .flatMap(Collection::stream)
+                    .collect(Collectors.toList());
                 
                 int replacementLength = currentWord == null ? 0 : currentWord.length();
                 return new SQLQueryCompletionSet(position - replacementLength, replacementLength, completionItems);
@@ -298,7 +300,8 @@ public abstract class SQLQueryCompletionContext {
                         );
                     return prefixContext == null
                         ? Collections.emptyList()
-                        : this.prepareObjectComponentCompletions(monitor, prefixContext, tail, componentType);
+                        : this.prepareObjectComponentCompletions(monitor, prefixContext, tail, componentType,
+                            x -> SQLQueryCompletionItem.forRealTable((DBSEntity) x, alreadyReferencedObjects.contains(x)));
                 }
             }
 
@@ -325,7 +328,19 @@ public abstract class SQLQueryCompletionContext {
             private List<SQLQueryCompletionItem> prepareObjectComponentCompletions(
                 @NotNull DBRProgressMonitor monitor,
                 @NotNull DBSObject object,
-                @NotNull String componentNamePart, Class<?> componentType
+                @NotNull String componentNamePart,
+                Class<?> componentType
+            ) {
+                return prepareObjectComponentCompletions(monitor, object, componentNamePart, componentType,
+                    SQLQueryCompletionItem::forDbObject);
+            }
+            @NotNull
+            private List<SQLQueryCompletionItem> prepareObjectComponentCompletions(
+                @NotNull DBRProgressMonitor monitor,
+                @NotNull DBSObject object,
+                @NotNull String componentNamePart,
+                Class<?> componentType,
+                Function<DBSObject, SQLQueryCompletionItem> queryCompletionItemProvider
             ) {
                 try {
                     Stream<? extends DBSObject> components;
@@ -342,12 +357,23 @@ public abstract class SQLQueryCompletionContext {
                         components = Stream.empty();
                     }
 
-                    return components.filter(a -> (componentType == null || componentType.isInstance(a)) && a.getName().toLowerCase().contains(componentNamePart))
-                        .map(SQLQueryCompletionItem::forDbObject)
+                    return components.filter(a -> (componentType == null || componentType.isInstance(a))
+                            && a.getName().toLowerCase().contains(componentNamePart))
+                        .map(queryCompletionItemProvider)
                         .toList();
                 } catch (DBException ex) {
                     return Collections.emptyList();
                 }
+            }
+
+            private Set<DBSObject> fillAlreadyReferenceTables() {
+                Set<DBSObject> alreadyReferencedObjects = new HashSet<>();
+                for (SourceResolutionResult rr : this.referencedSources.values()) {
+                    if (rr.tableOrNull != null) {
+                        alreadyReferencedObjects.add(rr.tableOrNull);
+                    }
+                }
+                return alreadyReferencedObjects;
             }
 
             private List<String> obtainIdentifierParts(int position) {
@@ -476,15 +502,10 @@ public abstract class SQLQueryCompletionContext {
                 @NotNull DBRProgressMonitor monitor,
                 @NotNull SQLCompletionRequest request
             ) {
-                Set<DBSObject> alreadyReferencedObjects = new HashSet<>();
-                
                 LinkedList<SQLQueryCompletionItem> completions = new LinkedList<>();
                 for (SourceResolutionResult rr : this.referencedSources.values()) {
                     if (rr.aliasOrNull != null && rr.isCteSubquery) {
                         completions.add(SQLQueryCompletionItem.forSubqueryAlias(rr.aliasOrNull, rr.source));
-                    }
-                    if (rr.tableOrNull != null) {
-                        alreadyReferencedObjects.add(rr.tableOrNull);
                     }
                 }
 

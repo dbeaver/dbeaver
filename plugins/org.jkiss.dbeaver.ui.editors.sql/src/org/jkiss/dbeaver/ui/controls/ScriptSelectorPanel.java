@@ -44,8 +44,8 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -81,7 +81,7 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
     @NotNull
     private final IFolder rootFolder;
     @Nullable
-    private final DBPProject project;
+    private final RCPProject project;
 
     @NotNull
     private final List<ResourceInfo> scriptFiles;

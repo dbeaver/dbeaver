@@ -203,7 +203,7 @@ public class CubridUser extends GenericSchema
         }
     }
 
-    public class CubridIndexCache extends JDBCCompositeCache<GenericStructContainer, CubridTable, GenericTableIndex, GenericTableIndexColumn>
+    public class CubridIndexCache extends JDBCCompositeCache<GenericStructContainer, CubridTable, CubridTableIndex, GenericTableIndexColumn>
     {
         CubridIndexCache(@NotNull TableCache tableCache) {
             super(tableCache, CubridTable.class, JDBCConstants.TABLE_NAME, JDBCConstants.INDEX_NAME);
@@ -218,7 +218,7 @@ public class CubridUser extends GenericSchema
 
         @Nullable
         @Override
-        protected GenericTableIndex fetchObject(
+        protected CubridTableIndex fetchObject(
                 @NotNull JDBCSession session,
                 @NotNull GenericStructContainer owner,
                 @Nullable CubridTable parent,
@@ -251,7 +251,7 @@ public class CubridUser extends GenericSchema
             if (CommonUtils.isEmpty(name)) {
                 name = parent.getName().toUpperCase(Locale.ENGLISH) + "_INDEX";
             }
-            return new GenericTableIndex(parent, isNonUnique, indexQualifier,
+            return new CubridTableIndex(parent, isNonUnique, indexQualifier,
                     cardinality, name, indexType, true);
         }
 
@@ -260,7 +260,7 @@ public class CubridUser extends GenericSchema
         protected GenericTableIndexColumn[] fetchObjectRow(
                 @NotNull JDBCSession session,
                 @NotNull CubridTable parent,
-                @NotNull GenericTableIndex object,
+                @NotNull CubridTableIndex object,
                 @NotNull JDBCResultSet dbResult)
                 throws SQLException, DBException {
             int ordinalPosition = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
@@ -282,7 +282,7 @@ public class CubridUser extends GenericSchema
         @Override
         protected void cacheChildren(
                 @NotNull DBRProgressMonitor monitor,
-                @Nullable GenericTableIndex object,
+                @Nullable CubridTableIndex object,
                 @Nullable List<GenericTableIndexColumn> children) {
             object.setColumns(children);
         }

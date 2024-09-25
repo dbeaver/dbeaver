@@ -16,19 +16,23 @@
  */
 package org.jkiss.dbeaver.dpi.app;
 
-import org.eclipse.core.resources.ResourcesPlugin;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.registry.EclipseWorkspaceImpl;
+import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
+
+import java.nio.file.Path;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * DPIWorkspace
  */
-public class DPIWorkspace extends EclipseWorkspaceImpl {
+public class DPIWorkspace extends BaseWorkspaceImpl {
     private final DBPProject fakeProject;
 
-    DPIWorkspace(DPIPlatform platform) {
-        super(platform, ResourcesPlugin.getWorkspace());
+    DPIWorkspace(DPIPlatform platform, Path workspacePath) {
+        super(platform, workspacePath);
         this.fakeProject = new DPIVirtualProject(this, getAuthContext(), "dpi-virtual-project");
     }
 
@@ -37,9 +41,33 @@ public class DPIWorkspace extends EclipseWorkspaceImpl {
         return true;
     }
 
+    @NotNull
+    @Override
+    public String getWorkspaceId() {
+        return "DPI";
+    }
+
+    @NotNull
+    @Override
+    public List<? extends DBPProject> getProjects() {
+        return Collections.singletonList(fakeProject);
+    }
+
+    @Override
+    public void initializeProjects() {
+
+    }
+
     @Nullable
     @Override
     public DBPProject getActiveProject() {
         return fakeProject;
     }
+
+    @Nullable
+    @Override
+    public DBPProject getProject(@NotNull String projectName) {
+        return null;
+    }
+
 }

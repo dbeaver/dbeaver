@@ -28,4 +28,5 @@ public interface DBPImage
 
     String getLocation();
 
+    default void dispose() {}
 }

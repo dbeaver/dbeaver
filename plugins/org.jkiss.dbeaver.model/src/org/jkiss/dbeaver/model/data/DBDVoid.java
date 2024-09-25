@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.data;
 /**
  * Not a value.
  */
-public class DBDVoid implements DBDValue {
+public class DBDVoid implements DBDValue, DBDValueSurrogate {
 
     public static final DBDVoid INSTANCE = new DBDVoid();
 
