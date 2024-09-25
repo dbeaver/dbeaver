@@ -37,9 +37,13 @@ import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
-import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNProject;
+import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystems;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.rm.RMControllerProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
@@ -76,7 +80,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
     private TableViewer scriptsViewer;
     private TableViewer dataSourceViewer;
 
-    private final List<DBNNodeWithResource> selectedScripts = new ArrayList<>();
+    private final List<DBNNode> selectedScripts = new ArrayList<>();
     private final List<DBNDataSource> selectedDataSources = new ArrayList<>();
 
     SQLScriptTaskPageSettings(SQLScriptTaskConfigurationWizard wizard) {
@@ -114,8 +118,15 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                     if (element instanceof DBNPathBase path) {
                         return path.getPath().toString();
                     }
-                    DBPProject ownerProject = ((DBNNode) element).getOwnerProject();
-                    return ownerProject.getResourcePath(((DBNNodeWithResource) element).getResource());
+                    DBNNode node = (DBNNode) element;
+                    DBPProject ownerProject = node.getOwnerProject();
+                    if (ownerProject instanceof RCPProject rcpProject) {
+                        IResource resource = node.getAdapter(IResource.class);
+                        if (resource != null) {
+                            return rcpProject.getResourcePath(resource);
+                        }
+                    }
+                    return "";
                 }
                 @Override
                 public Image getImage(Object element) {
@@ -131,7 +142,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
             });
             scriptsViewer.addDoubleClickListener(event -> {
                 StructuredSelection selection = (StructuredSelection) event.getSelection();
-                IResource resource = ((DBNNodeWithResource) selection.getFirstElement()).getResource();
+                IResource resource = ((DBNNode) selection.getFirstElement()).getAdapter(IResource.class);
                 if (resource != null) {
                     DBPResourceHandler handler = DBPPlatformDesktop.getInstance().getWorkspace().getResourceHandler(resource);
                     if (handler != null) {
@@ -159,7 +170,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                 public void widgetSelected(SelectionEvent e) {
                     SQLScriptTaskScriptSelectorDialog dialog = new SQLScriptTaskScriptSelectorDialog(getShell(), projectNode);
                     if (dialog.open() == IDialogConstants.OK_ID) {
-                        for (DBNNodeWithResource script : dialog.getSelectedScripts()) {
+                        for (DBNNode script : dialog.getSelectedScripts()) {
                             if (!selectedScripts.contains(script)) {
                                 selectedScripts.add(script);
                             }
@@ -194,7 +205,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                     ISelection selection = scriptsViewer.getSelection();
                     if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
                         for (Object element : ((IStructuredSelection) selection).toArray()) {
-                            if (element instanceof DBNNodeWithResource) {
+                            if (element instanceof DBNNode node && node.getAdapter(IResource.class) != null) {
                                 selectedScripts.remove(element);
                             }
                         }
@@ -208,7 +219,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                 public void widgetSelected(SelectionEvent e) {
                     int selectionIndex = scriptTable.getSelectionIndex();
                     if (selectionIndex > 0) {
-                        DBNNodeWithResource prevScript = selectedScripts.get(selectionIndex - 1);
+                        DBNNode prevScript = selectedScripts.get(selectionIndex - 1);
                         selectedScripts.set(selectionIndex - 1, selectedScripts.get(selectionIndex));
                         selectedScripts.set(selectionIndex, prevScript);
                         refreshScripts();
@@ -220,7 +231,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                 public void widgetSelected(SelectionEvent e) {
                     int selectionIndex = scriptTable.getSelectionIndex();
                     if (selectionIndex < scriptTable.getItemCount() - 1) {
-                        DBNNodeWithResource nextScript = selectedScripts.get(selectionIndex + 1);
+                        DBNNode nextScript = selectedScripts.get(selectionIndex + 1);
                         selectedScripts.set(selectionIndex + 1, selectedScripts.get(selectionIndex));
                         selectedScripts.set(selectionIndex, nextScript);
                         refreshScripts();
@@ -374,7 +385,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
         DBNProject projectNode = project.getNavigatorModel().getRoot().getProjectNode(project);
 
         Set<DBPDataSourceContainer> dataSources = new LinkedHashSet<>();
-        for (DBNNodeWithResource element : selectedScripts) {
+        for (DBNNode element : selectedScripts) {
             if (element instanceof DBNResource res) {
                 Collection<DBPDataSourceContainer> resDS = res.getAssociatedDataSources();
                 if (!CommonUtils.isEmpty(resDS)) {
@@ -447,7 +458,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                         log.debug("Script file '" + filePath + "' not found");
                         continue;
                     }
-                    DBNResource resource = projectNode.findResource(monitor, workspaceFile);
+                    DBNNode resource = projectNode.findResource(monitor, workspaceFile);
                     if (resource != null) {
                         selectedScripts.add(resource);
                     }
@@ -483,13 +494,13 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
         SQLScriptExecuteSettings settings = sqlWizard.getSettings();
 
         List<String> scriptPaths = new ArrayList<>();
-        for (DBNNodeWithResource resource : selectedScripts) {
+        for (DBNNode resource : selectedScripts) {
             if (resource instanceof DBNPathBase) {
                 scriptPaths.add(((DBNPathBase) resource).getPath().toString());
             } else {
-                IResource res = resource.getResource();
-                if (res instanceof IFile) {
-                    scriptPaths.add(getWizard().getProject().getResourcePath(res));
+                IResource res = resource.getAdapter(IResource.class);
+                if (res instanceof IFile && getWizard().getProject() instanceof RCPProject rcpProject) {
+                    scriptPaths.add(rcpProject.getResourcePath(res));
                 }
             }
         }

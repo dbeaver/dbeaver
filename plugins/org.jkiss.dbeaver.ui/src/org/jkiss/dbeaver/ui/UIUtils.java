@@ -711,9 +711,24 @@ public class UIUtils {
 
     @NotNull
     public static Link createInfoLink(@NotNull Composite parent, @NotNull String text, @NotNull Runnable callback) {
-        final Composite composite = new Composite(parent, SWT.NONE);
-        composite.setLayout(GridLayoutFactory.fillDefaults().numColumns(2).create());
+        return createInfoLink(parent, text, callback, SWT.NONE, 1, SWT.DEFAULT);
+    }
 
+    @NotNull
+    public static Link createInfoLink(
+        @NotNull Composite parent,
+        @NotNull String text,
+        @NotNull Runnable callback,
+        int style,
+        int colsSpan,
+        int widthHint
+    ) {
+        final Composite composite = new Composite(parent, style);
+        composite.setLayout(GridLayoutFactory.fillDefaults().numColumns(2).create());
+        composite.setLayoutData(GridDataFactory.fillDefaults()
+            .span(colsSpan, 1)
+            .hint(widthHint, SWT.DEFAULT)
+            .grab(true, false).create());
         final Label imageLabel = new Label(composite, SWT.NONE);
         imageLabel.setImage(DBeaverIcons.getImage(DBIcon.SMALL_INFO));
         imageLabel.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false));

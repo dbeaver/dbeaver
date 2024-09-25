@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.registry.internal.RegistryMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -260,7 +259,6 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
             throw new DBException("Error saving Eclipse workspace", e);
         }
     }
-
 
     protected void fireProjectAdd(BaseProjectImpl project) {
         for (DBPProjectListener listener : getListenersCopy()) {

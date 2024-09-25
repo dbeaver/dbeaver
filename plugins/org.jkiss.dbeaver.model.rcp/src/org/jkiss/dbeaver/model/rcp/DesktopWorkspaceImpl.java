@@ -22,7 +22,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPAdaptable;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -32,7 +34,6 @@ import org.jkiss.dbeaver.registry.ResourceHandlerDescriptor;
 import org.jkiss.dbeaver.registry.ResourceTypeDescriptor;
 import org.jkiss.dbeaver.registry.ResourceTypeRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -155,6 +156,16 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
     @Override
     public DBPResourceHandlerDescriptor[] getAllResourceHandlers() {
         return handlerDescriptors.toArray(new DBPResourceHandlerDescriptor[0]);
+    }
+
+
+    @Override
+    public DBPImage getResourceIcon(DBPAdaptable resourceAdapter) {
+        IResource resource = resourceAdapter.getAdapter(IResource.class);
+        if (resource != null) {
+            return defaultHandler.getResourceIcon(resource);
+        }
+        return null;
     }
 
     @Override

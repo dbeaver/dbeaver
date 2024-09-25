@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -51,8 +52,10 @@ import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -66,6 +69,7 @@ public class SQLEditorUtils {
     public static final String SCRIPT_FILE_EXTENSION = "sql"; //$NON-NLS-1$
 
     private static final String DISABLE_SQL_SYNTAX_PARSER_RESOURCE_PROPERTY = "disable-sql-syntax-parser";
+    private static final int MIN_SQL_DESCRIPTION_LENGTH = 512;
 
     /**
      * A {@link IResource}'s session property to distinguish between persisted and newly created resources.
@@ -258,7 +262,7 @@ public class SQLEditorUtils {
         if (resource instanceof IFolder) {
             return "";
         } else if (resource instanceof IFile && SCRIPT_FILE_EXTENSION.equals(resource.getFileExtension())) {
-            String description = SQLUtils.getScriptDescription((IFile) resource);
+            String description = getScriptDescription((IFile) resource);
             if (CommonUtils.isEmptyTrimmed(description)) {
                 description = "<empty>";
             }
@@ -296,6 +300,40 @@ public class SQLEditorUtils {
 
     public static IContentType getSQLContentType() {
         return Platform.getContentTypeManager().getContentType("org.jkiss.dbeaver.sql");
+    }
+
+    @Nullable
+    public static String getScriptDescription(@NotNull IFile sqlScript)
+    {
+        try {
+            //log.debug("Read script '" + sqlScript.getName() + "' description");
+            StringBuilder sql = new StringBuilder();
+            try (BufferedReader is = new BufferedReader(new InputStreamReader(sqlScript.getContents()))) {
+                for (;;) {
+                    String line = is.readLine();
+                    if (line == null) {
+                        break;
+                    }
+                    line = line.trim();
+                    if (line.startsWith(SQLConstants.SL_COMMENT) ||
+                        line.startsWith("Rem") ||
+                        line.startsWith("rem") ||
+                        line.startsWith("REM")
+                        )
+                    {
+                        continue;
+                    }
+                    sql.append(line).append('\n');
+                    if (sql.length() > MIN_SQL_DESCRIPTION_LENGTH) {
+                        break;
+                    }
+                }
+            }
+            return SQLUtils.getScriptDescripion(sql.toString());
+        } catch (Exception e) {
+            log.warn("", e);
+        }
+        return null;
     }
 
     public static class ResourceInfo {
@@ -400,7 +438,7 @@ public class SQLEditorUtils {
         @Nullable
         @Override
         public Object getPropertyValue(@NotNull String propertyName) {
-            DBPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(projectFile.getProject());
+            RCPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(projectFile.getProject());
             if (project == null) {
                 log.debug("Project '" + projectFile.getProject() + "' not recognized (property read)");
                 return null;
@@ -410,7 +448,7 @@ public class SQLEditorUtils {
         
         @Override
         public void setPropertyValue(@NotNull String propertyName, @NotNull Object value) {
-            DBPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(projectFile.getProject());
+            RCPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(projectFile.getProject());
             if (project == null) {
                 log.debug("Project '" + projectFile.getProject() + "' not recognized (property write)");
                 return;

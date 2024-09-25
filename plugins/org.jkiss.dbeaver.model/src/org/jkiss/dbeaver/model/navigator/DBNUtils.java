@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -70,10 +71,10 @@ public class DBNUtils {
     public static DBNDatabaseNode getChildFolder(DBRProgressMonitor monitor, DBNDatabaseNode node, Class<?> folderType) {
         try {
             for (DBNDatabaseNode childNode : node.getChildren(monitor)) {
-                if (!(childNode instanceof DBNDatabaseFolder)) {
+                if (!(childNode instanceof DBNDatabaseFolder folder)) {
                     continue;
                 }
-                final DBXTreeFolder meta = ((DBNDatabaseFolder) childNode).getMeta();
+                final DBXTreeFolder meta = folder.getMeta();
                 if (!CommonUtils.isEmpty(meta.getType())) {
                     final Class<?> objectClass = meta.getSource().getObjectClass(meta.getType());
                     if (objectClass != null && folderType.isAssignableFrom(objectClass)) {
@@ -107,10 +108,8 @@ public class DBNUtils {
                 if (node instanceof DBPHiddenObject hiddenObject && hiddenObject.isHidden()) {
                     continue;
                 }
-                if (node instanceof DBNDatabaseNode dbNode) {
-                    if (dbNode.getMeta() != null && !dbNode.getMeta().isNavigable()) {
-                        continue;
-                    }
+                if (node instanceof DBNDatabaseNode dbNode && !dbNode.getMeta().isNavigable()) {
+                    continue;
                 }
                 filtered.add(node);
             }
@@ -130,7 +129,7 @@ public class DBNUtils {
         // and if children are not folders
         if (children.length > 0) {
             DBNNode firstChild = children[0];
-            boolean isResources = firstChild instanceof DBNNodeWithResource;
+            boolean isResources = firstChild.getAdapter(Path.class) != null;
             {
                 if (isResources) {
                     Arrays.sort(children, NodeFolderComparator.INSTANCE);
@@ -147,15 +146,15 @@ public class DBNUtils {
     }
 
     private static boolean isMergedEntity(DBNNode node) {
-        return node instanceof DBNDatabaseNode &&
-            ((DBNDatabaseNode) node).getObject() instanceof DBSEntity &&
-            ((DBNDatabaseNode) node).getObject().getDataSource().getContainer().getNavigatorSettings().isMergeEntities();
+        return node instanceof DBNDatabaseNode dbNode &&
+           dbNode.getObject() instanceof DBSEntity &&
+           dbNode.getObject().getDataSource().getContainer().getNavigatorSettings().isMergeEntities();
     }
 
     public static boolean isDefaultElement(Object element)
     {
-        if (element instanceof DBSWrapper) {
-            DBSObject object = ((DBSWrapper) element).getObject();
+        if (element instanceof DBSWrapper wrapper) {
+            DBSObject object = wrapper.getObject();
             if (object != null) {
                 // Get default context from default instance - not from active object
                 DBCExecutionContext defaultContext = DBUtils.getDefaultContext(object.getDataSource(), false);
@@ -168,9 +167,7 @@ public class DBNUtils {
                 }
             }
         } else if (element instanceof DBNProject nodeProject) {
-            if (nodeProject.getProject() == DBWorkbench.getPlatform().getWorkspace().getActiveProject()) {
-                return true;
-            }
+            return nodeProject.getProject() == DBWorkbench.getPlatform().getWorkspace().getActiveProject();
         }
         return false;
     }
@@ -183,9 +180,13 @@ public class DBNUtils {
 
     public static boolean isReadOnly(DBNNode node)
     {
-        return node instanceof DBNDatabaseNode &&
+        return node instanceof DBNDatabaseNode dbNode &&
             !(node instanceof DBNDataSource) &&
-            !((DBNDatabaseNode) node).getDataSourceContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA);
+            !dbNode.getDataSourceContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA);
+    }
+
+    public static boolean isFolderNode(DBNNode node) {
+        return node.allowsChildren();
     }
 
     private static class NodeNameComparator implements Comparator<DBNNode> {
@@ -254,8 +255,8 @@ public class DBNUtils {
 
             @Override
             public boolean has(String name) {
-                return node instanceof DBNDatabaseNode && name.equals("object")
-                    && ((DBNDatabaseNode) node).getValueObject() != null;
+                return node instanceof DBNDatabaseNode dbNode && name.equals("object")
+                    && dbNode.getValueObject() != null;
             }
         };
     }
@@ -278,6 +279,11 @@ public class DBNUtils {
      */
     public static String encodeNodePath(@NotNull String path) {
         return path.replace("%", "%25").replace("/", "%2F");
+    }
+
+
+    public static void disposeNode(DBNNode node, boolean reflect) {
+        node.dispose(reflect);
     }
 
 }
