@@ -8,7 +8,7 @@
     <version>1.0.0-SNAPSHOT</version>
      <relativePath>../</relativePath>
   </parent>
-  <artifactId>org.jkiss.dbeaver.ui.macos</artifactId>
-  <version>1.0.5-SNAPSHOT</version>
+  <artifactId>org.jkiss.dbeaver.ui.swt.linux</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 </project>
