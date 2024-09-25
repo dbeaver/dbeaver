@@ -469,6 +469,9 @@ public class ResultSetModel {
             topAttribute = attr.getTopParent();
             rootIndex = topAttribute.getOrdinalPosition();
         }
+        if (row.getState() != ResultSetRow.STATE_NORMAL) {
+            updateChanges = false;
+        }
         if (updateChanges && row.changes == null) {
             row.changes = new HashMap<>();
         }

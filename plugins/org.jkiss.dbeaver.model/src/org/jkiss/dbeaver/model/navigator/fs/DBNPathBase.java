@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.navigator.fs;
 
-import org.eclipse.core.resources.IFolder;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -25,7 +24,6 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.fs.DBFResourceAdapter;
-import org.jkiss.dbeaver.model.fs.nio.EFSNIOResource;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNLazyNode;
@@ -37,8 +35,6 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.ByteNumberFormat;
 
 import java.io.IOException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -85,13 +81,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
     @Override
     @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 1)
     public String getNodeDisplayName() {
-        return getFileName();
-    }
-
-    // Path's file name may be null (e.g. forFS root folder)
-    // Then try to extract it from URI or from toString
-    private String getFileName() {
-        return URLDecoder.decode(EFSNIOResource.getPathFileNameOrHost(getPath()), StandardCharsets.UTF_8);
+        return getPath().getFileName().toString();
     }
 
     @Override
@@ -364,9 +354,9 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
             if (o1 instanceof DBNPathBase && o2 instanceof DBNPathBase) {
                 Path res1 = ((DBNPathBase) o1).getPath();
                 Path res2 = ((DBNPathBase) o2).getPath();
-                if (res1 instanceof IFolder && !(res2 instanceof IFolder)) {
+                if (Files.isDirectory(res1) && !Files.isDirectory(res2)) {
                     return -1;
-                } else if (res2 instanceof IFolder && !(res1 instanceof IFolder)) {
+                } else if (Files.isDirectory(res2) && !Files.isDirectory(res1)) {
                     return 1;
                 }
             }
