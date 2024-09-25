@@ -227,27 +227,28 @@ public class AuthModelSelector extends Composite {
             ? UIConnectionMessages.dialog_connection_auth_group
             : UIConnectionMessages.dialog_connection_auth_group + " (" + selectedAuthModel.getName() + ")");
 
+        boolean sharedCredsProhibitedByIntention = this.intention == DBPConnectionEditIntention.CREDENTIALS_ONLY && this.activeDataSource.isSharedCredentials();
         DBAAuthModel<?> authModel = selectedAuthModel.getInstance();
-        if (authSettingsEnabled) {
+        if (authSettingsEnabled && !sharedCredsProhibitedByIntention) {
             authModelConfigurator = null;
-            if (this.intention == DBPConnectionEditIntention.CREDENTIALS_ONLY && this.activeDataSource.isSharedCredentials()) {
-                UIUtils.createInfoLabel(modelConfigPlaceholder, "Shared credentials cannot be edited", GridData.FILL_BOTH, 1);
-            } else {
-                UIPropertyConfiguratorDescriptor uiConfiguratorDescriptor = UIPropertyConfiguratorRegistry.getInstance()
-                    .getDescriptor(authModel);
-                if (uiConfiguratorDescriptor != null) {
-                    try {
-                        authModelConfigurator = uiConfiguratorDescriptor.createConfigurator();
-                        if (authModelConfigurator instanceof AbstractObjectPropertyConfigurator<?, ?> abstractConfigurator) {
-                            abstractConfigurator.setEditIntention(this.intention);
-                        }
-                    } catch (DBException e) {
-                        log.error(e);
+            UIPropertyConfiguratorDescriptor uiConfiguratorDescriptor = UIPropertyConfiguratorRegistry.getInstance()
+                .getDescriptor(authModel);
+            if (uiConfiguratorDescriptor != null) {
+                try {
+                    authModelConfigurator = uiConfiguratorDescriptor.createConfigurator();
+                    if (authModelConfigurator instanceof AbstractObjectPropertyConfigurator<?, ?> abstractConfigurator) {
+                        abstractConfigurator.setEditIntention(this.intention);
                     }
-                } else {
-                    log.debug("No UI configurator for auth model " + selectedAuthModel.getId());
+                } catch (DBException e) {
+                    log.error(e);
                 }
+            } else {
+                log.debug("No UI configurator for auth model " + selectedAuthModel.getId());
             }
+        }
+
+        if (sharedCredsProhibitedByIntention) {
+            UIUtils.createInfoLabel(modelConfigPlaceholder, "Shared credentials cannot be edited", GridData.FILL_BOTH, 1);
         }
 
         if (authModelConfigurator != null) {
