@@ -55,6 +55,7 @@ import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
+import org.jkiss.dbeaver.registry.BasePlatformImpl;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.OperationSystemState;
@@ -385,6 +386,12 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             if (desktop.isSupported(Desktop.Action.APP_EVENT_SYSTEM_SLEEP)) {
                 desktop.removeAppEventListener(systemSleepListener);
             }
+        }
+
+        if (DBWorkbench.getPlatform() instanceof BasePlatformImpl basePlatform) {
+            // Dispose navigator model earlier because it may lock some UI resources
+            // and we want to free them before application display will be disposed
+            basePlatform.disposeNavigatorModel();
         }
     }
 

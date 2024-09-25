@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.registry.ResourceHandlerDescriptor;
 import org.jkiss.dbeaver.registry.ResourceTypeDescriptor;
 import org.jkiss.dbeaver.registry.ResourceTypeRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
