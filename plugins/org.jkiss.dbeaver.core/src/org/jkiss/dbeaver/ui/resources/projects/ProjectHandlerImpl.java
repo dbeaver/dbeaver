@@ -21,8 +21,6 @@ import org.eclipse.core.resources.IResource;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -57,15 +55,6 @@ public class ProjectHandlerImpl extends AbstractResourceHandler {
             }
         }
         return features;
-    }
-
-    @NotNull
-    @Override
-    public DBNProject makeNavigatorNode(@NotNull DBNNode parentNode, @NotNull IResource resource) {
-        return new DBNProject(
-            parentNode,
-            DBPPlatformDesktop.getInstance().getWorkspace().getProject((IProject) resource),
-            this);
     }
 
     @Override
