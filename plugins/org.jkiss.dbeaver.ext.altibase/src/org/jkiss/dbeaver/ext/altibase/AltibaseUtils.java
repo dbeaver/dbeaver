@@ -37,13 +37,14 @@ import java.sql.SQLException;
 public class AltibaseUtils {
 
     static final Log log = Log.getLog(AltibaseUtils.class);
-    
+
     public static <PARENT extends DBSObject> Object resolveLazyReference(
-            DBRProgressMonitor monitor,
-            PARENT parent,
-            DBSObjectCache<PARENT, ?> cache,
-            DBSObjectLazy<?> referrer,
-            Object propertyId) throws DBException {
+        DBRProgressMonitor monitor,
+        PARENT parent,
+        DBSObjectCache<PARENT, ?> cache,
+        DBSObjectLazy<?> referrer,
+        Object propertyId
+        ) throws DBException {
 
         final Object reference = referrer.getLazyReference(propertyId);
 
