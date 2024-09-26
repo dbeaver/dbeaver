@@ -608,7 +608,18 @@ public class SQLBackgroundParsingJob {
                             element instanceof SQLQuery queryElement && Boolean.TRUE.equals(queryElement.isEndsWithDelimiter())
                         );
                         itemContext.clear();
-                        itemContext.setProblems(recognitionContext.getProblems());
+                        List<SQLQueryRecognitionProblemInfo> problems = recognitionContext.getProblems();
+                        if (problems.size() >= SQLQueryRecognitionProblemInfo.PER_QUERY_LIMIT && queryModel.getQueryModel() != null) {
+                            problems.add(new SQLQueryRecognitionProblemInfo(
+                                SQLQueryRecognitionProblemInfo.Severity.WARNING,
+                                queryModel.getSyntaxNode(),
+                                null,
+                                "Too many errors found in one query of " + this.editor.getTitle() + "!"+
+                                    " Displaying first " + SQLQueryRecognitionProblemInfo.PER_QUERY_LIMIT + " of them.",
+                                null
+                            ));
+                        }
+                        itemContext.setProblems(problems);
                         for (SQLQuerySymbolEntry entry : queryModel.getAllSymbols()) {
                             itemContext.registerToken(entry.getInterval().a, entry);
                         }
@@ -618,7 +629,8 @@ public class SQLBackgroundParsingJob {
                     log.debug("Error while analyzing query text: " + element.getOriginalText(), ex);
                 }
                 monitor.worked(1);
-                monitor.subTask("Background query analysis: subtask #" + (i++));
+                monitor.subTask("Background query analysis: subtask #" + i + " of " + elements.size());
+                i++;
             }
             this.context.resetLastAccessCache();
         } catch (Throwable ex) {
