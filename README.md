@@ -58,8 +58,7 @@ You can change default JDK version by replacing directory `jre` in dbeaver insta
 Hooray, we have reached 35k+ stars on GitHub and continue to grow!  
 That's really cool, and we are glad that you like DBeaver.
 
-- We are actively looking for new source code contributors. We have added labels “Good first issue” and “Help wanted” to some tickets. If you want to be a part of our development team, just be brave and take a ticket.
--  <a href="https://dbeaver.com/help-dbeaver/">We are happy to reward</a> our most active contributors every major sprint. The most significant contribution to our code for the major release 24.2.0 was made by: <a href="https://github.com/GaussDB-Fans">GaussDB-Fans</a>, <a href="https://github.com/longhaseng52">longhaseng52</a>, <a href="https://github.com/rathana-pvs">rathana-pvs</a>, <a href="https://github.com/zennken">zennken</a>, <a href="https://github.com/v613">v613</a>, <a href="https://github.com/ask9">ask9</a>, <a href="https://github.com/Stkai">Stkai</a>, <a href="https://github.com/Jean-BaptisteC">Jean-BaptisteC</a>, <a href="https://github.com/kai-morich">kai-morich</a>, and <a href="https://github.com/Sargul">Sargul</a>.
+- We are actively looking for new source code contributors. We have added labels “Good first issue” and “Help wanted” to some tickets. If you want to be a part of our development team, just be brave and take a ticket. <a href="https://dbeaver.com/help-dbeaver/">We are happy to reward</a> our most active contributors every major sprint.
 - You can buy <a href="https://dbeaver.com/buy/">one of our commercial versions</a>. They include NoSQL databases support, additional extensions, and official online support. Also, licensed users have priorities in bug fixes and the development of new features.
 
 Thank you!  
