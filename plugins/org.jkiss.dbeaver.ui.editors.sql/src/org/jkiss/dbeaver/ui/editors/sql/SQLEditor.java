@@ -3074,13 +3074,11 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @Override
-    public void beforeConnect()
-    {
+    public void beforeConnect() {
     }
 
     @Override
-    public void beforeDisconnect()
-    {
+    public void beforeDisconnect() {
         closeAllJobs();
     }
 
@@ -3238,11 +3236,9 @@ public class SQLEditor extends SQLEditorBase implements
 
     private boolean isContextChanged(DBPEvent event) {
         DBPEvent.Action eventAction = event.getAction();
-        boolean contextChanged = eventAction.equals(DBPEvent.Action.OBJECT_UPDATE); // update highlighting on connect/disconnect
-        if (!contextChanged && eventAction.equals(DBPEvent.Action.OBJECT_SELECT)
-            && event.getData() == this.getExecutionContext()
-            && event.getEnabled()
-        ) {
+        boolean isEditorContext = event.getData() == this.getExecutionContext();
+        boolean contextChanged = isEditorContext && eventAction.equals(DBPEvent.Action.OBJECT_UPDATE);
+        if (!contextChanged && isEditorContext && eventAction.equals(DBPEvent.Action.OBJECT_SELECT) && event.getEnabled()) {
             DBCExecutionContext execContext = this.getExecutionContext();
             DBCExecutionContextDefaults<?, ?> ctxDefault = execContext == null
                 ? null
