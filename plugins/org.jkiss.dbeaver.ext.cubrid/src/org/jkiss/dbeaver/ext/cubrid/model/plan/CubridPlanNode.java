@@ -225,7 +225,7 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
                     }
                     break;
                 case "class":
-                    this.getNameValue(value);
+                    this.setNameValue(value);
                     break;
                 case "sort":
                     if (!parentExcept.contains(name))
@@ -313,7 +313,7 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
         return null;
     }
 
-    private void getNameValue(String value) {
+    private void setNameValue(String value) {
 
         String[] values = value.split(SPACE);
         String nameValue = classNode.get(values[values.length - 1]);
@@ -324,11 +324,11 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
             Set<String> setName = new LinkedHashSet<String>(Arrays.asList(temName.split(SPACE)));
             nodeName = String.join(SPACE, setName);
 
-            this.getTotalValue(nameValue);
+            this.setTotalValue(nameValue);
         }
     }
 
-    private void getTotalValue(String value) {
+    private void setTotalValue(String value) {
 
         if (CommonUtils.isNotEmpty(value)) {
 
