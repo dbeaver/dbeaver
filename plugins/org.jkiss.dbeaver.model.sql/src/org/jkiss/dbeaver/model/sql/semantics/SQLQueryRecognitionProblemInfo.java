@@ -24,6 +24,8 @@ import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 public class SQLQueryRecognitionProblemInfo {
 
+    public static final int PER_QUERY_LIMIT = 50;
+
     public enum Severity {
         ERROR(2), // IMarker.SEVERITY_ERROR
         WARNING(1); // IMarker.SEVERITY_WARNING
