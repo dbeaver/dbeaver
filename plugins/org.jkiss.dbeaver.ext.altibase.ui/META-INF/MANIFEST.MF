@@ -34,4 +34,3 @@ Bundle-ClassPath: .
 Bundle-Localization: OSGI-INF/l10n/bundle
 Export-Package: org.jkiss.dbeaver.ext.altibase.ui.views
 Automatic-Module-Name: org.jkiss.dbeaver.ext.altibase.ui
-Import-Package: org.jkiss.dbeaver.ext.ui.locks.edit
