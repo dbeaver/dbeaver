@@ -36,12 +36,12 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
     private static Map<String, String> terms = new HashMap<>();
     private static List<String> segments;
     
-    private List<String> parentNode = List.of("subplan", "head", "outer", "inner", "Query plan");
-    private List<String> parentExcept = List.of("iscan", "sscan");
-    private Pattern totalPattern = Pattern.compile("\\d+\\/\\d+");
-    private Pattern termPattern = Pattern.compile("node\\[\\d\\]");
-    private Pattern subNodePattern = Pattern.compile("term\\[\\d\\]");
-    private Pattern segmentPattern = Pattern.compile("(inner|outer|class|cost|follow|head|subplan|index|filtr|sort|sargs|edge|Query plan|term\\[..|node\\[..):\\s*([^\\n\\r]*)");
+    private static final List<String> parentNode = List.of("subplan", "head", "outer", "inner", "Query plan");
+    private static final List<String> parentExcept = List.of("iscan", "sscan");
+    private static final Pattern totalPattern = Pattern.compile("\\d+\\/\\d+");
+    private static final Pattern termPattern = Pattern.compile("node\\[\\d\\]");
+    private static final Pattern subNodePattern = Pattern.compile("term\\[\\d\\]");
+    private static final Pattern segmentPattern = Pattern.compile("(inner|outer|class|cost|follow|head|subplan|index|filtr|sort|sargs|edge|Query plan|term\\[..|node\\[..):\\s*([^\\n\\r]*)");
     private String fullText;
     private String nodeName;
     private String totalValue;
