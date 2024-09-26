@@ -430,7 +430,11 @@ public class ResultSetViewer extends Viewer
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
                 if (!getControl().isDisposed()) {
-                    UIUtils.syncExec(ResultSetViewer.this::applyCurrentPresentationThemeSettings);
+                    UIUtils.syncExec(() -> {
+                        if (!getControl().isDisposed()) {
+                            applyCurrentPresentationThemeSettings();
+                        }
+                    });
                     lastThemeUpdateTime = System.currentTimeMillis();
                 }
                 return Status.OK_STATUS;

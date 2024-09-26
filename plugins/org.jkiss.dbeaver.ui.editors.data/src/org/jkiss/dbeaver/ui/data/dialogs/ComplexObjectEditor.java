@@ -95,6 +95,7 @@ public class ComplexObjectEditor extends TreeViewer {
     private final Color backgroundAdded;
     private final Color backgroundDeleted;
     private final Color backgroundModified;
+    private final Color foregroundReadOnly;
 
     private final CopyAction copyNameAction;
     private final CopyAction copyValueAction;
@@ -117,6 +118,7 @@ public class ComplexObjectEditor extends TreeViewer {
         this.backgroundAdded = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_NEW_BACK);
         this.backgroundDeleted = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_DELETED_BACK);
         this.backgroundModified = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_MODIFIED_BACK);
+        this.foregroundReadOnly = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_NULL_FOREGROUND);
 
         final Tree treeControl = super.getTree();
         treeControl.setHeaderVisible(true);
@@ -146,7 +148,7 @@ public class ComplexObjectEditor extends TreeViewer {
             column.getColumn().setWidth(200);
             column.getColumn().setMoveable(true);
             column.getColumn().setText(UIMessages.ui_properties_name);
-            column.setLabelProvider(new PropsLabelProvider());
+            column.setLabelProvider(new PropsLabelProvider(true));
         }
 
         {
@@ -154,7 +156,7 @@ public class ComplexObjectEditor extends TreeViewer {
             column.getColumn().setWidth(120);
             column.getColumn().setMoveable(true);
             column.getColumn().setText(UIMessages.ui_properties_value);
-            column.setLabelProvider(new PropsLabelProvider());
+            column.setLabelProvider(new PropsLabelProvider(false));
         }
 
         treeEditor = new TreeEditor(treeControl);
@@ -239,7 +241,7 @@ public class ComplexObjectEditor extends TreeViewer {
             this.executionContext = executionContext;
             this.cache.clear();
             setInput(wrap(null, value));
-            expandToLevel(2);
+            expandAll();
             updateActions();
         } finally {
             getTree().setRedraw(true);
@@ -598,6 +600,11 @@ public class ComplexObjectEditor extends TreeViewer {
     }
 
     private class PropsLabelProvider extends CellLabelProvider {
+        private final boolean title;
+        public PropsLabelProvider(boolean isTitle) {
+            this.title = isTitle;
+        }
+
         @Override
         public String getToolTipText(Object obj) {
             if (obj instanceof CompositeElement.Item) {
@@ -618,6 +625,9 @@ public class ComplexObjectEditor extends TreeViewer {
                 cell.setBackground(backgroundModified);
             } else {
                 cell.setBackground(null);
+            }
+            if (!title && isComplexType(element)) {
+                cell.setForeground(foregroundReadOnly);
             }
         }
 

@@ -145,4 +145,14 @@ public interface DBPApplication {
     default boolean isStatisticsCollectionRequired() {
         return false;
     }
+
+
+    /**
+     * Returns last user activity time
+     * @return -1 by default
+     */
+    default long getLastUserActivityTime() {
+        return -1;
+    }
+
 }

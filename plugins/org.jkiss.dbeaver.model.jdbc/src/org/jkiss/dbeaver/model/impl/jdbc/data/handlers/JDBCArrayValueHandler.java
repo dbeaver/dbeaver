@@ -62,23 +62,31 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
     }
 
     @Override
-    public DBDCollection getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
     {
         if (object == null) {
             return JDBCCollection.makeCollectionFromArray((JDBCSession) session, type, null);
-        } else if (object instanceof JDBCCollection) {
-            return (JDBCCollection)(copy ? ((JDBCCollection) object).cloneValue(session.getProgressMonitor()) : object);
-        } else if (object instanceof Array) {
-            return JDBCCollection.makeCollectionFromArray((JDBCSession) session, type, (Array) object);
-        } else if (object instanceof String) {
-            return JDBCCollection.makeCollectionFromString((JDBCSession) session, (String)object);
+        } else if (object instanceof JDBCCollection col) {
+            return (JDBCCollection)(copy ? col.cloneValue(session.getProgressMonitor()) : col);
+        } else if (object instanceof Array array) {
+            return JDBCCollection.makeCollectionFromArray((JDBCSession) session, type, array);
         } else if (object.getClass().isArray()) {
             return JDBCCollection.makeCollectionFromJavaArray((JDBCSession) session, object);
-        } else if (object instanceof Collection) {
-            return JDBCCollection.makeCollectionFromJavaCollection((JDBCSession) session, type, (Collection<?>) object);
+        } else if (object instanceof Collection<?> col) {
+            return JDBCCollection.makeCollectionFromJavaCollection((JDBCSession) session, type, col);
+        } else if (convertSingleValueToArray()) {
+            if (object instanceof String string) {
+                return JDBCCollection.makeCollectionFromString((JDBCSession) session, string);
+            } else {
+                return JDBCCollection.makeCollectionFromString((JDBCSession) session, CommonUtils.toString(object));
+            }
         } else {
-            return JDBCCollection.makeCollectionFromString((JDBCSession) session, CommonUtils.toString(object));
+            return object;
         }
+    }
+
+    protected boolean convertSingleValueToArray() {
+        return true;
     }
 
     @Override
