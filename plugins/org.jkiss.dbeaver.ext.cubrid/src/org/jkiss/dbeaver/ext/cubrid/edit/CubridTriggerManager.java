@@ -19,11 +19,11 @@ package org.jkiss.dbeaver.ext.cubrid.edit;
 import java.util.List;
 import java.util.Map;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTrigger;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTriggerManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
-import org.jkiss.dbeaver.ext.generic.model.GenericTrigger;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 
-public class CubridTriggerManager extends GenericTriggerManager {
+public class CubridTriggerManager extends GenericTriggerManager<CubridTrigger> {
 
     public static final String BASE_TRIGGER_NAME = "new_trigger";
 
@@ -43,11 +43,11 @@ public class CubridTriggerManager extends GenericTriggerManager {
 
     @Override
     protected CubridTrigger createDatabaseObject(
-            DBRProgressMonitor monitor,
-            DBECommandContext context,
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBECommandContext context,
             Object container,
             Object copyFrom,
-            Map<String, Object> options) throws DBException {
+            @NotNull Map<String, Object> options) throws DBException {
         return new CubridTrigger((GenericTableBase) container, BASE_TRIGGER_NAME, monitor);
     }
 
@@ -79,12 +79,11 @@ public class CubridTriggerManager extends GenericTriggerManager {
 
     @Override
     protected void createOrReplaceTriggerQuery(
-            DBRProgressMonitor monitor,
-            DBCExecutionContext executionContext,
-            List<DBEPersistAction> actions,
-            GenericTrigger genericTrigger,
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBCExecutionContext executionContext,
+            @NotNull List<DBEPersistAction> actions,
+            @NotNull CubridTrigger trigger,
             boolean create) {
-    	CubridTrigger trigger = (CubridTrigger) genericTrigger;
         StringBuilder sb = new StringBuilder();
         sb.append(create ? "CREATE TRIGGER" : "ALTER TRIGGER ");
         sb.append(trigger.getFullyQualifiedName(DBPEvaluationContext.DDL));
