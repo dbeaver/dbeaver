@@ -33,7 +33,6 @@ import java.util.Map;
 public class CubridPlanAnalyser extends AbstractExecutionPlan
 {
 
-    private static final String SPLIT_QUERY = "Join graph segments";
     private List<CubridPlanNode> rootNodes = new ArrayList<>();
     private String queryPlan;
     private String query;
@@ -49,9 +48,9 @@ public class CubridPlanAnalyser extends AbstractExecutionPlan
             List<CubridPlanNode> tempNode = new ArrayList<>();
             CubridPlanNode parent = new CubridPlanNode();
             long totalCost = 0;
-            for (String fullText : plan.split(SPLIT_QUERY)) {
+            for (String fullText : plan.split("(?=Join graph segments)")) {
                 if (CommonUtils.isNotEmpty(fullText)) {
-                    CubridPlanNode node = new CubridPlanNode(String.format("%s%s", SPLIT_QUERY, fullText));
+                    CubridPlanNode node = new CubridPlanNode(fullText);
                     totalCost = totalCost + node.getCost();
                     tempNode.add(node);
 
