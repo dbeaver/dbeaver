@@ -56,6 +56,10 @@ import java.util.stream.Collectors;
  */
 public class DBNModel {
 
+    //TODO: create real resource root node
+    //this 'node' exist to avoid collision between resource folders and other root nodes
+    //example: you can create 'datasources' folder, and nodeUri will be the same as for DBNProjectDatabases
+    public static final String FAKE_RESOURCE_ROOT_NODE = "resources";
     private static final Log log = Log.getLog(DBNModel.class);
 
     public static class NodePath {
@@ -159,7 +163,7 @@ public class DBNModel {
     }
 
     protected DBNProject createProjectNode(DBNRoot parent, DBPProject project) {
-        return new DBNProject(parent, project, null);
+        return new DBNProject(parent, project);
     }
 
     @Nullable
@@ -274,7 +278,7 @@ public class DBNModel {
         }
         NodePath nodePath = getNodePath(path);
         if (nodePath.legacyFormat) {
-            return DBNLegacyUtils.getDataSourceByPath(projectNode, nodePath);
+            return projectNode.getDatabases().getDataSource(nodePath.first());
         }
         DBNProjectDatabases databaseRootNode = projectNode.getDatabases();
         int rootDbNodeIndex = nodePath.pathItems.indexOf(databaseRootNode.getNodeId());
@@ -347,7 +351,7 @@ public class DBNModel {
         String expectedNodePathName = nodePath.pathItems.get(currentLevel);
         //skip fake root resource node
         //1 because project node is 0, fake resource node must be 1 in the path
-        if (currentLevel == 1 && DBNResource.FAKE_RESOURCE_ROOT_NODE.equals(expectedNodePathName)) {
+        if (currentLevel == 1 && FAKE_RESOURCE_ROOT_NODE.equals(expectedNodePathName)) {
             currentLevel++;
             expectedNodePathName = nodePath.pathItems.get(currentLevel);
         }
@@ -610,10 +614,6 @@ public class DBNModel {
             }
         }
         return true;
-    }
-
-    public static void disposeNode(DBNNode node, boolean reflect) {
-        node.dispose(reflect);
     }
 
     private class EventProcessingJob extends Job {

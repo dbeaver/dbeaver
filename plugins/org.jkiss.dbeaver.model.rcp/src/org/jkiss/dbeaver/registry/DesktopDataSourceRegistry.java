@@ -24,8 +24,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.rcp.DBeaverNature;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
-import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
 import org.jkiss.utils.ArrayUtils;
 
 public class DesktopDataSourceRegistry extends DataSourceRegistry {

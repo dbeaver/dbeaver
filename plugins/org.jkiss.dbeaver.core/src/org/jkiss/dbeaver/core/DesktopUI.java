@@ -226,7 +226,10 @@ public class DesktopUI extends ConsoleUserInterface {
     }
 
     @Override
-    public UserResponse showError(@Nullable String title, @Nullable String message, @NotNull Throwable error) {
+    public UserResponse showError(@Nullable String title, @Nullable String message, Throwable error) {
+        if (error == null) {
+            return showError(title, message);
+        }
         if (isHeadlessMode()) {
             return super.showError(title, message, error);
         }

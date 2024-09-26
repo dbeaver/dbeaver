@@ -131,6 +131,10 @@ public interface DBPPlatform {
     @NotNull
     Path getApplicationConfiguration();
 
+
+    @NotNull
+    DBPDataFormatterRegistry getDataFormatterRegistry();
+
     boolean isShuttingDown();
 
 }

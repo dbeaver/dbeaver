@@ -17,20 +17,16 @@
 package org.jkiss.dbeaver.model.sql.semantics;
 
 import org.antlr.v4.runtime.misc.Interval;
-import org.eclipse.core.resources.IMarker;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
-
-import java.io.Serializable;
 
 public class SQLQueryRecognitionProblemInfo {
 
     public enum Severity {
-        ERROR(IMarker.SEVERITY_ERROR),
-        WARNING(IMarker.SEVERITY_WARNING);
+        ERROR(2), // IMarker.SEVERITY_ERROR
+        WARNING(1); // IMarker.SEVERITY_WARNING
 
         public final int markerSeverity;
 
