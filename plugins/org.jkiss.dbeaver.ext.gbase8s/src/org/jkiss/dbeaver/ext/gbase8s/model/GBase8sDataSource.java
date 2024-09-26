@@ -67,8 +67,8 @@ public class GBase8sDataSource extends GenericDataSource {
             field = this.getClass().getSuperclass().getDeclaredField("queryGetActiveDB");
             field.setAccessible(true);
             field.set(this, getActiveDBQuery);
-        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-            log.error("Failed to replace the connector of the database/table in queryGetActiveDB .");
+        } catch (Exception e) {
+            log.error("Failed to replace the connector of the database/table in queryGetActiveDB", e);
         }
     }
 }
