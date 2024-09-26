@@ -93,6 +93,7 @@
         <module>org.jkiss.dbeaver.team.git</module>
 
         <module>org.jkiss.dbeaver.headless</module>
+
     </modules>
 
     <profiles>
