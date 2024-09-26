@@ -32,8 +32,10 @@ public class GBase8sCatalog extends GenericCatalog implements DBPSystemObject {
 
     @Override
     public boolean isSystem() {
-        return getName().equals("sys") || getName().equals("sysadmin") || getName().equalsIgnoreCase("sysmaster")
-                || getName().equals("sysuser") || getName().equals("sysutils");
+        return switch (getName().toLowerCase()) {
+        case "sys", "sysadmin", "sysmaster", "sysuser", "sysutils" -> true;
+        default -> false;
+        };
     }
 
 }
