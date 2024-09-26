@@ -292,14 +292,13 @@ public class CubridMetaModel extends GenericMetaModel
             @NotNull GenericStructContainer container,
             @Nullable GenericTableBase table)
             throws SQLException {
-        String sql = "select t1.*, t2.*, owner.name from db_trigger t1 join db_trig t2 \n"
-                + "on t1.name = t2.trigger_name where owner.name = ? \n"
-                + (table != null ? "and target_class_name = ?" : "");
+        boolean supportMultiSchema = ((CubridDataSource) table.getDataSource()).getSupportMultiSchema();
+        String sql = "select t1.*, t2.*, t1.owner.name from db_trigger as t1, db_trig as t2 \n"
+                + "where t1.name = t2.trigger_name and t1.owner.name = ? and t2.target_class_name = ? \n"
+                + (supportMultiSchema ? "and t1.owner.name = t2.owner_name" : "");
         final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         dbStat.setString(1, container.getName());
-        if (table != null) {
-            dbStat.setString(2, table.getName());
-        }
+        dbStat.setString(2, table.getName());
         return dbStat;
     }
 
@@ -323,8 +322,10 @@ public class CubridMetaModel extends GenericMetaModel
             @NotNull JDBCSession session,
             @NotNull GenericStructContainer container)
             throws SQLException {
-        String sql = "select t1.*, t2.*, owner.name from db_trigger t1 join db_trig t2 \n"
-                + "on t1.name = t2.trigger_name where owner.name = ? \n";
+        boolean supportMultiSchema = ((CubridDataSource) container.getDataSource()).getSupportMultiSchema();
+        String sql = "select t1.*, t2.*, t1.owner.name from db_trigger as t1, db_trig as t2 \n"
+                + "where t1.name = t2.trigger_name and t1.owner.name = ?\n"
+                + (supportMultiSchema ? "and t1.owner.name = t2.owner_name" : "");
         final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         dbStat.setString(1, container.getName());
         return dbStat;
