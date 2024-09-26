@@ -718,19 +718,19 @@
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=navigator_additions_end">
             <separator name="copy" visible="true"/>
 
-            <command commandId="org.eclipse.ui.edit.copy" label="%command.org.eclipse.ui.edit.copy.name">
+            <command commandId="org.eclipse.ui.edit.copy">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <command commandId="org.eclipse.ui.edit.paste" label="%command.org.eclipse.ui.edit.paste.name">
+            <command commandId="org.eclipse.ui.edit.paste">
                 <visibleWhen checkEnabled="true"/>
             </command>
             <command commandId="org.jkiss.dbeaver.core.edit.copy.special" label="%command.org.jkiss.dbeaver.core.edit.copy.adv_info">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <command commandId="org.eclipse.ui.edit.delete" label="%command.org.eclipse.ui.edit.delete.name">
+            <command commandId="org.eclipse.ui.edit.delete">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <command commandId="org.eclipse.ui.edit.rename" label="%command.org.eclipse.ui.edit.rename.name">
+            <command commandId="org.eclipse.ui.edit.rename">
                 <visibleWhen checkEnabled="true"/>
             </command>
             
@@ -1228,6 +1228,14 @@
         <notification id="reconnect.success" name="Datasource invalidation success"/>
         <notification id="reconnect.failure" name="Datasource invalidation failure"/>
         <notification id="agent.notify" name="Long-time operations" description="This is a notification for long-time operations.&#10;It will be shown for all operations that have exceeded the specified timeout." soundEnabled="true"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.clearHistoryHandler">
+        <handler
+            id="clearBrowserCookies"
+            name="%handler.clearBrowserCookies.name"
+            description="%handler.clearBrowserCookies.description"
+            handler="org.jkiss.dbeaver.ui.browser.handlers.BrowserClearCookiesHandler"/>
     </extension>
 
 </plugin>

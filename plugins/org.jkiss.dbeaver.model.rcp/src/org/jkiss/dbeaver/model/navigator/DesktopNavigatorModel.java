@@ -61,11 +61,14 @@ public class DesktopNavigatorModel extends DBNModel {
     @Override
     protected DBNProject createProjectNode(DBNRoot parent, DBPProject project) {
         DBPPlatform platform = DBWorkbench.getPlatform();
-        return new DBNProject(
-            parent,
-            project,
-            platform instanceof DBPPlatformDesktop && project instanceof RCPProject rcpProject ?
-                ((DBPPlatformDesktop)platform).getWorkspace().getResourceHandler(rcpProject.getEclipseProject()) : null);
+        if (platform instanceof DBPPlatformDesktop platformDesktop && project instanceof RCPProject rcpProject) {
+            return new DBNProjectDesktop(
+                parent,
+                rcpProject,
+                platformDesktop.getWorkspace().getResourceHandler(rcpProject.getEclipseProject()));
+        } else {
+            throw new IllegalStateException("Desktop navigator model can be used only in RCP applications");
+        }
     }
 
 }

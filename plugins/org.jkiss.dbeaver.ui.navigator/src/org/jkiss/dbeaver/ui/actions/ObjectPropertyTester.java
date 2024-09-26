@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPOrderedObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.navigator.*;
@@ -275,7 +276,8 @@ public class ObjectPropertyTester extends PropertyTester {
      * Check whether the owner project of the specified node has required permissions
      */
     public static boolean nodeProjectHasPermission(@NotNull DBNNode node, @NotNull String permissionName) {
-        return node.getOwnerProject().hasRealmPermission(permissionName);
+        DBPProject ownerProject = node.getOwnerProjectOrNull();
+        return ownerProject != null && ownerProject.hasRealmPermission(permissionName);
     }
 
     public static boolean canCreateObject(DBNNode node, Boolean onlySingle) {

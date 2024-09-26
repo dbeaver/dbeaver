@@ -102,16 +102,6 @@
 
     <extension point="org.jkiss.dbeaver.resourceType">
         <type id="default"/>
-        <type id="project">
-            <resourceTypeBinding resourceType="org.eclipse.core.resources.IProject"/>
-        </type>
-        <type id="bookmark" name="Navigator bookmarks" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/bookmark_folder.png" managable="true">
-            <root folder="Bookmarks"/>
-            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.bookmark"/>
-        </type>
-        <type id="shortcut">
-            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.shortcut"/>
-        </type>
     </extension>
 
 </plugin>

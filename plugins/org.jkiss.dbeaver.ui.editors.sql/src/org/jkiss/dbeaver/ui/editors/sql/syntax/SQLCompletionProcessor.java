@@ -181,15 +181,11 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 if (mode.useNewAnalyzer) {
                     SQLQueryCompletionAnalyzer newAnalyzer = new SQLQueryCompletionAnalyzer(this.editor, request);
                     AbstractJob newJob = new AbstractJob("Analyzing query for proposals...") {
-                        {
-                            setSystem(true);
-                            setUser(false);
-                        }
-
                         @Override
                         protected IStatus run(DBRProgressMonitor monitor) {
                             try {
-                                monitor.beginTask("Seeking for SQL completion proposals", 1);
+                                monitor.beginTask("Seeking for SQL completion proposals", 2);
+                                monitor.worked(1);
                                 try {
                                     monitor.subTask("Find proposals");
                                     if (editor.getDataSource() != null) {
@@ -200,7 +196,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                                 } finally {
                                     monitor.done();
                                 }
-                                return Status.OK_STATUS;
+                                return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
                             } catch (Throwable e) {
                                 log.error(e);
                                 return Status.CANCEL_STATUS;
@@ -213,7 +209,11 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 }
 
                 completionJobs.forEach(UIUtils::waitJobCompletion);
-                proposals = completionSuppliers.stream().flatMap(s -> s.get().stream()).toList();
+                if (completionJobs.stream().anyMatch(j -> j.isCanceled())) {
+                    proposals = Collections.emptyList();
+                } else {
+                    proposals = completionSuppliers.stream().flatMap(s -> s.get().stream()).toList();
+                }
                 break;
             default:
                 proposals = Collections.emptyList();

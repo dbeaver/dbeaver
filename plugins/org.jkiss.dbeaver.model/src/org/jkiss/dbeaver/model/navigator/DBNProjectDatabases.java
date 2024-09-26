@@ -62,7 +62,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     protected void dispose(boolean reflect)
     {
         for (DBNDataSource dataSource : dataSources) {
-            dataSource.dispose(reflect);
+            DBNUtils.disposeNode(dataSource, reflect);
         }
         dataSources.clear();
         folderNodes.clear();
@@ -319,7 +319,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         }
         if (removedNode != null) {
             children = null;
-            removedNode.dispose(true);
+            DBNUtils.disposeNode(removedNode, true);
             refreshChildren();
         }
     }

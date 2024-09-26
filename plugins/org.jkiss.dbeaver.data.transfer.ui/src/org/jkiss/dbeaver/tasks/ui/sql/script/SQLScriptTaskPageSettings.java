@@ -458,7 +458,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                         log.debug("Script file '" + filePath + "' not found");
                         continue;
                     }
-                    DBNResource resource = projectNode.findResource(monitor, workspaceFile);
+                    DBNNode resource = projectNode.findResource(monitor, workspaceFile);
                     if (resource != null) {
                         selectedScripts.add(resource);
                     }

@@ -32,6 +32,7 @@ Export-Package: org.jkiss.dbeaver.runtime,
  org.jkiss.dbeaver.ui.swt
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.expressions,
+ org.eclipse.core.filesystem,
  org.eclipse.core.resources,
  org.eclipse.emf.common,
  org.eclipse.jface.text,

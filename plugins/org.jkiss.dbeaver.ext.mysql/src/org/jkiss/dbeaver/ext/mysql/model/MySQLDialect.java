@@ -244,7 +244,7 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
     }
 
     @Override
-    public boolean mustBeQuoted(String str, boolean forceCaseSensitive) {
+    public boolean mustBeQuoted(@NotNull String str, boolean forceCaseSensitive) {
         Matcher matcher = ONE_OR_MORE_DIGITS_PATTERN.matcher(str);
         if (matcher.lookingAt()) { // we should quote numeric names and names starts with number
             return true;

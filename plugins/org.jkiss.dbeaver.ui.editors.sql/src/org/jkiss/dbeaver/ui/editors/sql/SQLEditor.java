@@ -81,7 +81,6 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.DefaultServerOutputReader;
-import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerCount;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.NavigatorResources;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -94,6 +93,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.data.SQLQueryDataContainer;
+import org.jkiss.dbeaver.model.sql.transformers.SQLQueryTransformerCount;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -1233,7 +1233,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     public boolean isMultipleResultsPerTabEnabled() {
-        return CommonUtils.toBoolean(multipleResultsPerTabProperty.getPropertyValue(this).value);
+        return CommonUtils.toBoolean(multipleResultsPerTabProperty.getPropertyValue(this).value, false);
     }
 
     /**
@@ -2778,7 +2778,14 @@ public class SQLEditor extends SQLEditorBase implements
             // 1. Or all tabs are closed and no query processors are present
             // 2. Or current query processor has pinned tabs
             // 3. Or current query processor has running jobs
-            if (newTab || queryProcessors.isEmpty() || curQueryProcessor.getRunningJobs() > 0 || curQueryProcessor.hasPinnedTabs()) {
+            // 4. Or current query processor is multi-tabbed and user wants single-tabbed or vice versa
+            var noQueryProcessors = queryProcessors.isEmpty();
+            var hasRunningJobs = !noQueryProcessors && curQueryProcessor.getRunningJobs() > 0;
+            var hasPinnedTabs = !noQueryProcessors && curQueryProcessor.hasPinnedTabs();
+            var needAnotherQueryProcessor = !noQueryProcessors && useTabPerQuery(isSingleQuery)
+                && !(curQueryProcessor instanceof MultiTabsQueryProcessor);
+
+            if (newTab || noQueryProcessors || hasRunningJobs || hasPinnedTabs || needAnotherQueryProcessor) {
                 boolean foundSuitableTab = false;
                 boolean anyNotPinnedTab = false;
 
@@ -2798,7 +2805,7 @@ public class SQLEditor extends SQLEditorBase implements
                 // Just create a new query processor
                 if (!foundSuitableTab && (newTab || !anyNotPinnedTab)) {
                     // If we already have useless multi-tabbed processor, but we want single-tabbed, then get rid of the useless one  
-                    if (!useTabPerQuery(queries.size() == 1) && curQueryProcessor instanceof MultiTabsQueryProcessor
+                    if (needAnotherQueryProcessor
                         && curQueryProcessor.getResultContainers().size() == 1
                         && !curQueryProcessor.getFirstResults().viewer.hasData()
                     ) {
@@ -2913,6 +2920,12 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             }
             return confirmResult;
+        } else if (tabsToClose.size() == 1) {
+            if (tabsToClose.get(0).getData() instanceof SingleTabQueryProcessor sqp) {
+                // to avoid concurrent modification exception
+                List<QueryResultsContainer> results = new ArrayList<>(sqp.getResultContainers());
+                results.stream().skip(1).forEach(QueryResultsContainer::dispose);
+            }
         }
         // No need to close anything
         return IDialogConstants.IGNORE_ID;
