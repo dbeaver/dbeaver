@@ -566,12 +566,12 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     }
 
     @Override
-    public String getRuntimeProperty(String key) {
+    public String getRuntimeProperty(@NotNull String key) {
         return runtimeProperties.get(key);
     }
 
     @Override
-    public void setRuntimeProperty(String key, String value) {
+    public void setRuntimeProperty(@NotNull String key, String value) {
         runtimeProperties.put(key, value);
     }
 

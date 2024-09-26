@@ -163,6 +163,20 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
      */
     void dispose();
 
-    void setRuntimeProperty(String key, String value);
-    String getRuntimeProperty(String key);
+    /**
+     * Get the runtime property. Runtime property is a property that doesn't be stored and exists only in runtime.
+     *
+     * @param key property key
+     * @return property value
+     */
+    @Nullable
+    String getRuntimeProperty(@NotNull String key);
+
+    /**
+     * Set the runtime property.
+     *
+     * @param key   property key
+     * @param value property value
+     */
+    void setRuntimeProperty(@NotNull String key, @Nullable String value);
 }
