@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.altibase.AltibaseUtils;
 import org.jkiss.dbeaver.model.DBPObjectStatistics;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -122,6 +123,8 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
     private String qry4Size;
     
     final FileCache fileCache = new FileCache();
+    final TablePartnCache tablePartnCache = new TablePartnCache();
+    final IndexPartnCache indexPartnCache = new IndexPartnCache();
     
     protected AltibaseTablespace(AltibaseDataSource dataSource, ResultSet dbResult) {
         super(dataSource, true);
@@ -326,37 +329,14 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
         }
     }
     
-
-    /**
-     * Return file collection belongs to this tablespace.
-     */
-    @Association
-    public Collection<AltibaseDataFile> getFiles(DBRProgressMonitor monitor) throws DBException {
-        return fileCache.getAllObjects(monitor, this);
-    }
-    
-    /**
-     * Returns AltibaseDataFile matches to fileId
-     */
-    public AltibaseDataFile getFile(DBRProgressMonitor monitor, int fileId) throws DBException {
-        for (AltibaseDataFile file : fileCache.getAllObjects(monitor, this)) {
-            if (file.getId() == fileId) {
-                return file;
-            }
-        }
-        return null;
-    }
-    
-    public FileCache getFileCache() {
-        return fileCache;
-    }
-    
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         usedSize = null;
         availableSize = null;
         
         fileCache.clearCache();
+        tablePartnCache.clearCache();
+        indexPartnCache.clearCache();
         
         getDataSource().resetStatistics();
         return this;
@@ -412,6 +392,30 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
         long totalSize = dbResult.getLong("TOTAL_SIZE");
         usedSize = dbResult.getLong("USED_SIZE");
         availableSize = totalSize - usedSize;
+    }
+    
+    /**
+     * Return file collection belongs to this tablespace.
+     */
+    @Association
+    public Collection<AltibaseDataFile> getFiles(DBRProgressMonitor monitor) throws DBException {
+        return fileCache.getAllObjects(monitor, this);
+    }
+    
+    /**
+     * Returns AltibaseDataFile matches to fileId
+     */
+    public AltibaseDataFile getFile(DBRProgressMonitor monitor, int fileId) throws DBException {
+        for (AltibaseDataFile file : fileCache.getAllObjects(monitor, this)) {
+            if (file.getId() == fileId) {
+                return file;
+            }
+        }
+        return null;
+    }
+    
+    public FileCache getFileCache() {
+        return fileCache;
     }
     
     /**
@@ -479,6 +483,126 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
         }
     }
 
+    /**
+     * Return tables belongs to this tablespace.
+     */
+    @Association
+    public Collection<AltibaseTablespaceObj4Table> getAltibaseTablespaceObj4Tables(DBRProgressMonitor monitor) throws DBException {
+        return tablePartnCache.getAllObjects(monitor, this);
+    }
+
+    /**
+     *  Returns Table and partition belongs to this partition  
+     */
+    static class TablePartnCache extends JDBCObjectCache<AltibaseTablespace, AltibaseTablespaceObj4Table> {
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(
+                @NotNull JDBCSession session, 
+                @NotNull AltibaseTablespace owner) throws SQLException {
+            
+            String qry = 
+                    "SELECT * FROM"
+                    + " ("
+                    + " SELECT"
+                        + " u.user_name, t.table_name AS obj_name, null as partition_name"
+                    + " FROM"
+                        + " system_.sys_users_ u, system_.sys_tables_ t"
+                    + " WHERE"
+                        + " u.user_id = t.user_id AND (t.table_type = 'T' OR t.table_type = 'Q') AND "
+                        + " t.is_partitioned = 'F' AND t.tbs_id = ?"
+                    + " UNION ALL"
+                    + " SELECT"
+                        + " u.user_name, t.table_name AS obj_name, tp.partition_name"
+                    + " FROM"
+                        + " system_.sys_users_ u, system_.sys_tables_ t, system_.sys_table_partitions_ tp"
+                    + " WHERE"
+                        + " u.user_id = t.user_id AND (t.table_type = 'T' OR t.table_type = 'Q') AND "
+                        + " t.is_partitioned = 'T' AND t.table_id = tp.table_id AND tp.tbs_id = ?"
+                + " )"
+                + " ORDER BY 1,2,3";
+
+            
+            final JDBCPreparedStatement dbStat = session.prepareStatement(qry);
+            dbStat.setInt(1, owner.id);
+            dbStat.setInt(2, owner.id);
+            return dbStat;
+        }
+
+        @Override
+        protected AltibaseTablespaceObj4Table fetchObject(
+                @NotNull JDBCSession session, 
+                @NotNull AltibaseTablespace owner, 
+                @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+            return new AltibaseTablespaceObj4Table(owner, resultSet);
+        }
+    }
+    
+    /**
+     *  Returns Table and partition belongs to this partition  
+     */
+
+    @Association
+    public Collection<AltibaseTablespaceObj4Index> getAltibaseTablespaceObj4Indexes(DBRProgressMonitor monitor) throws DBException {
+        return indexPartnCache.getAllObjects(monitor, this);
+    }
+
+    static class IndexPartnCache extends JDBCObjectCache<AltibaseTablespace, AltibaseTablespaceObj4Index> {
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(
+                @NotNull JDBCSession session, 
+                @NotNull AltibaseTablespace owner) throws SQLException {
+            
+            String qry = 
+                    "SELECT * FROM"
+                    + " ("
+                    + " SELECT"
+                        + " u.user_name"
+                        + " ,i.index_name AS obj_name"
+                        + " ,NULL AS partition_name"
+                        + " , ut.user_name AS table_schema"
+                        + " , t.table_name"
+                    + " FROM"
+                        + " system_.sys_users_ u, system_.sys_indices_ i, system_.sys_users_ ut, system_.sys_tables_ t"
+                    + " WHERE"
+                        + " u.user_id = i.user_id AND i.is_partitioned = 'F'"
+                        + " AND i.table_id = t.table_id AND ut.user_id = t.user_id"
+                        + " AND i.tbs_id = ?"
+                    + " UNION ALL "
+                    + " SELECT"
+                        + " u.user_name"
+                        + " ,i.index_name AS obj_name"
+                        + " ,ip.index_partition_name"
+                        + " , ut.user_name AS table_schema"
+                        + " , t.table_name"
+                    + " FROM"
+                        + " system_.sys_users_ u, system_.sys_indices_ i, system_.sys_index_partitions_ ip, "
+                        + " system_.sys_users_ ut, system_.sys_tables_ t"
+                    + " WHERE"
+                        + " u.user_id = ip.user_id"
+                        + " AND i.index_id = ip.index_id"
+                        + " AND i.is_partitioned = 'T'"
+                        + " AND i.table_id = t.table_id AND ut.user_id = t.user_id"
+                        + " AND ip.tbs_id = ?"
+                    + " )"
+                    + " ORDER BY 1, 2, 3";
+
+            final JDBCPreparedStatement dbStat = session.prepareStatement(qry);
+            dbStat.setInt(1, owner.id);
+            dbStat.setInt(2, owner.id);
+            return dbStat;
+        }
+
+        @Override
+        protected AltibaseTablespaceObj4Index fetchObject(
+                @NotNull JDBCSession session, 
+                @NotNull AltibaseTablespace owner, 
+                @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+            return new AltibaseTablespaceObj4Index(owner, resultSet);
+        }
+    }
+
     static Object resolveTablespaceReference(DBRProgressMonitor monitor, DBSObjectLazy<AltibaseDataSource> referrer, 
             @Nullable Object propertyId) throws DBException {
         final AltibaseDataSource dataSource = referrer.getDataSource();
@@ -488,10 +612,9 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
     public static class TablespaceReferenceValidator implements IPropertyCacheValidator<DBSObjectLazy<AltibaseDataSource>> {
         @Override
         public boolean isPropertyCached(DBSObjectLazy<AltibaseDataSource> object, Object propertyId) {
-            return
-                object.getLazyReference(propertyId) instanceof AltibaseTablespace ||
-                object.getLazyReference(propertyId) == null ||
-                object.getDataSource().tablespaceCache.isFullyCached();
+            return object.getLazyReference(propertyId) instanceof AltibaseTablespace ||
+                    object.getLazyReference(propertyId) == null ||
+                    object.getDataSource().tablespaceCache.isFullyCached();
         }
     }
 }

@@ -168,9 +168,9 @@
                 <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridServer" label="%tree.servers.node.name" icon="#folder_server" description="%tree.servers.node.tip" visibleIf="object.supportsServer()">
                     <items label="%tree.server.node.name" path="cubridServer" property="cubridServers" icon="#server"/>
                 </folder>
-                <folder id="users" type="org.jkiss.dbeaver.ext.cubrid.model.CubridUser" label="%tree.users.node.name" icon="#folder_user"
+                <folder id="privilages" type="org.jkiss.dbeaver.ext.cubrid.model.CubridPrivilage" label="%tree.users.node.name" icon="#folder_user"
                         description="%tree.users.node.tip">
-                    <items label="%tree.user.node.name" path="cubridUser" property="cubridUsers" icon="#user"/>
+                    <items label="%tree.user.node.name" path="CubridPrivilage" property="CubridPrivilages" icon="#user"/>
                 </folder>
                 <folder type="org.jkiss.dbeaver.model.struct.DBSDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="%tree.dataTypes.node.tip">
                     <items label="%tree.dataType.node.name" path="dataType" property="dataTypes" icon="#data_type"/>
@@ -225,6 +225,7 @@
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridTableManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridPartition"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridTableManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTable"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridTableColumnManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTableColumn"/>
+        <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridServerManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridServer"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridSequenceManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridSequence"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridViewManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridView"/>
     </extension>
