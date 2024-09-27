@@ -773,20 +773,16 @@ public class GeneralUtils {
     }
 
     public static Path getMetadataFolder() {
-        try {
-            final File workspacePath = RuntimeUtils.getLocalFileFromURL(Platform.getInstanceLocation().getURL());
-            Path metaDir = getMetadataFolder(workspacePath.toPath());
-            if (!Files.exists(metaDir)) {
-                try {
-                    Files.createDirectories(metaDir);
-                } catch (IOException e) {
-                    return Platform.getLogFileLocation().toFile().toPath();
-                }
+        Path workspacePath = DBWorkbench.getPlatform().getWorkspace().getAbsolutePath();
+        Path metaDir = getMetadataFolder(workspacePath);
+        if (!Files.exists(metaDir)) {
+            try {
+                Files.createDirectories(metaDir);
+            } catch (IOException e) {
+                return Platform.getLogFileLocation().toFile().toPath();
             }
-            return metaDir;
-        } catch (IOException e) {
-            throw new IllegalStateException("Can't parse workspace location URL", e);
         }
+        return metaDir;
     }
 
     public static Path getMetadataFolder(Path workspaceFolder) {
