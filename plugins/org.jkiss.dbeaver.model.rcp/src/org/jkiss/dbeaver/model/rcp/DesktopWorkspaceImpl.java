@@ -318,13 +318,16 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
         if (!(project instanceof RCPProject rcpProject)) {
             throw new DBException("Project '" + project.getName() + "' is not an RCP project");
         }
+        if (project == activeProject) {
+            throw new DBException("You cannot delete active project");
+        }
         IProject eclipseProject = rcpProject.getEclipseProject();
+        if (eclipseProject == null) {
+            throw new DBException("Project '" + project.getName() + "' is not an Eclipse project");
+        }
         if (project.isUseSecretStorage()) {
             var secretController = DBSSecretController.getProjectSecretController(project);
             secretController.deleteProjectSecrets(project.getId());
-        }
-        if (eclipseProject == null) {
-            throw new DBException("Project '" + project.getName() + "' is not an Eclipse project");
         }
         try {
             eclipseProject.delete(deleteContents, true, new NullProgressMonitor());
