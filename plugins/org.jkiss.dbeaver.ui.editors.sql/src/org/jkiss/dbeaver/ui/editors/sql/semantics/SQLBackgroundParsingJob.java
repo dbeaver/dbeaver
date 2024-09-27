@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.utils.ListNode;
+import org.jkiss.utils.Pair;
 
 import java.util.ArrayDeque;
 import java.util.Comparator;
@@ -240,22 +241,8 @@ public class SQLBackgroundParsingJob {
                     return SQLQueryCompletionContext.prepareOffquery(scriptItem.offset);
                 }
                 LSMInspections.SyntaxInspectionResult syntaxInspectionResult = LSMInspections.prepareAbstractSyntaxInspection(syntaxNode, position);
-                SQLQueryDataContext context = null;
-                SQLQueryNodeModel node = model.findNodeContaining(position);
-                SQLQueryLexicalScopeItem lexicalItem = null;
-                if (node != null) {
-                    SQLQueryLexicalScope scope = node.findLexicalScope(position);
-                    if (scope != null) {
-                        context = scope.getContext();
-                        lexicalItem = scope.findItem(position);
-                    }
-                    if (context == null) {
-                        context = node.getGivenDataContext();
-                    }
-                } else {
-                    return SQLQueryCompletionContext.EMPTY;
-                }
-                if (context == null) {
+                Pair<SQLQueryDataContext, SQLQueryLexicalScopeItem> contextAndLexicalItem = model.findLexicalContext(position);
+                if (contextAndLexicalItem.getFirst() == null) {
                     return SQLQueryCompletionContext.EMPTY;
                 }
 
@@ -285,11 +272,15 @@ public class SQLBackgroundParsingJob {
                         }
                     }
                 }
+                SQLQueryLexicalScopeItem lexicalItem = contextAndLexicalItem.getSecond();
+                if (nameNodes.isEmpty() || (lexicalItem != null && nameNodes.getLast().getRealInterval().b != lexicalItem.getSyntaxNode().getRealInterval().b)) {
+                    lexicalItem = null;
+                }
                 return SQLQueryCompletionContext.prepare(
                         scriptItem,
                         this.editor.getExecutionContext(),
                         syntaxInspectionResult,
-                        context,
+                        contextAndLexicalItem.getFirst(),
                         lexicalItem,
                         nameNodes.toArray(STMTreeTermNode[]::new)
                 );
