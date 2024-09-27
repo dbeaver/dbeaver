@@ -2181,14 +2181,21 @@ public class DataSourceDescriptor
         }
 
         //do not store handlers in secret for shared connections
-        if (!isSharedCredentials() && CommonUtils.isEmpty(connectionInfo.getConfigProfileName())) {
+        if (!isSharedCredentials()) {
             // Handlers. If config profile is set then props are saved there
+            DBWNetworkProfile activeProfile = CommonUtils.isEmpty(connectionInfo.getConfigProfileName())
+                ? null
+                : this.getRegistry().getNetworkProfile(connectionInfo.getConfigProfileSource(), connectionInfo.getConfigProfileName());
+
             List<Map<String, Object>> handlersConfigs = new ArrayList<>();
             for (DBWHandlerConfiguration hc : connectionInfo.getHandlers()) {
-                Map<String, Object> handlerProps = hc.saveToSecret();
-                if (!handlerProps.isEmpty()) {
-                    handlerProps.put(RegistryConstants.ATTR_ID, hc.getId());
-                    handlersConfigs.add(handlerProps);
+                DBWHandlerConfiguration profileConfig = activeProfile == null ? null : activeProfile.getConfiguration(hc.getHandlerDescriptor());
+                if (profileConfig == null || !profileConfig.isEnabled()) {
+                    Map<String, Object> handlerProps = hc.saveToSecret();
+                    if (!handlerProps.isEmpty()) {
+                        handlerProps.put(RegistryConstants.ATTR_ID, hc.getId());
+                        handlersConfigs.add(handlerProps);
+                    }
                 }
             }
             if (!handlersConfigs.isEmpty()) {
