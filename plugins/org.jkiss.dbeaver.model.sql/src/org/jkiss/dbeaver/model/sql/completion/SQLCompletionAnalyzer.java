@@ -270,7 +270,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     } else {
                         rootObject = dataSource;
                     }
-                    if (!(rootObject instanceof DBPDataSource)) {
+                    if (!(rootObject instanceof DBPDataSource) || rootObject == dataSource) {
                         makeDataSourceProposals(parameters);
                     }
                 }
