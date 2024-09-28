@@ -215,7 +215,8 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
             configurer.getWindow()));
 
         // Show heap usage
-        //PlatformUI.getPreferenceStore().setValue(IWorkbenchPreferenceConstants.SHOW_MEMORY_MONITOR, true);
+        PlatformUI.getPreferenceStore().setDefault(IWorkbenchPreferenceConstants.SHOW_MEMORY_MONITOR, true);
+
         hookTitleUpdateListeners(configurer);
 
         // Initialize drivers in the very beginning
