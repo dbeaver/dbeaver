@@ -86,7 +86,8 @@ identifier: (Introducer characterSetSpecification)? actualIdentifier;
 actualIdentifier: (Identifier|DelimitedIdentifier|nonReserved|Quotted);
 
 // data types
-dataType: (datetimeType|intervalType|qualifiedName|anyWordsWithProperty (CHARACTER SET characterSetSpecification)?);
+dataType: (arrayType|datetimeType|intervalType|qualifiedName|anyWordsWithProperty (CHARACTER SET characterSetSpecification)?);
+arrayType: ARRAY LeftParen dataType RightParen; // TODO parse it conditionally on the database engine?
 datetimeType: DATE|TIME (LeftParen UnsignedInteger RightParen)? (WITH TIME ZONE)?|TIMESTAMP (LeftParen UnsignedInteger RightParen)? (WITH TIME ZONE)?;
 intervalType: INTERVAL intervalQualifier;
 intervalQualifier: (startField TO endField|singleDatetimeField);
@@ -443,5 +444,5 @@ nonReserved: COMMITTED | REPEATABLE | SERIALIZABLE | TYPE | UNCOMMITTED |
     EXTRACT | FULL | GLOBAL | LOCAL | INDICATOR | INITIALLY | INTERVAL | ISOLATION | KEY | LEVEL |
     NAMES | NO | NULLIF| ONLY | OVERLAPS| PARTIAL | PRESERVE | READ | RESTRICT | ROLLBACK | SCHEMA |
     SESSION | SET | TEMPORARY | TIME | TIMESTAMP | TIMEZONE_HOUR | TIMEZONE_MINUTE | TRANSACTION |
-    VIEW | WORK | WRITE
+    VIEW | WORK | WRITE | ARRAY
 ;
