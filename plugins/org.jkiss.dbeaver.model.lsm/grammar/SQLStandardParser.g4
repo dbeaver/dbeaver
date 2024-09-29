@@ -77,12 +77,11 @@ timestampLiteral: TIMESTAMP StringLiteralContent;
 intervalLiteral: INTERVAL sign? valueExpressionPrimary intervalQualifier;
 
 // identifiers
-characterSetSpecification: characterSetName;
-characterSetName: (schemaName Period)? Identifier;
-schemaName: (catalogName Period)? unqualifiedSchemaName;
-unqualifiedSchemaName: identifier;
-qualifiedName: (schemaName Period)? identifier;
-catalogName: identifier;
+characterSetSpecification: qualifiedName;
+characterSetName: qualifiedName;
+schemaName: qualifiedName;
+
+qualifiedName: identifier (Period identifier)* Period??;
 identifier: (Introducer characterSetSpecification)? actualIdentifier;
 actualIdentifier: (Identifier|DelimitedIdentifier|nonReserved|Quotted);
 
@@ -165,7 +164,8 @@ parameterSpecification: parameterName (indicatorParameter)?;
 parameterName: Colon identifier;
 indicatorParameter: (INDICATOR)? parameterName;
 dynamicParameterSpecification: QuestionMark;
-columnReference: ((qualifier Period)? (columnName))|(qualifier Period Asterisk);
+columnReference: qualifiedName | (tableName tupleRefSuffix);
+tupleRefSuffix: Period Asterisk;
 //columnReference: identifier (Period identifier (Period identifier (Period identifier)?)?)?;
 valueReference: (columnReference|valueRefNestedExpr) valueRefIndexingStep* (valueRefMemberStep valueRefIndexingStep*)*;
 valueRefNestedExpr: LeftParen valueReference RightParen;
@@ -173,7 +173,6 @@ valueRefIndexingStep: LeftBracket (valueRefIndexingStepDirect|valueRefIndexingSt
 valueRefIndexingStepDirect: signedNumericLiteral;
 valueRefIndexingStepSlice: signedNumericLiteral? Colon signedNumericLiteral?;
 valueRefMemberStep: Period identifier;
-qualifier: (tableName|correlationName);
 correlationName: identifier;
 
 withClause: WITH RECURSIVE? cteList;
@@ -204,7 +203,7 @@ queryExpression: (joinedTable|nonJoinQueryTerm) (unionTerm|exceptTerm)*;
 
 // from
 fromClause: FROM tableReference (Comma tableReference)*;
-nonjoinedTableReference: (tableName (PARTITION anyProperty)? (correlationSpecification)?)|(derivedTable correlationSpecification?);
+nonjoinedTableReference: (tableName (PARTITION anyProperty)? correlationSpecification?)|(derivedTable correlationSpecification?);
 tableReference: nonjoinedTableReference|joinedTable|tableReferenceHints|anyUnexpected??; // '.*' to handle incomplete queries
 tableReferenceHints: (tableHintKeywords|anyWord)+ anyProperty; // dialect-specific options, should be described and moved to dialects in future
 joinedTable: (nonjoinedTableReference|(LeftParen joinedTable RightParen)) (naturalJoinTerm|crossJoinTerm)+;

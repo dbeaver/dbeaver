@@ -190,12 +190,21 @@ public abstract class SQLQueryDataContext {
     public static class KnownSourcesInfo {
         @NotNull
         private final Map<SQLQueryRowsSourceModel, SourceResolutionResult> sources = new HashMap<>();
+        @NotNull
+        private final Set<DBSObject> referencedTables = new HashSet<>();
+        @NotNull
+        private final Set<String> aliasesInUse = new HashSet<>();
+
+        private final Map<SQLQueryRowsSourceModel, SourceResolutionResult> sourcesView = Collections.unmodifiableMap(sources);
+        private final Set<DBSObject> referencedTablesView = Collections.unmodifiableSet(this.referencedTables);
+        private final Set<String> aliasesInUseView = Collections.unmodifiableSet(this.aliasesInUse);
 
         public void registerTableReference(@NotNull SQLQueryRowsSourceModel source, @NotNull DBSEntity table) {
             SQLQueryRowsSourceModel sourceModel = source instanceof SQLQueryRowsCorrelatedSourceModel cc && cc.getCorrelationColumNames().isEmpty()
                 ? cc.getSource() : source;
             this.sources.compute(sourceModel, (k, v) -> v == null
                 ? SourceResolutionResult.forRealTableByName(sourceModel, table) : SourceResolutionResult.withRealTable(v, table));
+            this.referencedTables.add(table);
         }
 
         public void registerAlias(@NotNull SQLQueryRowsSourceModel source, @NotNull SQLQuerySymbol alias) {
@@ -203,11 +212,22 @@ public abstract class SQLQueryDataContext {
                 ? cc.getSource() : source;
             this.sources.compute(sourceModel, (k, v) -> v == null
                 ? SourceResolutionResult.forSourceByAlias(sourceModel, alias) : SourceResolutionResult.withAlias(v, alias));
+            this.aliasesInUse.add(alias.getName());
         }
 
         @NotNull
         public Map<SQLQueryRowsSourceModel, SourceResolutionResult> getResolutionResults() {
-            return Collections.unmodifiableMap(this.sources);
+            return this.sourcesView;
+        }
+
+        @NotNull
+        public Set<DBSObject> getReferencedTables() {
+            return this.referencedTablesView;
+        }
+
+        @NotNull
+        public Set<String> getAliasesInUse() {
+            return this.aliasesInUseView;
         }
     }
 

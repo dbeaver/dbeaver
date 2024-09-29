@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.resources;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -99,6 +100,9 @@ public abstract class AbstractResourceHandler implements DBPResourceHandler {
 
     @Override
     public DBPImage getResourceIcon(@NotNull IResource resource) {
+        if (resource instanceof IContainer) {
+            return null;
+        }
         String fileExtension = resource.getFileExtension();
         if (!CommonUtils.isEmpty(fileExtension)) {
             ProgramInfo program = ProgramInfo.getProgram(fileExtension);
