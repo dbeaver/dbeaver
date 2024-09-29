@@ -77,7 +77,6 @@ public class ObjectPropertyTester extends PropertyTester {
     @SuppressWarnings("unchecked")
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-
         DBNNode node = RuntimeUtils.getObjectAdapter(receiver, DBNNode.class);
         if (node == null) {
             return false;
@@ -136,9 +135,9 @@ public class ObjectPropertyTester extends PropertyTester {
 */
             }
             case PROP_SUPPORTS_NATIVE_EXECUTION:
-                if (receiver instanceof DBNResource) {
+                if (receiver instanceof DBNResource dbnResource) {
                     List<DBPDataSourceContainer> associatedDataSources
-                        = (List<DBPDataSourceContainer>) ((DBNResource) receiver).getAssociatedDataSources();
+                        = (List<DBPDataSourceContainer>) dbnResource.getAssociatedDataSources();
                     if (CommonUtils.isEmpty(associatedDataSources)) {
                         return false;
                     }
@@ -164,8 +163,8 @@ public class ObjectPropertyTester extends PropertyTester {
                     return false;
                 }
 
-                if (node instanceof DBSWrapper) {
-                    DBSObject object = ((DBSWrapper) node).getObject();
+                if (node instanceof DBSWrapper wrapper) {
+                    DBSObject object = wrapper.getObject();
                     if (object == null || DBUtils.isReadOnly(object) || !(node.getParentNode() instanceof DBNContainer) ||
                         !DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR)
                     ) {
@@ -173,10 +172,13 @@ public class ObjectPropertyTester extends PropertyTester {
                     }
                     DBEObjectMaker objectMaker = getObjectManager(object.getClass(), DBEObjectMaker.class);
                     return objectMaker != null && objectMaker.canDeleteObject(object);
-                } else if (node instanceof DBNResource) {
-                    if ((((DBNResource) node).getFeatures() & DBPResourceHandler.FEATURE_DELETE) != 0) {
+                } else if (node instanceof DBNResource dbnResource) {
+                    if ((dbnResource.getFeatures() & DBPResourceHandler.FEATURE_DELETE) != 0) {
                         return true;
                     }
+                } else if (node instanceof DBNProject projectNode) {
+                    DBPProject project = projectNode.getProject();
+                    return project != project.getWorkspace().getActiveProject();
                 } else if (isResourceNode(node)) {
                     return true;
                 }
