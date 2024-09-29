@@ -263,16 +263,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 } else if (dataSource instanceof DBSObjectContainer) {
                     // Try to get from active object
                     DBSObject selectedObject = getActiveInstanceObject();
-                    DBSObject rootObject;
                     if (selectedObject != null) {
                         makeProposalsFromChildren(selectedObject, null, false, parameters);
-                        rootObject = DBUtils.getPublicObject(selectedObject.getParentObject());
-                    } else {
-                        rootObject = dataSource;
                     }
-                    if (!(rootObject instanceof DBPDataSource) || rootObject == dataSource) {
-                        makeDataSourceProposals(parameters);
-                    }
+                    makeDataSourceProposals(parameters);
                 }
                 if (!isInLiteral) {
                     if (rootObjects != null) {
