@@ -68,7 +68,7 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
     public static final String GROUP_SQL_ADDITIONS = "sql.additions";
     public static final String GROUP_SQL_EXTRAS = "sql.extras";
 
-    private List<IActionContributor> actionContributors = new ArrayList<>();
+    private final List<IActionContributor> actionContributors = new ArrayList<>();
 
     public void addContextMenuContributor(IActionContributor contributor) {
         actionContributors.add(contributor);
@@ -219,11 +219,6 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
                 undoManager.connect(textViewer);
             }
         }
-    }
-
-    public void handleActivate()
-    {
-        safelySanityCheckState(getEditorInput());
     }
 
     @Nullable
