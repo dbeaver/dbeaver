@@ -58,6 +58,7 @@ public class MySQLDateTimeValueHandler extends JDBCDateTimeValueHandler {
     @Override
     public Object fetchValueObject(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, @NotNull DBSTypedObject type, int index) throws DBCException {
         if (resultSet instanceof JDBCResultSet dbResults) {
+            boolean isMariaDB = MySQLUtils.isMariaDB(session.getDataSource().getContainer().getDriver());
             try {
                 if (MySQLConstants.TYPE_YEAR.equalsIgnoreCase(type.getTypeName())) {
                     int year = dbResults.getInt(index + 1);
@@ -72,18 +73,17 @@ public class MySQLDateTimeValueHandler extends JDBCDateTimeValueHandler {
                   fail regardless of used method for value bigger than 24h. And MySQL8 will
                   try to getTime(). If it fails, we will get value via getString()
                  */
-                if (MySQLUtils.isMariaDB(session.getDataSource().getContainer().getDriver())
-                    && type.getTypeID() == Types.TIME) {
+                if (isMariaDB && type.getTypeID() == Types.TIME) {
                     return dbResults.getString(index + 1);
                 }
             } catch (SQLException e) {
                 log.debug("Exception caught when fetching date/time value", e);
             }
-            if (formatSettings.isUseNativeDateTimeFormat()) {
+            // In MySQL driver, negative dates aren't returned when using #getString.
+            // Weirdly enough, the expected value is returned when using #getBytes().
+            if (!isMariaDB && type.getTypeID() == Types.TIME && formatSettings.isUseNativeDateTimeFormat()) {
                 byte[] bytes = null;
                 try {
-                    // Workaround for AWS Aurora with MySQL - negative dates aren't returned when using #getString.
-                    // Weirdly enough, the expected value is returned when using #getBytes().
                     bytes = dbResults.getBytes(index + 1);
                 } catch (SQLException e) {
                     // ignored
