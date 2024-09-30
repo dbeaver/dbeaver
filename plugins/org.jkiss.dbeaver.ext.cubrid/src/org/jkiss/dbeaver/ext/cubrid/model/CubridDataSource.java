@@ -81,6 +81,10 @@ public class CubridDataSource extends GenericDataSource
         return privilageCache.getAllObjects(monitor, this);
     }
 
+    public CubridServerCache getServerCache() {
+        return serverCache;
+    }
+
     @Nullable
     public List<CubridServer> getCubridServers(@NotNull DBRProgressMonitor monitor) throws DBException {
         return serverCache.getAllObjects(monitor, this);
