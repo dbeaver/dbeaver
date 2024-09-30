@@ -2295,7 +2295,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     //ResultSetRow row = (ResultSetRow) (recordMode ? colElement.getElement() : rowElement.getElement());
                     if (isShowAsCheckbox(attr)) {
                         info.state |= booleanStyles.getMode() == BooleanMode.TEXT ? STATE_TOGGLE : STATE_LINK;
-                    } else if (!CommonUtils.isEmpty(attr.getReferrers()) || cellValue instanceof DBDCollection ||
+                    } else if (!CommonUtils.isEmpty(attr.getReferrers()) ||
+                           (cellValue instanceof DBDCollection col && !col.isEmpty()) ||
                            (cellValue instanceof DBDComposite && controller.isRecordMode())) {
                         if (!DBUtils.isNullValue(cellValue)) {
                             info.state |= STATE_LINK;
@@ -2337,7 +2338,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     }
                 }
                 // Collections
-                if (info.image == null && cellValue instanceof DBDComplexValue cv && !cv.isNull()) {
+                if (info.image == null && cellValue instanceof DBDComplexValue cv && !cv.isNull() &&
+                    (!(cellValue instanceof Collection<?> col && col.isEmpty()))) {
                     final GridCell cell = new GridCell(colElement, rowElement);
                     info.image = spreadsheet.isCellExpanded(cell) ? UIIcon.TREE_COLLAPSE : UIIcon.TREE_EXPAND;
                 }
@@ -2443,7 +2445,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
             }
             if (value instanceof DBDCollection collection && !collection.isNull()) {
                 if (isShowAsCollection(gridRow, gridColumn, value)) {
-                    return "[" + collection.size() + "]";
+                    if (collection.isEmpty()) {
+                        return "";
+                    } else {
+                        return "[" + collection.size() + "]";
+                    }
                 }
                 Object child = getCellValue(gridColumn, gridRow, getRowNestedIndexes(gridRow), true);
                 if (child == value) {
