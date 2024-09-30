@@ -55,6 +55,13 @@ public class DBWorkbench {
         return pc.cast(getPlatform());
     }
 
+    public static boolean isPlatformStarted() {
+        if (applicationWorkbench != null) {
+            return applicationWorkbench.getPlatform() != null;
+        }
+        return false;
+    }
+
     public static DBPPlatformUI getPlatformUI() {
         return getApplicationWorkbench().getPlatformUI();
     }
