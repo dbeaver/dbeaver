@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
-import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAnalyser;
 import org.jkiss.dbeaver.ext.mysql.model.session.MySQLSessionManager;
 import org.jkiss.dbeaver.model.*;
@@ -109,7 +108,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     private SQLHelpProvider helpProvider;
     private volatile boolean hasStatistics;
     private boolean containsCheckConstraintTable;
-    private boolean isAwsAurora;
 
     private transient boolean inServerTimezoneHandle;
 
@@ -419,16 +417,10 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                 }
             }
 
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SHOW VARIABLES " +
-                "WHERE VARIABLE_NAME IN ('lower_case_table_names', 'aurora_version')"
-            )) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW VARIABLES LIKE 'lower_case_table_names'")) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    while (dbResult.next()) {
-                        switch (CommonUtils.notEmpty(JDBCUtils.safeGetString(dbResult, 1))) {
-                            case "lower_case_table_names" -> lowerCaseTableNames = JDBCUtils.safeGetInt(dbResult, 2);
-                            case "aurora_version" -> isAwsAurora = true;
-                        }
+                    if (dbResult.next()) {
+                        lowerCaseTableNames = JDBCUtils.safeGetInt(dbResult, 2);
                     }
                 }
             } catch (Throwable ex) {
@@ -889,11 +881,8 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     }
 
     public boolean isMariaDB() {
-        return MySQLUtils.isMariaDB(getContainer().getDriver());
-    }
-
-    public boolean isAWSAurora() {
-        return isAwsAurora;
+        return MySQLConstants.DRIVER_CLASS_MARIA_DB.equals(
+            getContainer().getDriver().getDriverClassName());
     }
 
     @Override
