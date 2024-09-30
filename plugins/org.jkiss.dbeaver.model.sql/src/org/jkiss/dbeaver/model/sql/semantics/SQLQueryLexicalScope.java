@@ -100,4 +100,12 @@ public class SQLQueryLexicalScope {
            .min(Comparator.comparingInt(t -> t.getSyntaxNode().getRealInterval().a))
            .orElse(null);
     }
+
+    @Nullable
+    public SQLQueryLexicalScopeItem findNearestItem(int position) {
+        return this.items.stream()
+            .filter(t -> t.getSyntaxNode().getRealInterval().b <= position)
+            .max(Comparator.comparingInt(t -> t.getSyntaxNode().getRealInterval().b))
+            .orElse(null);
+    }
 }
