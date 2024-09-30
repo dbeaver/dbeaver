@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.registry.configurator.DBPConnectionEditIntention;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.utils.CommonUtils;
@@ -51,7 +52,7 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
             if (panelExtender != null) {
                 panelExtender.run();
             }
-        }, () -> getSite().updateButtons(), true);
+        }, () -> getSite().updateButtons(), true, this.getIntention());
         authModelSelector.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         ((GridData)authModelSelector.getLayoutData()).horizontalSpan = hSpan;
     }
@@ -121,5 +122,9 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
 
     protected boolean isAuthEnabled() {
         return true;
+    }
+
+    protected DBPConnectionEditIntention getIntention() {
+        return DBPConnectionEditIntention.DEFAULT;
     }
 }
