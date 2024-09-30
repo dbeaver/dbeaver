@@ -206,7 +206,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         String getText(QMEvent event, boolean briefInfo) {
             QMMObject object = event.getObject();
             if (object.isClosed()) {
-                return NUMBER_FORMAT.format(object.getDuration());
+                return RuntimeUtils.formatExecutionTime(object.getDuration());
             } else {
                 return ""; //$NON-NLS-1$
             }
