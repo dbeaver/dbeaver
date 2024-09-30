@@ -77,12 +77,11 @@ timestampLiteral: TIMESTAMP StringLiteralContent;
 intervalLiteral: INTERVAL sign? valueExpressionPrimary intervalQualifier;
 
 // identifiers
-characterSetSpecification: characterSetName;
-characterSetName: (schemaName Period)? Identifier;
-schemaName: (catalogName Period)? unqualifiedSchemaName;
-unqualifiedSchemaName: identifier;
-qualifiedName: (schemaName Period)? identifier;
-catalogName: identifier;
+characterSetSpecification: qualifiedName;
+characterSetName: qualifiedName;
+schemaName: qualifiedName;
+
+qualifiedName: identifier (Period identifier)* Period??;
 identifier: (Introducer characterSetSpecification)? actualIdentifier;
 actualIdentifier: (Identifier|DelimitedIdentifier|nonReserved|Quotted);
 
@@ -165,7 +164,8 @@ parameterSpecification: parameterName (indicatorParameter)?;
 parameterName: Colon identifier;
 indicatorParameter: (INDICATOR)? parameterName;
 dynamicParameterSpecification: QuestionMark;
-columnReference: ((qualifier Period)? (columnName))|(qualifier Period Asterisk);
+columnReference: qualifiedName | (tableName tupleRefSuffix);
+tupleRefSuffix: Period Asterisk;
 //columnReference: identifier (Period identifier (Period identifier (Period identifier)?)?)?;
 valueReference: (columnReference|valueRefNestedExpr) valueRefIndexingStep* (valueRefMemberStep valueRefIndexingStep*)*;
 valueRefNestedExpr: LeftParen valueReference RightParen;
@@ -173,7 +173,6 @@ valueRefIndexingStep: LeftBracket (valueRefIndexingStepDirect|valueRefIndexingSt
 valueRefIndexingStepDirect: signedNumericLiteral;
 valueRefIndexingStepSlice: signedNumericLiteral? Colon signedNumericLiteral?;
 valueRefMemberStep: Period identifier;
-qualifier: (tableName|correlationName);
 correlationName: identifier;
 
 withClause: WITH RECURSIVE? cteList;
@@ -204,7 +203,7 @@ queryExpression: (joinedTable|nonJoinQueryTerm) (unionTerm|exceptTerm)*;
 
 // from
 fromClause: FROM tableReference (Comma tableReference)*;
-nonjoinedTableReference: (tableName (PARTITION anyProperty)? (correlationSpecification)?)|(derivedTable correlationSpecification?);
+nonjoinedTableReference: (tableName (PARTITION anyProperty)? correlationSpecification?)|(derivedTable correlationSpecification?);
 tableReference: nonjoinedTableReference|joinedTable|tableReferenceHints|anyUnexpected??; // '.*' to handle incomplete queries
 tableReferenceHints: (tableHintKeywords|anyWord)+ anyProperty; // dialect-specific options, should be described and moved to dialects in future
 joinedTable: (nonjoinedTableReference|(LeftParen joinedTable RightParen)) (naturalJoinTerm|crossJoinTerm)+;
@@ -230,7 +229,7 @@ groupingColumnReferenceList: groupingColumnReference (Comma groupingColumnRefere
 groupingColumnReference: columnIndex | valueReference | anyWordsWithProperty;
 havingClause: HAVING searchCondition;
 tableValueConstructor: VALUES (rowValueConstructor (Comma rowValueConstructor)*);
-explicitTable: TABLE tableName;
+explicitTable: TABLE tableName?;
 correspondingSpec: CORRESPONDING (BY LeftParen correspondingColumnList RightParen)?;
 correspondingColumnList: columnNameList;
 caseExpression: (caseAbbreviation|simpleCase|searchedCase);
@@ -330,7 +329,7 @@ authorizationIdentifier: identifier;
 schemaCharacterSetSpecification: DEFAULT CHARACTER SET characterSetSpecification;
 schemaElement: createTableStatement|createViewStatement;
 
-createTableStatement: createTableHead tableName createTableExtraHead tableElementList createTableTail;
+createTableStatement: createTableHead (tableName? createTableExtraHead tableElementList createTableTail)?;
 createTableHead: CREATE (OR REPLACE)? (GLOBAL|LOCAL)? (TEMPORARY|TEMP)? TABLE (IF NOT EXISTS)? ;// here orReplace is MariaDB-specific only
 createTableExtraHead: (OF identifier)?;
 tableElementList: LeftParen tableElement (Comma tableElement)* RightParen;
@@ -358,7 +357,7 @@ levelsClause: (CASCADED|LOCAL);
 // schema ddl
 dropSchemaStatement: DROP SCHEMA schemaName dropBehaviour;
 dropBehaviour: (CASCADE|RESTRICT);
-alterTableStatement: ALTER anyWord* TABLE (IF EXISTS)? tableName alterTableAction (Comma alterTableAction)*;
+alterTableStatement: ALTER anyWord* TABLE (IF EXISTS)? (tableName (alterTableAction (Comma alterTableAction)*)?)?;
 alterTableAction: addColumnDefinition|alterColumnDefinition|renameColumnDefinition|dropColumnDefinition|addTableConstraintDefinition|dropTableConstraintDefinition|anyWordsWithProperty;
 addColumnDefinition: ADD (COLUMN)? columnDefinition;
 renameColumnDefinition: RENAME (COLUMN)? columnName TO identifier;
@@ -379,7 +378,7 @@ ifExistsSpec: IF EXISTS ;
 selectStatementSingleRow: SELECT (setQuantifier)? selectList INTO selectTargetList tableExpression;
 selectTargetList: parameterSpecification (Comma parameterSpecification)*;
 deleteStatement: DELETE FROM tableName? ((AS)? correlationName)? whereClause?;
-insertStatement: INSERT INTO tableName? insertColumnsAndSource?;
+insertStatement: INSERT INTO (tableName insertColumnsAndSource?)?;
 insertColumnsAndSource: (LeftParen (insertColumnList? | Asterisk) RightParen?)? (queryExpression | DEFAULT VALUES);
 insertColumnList: columnNameList;
 

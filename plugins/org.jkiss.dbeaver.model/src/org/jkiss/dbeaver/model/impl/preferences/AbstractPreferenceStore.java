@@ -16,12 +16,12 @@
  */
 package org.jkiss.dbeaver.model.impl.preferences;
 
-import org.eclipse.core.commands.common.EventManager;
+import org.eclipse.core.runtime.ListenerList;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.utils.CommonUtils;
 
-public abstract class AbstractPreferenceStore extends EventManager implements DBPPreferenceStore {
+public abstract class AbstractPreferenceStore implements DBPPreferenceStore {
 
     public static final boolean BOOLEAN_DEFAULT_DEFAULT = false;
     public static final double DOUBLE_DEFAULT_DEFAULT = 0.0;
@@ -32,19 +32,20 @@ public abstract class AbstractPreferenceStore extends EventManager implements DB
     public static final String TRUE = "true"; //$NON-NLS-1$
     public static final String FALSE = "false"; //$NON-NLS-1$
 
+    private volatile transient ListenerList<DBPPreferenceListener> listenerList = null;
+
     @Override
     public void firePropertyChangeEvent(String name, Object oldValue, Object newValue) {
         this.firePropertyChangeEvent(this, name, oldValue, newValue);
     }
 
     public void firePropertyChangeEvent(Object source, String name, Object oldValue, Object newValue) {
-        final Object[] finalListeners = getListeners();
-        // Do we need to fire an event.
+        final DBPPreferenceListener[] finalListeners = getListeners();
+        // Do we need to fire an event
         if (finalListeners.length > 0 && !CommonUtils.equalObjects(oldValue, newValue)) {
             final DBPPreferenceListener.PreferenceChangeEvent pe = new DBPPreferenceListener.PreferenceChangeEvent(source, name, oldValue, newValue);
-            for (int i = 0; i < finalListeners.length; ++i) {
-                final DBPPreferenceListener l = (DBPPreferenceListener) finalListeners[i];
-                l.preferenceChange(pe);
+            for (DBPPreferenceListener finalListener : finalListeners) {
+                finalListener.preferenceChange(pe);
             }
         }
     }
@@ -111,4 +112,45 @@ public abstract class AbstractPreferenceStore extends EventManager implements DB
         }
         return ival;
     }
+
+    protected final DBPPreferenceListener[] getListeners() {
+        final ListenerList<DBPPreferenceListener> list = listenerList;
+        if (list == null) {
+            return new DBPPreferenceListener[0];
+        }
+
+        Object[] ol = list.getListeners();
+        DBPPreferenceListener[] listeners = new DBPPreferenceListener[ol.length];
+        for (int i = 0; i < list.size(); i++) {
+            listeners[i] = (DBPPreferenceListener) ol[i];
+        }
+        return listeners;
+    }
+
+    protected synchronized final void addListenerObject(final DBPPreferenceListener listener) {
+        if (listener == null) {
+            throw new IllegalArgumentException();
+        }
+
+        if (listenerList == null) {
+            listenerList = new ListenerList<>(ListenerList.IDENTITY);
+        }
+
+        listenerList.add(listener);
+    }
+
+    protected synchronized final void removeListenerObject(final DBPPreferenceListener listener) {
+        if (listener == null) {
+            throw new IllegalArgumentException();
+        }
+
+        if (listenerList != null) {
+            listenerList.remove(listener);
+
+            if (listenerList.isEmpty()) {
+                listenerList = null;
+            }
+        }
+    }
+
 }

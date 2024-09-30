@@ -40,7 +40,8 @@ public class LSMInspections {
     private static final Set<Integer> presenceTestRules = Set.of(
         SQLStandardParser.RULE_tableName,
         SQLStandardParser.RULE_columnReference,
-        SQLStandardParser.RULE_identifier
+        SQLStandardParser.RULE_identifier,
+        SQLStandardParser.RULE_nonjoinedTableReference
     );
 
     @NotNull
@@ -83,8 +84,7 @@ public class LSMInspections {
     private static Pair<STMTreeNode, Boolean> findChildBeforeOrAtPosition(@NotNull STMTreeNode node, int position) {
         STMTreeNode nodeBefore = null;
         Interval nodeBeforeRange = null;
-        for (int i = 0; i < node.getChildCount(); i++) {
-            STMTreeNode cn = node.getStmChild(i);
+        for (STMTreeNode cn : node.getChildren()) {
             Interval range = cn.getRealInterval();
             if (range.a <= position && range.b >= position) {
                 return Pair.of(cn, true);
@@ -98,13 +98,14 @@ public class LSMInspections {
         return Pair.of(nodeBefore, false);
     }
 
-    private static SyntaxInspectionResult offqueryInspectionResult = prepareOffquerySyntaxInspectionInternal();
+    private static final SyntaxInspectionResult offqueryInspectionResult = prepareOffquerySyntaxInspectionInternal();
 
     @NotNull
     public static SyntaxInspectionResult prepareOffquerySyntaxInspection() {
         return offqueryInspectionResult;
     }
 
+    @NotNull
     public static SyntaxInspectionResult prepareOffquerySyntaxInspectionInternal() {
         ATN atn = SQLStandardParser._ATN;
         ListNode<Integer> emptyStack = ListNode.of(null);
@@ -112,7 +113,7 @@ public class LSMInspections {
         return inspectAbstractSyntaxAtState(emptyStack, initialState);
     }
 
-    @Nullable
+    @NotNull
     public static SyntaxInspectionResult prepareAbstractSyntaxInspection(@NotNull STMTreeNode root, int position) {
         STMTreeNode subroot = root;
         ATN atn = SQLStandardParser._ATN;
@@ -173,8 +174,8 @@ public class LSMInspections {
             if (node instanceof STMTreeTermNode term) {
                 return term;
             } else {
-                for (int i = 0; i < node.getChildCount(); i++) {
-                    stack = ListNode.push(stack, node.getStmChild(i));
+                for (STMTreeNode child : node.getChildren()) {
+                    stack = ListNode.push(stack, child);
                 }
             }
         }
@@ -193,7 +194,7 @@ public class LSMInspections {
                 terms.add(term);
             } else {
                 for (int i = node.getChildCount() - 1; i >= 0; i--) {
-                    stack = ListNode.push(stack, node.getStmChild(i));
+                    stack = ListNode.push(stack, node.getChildNode(i));
                 }
             }
         }
@@ -205,9 +206,9 @@ public class LSMInspections {
         ListNode<Integer> stack = ListNode.of(null);
         {
             var path = new LinkedList<RuleNode>();
-            for (STMTreeNode n = node instanceof TerminalNode ? node.getStmParent() : node;
+            for (STMTreeNode n = node instanceof TerminalNode ? node.getParentNode() : node;
                  n instanceof RuleNode rn;
-                 n = n.getStmParent()) {
+                 n = n.getParentNode()) {
                 path.addFirst(rn);
             }
             for (RuleNode rn : path) {
@@ -329,7 +330,8 @@ public class LSMInspections {
             expectingTableName,
             expectingColumnReference,
             reachabilityTests.get(SQLStandardParser.RULE_identifier) || presenceTests.get(SQLStandardParser.RULE_identifier),
-            expectingTableName && reachabilityTests.get(SQLStandardParser.RULE_nonjoinedTableReference),
+            expectingTableName && (reachabilityTests.get(SQLStandardParser.RULE_nonjoinedTableReference)
+                || presenceTests.get(SQLStandardParser.RULE_nonjoinedTableReference)),
             expectingColumnReference && reachabilityTests.get(SQLStandardParser.RULE_derivedColumn),
             reachabilityTests.get(SQLStandardParser.RULE_pattern)
         );

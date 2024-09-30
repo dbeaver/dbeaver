@@ -29,10 +29,11 @@ import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.rcp.DBeaverNature;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.preferences.WizardPrefPage;
@@ -101,7 +102,7 @@ public class ProjectCreateWizard extends BasicNewProjectResourceWizard implement
                     remoteProjectPage.getProjectName(),
                     remoteProjectPage.getProjectDescription()
                 );
-                project = newProject.getEclipseProject();
+                project = ((RCPProject)newProject).getEclipseProject();
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError(
                     UINavigatorMessages.dialog_project_create_wizard_error_cannot_create,

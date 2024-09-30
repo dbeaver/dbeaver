@@ -25,7 +25,10 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ContributionManager;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -64,7 +67,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
 
     private boolean showDivider;
 
-    private Label listInfoLabel;
+    private CLabel listInfoLabel;
 
     private ProgressBar progressBar;
     private Text searchText;
@@ -123,7 +126,9 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         if (ownerPageControl != null) {
             ownerPageControl.setInfo(info);
         } else if (listInfoLabel != null && !listInfoLabel.isDisposed()) {
+            listInfoLabel.setVisible(!CommonUtils.isEmptyTrimmed(info));
             listInfoLabel.setText(info);
+            listInfoLabel.getParent().layout(true, true);
         }
     }
 
@@ -212,38 +217,21 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         }
 
         Composite infoGroup = new Composite(container, SWT.NONE);
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        infoGroup.setLayoutData(gd);
-        GridLayout gl = new GridLayout(2, false);
-        gl.marginHeight = 0;
-        gl.marginWidth = 0;
-        infoGroup.setLayout(gl);
+        infoGroup.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
+        infoGroup.setLayout(GridLayoutFactory.swtDefaults().margins(5, 0).numColumns(3).create());
 
-        listInfoLabel = new Label(infoGroup, SWT.NONE);
-        //listInfoLabel.setCursor(infoGroup.getDisplay().getSystemCursor(SWT.CURSOR_HELP));
-        //listInfoLabel.setBackground(container.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalIndent = 5;
-        gd.minimumWidth = 100;
-        listInfoLabel.setLayoutData(gd);
+        customControlsComposite = new Composite(infoGroup, SWT.NONE);
+        customControlsComposite.setLayoutData(GridDataFactory.swtDefaults().create());
+        customControlsComposite.setLayout(GridLayoutFactory.fillDefaults().create());
 
-        Composite controlsComposite = UIUtils.createPlaceholder(infoGroup, 2, 5);
-        controlsComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        listInfoLabel = new CLabel(infoGroup, SWT.NONE);
+        listInfoLabel.setImage(DBeaverIcons.getImage(UIIcon.SEPARATOR_V));
+        listInfoLabel.setLayoutData(GridDataFactory.swtDefaults().minSize(100, SWT.DEFAULT).create());
 
-        searchControlsComposite = UIUtils.createPlaceholder(controlsComposite, 1);
-        //gd.heightHint = listInfoLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT, false).y + gl.verticalSpacing;
+        searchControlsComposite = UIUtils.createPlaceholder(infoGroup, 1);
         searchControlsComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         // Placeholder toolbar (need to set initial height of search composite)
         new ToolBar(searchControlsComposite, SWT.NONE);
-
-        customControlsComposite = new Composite(controlsComposite, SWT.NONE);
-        gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-        //gd.verticalIndent = 3;
-        customControlsComposite.setLayoutData(gd);
-        gl = new GridLayout(2, false);
-        gl.marginHeight = 0;
-        gl.marginWidth = 0;
-        customControlsComposite.setLayout(gl);
 
         defaultToolbarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
         customToolbarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
@@ -499,7 +487,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
     /**
      * Create search controls and perform search according to the searchType
      * @param searchType is a type of search
-     * @param isSetFocusToSearchText defines if focus should be set to the search text area if searchType is {@link SearchType.NONE}
+     * @param isSetFocusToSearchText defines if focus should be set to the search text area if searchType is {@link SearchType#NONE}
      * @return operation success indicator
      */
     public boolean performSearch(SearchType searchType, boolean isSetFocusToSearchText)

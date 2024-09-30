@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.dameng.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -74,6 +75,7 @@ public class DamengSQLDialect extends GenericSQLDialect {
         return true;
     }
 
+    @NotNull
     @Override
     public String[] getExecuteKeywords() {
         return EXEC_KEYWORDS;

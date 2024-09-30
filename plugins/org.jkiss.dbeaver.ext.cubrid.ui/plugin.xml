@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+    <extension point="org.jkiss.dbeaver.databaseEditor">
+        <editor
+            id="org.jkiss.dbeaver.ext.cubrid.ui.editors.CubridPrivilageEditor"
+            class="org.jkiss.dbeaver.ext.cubrid.ui.editors.CubridPrivilageEditor"
+            objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridPrivilage"
+            main="true"
+            label="%editor.general.name"
+            description="General user settings"
+            icon="#user">
+        </editor>
+    </extension>
+    
+    <extension point="org.jkiss.dbeaver.databaseEditor">
+        <configurator class="org.jkiss.dbeaver.ext.cubrid.ui.config.CubridProcedureConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.cubrid.model.CubridProcedure"/>
+        </configurator>
+    </extension>
+    
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.cubrid.ui.config.CubridUserManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridPrivilage"/>
+    </extension>
+</plugin>

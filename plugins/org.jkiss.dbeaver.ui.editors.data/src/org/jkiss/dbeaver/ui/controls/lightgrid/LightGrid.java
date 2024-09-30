@@ -320,6 +320,7 @@ public abstract class LightGrid extends Canvas {
     Font normalFont;
     Font boldFont;
     Font italicFont;
+    Font commentFont;
 
     @NotNull
     private Color lineColor;
@@ -438,6 +439,7 @@ public abstract class LightGrid extends Canvas {
         normalFont = getFont();
         boldFont = UIUtils.makeBoldFont(normalFont);
         italicFont = UIUtils.modifyFont(normalFont, SWT.ITALIC);
+        commentFont = UIUtils.modifyFontSize(italicFont, -1);
 
         columnHeaderRenderer = new GridColumnRenderer(this);
         rowHeaderRenderer = new GridRowRenderer(this);
@@ -506,30 +508,35 @@ public abstract class LightGrid extends Canvas {
             result.add(row);
             index++;
 
-            int maxColLength = getNestedRowsCount(row);
-            if (maxColLength > 0) {
-                index = collectNestedRows(result, row, index, 1, maxColLength);
-            }
+            index = collectNestedRows(result, row, index, 1);
         }
     }
 
-    private int getNestedRowsCount(IGridRow row) {
+    private int collectNestedRows(List<IGridRow> result, IGridRow parentRow, int position, int level) {
         if (expandedRows.isEmpty()) {
-            return 0;
+            return position;
         }
-        final RowExpandState rowState = expandedRows.get(new RowLocation(row));
-        return rowState != null && rowState.isAnyColumnExpanded() ? rowState.getMaxLength() : 0;
-    }
+        final RowExpandState rowState = expandedRows.get(new RowLocation(parentRow));
+        if (rowState == null || !rowState.isAnyColumnExpanded()) {
+            return position;
+        }
 
-    private int collectNestedRows(List<IGridRow> result, IGridRow parentRow, int position, int level, int colLength) {
-        for (int i = 0; i < colLength; i++) {
-            IGridRow nestedRow = new GridRowNested(parentRow, position++, i, level);
+        int childrenCount = rowState.getMaxLength();
+        Object[] children = getContentProvider().getChildren(parentRow);
+        if (children != null && children.length != childrenCount) {
+            log.warn("Child elements doesn't match calculated count: " + children.length + "<>" + childrenCount + ". Skip the tail.");
+            childrenCount = children.length;
+        }
+
+        for (int i = 0; i < childrenCount; i++) {
+            // In multi-column grid children elements are null (e.g. array elements)
+            // In this case use parent row element
+            Object element = children == null ? parentRow.getElement() : children[i];
+
+            IGridRow nestedRow = new GridRowNested(parentRow, position++, i, level, element);
             result.add(nestedRow);
 
-            int maxNestedColLength = getNestedRowsCount(nestedRow);
-            if (maxNestedColLength > 0) {
-                position = collectNestedRows(result, nestedRow, position, level + 1, maxNestedColLength);
-            }
+            position = collectNestedRows(result, nestedRow, position, level + 1);
         }
         return position;
     }
@@ -623,6 +630,7 @@ public abstract class LightGrid extends Canvas {
                 // Here we going to maximize single column to entire grid's width
                 // Sometimes (when new grid created and filled with data very fast our client area size is zero
                 // So let's add a workaround for it and use column's width in this case
+                recalculateSizes(true);
                 GridColumn column = getColumn(0);
                 int columnWidth = column.computeHeaderWidth(sizingGC);
                 int gridWidth = getCurrentOrLastClientArea().width - getRowHeaderWidth() - getHScrollSelectionInPixels() - getVerticalBar().getSize().x;
@@ -3129,6 +3137,7 @@ public abstract class LightGrid extends Canvas {
 
         UIUtils.dispose(boldFont);
         UIUtils.dispose(italicFont);
+        UIUtils.dispose(commentFont);
     }
 
     /**
@@ -4327,6 +4336,11 @@ public abstract class LightGrid extends Canvas {
     }
 
     @Nullable
+    public IGridColumn getFocusColumn() {
+        return focusColumn;
+    }
+
+    @Nullable
     public GridCell getFocusCell()
     {
         return posToCell(getFocusPos());
@@ -4717,21 +4731,22 @@ public abstract class LightGrid extends Canvas {
         normalFont = font;
         UIUtils.dispose(boldFont);
         UIUtils.dispose(italicFont);
+        UIUtils.dispose(commentFont);
+
         boldFont = UIUtils.makeBoldFont(normalFont);
         italicFont = UIUtils.modifyFont(normalFont, SWT.ITALIC);
+        commentFont = UIUtils.modifyFontSize(italicFont, -1);
+
         redraw();
     }
 
     @NotNull
     public Font getFont(@NotNull UIElementFontStyle style) {
-        switch (style) {
-            case ITALIC:
-                return italicFont;
-            case BOLD:
-                return boldFont;
-            default:
-                return normalFont;
-        }
+        return switch (style) {
+            case ITALIC -> italicFont;
+            case BOLD -> boldFont;
+            case NORMAL -> normalFont;
+        };
     }
 
     public String getCellText(IGridColumn colElement, IGridRow rowElement) {

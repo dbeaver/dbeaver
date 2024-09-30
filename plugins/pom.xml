@@ -17,13 +17,14 @@
         <module>org.jkiss.dbeaver.model</module>
         <module>org.jkiss.dbeaver.model.ai</module>
         <module>org.jkiss.dbeaver.model.event</module>
+        <module>org.jkiss.dbeaver.model.dashboard</module>
         <module>org.jkiss.dbeaver.model.jdbc</module>
+        <module>org.jkiss.dbeaver.model.lsm</module>
         <module>org.jkiss.dbeaver.model.nio</module>
+        <module>org.jkiss.dbeaver.model.rcp</module>
         <module>org.jkiss.dbeaver.model.sm</module>
         <module>org.jkiss.dbeaver.model.sql</module>
         <module>org.jkiss.dbeaver.model.sql.jdbc</module>
-        <module>org.jkiss.dbeaver.model.lsm</module>
-        <module>org.jkiss.dbeaver.model.dashboard</module>
         <module>org.jkiss.dbeaver.registry</module>
         <module>org.jkiss.dbeaver.dpi.app</module>
         <module>org.jkiss.dbeaver.dpi.model</module>
@@ -92,6 +93,7 @@
         <module>org.jkiss.dbeaver.team.git</module>
 
         <module>org.jkiss.dbeaver.headless</module>
+
     </modules>
 
     <profiles>
@@ -109,6 +111,7 @@
                 <module>org.jkiss.dbeaver.ext.athena.ui</module>
                 <module>org.jkiss.dbeaver.ext.bigquery.ui</module>
                 <module>org.jkiss.dbeaver.ext.clickhouse.ui</module>
+                <module>org.jkiss.dbeaver.ext.cubrid.ui</module>
                 <module>org.jkiss.dbeaver.ext.dameng.ui</module>
                 <module>org.jkiss.dbeaver.ext.exasol.ui</module>
                 <module>org.jkiss.dbeaver.ext.db2.ui</module>
@@ -153,7 +156,9 @@
                 <module>org.jkiss.dbeaver.ui.search</module>
                 <module>org.jkiss.dbeaver.ui.statistics</module>
 
-                <module>org.jkiss.dbeaver.ui.macos</module>
+                <module>org.jkiss.dbeaver.ui.swt.linux</module>
+                <module>org.jkiss.dbeaver.ui.swt.macos</module>
+                <module>org.jkiss.dbeaver.ui.swt.windows</module>
 
                 <module>org.jkiss.dbeaver.erd.ui</module>
                 <module>org.jkiss.dbeaver.tasks.native.ui</module>
@@ -165,7 +170,7 @@
                 <module>org.jkiss.dbeaver.ext.sample.database</module>
                 <module>org.jkiss.dbeaver.ext.ui.locks</module>
                 <module>org.jkiss.dbeaver.ext.ui.tipoftheday</module>
-                <module>org.jkiss.dbeaver.ext.import_config</module>
+                <module>org.jkiss.dbeaver.ext.config.migration</module>
                 <module>org.jkiss.dbeaver.ext.format.sqlworkbenchj</module>
                 <module>org.jkiss.dbeaver.cmp.simple.ui</module>
 

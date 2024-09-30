@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
-import org.eclipse.core.resources.IProject;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -108,10 +107,6 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
      * Internal node name. Usually it is the same as getName.
      */
     public abstract String getNodeDisplayName();
-
-    protected String getSortName() {
-        return getNodeDisplayName();
-    }
 
     @Override
     public String getLocalizedName(String locale) {
@@ -222,7 +217,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
     /**
      * Refreshes node.
      * If refresh cannot be done in this level then refreshes parent node.
-     * Do not actually changes navigation tree. If some underlying object is refreshed it must fire DB model
+     * Do not actually change navigation tree. If some underlying object is refreshed it must fire DB model
      * event which will cause actual tree nodes refresh. Underlying object could present multiple times in
      * navigation model - each occurrence will be refreshed then.
      *
@@ -287,10 +282,6 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
                 pathBuilder.insert(0, '/');
             }
             String nodeId = DBNUtils.encodeNodePath(currentNode.getNodeId());
-            if (currentNode instanceof DBNResource && currentNode.getParentNode() instanceof DBNProject) {
-                //FIXME: remove after migration to the real resource root node
-                nodeId = DBNResource.FAKE_RESOURCE_ROOT_NODE + "/" + nodeId;
-            }
             pathBuilder.insert(0, nodeId);
             if (currentNode instanceof DBNLocalFolder folder) {
                 // FIXME: When traversing to root, nested folders are skipped. This is a workaround so that we don't skip them.
@@ -305,23 +296,26 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
 
     @Override
     public <T> T getAdapter(Class<T> adapter) {
-        if (IProject.class.isAssignableFrom(adapter)) {
-            // Do not adapt to IProject.
-            // It brings a lot of Eclipse preferences/props to link to navigator nodes. We don't need them.
-            //return adapter.cast(getOwnerProject().getEclipseProject());
-        }
-
         return null;
     }
 
     @Nullable
-    public DBPProject getOwnerProject() {
+    public DBPProject getOwnerProjectOrNull() {
         for (DBNNode node = getParentNode(); node != null; node = node.getParentNode()) {
             if (node instanceof DBNProject) {
                 return ((DBNProject) node).getProject();
             }
         }
         return null;
+    }
+
+    @NotNull
+    public DBPProject getOwnerProject() {
+        DBPProject project = getOwnerProjectOrNull();
+        if (project == null) {
+            throw new IllegalStateException("Node doesn't have owner project");
+        }
+        return project;
     }
 
     public Throwable getLastLoadError() {
@@ -337,7 +331,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
             } else if (!isFolder1 && isFolder2) {
                 return 1;
             }
-            return o1.getSortName().compareToIgnoreCase(o2.getSortName());
+            return o1.getNodeDisplayName().compareToIgnoreCase(o2.getNodeDisplayName());
         });
     }
 

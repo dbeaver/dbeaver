@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerToggleOutlineView;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -613,7 +614,6 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         private final SQLQueryNodeModel model;
         @NotNull
         private final OutlineQueryNodeKind kind;
-        @NotNull
         private final String text;
         @Nullable
         private final String extraText;
@@ -739,7 +739,9 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         @Nullable
         @Override
         public Object visitRowsCteSubquery(@NotNull SQLQueryRowsCteSubqueryModel cteSubquery, @NotNull OutlineQueryNode node) {
-            this.makeNode(node, cteSubquery, cteSubquery.subqueryName.getRawName(), DBIcon.TREE_TABLE_LINK, cteSubquery.source);
+            String text = cteSubquery.subqueryName == null ? SQLConstants.QUESTION : cteSubquery.subqueryName.getRawName();
+            SQLQueryRowsSourceModel[] children = Stream.of(cteSubquery.source).filter(Objects::nonNull).toArray(SQLQueryRowsSourceModel[]::new);
+            this.makeNode(node, cteSubquery, text, DBIcon.TREE_TABLE_LINK, children);
             return null;
         }
 
@@ -790,15 +792,24 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             SQLQueryQualifiedName tableName = columnRefExpr.getTableName();
             String tableRefString = tableName == null ? "" : (tableName.toIdentifierString() + ".");
 
-            SQLQuerySymbolDefinition def = columnRefExpr.getColumnNameIfTrivialExpression().getDefinition();
-            while (def instanceof SQLQuerySymbolEntry s && s != s.getDefinition()) {
-                def = s.getDefinition();
-            }
+            SQLQuerySymbol columnName = columnRefExpr.getColumnNameIfTrivialExpression();
+            String text;
+            String extraText;
+            DBPImage icon;
+            if (columnName != null) {
+                SQLQuerySymbolDefinition def = columnName.getDefinition();
+                while (def instanceof SQLQuerySymbolEntry s && s != s.getDefinition()) {
+                    def = s.getDefinition();
+                }
 
-            String text = tableRefString + columnRefExpr.getColumnNameIfTrivialExpression().getName();
-            String extraText = this.obtainExprTypeNameString(columnRefExpr);
-            DBPImage icon = this.obtainExprTypeIcon(columnRefExpr);
-            
+                text = tableRefString + columnName.getName();
+                extraText = this.obtainExprTypeNameString(columnRefExpr);
+                icon = this.obtainExprTypeIcon(columnRefExpr);
+            } else {
+                text = SQLConstants.QUESTION;
+                extraText = null;
+                icon = DBIcon.TYPE_UNKNOWN;
+            }
             this.makeNode(node, columnRefExpr, text, extraText, icon);
             return null;
         }
@@ -891,9 +902,9 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         public Object visitRowsTableData(@NotNull SQLQueryRowsTableDataModel tableData, @NotNull OutlineQueryNode node) {
             DBSEntity table = tableData.getTable();
             DBPImage icon = DBValueFormatting.getObjectImage(table);
-            String text = table == null ?
-                tableData.getName().toIdentifierString() :
-                DBUtils.getObjectFullName(table, DBPEvaluationContext.DML);
+            String text = table == null
+                ? (tableData.getName() == null ? SQLConstants.QUESTION : tableData.getName().toIdentifierString())
+                : DBUtils.getObjectFullName(table, DBPEvaluationContext.DML);
             this.makeNode(node, tableData, text, icon);
             return null;
         }
@@ -928,7 +939,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
                 .map(SQLQuerySymbolEntry::getRawName)
                 .collect(Collectors.joining(", ", " (", ")"));
             String prefix = correlated.getSource() instanceof SQLQueryRowsTableDataModel t
-                    ? t.getName().toIdentifierString() + " " + SQLConstants.KEYWORD_AS + " "
+                    ? (t.getName() == null ? SQLConstants.QUESTION : t.getName().toIdentifierString()) + " " + SQLConstants.KEYWORD_AS + " "
                     : "";
             this.makeNode(
                 node,
@@ -1102,7 +1113,8 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         @Override
         public Object visitSelectColumnSpec(@NotNull SQLQuerySelectionResultColumnSpec columnSpec, @NotNull OutlineQueryNode arg) {
             SQLQuerySymbolEntry alias = columnSpec.getAlias();
-            SQLQuerySymbol mayBeColumnName = columnSpec.getValueExpression().getColumnNameIfTrivialExpression();
+            SQLQueryValueExpression mayBeExpr = columnSpec.getValueExpression();
+            SQLQuerySymbol mayBeColumnName = mayBeExpr == null ? null : mayBeExpr.getColumnNameIfTrivialExpression();
             
             String text;
             if (alias != null) {
@@ -1115,9 +1127,10 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
                         .substring(columnSpec.getInterval().a, columnSpec.getInterval().b + 1);
                 }
             }
-            String extraText = this.obtainExprTypeNameString(columnSpec.getValueExpression());
-            
-            this.makeNode(arg, columnSpec, text, extraText, DBIcon.TREE_COLUMN, columnSpec.getValueExpression());
+            String extraText = mayBeExpr == null ? null : this.obtainExprTypeNameString(mayBeExpr);
+
+            SQLQueryNodeModel[] subnodes = Stream.of(mayBeExpr).filter(Objects::nonNull).toArray(SQLQueryNodeModel[]::new);
+            this.makeNode(arg, columnSpec, text, extraText, DBIcon.TREE_COLUMN, subnodes);
             return null;
         }
 
@@ -1135,7 +1148,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
                     );
                 }
             } else {
-                String tableName = deleteStatement.getTableModel() == null
+                String tableName = deleteStatement.getTableModel() == null || deleteStatement.getTableModel().getName() == null
                     ? SQLConstants.QUESTION
                     : deleteStatement.getTableModel().getName().toIdentifierString();
                 String nodeName = SQLConstants.KEYWORD_DELETE + " " + SQLConstants.KEYWORD_FROM + " " + tableName;
@@ -1163,7 +1176,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
                     insertStatement.getValuesRows().apply(this, node);
                 }
             } else {
-                String tableName = insertStatement.getTableModel() == null
+                String tableName = insertStatement.getTableModel() == null || insertStatement.getTableModel().getName() == null
                     ? SQLConstants.QUESTION
                     : insertStatement.getTableModel().getName().toIdentifierString();
                 List<SQLQuerySymbolEntry> columnNames = insertStatement.getColumnNames();
@@ -1239,7 +1252,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
                         }
                     }
                     String columns = targetNames.stream().collect(Collectors.joining(", ", "(", ")"));
-                    String targetTableName = updateStatement.getTargetRows() instanceof SQLQueryRowsTableDataModel table
+                    String targetTableName = updateStatement.getTargetRows() instanceof SQLQueryRowsTableDataModel table && table.getName() != null
                         ? table.getName().toIdentifierString()
                         : "...";
                     String nodeName = SQLConstants.KEYWORD_UPDATE + " " + targetTableName + " " + SQLConstants.KEYWORD_SET + " " + columns;
@@ -1274,8 +1287,13 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         @Nullable
         @Override
         public Object visitTableStatementDrop(@NotNull SQLQueryTableDropModel dropStatement, OutlineQueryNode node) {
-            String tableNames = dropStatement.getTables().isEmpty() ? SQLConstants.QUESTION
-                : dropStatement.getTables().stream().map(t -> t.getName().toIdentifierString()).collect(Collectors.joining(", "));
+            String tableNames =  dropStatement.getTables() == null || dropStatement.getTables().isEmpty() ? SQLConstants.QUESTION
+                : dropStatement.getTables().stream()
+                    .filter(Objects::nonNull)
+                    .map(SQLQueryRowsTableDataModel::getName)
+                    .filter(Objects::nonNull)
+                    .map(SQLQueryQualifiedName::toIdentifierString)
+                    .collect(Collectors.joining(", "));
             String nodeName =  "DROP " + (dropStatement.isView() ? "VIEW" : "TABLE")
                 + (dropStatement.getIfExists() ? " IF EXISTS " : " ") + tableNames;
             this.makeNode(
@@ -1291,7 +1309,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         @Nullable
         @Override
         public Object visitObjectStatementDrop(@NotNull SQLQueryObjectDropModel dropStatement, OutlineQueryNode node) {
-            String procName = dropStatement.getObject().getName().toIdentifierString();
+            String procName = dropStatement.getObject() == null ? SQLConstants.QUESTION : dropStatement.getObject().getName().toIdentifierString();
             String nodeName =  "DROP " + dropStatement.getObject().getObjectType().getTypeName().toUpperCase()
                + " " + (dropStatement.getIfExists() ? "IF EXISTS " : " ") + procName;
             this.makeNode(
@@ -1319,7 +1337,8 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         @Nullable
         @Override
         public Object visitCreateTable(@NotNull SQLQueryTableCreateModel createTable, OutlineQueryNode node) {
-            String nodeName =  "CREATE TABLE " + createTable.getTableName().toIdentifierString();
+            SQLQueryQualifiedName tableName = createTable.getTableName();
+            String nodeName = "CREATE TABLE " + (tableName == null ? SQLConstants.QUESTION : tableName.toIdentifierString());
             this.makeNode(
                 node, createTable, nodeName, UIIcon.ACTION_OBJECT_ADD,
                 Stream.concat(createTable.getColumns().stream(), createTable.getConstraints().stream()).toArray(SQLQueryNodeModel[]::new)
@@ -1338,7 +1357,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         @Nullable
         @Override
         public Object visitColumnSpec(@NotNull SQLQueryColumnSpec columnSpec, OutlineQueryNode node) {
-            String nodeText = columnSpec.getColumnName() == null ? "?" : columnSpec.getColumnName().getName();
+            String nodeText = columnSpec.getColumnName() == null ? SQLConstants.QUESTION : columnSpec.getColumnName().getName();
             this.makeNode(
                 node, columnSpec, nodeText, " " + CommonUtils.notNull(columnSpec.getTypeName(), ""), DBIcon.TREE_COLUMN,
                 Stream.concat(

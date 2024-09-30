@@ -577,6 +577,24 @@ public class UIUtils {
         return new Font(normalFont.getDevice(), data);
     }
 
+
+    /**
+     * Modifies the size of the given font by applying the specified modifier to the current font size.
+     *
+     * @param normalFont the original font whose size needs to be modified.
+     * @param modifier the amount by which to modify the font size. Positive values increase the size,
+     *                 and negative values decrease it.
+     * @return a new {@link Font} object with the modified size.
+     */
+    @NotNull
+    public static Font modifyFontSize(@NotNull Font normalFont, int modifier) {
+        final FontData[] data = normalFont.getFontData();
+        for (FontData fd : data) {
+            fd.setHeight(fd.getHeight() + modifier);
+        }
+        return new Font(normalFont.getDevice(), data);
+    }
+
     public static Group createControlGroup(Composite parent, String label, int columns, int layoutStyle, int widthHint)
     {
         Group group = new Group(parent, SWT.NONE);
@@ -693,9 +711,24 @@ public class UIUtils {
 
     @NotNull
     public static Link createInfoLink(@NotNull Composite parent, @NotNull String text, @NotNull Runnable callback) {
-        final Composite composite = new Composite(parent, SWT.NONE);
-        composite.setLayout(GridLayoutFactory.fillDefaults().numColumns(2).create());
+        return createInfoLink(parent, text, callback, SWT.NONE, 1, SWT.DEFAULT);
+    }
 
+    @NotNull
+    public static Link createInfoLink(
+        @NotNull Composite parent,
+        @NotNull String text,
+        @NotNull Runnable callback,
+        int style,
+        int colsSpan,
+        int widthHint
+    ) {
+        final Composite composite = new Composite(parent, style);
+        composite.setLayout(GridLayoutFactory.fillDefaults().numColumns(2).create());
+        composite.setLayoutData(GridDataFactory.fillDefaults()
+            .span(colsSpan, 1)
+            .hint(widthHint, SWT.DEFAULT)
+            .grab(true, false).create());
         final Label imageLabel = new Label(composite, SWT.NONE);
         imageLabel.setImage(DBeaverIcons.getImage(DBIcon.SMALL_INFO));
         imageLabel.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false));
