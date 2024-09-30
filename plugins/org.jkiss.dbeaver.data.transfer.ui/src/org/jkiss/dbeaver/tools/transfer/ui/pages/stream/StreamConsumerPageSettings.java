@@ -28,7 +28,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.forms.events.ExpansionAdapter;
 import org.eclipse.ui.forms.events.ExpansionEvent;
-import org.eclipse.ui.forms.widgets.ExpandableComposite;
+import org.eclipse.ui.forms.widgets.Section;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -99,7 +99,7 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
         Composite composite = UIUtils.createComposite(parent, 1);
 
         {
-            final ExpandableComposite generalExpander = new ExpandableComposite(composite, SWT.NONE);
+            final Section generalExpander = new Section(composite, Section.TREE_NODE);
             generalExpander.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
             generalExpander.setText(DTMessages.data_transfer_wizard_settings_group_general);
             generalExpander.addExpansionListener(new ExpansionAdapter() {

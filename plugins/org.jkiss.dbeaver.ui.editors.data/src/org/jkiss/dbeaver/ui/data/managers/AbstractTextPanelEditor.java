@@ -325,8 +325,6 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
         }
         if (valueController.isReadOnly()) {
             editorControl.setBackground(UIStyles.getDefaultWidgetBackground());
-        } else {
-            editorControl.setBackground(null);
         }
         try {
 
