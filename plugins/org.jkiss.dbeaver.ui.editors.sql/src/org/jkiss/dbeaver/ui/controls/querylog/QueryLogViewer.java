@@ -84,7 +84,6 @@ import org.jkiss.utils.LongKeyMap;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
-import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
@@ -104,7 +103,6 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     public static final String COLOR_REVERTED = "org.jkiss.dbeaver.txn.color.reverted.background";  // = new RGB(0xFF, 0x63, 0x47); //$NON-NLS-1$
     public static final String COLOR_TRANSACTION = "org.jkiss.dbeaver.txn.color.transaction.background";  // = new RGB(0xFF, 0xE4, 0xB5); //$NON-NLS-1$
 
-    private static NumberFormat NUMBER_FORMAT = NumberFormat.getInstance();
     private final IPropertyChangeListener themePropertiesListener;
 
     private static abstract class LogColumn {
@@ -124,6 +122,11 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
         String getToolTipText(QMEvent event) {
             return getText(event, true);
+        }
+
+        @Nullable
+        Comparator<QMEvent> getComparator() {
+            return null;
         }
     }
 
@@ -201,15 +204,20 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             return ""; //$NON-NLS-1$
         }
     };
-    private static LogColumn COLUMN_DURATION = new LogColumn("duration", ModelMessages.controls_querylog_column_duration_name + " (" + ModelMessages.controls_querylog__ms + ")", ModelMessages.controls_querylog_column_duration_tooltip, 100) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+    private static LogColumn COLUMN_DURATION = new LogColumn("duration", ModelMessages.controls_querylog_column_duration_name, ModelMessages.controls_querylog_column_duration_tooltip, 100) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         @Override
         String getText(QMEvent event, boolean briefInfo) {
             QMMObject object = event.getObject();
             if (object.isClosed()) {
-                return NUMBER_FORMAT.format(object.getDuration());
+                return RuntimeUtils.formatExecutionTime(object.getDuration());
             } else {
                 return ""; //$NON-NLS-1$
             }
+        }
+
+        @Override
+        Comparator<QMEvent> getComparator() {
+            return Comparator.comparingLong(e -> e.getObject().getDuration());
         }
     };
     private static LogColumn COLUMN_ROWS = new LogColumn("rows", ModelMessages.controls_querylog_column_rows_name, ModelMessages.controls_querylog_column_rows_tooltip, 120) { //$NON-NLS-1$
@@ -312,7 +320,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     private final IWorkbenchPartSite site;
     private final Text searchText;
     private Table logTable;
-    private java.util.List<ColumnDescriptor> columns = new ArrayList<>();
+    private List<ColumnDescriptor> columns = new ArrayList<>();
     private LongKeyMap<TableItem> objectToItemMap = new LongKeyMap<>();
 
     private QMEventFilter defaultFilter = new DefaultEventFilter();
@@ -479,7 +487,11 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             final ColumnDescriptor cd = new ColumnDescriptor(logColumn, tableColumn);
             columns.add(cd);
 
-            tableColumn.addListener(SWT.Selection, new TableColumnSortListener(logTable, colIndex));
+            Comparator<QMEvent> comparator = logColumn.getComparator();
+            TableColumnSortListener sorter = comparator != null
+                ? new TableColumnSortListener(logTable, Comparator.comparing(item -> ((QMEvent) item.getData()), comparator))
+                : new TableColumnSortListener(logTable, colIndex);
+            tableColumn.addListener(SWT.Selection, sorter);
             tableColumn.addListener(SWT.Resize, event -> {
                 final int width = tableColumn.getWidth();
                 dialogSettings.put("column-" + logColumn.id, String.valueOf(width)); //$NON-NLS-1$
