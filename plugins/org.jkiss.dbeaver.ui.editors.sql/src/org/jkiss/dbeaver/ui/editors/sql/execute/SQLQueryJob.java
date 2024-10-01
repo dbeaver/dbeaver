@@ -814,17 +814,17 @@ public class SQLQueryJob extends DataSourceJob
             // Multiple statements - show script statistics
             fakeResultSet.addColumn("Queries", DBPDataKind.NUMERIC);
             fakeResultSet.addColumn("Updated Rows", DBPDataKind.NUMERIC);
-            fakeResultSet.addColumn("Execute time (ms)", DBPDataKind.NUMERIC);
-            fakeResultSet.addColumn("Fetch time (ms)", DBPDataKind.NUMERIC);
-            fakeResultSet.addColumn("Total time (ms)", DBPDataKind.NUMERIC);
+            fakeResultSet.addColumn("Execute time", DBPDataKind.NUMERIC);
+            fakeResultSet.addColumn("Fetch time", DBPDataKind.NUMERIC);
+            fakeResultSet.addColumn("Total time", DBPDataKind.NUMERIC);
             fakeResultSet.addColumn("Start time", DBPDataKind.DATETIME);
             fakeResultSet.addColumn("Finish time", DBPDataKind.DATETIME);
             fakeResultSet.addRow(
                 statistics.getStatementsCount(),
                 statistics.getRowsUpdated() < 0 ? 0 : statistics.getRowsUpdated(),
-                statistics.getExecuteTime(),
-                statistics.getFetchTime(),
-                statistics.getTotalTime(),
+                RuntimeUtils.formatExecutionTime(statistics.getExecuteTime()),
+                RuntimeUtils.formatExecutionTime(statistics.getFetchTime()),
+                RuntimeUtils.formatExecutionTime(statistics.getTotalTime()),
                 new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT).format(new Date(statistics.getStartTime())),
                 new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT).format(new Date()));
             executeResult.setResultSetName(SQLEditorMessages.editors_sql_statistics);
