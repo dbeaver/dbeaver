@@ -354,6 +354,79 @@ createViewStatement: CREATE VIEW tableName (LeftParen viewColumnList RightParen)
 viewColumnList: columnNameList;
 levelsClause: (CASCADED|LOCAL);
 
+//
+//trigger
+//proc
+//func
+
+//createProgrammaticals: CREATE opt_or_replace (FUNCTION | PROCEDURE) func_name func_args_with_defaults (
+//        RETURNS (func_return | TABLE OPEN_PAREN table_func_column_list CLOSE_PAREN)
+//    )? createfunc_opt_list
+//
+//CREATE [ OR REPLACE ] PROCEDURE name ( [ [ argmode ] [ argname ] argtype [ { DEFAULT | = } default_expr ] [, ...] ] )
+//  { LANGUAGE lang_name
+//    | TRANSFORM { FOR TYPE type_name } [, ... ]
+//    | [ EXTERNAL ] SECURITY INVOKER | [ EXTERNAL ] SECURITY DEFINER
+//    | SET configuration_parameter { TO value | = value | FROM CURRENT }
+//    | AS 'definition'
+//    | AS 'obj_file', 'link_symbol'
+//    | sql_body
+//  } ...
+//CREATE [ OR ALTER ] { PROC | PROCEDURE } [schema_name.] procedure_name [ ; number ]
+//    [ { @parameter_name [ type_schema_name. ] data_type }
+//        [ VARYING ] [ NULL ] [ = default ] [ OUT | OUTPUT | [READONLY]
+//    ] [ ,...n ]
+//[ WITH <procedure_option> [ ,...n ] ]
+//[ FOR REPLICATION ]
+//AS { [ BEGIN ] sql_statement [;] [ ...n ] [ END ] }
+//[;]
+//
+//
+//CREATE [ OR REPLACE ] FUNCTION
+//      name ( [ [ argmode ] [ argname ] argtype [ { DEFAULT | = } default_expr ] [, ...] ] )
+//      [ RETURNS rettype
+//        | RETURNS TABLE ( column_name column_type [, ...] ) ]
+//    { LANGUAGE lang_name
+//      | TRANSFORM { FOR TYPE type_name } [, ... ]
+//      | WINDOW
+//      | { IMMUTABLE | STABLE | VOLATILE }
+//      | [ NOT ] LEAKPROOF
+//      | { CALLED ON NULL INPUT | RETURNS NULL ON NULL INPUT | STRICT }
+//      | { [ EXTERNAL ] SECURITY INVOKER | [ EXTERNAL ] SECURITY DEFINER }
+//      | PARALLEL { UNSAFE | RESTRICTED | SAFE }
+//      | COST execution_cost
+//      | ROWS result_rows
+//      | SUPPORT support_function
+//      | SET configuration_parameter { TO value | = value | FROM CURRENT }
+//      | AS 'definition'
+//      | AS 'obj_file', 'link_symbol'
+//      | sql_body
+//    } ...
+//
+//
+//
+
+constantExpression: unsignedNumericLiteral|generalLiteral|nullSpecification|truthValue;
+
+functionParamsList: (functionParamSpec (Comma functionParamSpec)*)?;
+functionParamSpec: BatchVariableName AS? dataType VARYING? NULL? (EqualsOperator constantExpression)? (OUT|OUTPUT|READONLY)?;
+functionOptions: (WITH anyUnexpected (Comma anyUnexpected)*)?;
+functionReturnType: functionReturnTableType|dataType;
+functionReturnTableType: TABLE | BatchVariableName TABLE tableElementList;
+
+functionBody: functionStatementBlock;
+functionStatement: functionStatementBlock|functionStatementReturn;
+functionStatementBlock: BEGIN functionStatement* END;
+functionStatementReturn: RETURN anyValue?;
+
+createOrAlterFunction: CREATE (OR ALTER)? FUNCTION qualifiedName LeftParen functionParamsList RightParen RETURNS (
+         TABLE functionOptions AS? RETURN (selectStatement|(LeftParen selectStatement RightParen))
+         |functionReturnType functionOptions AS? functionBody
+    );
+createOrAlterProcedure: CREATE (OR ALTER)? (PROC | PROCEDURE) qualifiedName functionParamsList
+                        functionOptions AS functionStatement;
+
+
 // schema ddl
 dropSchemaStatement: DROP SCHEMA schemaName dropBehaviour;
 dropBehaviour: (CASCADE|RESTRICT);
