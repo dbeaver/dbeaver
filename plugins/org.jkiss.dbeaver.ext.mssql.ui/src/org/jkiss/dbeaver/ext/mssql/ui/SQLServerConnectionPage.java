@@ -29,6 +29,9 @@ import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
+import org.jkiss.dbeaver.model.access.DBAAuthModel;
+import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -216,7 +219,15 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
         if (isCustomURL()) {
             return !CommonUtils.isEmpty(urlText.getText());
         } else {
-            return hostText != null && !CommonUtils.isEmpty(hostText.getText());
+            boolean hostIsPresent = hostText != null &&
+                !CommonUtils.isEmpty(hostText.getText());
+            DBPAuthModelDescriptor selectedAuthModel = authModelSelector.getSelectedAuthModel();
+            if (selectedAuthModel != null) {
+                DBAAuthModel<DBAAuthCredentials> authModel = selectedAuthModel.getInstance();
+                boolean modelRequireHost = authModel.isModelRequireHost();
+                return !modelRequireHost || hostIsPresent;
+            }
+            return hostIsPresent;
         }
     }
 

@@ -38,7 +38,7 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
 
     private static final Log log = Log.getLog(DataSourceProviderRegistry.class);
 
-    private AuthModelSelector authModelSelector;
+    protected AuthModelSelector authModelSelector;
 
     protected void createAuthPanel(Composite parent, int hSpan) {
         createAuthPanel(parent, hSpan, null);

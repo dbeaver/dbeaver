@@ -31,6 +31,9 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerType;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
+import org.jkiss.dbeaver.model.access.DBAAuthModel;
+import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
@@ -216,10 +219,16 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         if (isCustomURL()) {
             return !CommonUtils.isEmpty(urlText.getText());
         } else {
-            return super.isComplete() &&
-                hostText != null &&
+            boolean hostAndPortIsPresent = hostText != null &&
                 !CommonUtils.isEmpty(hostText.getText()) &&
                 (portText == null || !CommonUtils.isEmpty(portText.getText()));
+            DBPAuthModelDescriptor selectedAuthModel = authModelSelector.getSelectedAuthModel();
+            if (selectedAuthModel != null) {
+                DBAAuthModel<DBAAuthCredentials> authModel = selectedAuthModel.getInstance();
+                boolean modelRequireHost = authModel.isModelRequireHost();
+                return super.isComplete() && (!modelRequireHost || hostAndPortIsPresent);
+            }
+            return super.isComplete() && hostAndPortIsPresent;
         }
     }
 
