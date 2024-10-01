@@ -14,23 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.net.ssh;
+package org.jkiss.dbeaver.ui;
 
-import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
-import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
-import org.jkiss.dbeaver.ui.ObjectPropertyConfiguratorWrapper;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.registry.configurator.DBPConnectionEditIntention;
 
-/**
- * SSH tunnel configuration
- */
-public class SSHTunnelConfiguratorUI extends ObjectPropertyConfiguratorWrapper<Object, DBWHandlerConfiguration> {
+public abstract class AbstractObjectPropertyConfigurator<OBJECT, SETTINGS> implements IObjectPropertyConfigurator<OBJECT, SETTINGS> {
 
+    private DBPConnectionEditIntention editIntention = DBPConnectionEditIntention.DEFAULT;
+
+    @NotNull
     @Override
-    protected IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> createConfigurator() {
-        return switch (this.getEditIntention()) {
-            case DEFAULT -> new SSHTunnelDefaultConfiguratorUI();
-            case CREDENTIALS_ONLY -> new SSHTunnelCredsOnlyConfiguratorUI();
-        };
+    public DBPConnectionEditIntention getEditIntention() {
+        return this.editIntention;
     }
 
+    public void setEditIntention(@NotNull DBPConnectionEditIntention editIntention) {
+        this.editIntention = editIntention;
+    }
 }

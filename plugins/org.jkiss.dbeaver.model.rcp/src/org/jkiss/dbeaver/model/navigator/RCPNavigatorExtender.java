@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystems;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 
-public class DBFNavigatorExtender implements DBNModelExtender {
+public class RCPNavigatorExtender implements DBNModelExtender {
 
     private DBFResourceListener resourceListener;
 

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.net;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 
 /**
@@ -37,6 +38,9 @@ public interface DBWHandlerDescriptor {
     String getLabel();
 
     String getDescription();
+
+    @NotNull
+    String getImplClassName();
 
     /**
      * Handler type

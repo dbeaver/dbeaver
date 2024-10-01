@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.utils;
 
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.utils.StandardConstants;
 
@@ -91,7 +92,7 @@ public class SystemVariablesResolver implements IVariableResolver {
     }
 
     public static String getWorkspacePath() {
-        return getPlainPath(Platform.getInstanceLocation().getURL());
+        return DBWorkbench.getPlatform().getWorkspace().getAbsolutePath().toString();
     }
 
     public static String getUserHome() {
