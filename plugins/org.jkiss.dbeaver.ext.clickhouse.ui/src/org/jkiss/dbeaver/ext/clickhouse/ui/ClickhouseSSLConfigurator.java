@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.clickhouse.ClickhouseConstants;
 import org.jkiss.dbeaver.ext.clickhouse.ui.internal.ClickhouseMessages;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.registry.configurator.DBPConnectionEditIntention;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.net.SSLConfiguratorTrustStoreUI;
 import org.jkiss.utils.CommonUtils;
@@ -64,6 +65,9 @@ public class ClickhouseSSLConfigurator extends SSLConfiguratorTrustStoreUI {
         sslModeCombo.select(0);
         sslModeCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
+        if (this.getEditIntention() == DBPConnectionEditIntention.CREDENTIALS_ONLY) {
+            sslModeCombo.setEnabled(false);
+        }
     }
 
     @Override

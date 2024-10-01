@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
@@ -28,11 +29,9 @@ import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLSearchUtils;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
-import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SourceResolutionResult;
-import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.stm.LSMInspections;
 import org.jkiss.dbeaver.model.stm.STMTreeTermNode;
 import org.jkiss.dbeaver.model.struct.*;
@@ -145,6 +144,14 @@ public abstract class SQLQueryCompletionContext {
     }
 
     /**
+     * Returns contexts participating in identifiers resolution
+     */
+    @NotNull
+    public Set<DBSObjectContainer> getExposedContexts() {
+        return Collections.emptySet();
+    }
+
+    /**
      * Prepare a set of completion proposal items for a given position in the text of the script item
      */
     @NotNull
@@ -166,6 +173,7 @@ public abstract class SQLQueryCompletionContext {
         @NotNull STMTreeTermNode[] nameNodes
     ) {
         return new SQLQueryCompletionContext(scriptItem.offset) {
+            private final Set<DBSObjectContainer> exposedContexts = SQLQueryCompletionContext.obtainExposedContexts(dbcExecutionContext);
             private final SQLQueryDataContext.KnownSourcesInfo knownSources = context.collectKnownSources();
 
             @NotNull
@@ -184,6 +192,12 @@ public abstract class SQLQueryCompletionContext {
             @Override
             public Set<String> getAliasesInUse() {
                 return this.knownSources.getAliasesInUse();
+            }
+
+            @NotNull
+            @Override
+            public Set<DBSObjectContainer> getExposedContexts() {
+                return this.exposedContexts;
             }
 
             @NotNull
@@ -499,9 +513,9 @@ public abstract class SQLQueryCompletionContext {
                     }
                 }
 
-                if (dbcExecutionContext != null && dbcExecutionContext.getDataSource() != null) {
+                if (dbcExecutionContext != null) {
                     try {
-                        DBCExecutionContextDefaults<?,?> defaults = dbcExecutionContext.getContextDefaults();
+                        DBCExecutionContextDefaults<?, ?> defaults = dbcExecutionContext.getContextDefaults();
                         if (defaults != null) {
                             DBSSchema defaultSchema = defaults.getDefaultSchema();
                             DBSCatalog defaultCatalog = defaults.getDefaultCatalog();
@@ -514,14 +528,9 @@ public abstract class SQLQueryCompletionContext {
                                     this.collectTables(monitor, defaultSchema, completions);
                                 }
                             }
-                            if (defaultCatalog != null) {
-                                this.collectSchemas(monitor, defaultCatalog, completions);
-                            }
                         }
 
-                        if (dbcExecutionContext.getDataSource() instanceof DBSObjectContainer container) {
-                            this.collectCatalogs(monitor, container, completions);
-                        }
+                        this.collectContextSchemasAndCatalogs(monitor, completions);
                     } catch (DBException e) {
                         log.error(e);
                     }
@@ -529,7 +538,17 @@ public abstract class SQLQueryCompletionContext {
                 
                 return completions;
             }
-            
+
+            private void collectContextSchemasAndCatalogs(@NotNull DBRProgressMonitor monitor, @NotNull LinkedList<SQLQueryCompletionItem> completions) throws DBException {
+                for (DBSObjectContainer container : this.exposedContexts) {
+                    Collection<? extends DBSObject> children = container.getChildren(monitor);
+                    for (DBSObject child : children) {
+                        if (child instanceof DBSSchema || child instanceof DBSCatalog) {
+                            completions.addLast(SQLQueryCompletionItem.forDbObject(child));
+                        }
+                    }
+                }
+            }
 
             private void collectTables(
                 @NotNull DBRProgressMonitor monitor,
@@ -588,5 +607,27 @@ public abstract class SQLQueryCompletionContext {
                 }
             }
         };
+    }
+
+    @NotNull
+    private static Set<DBSObjectContainer> obtainExposedContexts(@Nullable DBCExecutionContext dbcExecutionContext) {
+        Set<DBSObjectContainer> exposedContexts = new LinkedHashSet<>();
+        if (dbcExecutionContext != null) {
+            for (
+                DBSObject contextObject = DBUtils.getSelectedObject(dbcExecutionContext);
+                contextObject != null;
+                contextObject = contextObject.getParentObject()
+            ) {
+                if (contextObject instanceof DBSObjectContainer container) {
+                    exposedContexts.add(container);
+                }
+            }
+
+            DBPDataSource dataSource = dbcExecutionContext.getDataSource();
+            if (dataSource instanceof DBSObjectContainer container) {
+                exposedContexts.add(container);
+            }
+        }
+        return exposedContexts;
     }
 }
