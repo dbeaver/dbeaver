@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructContainer;
 import org.jkiss.dbeaver.model.struct.rdb.*;
+import org.jkiss.dbeaver.registry.RuntimeProjectPropertiesConstant;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressPainter;
@@ -363,6 +364,11 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 // Disable redraw during expand (its blinking)
                 getTree().setRedraw(false);
                 try {
+                    if (event.item != null && event.item.getData() instanceof DBNProject dbnProject) {
+                        //manual opening
+                        dbnProject.getProject().setRuntimeProperty(RuntimeProjectPropertiesConstant.IS_USER_DECLINE_PROJECT_DECRYPTION,
+                            Boolean.FALSE.toString());
+                    }
                     super.handleTreeExpand(event);
                 } finally {
                     getTree().setRedraw(true);

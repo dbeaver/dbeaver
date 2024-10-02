@@ -17,12 +17,11 @@
 package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLTableAliasInsertMode;
@@ -35,25 +34,23 @@ import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItemVi
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
-import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.model.struct.DBSStructContainer;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVisitor<String> {
+
+    private static final Log log = Log.getLog(SQLQueryCompletionTextProvider.class);
 
     private final SQLCompletionRequest request;
     private final SQLQueryCompletionContext queryCompletionContext;
     private final SQLTableAliasInsertMode aliasMode;
     private final char structSeparator;
     private final Set<String> localKnownColumnNames;
-    private final Set<DBSObject> currentScopeContainers = new HashSet<>();
 
     private final DBRProgressMonitor monitor;
+    private final DBSObjectContainer activeContext;
 
     public SQLQueryCompletionTextProvider(
         @NotNull SQLCompletionRequest request,
@@ -70,29 +67,9 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
                 .map(c -> c.symbol.getName())
                 .collect(Collectors.toSet());
         this.monitor = monitor;
-
-        this.prepareCurrentScopeContainers(request);
-    }
-
-    private void prepareCurrentScopeContainers(@NotNull SQLCompletionRequest request) {
-        DBCExecutionContext dbcExecutionContext = request.getContext().getExecutionContext();
-        if (dbcExecutionContext != null) {
-            DBCExecutionContextDefaults<?, ?> defaults = dbcExecutionContext.getContextDefaults();
-            if (defaults != null) {
-                DBSSchema defaultSchema = defaults.getDefaultSchema();
-                DBSCatalog defaultCatalog = defaults.getDefaultCatalog();
-
-                if (defaultSchema != null) {
-                    this.currentScopeContainers.add(defaultSchema);
-                }
-                if (defaultCatalog != null) {
-                    this.currentScopeContainers.add(defaultCatalog);
-                }
-            }
-            if (dbcExecutionContext.getDataSource() instanceof DBSObjectContainer container) {
-                this.currentScopeContainers.add(container);
-            }
-        }
+        this.activeContext = request.getContext().getExecutionContext() == null
+            ? null
+            : DBUtils.getSelectedObject(request.getContext().getExecutionContext()) instanceof DBSObjectContainer c ? c : null;
     }
 
     @NotNull
@@ -170,18 +147,49 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
     }
 
     @NotNull
-    private <T extends DBPNamedObject & DBSObject> String prepareObjectName(@NotNull T namedObject) {
-        boolean forceFullName = !this.currentScopeContainers.contains(namedObject.getParentObject());
+    private <T extends DBSObject> String prepareObjectName(@NotNull T namedObject) {
+        boolean forceFullName = !this.objectBelongsToTheActiveContext(namedObject) || this.activeContextHasConflictingName(namedObject);
 
+        String shortName = DBUtils.getQuotedIdentifier(namedObject);
         String name;
         if (this.request.getContext().isUseShortNames() && !forceFullName) {
-            name = DBUtils.getQuotedIdentifier(namedObject);
+            name = shortName;
         } else if (this.request.getContext().isUseFQNames() || forceFullName) {
             name = DBUtils.getObjectFullName(namedObject, DBPEvaluationContext.DML);
+            if (name.equals(shortName)) { // catalog name is not being included in full name for some reason sometimes
+                name = this.prepareQualifiedName(namedObject);
+            }
         } else {
-            name = DBUtils.getQuotedIdentifier(namedObject);
+            name = shortName;
         }
         return this.convertCaseIfNeeded(name);
+    }
+
+    private boolean objectBelongsToTheActiveContext(@NotNull DBSObject object) {
+        return object.getParentObject() instanceof DBSObjectContainer objectContainer &&
+            this.queryCompletionContext.getExposedContexts().contains(objectContainer);
+    }
+
+    private boolean activeContextHasConflictingName(@NotNull DBSObject object) {
+        try {
+            if (this.activeContext != null) {
+                DBSObject child = activeContext.getChild(this.monitor, object.getName());
+                return child != null && !child.equals(object);
+            }
+        } catch (DBException e) {
+            log.debug("Failed to validate database object completion name ambiguity", e);
+        }
+        return false;
+    }
+
+    private String prepareQualifiedName(@NotNull DBSObject object) {
+        LinkedList<String> parts = new LinkedList<>();
+        for (DBSObject o = object; o != null; o = o.getParentObject()) {
+            if (o instanceof DBSStructContainer) {
+                parts.addFirst(DBUtils.getQuotedIdentifier(o));
+            }
+        }
+        return String.join(Character.toString(object.getDataSource().getSQLDialect().getStructSeparator()), parts);
     }
 
     @NotNull

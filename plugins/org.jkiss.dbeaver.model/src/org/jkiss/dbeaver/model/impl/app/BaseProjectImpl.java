@@ -52,6 +52,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
 
@@ -82,6 +83,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     private volatile ProjectFormat format = ProjectFormat.UNKNOWN;
     private volatile DBPDataSourceRegistry dataSourceRegistry;
     private volatile DBFFileSystemManager fileSystemManager;
+    private volatile Map<String, String> runtimeProperties = new ConcurrentHashMap<>();
     private volatile Map<String, Object> properties;
     protected volatile Map<String, Map<String, Object>> resourceProperties;
     private UUID projectID;
@@ -562,6 +564,16 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
                 metadataSyncJob.schedule(100);
             }
         }
+    }
+
+    @Override
+    public String getRuntimeProperty(@NotNull String key) {
+        return runtimeProperties.get(key);
+    }
+
+    @Override
+    public void setRuntimeProperty(@NotNull String key, String value) {
+        runtimeProperties.put(key, value);
     }
 
     @Override
