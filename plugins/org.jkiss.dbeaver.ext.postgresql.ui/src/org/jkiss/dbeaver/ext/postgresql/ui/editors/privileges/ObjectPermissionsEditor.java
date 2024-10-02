@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ObjectPermissionsEditor extends PostgresPermissionsEditor<PostgreRole> {
+    private PostgrePrivilegeType[] supportedPrivilegeTypes;
 
     @Override
     protected PostgrePrivilege grantPrivilege(PostgrePrivilegeType privilegeType, PostgreRole role) {
@@ -59,6 +60,15 @@ public class ObjectPermissionsEditor extends PostgresPermissionsEditor<PostgreRo
 
     @Override
     protected PostgrePrivilegeType[] getSupportedPrivilegeTypes(DBSObject object) {
+        // Privilege types are loaded once and cached since they are not expected to change
+        if (supportedPrivilegeTypes == null) {
+            supportedPrivilegeTypes = loadSupportedPrivilegeTypes();
+        }
+
+        return supportedPrivilegeTypes;
+    }
+
+    private PostgrePrivilegeType[] loadSupportedPrivilegeTypes() {
         return Arrays.stream(getDatabaseObject().getDataSource().getSupportedPrivilegeTypes())
             .filter(it -> it.isValid() && it.supportsType(getDatabaseObject().getClass()))
             .toArray(PostgrePrivilegeType[]::new);
