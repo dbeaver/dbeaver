@@ -75,10 +75,13 @@ public class DriverEditHelpers {
                 monitor.done();
                 monitor.beginTask("Export driver files", totalFiles);
                 for (DBPDriverLibrary library : libraries) {
+                    if (monitor.isCanceled()) {
+                        break;
+                    }
                     try {
                         Path exported = exportLibrary(monitor, library, outputFolder);
                         if (exported == null) {
-                            break;
+                            continue;
                         }
                         if (firstExported[0] == null) {
                             firstExported[0] = exported;
@@ -98,6 +101,9 @@ public class DriverEditHelpers {
     }
 
     private static int countFiles(DBRProgressMonitor monitor, DBPDriverLibrary library) {
+        if (monitor.isCanceled()) {
+            return 0;
+        }
         int totalFiles = 0;
         try {
             Collection<? extends DBPDriverLibrary> dependencies = library.getDependencies(monitor);
@@ -110,6 +116,13 @@ public class DriverEditHelpers {
             // ignore
         }
         Path localFile = library.getLocalFile();
+        if (localFile == null) {
+            try {
+                library.downloadLibraryFile(monitor, false, "Download file");
+            } catch (Exception e) {
+                log.debug(e);
+            }
+        }
         if (localFile != null && Files.exists(localFile)) {
             totalFiles++;
         }
@@ -117,6 +130,10 @@ public class DriverEditHelpers {
     }
 
     private static Path exportLibrary(DBRProgressMonitor monitor, DBPDriverLibrary library, String outputFolder) throws InterruptedException {
+        if (monitor.isCanceled()) {
+            return null;
+        }
+
         while (true) {
             try {
                 Path depExported = null;
