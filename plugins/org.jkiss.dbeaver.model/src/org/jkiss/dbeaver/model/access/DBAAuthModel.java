@@ -102,7 +102,7 @@ public interface DBAAuthModel<CREDENTIALS extends DBAAuthCredentials> {
      *
      * @return necessity of the hostname field
      */
-    default boolean isModelRequireHost() {
+    default boolean isHostRequired() {
         return true;
     }
 }

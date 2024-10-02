@@ -230,7 +230,7 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
             DBPAuthModelDescriptor selectedAuthModel = authModelSelector.getSelectedAuthModel();
             if (selectedAuthModel != null) {
                 DBAAuthModel<DBAAuthCredentials> authModel = selectedAuthModel.getInstance();
-                boolean modelRequireHost = authModel.isModelRequireHost();
+                boolean modelRequireHost = authModel.isHostRequired();
                 return super.isComplete() && (!modelRequireHost || hostAndPortIsPresent);
             }
             return super.isComplete() && hostAndPortIsPresent;
