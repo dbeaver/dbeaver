@@ -109,6 +109,11 @@ public class PostgreSchema implements
         dataTypeCache = new PostgreDataTypeCache();
     }
 
+    @Override
+    public List<DBSObjectContainer> getImportedScopes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return List.of(this.database.getSchema(monitor, PostgreConstants.INFO_SCHEMA_NAME));
+    }
+
     @NotNull
     protected TableCache createTableCache() {
         return new TableCache();

@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.model.dpi.DPIElement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * DBSObjectContainer
@@ -93,4 +95,7 @@ public interface DBSObjectContainer extends DBSObject
      */
     void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException;
 
+    default List<DBSObjectContainer> getImportedScopes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return Collections.emptyList();
+    }
 }

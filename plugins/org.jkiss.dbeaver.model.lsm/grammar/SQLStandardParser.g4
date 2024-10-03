@@ -164,7 +164,7 @@ parameterSpecification: parameterName (indicatorParameter)?;
 parameterName: Colon identifier;
 indicatorParameter: (INDICATOR)? parameterName;
 dynamicParameterSpecification: QuestionMark;
-columnReference: qualifiedName | (tableName tupleRefSuffix);
+columnReference: (tableName tupleRefSuffix) | qualifiedName;
 tupleRefSuffix: Period Asterisk;
 //columnReference: identifier (Period identifier (Period identifier (Period identifier)?)?)?;
 valueReference: (columnReference|valueRefNestedExpr) valueRefIndexingStep* (valueRefMemberStep valueRefIndexingStep*)*;
