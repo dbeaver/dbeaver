@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
+import java.util.Map;
 import java.util.TimeZone;
 
 /**
@@ -226,8 +227,8 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
             String host = hostText != null ? hostText.getText() : null;
             String port = portText != null ? portText.getText() : null;
             DBPAuthModelDescriptor selectedAuthModel = authModelSelector.getSelectedAuthModel();
-
-            return super.isComplete() && DBAuthUtils.isPageCompleteByAuthModel(host, port, selectedAuthModel, null);
+            Map<String, String> authProperties = authModelSelector.getActiveDataSource().getConnectionConfiguration().getAuthProperties();
+            return super.isComplete() && DBAuthUtils.isPageCompleteByAuthModel(host, port, selectedAuthModel, authProperties);
         }
     }
 
