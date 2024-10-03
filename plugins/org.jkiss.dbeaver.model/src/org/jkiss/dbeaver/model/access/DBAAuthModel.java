@@ -96,13 +96,4 @@ public interface DBAAuthModel<CREDENTIALS extends DBAAuthCredentials> {
         @NotNull DBPConnectionConfiguration configuration,
         @NotNull CREDENTIALS credentials
     ) throws DBException;
-
-    /**
-     * Getting necessity of the hostname field
-     *
-     * @return necessity of the hostname field
-     */
-    default boolean isHostRequired() {
-        return true;
-    }
 }

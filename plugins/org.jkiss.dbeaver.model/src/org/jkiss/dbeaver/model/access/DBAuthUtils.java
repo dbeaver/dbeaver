@@ -17,13 +17,17 @@
 package org.jkiss.dbeaver.model.access;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.Map;
 
 public class DBAuthUtils {
 
@@ -83,5 +87,22 @@ public class DBAuthUtils {
             }
         }
         return false;
+    }
+
+    public static boolean isPageCompleteByAuthModel(
+        @Nullable String host,
+        @Nullable String port,
+        @Nullable DBPAuthModelDescriptor selectedAuthModel,
+        @Nullable Map<String, String> authProperties
+    ) {
+        boolean hostAndPortIsPresent = CommonUtils.isNotEmpty(host) && CommonUtils.isNotEmpty(port);
+        if (selectedAuthModel != null) {
+            DBAAuthModel<DBAAuthCredentials> authModel = selectedAuthModel.getInstance();
+            if (authModel instanceof DBAAuthHostRequireChecker hostRequireChecker) {
+                boolean isHostRequired = hostRequireChecker.isHostRequired(authProperties);
+                return !isHostRequired || hostAndPortIsPresent;
+            }
+        }
+        return hostAndPortIsPresent;
     }
 }
