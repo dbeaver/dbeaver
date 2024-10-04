@@ -795,7 +795,7 @@ public class GeneralUtils {
 
     @NotNull
     public static URI makeURIFromFilePath(@NotNull String path) throws URISyntaxException {
-        return new URI(path.replace(" ", "%20"));
+        return Path.of(path).toUri();
     }
 
     /////////////////////////////////////////////////////////////////////////
