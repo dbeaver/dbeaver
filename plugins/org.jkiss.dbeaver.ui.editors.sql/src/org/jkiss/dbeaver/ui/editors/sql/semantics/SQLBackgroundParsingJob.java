@@ -43,7 +43,6 @@ import org.jkiss.dbeaver.model.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.stm.LSMInspections;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.stm.STMTreeTermNode;
@@ -488,7 +487,7 @@ public class SQLBackgroundParsingJob {
                 // for now just cover the region of interest
                 {
                     NodesIterator<QueuedRegionInfo> it = this.queuedForReparse.nodesIteratorAt(0);
-                    workOffset = (it.getCurrValue() != null || it.next()) ? it.getCurrOffset() : 0;
+                    workOffset = it.getCurrOffset();
                 }
                 {
                     NodesIterator<QueuedRegionInfo> it = this.queuedForReparse.nodesIteratorAt(Integer.MAX_VALUE);

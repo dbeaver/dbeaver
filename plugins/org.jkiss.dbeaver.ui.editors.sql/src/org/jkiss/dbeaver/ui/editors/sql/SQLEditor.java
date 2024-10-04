@@ -81,6 +81,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.DefaultServerOutputReader;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.NavigatorResources;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -93,13 +94,13 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.data.SQLQueryDataContainer;
+import org.jkiss.dbeaver.model.sql.parser.SQLParserContext;
+import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.model.sql.transformers.SQLQueryTransformerCount;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
-import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
-import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceMonitorJob;
@@ -231,7 +232,6 @@ public class SQLEditor extends SQLEditorBase implements
     private volatile QueryProcessor curQueryProcessor;
     private final List<QueryProcessor> queryProcessors = new ArrayList<>();
 
-    private DBPDataSourceContainer dataSourceContainer;
     private DBPDataSource curDataSource;
     private volatile DBCExecutionContext executionContext;
     private volatile DBCExecutionContext lastExecutionContext;
@@ -673,6 +673,27 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     public boolean isActiveTask() {
         return getTotalQueryRunning() > 0;
+    }
+
+    @NotNull
+    @Override
+    public SQLDialect getSQLDialect() {
+        if (dataSourceContainer == null) {
+            return BasicSQLDialect.INSTANCE;
+        }
+        SQLDialectMetadata scriptDialect = dataSourceContainer.getScriptDialect();
+        try {
+            return scriptDialect.createInstance();
+        } catch (DBException e) {
+            log.warn(String.format("Can't create sql dialect for %s:%s", scriptDialect.getId(), scriptDialect.getLabel()));
+        }
+        return BasicSQLDialect.INSTANCE;
+    }
+
+    @NotNull
+    @Override
+    protected SQLParserContext getParserContext(SQLSyntaxManager syntaxManager, SQLRuleManager ruleManager, IDocument document) {
+        return new SQLParserContext(dataSourceContainer, syntaxManager, ruleManager, document != null ? document : new Document());
     }
 
     @Override
