@@ -594,6 +594,12 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             connectionEditor.dispose();
             connectionEditor = null;
         }
+        if (extraPages != null) {
+            for (IDialogPage ep : extraPages) {
+                ep.dispose();
+            }
+            extraPages = null;
+        }
         super.dispose();
     }
 
