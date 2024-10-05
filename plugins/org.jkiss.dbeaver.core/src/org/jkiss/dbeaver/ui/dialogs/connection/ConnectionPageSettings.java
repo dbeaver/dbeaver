@@ -188,6 +188,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             control.setRedraw(true);
         }
         //getContainer().updateTitleBar();
+        UIUtils.asyncExec(() -> control.setFocus());
     }
 
     @Override
