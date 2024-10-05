@@ -63,7 +63,7 @@ import java.util.stream.Collectors;
 public class GeneralUtils {
     private static final Log log = Log.getLog(GeneralUtils.class);
 
-    public static final Pattern URI_SCHEMA_PATTERN = Pattern.compile("([a-zA-Z0-9]+:/).+");
+    public static final Pattern URI_SCHEMA_PATTERN = Pattern.compile("([a-zA-Z0-9]+:).+");
 
     public static final String UTF8_ENCODING = StandardCharsets.UTF_8.name();
     public static final String DEFAULT_ENCODING = UTF8_ENCODING;
@@ -804,7 +804,8 @@ public class GeneralUtils {
     public static URI makeURIFromFilePath(@NotNull String path) throws URISyntaxException {
         Matcher matcher = URI_SCHEMA_PATTERN.matcher(path);
         if (matcher.matches()) {
-            path = path.substring(matcher.end(1));
+            String plainPath = path.substring(matcher.end(1));
+            return Path.of(plainPath).toUri();
         }
         return Path.of(path).toUri();
     }
