@@ -528,9 +528,9 @@ public class SQLBackgroundParsingJob {
             if (workLength == 0) {
                 return;
             }
-            
-            SQLParserContext parserContext =
-                new SQLParserContext(this.editor.getDataSource(), this.editor.getSyntaxManager(), this.editor.getRuleManager(), this.document);
+
+            SQLParserContext parserContext = new SQLParserContext(editor.getDataSource() != null ? editor.getDataSource().getContainer() : null,
+                    editor.getSyntaxManager(), editor.getRuleManager(), document);
             List<SQLScriptElement> elements = SQLScriptParser.extractScriptQueries(parserContext, workOffset, workLength, false, false, false);
             if (elements.isEmpty()) {
                 if (DEBUG) {

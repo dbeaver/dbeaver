@@ -405,8 +405,8 @@ public class SQLScriptParserGenericsTest {
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(dialect, dataSourceContainer.getPreferenceStore());
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
-        ruleManager.loadRules(dataSource, false);
-        return new SQLParserContext(dataSource, syntaxManager, ruleManager, new Document(query));
+        ruleManager.loadRules(dataSourceContainer, false);
+        return new SQLParserContext(dataSourceContainer, syntaxManager, ruleManager, new Document(query));
     }
 
     private SQLDialect setDialect(String name) throws DBException {

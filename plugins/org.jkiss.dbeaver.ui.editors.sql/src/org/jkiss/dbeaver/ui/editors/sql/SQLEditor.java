@@ -682,18 +682,14 @@ public class SQLEditor extends SQLEditorBase implements
             return BasicSQLDialect.INSTANCE;
         }
         SQLDialectMetadata scriptDialect = dataSourceContainer.getScriptDialect();
-        try {
-            return scriptDialect.createInstance();
-        } catch (DBException e) {
-            log.warn(String.format("Can't create sql dialect for %s:%s", scriptDialect.getId(), scriptDialect.getLabel()));
+        if (scriptDialect != null) {
+            try {
+                return scriptDialect.createInstance();
+            } catch (DBException e) {
+                log.warn(String.format("Can't create sql dialect for %s:%s", scriptDialect.getId(), scriptDialect.getLabel()));
+            }
         }
         return BasicSQLDialect.INSTANCE;
-    }
-
-    @NotNull
-    @Override
-    protected SQLParserContext getParserContext(SQLSyntaxManager syntaxManager, SQLRuleManager ruleManager, IDocument document) {
-        return new SQLParserContext(dataSourceContainer, syntaxManager, ruleManager, document != null ? document : new Document());
     }
 
     @Override

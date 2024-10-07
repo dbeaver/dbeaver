@@ -455,7 +455,7 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(this, dataSource.getContainer().getPreferenceStore());
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
-        ruleManager.loadRules(dataSource, false);
+        ruleManager.loadRules(dataSource.getContainer(), false);
         TokenPredicateFactory tt = TokenPredicateFactory.makeDialectSpecificFactory(ruleManager);
 
         TokenPredicateSet conditions = TokenPredicateSet.of(

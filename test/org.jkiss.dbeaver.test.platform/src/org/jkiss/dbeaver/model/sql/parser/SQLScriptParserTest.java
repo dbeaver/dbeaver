@@ -770,9 +770,9 @@ public class SQLScriptParserTest {
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(dialect, dataSourceContainer.getPreferenceStore());
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
-        ruleManager.loadRules(dataSource, false);
+        ruleManager.loadRules(dataSourceContainer, false);
         Document document = new Document(query);
-        return new SQLParserContext(dataSource, syntaxManager, ruleManager, document);
+        return new SQLParserContext(dataSourceContainer, syntaxManager, ruleManager, document);
     }
 
     private SQLDialect setDialect(String name) throws DBException {

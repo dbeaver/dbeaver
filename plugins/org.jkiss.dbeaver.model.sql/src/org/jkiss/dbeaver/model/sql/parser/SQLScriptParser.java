@@ -748,7 +748,7 @@ public class SQLScriptParser {
 
     public static List<SQLQueryParameter> parseParametersAndVariables(SQLParserContext context, String selectedQueryText) {
         SQLParserContext ctx = new SQLParserContext(
-                context.getDataSource(),
+                context.getDataSource() != null ? context.getDataSource().getContainer() : null,
                 context.getSyntaxManager(),
                 context.getRuleManager(),
                 new Document(selectedQueryText)
@@ -1011,11 +1011,11 @@ public class SQLScriptParser {
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(dataSource.getSQLDialect(), dataSource.getContainer().getPreferenceStore());
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
-        ruleManager.loadRules(dataSource, false);
+        ruleManager.loadRules(dataSource.getContainer(), false);
 
         Document sqlDocument = new Document(sqlScriptContent);
 
-        SQLParserContext parserContext = new SQLParserContext(dataSource, syntaxManager, ruleManager, sqlDocument);
+        SQLParserContext parserContext = new SQLParserContext(dataSource.getContainer(), syntaxManager, ruleManager, sqlDocument);
         return SQLScriptParser.extractScriptQueries(parserContext, 0, sqlScriptContent.length(), true, false, true);
     }
 
@@ -1050,7 +1050,7 @@ public class SQLScriptParser {
 
         sqlDocument.setDocumentPartitioner(SQLParserPartitions.SQL_PARTITIONING, partitioner);
 
-        SQLParserContext parserContext = new SQLParserContext(dataSource, syntaxManager, ruleManager, sqlDocument);
+        SQLParserContext parserContext = new SQLParserContext(dataSource != null ? dataSource.getContainer() : null, syntaxManager, ruleManager, sqlDocument);
         parserContext.setPreferenceStore(preferenceStore);
         return parserContext;
     }
