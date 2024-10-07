@@ -18,8 +18,6 @@ package org.jkiss.dbeaver.model.sql.semantics.context;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -28,7 +26,10 @@ import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableValueModel;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 
@@ -42,8 +43,6 @@ import java.util.function.Function;
  * Represents underlying database context having real tables
  */
 public class SQLQueryDataSourceContext extends SQLQueryDataContext {
-    private static final Log log = Log.getLog(SQLQueryDataSourceContext.class);
-
     @NotNull
     private final SQLDialect dialect;
     @NotNull
@@ -96,10 +95,9 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
                 container,
                 this.executionContext,
                 tableName2,
-                true,
+                false,
                 identifierDetector
             );
-            obj = expandAliases(monitor, obj);
             return obj instanceof DBSTable table ? table : (obj instanceof DBSView view ? view : null);
         } else {
             // Semantic analyser should never be used for databases, which doesn't support table lookup
@@ -123,10 +121,9 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
                 container,
                 this.executionContext,
                 objectName2,
-                true,
+                false,
                 identifierDetector
             );
-            obj = expandAliases(monitor, obj);
             return objectType.getTypeClass().isInstance(obj) ? obj : null;
         } else {
             // Semantic analyser should never be used for databases, which doesn't support table lookup
@@ -134,19 +131,6 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
             // so that analyzers could be created only for supported dialects.
             throw new UnsupportedOperationException("Semantic analyser should never be used for databases, which doesn't support table lookup");
         }
-    }
-
-    @Nullable
-    private static DBSObject expandAliases(@NotNull DBRProgressMonitor monitor, @Nullable DBSObject obj) {
-        while (obj instanceof DBSAlias aliasObject) {
-            try {
-                obj = aliasObject.getTargetObject(monitor);
-            } catch (DBException e) {
-                obj = null;
-                log.debug("Can't resolve target object for alias '" + aliasObject.getName() + "'", e);
-            }
-        }
-        return obj;
     }
 
     @Nullable
