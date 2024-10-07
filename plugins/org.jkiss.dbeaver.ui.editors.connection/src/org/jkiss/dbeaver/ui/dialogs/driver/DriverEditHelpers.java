@@ -48,7 +48,9 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * DriverEditUtils
@@ -124,7 +126,17 @@ public class DriverEditHelpers {
             }
         }
         if (localFile != null && Files.exists(localFile)) {
-            totalFiles++;
+            if (Files.isDirectory(localFile)) {
+                try (Stream<Path> walk = Files.walk(localFile)) {
+                    totalFiles += walk
+                        .sorted(Comparator.reverseOrder())
+                        .toList().size();
+                } catch (IOException e) {
+                    log.debug(e);
+                }
+            } else {
+                totalFiles++;
+            }
         }
         return totalFiles;
     }
@@ -150,12 +162,32 @@ public class DriverEditHelpers {
                 if (localFile == null || !Files.exists(localFile)) {
                     return depExported;
                 }
+                Path outFile = null;
+                if (Files.isDirectory(localFile)) {
+                    Path[] exported = new Path[1];
+                    try (Stream<Path> walk = Files.walk(localFile)) {
+                        walk.forEach(source -> {
+                            if (Files.isDirectory(source)) {
+                                return;
+                            }
+                            monitor.subTask("Export file '" + source + "'");
+                            Path destination = Path.of(outputFolder, source.getFileName().toString());
+                            try {
+                                Files.copy(source, destination, StandardCopyOption.REPLACE_EXISTING);
+                            } catch (IOException e) {
+                                log.debug(e);
+                            }
+                            if (exported[0] == null) exported[0] = destination;
+                        });
+                    }
+                    outFile = exported[0];
+                } else {
+                    String driverFileName = localFile.getFileName().toString();
+                    monitor.subTask("Export library file '" + driverFileName + "'");
+                    outFile = Path.of(outputFolder, driverFileName);
 
-                String driverFileName = localFile.getFileName().toString();
-                monitor.subTask("Export library file '" + driverFileName + "'");
-                Path outFile = Path.of(outputFolder, driverFileName);
-
-                Files.copy(localFile, outFile, StandardCopyOption.REPLACE_EXISTING);
+                    Files.copy(localFile, outFile, StandardCopyOption.REPLACE_EXISTING);
+                }
                 monitor.worked(1);
                 return outFile;
             } catch (IOException e) {
