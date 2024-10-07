@@ -117,9 +117,9 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
                 identifierDetector
             );
             if (obj == null) {
-                if (DBUtils.getSelectedObject(this.executionContext) instanceof DBSObjectContainer currentScope) {
+                if (DBUtils.getSelectedObject(this.executionContext) instanceof DBSVisibilityScopeProvider currentScope) {
                     try {
-                        for (DBSObjectContainer scope : currentScope.getImportedScopes(monitor)) {
+                        for (DBSObjectContainer scope : currentScope.getPublicContainers(monitor)) {
                             List<String> objectName3 = new ArrayList<>(objectName);
                             obj = SQLSearchUtils.findObjectByFQN(monitor, scope, this.executionContext, objectName3, false, identifierDetector);
                             if (obj != null) {

@@ -94,8 +94,4 @@ public interface DBSObjectContainer extends DBSObject
      * @param scope underlying structure scope
      */
     void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException;
-
-    default List<DBSObjectContainer> getImportedScopes(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return Collections.emptyList();
-    }
 }
