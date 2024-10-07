@@ -86,16 +86,16 @@ public class DTUtils {
                 DBUtils.getObjectFullName(source, DBPEvaluationContext.UI);
         } else {
             String tableName = null;
-            if (source instanceof SQLQueryContainer) {
-                tableName = getTableNameFromQuery(dataSource, (SQLQueryContainer) source, shortName);
-            } else if (source instanceof IAdaptable) {
-                SQLQueryContainer queryContainer = ((IAdaptable) source).getAdapter(SQLQueryContainer.class);
+            if (source instanceof SQLQueryContainer queryContainer) {
+                tableName = getTableNameFromQuery(dataSource, queryContainer, shortName);
+            } else if (source instanceof IAdaptable adaptable) {
+                SQLQueryContainer queryContainer = adaptable.getAdapter(SQLQueryContainer.class);
                 if (queryContainer != null) {
                     tableName = getTableNameFromQuery(dataSource, queryContainer, shortName);
                 }
             }
-            if (tableName == null && source instanceof IAdaptable) {
-                DBSDataContainer dataContainer = ((IAdaptable) source).getAdapter(DBSDataContainer.class);
+            if (tableName == null && source instanceof IAdaptable adaptable) {
+                DBSDataContainer dataContainer = adaptable.getAdapter(DBSDataContainer.class);
                 if (dataContainer instanceof DBSEntity) {
                     tableName = shortName ?
                         DBUtils.getQuotedIdentifier(dataContainer) :
