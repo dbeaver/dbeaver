@@ -132,11 +132,6 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         schemaCache.setCache(Collections.singletonList(defSchema));
     }
 
-    @NotNull
-    OracleSchema getPublicSchema() {
-        return this.publicSchema;
-    }
-
     @Override
     public Object getDataSourceFeature(String featureId) {
         switch (featureId) {

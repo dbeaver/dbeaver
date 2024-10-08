@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.model.struct.DBSVisibilityScopeProvider;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
@@ -58,8 +57,7 @@ public class OracleSchema extends OracleGlobalObject implements
     DBPSystemObject,
     DBSProcedureContainer,
     DBPObjectStatisticsCollector,
-    DBPScriptObject,
-    DBSVisibilityScopeProvider
+    DBPScriptObject
 {
     private static final Log log = Log.getLog(OracleSchema.class);
 
@@ -406,11 +404,6 @@ public class OracleSchema extends OracleGlobalObject implements
         throws DBException
     {
         return OracleTable.class;
-    }
-
-    @Override
-    public List<DBSObjectContainer> getPublicContainers(@NotNull DBRProgressMonitor monitor) {
-        return List.of(this.getDataSource().getPublicSchema());
     }
 
     @Override

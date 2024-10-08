@@ -73,8 +73,7 @@ public class PostgreSchema implements
     PostgreScriptObject,
     PostgrePrivilegeOwner,
     DBPScriptObjectExt2,
-    DBSNamespaceContainer,
-    DBSVisibilityScopeProvider
+    DBSNamespaceContainer
 {
 
     private static final Log log = Log.getLog(PostgreSchema.class);
@@ -108,11 +107,6 @@ public class PostgreSchema implements
         indexCache = database.getDataSource().getServerType().supportsIndexes() ? new IndexCache() : null;
         proceduresCache = createProceduresCache();
         dataTypeCache = new PostgreDataTypeCache();
-    }
-
-    @Override
-    public List<DBSObjectContainer> getPublicContainers(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return List.of(this.database.getSchema(monitor, PostgreConstants.INFO_SCHEMA_NAME));
     }
 
     @NotNull
