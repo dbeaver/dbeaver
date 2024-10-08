@@ -44,6 +44,7 @@ public interface InternalDatabaseConfig {
         private int maxIdleConnections = 10;
         private int maxConnections = 100;
         private String validationQuery = "SELECT 1";
+        private String bootstrapQuery = null;
 
         public Pool() {
         }
@@ -52,12 +53,14 @@ public interface InternalDatabaseConfig {
             int minIdleConnections,
             int maxIdleConnections,
             int maxConnections,
-            String validationQuery
+            String validationQuery,
+            String bootstrapQuery
         ) {
             this.minIdleConnections = minIdleConnections;
             this.maxIdleConnections = maxIdleConnections;
             this.maxConnections = maxConnections;
             this.validationQuery = validationQuery;
+            this.bootstrapQuery = bootstrapQuery;
         }
 
         public int getMinIdleConnections() {
@@ -74,6 +77,10 @@ public interface InternalDatabaseConfig {
 
         public String getValidationQuery() {
             return validationQuery;
+        }
+
+        public String getBootstrapQuery() {
+            return bootstrapQuery;
         }
     }
 }
