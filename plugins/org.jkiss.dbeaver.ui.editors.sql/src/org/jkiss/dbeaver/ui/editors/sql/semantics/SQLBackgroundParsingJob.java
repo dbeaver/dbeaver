@@ -347,7 +347,7 @@ public class SQLBackgroundParsingJob {
                     }
                     this.queuedForReparse.removeAt(kn.data);
                 }
-                this.queuedForReparse.put(reparseStart, new QueuedRegionInfo(reparseLength));
+                this.queuedForReparse.put(reparseStart, new QueuedRegionInfo(Integer.MAX_VALUE));
             }
             this.resetLastParsingFinishTime();
         }
