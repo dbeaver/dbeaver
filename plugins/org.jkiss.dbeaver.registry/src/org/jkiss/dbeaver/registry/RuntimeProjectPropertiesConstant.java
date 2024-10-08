@@ -14,17 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.lang;
+package org.jkiss.dbeaver.registry;
 
-import org.eclipse.jface.text.rules.ITokenScanner;
-import org.jkiss.code.NotNull;
+public class RuntimeProjectPropertiesConstant {
 
-/**
- * Source code node
- */
-public interface SCMSourceScanner extends ITokenScanner {
-
-    @NotNull
-    SCMSourceText getSource();
-
+    public static final String IS_USER_DECLINE_PROJECT_DECRYPTION = "user.decline.project.decryption";
 }

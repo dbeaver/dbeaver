@@ -99,7 +99,6 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
 
     @Override
     public void dispose() {
-        UIUtils.dispose(boldFont);
         super.dispose();
     }
 
@@ -246,6 +245,8 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
     @Override
     public void createControl(Composite parent) {
         boldFont = UIUtils.makeBoldFont(parent.getFont());
+        getShell().addDisposeListener(e -> UIUtils.dispose(boldFont));
+
         Composite group = UIUtils.createPlaceholder(parent, 1, 5);
 
         {

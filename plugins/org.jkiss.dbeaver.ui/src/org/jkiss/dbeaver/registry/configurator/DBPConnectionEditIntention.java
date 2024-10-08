@@ -14,20 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.lang.base;
+package org.jkiss.dbeaver.registry.configurator;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.lang.SCMCompositeNode;
-import org.jkiss.dbeaver.lang.SCMLeafNode;
-import org.jkiss.dbeaver.lang.SCMSourceScanner;
+public enum DBPConnectionEditIntention {
+    DEFAULT(true),
+    CREDENTIALS_ONLY(false);
 
-/**
- * Whitespace
- */
-public class SCMEWhitespace extends SCMLeafNode {
+    public final boolean authModelSelectionEnabled;
 
-    public SCMEWhitespace(@NotNull SCMCompositeNode parent, @NotNull SCMSourceScanner scanner) {
-        super(parent, scanner);
+    DBPConnectionEditIntention(boolean authModelSelectionEnabled) {
+        this.authModelSelectionEnabled = authModelSelectionEnabled;
     }
-
 }

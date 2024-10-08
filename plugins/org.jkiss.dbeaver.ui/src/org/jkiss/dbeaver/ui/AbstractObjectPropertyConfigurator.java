@@ -14,23 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.lang;
+package org.jkiss.dbeaver.ui;
 
-import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.rules.IToken;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.registry.configurator.DBPConnectionEditIntention;
 
-/**
- * Source code node
- */
-public interface SCMSourceParser {
+public abstract class AbstractObjectPropertyConfigurator<OBJECT, SETTINGS> implements IObjectPropertyConfigurator<OBJECT, SETTINGS> {
 
-    SCMSourceScanner createScanner(Document document);
+    private DBPConnectionEditIntention editIntention = DBPConnectionEditIntention.DEFAULT;
 
-    /**
-     * Returns parsed node. Null on end of file
-     */
     @NotNull
-    SCMNode parseNode(@NotNull SCMCompositeNode container, @NotNull IToken token, @NotNull SCMSourceScanner scanner);
+    @Override
+    public DBPConnectionEditIntention getEditIntention() {
+        return this.editIntention;
+    }
 
+    public void setEditIntention(@NotNull DBPConnectionEditIntention editIntention) {
+        this.editIntention = editIntention;
+    }
 }
