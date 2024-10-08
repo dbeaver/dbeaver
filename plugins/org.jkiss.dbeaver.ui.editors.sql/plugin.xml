@@ -1337,7 +1337,7 @@
             label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.semanticError.foreground.label"
             categoryId="org.jkiss.dbeaver.ui.presentation.sql"
             id="org.jkiss.dbeaver.sql.editor.color.semanticError.foreground"
-            value="255,55,55">
+            value="108,81,81">
             <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.semanticError.foreground.description</description>
         </colorDefinition>
         <colorDefinition
