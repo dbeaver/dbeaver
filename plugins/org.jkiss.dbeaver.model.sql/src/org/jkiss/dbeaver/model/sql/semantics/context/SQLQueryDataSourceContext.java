@@ -116,7 +116,6 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
                 false,
                 identifierDetector
             );
-            obj = expandAliases(monitor, obj);
             return obj;
         } else {
             // Semantic analyser should never be used for databases, which doesn't support table lookup
