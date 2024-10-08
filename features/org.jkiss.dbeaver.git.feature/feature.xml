@@ -18,23 +18,15 @@
    </license>
 
    <requires>
-      <import feature="org.jkiss.dbeaver.ui.feature" match="greaterOrEqual"/>
-      <import plugin="org.eclipse.core.runtime" match="compatible"/>
-      <import plugin="org.eclipse.core.resources" match="compatible"/>
-      <import plugin="org.eclipse.core.filesystem" match="compatible"/>
-      <import plugin="org.eclipse.ui" match="compatible"/>
-      <import plugin="org.eclipse.team.ui" match="compatible"/>
-      <import plugin="org.eclipse.jface.text" match="compatible"/>
-      <import plugin="org.eclipse.ui.ide" match="compatible"/>
-      <import plugin="org.eclipse.ui.workbench.texteditor" match="compatible"/>
-      <import plugin="org.eclipse.compare" match="compatible"/>
-      <import plugin="org.eclipse.core.net" match="compatible"/>
-      <import plugin="org.eclipse.team.core" match="compatible"/>
-      <import feature="org.eclipse.jgit" match="compatible"/>
-      <import feature="org.eclipse.jgit.gpg.bc" match="compatible"/>
-      <import feature="org.eclipse.jgit.http.apache" match="compatible"/>
-      <import feature="org.eclipse.jgit.ssh.apache" match="compatible"/>
+      <import feature="org.jkiss.dbeaver.ui.feature" version="7.0.0" match="greaterOrEqual"/>
+      <import feature="org.eclipse.rcp" version="0.0.0" match="greaterOrEqual"/>
+      <import id="org.eclipse.team.core" version="0.0.0" match="greaterOrEqual"/>
    </requires>
+
+   <includes id="org.eclipse.jgit" version="0.0.0" match="greaterOrEqual"/>
+   <includes id="org.eclipse.jgit.gpg.bc" version="0.0.0" match="greaterOrEqual"/>
+   <includes id="org.eclipse.jgit.http.apache" version="0.0.0" match="greaterOrEqual"/>
+   <includes id="org.eclipse.jgit.ssh.apache" version="0.0.0" match="greaterOrEqual"/>
 
    <!-- EGit deps -->
    <plugin id="org.eclipse.egit.core" version="0.0.0"/>
