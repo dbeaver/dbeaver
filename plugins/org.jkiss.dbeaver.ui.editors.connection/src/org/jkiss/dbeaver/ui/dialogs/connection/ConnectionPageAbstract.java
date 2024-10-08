@@ -380,7 +380,9 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         typeManualRadio = UIUtils.createRadioButton(modeGroup, UIConnectionMessages.dialog_connection_host_label, false, typeSwitcher);
         typeURLRadio = UIUtils.createRadioButton(modeGroup, UIConnectionMessages.dialog_connection_url_label, true, typeSwitcher);
         modeGroup.setLayoutData(GridDataFactory.fillDefaults().span(3, 1).create());
-        createDriverSubstitutionControls(modeGroup);
+        if (supportsDriverSubstitution()) {
+            createDriverSubstitutionControls(modeGroup);
+        }
         addControlToGroup(GROUP_CONNECTION_MODE, cnnTypeLabel);
         addControlToGroup(GROUP_CONNECTION_MODE, modeGroup);
     }
@@ -446,6 +448,10 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     protected void updateUrlFromSettings(Text urlText) {
         DBPDataSourceContainer dataSourceContainer = site.getActiveDataSource();
         urlText.setText(dataSourceContainer.getDriver().getConnectionURL(site.getActiveDataSource().getConnectionConfiguration()));
+    }
+
+    protected boolean supportsDriverSubstitution() {
+        return true;
     }
 
 }
