@@ -443,4 +443,9 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
             .add(control);
     }
 
+    protected void updateUrlFromSettings(Text urlText) {
+        DBPDataSourceContainer dataSourceContainer = site.getActiveDataSource();
+        urlText.setText(dataSourceContainer.getDriver().getConnectionURL(site.getActiveDataSource().getConnectionConfiguration()));
+    }
+
 }
