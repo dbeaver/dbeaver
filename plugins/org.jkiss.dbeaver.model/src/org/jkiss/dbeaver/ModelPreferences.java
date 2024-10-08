@@ -367,7 +367,6 @@ public final class ModelPreferences
             QMObjectType.toString(Arrays.asList(QMObjectType.txn, QMObjectType.query)));
         PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_QUERY_TYPES, DBCExecutionPurpose.USER + "," + DBCExecutionPurpose.USER_FILTERED + "," + DBCExecutionPurpose.USER_SCRIPT);
         PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_STORE_LOG_FILE, false);
-        PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_LOG_DIRECTORY, GeneralUtils.getMetadataFolder().toAbsolutePath().toString());
 
         // SQL
         PrefUtils.setDefaultPreferenceValue(store, SQL_PARAMETERS_ENABLED, true);
