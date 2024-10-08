@@ -19,13 +19,13 @@
 
    <requires>
       <import feature="org.jkiss.dbeaver.ui.feature" version="7.0.0" match="greaterOrEqual"/>
+      <import feature="org.eclipse.rcp" version="0.0.0" match="greaterOrEqual"/>
    </requires>
 
    <includes id="org.eclipse.jgit" version="0.0.0" match="greaterOrEqual"/>
    <includes id="org.eclipse.jgit.gpg.bc" version="0.0.0" match="greaterOrEqual"/>
    <includes id="org.eclipse.jgit.http.apache" version="0.0.0" match="greaterOrEqual"/>
    <includes id="org.eclipse.jgit.ssh.apache" version="0.0.0" match="greaterOrEqual"/>
-   <includes id="org.eclipse.rcp" version="0.0.0" match="greaterOrEqual"/>
 
    <!-- EGit deps -->
    <plugin id="org.eclipse.egit.core" version="0.0.0"/>
