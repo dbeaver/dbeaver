@@ -38,7 +38,7 @@ public class SQLEditorSemanticAnnotationModelFactory implements IAnnotationModel
     @Override
     public IAnnotationModel createAnnotationModel(IPath location) {
         IFile file = FileBuffers.getWorkspaceFileAtLocation(location);
-        return (IAnnotationModel)(file != null ? new ResourceMarkerSemanticAnnotationModel(file) : new AnnotationModel());
+        return file != null ? new ResourceMarkerSemanticAnnotationModel(file) : new AnnotationModel();
     }
 
     private static class ResourceMarkerSemanticAnnotationModel extends ResourceMarkerAnnotationModel {
