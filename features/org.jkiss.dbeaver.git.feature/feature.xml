@@ -32,10 +32,12 @@
       <import plugin="org.eclipse.team.core" version="3.8.0" match="compatible"/>
    </requires>
 
-   <includes id="org.eclipse.jgit" version="0.0.0" match="greaterOrEqual"/>
-   <includes id="org.eclipse.jgit.gpg.bc" version="0.0.0" match="greaterOrEqual"/>
-   <includes id="org.eclipse.jgit.http.apache" version="0.0.0" match="greaterOrEqual"/>
-   <includes id="org.eclipse.jgit.ssh.apache" version="0.0.0" match="greaterOrEqual"/>
+    <plugin id="org.eclipse.jgit" version="0.0.0" match="greaterOrEqual"/>
+    <plugin id="org.eclipse.jgit.archive" version="0.0.0" match="greaterOrEqual"/>
+    <plugin id="org.eclipse.jgit.gpg.bc" version="0.0.0" match="greaterOrEqual"/>
+    <plugin id="org.eclipse.jgit.http.apache" version="0.0.0" match="greaterOrEqual"/>
+    <plugin id="org.eclipse.jgit.ssh.apache" version="0.0.0" match="greaterOrEqual"/>
+    <plugin id="org.eclipse.jgit.ssh.apache.agent" version="0.0.0" match="greaterOrEqual"/>
 
    <!-- EGit deps -->
    <plugin id="org.eclipse.egit.core" version="0.0.0"/>
