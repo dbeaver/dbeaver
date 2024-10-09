@@ -23,7 +23,6 @@
    </requires>
 
    <!-- DBeaver deps -->
-   <plugin id="org.jkiss.dbeaver.team.git" version="0.0.0"/>
    <plugin id="org.jkiss.dbeaver.team.git.ui" version="0.0.0"/>
 
 </feature>
