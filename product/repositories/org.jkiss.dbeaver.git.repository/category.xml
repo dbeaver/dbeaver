@@ -2,9 +2,6 @@
 <site>
     <description name="DBeaver - Git integration" url="https://dbeaver.io/update/git/latest">DBeaver - Git integration</description>
 
-    <feature id="org.eclipse.egit">
-        <category name="org.jkiss.dbeaver.git.category"/>
-    </feature>
     <feature id="org.jkiss.dbeaver.git.feature">
         <category name="org.jkiss.dbeaver.git.category"/>
     </feature>
