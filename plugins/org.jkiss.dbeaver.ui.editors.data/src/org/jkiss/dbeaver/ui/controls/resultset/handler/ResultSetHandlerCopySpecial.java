@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.UIWidgets;
 import org.jkiss.dbeaver.ui.controls.ValueFormatSelector;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCopySettings;
@@ -142,9 +143,9 @@ public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements
             ((GridLayout)group.getLayout()).numColumns = 2;
 
             createControlsBefore(group);
-            colDelimCombo = UIUtils.createDelimiterCombo(group, ResultSetMessages.copy_special_column_delimiter, new String[] {"\t", ";", ","}, copySettings.getColumnDelimiter(), false);
-            rowDelimCombo = UIUtils.createDelimiterCombo(group, ResultSetMessages.copy_special_row_delimiter, new String[] {"\n", "|", "^"}, copySettings.getRowDelimiter(), false);
-            quoteStringCombo = UIUtils.createDelimiterCombo(group, ResultSetMessages.copy_special_quote_character, new String[] {"\"", "'"}, copySettings.getQuoteString(), false);
+            colDelimCombo = UIWidgets.createDelimiterCombo(group, ResultSetMessages.copy_special_column_delimiter, new String[] {"\t", ";", ","}, copySettings.getColumnDelimiter(), false);
+            rowDelimCombo = UIWidgets.createDelimiterCombo(group, ResultSetMessages.copy_special_row_delimiter, new String[] {"\n", "|", "^"}, copySettings.getRowDelimiter(), false);
+            quoteStringCombo = UIWidgets.createDelimiterCombo(group, ResultSetMessages.copy_special_quote_character, new String[] {"\"", "'"}, copySettings.getQuoteString(), false);
 
             Composite placeholder = UIUtils.createPlaceholder(group, 2);
 

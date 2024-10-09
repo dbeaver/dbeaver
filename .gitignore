@@ -38,6 +38,9 @@ buildNumber.properties
 .classpath
 .settings/
 
+## Eclipse PDE
+*.product.launch
+
 # Dev executables
 
 .cmd
