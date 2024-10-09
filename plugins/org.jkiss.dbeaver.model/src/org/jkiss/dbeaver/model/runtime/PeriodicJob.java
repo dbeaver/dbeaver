@@ -21,19 +21,18 @@ import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 
-public abstract class PeriodicSystemJob extends AbstractJob {
-
+public abstract class PeriodicJob extends AbstractJob {
     @NotNull
     protected final DBPPlatform platform;
     private final long periodMs;
 
-    public PeriodicSystemJob(@NotNull String name, @NotNull DBPPlatform platform, long periodMs) {
+    public PeriodicJob(@NotNull String name, @NotNull DBPPlatform platform, long periodMs) {
         super(name);
         this.platform = platform;
         this.periodMs = periodMs;
 
-        setUser(false);
-        setSystem(true);
+        setUser(true);
+        setSystem(false);
     }
 
     @Override
