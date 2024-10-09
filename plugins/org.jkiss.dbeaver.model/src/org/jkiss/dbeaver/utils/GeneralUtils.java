@@ -773,6 +773,9 @@ public class GeneralUtils {
     }
 
     public static Path getMetadataFolder() {
+        if (!DBWorkbench.isPlatformStarted()) {
+            log.warn("Platform not initialized: metadata folder may be not set");
+        }
         DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
         Path workspacePath;
         if (workspace == null) {
