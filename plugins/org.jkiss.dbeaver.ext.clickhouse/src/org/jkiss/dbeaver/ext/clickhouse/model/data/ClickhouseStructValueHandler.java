@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.clickhouse.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.clickhouse.ClickhouseTypeParser;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -40,6 +41,10 @@ public class ClickhouseStructValueHandler extends JDBCStructValueHandler {
     public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException {
         if (object instanceof DBDValue) {
             return object;
+        }
+
+        if (!session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES)) {
+            return object.toString();
         }
 
         final String typeName = type.getTypeName();

@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ui.data.managers;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.dialogs.DefaultValueViewDialog;
@@ -40,8 +42,13 @@ public abstract class ComplexValueManager extends BaseValueManager {
         throws DBException
     {
         switch (controller.getEditType()) {
-            case PANEL:
+            case PANEL: {
+                DBCExecutionContext executionContext = controller.getExecutionContext();
+                if (executionContext == null || !executionContext.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES)) {
+                    return new StringInlineEditor(controller);
+                }
                 return new ComplexValueInlineEditor(controller);
+            }
             case INLINE:
                 return new StringInlineEditor(controller);
             case EDITOR:
