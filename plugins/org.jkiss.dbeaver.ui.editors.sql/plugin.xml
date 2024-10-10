@@ -1526,6 +1526,12 @@
                 title="%page.org.jkiss.dbeaver.preferences.main.sqleditor.name"
                 description="%page.org.jkiss.dbeaver.preferences.main.sqleditor.description"/>
             <dataSourcePage
+                id="sql-editor.codeeditor"
+                parent="sql-editor.main"
+                class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLCodeEditing"
+                title="%page.org.jkiss.dbeaver.preferences.main.sql.codeeditor.name"
+                description="%page.org.jkiss.dbeaver.preferences.main.sql.codeeditor.description"/>
+            <dataSourcePage
                 id="sql-editor.completion"
                 parent="sql-editor.main"
                 class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLCompletion"
