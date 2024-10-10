@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.api.DriverReference;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -358,6 +359,12 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         );
 */
         return enabled;
+    }
+
+    @Nullable
+    @Override
+    public DBPDriver findDriver(@NotNull DriverReference ref) {
+        return findDriver(ref.shortId());
     }
 
     @Nullable
