@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.UIWidgets;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.utils.CommonUtils;
@@ -201,7 +202,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         inputsTable.getTable().setLayoutData(gd);
         inputsTable.getTable().setLinesVisible(true);
         inputsTable.setContentProvider(new ListContentProvider());
-        UIUtils.createTableContextMenu(inputsTable.getTable(), null);
+        UIWidgets.createTableContextMenu(inputsTable.getTable(), null);
         DBNModel nModel = DBWorkbench.getPlatform().getNavigatorModel();
         CellLabelProvider labelProvider = new CellLabelProvider() {
             @Override
