@@ -82,5 +82,9 @@ public interface InternalDatabaseConfig {
         public String getBootstrapQuery() {
             return bootstrapQuery;
         }
+
+        public void setBootstrapQuery(String bootstrapQuery) {
+            this.bootstrapQuery = bootstrapQuery;
+        }
     }
 }

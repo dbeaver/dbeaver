@@ -60,6 +60,7 @@ import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.sql.Driver;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -779,7 +780,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @NotNull
     @Override
-    public <T> T getDriverInstance(@NotNull DBRProgressMonitor monitor)
+    public <T extends Driver> T getDriverInstance(@NotNull DBRProgressMonitor monitor)
             throws DBException {
         if (driverInstance == null) {
             loadDriver(monitor);

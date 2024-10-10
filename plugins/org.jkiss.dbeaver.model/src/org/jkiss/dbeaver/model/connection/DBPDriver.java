@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.utils.Pair;
 
+import java.sql.Driver;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -207,7 +208,7 @@ public interface DBPDriver extends DBPNamedObject
     boolean needsExternalDependencies();
 
     @NotNull
-    <T> T getDriverInstance(@NotNull DBRProgressMonitor monitor) throws DBException;
+    <T extends Driver> T getDriverInstance(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     void loadDriver(DBRProgressMonitor monitor) throws DBException;
 
