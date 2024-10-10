@@ -287,10 +287,10 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
 
     void flushBatch(DBCStatistics statistics, DBCStatement statement) throws DBCException {
         long startTime = System.currentTimeMillis();
-        int[] updatedRows = statement.executeStatementBatch();
+        long[] updatedRows = statement.executeStatementBatch();
         statistics.addExecuteTime(System.currentTimeMillis() - startTime);
         if (!ArrayUtils.isEmpty(updatedRows)) {
-            for (int rows : updatedRows) {
+            for (long rows : updatedRows) {
                 if (rows < 0) {
                     // In some cases (e.g. JDBC API) negative means "unknown".
                     // "Statement.SUCCESS_NO_INFO — the command was processed successfully, but the number of rows affected is unknown"
