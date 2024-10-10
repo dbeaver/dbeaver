@@ -993,27 +993,22 @@ public class DataSourceDescriptor
 
     @Override
     public void resolveSecrets(DBSSecretController secretController) throws DBException {
-        try {
-            if (!isSharedCredentials()) {
-                // try to load private user credentials
-                String secretValue = secretController.getPrivateSecretValue(getSecretValueId());
-                loadFromSecret(secretValue);
-                if (secretValue == null && !DBWorkbench.isDistributed()) {
-                    // Backward compatibility
-                    loadFromLegacySecret(secretController);
-                }
-            } else {
-                this.availableSharedCredentials = secretController.discoverCurrentUserSecrets(this);
-                if (this.availableSharedCredentials.size() == 1) {
-                    setSelectedSharedCredentials(availableSharedCredentials.get(0));
-                }
+        if (!isSharedCredentials()) {
+            // try to load private user credentials
+            String secretValue = secretController.getPrivateSecretValue(getSecretValueId());
+            loadFromSecret(secretValue);
+            if (secretValue == null && !DBWorkbench.isDistributed()) {
+                // Backward compatibility
+                loadFromLegacySecret(secretController);
             }
-        } finally {
-            // we always consider the secret to be resolved,
-            // because in case of an error during the resolve,
-            // we will not be able to save the new secret, look at #persistSecretIfNeeded
-            this.secretsResolved = true;
+        } else {
+            this.availableSharedCredentials = secretController.discoverCurrentUserSecrets(this);
+            if (this.availableSharedCredentials.size() == 1) {
+                setSelectedSharedCredentials(availableSharedCredentials.get(0));
+            }
         }
+
+        secretsResolved = true;
     }
 
     @Override
