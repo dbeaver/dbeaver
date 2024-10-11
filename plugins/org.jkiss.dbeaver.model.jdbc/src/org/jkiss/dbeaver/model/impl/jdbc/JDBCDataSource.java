@@ -87,7 +87,10 @@ public abstract class JDBCDataSource extends AbstractDataSource
     private int databaseMinorVersion = 0;
 
     private final transient List<Connection> closingConnections = new ArrayList<>();
-    protected List<Path> tempFiles;
+    protected transient List<Path> tempFiles;
+
+    private transient DBAAuthCredentials authCredentials;
+    private transient String connectionURL;
 
 
     protected JDBCDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container, @NotNull SQLDialect dialect)
@@ -127,37 +130,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         DBPDriver driver = container.getDriver();
         DBPConnectionConfiguration connectionInfo = new DBPConnectionConfiguration(container.getActualConnectionConfiguration());
         Properties connectProps = getAllConnectionProperties(monitor, context, purpose, connectionInfo);
-        String url = getConnectionURL(connectionInfo);
-
-        final DBPDriverSubstitutionDescriptor driverSubstitution = container.getDriverSubstitution();
-        if (driverSubstitution != null) {
-            final DBPDataSourceProviderDescriptor dataSourceProvider = DBWorkbench.getPlatform().getDataSourceProviderRegistry()
-                .getDataSourceProvider(driverSubstitution.getProviderId());
-
-            if (dataSourceProvider != null) {
-                final DBPDriver substitutedDriver = dataSourceProvider.getDriver(driverSubstitution.getDriverId());
-
-                if (substitutedDriver != null) {
-                    final DBPDriverSubstitution substitution = driverSubstitution.getInstance();
-                    final Properties substitutedProperties = substitution.getConnectionProperties(monitor, container, connectionInfo);
-                    final String substitutedUrl = substitution.getConnectionURL(container, connectionInfo);
-
-                    if (substitutedProperties != null) {
-                        connectProps.putAll(substitutedProperties);
-                    }
-
-                    if (substitutedUrl != null) {
-                        url = substitutedUrl;
-                    }
-                } else {
-                    log.warn("Couldn't find driver '" + driverSubstitution.getDriverId()
-                        + "' for driver substitution '" + driverSubstitution.getId() + "', using original driver");
-                }
-            } else {
-                log.warn("Couldn't find data source provider '" + driverSubstitution.getProviderId()
-                    + "' for driver substitution '" + driverSubstitution.getId() + "', using original driver");
-            }
-        }
+        configureConnectionURL(monitor, connectionInfo, connectProps);
 
         final JDBCConnectionConfigurer connectionConfigurer = GeneralUtils.adapt(this, JDBCConnectionConfigurer.class);
 
@@ -174,45 +147,24 @@ public abstract class JDBCDataSource extends AbstractDataSource
             monitor.subTask("Connecting " + purpose);
             int openTimeout = container.getPreferenceStore().getInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT);
 
-            // Init authentication first (it may affect driver properties or driver configuration or even driver libraries)
-            Object authResult;
-            try {
-                DBAAuthCredentials credentials = authModel.loadCredentials(container, connectionInfo);
-
-                if (REFRESH_CREDENTIALS_ON_CONNECT) {
-                    // Refresh credentials
-                    authModel.refreshCredentials(monitor, container, connectionInfo, credentials);
-                }
-                final String host = connectionInfo.getHostName();
-                final String port = connectionInfo.getHostPort();
-                final String database = connectionInfo.getDatabaseName();
-                authResult = authModel.initAuthentication(monitor, this, credentials, connectionInfo, connectProps);
-                if (!CommonUtils.equalObjects(host, connectionInfo.getHostName()) ||
-                    !CommonUtils.equalObjects(port, connectionInfo.getHostPort()) ||
-                    !CommonUtils.equalObjects(database, connectionInfo.getDatabaseName())) {
-                    url = getConnectionURL(connectionInfo);
-                    log.debug("Configuration info was changed after auth initialization. Connection URL was updated to: " + url);
-                }
-            } catch (DBException e) {
-                throw new DBCException("Authentication error: " + e.getMessage(), e);
-            }
+            Object authResult = initConnectionAuthentication(monitor, connectionInfo, connectProps, authModel);
 
             Driver driverInstance = createDriverInstance(monitor, driver);
             if (driverInstance != null) {
                 try {
-                    if (!driverInstance.acceptsURL(url)) {
+                    if (!driverInstance.acceptsURL(connectionURL)) {
                         // Just set the mark. Some drivers are poorly coded and always returns false here.
                         isInvalidURL = true;
                     }
                 } catch (Throwable e) {
-                    log.debug("Error in " + driverInstance.getClass().getName() + ".acceptsURL() - " + url, e);
+                    log.debug("Error in " + driverInstance.getClass().getName() + ".acceptsURL() - " + connectionURL, e);
                 }
             }
 
             JDBCConnectionOpener connectTask = new JDBCConnectionOpener(
                 driver,
                 driverInstance,
-                url,
+                connectionURL,
                 connectProps,
                 authResult
             );
@@ -250,7 +202,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
             }
             if (connectTask.getConnection() == null) {
                 if (isInvalidURL) {
-                    throw new DBCException("Invalid JDBC URL: " + url);
+                    throw new DBCException("Invalid JDBC URL: " + connectionURL);
                 } else {
                     throw new DBCException("Null connection returned");
                 }
@@ -272,6 +224,79 @@ public abstract class JDBCDataSource extends AbstractDataSource
         catch (Throwable e) {
             throw new DBCConnectException("Unexpected driver error occurred while connecting to the database", e);
         }
+    }
+
+    private void configureConnectionURL(@NotNull DBRProgressMonitor monitor, DBPConnectionConfiguration connectionInfo, Properties connectProps) {
+        if (connectionURL == null) {
+            connectionURL = getConnectionURL(connectionInfo);
+            final DBPDriverSubstitutionDescriptor driverSubstitution = container.getDriverSubstitution();
+            if (driverSubstitution != null) {
+                final DBPDataSourceProviderDescriptor dataSourceProvider = DBWorkbench.getPlatform().getDataSourceProviderRegistry()
+                    .getDataSourceProvider(driverSubstitution.getProviderId());
+
+                if (dataSourceProvider != null) {
+                    final DBPDriver substitutedDriver = dataSourceProvider.getDriver(driverSubstitution.getDriverId());
+
+                    if (substitutedDriver != null) {
+                        final DBPDriverSubstitution substitution = driverSubstitution.getInstance();
+                        final Properties substitutedProperties = substitution.getConnectionProperties(monitor, container, connectionInfo);
+                        final String substitutedUrl = substitution.getConnectionURL(container, connectionInfo);
+
+                        if (substitutedProperties != null) {
+                            connectProps.putAll(substitutedProperties);
+                        }
+
+                        if (substitutedUrl != null) {
+                            connectionURL = substitutedUrl;
+                        }
+                    } else {
+                        log.warn("Couldn't find driver '" + driverSubstitution.getDriverId()
+                            + "' for driver substitution '" + driverSubstitution.getId() + "', using original driver");
+                    }
+                } else {
+                    log.warn("Couldn't find data source provider '" + driverSubstitution.getProviderId()
+                        + "' for driver substitution '" + driverSubstitution.getId() + "', using original driver");
+                }
+            }
+        }
+    }
+
+    private Object initConnectionAuthentication(
+        @NotNull DBRProgressMonitor monitor,
+        DBPConnectionConfiguration connectionInfo,
+        Properties connectProps,
+        DBAAuthModel<DBAAuthCredentials> authModel
+    ) throws DBCException {
+        if (authCredentials == null) {
+            // Init authentication first (it may affect driver properties or driver configuration or even driver libraries)
+            try {
+                authCredentials = authModel.loadCredentials(container, connectionInfo);
+
+                if (REFRESH_CREDENTIALS_ON_CONNECT) {
+                    // Refresh credentials
+                    authModel.refreshCredentials(monitor, container, connectionInfo, authCredentials);
+                }
+            } catch (DBException e) {
+                throw new DBCException("Credentials load error: " + e.getMessage(), e);
+            }
+        }
+        final String host = connectionInfo.getHostName();
+        final String port = connectionInfo.getHostPort();
+        final String database = connectionInfo.getDatabaseName();
+        Object authResult;
+        try {
+            authResult = authModel.initAuthentication(monitor, this, authCredentials, connectionInfo, connectProps);
+        } catch (DBException e) {
+            throw new DBCException("Authentication error: " + e.getMessage(), e);
+        }
+        if (!CommonUtils.equalObjects(host, connectionInfo.getHostName()) ||
+            !CommonUtils.equalObjects(port, connectionInfo.getHostPort()) ||
+            !CommonUtils.equalObjects(database, connectionInfo.getDatabaseName())) {
+            connectionURL = getConnectionURL(connectionInfo);
+            log.debug("Configuration info was changed after auth initialization. Connection URL was updated to: " + connectionURL);
+        }
+
+        return authResult;
     }
 
     @Nullable
@@ -317,7 +342,11 @@ public abstract class JDBCDataSource extends AbstractDataSource
     }
 
     @NotNull
-    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
+    protected Properties getAllConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        JDBCExecutionContext context,
+        String purpose,
+        DBPConnectionConfiguration connectionInfo) throws DBCException {
         // Set properties
         Properties connectProps = new Properties();
 
@@ -390,17 +419,6 @@ public abstract class JDBCDataSource extends AbstractDataSource
             return true;
         }
     }
-
-/*
-    @Override
-    public JDBCSession openSession(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle)
-    {
-        if (metaContext != null && (purpose == DBCExecutionPurpose.META || purpose == DBCExecutionPurpose.META_DDL)) {
-            return createConnection(monitor, this.metaContext, purpose, taskTitle);
-        }
-        return createConnection(monitor, executionContext, purpose, taskTitle);
-    }
-*/
 
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, JDBCExecutionContext initFrom) throws DBException {
 
@@ -477,6 +495,8 @@ public abstract class JDBCDataSource extends AbstractDataSource
             }
             tempFiles = null;
         }
+
+        authCredentials = null;
     }
 
     @Override
