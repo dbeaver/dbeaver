@@ -44,7 +44,10 @@
             --add-opens=java.desktop/java.awt.peer=ALL-UNNAMED
             --add-opens=java.sql/java.sql=ALL-UNNAMED
             -Xms64m
-            -Xmx1024m</vmArgs>
+            -Xmx1024m
+            # It is not recommended to add/change any of the JVM arguments here directly.
+            # For more information, see https://dbeaver.com/wiki/Command-Line#vm-arguments
+        </vmArgs>
         <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.cocoa.useNativeItemHeight=false</vmArgsMac>
     </launcherArgs>
 
