@@ -385,7 +385,8 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
     private void loadExternalFileProperties() {
         synchronized (externalFileProperties) {
             externalFileProperties.clear();
-            java.nio.file.Path propsFile = GeneralUtils.getMetadataFolder().resolve(EXT_FILES_PROPS_STORE);
+            java.nio.file.Path propsFile = GeneralUtils.getMetadataFolder(getAbsolutePath())
+                .resolve(EXT_FILES_PROPS_STORE);
             if (Files.exists(propsFile)) {
                 try (InputStream is = Files.newInputStream(propsFile)) {
                     try (ObjectInputStream ois = new ObjectInputStream(is)) {
@@ -417,7 +418,8 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
             synchronized (externalFileProperties) {
-                java.nio.file.Path propsFile = GeneralUtils.getMetadataFolder().resolve(EXT_FILES_PROPS_STORE);
+                java.nio.file.Path propsFile = GeneralUtils.getMetadataFolder(getAbsolutePath())
+                    .resolve(EXT_FILES_PROPS_STORE);
                 try (OutputStream os = Files.newOutputStream(propsFile)) {
                     try (ObjectOutputStream oos = new ObjectOutputStream(os)) {
                         oos.writeObject(externalFileProperties);

@@ -350,7 +350,7 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
     }
 
     protected String initWorkspaceId() {
-        return readWorkspaceId();
+        return readWorkspaceId(getAbsolutePath());
     }
 
     public boolean isAdmin() {
