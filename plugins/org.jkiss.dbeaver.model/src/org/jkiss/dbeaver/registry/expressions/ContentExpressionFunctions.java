@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.registry.expressions;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.Strictness;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
@@ -74,7 +75,7 @@ public class ContentExpressionFunctions {
     private static final Log log = Log.getLog(ContentExpressionFunctions.class);
 
     private static final Gson GSON = new GsonBuilder()
-        .setLenient()
+        .setStrictness(Strictness.LENIENT)
         .serializeNulls()
         .setPrettyPrinting()
         .create();
