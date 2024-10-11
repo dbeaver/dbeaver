@@ -70,5 +70,5 @@ Thank you!
 <a href="https://github.com/dbeaver/cloudbeaver/"><img src="https://github.com/dbeaver/cloudbeaver/wiki/images/cloudbeaver-logo.png" width="250"/></a>
 
 DBeaver is a desktop client.  
-If you are looking for a web-based database management tool - check our new product: <a href="https://cloudbeaver.io/">CloudBeaver</a>.  
+If you are looking for a web-based database management tool - check our new product: <a href="https://github.com/dbeaver/cloudbeaver">CloudBeaver</a>.  
 It is based on DBeaver platform and thus supports any database and most of DBeaver features.
