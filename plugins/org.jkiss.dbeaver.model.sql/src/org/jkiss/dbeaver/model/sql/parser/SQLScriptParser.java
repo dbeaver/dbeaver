@@ -748,7 +748,7 @@ public class SQLScriptParser {
 
     public static List<SQLQueryParameter> parseParametersAndVariables(SQLParserContext context, String selectedQueryText) {
         SQLParserContext ctx = new SQLParserContext(
-                context.getDataSource() != null ? context.getDataSource().getContainer() : null,
+                context.getDataSource(),
                 context.getSyntaxManager(),
                 context.getRuleManager(),
                 new Document(selectedQueryText)
@@ -1015,7 +1015,7 @@ public class SQLScriptParser {
 
         Document sqlDocument = new Document(sqlScriptContent);
 
-        SQLParserContext parserContext = new SQLParserContext(dataSource.getContainer(), syntaxManager, ruleManager, sqlDocument);
+        SQLParserContext parserContext = new SQLParserContext(dataSource, syntaxManager, ruleManager, sqlDocument);
         return SQLScriptParser.extractScriptQueries(parserContext, 0, sqlScriptContent.length(), true, false, true);
     }
 

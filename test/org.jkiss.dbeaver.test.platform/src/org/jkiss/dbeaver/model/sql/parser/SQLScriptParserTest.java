@@ -772,7 +772,7 @@ public class SQLScriptParserTest {
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
         ruleManager.loadRules(dataSource, false);
         Document document = new Document(query);
-        return new SQLParserContext(dataSourceContainer, syntaxManager, ruleManager, document);
+        return new SQLParserContext(dataSource, syntaxManager, ruleManager, document);
     }
 
     private SQLDialect setDialect(String name) throws DBException {

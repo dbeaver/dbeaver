@@ -488,7 +488,6 @@ public class SQLBackgroundParsingJob {
                 {
                     NodesIterator<QueuedRegionInfo> it = this.queuedForReparse.nodesIteratorAt(0);
                     workOffset = (it.getCurrValue() != null || it.next()) ? it.getCurrOffset() : 0;
-                    //workOffset = it.getCurrOffset();
                 }
                 {
                     NodesIterator<QueuedRegionInfo> it = this.queuedForReparse.nodesIteratorAt(Integer.MAX_VALUE);
