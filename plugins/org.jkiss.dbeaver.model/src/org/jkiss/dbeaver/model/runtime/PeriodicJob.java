@@ -19,9 +19,11 @@ package org.jkiss.dbeaver.model.runtime;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 
 public abstract class PeriodicJob extends AbstractJob {
+    private static final Log log = Log.getLog(PeriodicJob.class);
     @NotNull
     protected final DBPPlatform platform;
     private final long periodMs;
@@ -41,8 +43,9 @@ public abstract class PeriodicJob extends AbstractJob {
             return Status.OK_STATUS;
         }
 
+        log.info(getName() + " job is started");
         doJob(monitor);
-
+        log.info(getName() + " job is finished");
         // If the platform is still running after the job is completed, reschedule the job
         if (!platform.isShuttingDown()) {
             scheduleMonitor();
