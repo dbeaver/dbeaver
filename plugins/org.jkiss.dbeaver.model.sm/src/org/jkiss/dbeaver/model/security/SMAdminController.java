@@ -219,4 +219,6 @@ public interface SMAdminController extends SMController {
     @NotNull
     List<SMTeamMemberInfo> getTeamMembersInfo(@NotNull String teamId) throws DBException;
 
+    @Nullable
+    String[] getEnableFeatures();
 }
