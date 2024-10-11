@@ -72,6 +72,9 @@ public class WizardPrefPage extends WizardPage implements IDialogPageProvider {
     public void dispose()
     {
         preferencePage.dispose();
+        for (WizardPrefPage wpp : subPages) {
+            wpp.dispose();
+        }
         super.dispose();
     }
 

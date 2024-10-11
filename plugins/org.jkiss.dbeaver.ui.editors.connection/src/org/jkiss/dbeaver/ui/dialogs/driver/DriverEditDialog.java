@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.*;
@@ -31,13 +30,12 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.DBDatabaseException;
+import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBFileController;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
@@ -45,20 +43,15 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.IHelpContextIds;
-import org.jkiss.dbeaver.ui.ShellUtils;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.CSmartCombo;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
-import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesPanel;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPropertiesControl;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDriversClasspath;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -391,8 +384,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 @Override
                 public void update(ViewerCell cell) {
                     final Object element = cell.getElement();
-                    if (element instanceof DBPDriverLibrary) {
-                        DBPDriverLibrary lib = (DBPDriverLibrary) element;
+                    if (element instanceof DBPDriverLibrary lib) {
                         String displayName = lib.getDisplayName();
                         if (lib.getPreferredVersion() != null) {
                             displayName += " [" + lib.getPreferredVersion() + "]";
@@ -437,6 +429,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
             libTable.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
             libTable.getControl().addListener(SWT.Selection, event -> changeLibSelection());
             libTable.addDoubleClickListener(event -> editSelectedLibrary());
+            UIWidgets.setControlContextMenu(libTable.getTree(), manager ->
+                UIWidgets.fillDefaultTreeContextMenu(manager, libTable.getTree()));
 
             // Find driver class
             boolean isReadOnly = !provider.isDriversManagable();
@@ -566,6 +560,24 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 UIUtils.showPreferencesFor(null, null, PrefPageDriversClasspath.PAGE_ID);
             }
         });
+        UIUtils.createToolButton(libsControlGroup, ActionUtils.findCommandName(IWorkbenchCommandConstants.FILE_EXPORT), new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                for (DBPDriverLibrary lib : libraries) {
+                    if (!driver.isLibraryResolved(lib)) {
+                        if (!UIUtils.confirmAction(getShell(), "Not all files present",
+                            "Driver files weren't downloaded. " +
+                            "You need to click '" + UIConnectionMessages.dialog_edit_driver_button_update_version + "' before exporting.\n" +
+                            "Are you sure you want to continue with incomplete files?")
+                        ) {
+                            return;
+                        }
+                        break;
+                    }
+                }
+                DriverEditHelpers.exportDriverLibraries(getShell(), libraries);
+            }
+        });
 
         changeLibContent();
 
@@ -580,24 +592,14 @@ public class DriverEditDialog extends HelpEnabledDialog {
         if (selectedLibrary instanceof DriverLibraryMavenArtifact) {
             editMavenArtifact();
         } else if (selectedLibrary instanceof DriverLibraryLocal) {
-            showFileInExplorer(selectedLibrary.getLocalFile());
+            DriverEditHelpers.showFileInExplorer(selectedLibrary.getLocalFile());
         } else {
             IStructuredSelection selection = (IStructuredSelection) libTable.getSelection();
             if (!selection.isEmpty()) {
                 Object element = selection.getFirstElement();
                 if (element instanceof DriverDescriptor.DriverFileInfo dfi) {
-                    showFileInExplorer(dfi.getFile());
+                    DriverEditHelpers.showFileInExplorer(dfi.getFile());
                 }
-            }
-        }
-    }
-
-    private static void showFileInExplorer(Path localFile) {
-        if (localFile != null) {
-            if (Files.isDirectory(localFile)) {
-                ShellUtils.launchProgram(localFile.toAbsolutePath().toString());
-            } else {
-                ShellUtils.showInSystemExplorer(localFile.toAbsolutePath().toString());
             }
         }
     }
@@ -912,7 +914,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         for (DBPDriverLibrary oldLib : oldLibs) {
             if (!libraries.contains(oldLib)) {
                 // Remove old library files
-                List<DBPDriver> usedBy = getDriversByLibrary(oldLib);
+                List<DBPDriver> usedBy = DriverEditHelpers.getDriversByLibrary(oldLib);
                 if (usedBy.size() <= 1) {
                     syncRemoveDriverLibFile(oldLib);
                 }
@@ -990,77 +992,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
         driver.addLibraryFile(library, fileInfo);
     }
 
-    private static List<DBPDriver> getDriversByLibrary(DBPDriverLibrary oldLib) {
-        List<DBPDriver> drivers = new ArrayList<>();
-        for (DataSourceProviderDescriptor dspd : DataSourceProviderRegistry.getInstance().getDataSourceProviders()) {
-            for (DBPDriver driver : dspd.getDrivers()) {
-                for (DBPDriverLibrary library : driver.getDriverLibraries()) {
-                    if (CommonUtils.equalObjects(library.getPath(), oldLib.getPath())) {
-                        drivers.add(driver);
-                    }
-                }
-            }
-        }
-        return drivers;
-    }
-
-
-    public static void showBadConfigDialog(final Shell shell, final String message, final DBException error) {
-        //log.debug(message);
-        Runnable runnable = () -> {
-            DBPDataSource dataSource = error instanceof DBDatabaseException dbe ? dbe.getDataSource() : null;
-            String title = NLS.bind(UIConnectionMessages.dialog_edit_driver_dialog_bad_configuration,
-                dataSource == null ? "<unknown driver>" : dataSource.getContainer().getDriver().getName());
-            new BadDriverConfigDialog(shell, title, message == null ? title : message, error).open();
-        };
-        UIUtils.syncExec(runnable);
-    }
-
-    private static class BadDriverConfigDialog extends StandardErrorDialog {
-
-        private final DBPDataSource dataSource;
-
-        BadDriverConfigDialog(Shell shell, String title, String message, DBException error) {
-            super(
-                shell == null ? UIUtils.getActiveWorkbenchShell() : shell,
-                title,
-                message,
-                RuntimeUtils.stripStack(GeneralUtils.makeExceptionStatus(error)),
-                IStatus.ERROR);
-            dataSource = error instanceof DBDatabaseException dbe ? dbe.getDataSource() : null;
-        }
-
-        @Override
-        protected void createButtonsForButtonBar(Composite parent) {
-            createButton(parent, IDialogConstants.RETRY_ID, "Open Driver &Configuration", true);
-            createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, false);
-            createDetailsButton(parent);
-        }
-
-        @Override
-        protected void buttonPressed(int id) {
-            if (id == IDialogConstants.RETRY_ID) {
-                UIUtils.asyncExec(() -> {
-                    DriverEditDialog dialog = new DriverEditDialog(
-                        UIUtils.getActiveWorkbenchShell(),
-                        dataSource.getContainer().getDriver());
-                    dialog.open();
-                });
-                super.buttonPressed(IDialogConstants.OK_ID);
-            }
-            super.buttonPressed(id);
-        }
-    }
 
     private class LibContentProvider implements ITreeContentProvider {
-        @Override
-        public void dispose() {
-        }
-
-        @Override
-        public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-        }
-
         @Override
         public Object[] getElements(Object inputElement) {
             if (inputElement instanceof Collection) {
@@ -1076,7 +1009,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 if (CommonUtils.isEmpty(files)) {
                     return null;
                 }
-                return files.toArray(new Object[files.size()]);
+                return files.toArray(new Object[0]);
             }
             return new Object[0];
         }

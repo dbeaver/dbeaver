@@ -452,7 +452,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             mappingViewer.getTree().setLinesVisible(false);
         }
 
-        UIUtils.setControlContextMenu(mappingViewer.getTree(), manager -> {
+        UIWidgets.setControlContextMenu(mappingViewer.getTree(), manager -> {
             IStructuredSelection selection = (IStructuredSelection) mappingViewer.getSelection();
             if (!selection.isEmpty()) {
                 Object element = selection.getFirstElement();
@@ -474,7 +474,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     }
                 }
             }
-            UIUtils.fillDefaultTreeContextMenu(manager, mappingViewer.getTree());
+            UIWidgets.fillDefaultTreeContextMenu(manager, mappingViewer.getTree());
         });
 
         {

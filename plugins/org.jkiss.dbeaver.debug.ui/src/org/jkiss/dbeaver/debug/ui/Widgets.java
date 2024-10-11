@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui;
+package org.jkiss.dbeaver.debug.ui;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
