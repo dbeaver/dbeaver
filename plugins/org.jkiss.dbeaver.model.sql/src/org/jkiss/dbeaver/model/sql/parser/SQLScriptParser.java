@@ -1011,7 +1011,7 @@ public class SQLScriptParser {
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(dataSource.getSQLDialect(), dataSource.getContainer().getPreferenceStore());
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
-        ruleManager.loadRules(dataSource.getContainer(), false);
+        ruleManager.loadRules(dataSource, false);
 
         Document sqlDocument = new Document(sqlScriptContent);
 

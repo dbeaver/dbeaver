@@ -770,7 +770,7 @@ public class SQLScriptParserTest {
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(dialect, dataSourceContainer.getPreferenceStore());
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
-        ruleManager.loadRules(dataSourceContainer, false);
+        ruleManager.loadRules(dataSource, false);
         Document document = new Document(query);
         return new SQLParserContext(dataSourceContainer, syntaxManager, ruleManager, document);
     }

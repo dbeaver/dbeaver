@@ -636,7 +636,7 @@ public class OracleSQLDialect extends JDBCSQLDialect
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(this, dataSource.getContainer().getPreferenceStore());
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
-        ruleManager.loadRules(dataSource.getContainer(), false);
+        ruleManager.loadRules(dataSource, false);
         TokenPredicateFactory tt = TokenPredicateFactory.makeDialectSpecificFactory(ruleManager);
 
         // Oracle SQL references could be found from https://docs.oracle.com/en/database/oracle/oracle-database/

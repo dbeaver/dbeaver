@@ -39,6 +39,10 @@ public class SQLParserContext {
 
     @Nullable
     private final DBPDataSourceContainer dataSourceContainer;
+
+    @Nullable
+    private final DBPDataSource dataSource;
+
     @NotNull
     private final SQLSyntaxManager syntaxManager;
     @NotNull
@@ -50,12 +54,29 @@ public class SQLParserContext {
     @Nullable
     private DBPPreferenceStore preferenceStore;
 
-    public SQLParserContext(@Nullable DBPDataSourceContainer dataSourceContainer, @NotNull SQLSyntaxManager syntaxManager, @NotNull SQLRuleManager ruleManager, @NotNull IDocument document) {
-        this.dataSourceContainer = dataSourceContainer;
+    @Nullable
+    private SQLDialect cacheSqlDialect = null;
+
+    public SQLParserContext(@Nullable DBPDataSource dataSource, @NotNull SQLSyntaxManager syntaxManager, @NotNull SQLRuleManager ruleManager, @NotNull IDocument document) {
+        this.dataSource = dataSource;
+        if (dataSource != null) {
+            this.dataSourceContainer = dataSource.getContainer();
+        } else {
+            this.dataSourceContainer = null;
+        }
         this.syntaxManager = syntaxManager;
         this.ruleManager = ruleManager;
         this.document = document;
     }
+
+    public SQLParserContext(@NotNull DBPDataSourceContainer dataSourceContainer, @NotNull SQLSyntaxManager syntaxManager, @NotNull SQLRuleManager ruleManager, @NotNull IDocument document) {
+        this.dataSourceContainer = dataSourceContainer;
+        this.dataSource = dataSourceContainer.getDataSource();
+        this.syntaxManager = syntaxManager;
+        this.ruleManager = ruleManager;
+        this.document = document;
+    }
+
 
     @Nullable
     public DBPDataSource getDataSource() {
@@ -84,7 +105,10 @@ public class SQLParserContext {
                 if (dataSource != null) {
                     return dataSource.getSQLDialect();
                 }
-                return dataSourceContainer.getScriptDialect().createInstance();
+                if (cacheSqlDialect == null) {
+                    cacheSqlDialect = dataSourceContainer.getScriptDialect().createInstance();
+                }
+                return cacheSqlDialect;
             } catch (Exception e) {
                 log.warn(String.format("Can't get dialect from dataSourceContainerId: %s", dataSourceContainer.getId()));
             }
