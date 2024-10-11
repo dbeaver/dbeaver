@@ -17,21 +17,16 @@
 
 package org.jkiss.dbeaver.ext.gaussdb.model;
 
-import java.sql.ResultSet;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreCharset;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreServerExtension;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
+
+import java.sql.ResultSet;
 
 public class GaussDBDataSource extends PostgreDataSource {
 
@@ -69,8 +64,7 @@ public class GaussDBDataSource extends PostgreDataSource {
     @Override
     protected boolean isReadDatabaseList(DBPConnectionConfiguration configuration) {
         // It is configurable by default
-        return configuration.getConfigurationType() != DBPDriverConfigurationType.URL
-            && CommonUtils.getBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB), true);
+        return CommonUtils.getBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB), true);
     }
 
     @Override
