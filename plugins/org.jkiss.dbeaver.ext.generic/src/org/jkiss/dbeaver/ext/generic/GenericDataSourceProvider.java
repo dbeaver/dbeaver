@@ -38,28 +38,27 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class GenericDataSourceProvider extends JDBCDataSourceProvider {
 
     private final Map<String, GenericMetaModelDescriptor> metaModels = new HashMap<>();
+    private final Map<String, GenericMetaModelDescriptor> modelReplacements = new HashMap<>();
+
     private static final String EXTENSION_ID = "org.jkiss.dbeaver.generic.meta";
 
     public GenericDataSourceProvider()
     {
         metaModels.put(GenericConstants.META_MODEL_STANDARD, new GenericMetaModelDescriptor());
 
-        List<String> replacedModels = new ArrayList<>();
         IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
         IConfigurationElement[] extElements = extensionRegistry.getConfigurationElementsFor(EXTENSION_ID);
         for (IConfigurationElement ext : extElements) {
             GenericMetaModelDescriptor metaModel = new GenericMetaModelDescriptor(ext);
             metaModels.put(metaModel.getId(), metaModel);
-            replacedModels.addAll(metaModel.getModelReplacements());
-        }
-        for (String rm : replacedModels) {
-            metaModels.remove(rm);
+            for (String replaces : metaModel.getModelReplacements()) {
+                metaModels.put(replaces, metaModel);
+            }
         }
         for (GenericMetaModelDescriptor metaModel : new ArrayList<>(metaModels.values())) {
             for (String driverClass : ArrayUtils.safeArray(metaModel.getDriverClass())) {
