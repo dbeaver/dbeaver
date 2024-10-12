@@ -61,9 +61,6 @@ public class DriverSelectViewer extends Viewer {
 
     private static final int REFRESH_DELAY = 200;
 
-    private static final String CLEAR_ICON = "org.jkiss.dbeaver.ui.dialogs.driver.DriverSelectViewer.CLEAR_ICON"; //$NON-NLS-1$
-    private static final String DISABLED_CLEAR_ICON = "org.jkiss.dbeaver.ui.dialogs.driver.DriverSelectViewer.DCLEAR_ICON"; //$NON-NLS-1$
-
     private static final String PROP_SELECTOR_VIEW_TYPE = "driver.selector.view.mode"; //$NON-NLS-1$
     private static final String PROP_SELECTOR_ORDER_BY = "driver.selector.orderBy"; //$NON-NLS-1$
 
@@ -332,12 +329,12 @@ public class DriverSelectViewer extends Viewer {
 
             selectorViewer.addSelectionChangedListener(event -> {
                 if (site instanceof ISelectionChangedListener) {
-                    ((ISelectionChangedListener)site).selectionChanged(event);
+                    ((ISelectionChangedListener) site).selectionChanged(event);
                 }
             });
             selectorViewer.addDoubleClickListener(event -> {
                 if (site instanceof IDoubleClickListener) {
-                    ((IDoubleClickListener)site).doubleClick(event);
+                    ((IDoubleClickListener) site).doubleClick(event);
                 }
             });
         } finally {
@@ -352,7 +349,9 @@ public class DriverSelectViewer extends Viewer {
                 drivers.addAll(provider.getEnabledDrivers());
             }
         }
-        drivers.sort((o1, o2) -> { return o1.getName().compareToIgnoreCase(o2.getName()); });
+        drivers.sort((o1, o2) -> {
+            return o1.getName().compareToIgnoreCase(o2.getName());
+        });
         return drivers.toArray(new Object[0]);
     }
 
@@ -477,10 +476,11 @@ public class DriverSelectViewer extends Viewer {
         }
 
         protected boolean isLeafMatch(Viewer viewer, Object element) {
-            if (element instanceof DriverDescriptor) {
-                return wordMatches(((DriverDescriptor) element).getName()) ||
-                    wordMatches(((DriverDescriptor) element).getDescription()) ||
-                    wordMatches(((DriverDescriptor) element).getCategory());
+            if (element instanceof DriverDescriptor driver) {
+                return wordMatches(driver.getName()) ||
+                       wordMatches(driver.getDescription()) ||
+                       wordMatches(driver.getCategory()) ||
+                       wordMatches(driver.getId());
             }
             return super.isLeafMatch(viewer, element);
         }
