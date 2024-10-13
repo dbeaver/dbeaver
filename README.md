@@ -47,6 +47,7 @@ You can change default JDK version by replacing directory `jre` in dbeaver insta
 ## Feedback
 
 - For bug reports and feature requests - please <a href="https://github.com/dbeaver/dbeaver/issues">create a ticket</a>.
+- To promote <a href="https://github.com/dbeaver/dbeaver/issues">a ticket</a> to a higher priority - please vote for it with 👍 under the ticket description.
 - If you have any questions, ideas, etc - please <a href="https://github.com/dbeaver/dbeaver/discussions">start a discussion</a>.
 - Pull requests are welcome.
 - Visit https://dbeaver.com for more information.
