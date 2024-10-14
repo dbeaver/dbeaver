@@ -23,10 +23,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.KeyAdapter;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -164,8 +161,19 @@ public class DriverSelectViewer extends Viewer {
 
         createSelectorControl();
 
-        filterText.addTraverseListener(e -> {
-            selectorViewer.getControl().traverse(e.detail, e);
+        filterText.addTraverseListener(new TraverseListener() {
+            boolean inTraverse;
+            @Override
+            public void keyTraversed(TraverseEvent e) {
+                if (!inTraverse) {
+                    inTraverse = true;
+                    try {
+                        selectorViewer.getControl().traverse(e.detail, e);
+                    } finally {
+                        inTraverse = false;
+                    }
+                }
+            }
         });
 
         refreshJob = createRefreshJob();
