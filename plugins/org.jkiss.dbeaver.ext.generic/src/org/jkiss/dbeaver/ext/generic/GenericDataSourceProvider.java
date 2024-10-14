@@ -16,9 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.generic;
 
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IExtensionRegistry;
-import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
@@ -33,50 +30,20 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class GenericDataSourceProvider extends JDBCDataSourceProvider {
 
-    private final Map<String, GenericMetaModelDescriptor> metaModels = new HashMap<>();
-    private static final String EXTENSION_ID = "org.jkiss.dbeaver.generic.meta";
-
-    public GenericDataSourceProvider()
-    {
-        metaModels.put(GenericConstants.META_MODEL_STANDARD, new GenericMetaModelDescriptor());
-
-        List<String> replacedModels = new ArrayList<>();
-        IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
-        IConfigurationElement[] extElements = extensionRegistry.getConfigurationElementsFor(EXTENSION_ID);
-        for (IConfigurationElement ext : extElements) {
-            GenericMetaModelDescriptor metaModel = new GenericMetaModelDescriptor(ext);
-            metaModels.put(metaModel.getId(), metaModel);
-            replacedModels.addAll(metaModel.getModelReplacements());
-        }
-        for (String rm : replacedModels) {
-            metaModels.remove(rm);
-        }
-        for (GenericMetaModelDescriptor metaModel : new ArrayList<>(metaModels.values())) {
-            for (String driverClass : ArrayUtils.safeArray(metaModel.getDriverClass())) {
-                metaModels.put(driverClass, metaModel);
-            }
-        }
+    public GenericDataSourceProvider() {
     }
 
     @Override
-    public long getFeatures()
-    {
+    public long getFeatures() {
         return FEATURE_CATALOGS | FEATURE_SCHEMAS;
     }
 
     @Override
-    public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo)
-    {
+    public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
         return DatabaseURL.generateUrlByTemplate(driver, connectionInfo);
     }
 
@@ -85,29 +52,13 @@ public class GenericDataSourceProvider extends JDBCDataSourceProvider {
     public DBPDataSource openDataSource(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDataSourceContainer container)
-        throws DBException
-    {
-        GenericMetaModelDescriptor metaModel = null;
-        Object metaModelId = container.getDriver().getDriverParameter(GenericConstants.PARAM_META_MODEL);
-        if (metaModelId != null && !GenericConstants.META_MODEL_STANDARD.equals(metaModelId)) {
-            metaModel = metaModels.get(metaModelId.toString());
-            if (metaModel == null) {
-                log.warn("Meta model '" + metaModelId + "' not recognized. Default one will be used");
-            }
-        }
-        if (metaModel == null) {
-            // Try to get model by driver class
-            metaModel = metaModels.get(container.getDriver().getDriverClassName());
-        }
-        if (metaModel == null) {
-            metaModel = getStandardMetaModel();
-        }
-        GenericMetaModel metaModelInstance = metaModel.getInstance();
+        throws DBException {
+        GenericMetaModel metaModelInstance = GenericMetaModelRegistry.getInstance().getMetaModel(container);
         return metaModelInstance.createDataSourceImpl(monitor, container);
     }
 
     protected GenericMetaModelDescriptor getStandardMetaModel() {
-        return metaModels.get(GenericConstants.META_MODEL_STANDARD);
+        return GenericMetaModelRegistry.getInstance().getStandardMetaModel();
     }
 
     @Override
