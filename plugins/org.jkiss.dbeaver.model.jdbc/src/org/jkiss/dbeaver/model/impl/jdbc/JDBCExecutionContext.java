@@ -288,8 +288,11 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     //////////////////////////////////////////////////////////////
 
     @Override
-    public DBPTransactionIsolation getTransactionIsolation() {
+    public DBPTransactionIsolation getTransactionIsolation() throws DBCException {
         if (transactionIsolationLevel == null) {
+            if (isAutoCommit()) {
+                return JDBCTransactionIsolation.getByCode(Connection.TRANSACTION_NONE);
+            }
             if (!txnIsolationLevelReadInProgress) {
                 txnIsolationLevelReadInProgress = true;
                 new AbstractJob("Get transaction isolation level") {
@@ -324,10 +327,9 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     @Override
     public void setTransactionIsolation(@NotNull DBRProgressMonitor monitor, @NotNull DBPTransactionIsolation transactionIsolation)
         throws DBCException {
-        if (!(transactionIsolation instanceof JDBCTransactionIsolation)) {
+        if (!(transactionIsolation instanceof JDBCTransactionIsolation jdbcTIL)) {
             throw new DBCException(ModelMessages.model_jdbc_exception_invalid_transaction_isolation_parameter);
         }
-        JDBCTransactionIsolation jdbcTIL = (JDBCTransactionIsolation) transactionIsolation;
         try {
             getConnection().setTransactionIsolation(jdbcTIL.getCode());
             transactionIsolationLevel = jdbcTIL.getCode();
@@ -385,6 +387,14 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             Connection dbCon = getConnection();
             dbCon.setAutoCommit(autoCommit);
             this.autoCommit = dbCon.getAutoCommit();
+            if (!this.autoCommit) {
+                try {
+                    transactionIsolationLevel = getConnection().getTransactionIsolation();
+                } catch (Throwable e) {
+                    transactionIsolationLevel = Connection.TRANSACTION_NONE;
+                    log.debug("Error getting transaction isolation level: " + e.getMessage());
+                }
+            }
         } catch (SQLException e) {
             throw new JDBCException(e, this);
         } finally {
