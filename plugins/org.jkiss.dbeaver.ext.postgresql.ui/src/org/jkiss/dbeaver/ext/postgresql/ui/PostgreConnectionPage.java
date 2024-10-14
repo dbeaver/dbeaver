@@ -80,8 +80,6 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
 
     @Override
     public void createControl(Composite composite) {
-        //Composite group = new Composite(composite, SWT.NONE);
-        //group.setLayout(new GridLayout(1, true));
         final ModifyListener textListener = e -> {
             if (activated) {
                 updateUrl();
@@ -167,7 +165,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
             PostgreMessages.dialog_setting_connection_nondefaultDatabase_tip,
             false,
             2);
-        addControlToGroup(GROUP_CONNECTION, showNonDefault);
+        //addControlToGroup(GROUP_CONNECTION, showNonDefault);
 
         createAuthPanel(mainGroup, 1);
 

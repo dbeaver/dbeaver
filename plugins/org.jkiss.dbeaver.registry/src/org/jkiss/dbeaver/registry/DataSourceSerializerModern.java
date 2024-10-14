@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.registry;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.Strictness;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonWriter;
 import org.eclipse.osgi.util.NLS;
@@ -81,16 +82,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
     private static final String ENCRYPTED_CONFIGURATION = "secureProject"; //$NON-NLS-1$
 
     private static final Gson CONFIG_GSON = new GsonBuilder()
-        .setLenient()
+        .setStrictness(Strictness.LENIENT)
         .serializeNulls()
         .create();
-    private static final Gson SECURE_GSON = new GsonBuilder()
-        .setLenient()
-        .serializeNulls()
-        .create();
-
-    private boolean passwordReadCanceled = false;
-    private boolean passwordWriteCanceled = false;
 
     @NotNull
     private final DataSourceRegistry registry;
@@ -260,7 +254,6 @@ class DataSourceSerializerModern implements DataSourceSerializer
             configurationManager,
             configurationStorage.getStorageName(),
             jsonString,
-            false,
             registry.getProject().isEncryptedProject());
 
         if (!configurationManager.isSecure()) {
@@ -336,7 +329,12 @@ class DataSourceSerializerModern implements DataSourceSerializer
         }
     }
 
-    private void saveConfigFile(DataSourceConfigurationManager configurationManager, String name, String contents, boolean teamPrivate, boolean encrypt) throws DBException, IOException {
+    private void saveConfigFile(
+        DataSourceConfigurationManager configurationManager,
+        String name,
+        String contents,
+        boolean encrypt
+    ) throws DBException, IOException {
         byte[] binaryContents = null;
         if (contents != null) {
             if (encrypt) {
@@ -356,11 +354,11 @@ class DataSourceSerializerModern implements DataSourceSerializer
         String credFile = DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + storage.getStorageSubId() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT;
         try {
             if (secureProperties.isEmpty()) {
-                saveConfigFile(configurationManager, credFile, null, true, true);
+                saveConfigFile(configurationManager, credFile, null, true);
             } else {
                 // Serialize and encrypt
-                String jsonString = SECURE_GSON.toJson(secureProperties, Map.class);
-                saveConfigFile(configurationManager, credFile, jsonString, true, true);
+                String jsonString = CONFIG_GSON.toJson(secureProperties, Map.class);
+                saveConfigFile(configurationManager, credFile, jsonString, true);
             }
         } catch (Exception e) {
             log.error("Error saving secure credentials", e);
@@ -652,7 +650,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     config.setServerName(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_SERVER));
                     config.setDatabaseName(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_DATABASE));
                     config.setUrl(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_URL));
-                    if (!passwordReadCanceled) {
+                    {
                         final SecureCredentials creds = configurationManager.isSecure() ?
                             readPlainCredentials(cfgObject) :
                             readSecuredCredentials(dataSource, null, null);
@@ -763,8 +761,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     if (originalDriver != substitutedDriver) {
                         if (substitutedDriver.getProviderDescriptor().supportsDriverMigration()) {
                             final DBPDataSourceProvider dataSourceProvider = substitutedDriver.getDataSourceProvider();
-                            if (dataSourceProvider instanceof DBPConnectionConfigurationMigrator) {
-                                final DBPConnectionConfigurationMigrator migrator = (DBPConnectionConfigurationMigrator) dataSourceProvider;
+                            if (dataSourceProvider instanceof DBPConnectionConfigurationMigrator migrator) {
                                 if (migrator.migrationRequired(config)) {
                                     final DBPConnectionConfiguration migrated = new DBPConnectionConfiguration(config);
                                     try {
@@ -991,7 +988,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             DBWHandlerConfiguration curNetworkHandler = new DBWHandlerConfiguration(handlerDescriptor, dataSource);
             curNetworkHandler.setEnabled(JSONUtils.getBoolean(handlerCfg, RegistryConstants.ATTR_ENABLED));
             curNetworkHandler.setSavePassword(JSONUtils.getBoolean(handlerCfg, RegistryConstants.ATTR_SAVE_PASSWORD));
-            if (!passwordReadCanceled) {
+            {
                 final SecureCredentials creds = configurationManager.isSecure() ?
                     readPlainCredentials(handlerCfg) :
                     readSecuredCredentials(dataSource, profile,
@@ -1274,7 +1271,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
     }
 
     private void saveNetworkHandlerConfiguration(
-        DataSourceConfigurationManager configurationManager, @NotNull JsonWriter json,
+        @NotNull DataSourceConfigurationManager configurationManager,
+        @NotNull JsonWriter json,
         @Nullable DataSourceDescriptor dataSource,
         @Nullable DBWNetworkProfile profile,
         @NotNull DBWHandlerConfiguration configuration) throws IOException
@@ -1291,9 +1289,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
             final SecureCredentials credentials = new SecureCredentials(configuration);
             credentials.setProperties(configuration.getSecureProperties());
 
-            DBPProject project = dataSource != null ? dataSource.getProject() : profile.getProject();
+            DBPProject project = dataSource != null ?
+                dataSource.getProject() : (profile != null ? profile.getProject() : null);
 
-            if (project.isUseSecretStorage()) {
+            if (project != null && project.isUseSecretStorage()) {
                 // For secured projects save only shared credentials
                 // Others are stored in secret storage
                 if (dataSource == null || dataSource.isSharedCredentials()) {
