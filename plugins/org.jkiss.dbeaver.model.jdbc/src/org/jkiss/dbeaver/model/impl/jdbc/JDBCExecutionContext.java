@@ -352,6 +352,14 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
                     DBExecUtils.tryExecuteRecover(monitor, getDataSource(), monitor1 -> {
                         try {
                             autoCommit = getConnection().getAutoCommit();
+                            if (!autoCommit) {
+                                try {
+                                    transactionIsolationLevel = getConnection().getTransactionIsolation();
+                                } catch (Throwable e) {
+                                    transactionIsolationLevel = Connection.TRANSACTION_NONE;
+                                    log.debug("Error getting transaction isolation level: " + e.getMessage());
+                                }
+                            }
                         } catch (Exception e) {
                             log.error("Error getting auto commit state", e);
                         }
