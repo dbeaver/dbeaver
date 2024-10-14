@@ -636,13 +636,15 @@ public class NavigatorUtils {
                     id.startsWith("addFromHistoryAction")) { // $NON-NLS-0$
                     item.dispose();
                 }
-                IResource resource = node.getAdapter(IResource.class);
-                if ((resource instanceof IFolder || resource instanceof EFSNIOResource) &&
-                    (id.startsWith("compareWithMenu") || // $NON-NLS-0$
-                     id.startsWith("replaceWithMenu") ||
-                     id.startsWith("team.main"))  // $NON-NLS-0$
-                ) {
-                    item.dispose();
+                if (node != null) {
+                    IResource resource = node.getAdapter(IResource.class);
+                    if ((resource instanceof IFolder || resource instanceof EFSNIOResource) &&
+                        (id.startsWith("compareWithMenu") || // $NON-NLS-0$
+                            id.startsWith("replaceWithMenu") ||
+                            id.startsWith("team.main"))  // $NON-NLS-0$
+                    ) {
+                        item.dispose();
+                    }
                 }
             }
         }

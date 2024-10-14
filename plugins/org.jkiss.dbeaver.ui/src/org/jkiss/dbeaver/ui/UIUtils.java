@@ -23,7 +23,10 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.e4.ui.model.application.ui.menu.MHandledItem;
 import org.eclipse.e4.ui.workbench.renderers.swt.HandledContributionItem;
-import org.eclipse.jface.action.*;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -47,7 +50,6 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
 import org.eclipse.swt.dnd.Clipboard;
-import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
@@ -1742,138 +1744,6 @@ public class UIUtils {
                 (bounds.height - height) / 2 + offset);
             offset += ext.y;
         }
-    }
-
-    public static void createTableContextMenu(@NotNull final Table table, @Nullable DBRCreator<Boolean, IContributionManager> menuCreator) {
-        MenuManager menuMgr = new MenuManager();
-        menuMgr.addMenuListener(manager -> {
-            if (menuCreator != null) {
-                if (!menuCreator.createObject(menuMgr)) {
-                    return;
-                }
-            }
-            UIUtils.fillDefaultTableContextMenu(manager, table);
-        });
-        menuMgr.setRemoveAllWhenShown(true);
-        table.setMenu(menuMgr.createContextMenu(table));
-        table.addDisposeListener(e -> menuMgr.dispose());
-    }
-
-    public static void setControlContextMenu(Control control, IMenuListener menuListener) {
-        MenuManager menuMgr = new MenuManager();
-        menuMgr.addMenuListener(menuListener);
-        menuMgr.setRemoveAllWhenShown(true);
-        control.setMenu(menuMgr.createContextMenu(control));
-        control.addDisposeListener(e -> menuMgr.dispose());
-    }
-
-    public static void fillDefaultTableContextMenu(IContributionManager menu, final Table table) {
-        if (table.getColumnCount() > 1) {
-            menu.add(new Action(NLS.bind(UIMessages.utils_actions_copy_label, table.getColumn(0).getText())) {
-                @Override
-                public void run() {
-                    StringBuilder text = new StringBuilder();
-                    for (TableItem item : table.getSelection()) {
-                        if (text.length() > 0) text.append("\n");
-                        text.append(item.getText(0));
-                    }
-                    if (text.length() == 0) {
-                        return;
-                    }
-                    UIUtils.setClipboardContents(table.getDisplay(), TextTransfer.getInstance(), text.toString());
-                }
-            });
-        }
-        menu.add(new Action(UIMessages.utils_actions_copy_all_label) {
-            @Override
-            public void run() {
-                StringBuilder text = new StringBuilder();
-                int columnCount = table.getColumnCount();
-                for (TableItem item : table.getSelection()) {
-                    if (text.length() > 0) text.append("\n");
-                    for (int i = 0 ; i < columnCount; i++) {
-                        if (i > 0) text.append("\t");
-                        text.append(item.getText(i));
-                    }
-                }
-                if (text.length() == 0) {
-                    return;
-                }
-                UIUtils.setClipboardContents(table.getDisplay(), TextTransfer.getInstance(), text.toString());
-            }
-        });
-    }
-
-    public static void fillDefaultTreeContextMenu(IContributionManager menu, final Tree tree) {
-        if (tree.getColumnCount() > 1) {
-            menu.add(new Action("Copy " + tree.getColumn(0).getText()) {
-                @Override
-                public void run() {
-                    StringBuilder text = new StringBuilder();
-                    for (TreeItem item : tree.getSelection()) {
-                        if (text.length() > 0) text.append("\n");
-                        text.append(item.getText(0));
-                    }
-                    if (text.length() == 0) {
-                        return;
-                    }
-                    UIUtils.setClipboardContents(tree.getDisplay(), TextTransfer.getInstance(), text.toString());
-                }
-            });
-        }
-        menu.add(new Action(UIMessages.utils_actions_copy_all_label) {
-            @Override
-            public void run() {
-                StringBuilder text = new StringBuilder();
-                int columnCount = tree.getColumnCount();
-                for (TreeItem item : tree.getSelection()) {
-                    if (text.length() > 0) text.append("\n");
-                    for (int i = 0 ; i < columnCount; i++) {
-                        if (i > 0) text.append("\t");
-                        text.append(item.getText(i));
-                    }
-                }
-                if (text.length() == 0) {
-                    return;
-                }
-                UIUtils.setClipboardContents(tree.getDisplay(), TextTransfer.getInstance(), text.toString());
-            }
-        });
-        //menu.add(ActionFactory.SELECT_ALL.create(UIUtils.getActiveWorkbenchWindow()));
-    }
-
-    public static void addFileOpenOverlay(Text text, SelectionListener listener) {
-        final Image browseImage = DBeaverIcons.getImage(DBIcon.TREE_FOLDER);
-        final Rectangle iconBounds = browseImage.getBounds();
-        text.addPaintListener(e -> {
-            final Rectangle bounds = ((Text) e.widget).getBounds();
-            e.gc.drawImage(browseImage, bounds.width - iconBounds.width - 2, 0);
-        });
-    }
-
-    public static Combo createDelimiterCombo(Composite group, String label, String[] options, String defDelimiter, boolean multiDelims) {
-        createControlLabel(group, label);
-        Combo combo = new Combo(group, SWT.BORDER | SWT.DROP_DOWN);
-        combo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        for (String option : options) {
-            combo.add(CommonUtils.escapeDisplayString(option));
-        }
-        if (!multiDelims) {
-            if (!ArrayUtils.contains(options, defDelimiter)) {
-                combo.add(CommonUtils.escapeDisplayString(defDelimiter));
-            }
-            String[] items = combo.getItems();
-            for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
-                String delim = CommonUtils.unescapeDisplayString(items[i]);
-                if (delim.equals(defDelimiter)) {
-                    combo.select(i);
-                    break;
-                }
-            }
-        } else {
-            combo.setText(CommonUtils.escapeDisplayString(defDelimiter));
-        }
-        return combo;
     }
 
     public static SharedTextColors getSharedTextColors() {

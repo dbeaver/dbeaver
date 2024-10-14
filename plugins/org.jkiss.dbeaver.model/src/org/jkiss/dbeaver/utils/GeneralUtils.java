@@ -63,6 +63,8 @@ import java.util.stream.Collectors;
 public class GeneralUtils {
     private static final Log log = Log.getLog(GeneralUtils.class);
 
+    public static final Pattern URI_SCHEMA_PATTERN = Pattern.compile("([a-zA-Z0-9-_]+:).+");
+
     public static final String UTF8_ENCODING = StandardCharsets.UTF_8.name();
     public static final String DEFAULT_ENCODING = UTF8_ENCODING;
 
@@ -773,29 +775,54 @@ public class GeneralUtils {
     }
 
     public static Path getMetadataFolder() {
-        try {
-            final File workspacePath = RuntimeUtils.getLocalFileFromURL(Platform.getInstanceLocation().getURL());
-            Path metaDir = getMetadataFolder(workspacePath.toPath());
-            if (!Files.exists(metaDir)) {
-                try {
-                    Files.createDirectories(metaDir);
-                } catch (IOException e) {
-                    return Platform.getLogFileLocation().toFile().toPath();
-                }
-            }
-            return metaDir;
-        } catch (IOException e) {
-            throw new IllegalStateException("Can't parse workspace location URL", e);
+        if (!DBWorkbench.isPlatformStarted()) {
+            log.warn("Platform not initialized: metadata folder may be not set");
         }
+        DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
+        Path workspacePath;
+        if (workspace == null) {
+            log.warn("Metadata is read before workspace initialization");
+            try {
+                workspacePath = RuntimeUtils.getLocalPathFromURL(Platform.getInstanceLocation().getURL());
+            } catch (IOException e) {
+                throw new IllegalStateException("Can't parse workspace location URL", e);
+            }
+        } else {
+            workspacePath = workspace.getAbsolutePath();
+        }
+        Path metaDir = getMetadataFolder(workspacePath);
+        if (!Files.exists(metaDir)) {
+            try {
+                Files.createDirectories(metaDir);
+            } catch (IOException e) {
+                return Platform.getLogFileLocation().toFile().toPath();
+            }
+        }
+        return metaDir;
     }
 
     public static Path getMetadataFolder(Path workspaceFolder) {
         return workspaceFolder.resolve(DBPWorkspace.METADATA_FOLDER);
     }
 
+    // Workaround for broken URLs.
+    // In some cases we get file path from URI and it looks like file:/c:/path with spaces/
+    // Thus we can't parse it as URL or URI (because of spaces and special characters)
+    // and we can't parse it as file (because of file:/ prefix - it fail on Windows at least)
+    // So we remove schema prefix if present and convert path to URI.
     @NotNull
     public static URI makeURIFromFilePath(@NotNull String path) throws URISyntaxException {
-        return new URI(path.replace(" ", "%20"));
+        Matcher matcher = URI_SCHEMA_PATTERN.matcher(path);
+        if (matcher.matches()) {
+            String plainPath = path.substring(matcher.end(1));
+            if (RuntimeUtils.isWindows()) {
+                // Trim leading slashes on Windows
+                while (plainPath.startsWith("/") && plainPath.indexOf(':') >= 0)
+                    plainPath = plainPath.substring(1);
+            }
+            return Path.of(plainPath).toUri();
+        }
+        return Path.of(path).toUri();
     }
 
     /////////////////////////////////////////////////////////////////////////

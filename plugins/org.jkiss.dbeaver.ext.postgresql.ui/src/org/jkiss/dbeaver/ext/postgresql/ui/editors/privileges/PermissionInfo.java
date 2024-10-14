@@ -14,17 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.lang;
+package org.jkiss.dbeaver.ext.postgresql.ui.editors.privileges;
 
-import org.eclipse.jface.text.rules.ITokenScanner;
-import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgrePrivilege;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 
-/**
- * Source code node
- */
-public interface SCMSourceScanner extends ITokenScanner {
+import java.util.Collection;
 
-    @NotNull
-    SCMSourceText getSource();
-
+record PermissionInfo(
+    Collection<PostgrePrivilege> privileges,
+    DBNDatabaseNode objectRootNode
+) {
 }
