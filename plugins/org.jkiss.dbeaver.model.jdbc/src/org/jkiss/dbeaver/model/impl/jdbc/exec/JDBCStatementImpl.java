@@ -148,7 +148,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
         try {
             try {
                 return this.executeLargeBatch();
-            } catch (SQLFeatureNotSupportedException e) {
+            } catch (SQLFeatureNotSupportedException | UnsupportedOperationException | IncompatibleClassChangeError e) {
                 int[] result = this.executeBatch();
                 long[] longResult = new long[result.length];
                 for (int i = 0; i < result.length; i++) longResult[i] = result[i];
