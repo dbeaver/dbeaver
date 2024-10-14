@@ -221,9 +221,13 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         } else {
             String host = hostText != null ? hostText.getText() : null;
             String port = portText != null ? portText.getText() : null;
-            DBPAuthModelDescriptor selectedAuthModel = authModelSelector.getSelectedAuthModel();
-            Map<String, String> authProperties = authModelSelector.getActiveDataSource().getConnectionConfiguration().getAuthProperties();
-            return super.isComplete() && DBAuthUtils.isPageCompleteByAuthModel(host, port, selectedAuthModel, authProperties);
+            DBPAuthModelDescriptor selectedAuthModel = getAuthModelSelector().getSelectedAuthModel();
+            DBPDataSourceContainer dataSourceContainer = getAuthModelSelector().getActiveDataSource();
+            if (dataSourceContainer == null) {
+                return super.isComplete();
+            }
+            Map<String, String> authProperties = dataSourceContainer.getConnectionConfiguration().getAuthProperties();
+            return super.isComplete() && DBAuthUtils.isHostPresent(host, port, selectedAuthModel, authProperties);
         }
     }
 

@@ -226,9 +226,9 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
         } else {
             String host = hostText != null ? hostText.getText() : null;
             String port = portText != null ? portText.getText() : null;
-            DBPAuthModelDescriptor selectedAuthModel = authModelSelector.getSelectedAuthModel();
-            Map<String, String> authProperties = authModelSelector.getActiveDataSource().getConnectionConfiguration().getAuthProperties();
-            return super.isComplete() && DBAuthUtils.isPageCompleteByAuthModel(host, port, selectedAuthModel, authProperties);
+            DBPAuthModelDescriptor selectedAuthModel = getAuthModelSelector().getSelectedAuthModel();
+            Map<String, String> authProperties = getAuthModelSelector().getActiveDataSource().getConnectionConfiguration().getAuthProperties();
+            return super.isComplete() && DBAuthUtils.isHostPresent(host, port, selectedAuthModel, authProperties);
         }
     }
 

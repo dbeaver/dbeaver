@@ -89,7 +89,7 @@ public class DBAuthUtils {
         return false;
     }
 
-    public static boolean isPageCompleteByAuthModel(
+    public static boolean isHostPresent(
         @Nullable String host,
         @Nullable String port,
         @Nullable DBPAuthModelDescriptor selectedAuthModel,
