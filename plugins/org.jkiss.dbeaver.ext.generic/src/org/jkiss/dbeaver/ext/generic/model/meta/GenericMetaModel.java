@@ -393,6 +393,10 @@ public class GenericMetaModel {
                             }
                             String procedureCatalog = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.PROCEDURE_CAT);
                             String procedureName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.PROCEDURE_NAME);
+                            if (procedureName == null) {
+                                // It may be a function?
+                                continue;
+                            }
                             String specificName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.SPECIFIC_NAME);
                             int procTypeNum = GenericUtils.safeGetInt(procObject, dbResult, JDBCConstants.PROCEDURE_TYPE);
                             String remarks = GenericUtils.safeGetString(procObject, dbResult, JDBCConstants.REMARKS);
