@@ -218,6 +218,11 @@ public class ContentUtils {
         return contentType != null && contentType.toLowerCase(Locale.ENGLISH).startsWith("text");
     }
 
+    public static boolean isJsonContent(DBDContent content) {
+        String contentType = content == null ? null : content.getContentType();
+        return contentType != null && contentType.toLowerCase(Locale.ENGLISH).contains("json");
+    }
+
     public static boolean isTextMime(String mimeType) {
         return mimeType != null && mimeType.toLowerCase(Locale.ENGLISH).startsWith("text");
     }
