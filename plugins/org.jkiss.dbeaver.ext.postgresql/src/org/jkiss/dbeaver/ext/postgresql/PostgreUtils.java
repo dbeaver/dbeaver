@@ -957,7 +957,7 @@ public class PostgreUtils {
         try {
             final java.sql.Array value = dbResult.getArray(columnName);
             return value != null ? (T[]) value.getArray() : null;
-        } catch (SQLFeatureNotSupportedException ignored) {
+        } catch (SQLFeatureNotSupportedException | UnsupportedOperationException | IncompatibleClassChangeError ignored) {
             // Some drivers (ODBC) might not have an implementation for that API, just ignore and try with a string
         } catch (Exception e) {
             exception = e;
