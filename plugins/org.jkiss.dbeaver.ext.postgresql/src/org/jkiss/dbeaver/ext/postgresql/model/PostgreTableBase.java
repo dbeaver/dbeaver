@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectWithType;
@@ -336,13 +335,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
             if (!object.getDataSource().getServerType().supportsTablespaces()) {
                 return new Object[0];
             }
-            try {
-                Collection<PostgreTablespace> tablespaces = object.getDatabase().getTablespaces(new VoidProgressMonitor());
-                return tablespaces.toArray(new Object[0]);
-            } catch (DBException e) {
-                log.error(e);
-                return new Object[0];
-            }
+            return object.getDatabase().getTablespaceCache().getCachedObjects().toArray(new Object[0]);
         }
     }
 
