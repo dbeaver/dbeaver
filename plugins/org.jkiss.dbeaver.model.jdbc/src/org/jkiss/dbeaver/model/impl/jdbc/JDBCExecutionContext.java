@@ -382,6 +382,9 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     @Override
     public void setAutoCommit(@NotNull DBRProgressMonitor monitor, boolean autoCommit)
         throws DBCException {
+        if (this.autoCommit != null && this.autoCommit == autoCommit) {
+            return;
+        }
         monitor.subTask("Set JDBC connection auto-commit " + autoCommit);
         try {
             Connection dbCon = getConnection();
