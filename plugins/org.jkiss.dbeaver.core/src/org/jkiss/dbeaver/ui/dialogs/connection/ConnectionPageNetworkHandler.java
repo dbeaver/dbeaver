@@ -211,7 +211,6 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
         DBPDataSourceContainer dataSource = site.getActiveDataSource();
         DBPConnectionConfiguration cfg = dataSource.getConnectionConfiguration();
         String oldProfileId = cfg.getConfigProfileName();
-        saveSettings(site.getActiveDataSource());
 
         if (activeProfile != null) {
             cfg.setConfigProfile(activeProfile);
