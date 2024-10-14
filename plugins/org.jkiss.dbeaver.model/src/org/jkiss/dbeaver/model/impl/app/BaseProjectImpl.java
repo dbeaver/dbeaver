@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.app;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.Strictness;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import org.eclipse.core.runtime.IStatus;
@@ -69,7 +70,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     }
 
     public static final Gson METADATA_GSON = new GsonBuilder()
-        .setLenient()
+        .setStrictness(Strictness.LENIENT)
         .serializeNulls()
         .create();
 
