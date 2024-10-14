@@ -1008,8 +1008,6 @@ public class DataSourceDescriptor
             }
         }
 
-        resolvePropertiesFromProfile();
-
         secretsResolved = true;
     }
 
