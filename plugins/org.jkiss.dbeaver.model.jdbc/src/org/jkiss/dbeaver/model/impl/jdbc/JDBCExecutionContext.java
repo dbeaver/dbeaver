@@ -405,6 +405,8 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
                     transactionIsolationLevel = Connection.TRANSACTION_NONE;
                     log.debug("Error getting transaction isolation level: " + e.getMessage());
                 }
+            } else {
+                transactionIsolationLevel = null;
             }
         } catch (SQLException e) {
             throw new JDBCException(e, this);
