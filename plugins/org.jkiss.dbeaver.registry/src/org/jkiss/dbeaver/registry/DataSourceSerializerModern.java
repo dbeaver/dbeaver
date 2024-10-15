@@ -277,7 +277,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         configurationManager, jsonWriter,
                         null,
                         np,
-                        configuration);
+                        configuration,
+                        false);
                 }
             }
             jsonWriter.endObject();
@@ -1172,16 +1173,24 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 json.endObject();
             }
 
-            // Save network handlers' configurations
-            if (!CommonUtils.isEmpty(connectionInfo.getHandlers())) {
-                json.name(RegistryConstants.TAG_HANDLERS);
-                json.beginObject();
-                for (DBWHandlerConfiguration configuration : connectionInfo.getHandlers()) {
-                    if (configuration.isEnabled()) {
-                        saveNetworkHandlerConfiguration(configurationManager, json, dataSource, null, configuration);
+            {
+                // Save network handlers' configurations
+                if (!CommonUtils.isEmpty(connectionInfo.getHandlers())) {
+                    json.name(RegistryConstants.TAG_HANDLERS);
+                    json.beginObject();
+                    for (DBWHandlerConfiguration configuration : connectionInfo.getHandlers()) {
+                        if (configuration.isEnabled()) {
+                            saveNetworkHandlerConfiguration(
+                                configurationManager,
+                                json,
+                                dataSource,
+                                null,
+                                configuration,
+                                !CommonUtils.isEmpty(connectionInfo.getConfigProfileName()));
+                        }
                     }
+                    json.endObject();
                 }
-                json.endObject();
             }
 
             // Save bootstrap info
@@ -1275,42 +1284,45 @@ class DataSourceSerializerModern implements DataSourceSerializer
         @NotNull JsonWriter json,
         @Nullable DataSourceDescriptor dataSource,
         @Nullable DBWNetworkProfile profile,
-        @NotNull DBWHandlerConfiguration configuration) throws IOException
+        @NotNull DBWHandlerConfiguration configuration,
+        boolean referenceOnly) throws IOException
     {
         json.name(CommonUtils.notEmpty(configuration.getId()));
         json.beginObject();
         JSONUtils.field(json, RegistryConstants.ATTR_TYPE, configuration.getType().name());
         JSONUtils.field(json, RegistryConstants.ATTR_ENABLED, configuration.isEnabled());
-        JSONUtils.field(json, RegistryConstants.ATTR_SAVE_PASSWORD, configuration.isSavePassword());
-        if (!CommonUtils.isEmpty(configuration.getUserName()) ||
-            !CommonUtils.isEmpty(configuration.getPassword()) ||
-            !CommonUtils.isEmpty(configuration.getSecureProperties())
-        ) {
-            final SecureCredentials credentials = new SecureCredentials(configuration);
-            credentials.setProperties(configuration.getSecureProperties());
+        if (!referenceOnly) {
+            JSONUtils.field(json, RegistryConstants.ATTR_SAVE_PASSWORD, configuration.isSavePassword());
+            if (!CommonUtils.isEmpty(configuration.getUserName()) ||
+                !CommonUtils.isEmpty(configuration.getPassword()) ||
+                !CommonUtils.isEmpty(configuration.getSecureProperties())
+            ) {
+                final SecureCredentials credentials = new SecureCredentials(configuration);
+                credentials.setProperties(configuration.getSecureProperties());
 
-            DBPProject project = dataSource != null ?
-                dataSource.getProject() : (profile != null ? profile.getProject() : null);
+                DBPProject project = dataSource != null ?
+                    dataSource.getProject() : (profile != null ? profile.getProject() : null);
 
-            if (project != null && project.isUseSecretStorage()) {
-                // For secured projects save only shared credentials
-                // Others are stored in secret storage
-                if (dataSource == null || dataSource.isSharedCredentials()) {
-                    savePlainCredentials(json, credentials);
+                if (project != null && project.isUseSecretStorage()) {
+                    // For secured projects save only shared credentials
+                    // Others are stored in secret storage
+                    if (dataSource == null || dataSource.isSharedCredentials()) {
+                        savePlainCredentials(json, credentials);
+                    }
+                } else if (configurationManager.isSecure()) {
+                    savePlainCredentials(
+                        json,
+                        credentials);
+                } else {
+                    saveSecuredCredentials(
+                        dataSource,
+                        profile,
+                        "network/" + configuration.getId() + (profile == null ? "" : "/profile/" + profile.getProfileName()),
+                        credentials);
                 }
-            } else if (configurationManager.isSecure()) {
-                savePlainCredentials(
-                    json,
-                    credentials);
-            } else {
-                saveSecuredCredentials(
-                    dataSource,
-                    profile,
-                    "network/" + configuration.getId() + (profile == null ? "" : "/profile/" + profile.getProfileName()),
-                    credentials);
             }
+            JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, configuration.getProperties(), true);
         }
-        JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, configuration.getProperties(), true);
         json.endObject();
     }
 
