@@ -50,6 +50,10 @@ public abstract class SQLGeneratorResultSet extends SQLGeneratorBase<IResultSetC
         return getController().getSelection().getSelectedRows();
     }
 
+    public List<DBDAttributeBinding> getSelectedAttributes() {
+        return getController().getSelection().getSelectedAttributes();
+    }
+
     public DBSEntity getSingleEntity() {
         return getController().getModel().getSingleSource();
     }
@@ -127,4 +131,14 @@ public abstract class SQLGeneratorResultSet extends SQLGeneratorBase<IResultSetC
         }
     }
 
+    protected String getAttributeValue(IResultSetController rsv, DBDAttributeBinding binding, ResultSetRow row)
+    {
+        DBPDataSource dataSource = binding.getDataSource();
+        Object value = rsv.getModel().getCellValue(binding, row);
+        DBSAttributeBase attribute = binding.getAttribute();
+        if (attribute != null && attribute.getDataKind() == DBPDataKind.DATETIME && isUseCustomDataFormat()) {
+            return SQLUtils.quoteString(dataSource, SQLUtils.convertValueToSQL(dataSource, attribute, DBUtils.findValueHandler(dataSource, attribute), value, DBDDisplayFormat.UI));
+        }
+        return SQLUtils.convertValueToSQL(dataSource, attribute, value);
+    }
 }
