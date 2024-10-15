@@ -32,7 +32,9 @@ import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerTypeRegistry;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.exec.*;
@@ -955,7 +957,7 @@ public class PostgreUtils {
         try {
             final java.sql.Array value = dbResult.getArray(columnName);
             return value != null ? (T[]) value.getArray() : null;
-        } catch (SQLFeatureNotSupportedException ignored) {
+        } catch (SQLFeatureNotSupportedException | UnsupportedOperationException | IncompatibleClassChangeError ignored) {
             // Some drivers (ODBC) might not have an implementation for that API, just ignore and try with a string
         } catch (Exception e) {
             exception = e;
@@ -1012,4 +1014,49 @@ public class PostgreUtils {
             return Double.parseDouble(str);
         }
     }
+
+    @Nullable
+    public static String getDatabaseNameFromConfiguration(DBPConnectionConfiguration configuration) {
+        String activeDatabaseName = null;
+        if (configuration.getConfigurationType() == DBPDriverConfigurationType.MANUAL) {
+            activeDatabaseName = configuration.getBootstrap().getDefaultCatalogName();
+            if (CommonUtils.isEmpty(activeDatabaseName)) {
+                activeDatabaseName = configuration.getDatabaseName();
+            }
+        } else {
+            String url = configuration.getUrl();
+            int divPos = url.lastIndexOf('/');
+            if (divPos > 0) {
+                int lastPos = getLastNonDatabaseCharPos(divPos, url);
+                activeDatabaseName = url.substring(divPos + 1, lastPos);
+            }
+        }
+        return activeDatabaseName;
+    }
+
+
+    @NotNull
+    public static String updateDatabaseNameInURL(String url, String dbName) {
+        int divPos = url.lastIndexOf('/');
+        if (divPos > 0) {
+            int lastPos = getLastNonDatabaseCharPos(divPos, url);
+            return url.substring(0, divPos + 1) + dbName + url.substring(lastPos);
+        } else {
+            return url + "/" + dbName;
+        }
+    }
+
+    private static int getLastNonDatabaseCharPos(int divPos, String url) {
+        int lastPos = -1;
+        for (int i = divPos + 1; i < url.length(); i++) {
+            char c = url.charAt(i);
+            if (!Character.isLetterOrDigit(c) && c != '_' && c != '$' && c != '.') {
+                lastPos = i;
+                break;
+            }
+        }
+        if (lastPos < 0) lastPos = url.length();
+        return lastPos;
+    }
+
 }
