@@ -1136,13 +1136,8 @@ public class DataSourceDescriptor
     }
 
     private boolean connect0(DBRProgressMonitor monitor, boolean initialize, boolean reflect) throws DBException {
-        DBSSecretController secretController = null;
-
         log.debug("Connect with '" + getName() + "' (" + getId() + ")");
-        if (getProject().isUseSecretStorage()) {
-            // Resolve secrets
-            secretController = DBSSecretController.getProjectSecretController(getProject());
-        }
+
         resolveSecretsIfNeeded();
 
         if (isSharedCredentials() && !isSharedCredentialsSelected()) {
@@ -1199,7 +1194,7 @@ public class DataSourceDescriptor
                 }
             }
 
-            resolveConnectVariables(secretController);
+            resolvePropertiesFromProfile();
 
             // Handle tunnelHandler
             // Open tunnelHandler and replace connection info with new one
@@ -1335,34 +1330,33 @@ public class DataSourceDescriptor
         }
     }
 
-    private void resolveConnectVariables(DBSSecretController secretController) throws DBException {
-        // Resolve variables
-        if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS) ||
-            !CommonUtils.isEmpty(resolvedConnectionInfo.getConfigProfileName())) {
+    private void resolvePropertiesFromProfile() throws DBException {
+        DBSSecretController secretController = getProject().isUseSecretStorage() ?
+            DBSSecretController.getProjectSecretController(getProject()) : null;
+        // Update config from profile
+        if (!CommonUtils.isEmpty(resolvedConnectionInfo.getConfigProfileName())) {
             // Update config from profile
-            if (!CommonUtils.isEmpty(resolvedConnectionInfo.getConfigProfileName())) {
-                // Update config from profile
-                DBWNetworkProfile profile = registry.getNetworkProfile(
-                    resolvedConnectionInfo.getConfigProfileSource(),
-                    resolvedConnectionInfo.getConfigProfileName());
-                if (profile != null) {
-                    if (secretController != null) {
-                        profile.resolveSecrets(secretController);
-                    }
-                    for (DBWHandlerConfiguration handlerCfg : profile.getConfigurations()) {
-                        if (handlerCfg.isEnabled()) {
-                            resolvedConnectionInfo.updateHandler(new DBWHandlerConfiguration(handlerCfg));
-                        }
+            DBWNetworkProfile profile = registry.getNetworkProfile(
+                resolvedConnectionInfo.getConfigProfileSource(),
+                resolvedConnectionInfo.getConfigProfileName());
+            if (profile != null) {
+                if (secretController != null) {
+                    profile.resolveSecrets(secretController);
+                }
+                for (DBWHandlerConfiguration handlerCfg : profile.getConfigurations()) {
+                    if (handlerCfg.isEnabled()) {
+                        resolvedConnectionInfo.updateHandler(new DBWHandlerConfiguration(handlerCfg));
                     }
                 }
             }
-            // Process variables
-            if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
-                IVariableResolver variableResolver = new DataSourceVariableResolver(
-                    this, this.resolvedConnectionInfo);
-                this.resolvedConnectionInfo.resolveDynamicVariables(variableResolver);
-            }
         }
+        // Process variables
+        if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
+            IVariableResolver variableResolver = new DataSourceVariableResolver(
+                this, this.resolvedConnectionInfo);
+            this.resolvedConnectionInfo.resolveDynamicVariables(variableResolver);
+        }
+
     }
 
     private void resolveSecretsIfNeeded() throws DBException {
