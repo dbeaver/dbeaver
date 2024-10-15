@@ -26,9 +26,6 @@ import java.sql.SQLException;
 
 
 public class DuckDBGeometryValueHandler extends GISGeometryValueHandler {
-
-    public static final String[] GEOMETRY_TYPES = new String[]{"GEOMETRY"};
-
     public static final DuckDBGeometryValueHandler INSTANCE = new DuckDBGeometryValueHandler();
 
     @Override
