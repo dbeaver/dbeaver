@@ -66,7 +66,7 @@ import java.util.regex.Pattern;
 public class SQLBackgroundParsingJob {
 
     private static final Log log = Log.getLog(SQLBackgroundParsingJob.class);
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
 
     private static final long schedulingTimeoutMilliseconds = 500;
     
@@ -169,58 +169,43 @@ public class SQLBackgroundParsingJob {
      * Prepare completion context for the specified position in the text
      */
     @NotNull
-    public SQLQueryCompletionContext obtainCompletionContext(int offset) {
+    public SQLQueryCompletionContext obtainCompletionContext(@NotNull Position completionRequestPostion) {
         SQLScriptItemAtOffset scriptItem = null;
-        Position requestPosition = new Position(offset);
-        try {
-            UIUtils.syncExec(() -> {
-                try {
-                    assert this.document != null;
-                    this.document.addPosition(requestPosition);
-                } catch (BadLocationException e) {
-                    log.error(e);
-                    throw new RuntimeException(e);
-                }
-            });
-            do {
-                final long requestStamp = System.currentTimeMillis();
-                CompletableFuture<Long> expectedParsingSessionFinishStamp;
-                synchronized (this.syncRoot) {
-                    if (scriptItem == null || this.queuedForReparse.size() == 0) {
-                        scriptItem = this.context.findScriptItem(offset - 1);
-                        if (scriptItem != null) { // TODO consider statements separation which is ignored for now
-                            if (scriptItem.item.isDirty()) {
-                                // awaiting reparse, so proceed to release lock and wait for the job to finish, then retry
-                            } else {
-                                return this.prepareCompletionContext(scriptItem, requestPosition.getOffset());
-                            }
+        do {
+            final long requestStamp = System.currentTimeMillis();
+            CompletableFuture<Long> expectedParsingSessionFinishStamp;
+            synchronized (this.syncRoot) {
+                if (scriptItem == null || this.queuedForReparse.size() == 0) {
+                    scriptItem = this.context.findScriptItem(completionRequestPostion.offset - 1);
+                    if (scriptItem != null) { // TODO consider statements separation which is ignored for now
+                        if (scriptItem.item.isDirty()) {
+                            // awaiting reparse, so proceed to release lock and wait for the job to finish, then retry
                         } else {
-                            // no script items here, so fallback to offquery context
-                            break;
+                            if (DEBUG) {
+                                log.debug("obtained model for " + scriptItem.item.getOriginalText());
+                            }
+                            return this.prepareCompletionContext(scriptItem, completionRequestPostion.getOffset());
                         }
+                    } else if (this.queuedForReparse.size() <= 0) {
+                        // no script items here, so fallback to offquery context
+                        return SQLQueryCompletionContext.prepareOffquery(0);
                     }
-                    expectedParsingSessionFinishStamp = this.lastParsingFinishStamp;
                 }
+                expectedParsingSessionFinishStamp = this.lastParsingFinishStamp;
+            }
 
-                try {
-                    // job.join() cannot be used here because completion request is being submitted at before-change event,
-                    // when the job is not scheduled yet (so join returns immediately)
-                    // job.schedule() performed only after the series of keypresses at after-change event
-                    if (expectedParsingSessionFinishStamp.get() < requestStamp) {
-                        return SQLQueryCompletionContext.EMPTY;
-                    }
-                } catch (InterruptedException | ExecutionException e) {
-                    break;
-                }
-                if (requestPosition.isDeleted()) {
+            try {
+                // job.join() cannot be used here because completion request is being submitted at before-change event,
+                // when the job is not scheduled yet (so join returns immediately)
+                // job.schedule() performed only after the series of keypresses at after-change event
+                if (expectedParsingSessionFinishStamp.get() < requestStamp) {
                     return SQLQueryCompletionContext.EMPTY;
                 }
-            } while (scriptItem != null);
-            return SQLQueryCompletionContext.prepareOffquery(0);
-        }
-        finally {
-            UIUtils.syncExec(() -> this.document.removePosition(requestPosition));
-        }
+            } catch (InterruptedException | ExecutionException e) {
+                break;
+            }
+        } while (!completionRequestPostion.isDeleted());
+        return SQLQueryCompletionContext.EMPTY;
     }
 
     @NotNull
@@ -530,8 +515,18 @@ public class SQLBackgroundParsingJob {
                 return;
             }
             
-            SQLParserContext parserContext =
-                new SQLParserContext(this.editor.getDataSource(), this.editor.getSyntaxManager(), this.editor.getRuleManager(), this.document);
+            SQLParserContext parserContext = new SQLParserContext(
+                    this.editor.getDataSource(), this.editor.getSyntaxManager(), this.editor.getRuleManager(), this.document
+            );
+            if (DEBUG) {
+                log.debug("discovering " + workOffset + "+" + workLength);
+            }
+            {
+                SQLScriptElement firstElement = SQLScriptParser.extractQueryAtPos(parserContext, workOffset);
+                if (firstElement != null) {
+                    workOffset = Math.min(firstElement.getOffset(), workOffset);
+                }
+            }
             List<SQLScriptElement> elements = SQLScriptParser.extractScriptQueries(parserContext, workOffset, workLength, false, false, false);
             if (elements.isEmpty()) {
                 if (DEBUG) {
@@ -540,14 +535,24 @@ public class SQLBackgroundParsingJob {
                 return;
             } else {
                 SQLScriptElement element = SQLScriptParser.extractQueryAtPos(parserContext, elements.get(0).getOffset());
-                if (element != null) {
+                if (element != null && element.getOffset() < elements.get(0).getOffset()) {
                     elements.set(0, element);
                 }
+                int lastElementIndex = elements.size() - 1;
+                SQLScriptElement lastElement = elements.get(lastElementIndex);
                 if (elements.size() > 1) {
-                    int index = elements.size() - 1;
-                    element = SQLScriptParser.extractQueryAtPos(parserContext, elements.get(index).getOffset());
+                    element = SQLScriptParser.extractQueryAtPos(parserContext, lastElement.getOffset());
                     if (element != null) {
-                        elements.set(index, element);
+                        elements.set(lastElementIndex, element);
+                        lastElement = element;
+                    }
+                }
+                {
+                    SQLScriptElement followingElement = SQLScriptParser.extractNextQuery(parserContext, lastElement, true);
+                    if (followingElement != null &&
+                        followingElement.getOffset() < workOffset + workLength &&
+                        followingElement.getOffset() > lastElement.getOffset() + lastElement.getLength()) {
+                        elements.add(followingElement);
                     }
                 }
             }
@@ -560,8 +565,17 @@ public class SQLBackgroundParsingJob {
                 workOffset = elements.get(0).getOffset();
                 workLength = lastElement.getOffset() + lastElement.getLength() - workOffset;
                 if (DEBUG) {
+                    log.debug("firstElement@" + elements.get(0).getOffset() + ":" + elements.get(0).getText());
+                    log.debug("lastElement@" + elements.get(elements.size() - 1).getOffset() + ":" + elements.get(elements.size() - 1).getText());
                     log.debug("parsing " + workOffset + "+" + workLength);
                 }
+            }
+            if (DEBUG) {
+                log.debug("{");
+                for (var e: elements) {
+                    log.debug("    @" + e.getOffset() + "+" + e.getLength() + " " + (e instanceof SQLQuery q && q.isEndsWithDelimiter()));
+                }
+                log.debug("}");
             }
 
             boolean useRealMetadata = this.editor.isReadMetadataForQueryAnalysisEnabled();
