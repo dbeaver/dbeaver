@@ -393,6 +393,10 @@ public class GenericMetaModel {
                             }
                             String procedureCatalog = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.PROCEDURE_CAT);
                             String procedureName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.PROCEDURE_NAME);
+                            if (procedureName == null) {
+                                // It may be a function?
+                                continue;
+                            }
                             String specificName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.SPECIFIC_NAME);
                             int procTypeNum = GenericUtils.safeGetInt(procObject, dbResult, JDBCConstants.PROCEDURE_TYPE);
                             String remarks = GenericUtils.safeGetString(procObject, dbResult, JDBCConstants.REMARKS);
@@ -688,7 +692,9 @@ public class GenericMetaModel {
         @NotNull GenericTableBase sourceObject,
         @NotNull Map<String, Object> options
     ) throws DBException {
-        return DBStructUtils.generateTableDDL(monitor, sourceObject, options, false);
+        boolean showComments = CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SOURCE);
+        return DBStructUtils.generateTableDDL(
+            monitor, sourceObject, options, false);
     }
 
     public boolean supportsTableDDLSplit(GenericTableBase sourceObject) {

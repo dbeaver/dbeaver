@@ -318,6 +318,10 @@ public class SQLQueryJob extends DataSourceJob
                     QMUtils.getDefaultHandler().handleScriptEnd(session);
                 }
 
+                if (listener != null) {
+                    listener.onEndSqlJob(session, getSqlJobResult());
+                }
+
                 // Return success
                 return new Status(
                     Status.OK,
@@ -342,6 +346,17 @@ public class SQLQueryJob extends DataSourceJob
                     log.error(e);
                 }
             }
+        }
+    }
+
+    @NotNull
+    private SqlJobResult getSqlJobResult() {
+        if (queries.get(queries.size() - 1) == lastGoodQuery && lastError == null) {
+            return SqlJobResult.SUCCESS;
+        } else if (lastGoodQuery != null) {
+            return SqlJobResult.PARTIAL_SUCCESS;
+        } else {
+            return SqlJobResult.FAILURE;
         }
     }
 
@@ -799,17 +814,17 @@ public class SQLQueryJob extends DataSourceJob
             // Multiple statements - show script statistics
             fakeResultSet.addColumn("Queries", DBPDataKind.NUMERIC);
             fakeResultSet.addColumn("Updated Rows", DBPDataKind.NUMERIC);
-            fakeResultSet.addColumn("Execute time (ms)", DBPDataKind.NUMERIC);
-            fakeResultSet.addColumn("Fetch time (ms)", DBPDataKind.NUMERIC);
-            fakeResultSet.addColumn("Total time (ms)", DBPDataKind.NUMERIC);
+            fakeResultSet.addColumn("Execute time", DBPDataKind.NUMERIC);
+            fakeResultSet.addColumn("Fetch time", DBPDataKind.NUMERIC);
+            fakeResultSet.addColumn("Total time", DBPDataKind.NUMERIC);
             fakeResultSet.addColumn("Start time", DBPDataKind.DATETIME);
             fakeResultSet.addColumn("Finish time", DBPDataKind.DATETIME);
             fakeResultSet.addRow(
                 statistics.getStatementsCount(),
                 statistics.getRowsUpdated() < 0 ? 0 : statistics.getRowsUpdated(),
-                statistics.getExecuteTime(),
-                statistics.getFetchTime(),
-                statistics.getTotalTime(),
+                RuntimeUtils.formatExecutionTime(statistics.getExecuteTime()),
+                RuntimeUtils.formatExecutionTime(statistics.getFetchTime()),
+                RuntimeUtils.formatExecutionTime(statistics.getTotalTime()),
                 new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT).format(new Date(statistics.getStartTime())),
                 new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT).format(new Date()));
             executeResult.setResultSetName(SQLEditorMessages.editors_sql_statistics);
@@ -984,6 +999,11 @@ public class SQLQueryJob extends DataSourceJob
         session.getProgressMonitor().subTask(CommonUtils.truncateString(query.getText(), 512));
 
         boolean result = executeSingleQuery(session, query, fireEvents);
+
+        if (listener != null) {
+            listener.onEndSqlJob(session, getSqlJobResult());
+        }
+
         if (!result && lastError != null) {
             if (lastError instanceof DBCException dbce) {
                 throw dbce;

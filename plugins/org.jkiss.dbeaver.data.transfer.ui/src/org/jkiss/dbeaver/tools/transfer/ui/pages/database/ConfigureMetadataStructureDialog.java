@@ -300,7 +300,7 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
             if (showSaveButton) {
                 final Button persistButton = UIUtils.createPushButton(
                     buttonsBar,
-                    DTUIMessages.page_configure_table_DDL_button_persist,
+                    DTUIMessages.page_configure_table_DDL_button_execute,
                     null);
                 persistButton.setLayoutData(gridData);
                 persistButton.addSelectionListener(new SelectionAdapter() {

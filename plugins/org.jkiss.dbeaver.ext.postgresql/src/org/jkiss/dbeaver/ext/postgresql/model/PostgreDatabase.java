@@ -394,12 +394,12 @@ public class PostgreDatabase extends JDBCRemoteInstance
     }
 
     @Nullable
-    public PostgreRole getRoleByName(DBRProgressMonitor monitor, PostgreDatabase owner, String roleName) throws DBException {
+    public PostgreRole getRoleByReference(@NotNull DBRProgressMonitor monitor, @NotNull PostgreRoleReference reference) throws DBException {
         if (!getDataSource().getServerType().supportsRoles()) {
             return null;
         }
         checkInstanceConnection(monitor);
-        return roleCache.getObject(monitor, owner, roleName);
+        return roleCache.getObject(monitor, this, reference.getRoleName());
     }
 
     @Property(editable = false, updatable = false, order = 5/*, listProvider = CharsetListProvider.class*/)
@@ -591,6 +591,10 @@ public class PostgreDatabase extends JDBCRemoteInstance
     ///////////////////////////////////////////////
     // Tablespaces
 
+    TablespaceCache getTablespaceCache() {
+        return tablespaceCache;
+    }
+
     @Association
     public Collection<PostgreTablespace> getTablespaces(DBRProgressMonitor monitor) throws DBException {
         checkInstanceConnection(monitor);
@@ -615,6 +619,10 @@ public class PostgreDatabase extends JDBCRemoteInstance
             }
         }
         return null;
+    }
+
+    JobClassCache getJobClassCache() {
+        return jobClassCache;
     }
 
     @Association

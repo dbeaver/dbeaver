@@ -55,6 +55,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
@@ -321,6 +322,9 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
         StyledText editorControl = editor.getEditorControl();
         if (editorControl == null) {
             return;
+        }
+        if (valueController.isReadOnly()) {
+            editorControl.setBackground(UIStyles.getDefaultWidgetBackground());
         }
         try {
 

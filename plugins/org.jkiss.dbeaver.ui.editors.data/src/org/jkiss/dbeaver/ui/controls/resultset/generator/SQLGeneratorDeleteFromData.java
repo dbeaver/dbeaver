@@ -18,8 +18,8 @@ package org.jkiss.dbeaver.ui.controls.resultset.generator;
 
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.impl.sql.ChangeTableDataStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLQueryGeneratorUpdate;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
@@ -36,8 +36,8 @@ public class SQLGeneratorDeleteFromData extends SQLGeneratorResultSet {
         String entityName = getEntityName(dbsEntity);
         for (ResultSetRow firstRow : getSelectedRows()) {
             Collection<DBDAttributeBinding> keyAttributes = getKeyAttributes(monitor, object);
-            if (dbsEntity instanceof ChangeTableDataStatement) {
-                sql.append(((ChangeTableDataStatement) dbsEntity).generateTableDeleteFrom(entityName));
+            if (dbsEntity instanceof SQLQueryGeneratorUpdate) {
+                sql.append(((SQLQueryGeneratorUpdate) dbsEntity).generateTableDeleteFrom(entityName));
             } else {
                 sql.append("DELETE FROM ").append(entityName);
             }

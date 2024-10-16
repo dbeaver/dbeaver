@@ -55,9 +55,10 @@ import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
+import org.jkiss.dbeaver.registry.BasePlatformImpl;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.runtime.OperationSystemState;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.OperationSystemState;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIFonts;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
@@ -103,7 +104,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Workspace/org.eclipse.ui.preferencePages.BuildOrder",
         //WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.ContentTypes",
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.General.LinkHandlers",
-        WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Startup",
+        //WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Startup",
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.trace.tracingPage",
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.epp.mpc.projectnatures",
         "org.eclipse.ui.internal.console.ansi.preferences.AnsiConsolePreferencePage",
@@ -386,6 +387,12 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
                 desktop.removeAppEventListener(systemSleepListener);
             }
         }
+
+        if (DBWorkbench.getPlatform() instanceof BasePlatformImpl basePlatform) {
+            // Dispose navigator model earlier because it may lock some UI resources
+            // and we want to free them before application display will be disposed
+            basePlatform.disposeNavigatorModel();
+        }
     }
 
     private boolean saveAndCleanup() {
@@ -467,7 +474,10 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             // Probably some TE user without permissions and projects
             return true;
         }
-        final DBTTaskManager manager = activeProject.getTaskManager();
+        final DBTTaskManager manager = activeProject.getTaskManager(false);
+        if (manager == null) {
+            return true;
+        }
 
         if (manager.hasRunningTasks()) {
             final boolean cancel = !confirmCancel || DBWorkbench.getPlatformUI().confirmAction(

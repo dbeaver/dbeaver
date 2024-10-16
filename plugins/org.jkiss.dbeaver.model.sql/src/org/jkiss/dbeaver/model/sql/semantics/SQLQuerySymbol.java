@@ -104,7 +104,7 @@ public class SQLQuerySymbol {
         result.entries.addAll(this.entries);
         result.entries.addAll(other.entries);
         result.entries.forEach(e -> SQLQuerySymbolEntry.updateSymbol(e, result));
-        return this;
+        return result;
     }
     
     @Override

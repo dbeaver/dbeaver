@@ -77,9 +77,7 @@ public class AdvancedList extends Canvas {
         setFont(smallFont);
         addDisposeListener(e -> {
             smallFont.dispose();
-            for (AdvancedListItem item : items) {
-                item.dispose();
-            }
+            cleanupItems();
         });
 
         if (parent.getLayout() instanceof GridLayout) {
@@ -171,6 +169,12 @@ public class AdvancedList extends Canvas {
         toolTipHandler = new CustomToolTipHandler(this);
 
         initAccessible();
+    }
+
+    private void cleanupItems() {
+        for (AdvancedListItem item : items) {
+            item.dispose();
+        }
     }
 
     public void refreshFilters() {
@@ -435,6 +439,7 @@ public class AdvancedList extends Canvas {
     public void removeAll() {
         checkWidget ();
         setSelection(null);
+        cleanupItems();
         items.clear();
     }
 

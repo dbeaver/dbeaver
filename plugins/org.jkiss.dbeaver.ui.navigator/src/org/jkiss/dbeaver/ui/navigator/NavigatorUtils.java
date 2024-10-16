@@ -20,7 +20,6 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
@@ -46,6 +45,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
+import org.jkiss.dbeaver.model.fs.nio.EFSNIOResource;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
 import org.jkiss.dbeaver.model.rm.RMConstants;
@@ -575,7 +575,7 @@ public class NavigatorUtils {
         if (currentSelection instanceof IStructuredSelection && !currentSelection.isEmpty()) {
             Object selItem = ((IStructuredSelection) currentSelection).getFirstElement();
             if (selItem instanceof DBNNode) {
-                activeProject = ((DBNNode) selItem).getOwnerProject();
+                activeProject = ((DBNNode) selItem).getOwnerProjectOrNull();
             }
         }
         if (activeProject == null) {
@@ -636,16 +636,15 @@ public class NavigatorUtils {
                     id.startsWith("addFromHistoryAction")) { // $NON-NLS-0$
                     item.dispose();
                 }
-                DBNNodeWithResource adapt = Adapters.adapt(node, DBNNodeWithResource.class);
-                if (adapt == null) {
-                    return;
-                }
-                if ((adapt.isRemoteResource() ||
-                    adapt.getResource() instanceof IFolder) &&
-                    (id.startsWith("compareWithMenu") || // $NON-NLS-0$
-                        id.startsWith("replaceWithMenu") ||
-                        id.startsWith("team.main"))) { // $NON-NLS-0$
-                    item.dispose();
+                if (node != null) {
+                    IResource resource = node.getAdapter(IResource.class);
+                    if ((resource instanceof IFolder || resource instanceof EFSNIOResource) &&
+                        (id.startsWith("compareWithMenu") || // $NON-NLS-0$
+                            id.startsWith("replaceWithMenu") ||
+                            id.startsWith("team.main"))  // $NON-NLS-0$
+                    ) {
+                        item.dispose();
+                    }
                 }
             }
         }

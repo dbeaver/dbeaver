@@ -681,29 +681,6 @@
                 </driver>
 
                 <driver
-                    id="apache_hive2"
-                    label="Apache Hive"
-                    icon="icons/hive_icon.png"
-                    iconBig="icons/hive_icon_big.png"
-                    class="org.apache.hive.jdbc.HiveDriver"
-                    sampleURL="jdbc:hive2://{host}[:{port}][/{database}]"
-                    defaultPort="10000"
-                    description="Apache Hive JDBC"
-                    supportedConfigurationTypes="MANUAL,URL"
-                    webURL="https://cwiki.apache.org/confluence/display/Hive/Home"
-                    category="Hadoop"
-                    categories="hadoop"
-                    singleConnection="true">
-
-                    <file type="jar" path="https://github.com/timveil/hive-jdbc-uber-jar/releases/download/v1.9-2.6.5/hive-jdbc-uber-2.6.5.0-292.jar" bundle="!drivers.hive"/>
-                    <file type="jar" path="drivers/hive" bundle="drivers.hive"/>
-
-                    <parameter name="supports-limits" value="false"/>
-                    <parameter name="supports-references" value="false"/>
-                    <parameter name="query-get-active-db" value="SELECT CURRENT_DATABASE()"/>
-                    <parameter name="query-set-active-db" value="USE ?"/>
-                </driver>
-                <driver
                     id="spark_hive"
                     label="Apache Spark"
                     icon="icons/spark_hive_icon.png"
@@ -801,7 +778,7 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/openlink/virtuoso-opensource"
                     categories="sql,object">
-                    <file type="jar" path="https://github.com/openlink/virtuoso-opensource/raw/develop/7/libsrc/JDBCDriverType4/virtjdbc4.jar"/>
+                    <file type="jar" path="maven:/com.openlinksw:virtjdbc4_3:RELEASE"/>
                     <file type="license" path="https://www.gnu.org/licenses/old-licenses/lgpl-2.0.txt"/>
                 </driver>
 
@@ -857,6 +834,28 @@
                     <parameter name="stored-quoted-case" value="lower"/>
                     <parameter name="stored-unquoted-case" value="lower"/>
                     <parameter name="identifier-quotes" value="`:`"/>
+                </driver>
+
+                <!-- DolphinDB -->
+                <driver
+                    id="DolphinDB"
+                    label="DolphinDB"
+                    class="com.dolphindb.jdbc.Driver"
+                    sampleURL="jdbc:dolphindb://{host}:{port}"
+                    defaultPort="8848"
+                    icon="icons/dolphindb_icon.png"
+                    iconBig="icons/dolphindb_icon_big.png"
+                    description="DolphinDB Driver"
+                    supportedConfigurationTypes="MANUAL,URL"
+                    webURL="https://github.com/dolphindb/jdbc"
+                    categories="sql,analytic,timeseries">
+                    <file type="jar" path="maven:/com.dolphindb:jdbc:RELEASE[3.00.1.0]" />               
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-truncate" value="true"/>
+                    <parameter name="omit-catalog" value="false"/>
+                    <parameter name="alter-table-add-column" value="true"/>
+                    <parameter name="query-get-active-db" value="getCurrentCatalog()"/>
+                    <parameter name="query-set-active-db" value="set catalog ?"/>
                 </driver>
 
                 <!-- OrientDB -->
@@ -956,6 +955,7 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://trino.io/"
                     categories="sql,bigdata,hadoop">
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <file type="jar" path="maven:/io.trino:trino-jdbc:RELEASE" bundle="!drivers.trino"/>
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.trino"/>
                     <file type="jar" path="drivers/trino" bundle="drivers.trino"/>
@@ -1386,6 +1386,7 @@
                 <driver id="sybase"/>
                 <driver id="vertica"/>
                 <driver id="yandex_clickhouse"/>
+                <driver id="apache_hive2"/>
 
                 <!-- Drivers Teasers -->
                 <driver

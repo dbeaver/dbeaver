@@ -32,7 +32,9 @@ import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerTypeRegistry;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.exec.*;
@@ -59,6 +61,8 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.IntFunction;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * postgresql utils
@@ -68,7 +72,8 @@ public class PostgreUtils {
     private static final Log log = Log.getLog(PostgreUtils.class);
 
     private static final int UNKNOWN_LENGTH = -1;
-    private static final String GROUP_PREFIX = "group ";
+
+    private static final Pattern ROLE_TYPE_PATTERN = Pattern.compile("^\\w+\\s+");
 
     public static String getObjectComment(DBRProgressMonitor monitor, GenericStructContainer container, String schema, String object)
             throws DBException {
@@ -657,8 +662,8 @@ public class PostgreUtils {
         return serverType;
     }
 
-    public static String[] extractGranteesFromACL(@NotNull String[] acl) {
-        final List<String> grantees = new ArrayList<>();
+    public static Set<PostgreRoleReference> extractGranteesFromACL(@NotNull PostgreDatabase database, @NotNull String[] acl) {
+        final Set<PostgreRoleReference> grantees = new HashSet<>();
         for (String aclValue : acl) {
             if (CommonUtils.isEmpty(aclValue)) {
                 continue;
@@ -668,12 +673,13 @@ public class PostgreUtils {
                 log.warn("Bad ACL item: " + aclValue);
                 continue;
             }
-            String grantee = extractGranteeName(aclValue, divPos);
+            PostgreRoleReference grantee = extractGranteeName(database, aclValue, divPos);
             grantees.add(grantee);
         }
-        return grantees.toArray(new String[0]);
+        return grantees;
     }
 
+    // FIXME consider user/group/role name like "test test", "test=test", "test,test", "test\"test" and user name like "group" or "role"
     public static List<PostgrePrivilege> extractPermissionsFromACL(
         @NotNull PostgrePrivilegeOwner owner,
         @NotNull String[] acl,
@@ -689,7 +695,7 @@ public class PostgreUtils {
                 log.warn("Bad ACL item: " + aclValue);
                 continue;
             }
-            String grantee = extractGranteeName(aclValue, divPos);
+            PostgreRoleReference grantee = extractGranteeName(owner.getDatabase(), aclValue, divPos);
             String permString = aclValue.substring(divPos + 1);
             int divPos2 = permString.indexOf('/');
             if (divPos2 == -1) {
@@ -708,7 +714,8 @@ public class PostgreUtils {
                     k++;
                 }
                 privileges.add(new PostgrePrivilegeGrant(
-                    grantor, grantee,
+                    new PostgreRoleReference(owner.getDatabase(), grantor, null),
+                    grantee,
                     owner.getDatabase().getName(),
                     owner.getSchema().getName(),
                     owner.getName(),
@@ -727,15 +734,23 @@ public class PostgreUtils {
     }
 
     @NotNull
-    private static String extractGranteeName(String aclValue, int divPos) {
-        String grantee = aclValue.substring(0, divPos);
+    private static PostgreRoleReference extractGranteeName(@NotNull PostgreDatabase database, @NotNull String aclValue, int divPos) {
+        String grantee = aclValue.substring(0, divPos).trim();
+        String granteeType = null;
         if (grantee.isEmpty()) {
             grantee = "public";
-        } else if (grantee.startsWith(GROUP_PREFIX)) {
-            // Remove group flag
-            grantee = grantee.substring(GROUP_PREFIX.length());
+        } else {
+            Matcher m = ROLE_TYPE_PATTERN.matcher(grantee);
+            if (m.find()) {
+                int prefixEnd = m.end();
+                if (prefixEnd < grantee.length()) {
+                    granteeType = grantee.substring(0, prefixEnd).trim();
+                    grantee = grantee.substring(prefixEnd).trim();
+                }
+            }
+            grantee = DBUtils.getUnQuotedIdentifier(database.getDataSource(), grantee);
         }
-        return grantee;
+        return new PostgreRoleReference(database, grantee, granteeType);
     }
 
     public static List<PostgrePrivilege> extractPermissionsFromACL(
@@ -748,20 +763,20 @@ public class PostgreUtils {
             if (acl == null) {
                 // Special case. Means ALL permissions are granted to table owner
                 PostgreRole objectOwner = owner.getOwner(monitor);
-                String granteeName = objectOwner == null ? null : objectOwner.getName();
+                PostgreRoleReference granteeReference = objectOwner == null ? null : objectOwner.getRoleReference();
 
                 List<PostgrePrivilegeGrant> privileges = new ArrayList<>();
                 privileges.add(
                         new PostgrePrivilegeGrant(
-                                granteeName,
-                                granteeName,
+                                granteeReference,
+                                granteeReference,
                                 owner.getDatabase().getName(),
                                 owner.getSchema().getName(),
                                 owner.getName(),
                                 PostgrePrivilegeType.ALL,
                                 false,
                                 false));
-                PostgreObjectPrivilege permission = new PostgreObjectPrivilege(owner, objectOwner == null ? null : objectOwner.getName(), privileges);
+                PostgreObjectPrivilege permission = new PostgreObjectPrivilege(owner, granteeReference, privileges);
                 return Collections.singletonList(permission);
             }
             return Collections.emptyList();
@@ -942,7 +957,7 @@ public class PostgreUtils {
         try {
             final java.sql.Array value = dbResult.getArray(columnName);
             return value != null ? (T[]) value.getArray() : null;
-        } catch (SQLFeatureNotSupportedException ignored) {
+        } catch (SQLFeatureNotSupportedException | UnsupportedOperationException | IncompatibleClassChangeError ignored) {
             // Some drivers (ODBC) might not have an implementation for that API, just ignore and try with a string
         } catch (Exception e) {
             exception = e;
@@ -999,4 +1014,49 @@ public class PostgreUtils {
             return Double.parseDouble(str);
         }
     }
+
+    @Nullable
+    public static String getDatabaseNameFromConfiguration(DBPConnectionConfiguration configuration) {
+        String activeDatabaseName = null;
+        if (configuration.getConfigurationType() == DBPDriverConfigurationType.MANUAL) {
+            activeDatabaseName = configuration.getBootstrap().getDefaultCatalogName();
+            if (CommonUtils.isEmpty(activeDatabaseName)) {
+                activeDatabaseName = configuration.getDatabaseName();
+            }
+        } else {
+            String url = configuration.getUrl();
+            int divPos = url.lastIndexOf('/');
+            if (divPos > 0) {
+                int lastPos = getLastNonDatabaseCharPos(divPos, url);
+                activeDatabaseName = url.substring(divPos + 1, lastPos);
+            }
+        }
+        return activeDatabaseName;
+    }
+
+
+    @NotNull
+    public static String updateDatabaseNameInURL(String url, String dbName) {
+        int divPos = url.lastIndexOf('/');
+        if (divPos > 0) {
+            int lastPos = getLastNonDatabaseCharPos(divPos, url);
+            return url.substring(0, divPos + 1) + dbName + url.substring(lastPos);
+        } else {
+            return url + "/" + dbName;
+        }
+    }
+
+    private static int getLastNonDatabaseCharPos(int divPos, String url) {
+        int lastPos = -1;
+        for (int i = divPos + 1; i < url.length(); i++) {
+            char c = url.charAt(i);
+            if (!Character.isLetterOrDigit(c) && c != '_' && c != '$' && c != '.') {
+                lastPos = i;
+                break;
+            }
+        }
+        if (lastPos < 0) lastPos = url.length();
+        return lastPos;
+    }
+
 }

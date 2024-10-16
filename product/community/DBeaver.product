@@ -2,7 +2,7 @@
 <?pde version="3.5"?>
 
 <product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.ui.app.standalone.product"
-    application="org.jkiss.dbeaver.ui.app.standalone.standalone" version="24.1.5.qualifier" useFeatures="true"
+    application="org.jkiss.dbeaver.ui.app.standalone.standalone" version="24.2.4.qualifier" useFeatures="true"
     includeLaunchers="true">
 
     <configIni use="default">
@@ -10,7 +10,9 @@
 
     <launcherArgs>
         <programArgs></programArgs>
-        <programArgsMac>-vm ../Eclipse/jre/Contents/Home/lib/libjli.dylib</programArgsMac>
+        <programArgsLin>--launcher.additionalVmargs %XDG_DATA_HOME%/DBeaverData/settings/dbeaver.vmoptions %HOME%/.local/share/DBeaverData/settings/dbeaver.vmoptions</programArgsLin>
+        <programArgsWin>--launcher.additionalVmargs %APPDATA%\DBeaverData\settings\dbeaver.exe.vmoptions</programArgsWin>
+        <programArgsMac>--launcher.additionalVmargs %HOME%/Library/DBeaverData/settings/dbeaver.vmoptions -vm ../Eclipse/jre/Contents/Home/lib/libjli.dylib</programArgsMac>
 
         <vmArgs>
             -XX:+IgnoreUnrecognizedVMOptions

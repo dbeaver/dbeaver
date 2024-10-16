@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.net;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -36,11 +37,12 @@ public interface DBWTunnel extends DBWNetworkHandler, DBWForwarder {
     @NotNull
     AuthCredentials getRequiredCredentials(@NotNull DBWHandlerConfiguration configuration) throws DBException;
 
-    void closeTunnel(DBRProgressMonitor monitor)
+    void closeTunnel(@NotNull DBRProgressMonitor monitor)
         throws DBException, IOException;
 
+    @Nullable
     Object getImplementation();
 
-    void addCloseListener(Runnable listener);
+    void addCloseListener(@NotNull Runnable listener);
 
 }

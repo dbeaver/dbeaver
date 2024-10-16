@@ -296,7 +296,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             }
         }
         if (childNode != null) {
-            childNode.dispose(true);
+            DBNUtils.disposeNode(childNode, true);
         }
     }
 
@@ -411,7 +411,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         }
         if (childrenCopy != null) {
             for (DBNNode child : childrenCopy) {
-                child.dispose(reflect);
+                DBNUtils.disposeNode(child, reflect);
             }
         }
     }
@@ -775,7 +775,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                 }
                 if (!found) {
                     // Remove old child object
-                    oldChild.dispose(true);
+                    DBNUtils.disposeNode(oldChild, true);
                 }
             }
         }

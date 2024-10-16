@@ -155,17 +155,17 @@
 
     <extension point="org.eclipse.ui.importWizards">
         <wizard
-                category="org.jkiss.dbeaver.import_config.third-party"
+                category="org.jkiss.dbeaver.config.migration.third-party"
                 class="org.jkiss.dbeaver.ext.oracle.ui.tools.sqldeveloper.ConfigImportWizardSqlDeveloper"
-                id="org.jkiss.dbeaver.import_config.sqldeveloper"
+                id="org.jkiss.dbeaver.config.migration.sqldeveloper"
                 name="Oracle SQL Developer"
                 icon="icons/sqldeveloper.png">
             <description>Oracle SQL Developer</description>
         </wizard>
         <wizard
-                category="org.jkiss.dbeaver.import_config.third-party"
+                category="org.jkiss.dbeaver.config.migration.third-party"
                 class="org.jkiss.dbeaver.ext.oracle.ui.tools.toad.ConfigImportWizardToad"
-                id="org.jkiss.dbeaver.import_config.toad"
+                id="org.jkiss.dbeaver.config.migration.toad"
                 name="Toad"
                 icon="icons/toad_icon.png">
             <description>Toad</description>

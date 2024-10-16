@@ -21,6 +21,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -89,7 +91,7 @@ public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCred
         DBPConnectionConfiguration originalConfiguration = dataSource.getConnectionConfiguration();
         String conHostName = originalConfiguration.getHostName();
         String sshHost = null;
-        if (CommonUtils.isEmpty(conHostName) || conHostName.equals("localhost") || conHostName.equals("127.0.0.1")) {
+        if (CommonUtils.isEmpty(conHostName) || conHostName.equals(DBConstants.HOST_LOCALHOST) || conHostName.equals(DBConstants.HOST_LOCALHOST_IP)) {
             sshHost = getSSHHost(dataSource);
         }
         final String providerProperty = dataSource.getConnectionConfiguration()
@@ -140,7 +142,7 @@ public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCred
         }
         DBPConnectionConfiguration originalConfiguration = dataSourceContainer.getConnectionConfiguration();
         String conHostPort = originalConfiguration.getHostPort();
-        String conDatabaseName = originalConfiguration.getDatabaseName();
+        String conDatabaseName = PostgreUtils.getDatabaseNameFromConfiguration(originalConfiguration);
         String conUserName = originalConfiguration.getUserName();
         if (CommonUtils.isEmpty(conHostPort)) {
             conHostPort = dataSourceContainer.getDriver().getDefaultPort();

@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Fragment-Host: org.eclipse.swt
+Bundle-Name: SWT Windows extensions
+Bundle-Vendor: DBeaver Corp
+Bundle-SymbolicName: org.jkiss.dbeaver.ui.swt.windows;singleton:=true
+Bundle-Version: 1.0.2.qualifier
+Bundle-ManifestVersion: 2
+Bundle-Release-Date: 20241104
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-ActivationPolicy: lazy
+SWT-WS: win32
+SWT-OS: win32
+Eclipse-PlatformFilter: (& (osgi.ws=win32) (osgi.os=win32) )
+Export-Package: org.eclipse.swt.browser
+Require-Bundle: org.eclipse.swt
+Automatic-Module-Name: org.jkiss.dbeaver.ui.swt.windows

@@ -35,7 +35,7 @@ class GridColumnRenderer extends AbstractRenderer {
     public static final int LEFT_MARGIN = 6;
     public static final int RIGHT_MARGIN = 6;
     public static final int BOTTOM_MARGIN = 6;
-    public static final int TOP_MARGIN = 6;
+    public static final int TOP_MARGIN = 4;
     public static final int ARROW_MARGIN = 6;
     public static final int IMAGE_SPACING = 3;
 
@@ -131,6 +131,8 @@ class GridColumnRenderer extends AbstractRenderer {
         bounds.width -= LEFT_MARGIN + RIGHT_MARGIN;
         bounds.height -= TOP_MARGIN + BOTTOM_MARGIN;
 
+        int fontHeight = grid.fontMetrics.getHeight();
+
         if (SHIFT_PAINT_ON_SELECTION && (hovering || selected)) {
             bounds.x += 1;
             bounds.y += 1;
@@ -138,9 +140,11 @@ class GridColumnRenderer extends AbstractRenderer {
 
         final Image columnImage = getColumnImage(element);
         if (columnImage != null) {
-            gc.drawImage(columnImage, bounds.x, bounds.y);
+            Rectangle imageBounds = columnImage.getBounds();
 
-            final int width = columnImage.getBounds().width + IMAGE_SPACING;
+            gc.drawImage(columnImage, bounds.x, bounds.y + (fontHeight - imageBounds.height) / 2 + 1);
+
+            final int width = imageBounds.width + IMAGE_SPACING;
             bounds.x += width;
             bounds.width -= width;
         }
@@ -173,7 +177,7 @@ class GridColumnRenderer extends AbstractRenderer {
         { // Draw column name
             final String text = UITextUtils.getShortString(grid.fontMetrics, getColumnText(element), bounds.width);
             gc.setFont(getColumnFont(element));
-            gc.setClipping(bounds.x, bounds.y, bounds.width, grid.fontMetrics.getHeight());
+            gc.setClipping(bounds.x, bounds.y, bounds.width, fontHeight);
             gc.drawString(text, bounds.x, bounds.y, isTransparent);
             gc.setClipping((Rectangle) null);
         }
@@ -182,10 +186,10 @@ class GridColumnRenderer extends AbstractRenderer {
             String text = getColumnDescription(element);
             if (!CommonUtils.isEmpty(text)) {
                 text = UITextUtils.getShortString(grid.fontMetrics, text, bounds.width);
-                bounds.y += TOP_MARGIN + grid.fontMetrics.getHeight();
-                gc.setForeground(grid.getLabelProvider().getHeaderBorder(element));
-                gc.setFont(grid.normalFont);
-                gc.setClipping(bounds.x, bounds.y, bounds.width, grid.fontMetrics.getHeight());
+                bounds.y += TOP_MARGIN + fontHeight;
+                gc.setForeground(grid.getLabelProvider().getHeaderForeground(element, selected || hovering));
+                gc.setFont(grid.commentFont);
+                gc.setClipping(bounds.x, bounds.y, bounds.width, fontHeight);
                 gc.drawString(text, bounds.x, bounds.y, isTransparent);
                 gc.setClipping((Rectangle) null);
             }

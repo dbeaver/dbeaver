@@ -28,9 +28,9 @@ import org.jkiss.dbeaver.dpi.server.DPIRestServer;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.dpi.DBPApplicationDPI;
+import org.jkiss.dbeaver.model.impl.app.BaseApplicationImpl;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.registry.DesktopApplicationImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -47,7 +47,7 @@ import java.util.stream.Collectors;
 /**
  * DPI application
  */
-public class DPIApplication extends DesktopApplicationImpl implements DBPApplicationDPI {
+public class DPIApplication extends BaseApplicationImpl implements DBPApplicationDPI {
 
     private static final Log log = Log.getLog(DPIApplication.class);
 
@@ -200,7 +200,6 @@ public class DPIApplication extends DesktopApplicationImpl implements DBPApplica
     }
 
     @NotNull
-    @Override
     public DBPPreferenceStore getPreferenceStore() {
         return new BundlePreferenceStore(DPIPlatform.PLUGIN_ID);
     }

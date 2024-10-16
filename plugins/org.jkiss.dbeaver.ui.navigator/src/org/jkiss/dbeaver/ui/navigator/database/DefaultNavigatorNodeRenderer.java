@@ -18,10 +18,13 @@
 package org.jkiss.dbeaver.ui.navigator.database;
 
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -34,19 +37,6 @@ import org.jkiss.dbeaver.ui.navigator.INavigatorItemRenderer;
  * Draws connection type marker next to the item name.
  */
 public class DefaultNavigatorNodeRenderer implements INavigatorItemRenderer {
-
-    @Override
-    public void drawNodeBackground(DBNNode node, Tree tree, GC gc, Event event) {
-//        Color conColor = null;
-//        Object element = event.item.getData();
-//        if (element instanceof DBNDataSource) {
-//            DBPDataSourceContainer ds = ((DBNDataSource) element).getDataSourceContainer();
-//            conColor = UIUtils.getConnectionColor(ds.getConnectionConfiguration());
-//        }
-//        if (conColor != null) {
-//
-//        }
-    }
 
     public void paintNodeDetails(DBNNode node, Tree tree, GC gc, Event event) {
         Color conColor = null;
@@ -86,18 +76,19 @@ public class DefaultNavigatorNodeRenderer implements INavigatorItemRenderer {
     }
 
     @Override
-    public void showDetailsToolTip(DBNNode node, Tree tree, Event event) {
-
-    }
-
-    @Override
     public void performAction(DBNNode node, Tree tree, Event event, boolean defaultAction) {
-
+        // do nothing by default
     }
 
+    @Nullable
     @Override
-    public void handleHover(DBNNode node, Tree tree, TreeItem item, Event event) {
-
+    public String getToolTipText(@NotNull DBNNode node, @NotNull Tree tree, @NotNull Event event) {
+        return null;
     }
 
+    @Nullable
+    @Override
+    public Cursor getCursor(@NotNull DBNNode node, @NotNull Tree tree, @NotNull Event event) {
+        return null;
+    }
 }

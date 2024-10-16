@@ -21,9 +21,11 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
@@ -37,7 +39,7 @@ public class SQLQueryRecognitionContext {
     private final DBRProgressMonitor monitor;
 
     @Nullable
-    DBCExecutionContext executionContext;
+    private final DBCExecutionContext executionContext;
 
     private final boolean useRealMetadata;
 
@@ -45,18 +47,33 @@ public class SQLQueryRecognitionContext {
     private final SQLSyntaxManager syntaxManager;
 
     @NotNull
+    private final SQLDialect dialect;
+
+    @NotNull
     private final Deque<SQLQueryRecognitionProblemInfo> problems = new LinkedList<>();
+
+    private boolean errorsAsWarnings = false;
 
     public SQLQueryRecognitionContext(
         @NotNull DBRProgressMonitor monitor,
         @Nullable DBCExecutionContext executionContext,
         boolean useRealMetadata,
-        @NotNull SQLSyntaxManager syntaxManager
+        @NotNull SQLSyntaxManager syntaxManager,
+        @NotNull SQLDialect dialect
     ) {
         this.monitor = monitor;
         this.executionContext = executionContext;
         this.useRealMetadata = useRealMetadata;
         this.syntaxManager = syntaxManager;
+        this.dialect = dialect;
+    }
+
+    public void setTreatErrorAsWarnings(boolean errorsAsWarnings) {
+        this.errorsAsWarnings = errorsAsWarnings;
+    }
+
+    public boolean isTreatErrorsAsWarnings() {
+        return this.errorsAsWarnings;
     }
 
     @NotNull
@@ -78,28 +95,66 @@ public class SQLQueryRecognitionContext {
         return this.syntaxManager;
     }
 
+    @NotNull
+    SQLDialect getDialect() {
+        return this.dialect;
+    }
+
+    @NotNull
     public List<SQLQueryRecognitionProblemInfo> getProblems() {
-        return List.copyOf(this.problems);
+        return new ArrayList<>(this.problems);
+    }
+
+
+    private SQLQueryRecognitionProblemInfo makeError(
+        @NotNull STMTreeNode syntaxNode,
+        @Nullable SQLQuerySymbolEntry symbol,
+        @NotNull String message,
+        @Nullable DBException exception
+    ) {
+        SQLQueryRecognitionProblemInfo.Severity severity = this.errorsAsWarnings
+            ? SQLQueryRecognitionProblemInfo.Severity.WARNING
+            : SQLQueryRecognitionProblemInfo.Severity.ERROR;
+        return new SQLQueryRecognitionProblemInfo(severity, syntaxNode, symbol, message, exception);
+    }
+
+    private SQLQueryRecognitionProblemInfo makeWarning(
+        @NotNull STMTreeNode syntaxNode,
+        @Nullable SQLQuerySymbolEntry symbol,
+        @NotNull String message,
+        @Nullable DBException exception
+    ) {
+        return new SQLQueryRecognitionProblemInfo(SQLQueryRecognitionProblemInfo.Severity.WARNING, syntaxNode, symbol, message, exception);
+    }
+
+    private void registerProblem(SQLQueryRecognitionProblemInfo problemInfo) {
+        if (this.problems.size() < SQLQueryRecognitionProblemInfo.PER_QUERY_LIMIT) {
+            this.problems.addLast(problemInfo);
+        }
     }
 
     public void appendError(@NotNull SQLQuerySymbolEntry symbol, @NotNull String error, @NotNull DBException ex) {
-        this.problems.addLast(SQLQueryRecognitionProblemInfo.makeError(symbol.getSyntaxNode(), symbol, error, ex));
+        this.registerProblem(this.makeError(symbol.getSyntaxNode(), symbol, error, ex));
     }
 
     public void appendError(@NotNull SQLQuerySymbolEntry symbol, @NotNull String error) {
-        this.problems.addLast(SQLQueryRecognitionProblemInfo.makeError(symbol.getSyntaxNode(), symbol, error, null));
+        this.registerProblem(this.makeError(symbol.getSyntaxNode(), symbol, error, null));
     }
 
     public void appendError(@NotNull STMTreeNode treeNode, @NotNull String error) {
-        this.problems.addLast(SQLQueryRecognitionProblemInfo.makeError(treeNode, null, error, null));
+        this.registerProblem(this.makeError(treeNode, null, error, null));
     }
 
     public void appendWarning(@NotNull SQLQuerySymbolEntry symbol, @NotNull String error) {
-        this.problems.addLast(SQLQueryRecognitionProblemInfo.makeWarning(symbol.getSyntaxNode(), symbol, error, null));
+        this.registerProblem(this.makeWarning(symbol.getSyntaxNode(), symbol, error, null));
     }
 
     public void appendWarning(@NotNull STMTreeNode treeNode, @NotNull String error) {
-        this.problems.addLast(SQLQueryRecognitionProblemInfo.makeWarning(treeNode, null, error, null));
+        this.registerProblem(this.makeWarning(treeNode, null, error, null));
+    }
+
+    public void appendError(@NotNull STMTreeNode treeNode, @NotNull String error, @NotNull DBException ex) {
+        this.registerProblem(this.makeError(treeNode, null, error, ex));
     }
 
     public void reset() {

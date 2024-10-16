@@ -35,5 +35,9 @@
              </drivers>
         </datasource>
     </extension>
+    
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="ocient" class="org.jkiss.dbeaver.ext.ocient.model.OcientMetaModel" driverClass="com.ocient.jdbc.Driver"/>
+    </extension>
 
 </plugin>

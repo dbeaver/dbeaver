@@ -95,13 +95,8 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
             return;
         }
         DBPDataSourceContainer dataSource = site.getActiveDataSource();
-        DBPConnectionConfiguration connectionConfiguration = dataSource.getConnectionConfiguration();
-        handlerConfiguration = connectionConfiguration.getHandler(handlerDescriptor.getId());
 
-        if (handlerConfiguration == null) {
-            handlerConfiguration = new DBWHandlerConfiguration(handlerDescriptor, dataSource);
-            connectionConfiguration.updateHandler(handlerConfiguration);
-        }
+        loadHandlerConfiguration(dataSource);
 
         Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayout(new GridLayout(1, false));
@@ -168,9 +163,31 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
         }
 
         enableHandlerContent();
-        updateProfileList();
+        updateProfileList(true);
 
         setControl(composite);
+    }
+
+    private void loadHandlerConfiguration(DBPDataSourceContainer dataSource) {
+        DBPConnectionConfiguration connectionConfiguration = dataSource.getConnectionConfiguration();
+
+        if (!CommonUtils.isEmpty(connectionConfiguration.getConfigProfileName())) {
+            // Update config from profile
+            DBWNetworkProfile profile = dataSource.getRegistry().getNetworkProfile(
+                connectionConfiguration.getConfigProfileSource(),
+                connectionConfiguration.getConfigProfileName());
+            if (profile != null) {
+                handlerConfiguration = profile.getConfiguration(handlerDescriptor);
+            }
+        }
+        if (handlerConfiguration == null) {
+            handlerConfiguration = connectionConfiguration.getHandler(handlerDescriptor.getId());
+        }
+
+        if (handlerConfiguration == null) {
+            handlerConfiguration = new DBWHandlerConfiguration(handlerDescriptor, dataSource);
+            connectionConfiguration.updateHandler(handlerConfiguration);
+        }
     }
 
     @Override
@@ -194,7 +211,6 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
         DBPDataSourceContainer dataSource = site.getActiveDataSource();
         DBPConnectionConfiguration cfg = dataSource.getConnectionConfiguration();
         String oldProfileId = cfg.getConfigProfileName();
-        saveSettings(site.getActiveDataSource());
 
         if (activeProfile != null) {
             cfg.setConfigProfile(activeProfile);
@@ -208,7 +224,7 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
         site.firePropertyChange(this, PROP_CONFIG_PROFILE, oldProfileId, activeProfile == null ? null : activeProfile.getProfileName());
     }
 
-    private void updateProfileList() {
+    private void updateProfileList(boolean updateConfiguration) {
         DBPConnectionConfiguration cfg = site.getActiveDataSource().getConnectionConfiguration();
         activeProfile = CommonUtils.isEmpty(cfg.getConfigProfileName()) ? null : site.getProject().getDataSourceRegistry().getNetworkProfile(
             cfg.getConfigProfileSource(),
@@ -241,11 +257,10 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
 
         }
 
-        // Update page controls
-        handlerConfiguration = cfg.getHandler(handlerDescriptor.getId());
-        if (handlerConfiguration == null) {
-            handlerConfiguration = new DBWHandlerConfiguration(handlerDescriptor, site.getActiveDataSource());
+        if (updateConfiguration) {
+            loadHandlerConfiguration(site.getActiveDataSource());
         }
+
         if (useHandlerCheck != null) {
             useHandlerCheck.setSelection(handlerConfiguration.isEnabled());
         }
@@ -292,7 +307,7 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
     @Override
     public void propertyChange(PropertyChangeEvent event) {
         if (PROP_CONFIG_PROFILE.equals(event.getProperty())) {
-            updateProfileList();
+            updateProfileList(false);
         }
     }
 

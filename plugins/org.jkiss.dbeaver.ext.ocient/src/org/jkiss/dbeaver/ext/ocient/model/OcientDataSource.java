@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 public class OcientDataSource extends GenericDataSource {
 
     public OcientDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
-        super(monitor, container, new GenericMetaModel(), new OcientSQLDialect());
+        super(monitor, container, new OcientMetaModel(), new OcientSQLDialect());
     }
 
     @Override

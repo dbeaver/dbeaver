@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -95,11 +96,8 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
         } else {
             PostgreObjectPrivilege permission = (PostgreObjectPrivilege) this.privilege;
             if (permission.getGrantee() != null) {
-                roleName = permission.getGrantee();
-                if (!roleName.toLowerCase(Locale.ENGLISH).startsWith("group ")) {
-                    // Group names already can be quoted
-                    roleName = DBUtils.getQuotedIdentifier(object.getDataSource(), roleName);
-                }
+                roleName = DBUtils.getQuotedIdentifier(object.getDataSource(), permission.getGrantee().getRoleName());
+                roleType = permission.getGrantee().getRoleType();
             } else {
                 roleName = "";
             }
@@ -144,7 +142,7 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
 
         String grantScript = scriptBeginning + (grant ? "GRANT " : "REVOKE ") + privName + grantedCols +
             " ON " + grantedTypedObject +
-            (grant ? " TO " : " FROM ") + (roleType != null ? roleType + " " : "") + roleName;
+            (grant ? " TO " : " FROM ") + (roleType != null ? roleType.toUpperCase() + " " : "") + roleName;
         if (grant && withGrantOption) {
             grantScript += " WITH GRANT OPTION";
         }

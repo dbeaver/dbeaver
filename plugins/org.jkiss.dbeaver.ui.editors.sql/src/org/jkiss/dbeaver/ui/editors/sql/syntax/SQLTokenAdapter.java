@@ -62,7 +62,7 @@ public class SQLTokenAdapter extends Token {
                     break;
                 case T_STRING:
                     colorKey = SQLConstants.CONFIG_COLOR_STRING;
-                    style = scanner.getKeywordStyle();
+                    style = SWT.NORMAL;
                     break;
                 case T_QUOTED:
                 case T_TYPE:
@@ -129,7 +129,7 @@ public class SQLTokenAdapter extends Token {
                     break;
                 case T_SEMANTIC_ERROR:
                     colorKey = SQLConstants.CONFIG_COLOR_SEMANTIC_ERROR;
-                    style = SWT.BOLD | SWT.ITALIC;
+                    style = SWT.NORMAL;
                     break;
                 default:
                     colorKey = SQLConstants.CONFIG_COLOR_TEXT;

@@ -39,6 +39,7 @@ public interface JDBCSession extends DBCSession, Connection {
     Connection getOriginal()
         throws SQLException;
 
+    @NotNull
     JDBCExecutionContext getExecutionContext();
 
     @Override

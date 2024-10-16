@@ -17,9 +17,6 @@
 
 package org.jkiss.dbeaver.model.app;
 
-import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -76,12 +73,6 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
     @NotNull
     Path getAbsolutePath();
 
-    @Nullable
-    IProject getEclipseProject();
-
-    @Nullable
-    IContainer getRootResource();
-
     @NotNull
     Path getMetadataFolder(boolean create);
 
@@ -116,7 +107,14 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
     DBPDataSourceRegistry getDataSourceRegistry();
 
     @NotNull
-    DBTTaskManager getTaskManager();
+    default DBTTaskManager getTaskManager() {
+        throw new IllegalStateException("Task manager is not supported by " + getClass().getSimpleName());
+    }
+
+    @Nullable
+    default DBTTaskManager getTaskManager(boolean create) {
+        return getTaskManager();
+    }
 
     /**
      * Project auth context
@@ -133,12 +131,6 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
     Object getProjectProperty(String propName);
 
     void setProjectProperty(@NotNull String propName, @Nullable Object propValue);
-
-    /**
-     * Returns logical resource path
-     */
-    @NotNull
-    String getResourcePath(@NotNull IResource resource);
 
     /**
      * Finds resources that match the supplied {@code properties} map.
@@ -170,4 +162,21 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
      * close project and all related resources
      */
     void dispose();
+
+    /**
+     * Get the runtime property. Runtime property is a property that doesn't be stored and exists only in runtime.
+     *
+     * @param key property key
+     * @return property value
+     */
+    @Nullable
+    String getRuntimeProperty(@NotNull String key);
+
+    /**
+     * Set the runtime property.
+     *
+     * @param key   property key
+     * @param value property value
+     */
+    void setRuntimeProperty(@NotNull String key, @Nullable String value);
 }

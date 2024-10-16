@@ -39,12 +39,12 @@ public abstract class PostgrePrivilege implements DBAPrivilege, Comparable<Postg
 
     public class ObjectPermission implements DBAPrivilegeGrant {
         @NotNull
-        private PostgrePrivilegeType privilegeType;
+        private final PostgrePrivilegeType privilegeType;
         @NotNull
-        private String grantor;
+        private final PostgreRoleReference grantor;
         private short permissions;
 
-        public ObjectPermission(@NotNull PostgrePrivilegeType privilegeType, @NotNull String grantor, short permissions) {
+        public ObjectPermission(@NotNull PostgrePrivilegeType privilegeType, @NotNull PostgreRoleReference grantor, short permissions) {
             this.privilegeType = privilegeType;
             this.grantor = grantor;
             this.permissions = permissions;
@@ -76,7 +76,7 @@ public abstract class PostgrePrivilege implements DBAPrivilege, Comparable<Postg
         }
 
         @NotNull
-        public String getGrantor() {
+        public PostgreRoleReference getGrantor() {
             return grantor;
         }
 
@@ -160,56 +160,37 @@ public abstract class PostgrePrivilege implements DBAPrivilege, Comparable<Postg
         return NONE;
     }
 
-    public void setPermission(PostgrePrivilegeType privilegeType, boolean permit) {
-        for (ObjectPermission permission : permissions) {
-            if (permission.privilegeType == privilegeType) {
-                if (permit) {
-                    permission.permissions |= GRANTED;
-                } else {
-                    permission.permissions = 0;
-                }
+    public boolean hasPermission(@NotNull PostgrePrivilegeType privilegeType) {
+        return getPermission(privilegeType) != NONE;
+    }
+
+    public void addPermission(@NotNull PostgrePrivilegeGrant privilege) {
+        ObjectPermission[] newPermissions = new ObjectPermission[this.permissions.length + 1];
+        System.arraycopy(this.permissions, 0, newPermissions, 0, this.permissions.length);
+
+        short permission = GRANTED;
+        if (privilege.isGrantable()) permission |= WITH_GRANT_OPTION;
+        if (privilege.isWithHierarchy()) permission |= WITH_HIERARCHY;
+        newPermissions[this.permissions.length] = new ObjectPermission(
+            privilege.getPrivilegeType(),
+            privilege.getGrantor(),
+            permission
+        );
+
+        this.permissions = newPermissions;
+    }
+
+    public void removePermission(@NotNull PostgrePrivilegeType privilegeType) {
+        for (int i = 0; i < permissions.length; i++) {
+            if (permissions[i].privilegeType == privilegeType) {
+                ObjectPermission[] newPermissions = new ObjectPermission[this.permissions.length - 1];
+                System.arraycopy(this.permissions, 0, newPermissions, 0, i);
+                System.arraycopy(this.permissions, i + 1, newPermissions, i, this.permissions.length - i - 1);
+                this.permissions = newPermissions;
+                break;
             }
         }
     }
-
-    // Properties for permissions viewer
-
-/*
-    @Property(viewable = true, editable = true, updatable = true, order = 100, name = "SELECT")
-    public boolean hasPermissionSelect() {
-        return getPermission(PostgrePrivilegeType.SELECT) != 0;
-    }
-
-    @Property(viewable = true, order = 101, name = "INSERT")
-    public boolean hasPermissionInsert() {
-        return getPermission(PostgrePrivilegeType.INSERT) != 0;
-    }
-
-    @Property(viewable = true, order = 102, name = "UPDATE")
-    public boolean hasPermissionUpdate() {
-        return getPermission(PostgrePrivilegeType.UPDATE) != 0;
-    }
-
-    @Property(viewable = true, order = 103, name = "DELETE")
-    public boolean hasPermissionDelete() {
-        return getPermission(PostgrePrivilegeType.DELETE) != 0;
-    }
-
-    @Property(viewable = true, order = 104, name = "TRUNCATE")
-    public boolean hasPermissionTruncate() {
-        return getPermission(PostgrePrivilegeType.TRUNCATE) != 0;
-    }
-
-    @Property(viewable = true, order = 105, name = "REFERENCES")
-    public boolean hasPermissionReferences() {
-        return getPermission(PostgrePrivilegeType.REFERENCES) != 0;
-    }
-
-    @Property(viewable = true, order = 106, name = "TRIGGER")
-    public boolean hasPermissionTrigger() {
-        return getPermission(PostgrePrivilegeType.TRIGGER) != 0;
-    }
-*/
 
     /**
      * Checks all privileges
