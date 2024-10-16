@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
@@ -53,7 +52,7 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
 
     public static final String PROP_FORMAT_DATE_ISO = "formatDateISO";
     public static final String PROP_PRINT_TABLE_NAME = "printTableName";
-    public static final String PROP_EXPORTJSONASSTRING = "exportJsonAsString";
+    public static final String PROP_EXPORT_JSON_AS_STRING = "exportJsonAsString";
 
     private DBDAttributeBinding[] columns;
     private String tableName;
@@ -68,7 +67,7 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
         super.init(site);
         formatDateISO = CommonUtils.getBoolean(site.getProperties().get(PROP_FORMAT_DATE_ISO), true);
         printTableName = CommonUtils.getBoolean(site.getProperties().get(PROP_PRINT_TABLE_NAME), true);
-        exportJsonAsString = CommonUtils.getBoolean(site.getProperties().get(PROP_EXPORTJSONASSTRING), true);
+        exportJsonAsString = CommonUtils.getBoolean(site.getProperties().get(PROP_EXPORT_JSON_AS_STRING), true);
     }
 
     @Override
@@ -148,10 +147,11 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
     }
 
     private void writeDocument(DBCSession session, DBDDocument document) throws DBException, IOException {
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        document.serializeDocument(session.getProgressMonitor(), buffer, StandardCharsets.UTF_8);
-        String jsonText = buffer.toString(StandardCharsets.UTF_8);
-        getWriter().write(jsonText);
+        document.serializeDocument(
+            session.getProgressMonitor(),
+            getOutputStream(),
+            StandardCharsets.UTF_8
+        );
     }
 
     @Override
@@ -198,16 +198,14 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
         DBDContent content,
         DBDContentStorage cs
     ) throws IOException {
-        if (!exportJsonAsString && ContentUtils.isJsonContent(content)) {
-            try (Reader in = cs.getContentReader()) {
+        try (Reader in = cs.getContentReader()) {
+            if (!exportJsonAsString && ContentUtils.isJsonContent(content)) {
                 writeCellValue(in, false);
-            }
-        } else {
-            getWriter().write("\"");
-            try (Reader in = cs.getContentReader()) {
+            } else {
+                getWriter().write("\"");
                 writeCellValue(in, true);
+                getWriter().write("\"");
             }
-            getWriter().write("\"");
         }
     }
 
@@ -220,7 +218,7 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
     private void writeCellValue(Reader reader, boolean escape) throws IOException {
         // Copy reader
         char[] buffer = new char[2000];
-        for (; ; ) {
+        while (true) {
             int count = reader.read(buffer);
             if (count <= 0) {
                 break;
