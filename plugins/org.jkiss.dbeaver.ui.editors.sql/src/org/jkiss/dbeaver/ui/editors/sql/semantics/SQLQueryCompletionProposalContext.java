@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics;
 import org.eclipse.jface.viewers.StyledString;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
@@ -45,11 +46,14 @@ public class SQLQueryCompletionProposalContext {
     }};
 
     private final SQLCompletionRequest completionRequest;
-    private final boolean insertSpaceAfterProposal;
+    private boolean insertSpaceAfterProposal = true;
 
     public SQLQueryCompletionProposalContext(@NotNull SQLCompletionRequest completionRequest) {
         this.completionRequest = completionRequest;
-        this.insertSpaceAfterProposal = completionRequest.getContext().getExecutionContext().getDataSource().getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS);
+        DBCExecutionContext executionContext = completionRequest.getContext().getExecutionContext();
+        if (executionContext != null) {
+            this.insertSpaceAfterProposal = executionContext.getDataSource().getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS);
+        }
     }
 
     @Nullable
