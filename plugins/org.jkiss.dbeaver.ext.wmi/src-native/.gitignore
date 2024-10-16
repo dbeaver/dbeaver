@@ -1,0 +1,6 @@
+.vs/
+ARM64/
+x64/
+Win32/
+WMIService.vcxproj.filters
+WMIService.vcxproj.user
