@@ -229,7 +229,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
 
         if (statistics instanceof ObjectStatistics.Known known) {
             text = known.format.format(known.statObjectSize);
-            percentFull = (int) (known.statObjectSize * 100 / known.maxObjectSize);
+            percentFull = known.maxObjectSize == 0 ? 0 : (int) (known.statObjectSize * 100 / known.maxObjectSize);
         } else {
             text = "...";
             percentFull = 0;

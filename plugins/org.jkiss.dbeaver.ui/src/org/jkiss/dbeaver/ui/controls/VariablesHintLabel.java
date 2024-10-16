@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.UIWidgets;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -103,7 +104,7 @@ public class VariablesHintLabel {
                 item.setText(2, isSecure ? "********" : CommonUtils.notEmpty(resolver.get(varName)));
             }
             UIUtils.packColumns(table);
-            UIUtils.setControlContextMenu(table, manager -> UIUtils.fillDefaultTableContextMenu(manager, table));
+            UIWidgets.setControlContextMenu(table, manager -> UIWidgets.fillDefaultTableContextMenu(manager, table));
 
             TableEditor tableEditor = new TableEditor(table);
 

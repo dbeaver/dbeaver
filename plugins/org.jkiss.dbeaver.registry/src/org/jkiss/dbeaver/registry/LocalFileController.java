@@ -78,6 +78,6 @@ public class LocalFileController implements DBFileController {
 
     @NotNull
     protected Path getTargetPath(@NotNull Path folder, @NotNull String fileType, @NotNull String filePath) {
-        return folder.resolve(fileType).resolve(Path.of(filePath));
+        return folder.resolve(fileType).resolve(filePath);
     }
 }
