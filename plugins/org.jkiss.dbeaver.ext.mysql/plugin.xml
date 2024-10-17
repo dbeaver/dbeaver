@@ -273,8 +273,10 @@
                     description="MariaDB JDBC driver"
                     promoted="1"
                     categories="sql">
-                    <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:RELEASE[3.3.2]" bundle="!drivers.mariadb"/>
+                    <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:RELEASE[3.3.2]" load-optional-dependencies="true" bundle="!drivers.mariadb"/>
                     <file type="license" path="https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt" bundle="!drivers.mariadb"/>
+<!--                    <file type="jar" path="maven:/com.github.waffle:waffle-jna:RELEASE[1.9.1]" if="properties.gsslib=='sspi'" optional="true" bundle="!drivers.postgresql"/>-->
+                    <file type="jar" path="drivers/waffle" optional="true" bundle="!drivers.mariadb"/>
 
                     <file type="license" path="drivers/mariadb/LICENSE.txt" bundle="drivers.mariadb"/>
                     <file type="jar" path="drivers/mariadb" bundle="drivers.mariadb"/>
