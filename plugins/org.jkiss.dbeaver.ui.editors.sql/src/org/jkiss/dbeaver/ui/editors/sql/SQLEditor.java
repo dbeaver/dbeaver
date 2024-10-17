@@ -3359,7 +3359,8 @@ public class SQLEditor extends SQLEditorBase implements
             queryProcessor.cancelJob();
             // FIXME: it is a hack (to avoid asking "Save script?" because editor is marked as dirty while queries are running)
             // FIXME: make it better
-            queryProcessor.curJobRunning.set(0);
+            // heavy abstractions leakage
+            queryProcessor.curJobRunning.updateAndGet(i -> 0);
         }
 
         // End transaction
@@ -4864,7 +4865,7 @@ public class SQLEditor extends SQLEditorBase implements
                 synchronized (runningQueries) {
                     runningQueries.remove(result.getStatement());
                 }
-                queryProcessor.curJobRunning.decrementAndGet();
+                queryProcessor.curJobRunning.updateAndGet(i -> i > 0 ? i - 1 : i);
                 if (getTotalQueryRunning() <= 0) {
                     UIUtils.asyncExec(() -> {
                         if (isDisposed()) {
