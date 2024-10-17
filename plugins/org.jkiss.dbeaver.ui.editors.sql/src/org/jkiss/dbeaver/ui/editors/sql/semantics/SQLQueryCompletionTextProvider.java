@@ -74,7 +74,7 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
 
     @NotNull
     @Override
-    public String visitSubqueryAlias(@NotNull SQLSubqueryAliasCompletionItem subqueryAlias) {
+    public String visitSubqueryAlias(@NotNull SQLRowsSourceAliasCompletionItem subqueryAlias) {
         return subqueryAlias.symbol.getName();
     }
 

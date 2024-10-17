@@ -288,9 +288,6 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
     }
 
     private static class SQLOutlineLabelProvider implements ILabelProvider, IFontProvider, IStyledLabelProvider {
-        @NotNull
-        private final Styler extraTextStyler = StyledString.createColorRegistryStyler(JFacePreferences.DECORATIONS_COLOR, null);
-
         @Override
         public void addListener(@Nullable ILabelProviderListener listener) {
             // no listeners
@@ -336,7 +333,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
                 String extra = node.getExtraText(); 
                 if (extra != null) {
                     result.append(extra);
-                    result.setStyle(text.length(), extra.length(), extraTextStyler);
+                    result.setStyle(text.length(), extra.length(), StyledString.DECORATIONS_STYLER);
                 }
             } else {
                 result.append(element.toString());

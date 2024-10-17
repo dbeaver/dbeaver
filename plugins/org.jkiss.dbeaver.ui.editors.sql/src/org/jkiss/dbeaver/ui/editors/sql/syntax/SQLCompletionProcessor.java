@@ -95,12 +95,13 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     @Override
     public ICompletionProposal[] computeCompletionProposals(
         ITextViewer viewer,
-        int documentOffset)
-    {
+        int documentOffset
+    ) {
         IDocument document = editor.getDocument();
         if (document == null) {
             return new ICompletionProposal[0];
         }
+        Position completionRequestPostion = new Position(documentOffset);
         try {
             IRegion line = document.getLineInformationOfOffset(documentOffset);
             if (documentOffset <= line.getLength() + line.getOffset() && line.getLength() > 0) { // we are in the nonempty line
@@ -140,92 +141,106 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         request.setContentType(contentType);
 
         List<? extends Object> proposals;
-        switch (contentType) {
-            case IDocument.DEFAULT_CONTENT_TYPE:
-            case SQLParserPartitions.CONTENT_TYPE_SQL_STRING:
-            case SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED:
-                if (lookupTemplates) {
-                    return makeTemplateProposals(viewer, request);
-                }
-
-                try {
-                    String commandPrefix = editor.getSyntaxManager().getControlCommandPrefix();
-                    if (commandPrefix != null && wordDetector.getStartOffset() >= commandPrefix.length() &&
-                        viewer.getDocument().get(wordDetector.getStartOffset() - commandPrefix.length(), commandPrefix.length()).equals(commandPrefix)) {
-                        return makeCommandProposals(request, request.getWordPart());
+        try {
+            switch (contentType) {
+                case IDocument.DEFAULT_CONTENT_TYPE:
+                case SQLParserPartitions.CONTENT_TYPE_SQL_STRING:
+                case SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED:
+                    if (lookupTemplates) {
+                        return makeTemplateProposals(viewer, request);
                     }
-                } catch (BadLocationException e) {
-                    log.debug(e);
-                }
 
-                DBPDataSource dataSource = editor.getDataSource();
-
-                SQLExperimentalAutocompletionMode mode =  SQLExperimentalAutocompletionMode.fromPreferences(this.editor.getActivePreferenceStore());
-
-                List<AbstractJob> completionJobs = new ArrayList<>();
-                List<Supplier<List<? extends Object>>> completionSuppliers = new ArrayList<>();
-
-                if (request.getWordPart() != null && mode.useOldAnalyzer) {
-                    if (dataSource != null) {
-                        SQLCompletionAnalyzer analyzer = new SQLCompletionAnalyzer(request);
-                        ProposalSearchJob searchJob = new ProposalSearchJob(analyzer);
-                        searchJob.schedule();
-                        completionJobs.add(searchJob);
-                        completionSuppliers.add(analyzer::getProposals);
-
-                        // Wait until job finished
-                        UIUtils.waitJobCompletion(searchJob);
-                    }
-                }
-
-                if (mode.useNewAnalyzer) {
-                    SQLQueryCompletionAnalyzer newAnalyzer = new SQLQueryCompletionAnalyzer(this.editor, request);
-                    AbstractJob newJob = new AbstractJob("Analyzing query for proposals...") {
-                        @Override
-                        protected IStatus run(DBRProgressMonitor monitor) {
-                            try {
-                                monitor.beginTask("Seeking for SQL completion proposals", 2);
-                                monitor.worked(1);
-                                try {
-                                    monitor.subTask("Find proposals");
-                                    if (editor.getDataSource() != null) {
-                                        DBExecUtils.tryExecuteRecover(monitor, editor.getDataSource(), newAnalyzer);
-                                    } else {
-                                        newAnalyzer.run(monitor);
-                                    }
-                                } finally {
-                                    monitor.done();
-                                }
-                                return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
-                            } catch (Throwable e) {
-                                log.error(e);
-                                return Status.CANCEL_STATUS;
-                            }
+                    try {
+                        String commandPrefix = editor.getSyntaxManager().getControlCommandPrefix();
+                        if (commandPrefix != null && wordDetector.getStartOffset() >= commandPrefix.length() &&
+                            viewer.getDocument().get(wordDetector.getStartOffset() - commandPrefix.length(), commandPrefix.length()).equals(commandPrefix)
+                        ) {
+                            return makeCommandProposals(request, request.getWordPart());
                         }
-                    };
-                    newJob.schedule();
-                    completionJobs.add(newJob);
-                    completionSuppliers.add(newAnalyzer::getProposals);
-                }
+                        document.addPosition(completionRequestPostion);
+                    } catch (BadLocationException e) {
+                        log.debug(e);
+                    }
 
-                completionJobs.forEach(UIUtils::waitJobCompletion);
-                if (completionJobs.stream().anyMatch(j -> j.isCanceled())) {
+                    DBPDataSource dataSource = editor.getDataSource();
+
+                    SQLExperimentalAutocompletionMode mode = SQLExperimentalAutocompletionMode.fromPreferences(this.editor.getActivePreferenceStore());
+
+                    List<AbstractJob> completionJobs = new ArrayList<>();
+                    List<Supplier<List<? extends Object>>> completionSuppliers = new ArrayList<>();
+
+                    if (request.getWordPart() != null && mode.useOldAnalyzer) {
+                        if (dataSource != null) {
+                            SQLCompletionAnalyzer analyzer = new SQLCompletionAnalyzer(request);
+                            ProposalSearchJob searchJob = new ProposalSearchJob(analyzer);
+                            searchJob.schedule();
+                            completionJobs.add(searchJob);
+                            completionSuppliers.add(analyzer::getProposals);
+                        }
+                    }
+
+                    if (mode.useNewAnalyzer) {
+                        SQLQueryCompletionAnalyzer newAnalyzer = new SQLQueryCompletionAnalyzer(this.editor, request, completionRequestPostion);
+                        AbstractJob newJob = new AbstractJob("Analyzing query for proposals...") {
+                            @Override
+                            protected IStatus run(DBRProgressMonitor monitor) {
+                                try {
+                                    monitor.beginTask("Seeking for SQL completion proposals", 2);
+                                    monitor.worked(1);
+                                    try {
+                                        monitor.subTask("Find proposals");
+                                        if (editor.getDataSource() != null) {
+                                            DBExecUtils.tryExecuteRecover(monitor, editor.getDataSource(), newAnalyzer);
+                                        } else {
+                                            newAnalyzer.run(monitor);
+                                        }
+                                    } finally {
+                                        monitor.done();
+                                    }
+                                    return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
+                                } catch (Throwable e) {
+                                    log.error(e);
+                                    return Status.CANCEL_STATUS;
+                                }
+                            }
+                        };
+                        newJob.schedule();
+                        completionJobs.add(newJob);
+                        completionSuppliers.add(newAnalyzer::getProposals);
+                    }
+
+                    completionJobs.forEach(UIUtils::waitJobCompletion);
+                    if (completionJobs.stream().anyMatch(j -> j.isCanceled())) {
+                        proposals = Collections.emptyList();
+                    } else {
+                        proposals = completionSuppliers.stream().flatMap(s -> s.get().stream()).toList();
+                    }
+                    break;
+                default:
                     proposals = Collections.emptyList();
-                } else {
-                    proposals = completionSuppliers.stream().flatMap(s -> s.get().stream()).toList();
-                }
-                break;
-            default:
-                proposals = Collections.emptyList();
-        }
-
-        List<ICompletionProposal> result = new ArrayList<>();
-        for (Object cp : proposals) {
-            if (cp instanceof ICompletionProposal) {
-                result.add((ICompletionProposal) cp);
             }
+
+            List<ICompletionProposal> result = new ArrayList<>(proposals.size());
+            if (completionRequestPostion.offset != request.getDocumentOffset()) {
+                for (Object cp : proposals) {
+                    if (cp instanceof ICompletionProposal proposal && (
+                        (cp instanceof ICompletionProposalExtension2 exp && exp.validate(request.getDocument(), completionRequestPostion.offset, null))
+                        || !(cp instanceof ICompletionProposalExtension2)
+                    )) {
+                        result.add(proposal);
+                    }
+                }
+            } else {
+                for (Object cp : proposals) {
+                    if (cp instanceof ICompletionProposal proposal) {
+                        result.add(proposal);
+                    }
+                }
+            }
+            return ArrayUtils.toArray(ICompletionProposal.class, result);
+        } finally {
+            document.removePosition(completionRequestPostion);
         }
-        return ArrayUtils.toArray(ICompletionProposal.class, result);
     }
 
     private ICompletionProposal[] makeCommandProposals(SQLCompletionRequest request, String prefix) {
