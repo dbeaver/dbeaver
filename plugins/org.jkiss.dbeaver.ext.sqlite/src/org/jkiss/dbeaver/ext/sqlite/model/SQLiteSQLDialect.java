@@ -17,12 +17,14 @@
 package org.jkiss.dbeaver.ext.sqlite.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.sql.SQLDialectDDLExtension;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
 
@@ -30,7 +32,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
 
-public class SQLiteSQLDialect extends GenericSQLDialect {
+public class SQLiteSQLDialect extends GenericSQLDialect implements SQLDialectDDLExtension {
 
     private static final String[][] SQLITE_QUOTE_STRINGS = {
         {"\"", "\""},
@@ -124,4 +126,71 @@ public class SQLiteSQLDialect extends GenericSQLDialect {
         return true;
     }
 
+    @Nullable
+    @Override
+    public String getAutoIncrementKeyword() {
+        return "AUTOINCREMENT"; //$NON-NLS-1$
+    }
+
+    @Override
+    public boolean supportsCreateIfExists() {
+        return true;
+    }
+
+    @NotNull
+    @Override
+    public String getTimestampDataType() {
+        return "TIMESTAMP";
+    }
+
+    @NotNull
+    @Override
+    public String getBigIntegerType() {
+        return "INTEGER";
+    }
+
+    @NotNull
+    @Override
+    public String getClobDataType() {
+        return "CLOB";
+    }
+
+    @NotNull
+    @Override
+    public String getBlobDataType() {
+        return "BLOB";
+    }
+
+    @NotNull
+    @Override
+    public String getUuidDataType() {
+        return "UUID";
+    }
+
+    @NotNull
+    @Override
+    public String getBooleanDataType() {
+        return "VARCHAR(1)";
+    }
+
+    @NotNull
+    @Override
+    public String getAlterColumnOperation() {
+        return "ALTER";
+    }
+
+    @Override
+    public boolean supportsNoActionIndex() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsAlterColumnSet() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsAlterHasColumn() {
+        return true;
+    }
 }
