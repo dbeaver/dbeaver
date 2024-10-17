@@ -33,13 +33,13 @@ public class CubridPlanAnalyser extends AbstractExecutionPlan {
 
     private List<CubridPlanNode> rootNodes = new ArrayList<>();
     private String query;
+    private String plan;
 
     public CubridPlanAnalyser(@NotNull JDBCSession session, @NotNull String query)
             throws DBCException {
         this.query = query;
         try {
-            String plan =
-                    CubridStatementProxy.getQueryplan(
+            plan = CubridStatementProxy.getQueryplan(
                             session.getOriginal().createStatement(), query);
             rootNodes.add(new CubridPlanNode(plan));
         } catch (SQLException e) {
@@ -62,6 +62,6 @@ public class CubridPlanAnalyser extends AbstractExecutionPlan {
     @NotNull
     @Override
     public String getPlanQueryString() throws DBException {
-        return query;
+        return plan;
     }
 }
