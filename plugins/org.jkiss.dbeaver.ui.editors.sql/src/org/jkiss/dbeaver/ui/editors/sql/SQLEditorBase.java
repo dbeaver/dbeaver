@@ -839,7 +839,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
         ruleManager.loadRules(dataSourceContainer, !SQLEditorUtils.isSQLSyntaxParserApplied(getEditorInput()));
         ruleScanner.refreshRules(dataSourceContainer, ruleManager, this);
-        parserContext = new SQLParserContext(dataSourceContainer, syntaxManager, ruleManager, document != null ? document : new Document());
+        if (getDataSource() != null) {
+            parserContext = new SQLParserContext(getDataSource(), syntaxManager, ruleManager, document != null ? document : new Document());
+        } else {
+            parserContext = new SQLParserContext(dataSourceContainer, syntaxManager, ruleManager, document != null ? document : new Document());
+        }
 
         if (document instanceof IDocumentExtension3) {
             IDocumentPartitioner partitioner = new FastPartitioner(

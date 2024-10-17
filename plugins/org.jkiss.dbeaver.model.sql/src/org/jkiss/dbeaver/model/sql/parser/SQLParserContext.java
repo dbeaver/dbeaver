@@ -69,9 +69,13 @@ public class SQLParserContext {
         this.document = document;
     }
 
-    public SQLParserContext(@NotNull DBPDataSourceContainer dataSourceContainer, @NotNull SQLSyntaxManager syntaxManager, @NotNull SQLRuleManager ruleManager, @NotNull IDocument document) {
+    public SQLParserContext(@Nullable DBPDataSourceContainer dataSourceContainer, @NotNull SQLSyntaxManager syntaxManager, @NotNull SQLRuleManager ruleManager, @NotNull IDocument document) {
         this.dataSourceContainer = dataSourceContainer;
-        this.dataSource = dataSourceContainer.getDataSource();
+        if (dataSourceContainer != null) {
+            this.dataSource = dataSourceContainer.getDataSource();
+        } else {
+            this.dataSource = null;
+        }
         this.syntaxManager = syntaxManager;
         this.ruleManager = ruleManager;
         this.document = document;
