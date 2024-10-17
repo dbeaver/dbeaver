@@ -20,11 +20,13 @@ package org.jkiss.dbeaver.model.sql.parser;
 import org.eclipse.jface.text.IDocument;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.text.parser.TPRuleBasedScanner;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
@@ -33,8 +35,14 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
  */
 public class SQLParserContext {
 
+    private static final Log log = Log.getLog(SQLParserContext.class);
+
+    @Nullable
+    private final DBPDataSourceContainer dataSourceContainer;
+
     @Nullable
     private final DBPDataSource dataSource;
+
     @NotNull
     private final SQLSyntaxManager syntaxManager;
     @NotNull
@@ -46,12 +54,33 @@ public class SQLParserContext {
     @Nullable
     private DBPPreferenceStore preferenceStore;
 
+    @Nullable
+    private SQLDialect cachedSqlDialect = null;
+
     public SQLParserContext(@Nullable DBPDataSource dataSource, @NotNull SQLSyntaxManager syntaxManager, @NotNull SQLRuleManager ruleManager, @NotNull IDocument document) {
         this.dataSource = dataSource;
+        if (dataSource != null) {
+            this.dataSourceContainer = dataSource.getContainer();
+        } else {
+            this.dataSourceContainer = null;
+        }
         this.syntaxManager = syntaxManager;
         this.ruleManager = ruleManager;
         this.document = document;
     }
+
+    public SQLParserContext(@Nullable DBPDataSourceContainer dataSourceContainer, @NotNull SQLSyntaxManager syntaxManager, @NotNull SQLRuleManager ruleManager, @NotNull IDocument document) {
+        this.dataSourceContainer = dataSourceContainer;
+        if (dataSourceContainer != null) {
+            this.dataSource = dataSourceContainer.getDataSource();
+        } else {
+            this.dataSource = null;
+        }
+        this.syntaxManager = syntaxManager;
+        this.ruleManager = ruleManager;
+        this.document = document;
+    }
+
 
     @Nullable
     public DBPDataSource getDataSource() {
@@ -74,7 +103,24 @@ public class SQLParserContext {
     }
 
     public SQLDialect getDialect() {
-        return SQLUtils.getDialectFromDataSource(getDataSource());
+        if (dataSource != null) {
+            return dataSource.getSQLDialect();
+        }
+        if (dataSourceContainer != null) {
+            try {
+                DBPDataSource dataSource = dataSourceContainer.getDataSource();
+                if (dataSource != null) {
+                    return dataSource.getSQLDialect();
+                }
+                if (cachedSqlDialect == null) {
+                    cachedSqlDialect = dataSourceContainer.getScriptDialect().createInstance();
+                }
+                return cachedSqlDialect;
+            } catch (Exception e) {
+                log.warn(String.format("Can't get dialect from dataSourceContainerId: %s", dataSourceContainer.getId()));
+            }
+        }
+        return BasicSQLDialect.INSTANCE;
     }
 
     public TPRuleBasedScanner getScanner() {

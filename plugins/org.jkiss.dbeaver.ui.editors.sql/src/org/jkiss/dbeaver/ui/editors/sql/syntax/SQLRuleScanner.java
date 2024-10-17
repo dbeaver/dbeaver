@@ -26,7 +26,7 @@ import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.sql.semantics.SQLDocumentSyntaxContext;
@@ -97,11 +97,11 @@ public class SQLRuleScanner extends RuleBasedScanner implements TPCharacterScann
         return posList;
     }
 
-    public void refreshRules(@Nullable DBPDataSource dataSource, SQLRuleManager ruleManager, SQLEditorBase editor) {
+    public void refreshRules(@Nullable DBPDataSourceContainer dataSourceContainer, SQLRuleManager ruleManager, SQLEditorBase editor) {
         tokenMap.clear();
-        boolean boldKeywords = dataSource == null ?
+        boolean boldKeywords = dataSourceContainer == null ?
                 DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS) :
-                dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS);
+                dataSourceContainer.getPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS);
         keywordStyle = boldKeywords ? SWT.BOLD : SWT.NORMAL;
         TPRule[] allRules = ruleManager.getAllRules();
         IRule[] result = new IRule[allRules.length];
