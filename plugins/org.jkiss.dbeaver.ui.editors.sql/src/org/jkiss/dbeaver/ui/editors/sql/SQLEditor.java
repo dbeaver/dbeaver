@@ -94,8 +94,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.data.SQLQueryDataContainer;
-import org.jkiss.dbeaver.model.sql.parser.SQLParserContext;
-import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.model.sql.transformers.SQLQueryTransformerCount;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
@@ -232,6 +230,7 @@ public class SQLEditor extends SQLEditorBase implements
     private volatile QueryProcessor curQueryProcessor;
     private final List<QueryProcessor> queryProcessors = new ArrayList<>();
 
+    private DBPDataSourceContainer dataSourceContainer;
     private DBPDataSource curDataSource;
     private volatile DBCExecutionContext executionContext;
     private volatile DBCExecutionContext lastExecutionContext;
@@ -678,6 +677,10 @@ public class SQLEditor extends SQLEditorBase implements
     @NotNull
     @Override
     public SQLDialect getSQLDialect() {
+        DBPDataSource dataSource = getDataSource();
+        if (dataSource != null) {
+            return dataSource.getSQLDialect();
+        }
         if (dataSourceContainer == null) {
             return BasicSQLDialect.INSTANCE;
         }
@@ -5112,7 +5115,7 @@ public class SQLEditor extends SQLEditorBase implements
             TextViewer textViewer = getTextViewer();
             boolean focusInEditor = textViewer != null && textViewer.getTextWidget().isFocusControl();
             if (!focusInEditor) {
-                if (rsv != null && rsv.getActivePresentation().getControl().isFocusControl()) {
+                if (rsv != null && rsv.getActivePresentation().getControl() != null && rsv.getActivePresentation().getControl().isFocusControl()) {
                     focusInEditor = false;
                 } else {
                     focusInEditor = lastFocusInEditor;
