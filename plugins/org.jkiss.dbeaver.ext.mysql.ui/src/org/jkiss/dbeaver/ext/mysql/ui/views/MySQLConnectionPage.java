@@ -29,6 +29,8 @@ import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.access.DBAuthUtils;
+import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
@@ -44,6 +46,7 @@ import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
+import java.util.Map;
 import java.util.TimeZone;
 
 /**
@@ -220,11 +223,13 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
     public boolean isComplete() {
         if (isCustomURL()) {
             return !CommonUtils.isEmpty(urlText.getText());
+        } else {
+            String host = hostText != null ? hostText.getText() : null;
+            String port = portText != null ? portText.getText() : null;
+            DBPAuthModelDescriptor selectedAuthModel = getAuthModelSelector().getSelectedAuthModel();
+            Map<String, String> authProperties = getAuthModelSelector().getActiveDataSource().getConnectionConfiguration().getAuthProperties();
+            return super.isComplete() && DBAuthUtils.isHostPresent(host, port, selectedAuthModel, authProperties);
         }
-        return super.isComplete() &&
-            hostText != null &&
-            !CommonUtils.isEmpty(hostText.getText()) &&
-            (!needsPort || !CommonUtils.isEmpty(portText.getText()));
     }
 
     @Override

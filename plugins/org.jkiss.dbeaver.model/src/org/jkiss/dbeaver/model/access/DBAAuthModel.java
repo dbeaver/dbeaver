@@ -96,5 +96,4 @@ public interface DBAAuthModel<CREDENTIALS extends DBAAuthCredentials> {
         @NotNull DBPConnectionConfiguration configuration,
         @NotNull CREDENTIALS credentials
     ) throws DBException;
-
 }
