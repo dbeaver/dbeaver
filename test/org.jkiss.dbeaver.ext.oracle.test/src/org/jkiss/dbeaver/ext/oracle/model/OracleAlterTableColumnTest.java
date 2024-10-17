@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.edit.OracleTableColumnManager;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
@@ -60,6 +61,8 @@ public class OracleAlterTableColumnTest {
     private DBPDataSourceContainer mockDataSourceContainer;
     @Mock
     private JDBCRemoteInstance mockRemoteInstance;
+    @Mock
+    private DBPConnectionConfiguration mockConnectionConfiguration;
 
     private final String lineBreak = System.getProperty(StandardConstants.ENV_LINE_SEPARATOR);
 
@@ -67,6 +70,7 @@ public class OracleAlterTableColumnTest {
     public void setUp() throws DBException {
         DBPPlatform dbpPlatform = DBWorkbench.getPlatform();
         Mockito.when(mockDataSourceContainer.getDriver()).thenReturn(dbpPlatform.getDataSourceProviderRegistry().findDriver("oracle"));
+        Mockito.when(mockDataSourceContainer.getConnectionConfiguration()).thenReturn(mockConnectionConfiguration);
 
         testDataSource = new OracleDataSource(mockDataSourceContainer);
 

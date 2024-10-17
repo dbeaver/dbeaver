@@ -465,8 +465,8 @@ public class SQLQueryModelRecognizer {
     );
 
     @NotNull
-    public SQLQueryRowsTableDataModel collectTableReference(@NotNull STMTreeNode node) {
-        return new SQLQueryRowsTableDataModel(node, this.collectTableName(node));
+    public SQLQueryRowsTableDataModel collectTableReference(@NotNull STMTreeNode node, boolean forDDL) {
+        return new SQLQueryRowsTableDataModel(node, this.collectTableName(node), forDDL);
     }
 
     @Nullable

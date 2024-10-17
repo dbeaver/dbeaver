@@ -44,7 +44,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -130,7 +129,6 @@ public class CustomFormEditor {
             } else {
                 boolean editable = !isReadOnlyCon && (prop.isEditable(propertySource.getEditableValue()) ||
                     (prop.getId().equals(DBConstants.PROP_ID_NAME) && supportsObjectRename()));
-                Class<?> propType = prop.getDataType();
                 Object propertyValue = propertySource.getPropertyValue(null, prop.getId());
                 if (propertyValue == null && prop instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) prop).isOptional()) {
                     // Do not create editor for null optional properties
@@ -164,32 +162,30 @@ public class CustomFormEditor {
 
                 editorMap.put(prop, editControl);
 
-                Control finalEditControl = editControl;
-
-                if (finalEditControl instanceof Combo) {
-                    if ((finalEditControl.getStyle() & SWT.READ_ONLY) == SWT.READ_ONLY) {
-                        ((Combo) finalEditControl).addSelectionListener(new SelectionAdapter() {
+                if (editControl instanceof Combo combo) {
+                    if ((editControl.getStyle() & SWT.READ_ONLY) == SWT.READ_ONLY) {
+                        combo.addSelectionListener(new SelectionAdapter() {
                             @Override
                             public void widgetSelected(SelectionEvent e) {
-                                updatePropertyValue(prop, ((Combo) finalEditControl).getText());
+                                updatePropertyValue(prop, combo.getText());
                             }
                         });
                     } else {
-                        ((Combo) finalEditControl).addModifyListener(e -> {
+                        combo.addModifyListener(e -> {
                             try {
-                                updatePropertyValue(prop, ((Combo) finalEditControl).getText());
+                                updatePropertyValue(prop, combo.getText());
                             } catch (Exception ex) {
                                 log.debug("Error setting value from combo: " + ex.getMessage());
                             }
                         });
                     }
-                } else if (finalEditControl instanceof Text) {
-                    ((Text) finalEditControl).addModifyListener(e -> updatePropertyValue(prop, ((Text) finalEditControl).getText()));
-                } else if (finalEditControl instanceof Button) {
-                    ((Button) finalEditControl).addSelectionListener(new SelectionAdapter() {
+                } else if (editControl instanceof Text text) {
+                    text.addModifyListener(e -> updatePropertyValue(prop, ((Text) editControl).getText()));
+                } else if (editControl instanceof Button button) {
+                    button.addSelectionListener(new SelectionAdapter() {
                         @Override
                         public void widgetSelected(SelectionEvent e) {
-                            updatePropertyValue(prop, ((Button) finalEditControl).getSelection());
+                            updatePropertyValue(prop, button.getSelection());
                         }
                     });
                 }
@@ -236,21 +232,24 @@ public class CustomFormEditor {
         if (property.isRequired()) {
             propertyDisplayName += " (*)";
         }
-        if (!readOnly && property instanceof IPropertyValueListProvider) {
-            final IPropertyValueListProvider listProvider = (IPropertyValueListProvider) property;
+        if (!readOnly && property instanceof IPropertyValueListProvider listProvider) {
             Object[] items = listProvider.getPossibleValues(object);
-            if (items == null && property instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) property).hasListValueProvider()) {
+            if (items == null && property instanceof ObjectPropertyDescriptor opd && opd.hasListValueProvider()) {
                 // It is a list provider but it seems to be lazy and not yet initialized
                 items = new Object[0];
             }
             if (items != null) {
-                String[] strings = new String[items.length];
+                List<String> strings = new ArrayList<>(items.length);
                 for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
-                    strings[i] = objectValueToString(items[i]);
+                    strings.add(objectValueToString(items[i]));
                 }
                 if (!property.isRequired()) {
                     // Add null value
-                    strings = ArrayUtils.insertArea(String.class, strings, 0, new Object[] { "" });
+                    strings.add(0, "");
+                }
+                String curValue = objectValueToString(value);
+                if (!CommonUtils.isEmpty(curValue) && !strings.contains(curValue)) {
+                    strings.add(curValue);
                 }
                 Combo combo = UIUtils.createLabelCombo(
                     parent,
@@ -258,12 +257,14 @@ public class CustomFormEditor {
                     SWT.BORDER | SWT.DROP_DOWN |
                         (listProvider.allowCustomValue() ? SWT.NONE : SWT.READ_ONLY) |
                         (readOnly ? SWT.READ_ONLY : SWT.NONE));
-                combo.setItems(strings);
-                combo.setText(objectValueToString(value));
+
+                String[] stringsArray = strings.toArray(new String[0]);
+                combo.setItems(stringsArray);
+                combo.setText(curValue);
                 combo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
 
                 if ((combo.getStyle() & SWT.READ_ONLY) == 0) {
-                    StringContentProposalProvider proposalProvider = new StringContentProposalProvider(strings);
+                    StringContentProposalProvider proposalProvider = new StringContentProposalProvider(stringsArray);
                     ContentAssistUtils.installContentProposal(combo, new ComboContentAdapter(), proposalProvider);
                 }
 
@@ -382,10 +383,8 @@ public class CustomFormEditor {
         Class<?> propertyType = property.getDataType();
         // List
         String stringValue = objectValueToString(value);
-        if (editorControl instanceof Combo) {
-            Combo combo = (Combo) editorControl;
-            if (property instanceof IPropertyValueListProvider) {
-                final IPropertyValueListProvider listProvider = (IPropertyValueListProvider) property;
+        if (editorControl instanceof Combo combo) {
+            if (property instanceof IPropertyValueListProvider listProvider) {
                 final Object[] items = listProvider.getPossibleValues(object);
                 final Object[] oldItems = (Object[]) combo.getData(LIST_VALUE_KEY);
                 combo.setData(LIST_VALUE_KEY, items);
@@ -399,7 +398,7 @@ public class CustomFormEditor {
                     }
                     combo.setText(stringValue);
                 }
-            } else if (propertyType.isEnum()) {
+            } else if (propertyType != null && propertyType.isEnum()) {
                 if (combo.getItemCount() == 0) {
                     // Do not refresh enum values - they are static
                     final Object[] enumConstants = propertyType.getEnumConstants();
@@ -412,15 +411,13 @@ public class CustomFormEditor {
                 combo.setText(stringValue);
             }
         } else {
-            if (editorControl instanceof Text) {
-                Text text = (Text) editorControl;
+            if (editorControl instanceof Text text) {
                 if (!CommonUtils.equalObjects(text.getText(), stringValue)) {
                     text.setText(stringValue);
                 }
-            } else if (editorControl instanceof Button) {
-                ((Button) editorControl).setSelection(CommonUtils.toBoolean(value));
-            } else if (editorControl instanceof Link) {
-                Link link = (Link)editorControl;
+            } else if (editorControl instanceof Button button) {
+                button.setSelection(CommonUtils.toBoolean(value));
+            } else if (editorControl instanceof Link link) {
                 link.setData(value);
                 link.setText(getLinktitle(value));
             }

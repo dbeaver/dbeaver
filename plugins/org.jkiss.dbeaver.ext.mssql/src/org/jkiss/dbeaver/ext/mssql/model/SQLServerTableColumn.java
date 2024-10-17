@@ -45,7 +45,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * SQLServerTableColumn
@@ -438,7 +437,7 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
             List<SQLServerDataType> allTypes = new ArrayList<>(object.getDataSource().getLocalDataTypes());
             try {
                 List<SQLServerDataType> schemaTypes = object.getTable().getSchema().getDataTypes(new VoidProgressMonitor())
-                        .stream().filter(type -> !type.isTableType()).collect(Collectors.toList()); //do not show table types in types list
+                        .stream().filter(type -> !type.isTableType()).toList(); //do not show table types in types list
                 allTypes.addAll(schemaTypes);
             } catch (DBException e) {
                 log.debug("Error getting schema data types", e);

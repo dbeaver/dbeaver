@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
@@ -406,13 +405,11 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
 		public Object[] getPossibleValues(ExasolSchema object)
 		{
 			ExasolDataSource dataSource = object.getDataSource();
-			try {
-				Collection<ExasolGrantee> grantees = dataSource.getAllGrantees(new VoidProgressMonitor());
-				return grantees.toArray(new Object[grantees.size()]);
-			} catch (DBException e) {
-				log.error(e);
-				return new  Object[0];
-			}
+
+            List<ExasolGrantee> allGrantee = new ArrayList<>();
+            allGrantee.addAll(dataSource.getUserCache().getCachedObjects());
+            allGrantee.addAll(dataSource.getRoleCache().getCachedObjects());
+            return allGrantee.toArray(new Object[0]);
 		}
 		
 	}
