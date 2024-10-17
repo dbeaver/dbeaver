@@ -55,7 +55,7 @@ public class SQLParserContext {
     private DBPPreferenceStore preferenceStore;
 
     @Nullable
-    private SQLDialect cacheSqlDialect = null;
+    private SQLDialect cachedSqlDialect = null;
 
     public SQLParserContext(@Nullable DBPDataSource dataSource, @NotNull SQLSyntaxManager syntaxManager, @NotNull SQLRuleManager ruleManager, @NotNull IDocument document) {
         this.dataSource = dataSource;
@@ -80,7 +80,7 @@ public class SQLParserContext {
 
     @Nullable
     public DBPDataSource getDataSource() {
-        return dataSourceContainer != null ? dataSourceContainer.getDataSource() : null;
+        return dataSource;
     }
 
     @NotNull
@@ -99,16 +99,19 @@ public class SQLParserContext {
     }
 
     public SQLDialect getDialect() {
+        if (dataSource != null) {
+            return dataSource.getSQLDialect();
+        }
         if (dataSourceContainer != null) {
             try {
                 DBPDataSource dataSource = dataSourceContainer.getDataSource();
                 if (dataSource != null) {
                     return dataSource.getSQLDialect();
                 }
-                if (cacheSqlDialect == null) {
-                    cacheSqlDialect = dataSourceContainer.getScriptDialect().createInstance();
+                if (cachedSqlDialect == null) {
+                    cachedSqlDialect = dataSourceContainer.getScriptDialect().createInstance();
                 }
-                return cacheSqlDialect;
+                return cachedSqlDialect;
             } catch (Exception e) {
                 log.warn(String.format("Can't get dialect from dataSourceContainerId: %s", dataSourceContainer.getId()));
             }

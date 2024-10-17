@@ -966,7 +966,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         if (parserContext == null) {
             return null;
         }
-        SQLParserContext context = new SQLParserContext(dataSourceContainer, parserContext.getSyntaxManager(), parserContext.getRuleManager(), new Document(query.getText()));
+        SQLParserContext context;
+        if (getDataSource() != null) {
+            context = new SQLParserContext(getDataSource(), parserContext.getSyntaxManager(), parserContext.getRuleManager(), new Document(query.getText()));
+        } else {
+            context = new SQLParserContext(dataSourceContainer, parserContext.getSyntaxManager(), parserContext.getRuleManager(), new Document(query.getText()));
+        }
         return SQLScriptParser.parseParametersAndVariables(context, 0, query.getLength());
     }
 

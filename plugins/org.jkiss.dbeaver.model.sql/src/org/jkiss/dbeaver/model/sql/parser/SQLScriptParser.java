@@ -1050,7 +1050,7 @@ public class SQLScriptParser {
 
         sqlDocument.setDocumentPartitioner(SQLParserPartitions.SQL_PARTITIONING, partitioner);
 
-        SQLParserContext parserContext = new SQLParserContext(dataSource != null ? dataSource.getContainer() : null, syntaxManager, ruleManager, sqlDocument);
+        SQLParserContext parserContext = new SQLParserContext(dataSource, syntaxManager, ruleManager, sqlDocument);
         parserContext.setPreferenceStore(preferenceStore);
         return parserContext;
     }

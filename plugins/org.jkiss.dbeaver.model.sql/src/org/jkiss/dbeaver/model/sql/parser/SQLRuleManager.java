@@ -95,7 +95,7 @@ public class SQLRuleManager {
     public void loadRules(@Nullable DBPDataSource dataSource, boolean minimalRules) {
         if (dataSource == null) {
             loadRules((DBPDataSourceContainer) null, minimalRules);
-        } else{
+        } else {
             loadRules(dataSource.getContainer(), minimalRules);
         }
     }
