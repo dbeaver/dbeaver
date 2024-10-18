@@ -63,7 +63,7 @@ public class MavenRegistry {
     private final List<MavenRepository> repositories = new ArrayList<>();
     private MavenRepository localRepository;
     // Cache for not found artifact ids. Avoid multiple remote metadata reading
-    private final Set<String> notFoundArtifacts = new HashSet<>();
+    private final Map<String, MavenArtifactVersion> notFoundArtifacts = new HashMap<>();
 
     private MavenRegistry() {
     }
@@ -189,8 +189,9 @@ public class MavenRegistry {
     @Nullable
     public MavenArtifactVersion findArtifact(@NotNull DBRProgressMonitor monitor, @Nullable MavenArtifactVersion owner, @NotNull MavenArtifactReference ref) {
         String fullId = ref.getId();
-        if (notFoundArtifacts.contains(fullId)) {
-            return null;
+        MavenArtifactVersion notFoundVersion = notFoundArtifacts.get(fullId);
+        if (notFoundVersion != null) {
+            return notFoundVersion;
         }
         MavenArtifactVersion artifact = findInRepositories(monitor, owner, ref);
         if (artifact != null) {
@@ -198,8 +199,16 @@ public class MavenRegistry {
         }
 
         // Not found
-        notFoundArtifacts.add(fullId);
-        return null;
+        notFoundVersion = MavenArtifactVersion.createInvalidVersion(
+            new MavenArtifact(
+                MavenRepository.UnknownRepository,
+                ref.getGroupId(),
+                ref.getArtifactId(),
+                ref.getClassifier(),
+                ref.getFallbackVersion()),
+            ref.getVersion());
+        notFoundArtifacts.put(fullId, notFoundVersion);
+        return notFoundVersion;
     }
 
     public void resetArtifactInfo(MavenArtifactReference artifactReference) {

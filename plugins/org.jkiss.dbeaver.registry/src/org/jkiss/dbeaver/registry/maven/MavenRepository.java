@@ -47,6 +47,7 @@ public class MavenRepository
 
     public static final String ATTR_ID = "id";
     public static final String ATTR_NAME = "name";
+    public static final MavenRepository UnknownRepository = new MavenRepository("unknown", "unknown", "https://", RepositoryType.LOCAL);
 
     public enum RepositoryType {
         GLOBAL,     // Globally defined repositories (came from plugin.xml)

@@ -150,6 +150,11 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
         // do nothing
     }
 
+    @Override
+    public boolean isInvalidLibrary() {
+        return false;
+    }
+
     @NotNull
     @Override
     public FileType getType() {
