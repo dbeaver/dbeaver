@@ -64,16 +64,27 @@
 
     <extension point="org.eclipse.ui.editors">
         <editor
-                name="Session Manager"
+                name="%editor.session_manager.name"
                 icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png"
                 class="org.jkiss.dbeaver.ext.altibase.ui.editors.AltibaseSessionEditor"
                 id="org.jkiss.dbeaver.ext.altibase.ui.editors.AltibaseSessionEditor"
                 contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor">
         </editor>
+        <editor
+                name="%editor.lock_manager.name"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/locked.png"
+                class="org.jkiss.dbeaver.ext.altibase.ui.editors.AltibaseLockEditor"
+                id="org.jkiss.dbeaver.ext.altibase.ui.editors.AltibaseLockEditor">
+        </editor>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
-        <editorContribution editorId="org.jkiss.dbeaver.ext.altibase.ui.editors.AltibaseSessionEditor" category="connectionEditor" label="%editor.session_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png">
+        <editorContribution editorId="org.jkiss.dbeaver.ext.altibase.ui.editors.AltibaseSessionEditor" category="connectionEditor" 
+        label="%editor.session_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png">
+            <supports dataSource="altibase"/>
+        </editorContribution>
+        <editorContribution editorId="org.jkiss.dbeaver.ext.altibase.ui.editors.AltibaseLockEditor" category="connectionEditor" 
+        label="%editor.lock_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/locked.png">
             <supports dataSource="altibase"/>
         </editorContribution>
     </extension>
