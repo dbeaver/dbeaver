@@ -16,25 +16,5 @@
  */
 package org.jkiss.dbeaver.model.sql.semantics.completion;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItem.*;
-
-public interface SQLQueryCompletionItemVisitor<R> {
-
-    @Nullable
-    R visitSubqueryAlias(@NotNull SQLRowsSourceAliasCompletionItem rowsSourceAlias);
-
-    @Nullable
-    R visitColumnName(@NotNull SQLColumnNameCompletionItem columnName);
-
-    @Nullable
-    R visitTableName(@NotNull SQLTableNameCompletionItem tableName);
-
-    @Nullable
-    R visitReservedWord(@NotNull SQLReservedWordCompletionItem reservedWord);
-
-    @Nullable
-    R visitNamedObject(@NotNull SQLDbNamedObjectCompletionItem namedObject);
-
+public record SQLQueryWordEntry(int offset, String string) {
 }

@@ -27,17 +27,23 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultPseudoColumn;
 
 public class SQLQueryCompletionDescriptionProvider implements SQLQueryCompletionItemVisitor<String> {
 
-    @NotNull
-    @Override
-    public String visitSubqueryAlias(@NotNull SQLSubqueryAliasCompletionItem subqueryAlias) {
-        return "Subquery alias for \n" + subqueryAlias.source.getSyntaxNode().getTextContent();
+    public static final SQLQueryCompletionDescriptionProvider INSTANCE = new SQLQueryCompletionDescriptionProvider();
+
+    private SQLQueryCompletionDescriptionProvider() {
     }
 
     @NotNull
     @Override
+    public String visitSubqueryAlias(@NotNull SQLRowsSourceAliasCompletionItem rowsSourceAlias) {
+        String prefix = rowsSourceAlias.sourceInfo.tableOrNull != null ? "Table alias for \n" : "Subquery alias for \n";
+        return prefix + rowsSourceAlias.sourceInfo.source.getSyntaxNode().getTextContent();
+    }
+
+    @Nullable
+    @Override
     public String visitColumnName(@NotNull SQLColumnNameCompletionItem columnName) {
         @Nullable String originalColumnName = columnName.columnInfo.realAttr == null ? null
-                : DBUtils.getObjectFullName(columnName.columnInfo.realAttr, DBPEvaluationContext.DML);
+            : DBUtils.getObjectFullName(columnName.columnInfo.realAttr, DBPEvaluationContext.DML);
 
         if (columnName.columnInfo.symbol.getSymbolClass() == SQLQuerySymbolClass.COLUMN_DERIVED) {
             return "Derived column #" + columnName.columnInfo.index + " " + (originalColumnName != null ? "for real column " + originalColumnName : "") +
@@ -47,7 +53,7 @@ public class SQLQueryCompletionDescriptionProvider implements SQLQueryCompletion
                 return columnName.columnInfo.realAttr.getDescription();
             } else if (columnName.columnInfo.realSource != null) {
                 return "Column of the " + DBUtils.getObjectFullName(columnName.columnInfo.realSource, DBPEvaluationContext.DML);
-            } else if(columnName.columnInfo.symbol.getDefinition() instanceof SQLQueryResultPseudoColumn pseudoColumn) {
+            } else if (columnName.columnInfo.symbol.getDefinition() instanceof SQLQueryResultPseudoColumn pseudoColumn) {
                 return pseudoColumn.description;
             } else {
                 return "Computed column "; // TODO deliver the column expression to the model
