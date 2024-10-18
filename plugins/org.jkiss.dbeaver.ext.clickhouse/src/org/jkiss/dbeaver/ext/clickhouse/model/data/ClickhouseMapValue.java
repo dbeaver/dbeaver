@@ -248,5 +248,10 @@ public class ClickhouseMapValue extends AbstractDatabaseList {
         public void release() {
             // do nothing
         }
+
+        @Override
+        public String toString() {
+            return key + "=" + value;
+        }
     }
 }
