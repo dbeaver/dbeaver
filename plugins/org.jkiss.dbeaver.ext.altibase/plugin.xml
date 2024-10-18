@@ -335,6 +335,11 @@
                     <folder label="%tree.properties.node.name" icon="#info" description="%tree.properties.node.description">
                         <items label="%tree.property.node.name" path="altibaseProperties" property="properties" icon="#info" navigable="false" virtual="true"/>
                     </folder>
+                    <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseMemoryModule" 
+                    label="%tree.memorymodules.node.name"  description="%tree.memorymodules.node.description"
+                    icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/folder_database.png">
+                        <items label="%tree.memorymodules.node.name" path="memoryModule" property="memoryModules" navigable="false"/>
+                    </folder>
                 </folder>
              </tree>
         </datasource>
