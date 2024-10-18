@@ -21,9 +21,7 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterExpression;
 import net.sf.jsqlparser.statement.alter.AlterOperation;
-import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
-import net.sf.jsqlparser.statement.create.table.CreateTable;
-import net.sf.jsqlparser.statement.create.table.ForeignKeyIndex;
+import net.sf.jsqlparser.statement.create.table.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
@@ -34,10 +32,7 @@ import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * The type Sql query translator.
@@ -151,11 +146,33 @@ public class SQLQueryTranslator implements SQLTranslator {
             }
 
             var columnDefinitions = createTable.getColumnDefinitions();
+            var indexes = createTable.getIndexes();
+
             for (ColumnDefinition cd : columnDefinitions) {
+                var columnSpecs = cd.getColumnSpecs();
+
                 defChanged |= translateColumnDataType(cd, extendedDialect, targetDialect);
 
-                if (!CommonUtils.isEmpty(cd.getColumnSpecs())) {
-                    for (String columnSpec : new ArrayList<>(cd.getColumnSpecs())) {
+                if (!CommonUtils.isEmpty(columnSpecs)) {
+                    if (indexes != null) {
+                        for (Iterator<Index> it = indexes.iterator(); it.hasNext(); ) {
+                            Index index = it.next();
+                            if (index instanceof ForeignKeyIndex || index instanceof CheckConstraint) {
+                                continue;
+                            }
+                            if (index.getColumnsNames().equals(List.of(cd.getColumnName()))) {
+                                if (index.getType().equalsIgnoreCase("PRIMARY KEY") && columnSpecs.contains("AUTO_INCREMENT")) {
+                                    columnSpecs.add(columnSpecs.indexOf("AUTO_INCREMENT"), index.getType());
+                                } else {
+                                    columnSpecs.add(0, index.getType());
+                                }
+                                it.remove();
+                                defChanged = true;
+                            }
+                        }
+                    }
+
+                    for (String columnSpec : new ArrayList<>(columnSpecs)) {
                         switch (columnSpec.toUpperCase(Locale.ENGLISH)) {
                             case "AUTO_INCREMENT":
                             case "IDENTITY":
@@ -166,9 +183,9 @@ public class SQLQueryTranslator implements SQLTranslator {
                                     String sequenceName = schemaName == null ? sequenceWithoutSchemaName :
                                         schemaName + "." + sequenceWithoutSchemaName;
 
-                                    cd.getColumnSpecs().remove(columnSpec);
-                                    cd.getColumnSpecs().add("DEFAULT");
-                                    cd.getColumnSpecs().add("NEXTVAL('" + sequenceName + "')");
+                                    columnSpecs.remove(columnSpec);
+                                    columnSpecs.add("DEFAULT");
+                                    columnSpecs.add("NEXTVAL('" + sequenceName + "')");
                                     defChanged = true;
 
                                     String createSeqQuery = "CREATE SEQUENCE " + sequenceName;
@@ -183,9 +200,9 @@ public class SQLQueryTranslator implements SQLTranslator {
                                             .getFullyQualifiedName() + "." + cd.getColumnName();
                                     postExtraQueries.add(new SQLQuery(null, linkSeqWithTable));
                                 } else if (extendedDialect != null) {
-                                    int indexOf = cd.getColumnSpecs().indexOf(columnSpec);
+                                    int indexOf = columnSpecs.indexOf(columnSpec);
                                     defChanged = true;
-                                    cd.getColumnSpecs().set(indexOf, extendedDialect.getAutoIncrementKeyword());
+                                    columnSpecs.set(indexOf, extendedDialect.getAutoIncrementKeyword());
                                 }
                                 break;
                             default:
@@ -197,9 +214,9 @@ public class SQLQueryTranslator implements SQLTranslator {
             }
             if (extendedDialect != null &&
                 !extendedDialect.supportsNoActionIndex() &&
-                !CommonUtils.isEmpty(createTable.getIndexes())
+                !CommonUtils.isEmpty(indexes)
             ) {
-                for (var index : createTable.getIndexes()) {
+                for (var index : indexes) {
                     if (index instanceof ForeignKeyIndex) {
                         ForeignKeyIndex fkIndex = (ForeignKeyIndex) index;
                         ReferentialAction ra = fkIndex.getReferentialAction(ReferentialAction.Type.DELETE);
