@@ -181,7 +181,7 @@ public class SQLQueryTableConstraintSpec extends SQLQueryNodeModel {
                         .map(n -> n.findFirstChildOfName(STMKnownRuleNames.referencedTableAndColumns))
                         .orElse(null);
                     if (refNode != null) {
-                        referencedTable = recognizer.collectTableReference(refNode);
+                        referencedTable = recognizer.collectTableReference(refNode, false); // TODO consider if FK to alias allowed
                         referencedColumns = recognizer.collectColumnNameList(refNode);
                     }
                 }
