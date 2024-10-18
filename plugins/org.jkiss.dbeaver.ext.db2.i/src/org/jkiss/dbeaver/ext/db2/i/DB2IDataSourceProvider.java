@@ -24,4 +24,9 @@ public class DB2IDataSourceProvider extends GenericDataSourceProvider {
     {
     }
 
+    @Override
+    public long getFeatures() {
+        return FEATURE_SCHEMAS;
+    }
+
 }

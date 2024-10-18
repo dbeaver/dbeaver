@@ -24,4 +24,9 @@ public class DB2ZOSDataSourceProvider extends GenericDataSourceProvider {
     {
     }
 
+    @Override
+    public long getFeatures() {
+        return FEATURE_SCHEMAS;
+    }
+
 }
