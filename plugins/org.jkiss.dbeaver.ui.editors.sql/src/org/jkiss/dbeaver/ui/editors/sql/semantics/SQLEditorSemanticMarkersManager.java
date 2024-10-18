@@ -137,6 +137,8 @@ public class SQLEditorSemanticMarkersManager {
                         Interval problemInterval = problemInfo.getInterval();
                         int problemOffset = scriptItemPosition + problemInterval.a;
                         int problemLine = this.editor.getDocument().getLineOfOffset(problemOffset);
+                        // We associate position objects with annotations, but don't introduce this information into the markers, because
+                        // otherwise eclipse breaks annotation location, margin marker's per-line icon rendering and aggregation.
                         final IMarker marker = resource.createMarker(SQLSemanticErrorAnnotation.MARKER_TYPE, Map.of(
                                 IMarker.SEVERITY, problemInfo.getSeverity().markerSeverity,
                                 IMarker.MESSAGE, problemInfo.getMessage(),
@@ -183,21 +185,29 @@ public class SQLEditorSemanticMarkersManager {
         SQLDocumentSyntaxContext actualContext = this.editor.getSyntaxContext();
         synchronized (this.syncRoot) {
             SQLDocumentSyntaxContext currentContext = this.syntaxContext;
+            boolean clearScheduled = false;
             if (actualContext != currentContext) {
                 if (currentContext != null) {
                     this.cleanup();
+                    clearScheduled = true;
                 }
                 if (actualContext != null) {
                     this.setup();
                 }
             }
             {
+                if (!clearScheduled) {
+                    queuedOperations.clear();
+                    resetAnnotations = true;
+                }
                 SQLDocumentSyntaxContext context = this.syntaxContext;
                 if (context != null) {
                     for (SQLScriptItemAtOffset itemAtOffset : context.getScriptItems()) {
                         queuedOperations.put(itemAtOffset.item, true);
                     }
-                    this.scheduleClearAllProblems();
+                }
+                if (!clearScheduled) {
+                    scheduleRefreshJob();
                 }
             }
         }

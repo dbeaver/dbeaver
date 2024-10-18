@@ -47,6 +47,7 @@ You can change default JDK version by replacing directory `jre` in dbeaver insta
 ## Feedback
 
 - For bug reports and feature requests - please <a href="https://github.com/dbeaver/dbeaver/issues">create a ticket</a>.
+- To promote <a href="https://github.com/dbeaver/dbeaver/issues?q=is%3Aissue+is%3Aopen+sort%3Areactions-%2B1-desc+label%3A%22wait+for+votes%22">a ticket</a> to a higher priority - please vote for it with 👍 under the ticket description.
 - If you have any questions, ideas, etc - please <a href="https://github.com/dbeaver/dbeaver/discussions">start a discussion</a>.
 - Pull requests are welcome.
 - Visit https://dbeaver.com for more information.
@@ -70,5 +71,5 @@ Thank you!
 <a href="https://github.com/dbeaver/cloudbeaver/"><img src="https://github.com/dbeaver/cloudbeaver/wiki/images/cloudbeaver-logo.png" width="250"/></a>
 
 DBeaver is a desktop client.  
-If you are looking for a web-based database management tool - check our new product: <a href="https://cloudbeaver.io/">CloudBeaver</a>.  
+If you are looking for a web-based database management tool - check our new product: <a href="https://github.com/dbeaver/cloudbeaver">CloudBeaver</a>.  
 It is based on DBeaver platform and thus supports any database and most of DBeaver features.

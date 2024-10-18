@@ -591,6 +591,10 @@ public class PostgreDatabase extends JDBCRemoteInstance
     ///////////////////////////////////////////////
     // Tablespaces
 
+    TablespaceCache getTablespaceCache() {
+        return tablespaceCache;
+    }
+
     @Association
     public Collection<PostgreTablespace> getTablespaces(DBRProgressMonitor monitor) throws DBException {
         checkInstanceConnection(monitor);
@@ -615,6 +619,10 @@ public class PostgreDatabase extends JDBCRemoteInstance
             }
         }
         return null;
+    }
+
+    JobClassCache getJobClassCache() {
+        return jobClassCache;
     }
 
     @Association
