@@ -46,7 +46,7 @@ public class SQLQueryDeleteModel extends SQLQueryDMLStatementModel {
     @NotNull
     public static SQLQueryModelContent recognize(@NotNull SQLQueryModelRecognizer recognizer, @NotNull STMTreeNode node) {
         STMTreeNode tableNameNode = node.findFirstChildOfName(STMKnownRuleNames.tableName);
-        SQLQueryRowsTableDataModel tableModel = tableNameNode == null ? null : recognizer.collectTableReference(tableNameNode);
+        SQLQueryRowsTableDataModel tableModel = tableNameNode == null ? null : recognizer.collectTableReference(tableNameNode, false);
 
         STMTreeNode aliasNode = node.findFirstChildOfName(STMKnownRuleNames.correlationName);
         SQLQuerySymbolEntry alias = aliasNode == null ? null : recognizer.collectIdentifier(aliasNode);

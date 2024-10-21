@@ -336,7 +336,7 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
         },
         STMKnownRuleNames.nonjoinedTableReference, (n, cc, r) -> {
             // can they both be missing?
-            SQLQueryRowsSourceModel source = cc.isEmpty() ? r.collectTableReference(n) : cc.get(0);
+            SQLQueryRowsSourceModel source = cc.isEmpty() ? r.collectTableReference(n, false) : cc.get(0);
 
             // TODO column reference at PARTITION clause
 
@@ -350,7 +350,7 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
             }
             return source;
         },
-        STMKnownRuleNames.explicitTable, (n, cc, r) -> r.collectTableReference(n),
+        STMKnownRuleNames.explicitTable, (n, cc, r) -> r.collectTableReference(n, false),
         STMKnownRuleNames.tableValueConstructor, (n, cc, r) -> {
             List<SQLQueryValueExpression> values = n.findChildrenOfName(STMKnownRuleNames.rowValueConstructor).stream()
                 .map(r::collectValueExpression).toList();
