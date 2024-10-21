@@ -43,9 +43,9 @@ public abstract class PeriodicJob extends AbstractJob {
             return Status.OK_STATUS;
         }
 
-        log.info(getName() + " job started");
+        log.trace(getName() + " job started");
         doJob(monitor);
-        log.info(getName() + " job finished");
+        log.trace(getName() + " job finished");
         // If the platform is still running after the job is completed, reschedule the job
         if (!platform.isShuttingDown()) {
             scheduleMonitor();
