@@ -102,7 +102,11 @@ import java.util.ResourceBundle;
 /**
  * SQL Executor
  */
-public abstract class SQLEditorBase extends BaseTextEditor implements DBPContextProvider, IErrorVisualizer, DBPPreferenceListener {
+public abstract class SQLEditorBase extends BaseTextEditor implements
+    DBPContextProvider,
+    IErrorVisualizer,
+    DBPPreferenceListener,
+    DBPDataSourceContainerProvider {
 
     static protected final Log log = Log.getLog(SQLEditorBase.class);
     public static final long MAX_FILE_LENGTH_FOR_RULES = 1024 * 1000 * 2; // 2MB
@@ -149,7 +153,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     private SQLCompletionContext completionContext;
     private SQLOccurrencesHighlighter occurrencesHighlighter;
     private SQLSymbolInserter sqlSymbolInserter;
-    protected DBPDataSourceContainer dataSourceContainer;
 
     private int lastQueryErrorPosition = -1;
 
@@ -837,12 +840,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         IDocument document = getDocument();
         syntaxManager.init(dialect, getActivePreferenceStore());
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
-        ruleManager.loadRules(dataSourceContainer, !SQLEditorUtils.isSQLSyntaxParserApplied(getEditorInput()));
-        ruleScanner.refreshRules(dataSourceContainer, ruleManager, this);
+        ruleManager.loadRules(getDataSourceContainer(), !SQLEditorUtils.isSQLSyntaxParserApplied(getEditorInput()));
+        ruleScanner.refreshRules(getDataSourceContainer(), ruleManager, this);
         if (getDataSource() != null) {
             parserContext = new SQLParserContext(getDataSource(), syntaxManager, ruleManager, document != null ? document : new Document());
         } else {
-            parserContext = new SQLParserContext(dataSourceContainer, syntaxManager, ruleManager, document != null ? document : new Document());
+            parserContext = new SQLParserContext(getDataSourceContainer(), syntaxManager, ruleManager, document != null ? document : new Document());
         }
 
         if (document instanceof IDocumentExtension3) {
@@ -974,7 +977,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         if (getDataSource() != null) {
             context = new SQLParserContext(getDataSource(), parserContext.getSyntaxManager(), parserContext.getRuleManager(), new Document(query.getText()));
         } else {
-            context = new SQLParserContext(dataSourceContainer, parserContext.getSyntaxManager(), parserContext.getRuleManager(), new Document(query.getText()));
+            context = new SQLParserContext(getDataSourceContainer(), parserContext.getSyntaxManager(), parserContext.getRuleManager(), new Document(query.getText()));
         }
         return SQLScriptParser.parseParametersAndVariables(context, 0, query.getLength());
     }
@@ -1318,6 +1321,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             return true;
         }
         return super.isNavigationTarget(annotation);
+    }
+
+    @Nullable
+    @Override
+    public DBPDataSourceContainer getDataSourceContainer() {
+        return null;
     }
 
     ////////////////////////////////////////////////////////

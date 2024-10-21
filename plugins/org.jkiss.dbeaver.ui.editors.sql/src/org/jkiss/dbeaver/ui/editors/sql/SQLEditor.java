@@ -230,6 +230,7 @@ public class SQLEditor extends SQLEditorBase implements
     private volatile QueryProcessor curQueryProcessor;
     private final List<QueryProcessor> queryProcessors = new ArrayList<>();
 
+    private DBPDataSourceContainer dataSourceContainer;
     private DBPDataSource curDataSource;
     private volatile DBCExecutionContext executionContext;
     private volatile DBCExecutionContext lastExecutionContext;
