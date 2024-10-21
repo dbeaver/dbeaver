@@ -61,6 +61,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
     private final List<MavenArtifactLicense> licenses = new ArrayList<>();
     private final List<MavenProfile> profiles = new ArrayList<>();
     private final List<MavenRepository> repositories = new ArrayList<>();
+    private boolean invalidVersion;
 
     private final IVariableResolver propertyResolver = new IVariableResolver() {
         @Override
@@ -102,7 +103,22 @@ public class MavenArtifactVersion implements IMavenIdentifier {
         this.snapshotVersion = snapshotVersion;
         loadPOM(monitor, resolveOptionalDependencies);
         this.version = evaluateString(this.version);
+    }
 
+    private MavenArtifactVersion(
+        @NotNull MavenArtifact artifact,
+        @NotNull String version
+    ) {
+        this.artifact = artifact;
+        this.version = version;
+        this.snapshotVersion = false;
+        this.invalidVersion = true;
+    }
+
+    public static MavenArtifactVersion createInvalidVersion(
+        @NotNull MavenArtifact artifact,
+        @NotNull String version) {
+        return new MavenArtifactVersion(artifact, version);
     }
 
     @NotNull
@@ -112,6 +128,10 @@ public class MavenArtifactVersion implements IMavenIdentifier {
 
     public String getName() {
         return name;
+    }
+
+    public boolean isInvalidVersion() {
+        return invalidVersion;
     }
 
     @NotNull
@@ -214,15 +234,11 @@ public class MavenArtifactVersion implements IMavenIdentifier {
     @NotNull
     private String getPackagingFileExtension() {
         final String packaging = CommonUtils.notEmpty(this.packaging);
-        switch (packaging) {
-            case "": // empty packaging
-            case MavenArtifact.PACKAGING_BUNDLE:
-            case MavenArtifact.PACKAGING_MAVEN_PLUGIN:
-            case MavenArtifact.FILE_POM:
-                return MavenArtifact.FILE_JAR;
-            default:
-                return packaging;
-        }
+        return switch (packaging) { // empty packaging
+            case "", MavenArtifact.PACKAGING_BUNDLE, MavenArtifact.PACKAGING_MAVEN_PLUGIN, MavenArtifact.FILE_POM ->
+                MavenArtifact.FILE_JAR;
+            default -> packaging;
+        };
     }
 
     public String getExternalURL(String fileType) {
