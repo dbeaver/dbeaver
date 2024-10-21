@@ -66,6 +66,7 @@ import java.util.zip.ZipOutputStream;
  */
 public class CollectDiagnosticInfoHandler extends AbstractHandler {
     private static final Log log = Log.getLog(CollectDiagnosticInfoHandler.class);
+    private static String folderPath = "";
 
     @Nullable
     @Override
@@ -195,7 +196,11 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
             );
             textWithOpen.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             String userHome = System.getProperty(StandardConstants.ENV_USER_HOME);
-            if (userHome != null) {
+            if(folderPath.length()>0 && !folderPath.equals(userHome))
+            {
+                textWithOpen.setText(folderPath);
+            }
+            else if (userHome != null) {
                 textWithOpen.setText(userHome);
             } else {
                 enableOk(false);
@@ -228,6 +233,7 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
         protected void okPressed() {
             if (textWithOpen != null) {
                 String outputFolderPathString = textWithOpen.getText();
+                folderPath = outputFolderPathString;
                 if (!CommonUtils.isEmpty(outputFolderPathString)) {
                     outputFolder = new File(outputFolderPathString);
                 }
