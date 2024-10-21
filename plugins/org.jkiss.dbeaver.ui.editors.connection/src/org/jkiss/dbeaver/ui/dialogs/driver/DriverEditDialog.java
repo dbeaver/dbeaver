@@ -935,7 +935,6 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 if (Files.isDirectory(localFilePath)) {
                     synAddDriverLibDirectory(newLib, localFilePath, shortFileName);
                 } else {
-                    ((DriverLibraryLocal) newLib).setPath(shortFileName);
                     syncAddDriverLibFile(newLib, localFilePath, shortFileName);
                 }
             }
@@ -976,6 +975,10 @@ public class DriverEditDialog extends HelpEnabledDialog {
         DBFileController fileController = DBWorkbench.getPlatform().getFileController();
 
         String driverFilePath = driver.getId() + "/" + shortFileName;
+        if (library instanceof DriverLibraryLocal libraryLocal) {
+            libraryLocal.setPath(driverFilePath);
+        }
+
         try {
             byte[] fileData = Files.readAllBytes(localFilePath);
             fileController.saveFileData(
