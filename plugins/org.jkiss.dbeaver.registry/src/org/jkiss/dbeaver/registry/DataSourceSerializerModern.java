@@ -1303,16 +1303,11 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 DBPProject project = dataSource != null ?
                     dataSource.getProject() : (profile != null ? profile.getProject() : null);
 
-                if (project != null && project.isUseSecretStorage()) {
+                if (configurationManager.isSecure() ||
+                    (project != null && project.isUseSecretStorage() && profile == null && dataSource.isSharedCredentials())) {
                     // For secured projects save only shared credentials
                     // Others are stored in secret storage
-                    if (dataSource == null || dataSource.isSharedCredentials()) {
-                        savePlainCredentials(json, credentials);
-                    }
-                } else if (configurationManager.isSecure()) {
-                    savePlainCredentials(
-                        json,
-                        credentials);
+                    savePlainCredentials(json, credentials);
                 } else {
                     saveSecuredCredentials(
                         dataSource,
