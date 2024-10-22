@@ -1619,7 +1619,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                         break;
                     }
                     Path driverFolder = getWorkspaceDriversStorageFolder();
-                    Path localDriverFile = driverFolder.resolve(depFile.getFile());
+                    Path localDriverFile = driverFolder.resolve(depFile.getFile().toString());
                     if (!Files.exists(localDriverFile) || depFile.getFileCRC() == 0 ||
                         depFile.getFileCRC() != calculateFileCRC(localDriverFile))
                     {
@@ -1648,7 +1648,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                     }
                     try {
                         Path driverFolder = getWorkspaceDriversStorageFolder();
-                        Path localDriverFile = driverFolder.resolve(fileInfo.getFile());
+                        Path localDriverFile = driverFolder.resolve(fileInfo.getFile().toString());
                         if (!Files.exists(localDriverFile.getParent())) {
                             Files.createDirectories(localDriverFile.getParent());
                         }
@@ -1939,7 +1939,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 if (fileName.endsWith(".txt")) {
                     continue;
                 }
-                Path trgDirFile = trgLocalFile.resolve(dirFile.getFileName());
+                Path trgDirFile = trgLocalFile.resolve(dirFile.getFileName().toString());
                 if (Files.isDirectory(dirFile)) {
                     resolveDirectories(targetFileLocation, library, dirFile, trgDirFile, libraryFiles);
                 } else {

@@ -323,6 +323,6 @@ public class SQLDocumentSyntaxContext {
             droppedCount++;
         }
 
-        return new Interval(actualStart, actualEnd);
+        return actualEnd >= actualStart ? new Interval(actualStart, actualEnd) : new Interval(actualStart, 0);
     }
 }
