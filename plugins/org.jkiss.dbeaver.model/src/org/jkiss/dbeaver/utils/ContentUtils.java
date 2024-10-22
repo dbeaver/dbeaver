@@ -218,14 +218,6 @@ public class ContentUtils {
         return contentType != null && contentType.toLowerCase(Locale.ENGLISH).startsWith("text");
     }
 
-    public static boolean isJsonContent(@Nullable DBDContent content) {
-        if (content == null) {
-            return false;
-        }
-
-        return content.getContentType().toLowerCase(Locale.ENGLISH).contains("json");
-    }
-
     public static boolean isTextMime(String mimeType) {
         return mimeType != null && mimeType.toLowerCase(Locale.ENGLISH).startsWith("text");
     }

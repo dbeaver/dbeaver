@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDDocument;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -111,15 +112,17 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
 
                 Object cellValue = row[i];
                 if (DBUtils.isNullValue(cellValue)) {
-                    writeTextCell(null);
+                    writeTextCell(null, true);
                 } else if (cellValue instanceof DBDContent content) {
                     writeContentValue(session, resultSet, content);
                 } else if (cellValue instanceof Number || cellValue instanceof Boolean) {
                     out.write(cellValue.toString());
                 } else if (cellValue instanceof Date && formatDateISO) {
-                    writeTextCell(JSONUtils.formatDate((Date) cellValue));
+                    writeTextCell(JSONUtils.formatDate((Date) cellValue), true);
+                } else if (hasJsonDataType(column)) {
+                    writeTextCell(super.getValueDisplayString(column, cellValue), false);
                 } else {
-                    writeTextCell(super.getValueDisplayString(column, cellValue));
+                    writeTextCell(super.getValueDisplayString(column, cellValue), true);
                 }
 
                 if (i < columns.length - 1) {
@@ -164,11 +167,13 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
         out.write("\n");
     }
 
-    private void writeTextCell(@Nullable String value) {
-        if (value != null) {
+    private void writeTextCell(@Nullable String value, boolean escape) {
+        if (value == null) {
+            getWriter().write("null");
+        } else if (escape) {
             getWriter().write("\"" + JSONUtils.escapeJsonString(value) + "\"");
         } else {
-            getWriter().write("null");
+            getWriter().write(value);
         }
     }
 
@@ -199,7 +204,7 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
         DBDContentStorage cs
     ) throws IOException {
         try (Reader in = cs.getContentReader()) {
-            if (!exportJsonAsString && ContentUtils.isJsonContent(content)) {
+            if (!exportJsonAsString && ContentUtils.isJSON(content)) {
                 writeCellValue(in, false);
             } else {
                 getWriter().write("\"");
@@ -230,5 +235,14 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
                 escape ? JSONUtils.escapeJsonString(chunk) : chunk
             );
         }
+    }
+
+    private boolean hasJsonDataType(@NotNull DBDAttributeBinding column) {
+        DBCAttributeMetaData metaAttribute = column.getMetaAttribute();
+        if (metaAttribute == null) {
+            return false;
+        }
+
+        return metaAttribute.getTypeName().contains("json");
     }
 }
