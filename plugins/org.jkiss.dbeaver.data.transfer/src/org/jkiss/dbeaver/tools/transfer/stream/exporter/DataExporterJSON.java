@@ -45,6 +45,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.Locale;
 
 /**
  * JSON Exporter
@@ -119,7 +120,7 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
                     out.write(cellValue.toString());
                 } else if (cellValue instanceof Date && formatDateISO) {
                     writeTextCell(JSONUtils.formatDate((Date) cellValue), true);
-                } else if (hasJsonDataType(column)) {
+                } else if (!exportJsonAsString && hasJsonDataType(column)) {
                     writeTextCell(super.getValueDisplayString(column, cellValue), false);
                 } else {
                     writeTextCell(super.getValueDisplayString(column, cellValue), true);
@@ -243,6 +244,6 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
             return false;
         }
 
-        return metaAttribute.getTypeName().contains("json");
+        return metaAttribute.getTypeName().toLowerCase(Locale.ROOT).contains("json");
     }
 }
