@@ -88,6 +88,12 @@ public class PostgreSessionManager implements DBAServerSessionManager<PostgreSes
         }
     }
 
+    @NotNull
+    @Override
+    public Class<PostgreSession> getSessionType() {
+        return PostgreSession.class;
+    }
+
     @Override
     public boolean canGenerateSessionReadQuery() {
         return true;

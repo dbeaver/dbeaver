@@ -65,7 +65,7 @@ public class PostgreSession extends AbstractServerSession {
         this.appName = JDBCUtils.safeGetString(dbResult, "application_name");
     }
 
-    @Property(viewable = true, order = 1)
+    @Property(viewable = true, order = 1, features = "sm")
     public int getPid()
     {
         return pid;

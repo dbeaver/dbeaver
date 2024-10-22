@@ -82,7 +82,7 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
     }
 
     @Override
-    public void alterSession(@NotNull DBCSession session, @NotNull OracleServerSession sessionType, @NotNull Map<String, Object> options) throws DBException
+    public void alterSession(@NotNull DBCSession session, @NotNull OracleServerSession sessionType, @NotNull Map<String, Object> options) throws DBException //options?
     {
         final boolean toKill = Boolean.TRUE.equals(options.get(PROP_KILL_SESSION));
         final boolean immediate = Boolean.TRUE.equals(options.get(PROP_IMMEDIATE));
@@ -112,6 +112,12 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
         catch (SQLException e) {
             throw new DBDatabaseException(e, session.getDataSource());
         }
+    }
+
+    @NotNull
+    @Override
+    public Class<OracleServerSession> getSessionType() {
+        return OracleServerSession.class;
     }
 
     @NotNull

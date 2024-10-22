@@ -109,17 +109,17 @@ public class OracleServerSession extends AbstractServerSession {
 
     }
 
-    @Property(category = CAT_SESSION, viewable = false, order = 1)
+    @Property(category = CAT_SESSION, viewable = false, order = 1, features = "sm")
     public long getInstId() {
         return instId;
     }
 
-    @Property(category = CAT_SESSION, viewable = true, order = 2)
+    @Property(category = CAT_SESSION, viewable = true, order = 2, features = "sm")
     public long getSid() {
         return sid;
     }
 
-    @Property(category = CAT_SESSION, viewable = false, order = 3)
+    @Property(category = CAT_SESSION, viewable = false, order = 3, features = "sm")
     public long getSerial() {
         return serial;
     }

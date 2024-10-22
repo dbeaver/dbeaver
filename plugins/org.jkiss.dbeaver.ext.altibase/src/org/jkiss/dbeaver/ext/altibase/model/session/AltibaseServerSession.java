@@ -93,7 +93,7 @@ public class AltibaseServerSession extends AbstractServerSession {
         this.timezone           = JDBCUtils.safeGetString(dbResult, "TIME_ZONE");
     }
 
-    @Property(category = CAT_SESSION, viewable = true, order = 1)
+    @Property(category = CAT_SESSION, viewable = true, order = 1, features = "sm")
     public String getSessionId() {
         return sessionId;
     }

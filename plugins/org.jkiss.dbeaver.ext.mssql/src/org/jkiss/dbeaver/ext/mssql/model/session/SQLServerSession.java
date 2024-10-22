@@ -96,7 +96,7 @@ public class SQLServerSession extends AbstractServerSession {
         sqlText = JDBCUtils.safeGetString(dbResult, "sql_text");
     }
 
-    @Property(viewable = true, order = 1)
+    @Property(viewable = true, order = 1, features = "sm")
     public long getId() {
         return id;
     }

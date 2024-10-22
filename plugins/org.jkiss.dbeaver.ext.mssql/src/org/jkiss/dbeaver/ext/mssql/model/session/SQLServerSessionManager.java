@@ -90,6 +90,12 @@ public class SQLServerSessionManager implements DBAServerSessionManager<SQLServe
         }
     }
 
+    @NotNull
+    @Override
+    public Class<SQLServerSession> getSessionType() {
+        return SQLServerSession.class;
+    }
+
     @Override
     public boolean canGenerateSessionReadQuery() {
         return true;

@@ -92,7 +92,7 @@ public class ExasolServerSession extends AbstractServerSession {
         return sqlText;
     }
 
-    @Property(viewable = true, editable = false, order = 1)
+    @Property(viewable = true, editable = false, order = 1, features = "sm")
     public BigDecimal getSessionID() {
         return sessionID;
     }
