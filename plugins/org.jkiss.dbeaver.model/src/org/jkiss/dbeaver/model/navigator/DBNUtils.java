@@ -226,6 +226,9 @@ public class DBNUtils {
                     if (nodeChildren.length > 0 &&
                         !expectedChildrenType.isInstance(nodeChildren[0].getObject()))
                     {
+                        // Note: We should've check expectedNestedType.isInstance(nodeChildren[0].getObject())
+                        // but we cannot. Because after filters are applied child nodes may contain deeper nested type
+                        // FIXME: support it for databases which support only tables
                         itemsMeta = nestedMeta;
                     }
                 }
