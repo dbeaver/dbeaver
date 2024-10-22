@@ -11,7 +11,7 @@
 
 	<properties>
 		<reficio-p2-version>2.1.0</reficio-p2-version>
-		<tycho-version>4.0.8</tycho-version>
+		<tycho-version>4.0.9</tycho-version>
 		<repo-name>DBeaver CE Update</repo-name>
 	</properties>
 
