@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPObjectWithDescription;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItem.*;
@@ -67,15 +68,17 @@ public class SQLQueryCompletionDescriptionProvider implements SQLQueryCompletion
         return tableName.table.getDescription();
     }
 
-    @NotNull
+    @Nullable
     @Override
     public String visitReservedWord(@Nullable SQLReservedWordCompletionItem reservedWord) {
         return "Reserved word of the query language";
     }
 
-    @NotNull
+    @Nullable
     @Override
     public String visitNamedObject(@NotNull SQLDbNamedObjectCompletionItem namedObject) {
-        return DBUtils.getObjectFullName(namedObject.object, DBPEvaluationContext.DML);
+        return namedObject instanceof DBPObjectWithDescription owd
+            ? owd.getDescription()
+            : DBUtils.getObjectFullName(namedObject.object, DBPEvaluationContext.DML);
     }
 }

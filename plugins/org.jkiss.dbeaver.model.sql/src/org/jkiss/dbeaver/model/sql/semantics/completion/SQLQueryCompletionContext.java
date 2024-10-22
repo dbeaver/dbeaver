@@ -57,6 +57,12 @@ public abstract class SQLQueryCompletionContext {
     private static final Set<String> statementStartKeywords = LSMInspections.prepareOffquerySyntaxInspection().predictedWords;
     private static final int statementStartKeywordMaxLength = statementStartKeywords.stream().mapToInt(String::length).max().orElse(0);
 
+    private static final Set<SQLQuerySymbolClass> potentialKeywordPartClassification = Set.of(
+        SQLQuerySymbolClass.UNKNOWN,
+        SQLQuerySymbolClass.ERROR,
+        SQLQuerySymbolClass.RESERVED
+    );
+
     /**
      * Returns maximum length of all keywords
      */
@@ -67,37 +73,38 @@ public abstract class SQLQueryCompletionContext {
     /**
      * Empty completion context which always provides no completion items
      */
-    public static final SQLQueryCompletionContext EMPTY = new SQLQueryCompletionContext(0) {
+    public static SQLQueryCompletionContext prepareEmpty(int scriptItemOffset, int requestOffset) {
+        return new SQLQueryCompletionContext(0, requestOffset) {
 
-        @Nullable
-        @Override
-        public SQLQueryDataContext getDataContext() {
-            return null;
-        }
+            @Nullable
+            @Override
+            public SQLQueryDataContext getDataContext() {
+                return null;
+            }
 
-        @NotNull
-        @Override
-        public LSMInspections.SyntaxInspectionResult getInspectionResult() {
-            return LSMInspections.SyntaxInspectionResult.EMPTY;
-        }
+            @NotNull
+            @Override
+            public LSMInspections.SyntaxInspectionResult getInspectionResult() {
+                return LSMInspections.SyntaxInspectionResult.EMPTY;
+            }
 
-        @NotNull
-        @Override
-        public SQLQueryCompletionSet prepareProposal(
-            @NotNull DBRProgressMonitor monitor,
-            int position,
-            @NotNull SQLCompletionRequest request
-        ) {
-            return new SQLQueryCompletionSet(position, 0, Collections.emptyList());
-        }
-    };
+            @NotNull
+            @Override
+            public SQLQueryCompletionSet prepareProposal(
+                @NotNull DBRProgressMonitor monitor,
+                @NotNull SQLCompletionRequest request
+            ) {
+                return new SQLQueryCompletionSet(getRequestOffset(), 0, Collections.emptyList());
+            }
+        };
+    }
 
     /**
      * Prepare completion context for the script item at given offset treating current position as outside-of-query
      */
     @NotNull
-    public static SQLQueryCompletionContext prepareOffquery(int scriptItemOffset) {
-        return new SQLQueryCompletionContext(scriptItemOffset) {
+    public static SQLQueryCompletionContext prepareOffquery(int scriptItemOffset, int requestOffset) {
+        return new SQLQueryCompletionContext(scriptItemOffset, requestOffset) {
             private static final LSMInspections.SyntaxInspectionResult syntaxInspectionResult = LSMInspections.prepareOffquerySyntaxInspection();
             private static Pattern KEYWORD_FILTER_PATTERN = Pattern.compile("[a-zA-Z0-9]+$");
 
@@ -117,16 +124,15 @@ public abstract class SQLQueryCompletionContext {
             @Override
             public SQLQueryCompletionSet prepareProposal(
                 @NotNull DBRProgressMonitor monitor,
-                int position,
                 @NotNull SQLCompletionRequest request
             ) {
                 int lineStartOffset;
                 String lineHead;
                 try {
                     IDocument doc = request.getDocument();
-                    int line = doc.getLineOfOffset(position);
+                    int line = doc.getLineOfOffset(this.getRequestOffset());
                     lineStartOffset = doc.getLineOffset(line);
-                    lineHead = doc.get(lineStartOffset, position - lineStartOffset);
+                    lineHead = doc.get(lineStartOffset, this.getRequestOffset() - lineStartOffset);
                 } catch (BadLocationException ex) {
                     lineHead = "";
                     lineStartOffset = -1;
@@ -150,19 +156,25 @@ public abstract class SQLQueryCompletionContext {
                         .toList();
                 }
 
-                return new SQLQueryCompletionSet(position - replacementLength, replacementLength, keywordCompletions);
+                return new SQLQueryCompletionSet(this.getRequestOffset() - replacementLength, replacementLength, keywordCompletions);
             }
         };
     }
 
     private final int scriptItemOffset;
+    private final int requestOffset;
 
-    private SQLQueryCompletionContext(int scriptItemOffset) {
+    private SQLQueryCompletionContext(int scriptItemOffset, int requestOffset) {
         this.scriptItemOffset = scriptItemOffset;
+        this.requestOffset = requestOffset;
     }
 
     public int getOffset() {
         return this.scriptItemOffset;
+    }
+
+    public int getRequestOffset() {
+        return this.requestOffset;
     }
 
     @Nullable
@@ -195,7 +207,6 @@ public abstract class SQLQueryCompletionContext {
     @NotNull
     public abstract SQLQueryCompletionSet prepareProposal(
         @NotNull DBRProgressMonitor monitor,
-        int position,
         @NotNull SQLCompletionRequest request
     );
 
@@ -209,13 +220,14 @@ public abstract class SQLQueryCompletionContext {
      */
     public static SQLQueryCompletionContext prepare(
         @NotNull SQLScriptItemAtOffset scriptItem,
+        int requestOffset,
         @Nullable DBCExecutionContext dbcExecutionContext,
         @NotNull LSMInspections.SyntaxInspectionResult syntaxInspectionResult,
         @NotNull SQLQueryDataContext context,
         @Nullable SQLQueryLexicalScopeItem lexicalItem,
         @NotNull STMTreeTermNode[] nameNodes
     ) {
-        return new SQLQueryCompletionContext(scriptItem.offset) {
+        return new SQLQueryCompletionContext(scriptItem.offset, requestOffset) {
             private final Set<DBSObjectContainer> exposedContexts = SQLQueryCompletionContext.obtainExposedContexts(dbcExecutionContext);
             private final SQLQueryDataContext.KnownSourcesInfo knownSources = context.collectKnownSources();
 
@@ -247,14 +259,15 @@ public abstract class SQLQueryCompletionContext {
             @Override
             public SQLQueryCompletionSet prepareProposal(
                 @NotNull DBRProgressMonitor monitor,
-                int position,
                 @NotNull SQLCompletionRequest request
             ) {
-                position -= this.getOffset();
+                int position = this.getRequestOffset() - this.getOffset();
                 
                 SQLQueryWordEntry currentWord = this.obtainCurrentWord(position);
-                
-                final List<SQLQueryCompletionItem> keywordCompletions = prepareKeywordCompletions(syntaxInspectionResult.predictedWords, currentWord);
+
+                final List<SQLQueryCompletionItem> keywordCompletions = lexicalItem == null || potentialKeywordPartClassification.contains(lexicalItem.getSymbolClass())
+                    ? prepareKeywordCompletions(syntaxInspectionResult.predictedWords, currentWord)
+                    : Collections.emptyList();
 
                 List<SQLQueryCompletionItem> columnRefCompletions = syntaxInspectionResult.expectingColumnReference && nameNodes.length == 0
                     ? this.prepareColumnCompletions(null)
@@ -276,7 +289,7 @@ public abstract class SQLQueryCompletionContext {
                     .collect(Collectors.toList());
                 
                 int replacementLength = currentWord == null ? 0 : currentWord.string().length();
-                return new SQLQueryCompletionSet(this.getOffset() + position - replacementLength, replacementLength, completionItems);
+                return new SQLQueryCompletionSet(this.getRequestOffset() - replacementLength, replacementLength, completionItems);
             }
 
             @Nullable

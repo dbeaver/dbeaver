@@ -176,7 +176,7 @@ public class SQLBackgroundParsingJob {
             CompletableFuture<Long> expectedParsingSessionFinishStamp;
             synchronized (this.syncRoot) {
                 if (scriptItem == null || this.queuedForReparse.size() == 0) {
-                    scriptItem = this.context.findScriptItem(completionRequestPostion.offset - 1);
+                    scriptItem = this.context.findScriptItem(completionRequestPostion.getOffset() - 1);
                     if (scriptItem != null) { // TODO consider statements separation which is ignored for now
                         if (scriptItem.item.isDirty()) {
                             // awaiting reparse, so proceed to release lock and wait for the job to finish, then retry
@@ -188,7 +188,7 @@ public class SQLBackgroundParsingJob {
                         }
                     } else if (this.queuedForReparse.size() <= 0) {
                         // no script items here, so fallback to offquery context
-                        return SQLQueryCompletionContext.prepareOffquery(0);
+                        return SQLQueryCompletionContext.prepareOffquery(0, completionRequestPostion.getOffset());
                     }
                 }
                 expectedParsingSessionFinishStamp = this.lastParsingFinishStamp;
@@ -199,13 +199,13 @@ public class SQLBackgroundParsingJob {
                 // when the job is not scheduled yet (so join returns immediately)
                 // job.schedule() performed only after the series of keypresses at after-change event
                 if (expectedParsingSessionFinishStamp.get() < requestStamp) {
-                    return SQLQueryCompletionContext.EMPTY;
+                    return SQLQueryCompletionContext.prepareEmpty(0, completionRequestPostion.getOffset());
                 }
             } catch (InterruptedException | ExecutionException e) {
                 break;
             }
         } while (!completionRequestPostion.isDeleted());
-        return SQLQueryCompletionContext.EMPTY;
+        return SQLQueryCompletionContext.prepareEmpty(0, completionRequestPostion.getOffset());
     }
 
     @NotNull
@@ -215,7 +215,7 @@ public class SQLBackgroundParsingJob {
         SQLQueryModel model = scriptItem.item.getQueryModel();
         if (model != null) {
             if (scriptItem.item.hasContextBoundaryAtLength() && position > scriptItem.item.length()) {
-                return SQLQueryCompletionContext.prepareOffquery(scriptItem.offset);
+                return SQLQueryCompletionContext.prepareOffquery(scriptItem.offset, offset);
             } else {
                 STMTreeNode syntaxNode = model.getSyntaxNode();
                 Interval realInterval = syntaxNode.getRealInterval();
@@ -223,12 +223,12 @@ public class SQLBackgroundParsingJob {
                     && anyWordPattern.matcher(scriptItem.item.getOriginalText()).matches()
                     && position <= scriptItem.item.getOriginalText().length()
                 ) {
-                    return SQLQueryCompletionContext.prepareOffquery(scriptItem.offset);
+                    return SQLQueryCompletionContext.prepareOffquery(scriptItem.offset, offset);
                 }
                 LSMInspections.SyntaxInspectionResult syntaxInspectionResult = LSMInspections.prepareAbstractSyntaxInspection(syntaxNode, position);
                 Pair<SQLQueryDataContext, SQLQueryLexicalScopeItem> contextAndLexicalItem = model.findLexicalContext(position);
                 if (contextAndLexicalItem.getFirst() == null) {
-                    return SQLQueryCompletionContext.EMPTY;
+                    return SQLQueryCompletionContext.prepareEmpty(0, offset);
                 }
 
                 ArrayDeque<STMTreeTermNode> nameNodes = new ArrayDeque<>();
@@ -263,6 +263,7 @@ public class SQLBackgroundParsingJob {
                 }
                 return SQLQueryCompletionContext.prepare(
                         scriptItem,
+                        offset,
                         this.editor.getExecutionContext(),
                         syntaxInspectionResult,
                         contextAndLexicalItem.getFirst(),
@@ -271,7 +272,7 @@ public class SQLBackgroundParsingJob {
                 );
             }
         } else {
-            return SQLQueryCompletionContext.EMPTY;
+            return SQLQueryCompletionContext.prepareEmpty(0, offset);
         }
     }
 

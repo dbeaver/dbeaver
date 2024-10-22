@@ -92,6 +92,11 @@ public class SQLQueryCompletionProposal implements ICompletionProposal, IComplet
         this.filterString = filterString;
     }
 
+    @NotNull
+    public SQLQueryCompletionProposalContext getProposalContext() {
+        return this.proposalContext;
+    }
+
     @Override
     public IContextInformation getContextInformation() {
         return null;
@@ -129,6 +134,9 @@ public class SQLQueryCompletionProposal implements ICompletionProposal, IComplet
 
     @Override
     public Object getAdditionalProposalInfo(IProgressMonitor progressMonitor) {
+        if (!this.getProposalContext().getActivityTracker().isAdditionalInfoExpected()) {
+            return this.description;
+        }
         if (!this.cachedProposalInfoComputed) {
             DBRProgressMonitor monitor = new DefaultProgressMonitor(progressMonitor);
             if (this.object != null) {
@@ -161,7 +169,7 @@ public class SQLQueryCompletionProposal implements ICompletionProposal, IComplet
 
     @Override
     public IInformationControlCreator getInformationControlCreator() {
-        return this.object == null ? null : SuggestionInformationControlCreator.INSTANCE;
+        return this.object == null || !this.getProposalContext().getActivityTracker().isAdditionalInfoExpected() ? null : SuggestionInformationControlCreator.INSTANCE;
     }
 
     @Override
@@ -215,6 +223,7 @@ public class SQLQueryCompletionProposal implements ICompletionProposal, IComplet
         if (DEBUG) {
             log.debug("validate @" + offset);
         }
+        this.getProposalContext().getActivityTracker().implicitlyTriggered();
         if (this.filterString != null && CommonUtils.isNotEmpty(this.filterString.string())) {
             try {
                 int filterKeyStart = this.filterString.offset() >= 0 ? this.filterString.offset() : this.proposalContext.getRequestOffset();

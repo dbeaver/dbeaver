@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.completion.SQLCompletionActivityTracker;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItemKind;
@@ -46,14 +47,12 @@ public class SQLQueryCompletionProposalContext {
     }};
 
     private final SQLCompletionRequest completionRequest;
-    private boolean insertSpaceAfterProposal = true;
+    private final boolean insertSpaceAfterProposal;
 
     public SQLQueryCompletionProposalContext(@NotNull SQLCompletionRequest completionRequest) {
         this.completionRequest = completionRequest;
         DBCExecutionContext executionContext = completionRequest.getContext().getExecutionContext();
-        if (executionContext != null) {
-            this.insertSpaceAfterProposal = executionContext.getDataSource().getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS);
-        }
+        this.insertSpaceAfterProposal = executionContext == null || executionContext.getDataSource().getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS);
     }
 
     @Nullable
@@ -66,13 +65,15 @@ public class SQLQueryCompletionProposalContext {
         return this.completionRequest.getContext();
     }
 
-    @NotNull
     public int getRequestOffset() {
         return this.completionRequest.getDocumentOffset();
     }
 
-    @NotNull
     public boolean isInsertSpaceAfterProposal() {
         return this.insertSpaceAfterProposal;
+    }
+
+    public SQLCompletionActivityTracker getActivityTracker() {
+        return this.completionRequest.getActivityTracker();
     }
 }

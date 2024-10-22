@@ -34,6 +34,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionAnalyzer;
+import org.jkiss.dbeaver.model.sql.completion.SQLCompletionActivityTracker;
+import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
@@ -45,17 +47,17 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants.SQLExperimentalAutocompletionMode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryCompletionAnalyzer;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryCompletionProposal;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContext;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplateCompletionProposal;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesRegistry;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * The SQL content assist processor. This content assist processor proposes text
@@ -64,6 +66,10 @@ import java.util.function.Supplier;
 public class SQLCompletionProcessor implements IContentAssistProcessor
 {
     private static final Log log = Log.getLog(SQLCompletionProcessor.class);
+
+    private static final ICompletionProposal[] NO_PROPOSALS_ARRAY = new ICompletionProposal[0];
+
+    private static final Pattern IDENTIFIER_PART_PATTERN = Pattern.compile("^[_\\w]+$");
 
     private static IContextInformationValidator VALIDATOR = new Validator();
     private static boolean lookupTemplates = false;
@@ -101,6 +107,11 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         if (document == null) {
             return new ICompletionProposal[0];
         }
+        // This method blocks UI thread to prepare proposals, but in our implementation actual analysis performed in background jobs
+        // asynchronously with the editor's state modifications due to waitJobCompletion(..) usage, which forcibly pumps UI event loop.
+        // Accurate proposals preparation requires cursor position of where the user stops editing the text,
+        // so we are synchronously creating a position object to track the location of interest, instead of the documentOffset
+        // (which is where the proposals computation was initially triggered, not where it is really expected to get them).
         Position completionRequestPostion = new Position(documentOffset);
         try {
             IRegion line = document.getLineInformationOfOffset(documentOffset);
@@ -166,65 +177,91 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
                     SQLExperimentalAutocompletionMode mode = SQLExperimentalAutocompletionMode.fromPreferences(this.editor.getActivePreferenceStore());
 
-                    List<AbstractJob> completionJobs = new ArrayList<>();
-                    List<Supplier<List<? extends Object>>> completionSuppliers = new ArrayList<>();
+                    // UIUtils.waitJobCompletion(..) uses job.isFinished() which is not dropped on reschedule,
+                    // so we should be able to recreate the whole job object including all its non-reusable dependencies.
+                    List<Supplier<ProposalsComputationJobHolder>> completionJobSuppliers = new ArrayList<>();
 
                     if (request.getWordPart() != null && mode.useOldAnalyzer) {
                         if (dataSource != null) {
-                            SQLCompletionAnalyzer analyzer = new SQLCompletionAnalyzer(request);
-                            ProposalSearchJob searchJob = new ProposalSearchJob(analyzer);
-                            searchJob.schedule();
-                            completionJobs.add(searchJob);
-                            completionSuppliers.add(analyzer::getProposals);
+                            completionJobSuppliers.add(() -> {
+                                // old analyzer is not reusable, but it doesn't matter because see the next comment below
+                                SQLCompletionAnalyzer analyzer = new SQLCompletionAnalyzer(request);
+                                return new ProposalsComputationJobHolder(new ProposalSearchJob(analyzer)) {
+                                    @Override
+                                    public List<? extends Object> getProposals() {
+                                        return analyzer.getProposals();
+                                    }
+
+                                    @Override
+                                    public Integer getProposalsOriginOffset() {
+                                        // Actual origin for old analyzer's proposals is always request.getDocumentOffset(),
+                                        // which may be out of sync with cursor position at the time of analysis being accomplished.
+                                        // This is wrong, but old implementation ignores this fact,
+                                        // so for now we explicitly pretend that it is always in sync with current cursor position.
+                                        // Possible solution: support request object recreation when job restart needed.
+                                        return null;
+                                    }
+                                };
+                            });
                         }
                     }
 
                     if (mode.useNewAnalyzer) {
+                        // new analyzer is reusable
                         SQLQueryCompletionAnalyzer newAnalyzer = new SQLQueryCompletionAnalyzer(this.editor, request, completionRequestPostion);
-                        AbstractJob newJob = new AbstractJob("Analyzing query for proposals...") {
+                        completionJobSuppliers.add(() -> new ProposalsComputationJobHolder(new NewProposalSearchJob(newAnalyzer)) {
                             @Override
-                            protected IStatus run(DBRProgressMonitor monitor) {
-                                try {
-                                    monitor.beginTask("Seeking for SQL completion proposals", 2);
-                                    monitor.worked(1);
-                                    try {
-                                        monitor.subTask("Find proposals");
-                                        if (editor.getDataSource() != null) {
-                                            DBExecUtils.tryExecuteRecover(monitor, editor.getDataSource(), newAnalyzer);
-                                        } else {
-                                            newAnalyzer.run(monitor);
-                                        }
-                                    } finally {
-                                        monitor.done();
-                                    }
-                                    return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
-                                } catch (Throwable e) {
-                                    log.error(e);
-                                    return Status.CANCEL_STATUS;
-                                }
+                            public List<? extends Object> getProposals() {
+                                return newAnalyzer.getResult();
                             }
-                        };
-                        newJob.schedule();
-                        completionJobs.add(newJob);
-                        completionSuppliers.add(newAnalyzer::getProposals);
+
+                            @Override
+                            public Integer getProposalsOriginOffset() {
+                                return newAnalyzer.getActualContextOffset();
+                            }
+                        });
                     }
 
-                    completionJobs.forEach(UIUtils::waitJobCompletion);
-                    if (completionJobs.stream().anyMatch(j -> j.isCanceled())) {
-                        proposals = Collections.emptyList();
-                    } else {
-                        proposals = completionSuppliers.stream().flatMap(s -> s.get().stream()).toList();
-                    }
+                    List<ProposalsComputationJobHolder> completionJobs = completionJobSuppliers.stream()
+                        .map(Supplier::get).collect(Collectors.toList()); // modifiable list!
+                    boolean someJobRestarted;
+                    do {
+                        // wait for jobs to run asynchronously
+                        completionJobs.forEach(j -> UIUtils.waitJobCompletion(j.job));
+                        // if any job was cancelled while running in background, break the whole proposals computation logic
+                        if (completionJobs.stream().anyMatch(j -> j.job.isCanceled())) {
+                            return NO_PROPOSALS_ARRAY;
+                        } else {
+                            // all the jobs succeed, validate if the result is applicable
+                            int currentOffset = completionRequestPostion.getOffset();
+                            someJobRestarted = false;
+                            for (int i = 0; i < completionJobs.size(); i++) {
+                                Integer origin = completionJobs.get(i).getProposalsOriginOffset();
+                                if (origin != null) {
+                                    Boolean restartRequired = evaluateJobResult(request, origin, currentOffset).restartRequired;
+                                    System.out.println("restartRequired: " + restartRequired);
+                                    if (restartRequired == null) {
+                                        return NO_PROPOSALS_ARRAY;
+                                    } else if (restartRequired) {
+                                        completionJobs.set(i, completionJobSuppliers.get(i).get());
+                                        someJobRestarted = true;
+                                    }
+                                }
+                            }
+                        }
+                    } while (someJobRestarted);
+                    proposals = completionJobs.stream().flatMap(j -> j.getProposals().stream()).toList();
                     break;
                 default:
                     proposals = Collections.emptyList();
+                    break;
             }
 
             List<ICompletionProposal> result = new ArrayList<>(proposals.size());
-            if (completionRequestPostion.offset != request.getDocumentOffset()) {
+            if (completionRequestPostion.getOffset() != request.getDocumentOffset()) {
                 for (Object cp : proposals) {
                     if (cp instanceof ICompletionProposal proposal && (
-                        (cp instanceof ICompletionProposalExtension2 exp && exp.validate(request.getDocument(), completionRequestPostion.offset, null))
+                        (cp instanceof ICompletionProposalExtension2 exp && exp.validate(request.getDocument(), completionRequestPostion.getOffset(), null))
                         || !(cp instanceof ICompletionProposalExtension2)
                     )) {
                         result.add(proposal);
@@ -240,6 +277,58 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             return ArrayUtils.toArray(ICompletionProposal.class, result);
         } finally {
             document.removePosition(completionRequestPostion);
+        }
+    }
+
+    private enum ProposalsJobResultStatus {
+        VALID(false),
+        PARTIALLY_VALID(false),
+        INVALID(true),
+        ABORT(null);
+
+        public final Boolean restartRequired;
+
+
+        ProposalsJobResultStatus(Boolean restartRequired) {
+            this.restartRequired = restartRequired;
+        }
+    }
+
+    private static ProposalsJobResultStatus evaluateJobResult(SQLCompletionRequest request, int jobProposalsOrigin, int currentCursorPosition) {
+        // Proposals were successfully prepared by the job,
+        // but they still might be a bit out-of-sync with the cursor position.
+        if (jobProposalsOrigin > currentCursorPosition) {
+            // There were removals earlier than completion list appeared on the screen, so
+            // prepared proposals are not relevant anymore.
+            if (currentCursorPosition < request.getDocumentOffset()) {
+                // The cursor is positioned before the initial request offset.
+                // Eclipse drops completions list in this case anyway.
+                return ProposalsJobResultStatus.ABORT;
+            } else {
+                // The cursor is positioned before the initial request offset,
+                // but the job handled some insertions, which were then removed.
+                // Let's restart the job.
+                return ProposalsJobResultStatus.INVALID;
+            }
+        } else if (jobProposalsOrigin < currentCursorPosition) {
+            // There were extra insertions at the moment when the job didn't handle them on the fly.
+            String unconsideredInput = null;
+            try {
+                unconsideredInput = request.getDocument().get(jobProposalsOrigin, currentCursorPosition - jobProposalsOrigin);
+            } catch (BadLocationException e) {
+                log.error("Failed to prepare completion proposals", e);
+                return ProposalsJobResultStatus.ABORT;
+            }
+            if (IDENTIFIER_PART_PATTERN.matcher(unconsideredInput).matches()) {
+                // The inserted text fragment can be considered as part of a certain word or identifier,
+                // so it's enough to do proposals validation to filter them out.
+                return ProposalsJobResultStatus.PARTIALLY_VALID;
+            } else {
+                // The word structure was disrupted by non-identifier characters, so lets restart the job.
+                return ProposalsJobResultStatus.INVALID;
+            }
+        } else {
+            return ProposalsJobResultStatus.VALID;
         }
     }
 
@@ -313,9 +402,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     public char[] getCompletionProposalAutoActivationCharacters()
     {
         boolean useKeystrokes = editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.ENABLE_KEYSTROKE_ACTIVATION);
-        return useKeystrokes ?
-            ".abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_$".toCharArray() :
-            new char[] {'.', };
+        return useKeystrokes ? ".abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_$".toCharArray() : new char[] {'.', };
     }
 
     @Nullable
@@ -352,7 +439,13 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
         @Override
         public void selectionChanged(ICompletionProposal proposal, boolean smartToggle) {
+            SQLCompletionActivityTracker activityTracker =
+                proposal instanceof SQLQueryCompletionProposal p ? p.getProposalContext().getActivityTracker() :
+                proposal instanceof SQLCompletionProposalBase p ? p.getRequest().getActivityTracker() : null;
 
+            if (activityTracker != null) {
+                activityTracker.selectionChanged();
+            }
         }
 
         @Override
@@ -417,7 +510,48 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 return Status.CANCEL_STATUS;
             }
         }
-
     }
 
+    private class NewProposalSearchJob extends AbstractJob {
+        private final SQLQueryCompletionAnalyzer analyzer;
+
+        public NewProposalSearchJob(SQLQueryCompletionAnalyzer analyzer) {
+            super("Analyzing query for proposals...");
+            this.analyzer = analyzer;
+        }
+        @Override
+        protected IStatus run(DBRProgressMonitor monitor) {
+            try {
+                monitor.beginTask("Seeking for SQL completion proposals", 2);
+                monitor.worked(1);
+                try {
+                    monitor.subTask("Find proposals");
+                    if (editor.getDataSource() != null) {
+                        DBExecUtils.tryExecuteRecover(monitor, editor.getDataSource(), this.analyzer);
+                    } else {
+                        this.analyzer.run(monitor);
+                    }
+                } finally {
+                    monitor.done();
+                }
+                return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
+            } catch (Throwable e) {
+                log.error(e);
+                return Status.CANCEL_STATUS;
+            }
+        }
+    }
+
+    private abstract static class ProposalsComputationJobHolder {
+        public final AbstractJob job;
+
+        public ProposalsComputationJobHolder(AbstractJob job) {
+            this.job = job;
+            this.job.schedule();
+        }
+
+        public abstract List<? extends Object> getProposals();
+
+        public abstract Integer getProposalsOriginOffset();
+    }
 }
