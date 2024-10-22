@@ -33,7 +33,6 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBFileController;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -936,7 +935,6 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 if (Files.isDirectory(localFilePath)) {
                     synAddDriverLibDirectory(newLib, localFilePath, shortFileName);
                 } else {
-                    ((DriverLibraryLocal) newLib).setPath(shortFileName);
                     syncAddDriverLibFile(newLib, localFilePath, shortFileName);
                 }
             }
@@ -976,18 +974,22 @@ public class DriverEditDialog extends HelpEnabledDialog {
     private void syncAddDriverLibFile(DBPDriverLibrary library, Path localFilePath, String shortFileName) throws DBException {
         DBFileController fileController = DBWorkbench.getPlatform().getFileController();
 
-        String filePath = DBConstants.DEFAULT_DRIVERS_FOLDER + "/" + driver.getId() + "/" + shortFileName;
+        String driverFilePath = driver.getId() + "/" + shortFileName;
+        if (library instanceof DriverLibraryLocal libraryLocal) {
+            libraryLocal.setPath(driverFilePath);
+        }
+
         try {
             byte[] fileData = Files.readAllBytes(localFilePath);
             fileController.saveFileData(
                 DBFileController.TYPE_DATABASE_DRIVER,
-                filePath,
+                driverFilePath,
                 fileData);
         } catch (IOException e) {
             throw new DBException("IO error while saving driver file", e);
         }
         DriverDescriptor.DriverFileInfo fileInfo = new DriverDescriptor.DriverFileInfo(
-            shortFileName, null, DBPDriverLibrary.FileType.jar, Path.of(filePath));
+            driverFilePath, null, DBPDriverLibrary.FileType.jar, Path.of(driverFilePath));
         fileInfo.setFileCRC(DriverDescriptor.calculateFileCRC(localFilePath));
         driver.addLibraryFile(library, fileInfo);
     }
