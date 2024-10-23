@@ -639,6 +639,10 @@ public class CoreMessages extends NLS {
     public static String pref_page_accessibility_screen_reader_description;
     public static String pref_page_accessibility_screen_reader_group_lbl;
 
+    public static String sso_popup_title;
+    public static String sso_popup_browser_label;
+    public static String sso_popup_code_label;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, CoreMessages.class);

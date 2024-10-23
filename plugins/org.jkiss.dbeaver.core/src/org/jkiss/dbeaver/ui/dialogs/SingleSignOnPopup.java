@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.ShellUtils;
 
 import java.net.URI;
@@ -61,10 +62,10 @@ public class SingleSignOnPopup extends Dialog implements BlockingPopupDialog {
     protected Control createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
 
-        getShell().setText("Single Sign-On");
+        getShell().setText(CoreMessages.sso_popup_title);
 
         LabelFactory.newLabel(SWT.WRAP)
-            .text("A browser with the authorization page be opened.\nIf the browser does not open, open the following URL:")
+            .text(CoreMessages.sso_popup_browser_label)
             .layoutData(GridDataFactory.fillDefaults().grab(true, false).create())
             .create(composite);
 
@@ -74,7 +75,7 @@ public class SingleSignOnPopup extends Dialog implements BlockingPopupDialog {
             .create(composite);
 
         LabelFactory.newLabel(SWT.WRAP)
-            .text("Confirm the code matches or enter it manually:")
+            .text(CoreMessages.sso_popup_code_label)
             .layoutData(GridDataFactory.fillDefaults().grab(true, false).create())
             .create(composite);
 
