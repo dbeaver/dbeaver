@@ -1870,6 +1870,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                         libraryFiles.add(fileInfo);
                         resolvedFiles.put(library, libraryFiles);
                         continue;
+                    } else {
+                        log.debug("Driver library path '" + library.getPath() + "' cannot be resolved at '" + customFile + "'. Skipping.");
                     }
                 }
                 Path srcLocalFile = library.getLocalFile();
