@@ -33,8 +33,8 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
-import org.jkiss.dbeaver.model.sql.completion.SQLCompletionAnalyzer;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionActivityTracker;
+import org.jkiss.dbeaver.model.sql.completion.SQLCompletionAnalyzer;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
@@ -66,10 +66,6 @@ import java.util.stream.Collectors;
 public class SQLCompletionProcessor implements IContentAssistProcessor
 {
     private static final Log log = Log.getLog(SQLCompletionProcessor.class);
-
-    private static final ICompletionProposal[] NO_PROPOSALS_ARRAY = new ICompletionProposal[0];
-
-    private static final Pattern IDENTIFIER_PART_PATTERN = Pattern.compile("^[_\\w]+$");
 
     private static IContextInformationValidator VALIDATOR = new Validator();
     private static boolean lookupTemplates = false;
@@ -112,7 +108,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         // Accurate proposals preparation requires cursor position of where the user stops editing the text,
         // so we are synchronously creating a position object to track the location of interest, instead of the documentOffset
         // (which is where the proposals computation was initially triggered, not where it is really expected to get them).
-        Position completionRequestPostion = new Position(documentOffset);
+        Position completionRequestPosition = new Position(documentOffset);
         try {
             IRegion line = document.getLineInformationOfOffset(documentOffset);
             if (documentOffset <= line.getLength() + line.getOffset() && line.getLength() > 0) { // we are in the nonempty line
@@ -168,7 +164,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                         ) {
                             return makeCommandProposals(request, request.getWordPart());
                         }
-                        document.addPosition(completionRequestPostion);
+                        document.addPosition(completionRequestPosition);
                     } catch (BadLocationException e) {
                         log.debug(e);
                     }
@@ -208,7 +204,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
                     if (mode.useNewAnalyzer) {
                         // new analyzer is reusable
-                        SQLQueryCompletionAnalyzer newAnalyzer = new SQLQueryCompletionAnalyzer(this.editor, request, completionRequestPostion);
+                        SQLQueryCompletionAnalyzer newAnalyzer = new SQLQueryCompletionAnalyzer(this.editor, request, completionRequestPosition);
                         completionJobSuppliers.add(() -> new ProposalsComputationJobHolder(new NewProposalSearchJob(newAnalyzer)) {
                             @Override
                             public List<? extends Object> getProposals() {
@@ -222,35 +218,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                         });
                     }
 
-                    List<ProposalsComputationJobHolder> completionJobs = completionJobSuppliers.stream()
-                        .map(Supplier::get).collect(Collectors.toList()); // modifiable list!
-                    boolean someJobRestarted;
-                    do {
-                        // wait for jobs to run asynchronously
-                        completionJobs.forEach(j -> UIUtils.waitJobCompletion(j.job));
-                        // if any job was cancelled while running in background, break the whole proposals computation logic
-                        if (completionJobs.stream().anyMatch(j -> j.job.isCanceled())) {
-                            return NO_PROPOSALS_ARRAY;
-                        } else {
-                            // all the jobs succeed, validate if the result is applicable
-                            int currentOffset = completionRequestPostion.getOffset();
-                            someJobRestarted = false;
-                            for (int i = 0; i < completionJobs.size(); i++) {
-                                Integer origin = completionJobs.get(i).getProposalsOriginOffset();
-                                if (origin != null) {
-                                    Boolean restartRequired = evaluateJobResult(request, origin, currentOffset).restartRequired;
-                                    System.out.println("restartRequired: " + restartRequired);
-                                    if (restartRequired == null) {
-                                        return NO_PROPOSALS_ARRAY;
-                                    } else if (restartRequired) {
-                                        completionJobs.set(i, completionJobSuppliers.get(i).get());
-                                        someJobRestarted = true;
-                                    }
-                                }
-                            }
-                        }
-                    } while (someJobRestarted);
-                    proposals = completionJobs.stream().flatMap(j -> j.getProposals().stream()).toList();
+                    proposals = this.computeProposalsWithJobs(request, completionRequestPosition, completionJobSuppliers);
                     break;
                 default:
                     proposals = Collections.emptyList();
@@ -258,10 +226,10 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             }
 
             List<ICompletionProposal> result = new ArrayList<>(proposals.size());
-            if (completionRequestPostion.getOffset() != request.getDocumentOffset()) {
+            if (completionRequestPosition.getOffset() != request.getDocumentOffset()) {
                 for (Object cp : proposals) {
                     if (cp instanceof ICompletionProposal proposal && (
-                        (cp instanceof ICompletionProposalExtension2 exp && exp.validate(request.getDocument(), completionRequestPostion.getOffset(), null))
+                        (cp instanceof ICompletionProposalExtension2 exp && exp.validate(request.getDocument(), completionRequestPosition.getOffset(), null))
                         || !(cp instanceof ICompletionProposalExtension2)
                     )) {
                         result.add(proposal);
@@ -276,22 +244,56 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             }
             return ArrayUtils.toArray(ICompletionProposal.class, result);
         } finally {
-            document.removePosition(completionRequestPostion);
+            document.removePosition(completionRequestPosition);
         }
     }
 
-    private enum ProposalsJobResultStatus {
-        VALID(false),
-        PARTIALLY_VALID(false),
-        INVALID(true),
-        ABORT(null);
-
-        public final Boolean restartRequired;
-
-
-        ProposalsJobResultStatus(Boolean restartRequired) {
-            this.restartRequired = restartRequired;
+    private List<? extends Object> computeProposalsWithJobs(
+        @NotNull SQLCompletionRequest request,
+        @NotNull Position completionRequestPosition,
+        @NotNull List<Supplier<ProposalsComputationJobHolder>> completionJobSuppliers
+    ) {
+        List<ProposalsComputationJobHolder> completionJobs = completionJobSuppliers.stream()
+            .map(Supplier::get).collect(Collectors.toList()); // modifiable list!
+        boolean hasRunningJobs = true;
+        while (hasRunningJobs) {
+            // wait for jobs to run asynchronously
+            completionJobs.forEach(j -> UIUtils.waitJobCompletion(j.job));
+            hasRunningJobs = false;
+            // if any job was cancelled while running in background, break the whole proposals computation logic
+            if (completionJobs.stream().anyMatch(j -> j.job.isCanceled())) {
+                return Collections.emptyList();
+            } else {
+                // all the jobs succeed, validate if the result is applicable
+                int currentOffset = completionRequestPosition.getOffset();
+                for (int i = 0; i < completionJobs.size(); i++) {
+                    Integer origin = completionJobs.get(i).getProposalsOriginOffset();
+                    if (origin != null) {
+                        ProposalsJobResultStatus jobResultStatus = evaluateJobResult(request, origin, currentOffset);
+                        switch (jobResultStatus) {
+                            case VALID: // do nothing, all proposals are ok
+                            case PARTIALLY_VALID: // do nothing, proposals will be filtered with validation when supported
+                                break;
+                            case INVALID: // job restart required
+                                completionJobs.set(i, completionJobSuppliers.get(i).get());
+                                hasRunningJobs = true;
+                                break;
+                            case ABORT:
+                            default:
+                                return Collections.emptyList();
+                        }
+                    }
+                }
+            }
         }
+        return completionJobs.stream().flatMap(j -> j.getProposals().stream()).toList();
+    }
+
+    private enum ProposalsJobResultStatus {
+        VALID,
+        PARTIALLY_VALID,
+        INVALID,
+        ABORT
     }
 
     private static ProposalsJobResultStatus evaluateJobResult(SQLCompletionRequest request, int jobProposalsOrigin, int currentCursorPosition) {
@@ -312,21 +314,22 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             }
         } else if (jobProposalsOrigin < currentCursorPosition) {
             // There were extra insertions at the moment when the job didn't handle them on the fly.
-            String unconsideredInput = null;
-            try {
-                unconsideredInput = request.getDocument().get(jobProposalsOrigin, currentCursorPosition - jobProposalsOrigin);
-            } catch (BadLocationException e) {
-                log.error("Failed to prepare completion proposals", e);
-                return ProposalsJobResultStatus.ABORT;
-            }
-            if (IDENTIFIER_PART_PATTERN.matcher(unconsideredInput).matches()) {
+//            String unconsideredInput = null;
+//            try {
+//                unconsideredInput = request.getDocument().get(jobProposalsOrigin, currentCursorPosition - jobProposalsOrigin);
+//            } catch (BadLocationException e) {
+//                log.error("Failed to prepare completion proposals", e);
+//                return ProposalsJobResultStatus.ABORT;
+//            }
+
+//            if (IDENTIFIER_PART_PATTERN.matcher(unconsideredInput).matches()) {
                 // The inserted text fragment can be considered as part of a certain word or identifier,
                 // so it's enough to do proposals validation to filter them out.
                 return ProposalsJobResultStatus.PARTIALLY_VALID;
-            } else {
-                // The word structure was disrupted by non-identifier characters, so lets restart the job.
-                return ProposalsJobResultStatus.INVALID;
-            }
+//            } else {
+//                // The word structure was disrupted by non-identifier characters, so lets restart the job.
+//                return ProposalsJobResultStatus.INVALID;
+//            }
         } else {
             return ProposalsJobResultStatus.VALID;
         }

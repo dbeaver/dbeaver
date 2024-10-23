@@ -109,12 +109,12 @@ public class SQLQueryModelRecognizer {
         STMTreeRuleNode tree = analyzer.parseSqlQueryTree(querySource, new STMSkippingErrorListener());
 
         if (tree == null || (tree.start == tree.stop && !LSMInspections.prepareOffquerySyntaxInspection().predictedTokensIds.contains(tree.start.getType()))) {
-            return null;
+            return tree == null ? null : new SQLQueryModel(tree, null, Collections.emptySet());
         }
         this.queryDataContext = this.prepareDataContext(tree);
         STMTreeNode queryNode = tree.findFirstNonErrorChild();
         if (queryNode == null) {
-            return null;
+            return new SQLQueryModel(tree, null, Collections.emptySet());
         }
         SQLQueryModelContent contents = switch (queryNode.getNodeKindId()) {
             case SQLStandardParser.RULE_directSqlDataStatement -> {

@@ -217,8 +217,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     @Nullable
-    public SQLQueryCompletionContext obtainCompletionContext(@NotNull Position completionRequestPostion) {
-        return backgroundParsingJob == null ? null : backgroundParsingJob.obtainCompletionContext(completionRequestPostion);
+    public SQLQueryCompletionContext obtainCompletionContext(DBRProgressMonitor monitor, @NotNull Position completionRequestPostion) {
+        return backgroundParsingJob == null ? null : backgroundParsingJob.obtainCompletionContext(monitor, completionRequestPostion);
     }
 
     @Override

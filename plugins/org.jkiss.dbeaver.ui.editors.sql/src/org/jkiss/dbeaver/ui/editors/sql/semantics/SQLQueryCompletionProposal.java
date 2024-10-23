@@ -224,14 +224,14 @@ public class SQLQueryCompletionProposal implements ICompletionProposal, IComplet
             log.debug("validate @" + offset);
         }
         this.getProposalContext().getActivityTracker().implicitlyTriggered();
-        if (this.filterString != null && CommonUtils.isNotEmpty(this.filterString.string())) {
+        if (this.filterString != null && CommonUtils.isNotEmpty(this.filterString.filterString)) {
             try {
-                int filterKeyStart = this.filterString.offset() >= 0 ? this.filterString.offset() : this.proposalContext.getRequestOffset();
+                int filterKeyStart = this.filterString.offset >= 0 ? this.filterString.offset : this.proposalContext.getRequestOffset();
                 String filterKey = document.get(filterKeyStart, offset - filterKeyStart);
                 if (DEBUG) {
-                    log.debug("validate: " + filterString.string() + " vs " + filterKey);
+                    log.debug("validate: " + filterString.string + " vs " + filterKey);
                 }
-                return filterString.string().contains(filterKey.toLowerCase());
+                return filterString.filterString.contains(filterKey.toLowerCase());
             } catch (BadLocationException ex) {
                 log.error("Error validating completion proposal", ex);
             }

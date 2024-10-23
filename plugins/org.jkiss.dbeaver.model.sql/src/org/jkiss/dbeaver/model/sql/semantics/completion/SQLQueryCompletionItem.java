@@ -18,12 +18,17 @@ package org.jkiss.dbeaver.model.sql.semantics.completion;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.context.SourceResolutionResult;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSStructContainer;
+
+import java.util.LinkedList;
+import java.util.List;
 
 public abstract class SQLQueryCompletionItem {
 
@@ -241,5 +246,15 @@ public abstract class SQLQueryCompletionItem {
         protected <R> R applyImpl(SQLQueryCompletionItemVisitor<R> visitor) {
             return visitor.visitNamedObject(this);
         }
+    }
+
+    public static List<String> prepareQualifiedNameParts(@NotNull DBSObject object) {
+        LinkedList<String> parts = new LinkedList<>();
+        for (DBSObject o = object; o != null; o = o.getParentObject()) {
+            if (o instanceof DBSStructContainer) {
+                parts.addFirst(DBUtils.getQuotedIdentifier(o));
+            }
+        }
+        return parts;
     }
 }

@@ -16,5 +16,14 @@
  */
 package org.jkiss.dbeaver.model.sql.semantics.completion;
 
-public record SQLQueryWordEntry(int offset, String string) {
+public class SQLQueryWordEntry {
+    public final int offset;
+    public final String string;
+    public final String filterString;
+
+    public SQLQueryWordEntry(int offset, String string) {
+        this.offset = offset;
+        this.string = string;
+        this.filterString = string.toLowerCase();
+    }
 }
