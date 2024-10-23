@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.oracle.model.session;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.internal.OracleMessages;
@@ -82,7 +83,7 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
     }
 
     @Override
-    public void alterSession(@NotNull DBCSession session, @NotNull OracleServerSession sessionType, @NotNull Map<String, Object> options) throws DBException //options?
+    public void alterSession(@NotNull DBCSession session, @NotNull OracleServerSession sessionType, @NotNull Map<String, Object> options) throws DBException
     {
         final boolean toKill = Boolean.TRUE.equals(options.get(PROP_KILL_SESSION));
         final boolean immediate = Boolean.TRUE.equals(options.get(PROP_IMMEDIATE));
@@ -118,6 +119,12 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
     @Override
     public Class<OracleServerSession> getSessionType() {
         return OracleServerSession.class;
+    }
+
+    @NotNull
+    @Override
+    public Map<String, Object> getTerminateOptions() {
+        return Map.of(OracleServerSessionManager.PROP_KILL_SESSION, true);
     }
 
     @NotNull

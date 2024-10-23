@@ -44,4 +44,7 @@ public interface DBAServerSessionManager<SESSION_TYPE extends DBAServerSession> 
     @NotNull
     Class<SESSION_TYPE> getSessionType();
 
+    @NotNull
+    Map<String, Object> getTerminateOptions();
+
 }

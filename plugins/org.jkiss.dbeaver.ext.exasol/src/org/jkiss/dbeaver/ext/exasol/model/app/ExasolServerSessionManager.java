@@ -81,7 +81,7 @@ public class ExasolServerSessionManager implements DBAServerSessionManager<Exaso
     }
 
     @Override
-    public void alterSession(@NotNull DBCSession session, @NotNull ExasolServerSession sessionType, @NotNull Map<String, Object> options) // options?
+    public void alterSession(@NotNull DBCSession session, @NotNull ExasolServerSession sessionType, @NotNull Map<String, Object> options)
         throws DBException {
         try {
             String cmd = String.format(Boolean.TRUE.equals(options.get(PROP_KILL_QUERY)) ? KILL_STMT_CMD : KILL_APP_CMD, sessionType.getSessionID().toString());
@@ -99,6 +99,12 @@ public class ExasolServerSessionManager implements DBAServerSessionManager<Exaso
     @NotNull
     public Class<ExasolServerSession> getSessionType() {
         return ExasolServerSession.class;
+    }
+
+    @NotNull
+    @Override
+    public Map<String, Object> getTerminateOptions() {
+        return Map.of(PROP_KILL_QUERY, true);
     }
 
     public static Collection<ExasolServerSession> readSessions(JDBCSession session) throws SQLException {

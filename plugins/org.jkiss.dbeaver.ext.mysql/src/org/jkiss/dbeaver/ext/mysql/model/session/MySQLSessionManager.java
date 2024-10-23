@@ -84,7 +84,7 @@ public class MySQLSessionManager implements DBAServerSessionManager<MySQLSession
     }
 
     @Override
-    public void alterSession(@NotNull DBCSession session, @NotNull MySQLSession sessionType, @NotNull Map<String, Object> options) throws DBException //Options?
+    public void alterSession(@NotNull DBCSession session, @NotNull MySQLSession sessionType, @NotNull Map<String, Object> options) throws DBException
     {
         try {
             try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(
@@ -103,6 +103,12 @@ public class MySQLSessionManager implements DBAServerSessionManager<MySQLSession
     @Override
     public Class<MySQLSession> getSessionType() {
         return MySQLSession.class;
+    }
+
+    @NotNull
+    @Override
+    public Map<String, Object> getTerminateOptions() {
+        return Map.of(PROP_KILL_QUERY, true);
     }
 
     @Override

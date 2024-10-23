@@ -94,6 +94,12 @@ public class PostgreSessionManager implements DBAServerSessionManager<PostgreSes
         return PostgreSession.class;
     }
 
+    @NotNull
+    @Override
+    public Map<String, Object> getTerminateOptions() {
+        return Map.of();
+    }
+
     @Override
     public boolean canGenerateSessionReadQuery() {
         return true;
