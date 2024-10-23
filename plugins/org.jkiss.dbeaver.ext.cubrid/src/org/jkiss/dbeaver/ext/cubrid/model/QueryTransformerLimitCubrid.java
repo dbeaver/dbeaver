@@ -37,9 +37,8 @@ public class QueryTransformerLimitCubrid extends QueryTransformerLimit
     }
 
     public boolean isLimitApplicable(Statement statement) {
-        if (statement instanceof Select
-                && ((Select) statement).getSelectBody() instanceof PlainSelect) {
-            PlainSelect selectBody = (PlainSelect) ((Select) statement).getSelectBody();
+        if (statement instanceof Select select
+                && select.getSelectBody() instanceof PlainSelect selectBody) {
             String where = String.valueOf(selectBody.getWhere()).toUpperCase();
             if (where.contains("ROWNUM") || where.contains("INST_NUM")) {
                 return false;
