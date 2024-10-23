@@ -24,9 +24,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.ui.editors.sql.plan.simple.SQLPlanViewProviderSimple;
 
-public class CubridSQLPlanViewProvider extends SQLPlanViewProviderSimple
-{
-    private static final Log log = Log.getLog(CubridSQLPlanViewProvider.class);
+public class CubridSQLPlanViewProvider extends SQLPlanViewProviderSimple {
 
     @Override
     public void visualizeQueryPlan(Viewer viewer, SQLQuery query, DBCPlan plan) {
