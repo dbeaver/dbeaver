@@ -30,11 +30,7 @@ public class CubridSQLPlanViewProvider extends SQLPlanViewProviderSimple
 
     @Override
     public void visualizeQueryPlan(Viewer viewer, SQLQuery query, DBCPlan plan) {
-        try {
-            query.setText(plan.getPlanQueryString());
-        } catch (DBException e) {
-            log.debug("Cubrid: could not set query text", e);
-        }
+        query.setText(((CubridPlanAnalyser) plan).getPlanQueryString());
         fillPlan(query, plan);
         showPlan(viewer, query, plan);
     }
