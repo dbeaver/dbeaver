@@ -487,7 +487,7 @@
         <parameter name="databaseList"
             longName="database-driver-list"
             description="Show list of supported database drivers in json format."
-            exitAfterExecute="false"
+            exitAfterExecute="true"
             hasArg="true"
             handler="org.jkiss.dbeaver.ui.app.standalone.cli.DataBaseInfoHandler"/>
     </extension>
