@@ -23,4 +23,8 @@
     <extension point="org.jkiss.dbeaver.objectManager">
         <manager class="org.jkiss.dbeaver.ext.cubrid.ui.config.CubridUserManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridPrivilage"/>
     </extension>
+    
+	<extension point="org.jkiss.dbeaver.sql.plan.view">
+        <view id="fulltext" priority="101" label="%sql.plan.view.fulltext.name" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/page_explain_plan.png" description="%sql.plan.view.fulltext.tip" class="org.jkiss.dbeaver.ext.cubrid.ui.editors.CubridSQLPlanViewProvider" />
+    </extension>
 </plugin>
