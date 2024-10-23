@@ -47,6 +47,8 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.fs.nio.EFSNIOResource;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -405,18 +407,18 @@ public class NavigatorUtils {
     public static void filterSelection(final ISelection selection, boolean exclude)
     {
         if (selection instanceof IStructuredSelection) {
-            Map<DBNDatabaseFolder, DBSObjectFilter> folders = new HashMap<>();
+            Map<DBNDatabaseNode, DBSObjectFilter> folders = new HashMap<>();
             for (Object item : ((IStructuredSelection)selection).toArray()) {
-                if (item instanceof DBNNode) {
-                    final DBNNode node = (DBNNode) item;
-                    DBNDatabaseFolder folder = (DBNDatabaseFolder) node.getParentNode();
-                    DBSObjectFilter nodeFilter = folders.get(folder);
+                if (item instanceof DBNNode node && node.getParentNode() instanceof DBNDatabaseNode parentNode) {
+                    DBXTreeItem nodeMeta = getNodeMetaForFilters(node, parentNode);
+
+                    DBSObjectFilter nodeFilter = folders.get(parentNode);
                     if (nodeFilter == null) {
-                        nodeFilter = folder.getNodeFilter(folder.getItemsMeta(), true);
+                        nodeFilter = parentNode.getNodeFilter(nodeMeta, true);
                         if (nodeFilter == null) {
                             nodeFilter = new DBSObjectFilter();
                         }
-                        folders.put(folder, nodeFilter);
+                        folders.put(parentNode, nodeFilter);
                     }
                     if (exclude) {
                         nodeFilter.addExclude(node.getNodeDisplayName());
@@ -428,7 +430,7 @@ public class NavigatorUtils {
             }
             // Save folders
             Set<DBPDataSourceContainer> changedContainers = new HashSet<>();
-            for (Map.Entry<DBNDatabaseFolder, DBSObjectFilter> entry : folders.entrySet()) {
+            for (Map.Entry<DBNDatabaseNode, DBSObjectFilter> entry : folders.entrySet()) {
                 entry.getKey().setNodeFilter(entry.getKey().getItemsMeta(), entry.getValue(), false);
                 changedContainers.add(entry.getKey().getDataSourceContainer());
             }
@@ -439,6 +441,25 @@ public class NavigatorUtils {
             // Refresh all folders
             NavigatorHandlerRefresh.refreshNavigator(folders.keySet());
         }
+    }
+
+    public static DBXTreeItem getNodeMetaForFilters(DBNNode node, DBNDatabaseNode parentNode) {
+        DBXTreeItem nodeMeta = parentNode.getItemsMeta();
+
+        if (node instanceof DBNDatabaseItem dbItem && nodeMeta.isOptional()) {
+            // We filter db item - it may be optional
+            Class<?> assumeChildType = dbItem.getChildrenClass(nodeMeta);
+            if (assumeChildType == null || !assumeChildType.isInstance(dbItem.getObject())) {
+                // Node object has different type
+                List<DBXTreeNode> childMetas = nodeMeta.getChildren(node);
+                if (!childMetas.isEmpty() && childMetas.get(0) instanceof DBXTreeItem nestedItem &&
+                    parentNode.getChildrenClass(nestedItem) != null
+                ) {
+                    nodeMeta = nestedItem;
+                }
+            }
+        }
+        return nodeMeta;
     }
 
     public static boolean syncEditorWithNavigator(INavigatorModelView navigatorView, IEditorPart activeEditor) {
@@ -452,12 +473,11 @@ public class NavigatorUtils {
         }
         DBNNode selectedNode = getSelectedNode(navigatorViewer.getSelection());
         DBPProject nodeProject = selectedNode.getOwnerProject();
-        if (!(selectedNode instanceof DBNDatabaseNode)
+        if (!(selectedNode instanceof DBNDatabaseNode databaseNode)
             || (nodeProject != null && !nodeProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT))
         ) {
             return false;
         }
-        DBNDatabaseNode databaseNode = (DBNDatabaseNode) selectedNode;
         DBSObject dbsObject = databaseNode.getObject();
         if (!(dbsObject instanceof DBSStructContainer)) {
             dbsObject = DBUtils.getParentOfType(DBSStructContainer.class, dbsObject);
