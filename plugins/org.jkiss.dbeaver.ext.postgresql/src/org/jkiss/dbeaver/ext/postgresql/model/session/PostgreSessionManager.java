@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -58,7 +57,7 @@ public class PostgreSessionManager implements DBAServerSessionManager<PostgreSes
 
     @NotNull
     @Override
-    public Collection<PostgreSession> getSessions(@NotNull DBCSession session, @NotNull Map<String, Object> options) throws DBException
+    public List<PostgreSession> getSessions(@NotNull DBCSession session, @NotNull Map<String, Object> options) throws DBException
     {
         try {
             try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(generateSessionReadQuery(options))) {
