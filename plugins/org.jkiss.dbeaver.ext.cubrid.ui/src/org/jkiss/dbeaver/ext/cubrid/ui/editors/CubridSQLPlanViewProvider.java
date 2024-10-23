@@ -18,8 +18,6 @@
 package org.jkiss.dbeaver.ext.cubrid.ui.editors;
 
 import org.eclipse.jface.viewers.Viewer;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.ui.editors.sql.plan.simple.SQLPlanViewProviderSimple;
