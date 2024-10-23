@@ -10,9 +10,7 @@
 
     <launcherArgs>
         <programArgs></programArgs>
-        <programArgsLin>--launcher.additionalVmargs %XDG_DATA_HOME%/DBeaverData/settings/dbeaver.vmoptions %HOME%/.local/share/DBeaverData/settings/dbeaver.vmoptions</programArgsLin>
-        <programArgsWin>--launcher.additionalVmargs %APPDATA%\DBeaverData\settings\dbeaver.exe.vmoptions</programArgsWin>
-        <programArgsMac>--launcher.additionalVmargs %HOME%/Library/DBeaverData/settings/dbeaver.vmoptions -vm ../Eclipse/jre/Contents/Home/lib/libjli.dylib</programArgsMac>
+        <programArgsMac>-vm ../Eclipse/jre/Contents/Home/lib/libjli.dylib</programArgsMac>
 
         <vmArgs>
             -XX:+IgnoreUnrecognizedVMOptions
