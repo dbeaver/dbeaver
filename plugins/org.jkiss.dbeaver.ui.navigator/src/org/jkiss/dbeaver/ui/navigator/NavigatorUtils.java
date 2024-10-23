@@ -406,9 +406,9 @@ public class NavigatorUtils {
 
     public static void filterSelection(final ISelection selection, boolean exclude)
     {
-        if (selection instanceof IStructuredSelection) {
+        if (selection instanceof IStructuredSelection structuredSelection) {
             Map<DBNDatabaseNode, DBSObjectFilter> folders = new HashMap<>();
-            for (Object item : ((IStructuredSelection)selection).toArray()) {
+            for (Object item : structuredSelection.toArray()) {
                 if (item instanceof DBNNode node && node.getParentNode() instanceof DBNDatabaseNode parentNode) {
                     DBXTreeItem nodeMeta = getNodeMetaForFilters(node, parentNode);
 
@@ -444,9 +444,10 @@ public class NavigatorUtils {
     }
 
     public static DBXTreeItem getNodeMetaForFilters(DBNNode node, DBNDatabaseNode parentNode) {
-        DBXTreeItem nodeMeta = parentNode.getItemsMeta();
+        DBXTreeItem nodeMeta = node instanceof DBNDatabaseFolder folder ?
+            folder.getItemsMeta() : parentNode.getItemsMeta();
 
-        if (node instanceof DBNDatabaseItem dbItem && nodeMeta.isOptional()) {
+        if (node instanceof DBNDatabaseNode dbItem && nodeMeta.isOptional()) {
             // We filter db item - it may be optional
             Class<?> assumeChildType = dbItem.getChildrenClass(nodeMeta);
             if (assumeChildType == null || !assumeChildType.isInstance(dbItem.getObject())) {

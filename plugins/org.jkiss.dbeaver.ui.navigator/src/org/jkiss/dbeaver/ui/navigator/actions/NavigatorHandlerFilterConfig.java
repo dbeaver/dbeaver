@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
@@ -45,26 +46,23 @@ import java.util.List;
 import java.util.Map;
 
 public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBase implements IElementUpdater {
+    private static final Log log = Log.getLog(NavigatorHandlerFilterConfig.class);
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
         DBNNode node = NavigatorUtils.getSelectedNode(selection);
-        if (node instanceof DBNDatabaseItem) {
-            node = node.getParentNode();
-        }
-        if (node instanceof DBNDatabaseFolder) {
-            configureFilters(HandlerUtil.getActiveShell(event), node);
+        if (node instanceof DBNDatabaseNode dbNode) {
+            configureFilters(HandlerUtil.getActiveShell(event), dbNode);
         }
         return null;
     }
 
-    public static void configureFilters(Shell shell, DBNNode node)
-    {
-        final DBNDatabaseNode dbNode = (DBNDatabaseNode) node;
-        DBXTreeItem itemsMeta = dbNode.getItemsMeta();
+    public static void configureFilters(Shell shell, DBNDatabaseNode dbNode) {
+        DBNDatabaseNode parentNode = dbNode.getParentNode() instanceof DBNDatabaseNode parent ? parent : dbNode;
+        DBXTreeItem itemsMeta = NavigatorUtils.getNodeMetaForFilters(dbNode, parentNode);
         if (itemsMeta != null) {
-            DBSObjectFilter objectFilter = dbNode.getNodeFilter(itemsMeta, true);
+            DBSObjectFilter objectFilter = parentNode.getNodeFilter(itemsMeta, true);
             if (objectFilter == null) {
                 objectFilter = new DBSObjectFilter();
             }
@@ -77,7 +75,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
             EditObjectFilterDialog dialog = new EditObjectFilterDialog(
                 shell,
                 dsRegistry,
-                globalFilter ? "All " + node.getNodeTypeLabel() : node.getNodeTypeLabel() + " of " + parentName,
+                globalFilter ? "All " + dbNode.getNodeTypeLabel() : dbNode.getNodeTypeLabel() + " of " + parentName,
                 objectFilter,
                 globalFilter);
             switch (dialog.open()) {
@@ -103,7 +101,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
                     objectFilter = dbNode.getDataSource().getContainer().getObjectFilter(childrenClass, null, true);
                     dialog = new EditObjectFilterDialog(
                         shell,
-                        dsRegistry, "All " + node.getNodeTypeLabel(),
+                        dsRegistry, "All " + dbNode.getNodeTypeLabel(),
                         objectFilter != null ? objectFilter : new DBSObjectFilter(),
                         true);
                     if (dialog.open() == IDialogConstants.OK_ID) {
@@ -119,8 +117,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
     }
 
     @Override
-    public void updateElement(UIElement element, Map parameters)
-    {
+    public void updateElement(UIElement element, Map parameters) {
         if (!updateUI) {
             return;
         }

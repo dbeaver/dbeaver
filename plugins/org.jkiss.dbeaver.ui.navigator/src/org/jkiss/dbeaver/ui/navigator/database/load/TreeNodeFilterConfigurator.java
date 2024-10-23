@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.navigator.database.load;
 import org.eclipse.jface.viewers.IToolTipProvider;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerFilterConfig;
@@ -49,7 +50,9 @@ public class TreeNodeFilterConfigurator extends TreeNodeSpecial implements ITool
 
     @Override
     public boolean handleDefaultAction(DatabaseNavigatorTree tree) {
-        NavigatorHandlerFilterConfig.configureFilters(tree.getShell(), getParent());
+        if (getParent() instanceof DBNDatabaseNode dbNode) {
+            NavigatorHandlerFilterConfig.configureFilters(tree.getShell(), dbNode);
+        }
         return true;
     }
 }
