@@ -31,6 +31,10 @@ Export-Package: org.jkiss.dbeaver.ext.postgresql,
  org.jkiss.dbeaver.ext.postgresql.model.net,
  org.jkiss.dbeaver.ext.postgresql.model.plan,
  org.jkiss.dbeaver.ext.postgresql.model.session,
+ org.jkiss.dbeaver.ext.postgresql.model.impls.cockroach,
+ org.jkiss.dbeaver.ext.postgresql.model.impls.materialize,
+ org.jkiss.dbeaver.ext.postgresql.model.impls.redshift,
+ org.jkiss.dbeaver.ext.postgresql.model.impls.yellowbrick,
  org.jkiss.dbeaver.ext.postgresql.tasks
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.ext.postgresql
