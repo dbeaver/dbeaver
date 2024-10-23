@@ -61,7 +61,7 @@ public class CubridPlanAnalyser extends AbstractExecutionPlan {
 
     @NotNull
     @Override
-    public String getPlanQueryString() throws DBException {
+    public String getPlanQueryString() {
         return plan;
     }
 }
