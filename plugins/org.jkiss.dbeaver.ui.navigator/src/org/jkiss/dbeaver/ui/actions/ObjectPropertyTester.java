@@ -211,11 +211,11 @@ public class ObjectPropertyTester extends PropertyTester {
             }
             case PROP_CAN_MOVE_UP:
             case PROP_CAN_MOVE_DOWN: {
-                if (node instanceof DBNDatabaseNode) {
+                if (node instanceof DBNDatabaseNode dbNode) {
                     if (DBNUtils.isReadOnly(node)) {
                         return false;
                     }
-                    DBSObject object = ((DBNDatabaseNode) node).getObject();
+                    DBSObject object = dbNode.getObject();
                     if (object instanceof DBPOrderedObject) {
                         DBEObjectReorderer objectReorderer = getObjectManager(object.getClass(), DBEObjectReorderer.class);
                         if (objectReorderer != null) {
@@ -233,13 +233,13 @@ public class ObjectPropertyTester extends PropertyTester {
                 if (node instanceof DBNDatabaseItem) {
                     node = node.getParentNode();
                 }
-                if (node instanceof DBNDatabaseFolder && ((DBNDatabaseFolder) node).getItemsMeta() != null) {
+                if (node instanceof DBNDatabaseNode dbNode && dbNode.getItemsMeta() != null) {
                     return true;
                 }
                 break;
             }
             case PROP_CAN_FILTER_OBJECT: {
-                if (node.getParentNode() instanceof DBNDatabaseFolder && ((DBNDatabaseFolder) node.getParentNode()).getItemsMeta() != null) {
+                if (node.getParentNode() instanceof DBNDatabaseNode dbNode && dbNode.getItemsMeta() != null) {
                     return true;
                 }
                 break;
@@ -248,8 +248,8 @@ public class ObjectPropertyTester extends PropertyTester {
                 if (node instanceof DBNDatabaseItem) {
                     node = node.getParentNode();
                 }
-                if (node instanceof DBNDatabaseFolder && ((DBNDatabaseFolder) node).getItemsMeta() != null) {
-                    DBSObjectFilter filter = ((DBNDatabaseFolder) node).getNodeFilter(((DBNDatabaseFolder) node).getItemsMeta(), true);
+                if (node instanceof DBNDatabaseNode dbNode && dbNode.getItemsMeta() != null) {
+                    DBSObjectFilter filter = dbNode.getNodeFilter(dbNode.getItemsMeta(), true);
                     if ("defined".equals(expectedValue)) {
                         return filter != null && !filter.isEmpty();
                     } else {
