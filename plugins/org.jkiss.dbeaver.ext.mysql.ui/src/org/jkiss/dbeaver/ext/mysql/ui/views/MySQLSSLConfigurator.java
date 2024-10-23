@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.registry.configurator.DBPConnectionEditIntention;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.net.SSLConfiguratorTrustStoreUI;
 import org.jkiss.utils.CommonUtils;
@@ -62,6 +63,13 @@ public class MySQLSSLConfigurator extends SSLConfiguratorTrustStoreUI {
             requireSSQL = UIUtils.createLabelCheckbox(advGroup, MySQLUIMessages.mysql_ssl_configurator_checkbox_require_ssl, MySQLUIMessages.mysql_ssl_configurator_checkbox_require_ssl_tip, false);
             veryServerCert = UIUtils.createLabelCheckbox(advGroup, MySQLUIMessages.mysql_ssl_configurator_checkbox_verify_server_certificate, MySQLUIMessages.mysql_ssl_configurator_checkbox_verify_server_certificate_tip, true);
             allowPublicKeyRetrieval = UIUtils.createLabelCheckbox(advGroup, MySQLUIMessages.mysql_ssl_configurator_checkbox_allow_public_key, MySQLUIMessages.mysql_ssl_configurator_checkbox_allow_public_key_tip, false);
+        }
+
+        if (this.getEditIntention() == DBPConnectionEditIntention.CREDENTIALS_ONLY) {
+            cipherSuitesText.setEditable(false);
+            requireSSQL.setEnabled(false);
+            veryServerCert.setEnabled(false);
+            allowPublicKeyRetrieval.setEnabled(false);
         }
     }
 

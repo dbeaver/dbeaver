@@ -763,8 +763,8 @@ public class MySQLTable extends MySQLTableBase
                     engines.add(engine);
                 }
             }
-            Collections.sort(engines, DBUtils.<MySQLEngine>nameComparator());
-            return engines.toArray(new MySQLEngine[engines.size()]);
+            engines.sort(DBUtils.<MySQLEngine>nameComparator());
+            return engines.toArray(new MySQLEngine[0]);
         }
     }
 

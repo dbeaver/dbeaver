@@ -121,43 +121,29 @@ public abstract class JDBCDataSource extends AbstractDataSource
         this.defaultRemoteInstance = new JDBCRemoteInstance(monitor, this, true);
     }
 
-    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context, @NotNull String purpose)
-        throws DBCException
-    {
+    protected Connection openConnection(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable JDBCExecutionContext context,
+        @NotNull String purpose
+    ) throws DBCException {
+        return openConnection(
+            monitor,
+            context,
+            new DBPConnectionConfiguration(container.getActualConnectionConfiguration()),
+            purpose);
+    }
+
+    protected Connection openConnection(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable JDBCExecutionContext context,
+        @NotNull DBPConnectionConfiguration connectionInfo,
+        @NotNull String purpose
+    ) throws DBCException {
         DBPDriver driver = container.getDriver();
-        DBPConnectionConfiguration connectionInfo = new DBPConnectionConfiguration(container.getActualConnectionConfiguration());
         Properties connectProps = getAllConnectionProperties(monitor, context, purpose, connectionInfo);
         String url = getConnectionURL(connectionInfo);
 
-        final DBPDriverSubstitutionDescriptor driverSubstitution = container.getDriverSubstitution();
-        if (driverSubstitution != null) {
-            final DBPDataSourceProviderDescriptor dataSourceProvider = DBWorkbench.getPlatform().getDataSourceProviderRegistry()
-                .getDataSourceProvider(driverSubstitution.getProviderId());
-
-            if (dataSourceProvider != null) {
-                final DBPDriver substitutedDriver = dataSourceProvider.getDriver(driverSubstitution.getDriverId());
-
-                if (substitutedDriver != null) {
-                    final DBPDriverSubstitution substitution = driverSubstitution.getInstance();
-                    final Properties substitutedProperties = substitution.getConnectionProperties(monitor, container, connectionInfo);
-                    final String substitutedUrl = substitution.getConnectionURL(container, connectionInfo);
-
-                    if (substitutedProperties != null) {
-                        connectProps.putAll(substitutedProperties);
-                    }
-
-                    if (substitutedUrl != null) {
-                        url = substitutedUrl;
-                    }
-                } else {
-                    log.warn("Couldn't find driver '" + driverSubstitution.getDriverId()
-                        + "' for driver substitution '" + driverSubstitution.getId() + "', using original driver");
-                }
-            } else {
-                log.warn("Couldn't find data source provider '" + driverSubstitution.getProviderId()
-                    + "' for driver substitution '" + driverSubstitution.getId() + "', using original driver");
-            }
-        }
+        url = substituteDriverIfNeeded(monitor, connectionInfo, connectProps, url);
 
         final JDBCConnectionConfigurer connectionConfigurer = GeneralUtils.adapt(this, JDBCConnectionConfigurer.class);
 
@@ -272,6 +258,39 @@ public abstract class JDBCDataSource extends AbstractDataSource
         catch (Throwable e) {
             throw new DBCConnectException("Unexpected driver error occurred while connecting to the database", e);
         }
+    }
+
+    private String substituteDriverIfNeeded(@NotNull DBRProgressMonitor monitor, @NotNull DBPConnectionConfiguration connectionInfo, Properties connectProps, String url) {
+        final DBPDriverSubstitutionDescriptor driverSubstitution = container.getDriverSubstitution();
+        if (driverSubstitution != null) {
+            final DBPDataSourceProviderDescriptor dataSourceProvider = DBWorkbench.getPlatform().getDataSourceProviderRegistry()
+                .getDataSourceProvider(driverSubstitution.getProviderId());
+
+            if (dataSourceProvider != null) {
+                final DBPDriver substitutedDriver = dataSourceProvider.getDriver(driverSubstitution.getDriverId());
+
+                if (substitutedDriver != null) {
+                    final DBPDriverSubstitution substitution = driverSubstitution.getInstance();
+                    final Properties substitutedProperties = substitution.getConnectionProperties(monitor, container, connectionInfo);
+                    final String substitutedUrl = substitution.getConnectionURL(container, connectionInfo);
+
+                    if (substitutedProperties != null) {
+                        connectProps.putAll(substitutedProperties);
+                    }
+
+                    if (substitutedUrl != null) {
+                        url = substitutedUrl;
+                    }
+                } else {
+                    log.warn("Couldn't find driver '" + driverSubstitution.getDriverId()
+                        + "' for driver substitution '" + driverSubstitution.getId() + "', using original driver");
+                }
+            } else {
+                log.warn("Couldn't find data source provider '" + driverSubstitution.getProviderId()
+                    + "' for driver substitution '" + driverSubstitution.getId() + "', using original driver");
+            }
+        }
+        return url;
     }
 
     @Nullable

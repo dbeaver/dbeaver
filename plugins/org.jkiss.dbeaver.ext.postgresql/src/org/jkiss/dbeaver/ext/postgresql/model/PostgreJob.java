@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 
@@ -275,13 +274,8 @@ public class PostgreJob implements PostgreObject, DBPStatefulObject, DBPRefresha
 
         @Override
         public Object[] getPossibleValues(@NotNull PostgreJob object) {
-            try {
-                // Classes are already loaded at this moment, so we are free to use void monitor here
-                return object.getDatabase().getJobClasses(new VoidProgressMonitor()).toArray();
-            } catch (DBException e) {
-                log.error("Error loading job classes", e);
-                return null;
-            }
+            // Classes are already loaded at this moment, so we are free to use void monitor here
+            return object.getDatabase().getJobClassCache().getCachedObjects().toArray();
         }
     }
 }

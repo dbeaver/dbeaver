@@ -131,8 +131,15 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
         }
     }
 
+    @NotNull
     public ObjectType getHandlerType() {
         return handlerType;
+    }
+
+    @NotNull
+    @Override
+    public String getImplClassName() {
+        return getHandlerType().getImplName();
     }
 
     @Override
