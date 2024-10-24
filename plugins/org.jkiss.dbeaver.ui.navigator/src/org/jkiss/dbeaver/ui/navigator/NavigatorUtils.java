@@ -48,7 +48,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.fs.nio.EFSNIOResource;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
-import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -410,7 +409,7 @@ public class NavigatorUtils {
             Map<DBNDatabaseNode, DBSObjectFilter> folders = new HashMap<>();
             for (Object item : structuredSelection.toArray()) {
                 if (item instanceof DBNNode node && node.getParentNode() instanceof DBNDatabaseNode parentNode) {
-                    DBXTreeItem nodeMeta = getNodeMetaForFilters(node, parentNode);
+                    DBXTreeItem nodeMeta = DBNUtils.getNodeMetaForFilters(node, parentNode);
 
                     DBSObjectFilter nodeFilter = folders.get(parentNode);
                     if (nodeFilter == null) {
