@@ -21,9 +21,10 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseItem;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
@@ -36,15 +37,12 @@ public class NavigatorHandlerFilterClear extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
         DBNNode node = NavigatorUtils.getSelectedNode(selection);
-        if (node instanceof DBNDatabaseItem) {
-            node = node.getParentNode();
-        }
-        if (node instanceof DBNDatabaseFolder) {
-            final DBNDatabaseFolder folder = (DBNDatabaseFolder) node;
-            DBXTreeItem itemsMeta = folder.getItemsMeta();
+        DBNDatabaseNode parentNode = (DBNDatabaseNode) (node instanceof DBNDatabaseItem ? node.getParentNode() : node);
+        if (node instanceof DBNDatabaseNode dbNode) {
+            DBXTreeItem itemsMeta = DBNUtils.getNodeMetaForFilters(node, parentNode);//folder.getItemsMeta();
             if (itemsMeta != null) {
-                folder.setNodeFilter(itemsMeta, new DBSObjectFilter(), true);
-                NavigatorHandlerRefresh.refreshNavigator(Collections.singleton(folder));
+                dbNode.setNodeFilter(itemsMeta, new DBSObjectFilter(), true);
+                NavigatorHandlerRefresh.refreshNavigator(Collections.singleton(dbNode));
             }
 
         }

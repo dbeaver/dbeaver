@@ -163,8 +163,7 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
         SQLQueryExprType type;
 
         // TODO consider resolution order ?
-        SQLQueryResultPseudoColumn pseudoColumn =
-            context.resolveGlobalPseudoColumn(statistics.getMonitor(), columnName.getName());
+        SQLQueryResultPseudoColumn pseudoColumn = context.resolveGlobalPseudoColumn(statistics.getMonitor(), columnName.getName());
         if (pseudoColumn == null) {
             pseudoColumn = context.resolvePseudoColumn(statistics.getMonitor(), columnName.getName());
         }

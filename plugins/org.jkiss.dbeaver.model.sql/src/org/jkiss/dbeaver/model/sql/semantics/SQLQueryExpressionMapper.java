@@ -345,7 +345,12 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
                 STMTreeNode correlationNameNode = correlationSpecNode.findFirstChildOfName(STMKnownRuleNames.correlationName);
                 SQLQuerySymbolEntry correlationName = correlationNameNode == null ? null : r.collectIdentifier(correlationNameNode);
                 if (correlationName != null) {
-                    source = new SQLQueryRowsCorrelatedSourceModel(n, source, correlationName, r.collectColumnNameList(correlationSpecNode));
+                    List<SQLQuerySymbolEntry> correlationColumNames = r.collectColumnNameList(correlationSpecNode);
+                    source = new SQLQueryRowsCorrelatedSourceModel(n, source, correlationName, correlationColumNames);
+                    SQLQueryLexicalScope aliasesScope = new SQLQueryLexicalScope(correlationColumNames.size() + 1);
+                    aliasesScope.registerItem(correlationName);
+                    correlationColumNames.forEach(aliasesScope::registerItem);
+                    source.registerLexicalScope(aliasesScope);
                 }
             }
             return source;
