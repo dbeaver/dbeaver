@@ -38,9 +38,11 @@ import org.jkiss.dbeaver.model.DBPDataSourceOriginExternal;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.preferences.PrefPageProjectNetworkProfiles;
@@ -225,7 +227,8 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
     }
 
     private void updateProfileList(boolean updateConfiguration) {
-        DBPConnectionConfiguration cfg = site.getActiveDataSource().getConnectionConfiguration();
+        DBPDataSourceContainer activeDataSource = site.getActiveDataSource();
+        DBPConnectionConfiguration cfg = activeDataSource.getConnectionConfiguration();
         activeProfile = CommonUtils.isEmpty(cfg.getConfigProfileName()) ? null : site.getProject().getDataSourceRegistry().getNetworkProfile(
             cfg.getConfigProfileSource(),
             cfg.getConfigProfileName());
@@ -235,7 +238,7 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
         profileCombo.add("");
 
         allProfiles.clear();
-        DBPDataSourceOrigin dataSourceOrigin = site.getActiveDataSource().getOrigin();
+        DBPDataSourceOrigin dataSourceOrigin = activeDataSource.getOrigin();
         if (dataSourceOrigin instanceof DBPDataSourceOriginExternal) {
             allProfiles.addAll(((DBPDataSourceOriginExternal) dataSourceOrigin).getAvailableNetworkProfiles());
         }
@@ -254,11 +257,17 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
 
         // Update settings from profile
         if (activeProfile != null) {
-
+            try {
+                DBSSecretController secretController = DBSSecretController.getProjectSecretController(
+                    activeDataSource.getProject());
+                activeProfile.resolveSecrets(secretController);
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError("Secret resolve error", "Cannot save resolve profile secrets", e);
+            }
         }
 
         if (updateConfiguration) {
-            loadHandlerConfiguration(site.getActiveDataSource());
+            loadHandlerConfiguration(activeDataSource);
         }
 
         if (useHandlerCheck != null) {
