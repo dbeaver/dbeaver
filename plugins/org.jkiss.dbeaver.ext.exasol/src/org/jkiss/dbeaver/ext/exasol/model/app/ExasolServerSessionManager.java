@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.exasol.model.app;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -92,6 +93,18 @@ public class ExasolServerSessionManager implements DBAServerSessionManager<Exaso
             throw new DBDatabaseException(e, session.getDataSource());
         }
 
+    }
+
+    @Override
+    @NotNull
+    public Class<ExasolServerSession> getSessionType() {
+        return ExasolServerSession.class;
+    }
+
+    @NotNull
+    @Override
+    public Map<String, Object> getTerminateOptions() {
+        return Map.of();
     }
 
     public static Collection<ExasolServerSession> readSessions(JDBCSession session) throws SQLException {

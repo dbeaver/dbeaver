@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.oracle.model.session;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.internal.OracleMessages;
@@ -112,6 +113,18 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
         catch (SQLException e) {
             throw new DBDatabaseException(e, session.getDataSource());
         }
+    }
+
+    @NotNull
+    @Override
+    public Class<OracleServerSession> getSessionType() {
+        return OracleServerSession.class;
+    }
+
+    @NotNull
+    @Override
+    public Map<String, Object> getTerminateOptions() {
+        return Map.of(OracleServerSessionManager.PROP_KILL_SESSION, true);
     }
 
     @NotNull

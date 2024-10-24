@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.admin.sessions;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -39,5 +40,19 @@ public interface DBAServerSessionManager<SESSION_TYPE extends DBAServerSession> 
 
     void alterSession(@NotNull DBCSession session, @NotNull SESSION_TYPE sessionType, @NotNull Map<String, Object> options)
         throws DBException;
+
+    /**
+     * Returns the type of session associated with this class.
+     * @return a class object representing the session type associated with this class
+     */
+    @NotNull
+    Class<SESSION_TYPE> getSessionType();
+
+    /**
+     * Returns the options for terminating sessions.
+     * @return map containing session termination options, with option keys and their corresponding values
+     */
+    @NotNull
+    Map<String, Object> getTerminateOptions();
 
 }

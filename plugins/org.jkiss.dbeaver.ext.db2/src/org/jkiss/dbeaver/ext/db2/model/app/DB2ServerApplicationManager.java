@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.db2.model.app;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
@@ -75,6 +76,18 @@ public class DB2ServerApplicationManager implements DBAServerSessionManager<DB2S
         } catch (SQLException e) {
             throw new DBDatabaseException(e, session.getDataSource());
         }
+    }
+
+    @Override
+    @NotNull
+    public Class<DB2ServerApplication> getSessionType() {
+        return DB2ServerApplication.class;
+    }
+
+    @NotNull
+    @Override
+    public Map<String, Object> getTerminateOptions() {
+        return Map.of();
     }
 
     @Override

@@ -93,7 +93,7 @@ public class MySQLSession extends AbstractServerSession {
         }
     }
 
-    @Property(viewable = true, order = 1)
+    @Property(viewable = true, order = 1, features = "sessionManager")
     public long getPid()
     {
         return pid;
