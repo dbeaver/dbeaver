@@ -108,7 +108,7 @@ public class MySQLSessionManager implements DBAServerSessionManager<MySQLSession
     @NotNull
     @Override
     public Map<String, Object> getTerminateOptions() {
-        return Map.of(PROP_KILL_QUERY, true);
+        return Map.of();
     }
 
     @Override

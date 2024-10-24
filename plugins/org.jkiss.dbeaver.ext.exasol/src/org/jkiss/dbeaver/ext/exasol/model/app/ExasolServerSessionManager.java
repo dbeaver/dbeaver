@@ -104,7 +104,7 @@ public class ExasolServerSessionManager implements DBAServerSessionManager<Exaso
     @NotNull
     @Override
     public Map<String, Object> getTerminateOptions() {
-        return Map.of(PROP_KILL_QUERY, true);
+        return Map.of();
     }
 
     public static Collection<ExasolServerSession> readSessions(JDBCSession session) throws SQLException {
