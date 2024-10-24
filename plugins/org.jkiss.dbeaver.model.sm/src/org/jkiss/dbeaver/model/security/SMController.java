@@ -230,4 +230,5 @@ public interface SMController extends DBPObjectController,
 
     @NotNull
     String[] getTeamMembers(String teamId) throws DBException;
+
 }
