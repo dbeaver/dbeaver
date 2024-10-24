@@ -190,6 +190,8 @@ public class DTMessages extends NLS {
     public static String pref_data_transfer_replacing_combo_do_not;
     public static String pref_data_transfer_replacing_combo_underscores;
     public static String pref_data_transfer_replacing_combo_camel_case;
+    public static String data_transfer_task_failed_name;
+    public static String data_transfer_task_failed_description;
 
     static {
         // initialize resource bundle

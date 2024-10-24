@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.PrintStream;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Data transfer job
@@ -87,7 +88,9 @@ public class DataTransferJob extends AbstractJob {
         long startTime = System.currentTimeMillis();
         for (; ;) {
             if (monitor.isCanceled()) {
-                break;
+                monitor.done();
+                elapsedTime = System.currentTimeMillis() - startTime;
+                return new Status(IStatus.OK, getClass(), DTMessages.data_transfer_task_failed_name, new TimeoutException(DTMessages.data_transfer_task_failed_description));
             }
             DataTransferPipe transferPipe = settings.acquireDataPipe(monitor, task);
             if (transferPipe == null) {
@@ -107,7 +110,7 @@ public class DataTransferJob extends AbstractJob {
                 jobMonitor.worked(1);
             } catch (Exception e) {
                 // Report as an OK status to avoid showing the error in the UI (it's handled by the caller)
-                return new Status(IStatus.OK, getClass(), "Data transfer failed", e);
+                return new Status(IStatus.OK, getClass(), DTMessages.data_transfer_task_failed_name, e);
             }
         }
         monitor.done();
