@@ -48,7 +48,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.fs.nio.EFSNIOResource;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
-import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -410,7 +409,7 @@ public class NavigatorUtils {
             Map<DBNDatabaseNode, DBSObjectFilter> folders = new HashMap<>();
             for (Object item : ((IStructuredSelection)selection).toArray()) {
                 if (item instanceof DBNNode node && node.getParentNode() instanceof DBNDatabaseNode parentNode) {
-                    DBXTreeItem nodeMeta = getNodeMetaForFilters(node, parentNode);
+                    DBXTreeItem nodeMeta = DBNUtils.getNodeMetaForFilters(node, parentNode);
 
                     DBSObjectFilter nodeFilter = folders.get(parentNode);
                     if (nodeFilter == null) {
@@ -441,25 +440,6 @@ public class NavigatorUtils {
             // Refresh all folders
             NavigatorHandlerRefresh.refreshNavigator(folders.keySet());
         }
-    }
-
-    public static DBXTreeItem getNodeMetaForFilters(DBNNode node, DBNDatabaseNode parentNode) {
-        DBXTreeItem nodeMeta = parentNode.getItemsMeta();
-
-        if (node instanceof DBNDatabaseItem dbItem && nodeMeta.isOptional()) {
-            // We filter db item - it may be optional
-            Class<?> assumeChildType = dbItem.getChildrenClass(nodeMeta);
-            if (assumeChildType == null || !assumeChildType.isInstance(dbItem.getObject())) {
-                // Node object has different type
-                List<DBXTreeNode> childMetas = nodeMeta.getChildren(node);
-                if (!childMetas.isEmpty() && childMetas.get(0) instanceof DBXTreeItem nestedItem &&
-                    parentNode.getChildrenClass(nestedItem) != null
-                ) {
-                    nodeMeta = nestedItem;
-                }
-            }
-        }
-        return nodeMeta;
     }
 
     public static boolean syncEditorWithNavigator(INavigatorModelView navigatorView, IEditorPart activeEditor) {
