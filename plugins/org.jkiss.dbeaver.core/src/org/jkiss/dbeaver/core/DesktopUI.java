@@ -73,6 +73,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -397,6 +398,27 @@ public class DesktopUI extends ConsoleUserInterface {
     @Override
     public UserResponse showErrorStopRetryIgnore(String task, Throwable error, boolean queue) {
         return ExecutionQueueErrorJob.showError(task, error, queue);
+    }
+
+    @Override
+    public void showSingleSignOnPopup(
+        @NotNull URI browserUrl,
+        @NotNull String userCode,
+        @NotNull CompletableFuture<Void> future
+    ) {
+        UIUtils.asyncExec(() -> {
+            Shell shell = UIUtils.getActiveWorkbenchShell();
+            if (shell == null) {
+                // No shell - can't show the dialog
+                return;
+            }
+            SingleSignOnPopup dialog = new SingleSignOnPopup(shell, browserUrl, userCode, future);
+            future.handle((result, exception) -> {
+                UIUtils.syncExec(dialog::close);
+                return null;
+            });
+            dialog.open();
+        });
     }
 
     @Override

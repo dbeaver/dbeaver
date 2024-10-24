@@ -36,7 +36,9 @@ import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 /**
@@ -102,6 +104,21 @@ public interface DBPPlatformUI {
         @Nullable Integer previousChoice,
         int defaultChoice
     );
+
+    /**
+     * Shows a modal dialog displaying information about an SSO request. Doesn't prompt anything.
+     * <p>
+     * <b>This is a UI-blocking call.</b>
+     * <p>
+     * If the user decides to cancel the request, the {@code future} will be canceled.
+     * Otherwise, it's the responsibility of the caller to complete the {@code future}
+     * when the request is either fulfilled or failed to close the popup.
+     *
+     * @param browserUrl the url to be opened in the browser
+     * @param userCode   the code the user has to enter in order to authenticate
+     * @param future     a completable future that is completed once the dialog is closed.
+     */
+    void showSingleSignOnPopup(@NotNull URI browserUrl, @NotNull String userCode, @NotNull CompletableFuture<Void> future);
 
     UserResponse showErrorStopRetryIgnore(String task, Throwable error, boolean queue);
 

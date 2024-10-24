@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -118,6 +119,15 @@ public class ConsoleUserInterface implements DBPPlatformUI {
         int defaultChoice
     ) {
         return new UserChoiceResponse(defaultChoice, null);
+    }
+
+    @Override
+    public void showSingleSignOnPopup(
+        @NotNull URI browserUrl,
+        @NotNull String userCode,
+        @NotNull CompletableFuture<Void> future
+    ) {
+        // nothing to do
     }
 
     @Override
