@@ -94,7 +94,13 @@ public class SQLQueryTableDropModel extends SQLQueryModelContent {
     @Override
     protected void applyContext(@NotNull SQLQueryDataContext dataContext, @NotNull SQLQueryRecognitionContext recognitionContext) {
         this.dataContext = dataContext;
+        if (ifExists) {
+            recognitionContext.setTreatErrorAsWarnings(true);
+        }
         this.tables.forEach(t -> t.propagateContext(dataContext, recognitionContext));
+        if (ifExists) {
+            recognitionContext.setTreatErrorAsWarnings(false);
+        }
     }
 
     @Nullable

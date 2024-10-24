@@ -999,7 +999,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         return BeanUtils.getCollectionType(propType);
     }
 
-    private Class<?> getChildrenOrFolderClass(DBXTreeItem childMeta) {
+    public Class<?> getChildrenOrFolderClass(DBXTreeItem childMeta) {
         Class<?> childrenClass = this.getChildrenClass(childMeta);
         if (childrenClass == null && this instanceof DBNContainer) {
             childrenClass = ((DBNContainer) this).getChildrenClass();

@@ -24,6 +24,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseItem;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
@@ -38,7 +39,7 @@ public class NavigatorHandlerFilterClear extends AbstractHandler {
         DBNNode node = NavigatorUtils.getSelectedNode(selection);
         DBNDatabaseNode parentNode = (DBNDatabaseNode) (node instanceof DBNDatabaseItem ? node.getParentNode() : node);
         if (node instanceof DBNDatabaseNode dbNode) {
-            DBXTreeItem itemsMeta = NavigatorUtils.getNodeMetaForFilters(node, parentNode);//folder.getItemsMeta();
+            DBXTreeItem itemsMeta = DBNUtils.getNodeMetaForFilters(node, parentNode);//folder.getItemsMeta();
             if (itemsMeta != null) {
                 dbNode.setNodeFilter(itemsMeta, new DBSObjectFilter(), true);
                 NavigatorHandlerRefresh.refreshNavigator(Collections.singleton(dbNode));
