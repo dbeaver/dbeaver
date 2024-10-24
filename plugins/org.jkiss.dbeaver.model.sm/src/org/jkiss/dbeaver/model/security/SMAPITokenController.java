@@ -17,7 +17,16 @@
 package org.jkiss.dbeaver.model.security;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 
-public record SMAPIToken(@NotNull String tokenName, @Nullable String token, @NotNull String createTime, @Nullable String expireTime) {
+/**
+ * SM API token controller.
+ */
+public interface SMAPITokenController {
+
+    /**
+     * Decodes token and gets user id from token.
+     */
+    @NotNull
+    String getUserIdFromAPIToken(@NotNull String token) throws DBException;
 }
