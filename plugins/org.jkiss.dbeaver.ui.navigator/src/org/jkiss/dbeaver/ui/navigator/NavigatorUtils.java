@@ -442,26 +442,6 @@ public class NavigatorUtils {
         }
     }
 
-    public static DBXTreeItem getNodeMetaForFilters(DBNNode node, DBNDatabaseNode parentNode) {
-        DBXTreeItem nodeMeta = node instanceof DBNDatabaseFolder folder ?
-            folder.getItemsMeta() : parentNode.getItemsMeta();
-
-        if (node instanceof DBNDatabaseNode dbItem && nodeMeta.isOptional()) {
-            // We filter db item - it may be optional
-            Class<?> assumeChildType = dbItem.getChildrenClass(nodeMeta);
-            if (assumeChildType == null || !assumeChildType.isInstance(dbItem.getObject())) {
-                // Node object has different type
-                List<DBXTreeNode> childMetas = nodeMeta.getChildren(node);
-                if (!childMetas.isEmpty() && childMetas.get(0) instanceof DBXTreeItem nestedItem &&
-                    parentNode.getChildrenClass(nestedItem) != null
-                ) {
-                    nodeMeta = nestedItem;
-                }
-            }
-        }
-        return nodeMeta;
-    }
-
     public static boolean syncEditorWithNavigator(INavigatorModelView navigatorView, IEditorPart activeEditor) {
         if (!(activeEditor instanceof IDataSourceContainerUpdate)) {
             return false;

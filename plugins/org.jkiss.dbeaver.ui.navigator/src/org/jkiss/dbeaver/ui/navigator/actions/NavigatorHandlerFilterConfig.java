@@ -28,10 +28,7 @@ import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseItem;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -60,7 +57,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
 
     public static void configureFilters(Shell shell, DBNDatabaseNode dbNode) {
         DBNDatabaseNode parentNode = dbNode.getParentNode() instanceof DBNDatabaseNode parent ? parent : dbNode;
-        DBXTreeItem itemsMeta = NavigatorUtils.getNodeMetaForFilters(dbNode, parentNode);
+        DBXTreeItem itemsMeta = DBNUtils.getNodeMetaForFilters(dbNode, parentNode);
         if (itemsMeta != null) {
             DBSObjectFilter objectFilter = parentNode.getNodeFilter(itemsMeta, true);
             if (objectFilter == null) {
