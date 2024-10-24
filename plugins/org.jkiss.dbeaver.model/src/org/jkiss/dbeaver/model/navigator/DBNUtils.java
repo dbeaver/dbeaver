@@ -191,27 +191,6 @@ public class DBNUtils {
         return node.allowsChildren();
     }
 
-    public static DBXTreeItem getNodeMetaForFilters(DBNNode node, DBNDatabaseNode parentNode) {
-        DBXTreeItem nodeMeta = parentNode.getItemsMeta();
-
-        if (node instanceof DBNDatabaseItem dbItem && nodeMeta.isOptional()) {
-            // Maybe we need nested item.
-            // Specifically this handles optional catalogs and schemas in Generic driver
-            // We filter db item - it may be optional
-            Class<?> assumeChildType = dbItem.getChildrenClass(nodeMeta);
-            if (assumeChildType == null || !assumeChildType.isInstance(dbItem.getObject())) {
-                // Node object has different type
-                List<DBXTreeNode> childMetas = nodeMeta.getChildren(node);
-                if (!childMetas.isEmpty() && childMetas.get(0) instanceof DBXTreeItem nestedItem &&
-                    parentNode.getChildrenClass(nestedItem) != null
-                ) {
-                    nodeMeta = nestedItem;
-                }
-            }
-        }
-        return nodeMeta;
-    }
-
     public static DBXTreeItem getValidItemsMeta(DBRProgressMonitor monitor, DBNDatabaseNode dbNode) throws DBException {
         DBXTreeItem itemsMeta = dbNode.getItemsMeta();
         if (itemsMeta != null && itemsMeta.isOptional()) {

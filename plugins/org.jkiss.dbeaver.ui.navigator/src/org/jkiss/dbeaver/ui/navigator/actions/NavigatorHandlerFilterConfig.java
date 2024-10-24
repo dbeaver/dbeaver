@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -34,6 +35,7 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.dialogs.EditObjectFilterDialog;
@@ -56,60 +58,64 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
     }
 
     public static void configureFilters(Shell shell, DBNDatabaseNode dbNode) {
-        DBNDatabaseNode parentNode = dbNode.getParentNode() instanceof DBNDatabaseNode parent ? parent : dbNode;
-        DBXTreeItem itemsMeta = DBNUtils.getNodeMetaForFilters(dbNode, parentNode);
-        if (itemsMeta != null) {
-            DBSObjectFilter objectFilter = parentNode.getNodeFilter(itemsMeta, true);
-            if (objectFilter == null) {
-                objectFilter = new DBSObjectFilter();
-            }
-            final DBPDataSourceRegistry dsRegistry = dbNode.getOwnerProject().getDataSourceRegistry();
-            final boolean globalFilter = dbNode.getValueObject() instanceof DBPDataSource;
-            String parentName = "?";
-            if (dbNode.getValueObject() instanceof DBSObject) {
-                parentName = ((DBSObject) dbNode.getValueObject()).getName();
-            }
-            EditObjectFilterDialog dialog = new EditObjectFilterDialog(
-                shell,
-                dsRegistry,
-                globalFilter ? "All " + dbNode.getNodeTypeLabel() : dbNode.getNodeTypeLabel() + " of " + parentName,
-                objectFilter,
-                globalFilter);
-            switch (dialog.open()) {
-                case IDialogConstants.OK_ID:
-                    dbNode.setNodeFilter(itemsMeta, dialog.getFilter(), true);
-                    NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(dbNode));
-                    break;
-                case EditObjectFilterDialog.SHOW_GLOBAL_FILTERS_ID: {
-                    Class<?> childrenClass = null;
-                    if (dbNode instanceof DBNDatabaseFolder folder) {
-                        childrenClass = folder.getChildrenClass();
-                    } else {
-                        List<DBXTreeNode> childMeta = dbNode.getMeta().getChildren(dbNode);
-                        if (!childMeta.isEmpty() && childMeta.get(0) instanceof DBXTreeItem item) {
-                            childrenClass = dbNode.getChildrenClass(item);
-                        }
-                    }
-                    if (childrenClass == null) {
-                        DBWorkbench.getPlatformUI().showMessageBox(
-                            "Bad node", "Cannot use node '" + dbNode.getNodeUri() + "' for filters", true);
-                        return;
-                    }
-                    objectFilter = dbNode.getDataSource().getContainer().getObjectFilter(childrenClass, null, true);
-                    dialog = new EditObjectFilterDialog(
-                        shell,
-                        dsRegistry, "All " + dbNode.getNodeTypeLabel(),
-                        objectFilter != null ? objectFilter : new DBSObjectFilter(),
-                        true);
-                    if (dialog.open() == IDialogConstants.OK_ID) {
-                        // Set global filter
-                        dbNode.getDataSource().getContainer().setObjectFilter(childrenClass, null, dialog.getFilter());
-                        dbNode.getDataSource().getContainer().persistConfiguration();
+        try {
+            DBNDatabaseNode parentNode = dbNode.getParentNode() instanceof DBNDatabaseNode parent ? parent : dbNode;
+            DBXTreeItem itemsMeta = UIUtils.runWithMonitor(monitor -> DBNUtils.getValidItemsMeta(monitor, dbNode));
+            if (itemsMeta != null) {
+                DBSObjectFilter objectFilter = parentNode.getNodeFilter(itemsMeta, true);
+                if (objectFilter == null) {
+                    objectFilter = new DBSObjectFilter();
+                }
+                final DBPDataSourceRegistry dsRegistry = dbNode.getOwnerProject().getDataSourceRegistry();
+                final boolean globalFilter = dbNode.getValueObject() instanceof DBPDataSource;
+                String parentName = "?";
+                if (dbNode.getValueObject() instanceof DBSObject) {
+                    parentName = ((DBSObject) dbNode.getValueObject()).getName();
+                }
+                EditObjectFilterDialog dialog = new EditObjectFilterDialog(
+                    shell,
+                    dsRegistry,
+                    globalFilter ? "All " + dbNode.getNodeTypeLabel() : dbNode.getNodeTypeLabel() + " of " + parentName,
+                    objectFilter,
+                    globalFilter);
+                switch (dialog.open()) {
+                    case IDialogConstants.OK_ID:
+                        dbNode.setNodeFilter(itemsMeta, dialog.getFilter(), true);
                         NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(dbNode));
+                        break;
+                    case EditObjectFilterDialog.SHOW_GLOBAL_FILTERS_ID: {
+                        Class<?> childrenClass = null;
+                        if (dbNode instanceof DBNDatabaseFolder folder) {
+                            childrenClass = folder.getChildrenClass();
+                        } else {
+                            List<DBXTreeNode> childMeta = dbNode.getMeta().getChildren(dbNode);
+                            if (!childMeta.isEmpty() && childMeta.get(0) instanceof DBXTreeItem item) {
+                                childrenClass = dbNode.getChildrenClass(item);
+                            }
+                        }
+                        if (childrenClass == null) {
+                            DBWorkbench.getPlatformUI().showMessageBox(
+                                "Bad node", "Cannot use node '" + dbNode.getNodeUri() + "' for filters", true);
+                            return;
+                        }
+                        objectFilter = dbNode.getDataSource().getContainer().getObjectFilter(childrenClass, null, true);
+                        dialog = new EditObjectFilterDialog(
+                            shell,
+                            dsRegistry, "All " + dbNode.getNodeTypeLabel(),
+                            objectFilter != null ? objectFilter : new DBSObjectFilter(),
+                            true);
+                        if (dialog.open() == IDialogConstants.OK_ID) {
+                            // Set global filter
+                            dbNode.getDataSource().getContainer().setObjectFilter(childrenClass, null, dialog.getFilter());
+                            dbNode.getDataSource().getContainer().persistConfiguration();
+                            NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(dbNode));
+                        }
+                        break;
                     }
-                    break;
                 }
             }
+        } catch (DBException e) {
+            log.error(e);
         }
     }
 
