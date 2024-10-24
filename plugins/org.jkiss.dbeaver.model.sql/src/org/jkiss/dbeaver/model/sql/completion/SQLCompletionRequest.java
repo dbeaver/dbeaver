@@ -35,6 +35,8 @@ public class SQLCompletionRequest {
     private final SQLScriptElement activeQuery;
     private final boolean simpleMode;
 
+    private final SQLCompletionActivityTracker stateTracker;
+
     private final SQLWordPartDetector wordDetector;
 
     private String wordPart;
@@ -47,6 +49,7 @@ public class SQLCompletionRequest {
         this.documentOffset = documentOffset;
         this.activeQuery = activeQuery;
         this.simpleMode = simpleMode;
+        this.stateTracker = new SQLCompletionActivityTracker(simpleMode);
 
         this.wordDetector = new SQLWordPartDetector(document, context.getSyntaxManager(), documentOffset);
         this.wordPart = wordDetector.getWordPart();
@@ -70,6 +73,10 @@ public class SQLCompletionRequest {
 
     public boolean isSimpleMode() {
         return simpleMode;
+    }
+
+    public SQLCompletionActivityTracker getActivityTracker() {
+        return this.stateTracker;
     }
 
     public SQLWordPartDetector getWordDetector() {
