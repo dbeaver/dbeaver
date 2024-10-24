@@ -74,7 +74,10 @@ public class SQLiteDataSource extends GenericDataSource {
     }
 
     @Override
-    public DBSDataType getLocalDataType(String typeName) {
+    public DBSDataType getLocalDataType(@Nullable String typeName) {
+        if (typeName == null) {
+            return super.getLocalDataType(defaultAffinity().name());
+        }
         // Resolve type name according to https://www.sqlite.org/datatype3.html
         typeName = typeName.toUpperCase(Locale.ENGLISH);
         SQLiteAffinity affinity;
@@ -90,10 +93,14 @@ public class SQLiteDataSource extends GenericDataSource {
             typeName.contains("BOOL") || typeName.contains("GUID")) {
             affinity = SQLiteAffinity.NUMERIC;
         } else {
-            // If type is unknown, let's assume it's a text. Otherwise, search and data editor doesn't work right.
-            affinity = SQLiteAffinity.TEXT;
+            affinity = defaultAffinity();
         }
         return super.getLocalDataType(affinity.name());
+    }
+
+    private static SQLiteAffinity defaultAffinity() {
+        // If type is unknown, let's assume it's a text. Otherwise, search and data editor doesn't work right.
+        return SQLiteAffinity.TEXT;
     }
 
     @Override

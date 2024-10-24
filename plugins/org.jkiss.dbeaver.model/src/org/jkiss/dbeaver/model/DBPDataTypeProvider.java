@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -60,7 +61,7 @@ public interface DBPDataTypeProvider
      * @param typeName type name
      * @return data type of null
      */
-    DBSDataType getLocalDataType(String typeName);
+    DBSDataType getLocalDataType(@Nullable String typeName);
 
     /**
      * Gets data type with specified type id
