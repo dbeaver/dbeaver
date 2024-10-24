@@ -110,7 +110,7 @@ public class DB2ServerApplication extends AbstractServerSession {
         return applicationId;
     }
 
-    @Property(viewable = true, editable = false, order = 2, features = "sm")
+    @Property(viewable = true, editable = false, order = 2, features = "sessionManager")
     public Long getAgentId()
     {
         return agentId;
