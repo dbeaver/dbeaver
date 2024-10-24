@@ -600,12 +600,24 @@ public class SQLScriptParser {
         return partitioner != null && SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT.equals(partitioner.getContentType(currentPos));
     }
 
-    public static SQLScriptElement extractNextQuery(SQLParserContext context, int offset, boolean next) {
+    public static SQLScriptElement extractNextQuery(@NotNull SQLParserContext context, int offset, boolean next) {
         SQLScriptElement curElement = extractQueryAtPos(context, offset);
         return tryExpandElement(extractNextQueryImpl(context, curElement, next), context);
     }
 
-    private static SQLScriptElement extractNextQueryImpl(SQLParserContext context, SQLScriptElement curElement, boolean next) {
+    public static SQLScriptElement extractNextQuery(
+        @NotNull SQLParserContext context,
+        @Nullable SQLScriptElement curElement,
+        boolean next
+    ) {
+        return tryExpandElement(extractNextQueryImpl(context, curElement, next), context);
+    }
+
+    private static SQLScriptElement extractNextQueryImpl(
+        @NotNull SQLParserContext context,
+        @Nullable SQLScriptElement curElement,
+        boolean next
+    ) {
         if (curElement == null) {
             return null;
         }
@@ -1145,7 +1157,8 @@ public class SQLScriptParser {
                 token = lexer.nextToken();
             }
             return token != null && (
-                statementStartTokenIds.contains(token.getType()) || statementStartKeywords.contains(token.getText().toUpperCase()));
+                statementStartTokenIds.contains(token.getType()) || statementStartKeywords.contains(token.getText().toUpperCase())
+            );
         }
 
         private SQLQuery findSmartStatementBegginning(@NotNull SQLQuery element) {
@@ -1206,7 +1219,9 @@ public class SQLScriptParser {
                     extractionEnd = tailElement.getOffset() + tailElement.getOriginalText().length();
                 }
                 String text = this.context.getDocument().get(start, extractionEnd - start);
-                return new SQLQuery(this.context.getDataSource(), text, start, realEnd - start);
+                SQLQuery query = new SQLQuery(this.context.getDataSource(), text, start, realEnd - start);
+                query.setEndsWithDelimiter(tailElement.isEndsWithDelimiter());
+                return query;
             } catch (BadLocationException ex) {
                 return headElement;
             }
