@@ -428,7 +428,8 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     iconBig="icons/ingres_icon_big.png"
                     categories="sql">
-                    <file type="jar" path="maven:/com.ingres.jdbc:iijdbc:RELEASE" bundle="!drivers.ingres"/>
+                    <!-- We use direct jar path because Ingres metadata is broken #36021 -->
+                    <file type="jar" path="https://repo1.maven.org/maven2/com/ingres/jdbc/iijdbc/10.0-4.0.6/iijdbc-10.0-4.0.6.jar" bundle="!drivers.ingres"/>
                     <file type="license" path="https://www.gnu.org/licenses/lgpl-3.0.txt" bundle="!drivers.ingres"/>
                     <file type="jar" path="drivers/ingres" bundle="drivers.ingres"/>
                     <file type="license" path="drivers/ingres/LICENSE.txt" bundle="drivers.ingres"/>
