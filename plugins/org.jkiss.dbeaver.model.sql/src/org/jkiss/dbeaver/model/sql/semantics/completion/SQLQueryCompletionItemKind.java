@@ -26,26 +26,40 @@ public enum SQLQueryCompletionItemKind {
      * Subquery correlation alias when its underlying source is not a simple table reference 
      * <p> (simple identifier)
      */
-    SUBQUERY_ALIAS,
+    SUBQUERY_ALIAS(true, false),
     /**
      * Column name when defined by the correlation or by the column alias
      * <p> (simple identifier or prefixed with subquery alias)
      */
-    DERIVED_COLUMN_NAME,
+    DERIVED_COLUMN_NAME(false, true),
     /**
      * Table name never referenced in the underlying contexts
      * <p> (simple identifier or fullname)
      */
-    NEW_TABLE_NAME,
+    NEW_TABLE_NAME(true, false),
     /**
      * Table name already used in the underlying contexts
      * <p> (simple identifier or fullname)
      */
-    USED_TABLE_NAME,
+    USED_TABLE_NAME(true, false),
     /**
      * Table column name when derived from the real table 
      * <p> (simple identifier, fullname, alias-prefixed)
      * */
-    TABLE_COLUMN_NAME
+    TABLE_COLUMN_NAME(false, true);
+
+
+    public final boolean isTableName;
+    public final boolean isColumnName;
+
+
+    SQLQueryCompletionItemKind() {
+        this(false, false);
+    }
+
+    SQLQueryCompletionItemKind(boolean isTableName, boolean isColumnName) {
+        this.isTableName = isTableName;
+        this.isColumnName = isColumnName;
+    }
 }
     
