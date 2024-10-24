@@ -232,8 +232,15 @@ public interface SMController extends DBPObjectController,
     String[] getTeamMembers(String teamId) throws DBException;
 
     /**
+     * Decodes token and gets user id from token.
+     */
+    @NotNull
+    String getUserIdFromAPIToken(@NotNull String token) throws DBException;
+
+    /**
      * Returns all info about user API tokens that stored in database.
      */
+    @NotNull
     List<SMAPIToken> getAPITokens() throws DBException;
 
     /**
@@ -243,6 +250,7 @@ public interface SMController extends DBPObjectController,
      * @param period    period of validity
      * @return API token info (including a private key)
      */
+    @NotNull
     SMAPIToken createAPIToken(@NotNull String tokenName, int period) throws DBException;
 
     /**

@@ -19,5 +19,5 @@ package org.jkiss.dbeaver.model.security;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-public record SMAPIToken(@NotNull String tokenName, @Nullable String privateKey, long periodDays, long timestamp) {
+public record SMAPIToken(@NotNull String tokenName, @Nullable String token, int periodDays, @NotNull String createTime) {
 }
