@@ -127,4 +127,8 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
     protected DBPConnectionEditIntention getIntention() {
         return DBPConnectionEditIntention.DEFAULT;
     }
+
+    public AuthModelSelector getAuthModelSelector() {
+        return authModelSelector;
+    }
 }
