@@ -230,6 +230,9 @@ public class ObjectPropertyTester extends PropertyTester {
                 break;
             }
             case PROP_CAN_FILTER: {
+                if (node instanceof DBNDataSource ds && ds.getDataSource() == null) {
+                    return false;
+                }
                 if (node instanceof DBNDatabaseItem) {
                     node = node.getParentNode();
                 }

@@ -70,6 +70,7 @@ import org.eclipse.ui.services.IServiceLocator;
 import org.eclipse.ui.swt.IFocusService;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -1854,6 +1855,28 @@ public class UIUtils {
     public static void runInProgressService(final DBRRunnableWithProgress runnable)
         throws InvocationTargetException, InterruptedException {
         getDefaultRunnableContext().run(true, true, runnable);
+    }
+
+    public static <T, R> T runWithMonitor(final DBRRunnableWithReturn<T> runnable) throws DBException  {
+        Object[] result = new Object[1];
+        try {
+            getDefaultRunnableContext().run(true, true, monitor -> {
+                try {
+                    result[0] = runnable.runTask(monitor);
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
+            });
+        } catch (InvocationTargetException e) {
+            if (e.getTargetException() instanceof DBException dbe) {
+                throw dbe;
+            } else {
+                throw new DBException("Internal error", e.getTargetException());
+            }
+        } catch (Throwable e) {
+            log.error(e);
+        }
+        return (T) result[0];
     }
 
     /**
