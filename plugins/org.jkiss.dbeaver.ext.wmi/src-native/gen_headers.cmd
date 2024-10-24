@@ -1,5 +1,8 @@
-set JAVA_HOME=D:\Java\jdk1.6.0_06
-set PATH=%JAVA_HOME%/bin;%PATH%
+:: use the JDK9+ installation in %JAVA_HOME%
+:: and generate the native header files in current directory
+%JAVA_HOME%/bin/javac -classpath ../target/classes -h . -d ../target/classes ../src/org/jkiss/wmi/service/WMIService.java
+%JAVA_HOME%/bin/javac -classpath ../target/classes -h . -d ../target/classes ../src/org/jkiss/wmi/service/WMIObject.java
 
-javah -classpath ../../bin;../../../../plugins/org.jkiss.dbeaver.core/bin -o WMIServiceJNI.h org.jkiss.wmi.service.WMIService
-javah -classpath ../../bin;../../../../plugins/org.jkiss.dbeaver.core/bin -o WMIObjectJNI.h org.jkiss.wmi.service.WMIObject
+:: rename the generated native header files
+move /y org_jkiss_wmi_service_WMIService.h WMIServiceJNI.h
+move /y org_jkiss_wmi_service_WMIObject.h WMIObjectJNI.h
