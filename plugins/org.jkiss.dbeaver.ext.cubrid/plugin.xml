@@ -214,6 +214,7 @@
                     <property name="preparedStmtCacheSize" value="25"/>
                     <property name="preparedStmtCacheSqlLimit" value="256"/>
                     <property name="hold_cursor" value="true"/>
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                 </driver>
              </drivers>
         </datasource>
