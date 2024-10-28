@@ -98,7 +98,7 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
             List<DriverDescriptor.DriverFileInfo> driverFileInfos = driver.getResolvedFiles().get(this);
             if (!CommonUtils.isEmpty(driverFileInfos) && driverFileInfos.size() == 1) {
                 DriverDescriptor.DriverFileInfo driverFileInfo = driverFileInfos.get(0);
-                resolvedCache = resolveCacheDir().resolve(driverFileInfo.getFile());
+                resolvedCache = resolveCacheDir().resolve(driverFileInfo.getFile().toString());
             } else {
                 // need to correct driver initialization, otherwise, if at least one file was copied,
                 // the driver configuration will be incorrect and other driver files will not be copied

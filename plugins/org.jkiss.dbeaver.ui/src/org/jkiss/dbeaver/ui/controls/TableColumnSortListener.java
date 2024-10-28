@@ -20,6 +20,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 
 import java.text.Collator;
 import java.util.Comparator;
@@ -30,13 +31,18 @@ import java.util.Locale;
  */
 public class TableColumnSortListener implements Listener {
     private final Table table;
-    private final int columnIndex;
     private int sortDirection = SWT.DOWN;
     private TableColumn prevColumn = null;
+    private final Comparator<TableItem> comparator;
+
+    public TableColumnSortListener(@NotNull Table table, @NotNull Comparator<TableItem> comparator) {
+        this.table = table;
+        this.comparator = comparator;
+    }
 
     public TableColumnSortListener(Table table, int columnIndex) {
         this.table = table;
-        this.columnIndex = columnIndex;
+        this.comparator = new DefaultComparator(columnIndex);
     }
 
     private static void sortTable(Table table, Comparator<TableItem> comparator)
@@ -78,47 +84,60 @@ public class TableColumnSortListener implements Listener {
 
     @Override
     public void handleEvent(Event e) {
-        final Collator collator = Collator.getInstance(Locale.getDefault());
         TableColumn column = (TableColumn) e.widget;
         if (prevColumn == column && e.doit) {
-            // Set reverse order
-            sortDirection = (sortDirection == SWT.UP ? SWT.DOWN : SWT.UP);
+            sortDirection = switch (sortDirection) {
+                case SWT.DOWN -> SWT.UP;
+                case SWT.UP -> SWT.NONE;
+                default -> SWT.DOWN;
+            };
         }
         prevColumn = column;
         this.table.setSortColumn(column);
         this.table.setSortDirection(sortDirection);
-        sortTable(this.table, (e1, e2) -> {
-            int mul = (sortDirection == SWT.UP ? 1 : -1);
-            String text1 = e1.getText(columnIndex);
-            String text2 = e2.getText(columnIndex);
+        sortTable(this.table, sortDirection == SWT.UP ? comparator : comparator.reversed());
+    }
+
+    private static class DefaultComparator implements Comparator<TableItem> {
+        private final Collator collator = Collator.getInstance(Locale.getDefault());
+        private final int columnIndex;
+
+        public DefaultComparator(int columnIndex) {
+            this.columnIndex = columnIndex;
+        }
+
+        @Override
+        public int compare(TableItem o1, TableItem o2) {
+            String text1 = o1.getText(columnIndex);
+            String text2 = o2.getText(columnIndex);
             try {
                 Double num1 = getNumberFromString(text1);
                 if (num1 != null) {
                     Double num2 = getNumberFromString(text2);
                     if (num2 != null) {
-                        return (int)(num1 - num2) * mul;
+                        return (int) (num1 - num2);
                     }
                 }
             } catch (NumberFormatException e3) {
                 // Ignore
             }
-            return collator.compare(text1, text2) * mul;
-        });
-    }
-
-    private static Double getNumberFromString(String str) {
-        if (str.isEmpty()) return null;
-        if (!Character.isDigit(str.charAt(0))) return null;
-        int numLength = 1;
-        for (; numLength < str.length(); numLength++) {
-            if (Character.isWhitespace(str.charAt(numLength))) {
-                break;
-            }
+            return collator.compare(text1, text2);
         }
-        if (numLength == str.length()) {
-            return Double.parseDouble(str);
-        } else {
-            return Double.parseDouble(str.substring(0, numLength));
+
+        private static Double getNumberFromString(String str) {
+            if (str.isEmpty()) return null;
+            if (!Character.isDigit(str.charAt(0))) return null;
+            int numLength = 1;
+            for (; numLength < str.length(); numLength++) {
+                if (Character.isWhitespace(str.charAt(numLength))) {
+                    break;
+                }
+            }
+            if (numLength == str.length()) {
+                return Double.parseDouble(str);
+            } else {
+                return Double.parseDouble(str.substring(0, numLength));
+            }
         }
     }
 }

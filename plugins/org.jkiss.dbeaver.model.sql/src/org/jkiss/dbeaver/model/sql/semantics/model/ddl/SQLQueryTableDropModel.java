@@ -50,7 +50,7 @@ public class SQLQueryTableDropModel extends SQLQueryModelContent {
         boolean isView
     ) {
         List<SQLQueryRowsTableDataModel> tables = node.findChildrenOfName(STMKnownRuleNames.tableName).stream()
-                .map(recognizer::collectTableReference).collect(Collectors.toList());
+            .map(n -> recognizer.collectTableReference(n, true)).collect(Collectors.toList());
         boolean ifExists = node.findFirstChildOfName(STMKnownRuleNames.ifExistsSpec) != null; // "IF EXISTS" presented
         return new SQLQueryTableDropModel(node, tables, ifExists, isView);
     }
@@ -94,7 +94,13 @@ public class SQLQueryTableDropModel extends SQLQueryModelContent {
     @Override
     protected void applyContext(@NotNull SQLQueryDataContext dataContext, @NotNull SQLQueryRecognitionContext recognitionContext) {
         this.dataContext = dataContext;
+        if (ifExists) {
+            recognitionContext.setTreatErrorAsWarnings(true);
+        }
         this.tables.forEach(t -> t.propagateContext(dataContext, recognitionContext));
+        if (ifExists) {
+            recognitionContext.setTreatErrorAsWarnings(false);
+        }
     }
 
     @Nullable

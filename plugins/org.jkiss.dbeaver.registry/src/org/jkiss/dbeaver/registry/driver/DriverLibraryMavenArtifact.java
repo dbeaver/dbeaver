@@ -164,6 +164,11 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     }
 
     @Override
+    public boolean isInvalidLibrary() {
+        return localVersion == null || localVersion.isInvalidVersion();
+    }
+
+    @Override
     public void resetVersion() {
         this.localVersion = null;
         this.preferredVersion = originalPreferredVersion;
@@ -305,6 +310,9 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     }
 
     public void downloadLibraryFile(@NotNull DBRProgressMonitor monitor, boolean forceUpdate, String taskName) throws IOException, InterruptedException {
+        if (isInvalidLibrary()) {
+            throw new IOException("Maven artifact '" + getDisplayName() + "' cannot be resolved in external repositores");
+        }
         //monitor.beginTask(taskName + " - update localVersion information", 1);
         try {
             MavenArtifactVersion localVersion = resolveLocalVersion(monitor, forceUpdate);

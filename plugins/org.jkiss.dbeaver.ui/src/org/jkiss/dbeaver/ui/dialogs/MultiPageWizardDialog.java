@@ -48,6 +48,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * MultiPageWizardDialog
@@ -76,6 +78,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     private final ListenerList<IPageChangedListener> pageChangedListeners = new ListenerList<>();
     private Composite leftBottomPanel;
     private Font boldFont;
+    private Set<IWizardPage> resizedPages = new HashSet<>();
 
     public MultiPageWizardDialog(IWorkbenchWindow window, IWizard wizard) {
         this(window, wizard, null);
@@ -696,11 +699,12 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     private void updateSize(IWizardPage page) {
-        if (page == null || page.getControl() == null) {
+        if (page == null || page.getControl() == null || resizedPages.contains(page)) {
             return;
         }
         updateSizeForPage(page);
         pageArea.layout();
+        resizedPages.add(page);
     }
 
     /**

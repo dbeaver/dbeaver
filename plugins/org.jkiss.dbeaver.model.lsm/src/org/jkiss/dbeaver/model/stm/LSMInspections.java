@@ -98,13 +98,14 @@ public class LSMInspections {
         return Pair.of(nodeBefore, false);
     }
 
-    private static SyntaxInspectionResult offqueryInspectionResult = prepareOffquerySyntaxInspectionInternal();
+    private static final SyntaxInspectionResult offqueryInspectionResult = prepareOffquerySyntaxInspectionInternal();
 
     @NotNull
     public static SyntaxInspectionResult prepareOffquerySyntaxInspection() {
         return offqueryInspectionResult;
     }
 
+    @NotNull
     public static SyntaxInspectionResult prepareOffquerySyntaxInspectionInternal() {
         ATN atn = SQLStandardParser._ATN;
         ListNode<Integer> emptyStack = ListNode.of(null);
@@ -112,7 +113,7 @@ public class LSMInspections {
         return inspectAbstractSyntaxAtState(emptyStack, initialState);
     }
 
-    @Nullable
+    @NotNull
     public static SyntaxInspectionResult prepareAbstractSyntaxInspection(@NotNull STMTreeNode root, int position) {
         STMTreeNode subroot = root;
         ATN atn = SQLStandardParser._ATN;

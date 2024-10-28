@@ -77,29 +77,42 @@ public class SQLQueryValueMemberExpression extends SQLQueryValueExpression {
         if (this.identifier == null) {
             this.type = SQLQueryExprType.UNKNOWN;
         } else if (this.identifier.isNotClassified()) {
-            SQLQueryExprType type;
-            try {
-                type = this.owner.getValueType().findNamedMemberType(statistics.getMonitor(), this.identifier.getName());
-
-                if (type != null) {
-                    this.identifier.setDefinition(type.getDeclaratorDefinition());
-                } else {
-                    this.identifier.getSymbol().setSymbolClass(SQLQuerySymbolClass.ERROR);
-                }
-            } catch (DBException e) {
-                log.debug(e);
-                statistics.appendError(
-                    this.identifier,
-                    "Failed to resolve member reference " + this.identifier.getName() + " for " + this.owner.getValueType().getDisplayName(),
-                    e
-                );
-                type = null;
-            }
-
+            SQLQueryExprType type = tryResolveMemberReference(statistics, this.owner.getValueType(), this.identifier);
             this.type = type != null ? type : SQLQueryExprType.UNKNOWN;
         }
     }
-    
+
+    @Nullable
+    public static SQLQueryExprType tryResolveMemberReference(
+        @NotNull SQLQueryRecognitionContext statistics,
+        @NotNull SQLQueryExprType valueType,
+        @NotNull SQLQuerySymbolEntry identifier
+    ) {
+        SQLQueryExprType type;
+        try {
+            type = valueType.findNamedMemberType(statistics.getMonitor(), identifier.getName());
+
+            if (type != null) {
+                identifier.setDefinition(type.getDeclaratorDefinition());
+            } else {
+                identifier.getSymbol().setSymbolClass(SQLQuerySymbolClass.ERROR);
+                statistics.appendError(
+                    identifier,
+                    "Failed to resolve member reference " + identifier.getName() + " for " + valueType.getDisplayName()
+                );
+            }
+        } catch (DBException e) {
+            log.debug(e);
+            statistics.appendError(
+                identifier,
+                "Failed to resolve member reference " + identifier.getName() + " for " + valueType.getDisplayName(),
+                e
+            );
+            type = null;
+        }
+        return type;
+    }
+
     @Override
     protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg) {
         return visitor.visitValueMemberReferenceExpr(this, arg);

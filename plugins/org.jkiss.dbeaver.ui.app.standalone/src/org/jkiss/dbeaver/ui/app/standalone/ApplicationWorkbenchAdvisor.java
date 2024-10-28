@@ -104,7 +104,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Workspace/org.eclipse.ui.preferencePages.BuildOrder",
         //WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.ContentTypes",
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.General.LinkHandlers",
-        WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Startup",
+        //WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Startup",
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.trace.tracingPage",
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.epp.mpc.projectnatures",
         "org.eclipse.ui.internal.console.ansi.preferences.AnsiConsolePreferencePage",
@@ -113,6 +113,8 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
         WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID,
         WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.AutoSave",
+
+        "org.eclipse.equinox.internal.p2.ui.sdk.ProvisioningPreferencePage",    // Install-Update
 
         // Team preferences - not needed in CE
         //"org.eclipse.team.ui.TeamPreferences",
@@ -135,7 +137,6 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
     // Move to General
     private static final String[] GENERAL_PREF_PAGES = {
-        "org.eclipse.equinox.internal.p2.ui.sdk.ProvisioningPreferencePage",    // Install-Update
         "org.eclipse.debug.ui.DebugPreferencePage"                              // Debugger
     };
 

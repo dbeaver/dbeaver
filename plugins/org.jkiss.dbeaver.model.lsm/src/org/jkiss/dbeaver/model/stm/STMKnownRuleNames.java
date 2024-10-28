@@ -44,9 +44,7 @@ public class STMKnownRuleNames {
     public static final String characterSetSpecification = SQLStandardParser.ruleNames[SQLStandardParser.RULE_characterSetSpecification];
     public static final String characterSetName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_characterSetName];
     public static final String schemaName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_schemaName];
-    public static final String unqualifiedSchemaName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_unqualifiedSchemaName];
     public static final String qualifiedName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_qualifiedName];
-    public static final String catalogName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_catalogName];
     public static final String identifier = SQLStandardParser.ruleNames[SQLStandardParser.RULE_identifier];
     public static final String actualIdentifier = SQLStandardParser.ruleNames[SQLStandardParser.RULE_actualIdentifier];
 
@@ -131,6 +129,7 @@ public class STMKnownRuleNames {
     public static final String indicatorParameter = SQLStandardParser.ruleNames[SQLStandardParser.RULE_indicatorParameter];
     public static final String dynamicParameterSpecification = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dynamicParameterSpecification];
     public static final String columnReference = SQLStandardParser.ruleNames[SQLStandardParser.RULE_columnReference];
+    public static final String tupleRefSuffix = SQLStandardParser.ruleNames[SQLStandardParser.RULE_tupleRefSuffix];
     public static final String valueReference = SQLStandardParser.ruleNames[SQLStandardParser.RULE_valueReference];
 
     public static final String valueRefNestedExpr = SQLStandardParser.ruleNames[SQLStandardParser.RULE_valueRefNestedExpr];
@@ -141,7 +140,6 @@ public class STMKnownRuleNames {
     public static final String valueExpressionCastSpec = SQLStandardParser.ruleNames[SQLStandardParser.RULE_valueExpressionCastSpec];
     public static final String variableExpression = SQLStandardParser.ruleNames[SQLStandardParser.RULE_variableExpression];
 
-    public static final String qualifier = SQLStandardParser.ruleNames[SQLStandardParser.RULE_qualifier];
     public static final String correlationName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_correlationName];
 
     public static final String withClause = SQLStandardParser.ruleNames[SQLStandardParser.RULE_withClause];
@@ -359,4 +357,5 @@ public class STMKnownRuleNames {
 
     public static final String RECURSIVE_TERM = SQLStandardLexer.VOCABULARY.getSymbolicName(SQLStandardLexer.RECURSIVE);
     public static final String SELECT_TERM = SQLStandardLexer.VOCABULARY.getSymbolicName(SQLStandardLexer.SELECT);
+    public static final String PERIOD_TERM = SQLStandardParser.VOCABULARY.getSymbolicName(SQLStandardParser.Period);
 }

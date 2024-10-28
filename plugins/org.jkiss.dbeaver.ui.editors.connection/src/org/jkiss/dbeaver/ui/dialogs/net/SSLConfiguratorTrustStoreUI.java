@@ -26,6 +26,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.impl.net.SSLConfigurationMethod;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.registry.configurator.DBPConnectionEditIntention;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ConfigurationFileSelector;
@@ -221,6 +222,8 @@ public class SSLConfiguratorTrustStoreUI extends SSLConfiguratorAbstractUI {
                 }
                 configuration.setSavePassword(true);
             }
+        } else if (this.getEditIntention() == DBPConnectionEditIntention.CREDENTIALS_ONLY) {
+            configuration.setSavePassword(true);
         }
 
         configuration.setProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD, method.name());

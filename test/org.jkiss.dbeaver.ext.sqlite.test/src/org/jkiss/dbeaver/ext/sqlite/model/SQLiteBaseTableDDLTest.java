@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.utils.StandardConstants;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,7 +43,7 @@ import java.util.List;
 @RunWith(MockitoJUnitRunner.class)
 public class SQLiteBaseTableDDLTest {
 
-    private final String lineBreak = System.getProperty(StandardConstants.ENV_LINE_SEPARATOR);
+    private final String lineBreak = System.lineSeparator();
 
     @Mock
     private DBRProgressMonitor mockMonitor;

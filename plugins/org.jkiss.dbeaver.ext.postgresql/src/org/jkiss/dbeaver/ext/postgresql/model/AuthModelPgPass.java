@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -141,7 +142,7 @@ public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCred
         }
         DBPConnectionConfiguration originalConfiguration = dataSourceContainer.getConnectionConfiguration();
         String conHostPort = originalConfiguration.getHostPort();
-        String conDatabaseName = originalConfiguration.getDatabaseName();
+        String conDatabaseName = PostgreUtils.getDatabaseNameFromConfiguration(originalConfiguration);
         String conUserName = originalConfiguration.getUserName();
         if (CommonUtils.isEmpty(conHostPort)) {
             conHostPort = dataSourceContainer.getDriver().getDefaultPort();

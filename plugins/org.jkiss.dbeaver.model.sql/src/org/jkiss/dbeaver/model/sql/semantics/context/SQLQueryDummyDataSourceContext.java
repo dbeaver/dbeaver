@@ -20,6 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.impl.struct.AbstractObjectType;
+import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.semantics.*;
@@ -471,7 +473,9 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         @NotNull DBSObjectType objectType,
         @NotNull List<String> objectName
     ) {
-        return null;
+        return objectType.isCompatibleWith(RelationalObjectType.TYPE_TABLE) || objectType.isCompatibleWith(RelationalObjectType.TYPE_VIEW)
+            ? this.findRealTable(monitor, objectName)
+            : null;
     }
 
     @Override
@@ -510,7 +514,9 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     public class DummyTableRowsSource extends SQLQueryRowsTableDataModel {
         
         public DummyTableRowsSource(@NotNull STMTreeNode syntaxNode) {
-            super(syntaxNode, new SQLQueryQualifiedName(syntaxNode, new SQLQuerySymbolEntry(syntaxNode, "DummyTable", "DummyTable")));
+            super(syntaxNode, new SQLQueryQualifiedName(
+                syntaxNode, Collections.emptyList(), new SQLQuerySymbolEntry(syntaxNode, "DummyTable", "DummyTable"), 0
+            ), false);
         }
 
         @NotNull

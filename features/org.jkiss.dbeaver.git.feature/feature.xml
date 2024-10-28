@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.git.feature"
       label="%featureName"
-      version="1.0.128.qualifier"
+      version="1.0.130.qualifier"
       provider-name="%providerName">
 
    <description>
@@ -18,12 +18,20 @@
    </license>
 
    <requires>
-      <import feature="org.jkiss.dbeaver.ui.feature" version="7.0.0" match="greaterOrEqual"/>
-      <import feature="org.eclipse.egit" version="1.0.0"/>
+      <import feature="org.jkiss.dbeaver.ui.feature" version="0.0.0" match="greaterOrEqual"/>
    </requires>
 
+   <includes id="org.eclipse.jgit" version="0.0.0"/>
+   <includes id="org.eclipse.jgit.gpg.bc" version="0.0.0"/>
+   <includes id="org.eclipse.jgit.http.apache" version="0.0.0"/>
+   <includes id="org.eclipse.jgit.ssh.apache" version="0.0.0"/>
+   <includes id="org.eclipse.egit" version="0.0.0"/>
+
+   <!-- SSH Agent provider -->
+   <plugin id="org.apache.sshd.osgi" version="0.0.0"/>
+   <plugin id="org.apache.sshd.sftp" version="0.0.0"/>
+
    <!-- DBeaver deps -->
-   <plugin id="org.jkiss.dbeaver.team.git" version="0.0.0"/>
    <plugin id="org.jkiss.dbeaver.team.git.ui" version="0.0.0"/>
 
 </feature>

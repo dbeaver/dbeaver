@@ -50,10 +50,9 @@ public class ResourcePropertyTester extends PropertyTester
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-        if (!(receiver instanceof IResource)) {
+        if (!(receiver instanceof IResource resource)) {
             return false;
         }
-        IResource resource = (IResource)receiver;
         DBPWorkspaceDesktop workspace = DBPPlatformDesktop.getInstance().getWorkspace();
         DBPResourceHandler handler = workspace.getResourceHandler(resource);
         if (handler == null) {

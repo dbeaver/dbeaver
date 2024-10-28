@@ -46,7 +46,7 @@ public class SQLQueryInsertModel extends SQLQueryDMLStatementModel {
     @NotNull
     public static SQLQueryModelContent recognize(@NotNull SQLQueryModelRecognizer recognizer, @NotNull STMTreeNode node) {
         STMTreeNode tableNameNode = node.findFirstChildOfName(STMKnownRuleNames.tableName);
-        SQLQueryRowsTableDataModel tableModel = tableNameNode == null ? null : recognizer.collectTableReference(tableNameNode);
+        SQLQueryRowsTableDataModel tableModel = tableNameNode == null ? null : recognizer.collectTableReference(tableNameNode, false);
 
         List<SQLQuerySymbolEntry> columnNames;
         SQLQueryRowsSourceModel valuesRows;

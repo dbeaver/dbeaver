@@ -993,27 +993,22 @@ public class DataSourceDescriptor
 
     @Override
     public void resolveSecrets(DBSSecretController secretController) throws DBException {
-        try {
-            if (!isSharedCredentials()) {
-                // try to load private user credentials
-                String secretValue = secretController.getPrivateSecretValue(getSecretValueId());
-                loadFromSecret(secretValue);
-                if (secretValue == null && !DBWorkbench.isDistributed()) {
-                    // Backward compatibility
-                    loadFromLegacySecret(secretController);
-                }
-            } else {
-                this.availableSharedCredentials = secretController.discoverCurrentUserSecrets(this);
-                if (this.availableSharedCredentials.size() == 1) {
-                    setSelectedSharedCredentials(availableSharedCredentials.get(0));
-                }
+        if (!isSharedCredentials()) {
+            // try to load private user credentials
+            String secretValue = secretController.getPrivateSecretValue(getSecretValueId());
+            loadFromSecret(secretValue);
+            if (secretValue == null && !DBWorkbench.isDistributed()) {
+                // Backward compatibility
+                loadFromLegacySecret(secretController);
             }
-        } finally {
-            // we always consider the secret to be resolved,
-            // because in case of an error during the resolve,
-            // we will not be able to save the new secret, look at #persistSecretIfNeeded
-            this.secretsResolved = true;
+        } else {
+            this.availableSharedCredentials = secretController.discoverCurrentUserSecrets(this);
+            if (this.availableSharedCredentials.size() == 1) {
+                setSelectedSharedCredentials(availableSharedCredentials.get(0));
+            }
         }
+
+        secretsResolved = true;
     }
 
     @Override
@@ -1141,13 +1136,8 @@ public class DataSourceDescriptor
     }
 
     private boolean connect0(DBRProgressMonitor monitor, boolean initialize, boolean reflect) throws DBException {
-        DBSSecretController secretController = null;
-
         log.debug("Connect with '" + getName() + "' (" + getId() + ")");
-        if (getProject().isUseSecretStorage()) {
-            // Resolve secrets
-            secretController = DBSSecretController.getProjectSecretController(getProject());
-        }
+
         resolveSecretsIfNeeded();
 
         if (isSharedCredentials() && !isSharedCredentialsSelected()) {
@@ -1204,7 +1194,7 @@ public class DataSourceDescriptor
                 }
             }
 
-            resolveConnectVariables(secretController);
+            resolvePropertiesFromProfile();
 
             // Handle tunnelHandler
             // Open tunnelHandler and replace connection info with new one
@@ -1340,34 +1330,33 @@ public class DataSourceDescriptor
         }
     }
 
-    private void resolveConnectVariables(DBSSecretController secretController) throws DBException {
-        // Resolve variables
-        if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS) ||
-            !CommonUtils.isEmpty(resolvedConnectionInfo.getConfigProfileName())) {
+    private void resolvePropertiesFromProfile() throws DBException {
+        DBSSecretController secretController = getProject().isUseSecretStorage() ?
+            DBSSecretController.getProjectSecretController(getProject()) : null;
+        // Update config from profile
+        if (!CommonUtils.isEmpty(resolvedConnectionInfo.getConfigProfileName())) {
             // Update config from profile
-            if (!CommonUtils.isEmpty(resolvedConnectionInfo.getConfigProfileName())) {
-                // Update config from profile
-                DBWNetworkProfile profile = registry.getNetworkProfile(
-                    resolvedConnectionInfo.getConfigProfileSource(),
-                    resolvedConnectionInfo.getConfigProfileName());
-                if (profile != null) {
-                    if (secretController != null) {
-                        profile.resolveSecrets(secretController);
-                    }
-                    for (DBWHandlerConfiguration handlerCfg : profile.getConfigurations()) {
-                        if (handlerCfg.isEnabled()) {
-                            resolvedConnectionInfo.updateHandler(new DBWHandlerConfiguration(handlerCfg));
-                        }
+            DBWNetworkProfile profile = registry.getNetworkProfile(
+                resolvedConnectionInfo.getConfigProfileSource(),
+                resolvedConnectionInfo.getConfigProfileName());
+            if (profile != null) {
+                if (secretController != null) {
+                    profile.resolveSecrets(secretController);
+                }
+                for (DBWHandlerConfiguration handlerCfg : profile.getConfigurations()) {
+                    if (handlerCfg.isEnabled()) {
+                        resolvedConnectionInfo.updateHandler(new DBWHandlerConfiguration(handlerCfg));
                     }
                 }
             }
-            // Process variables
-            if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
-                IVariableResolver variableResolver = new DataSourceVariableResolver(
-                    this, this.resolvedConnectionInfo);
-                this.resolvedConnectionInfo.resolveDynamicVariables(variableResolver);
-            }
         }
+        // Process variables
+        if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
+            IVariableResolver variableResolver = new DataSourceVariableResolver(
+                this, this.resolvedConnectionInfo);
+            this.resolvedConnectionInfo.resolveDynamicVariables(variableResolver);
+        }
+
     }
 
     private void resolveSecretsIfNeeded() throws DBException {
@@ -2181,14 +2170,21 @@ public class DataSourceDescriptor
         }
 
         //do not store handlers in secret for shared connections
-        if (!isSharedCredentials() && CommonUtils.isEmpty(connectionInfo.getConfigProfileName())) {
+        if (!isSharedCredentials()) {
             // Handlers. If config profile is set then props are saved there
+            DBWNetworkProfile activeProfile = CommonUtils.isEmpty(connectionInfo.getConfigProfileName())
+                ? null
+                : this.getRegistry().getNetworkProfile(connectionInfo.getConfigProfileSource(), connectionInfo.getConfigProfileName());
+
             List<Map<String, Object>> handlersConfigs = new ArrayList<>();
             for (DBWHandlerConfiguration hc : connectionInfo.getHandlers()) {
-                Map<String, Object> handlerProps = hc.saveToSecret();
-                if (!handlerProps.isEmpty()) {
-                    handlerProps.put(RegistryConstants.ATTR_ID, hc.getId());
-                    handlersConfigs.add(handlerProps);
+                DBWHandlerConfiguration profileConfig = activeProfile == null ? null : activeProfile.getConfiguration(hc.getHandlerDescriptor());
+                if (profileConfig == null || !profileConfig.isEnabled()) {
+                    Map<String, Object> handlerProps = hc.saveToSecret();
+                    if (!handlerProps.isEmpty()) {
+                        handlerProps.put(RegistryConstants.ATTR_ID, hc.getId());
+                        handlersConfigs.add(handlerProps);
+                    }
                 }
             }
             if (!handlersConfigs.isEmpty()) {

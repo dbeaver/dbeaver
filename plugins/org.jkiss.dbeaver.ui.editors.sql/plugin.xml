@@ -9,6 +9,11 @@
     <extension-point id="org.jkiss.dbeaver.sql.plan.view" name="%extension-point.org.jkiss.dbeaver.sqlPlanView.name" schema="schema/org.jkiss.dbeaver.sqlPlanView.exsd"/>
     <extension-point id="org.jkiss.dbeaver.sql.editorAddIns" name="%extension-point.org.jkiss.dbeaver.sql.editorAddIns.name" schema="schema/org.jkiss.dbeaver.sql.editorAddIns.exsd"/>
 
+    <extension point="org.eclipse.core.filebuffers.annotationModelCreation">
+        <factory contentTypeId="org.jkiss.dbeaver.sql" class="org.jkiss.dbeaver.ui.editors.sql.semantics.SQLEditorSemanticAnnotationModelFactory">
+        </factory>
+    </extension>
+
     <extension point="org.eclipse.core.runtime.preferences">
         <initializer class="org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorPreferencesInitializer"/>
     </extension>
@@ -272,6 +277,7 @@
         <command id="org.jkiss.dbeaver.ui.editors.sql.close.tab" name="%command.org.jkiss.dbeaver.ui.editors.sql.close.tab.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.close.tab.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.toggle.pinned.tab" name="%command.org.jkiss.dbeaver.ui.editors.sql.toggle.pinned.tab.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.toggle.pinned.tab.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.gotoMatchingBracket" name="%command.org.jkiss.dbeaver.ui.editors.sql.gotoMatchingBracket.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.gotoMatchingBracket.description" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.selectToMatchingBracket" name="%command.org.jkiss.dbeaver.ui.editors.sql.selectToMatchingBracket.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.selectToMatchingBracket.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.text.content.format" name="%command.org.jkiss.dbeaver.ui.editors.text.content.format.name" description="%command.org.jkiss.dbeaver.ui.editors.text.content.format.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.toggleLayout" name="%command.org.jkiss.dbeaver.ui.editors.sql.toggleLayout.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.toggleLayout.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.search.web" name="%command.org.jkiss.dbeaver.ui.editors.sql.web.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.web.description" categoryId="org.jkiss.dbeaver.core.sql"/>
@@ -723,6 +729,9 @@
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.gotoMatchingBracket" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerGoToMatchingBracket">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor.base"/></enabledWhen>
         </handler>
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.selectToMatchingBracket" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerGoToMatchingBracket">
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor.base"/></enabledWhen>
+        </handler>
 
     </extension>
 
@@ -730,12 +739,19 @@
 
         <!-- SQL Editor -->
         <!--<key commandId="org.jkiss.dbeaver.core.sql.editor.open" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+L"/>-->
-        <key commandId="org.jkiss.dbeaver.core.sql.editor.recent" contextId="org.jkiss.dbeaver.ui.context.navigator" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+Enter"/>
+        <key commandId="org.jkiss.dbeaver.core.sql.editor.recent" contextId="org.jkiss.dbeaver.ui.context.navigator" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="win32" sequence="CTRL+Enter"/>
+        <key commandId="org.jkiss.dbeaver.core.sql.editor.recent" contextId="org.jkiss.dbeaver.ui.context.navigator" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="gtk" sequence="CTRL+Enter"/>
+        <key commandId="org.jkiss.dbeaver.core.sql.editor.recent" contextId="org.jkiss.dbeaver.ui.context.navigator" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="cocoa" sequence="COMMAND+Enter"/>
         <key commandId="org.jkiss.dbeaver.core.sql.editor.console" contextId="org.jkiss.dbeaver.ui.context.navigator" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+Enter"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.sync.connection" contextId="org.jkiss.dbeaver.ui.context.navigator" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+."/>
 
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+Enter"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+\"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="win32" sequence="CTRL+Enter"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="gtk" sequence="CTRL+Enter"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="cocoa" sequence="COMMAND+Enter"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="win32" sequence="CTRL+\"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="gtk" sequence="CTRL+\"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="cocoa" sequence="COMMAND+\"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="cocoa" sequence="CTRL+\"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.script" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+X"/>
         <key commandId="org.jkiss.dbeaver.core.sql.script.run.scriptNative" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+N"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+SHIFT+X"/>
@@ -775,6 +791,7 @@
         <key commandId="org.jkiss.dbeaver.core.sql.editor.create" contextId="org.jkiss.dbeaver.ui.perspective" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+]"/>
 
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.gotoMatchingBracket" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+["/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.selectToMatchingBracket" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+]"/>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
@@ -1323,7 +1340,7 @@
             label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.semanticError.foreground.label"
             categoryId="org.jkiss.dbeaver.ui.presentation.sql"
             id="org.jkiss.dbeaver.sql.editor.color.semanticError.foreground"
-            value="255,55,55">
+            value="108,81,81">
             <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.semanticError.foreground.description</description>
         </colorDefinition>
         <colorDefinition
@@ -1506,6 +1523,12 @@
                 class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLEditor"
                 title="%page.org.jkiss.dbeaver.preferences.main.sqleditor.name"
                 description="%page.org.jkiss.dbeaver.preferences.main.sqleditor.description"/>
+            <dataSourcePage
+                id="sql-editor.codeeditor"
+                parent="sql-editor.main"
+                class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLCodeEditing"
+                title="%page.org.jkiss.dbeaver.preferences.main.sql.codeeditor.name"
+                description="%page.org.jkiss.dbeaver.preferences.main.sql.codeeditor.description"/>
             <dataSourcePage
                 id="sql-editor.completion"
                 parent="sql-editor.main"

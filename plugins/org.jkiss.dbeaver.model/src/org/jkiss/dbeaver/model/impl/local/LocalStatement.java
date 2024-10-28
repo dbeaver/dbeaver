@@ -52,18 +52,13 @@ public class LocalStatement extends AbstractStatement<DBCSession>
     }
 
     @Override
-    public int[] executeStatementBatch() throws DBCException {
-        return new int[0];
+    public long[] executeStatementBatch() throws DBCException {
+        return new long[0];
     }
 
     @Override
     public DBCResultSet openResultSet() throws DBCException {
         return new LocalResultSet<>(connection, this);
-    }
-
-    @Override
-    public DBCResultSet openGeneratedKeysResultSet() throws DBCException {
-        return null;
     }
 
     @Override

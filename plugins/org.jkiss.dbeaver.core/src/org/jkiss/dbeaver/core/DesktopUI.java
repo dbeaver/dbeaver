@@ -60,7 +60,7 @@ import org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler;
 import org.jkiss.dbeaver.ui.dialogs.*;
 import org.jkiss.dbeaver.ui.dialogs.connection.PasswordChangeDialog;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverDownloadDialog;
-import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
+import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditHelpers;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
@@ -417,7 +417,7 @@ public class DesktopUI extends ConsoleUserInterface {
                 DataSourceInvalidateHandler.showConnectionLostDialog(null, message, error);
                 return UserResponse.OK;
             case DRIVER_CLASS_MISSING:
-                DriverEditDialog.showBadConfigDialog(null, message, error);
+                DriverEditHelpers.showBadConfigDialog(null, message, error);
                 return UserResponse.OK;
         }
 

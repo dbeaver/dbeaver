@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.app;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.Strictness;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import org.eclipse.core.runtime.IStatus;
@@ -52,6 +53,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
 
@@ -68,7 +70,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     }
 
     public static final Gson METADATA_GSON = new GsonBuilder()
-        .setLenient()
+        .setStrictness(Strictness.LENIENT)
         .serializeNulls()
         .create();
 
@@ -82,6 +84,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     private volatile ProjectFormat format = ProjectFormat.UNKNOWN;
     private volatile DBPDataSourceRegistry dataSourceRegistry;
     private volatile DBFFileSystemManager fileSystemManager;
+    private volatile Map<String, String> runtimeProperties = new ConcurrentHashMap<>();
     private volatile Map<String, Object> properties;
     protected volatile Map<String, Map<String, Object>> resourceProperties;
     private UUID projectID;
@@ -280,7 +283,8 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
 
         synchronized (metadataSync) {
             Path settingsFile = getMetadataPath().resolve(SETTINGS_STORAGE_FILE);
-            if (Files.exists(settingsFile) && settingsFile.toFile().length() > 0) {
+
+            if (fileExistsAndNonEmpty(settingsFile)) {
                 // Parse metadata
                 try (Reader settingsReader = Files.newBufferedReader(settingsFile, StandardCharsets.UTF_8)) {
                     properties = JSONUtils.parseMap(METADATA_GSON, settingsReader);
@@ -498,7 +502,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
             }
 
             Path mdFile = getMetadataPath().resolve(METADATA_STORAGE_FILE);
-            if (Files.exists(mdFile) && mdFile.toFile().length() > 0) {
+            if (fileExistsAndNonEmpty(mdFile)) {
                 // Parse metadata
                 Map<String, Map<String, Object>> mdCache = new TreeMap<>();
                 try (Reader mdReader = Files.newBufferedReader(mdFile, StandardCharsets.UTF_8)) {
@@ -561,6 +565,16 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
                 metadataSyncJob.schedule(100);
             }
         }
+    }
+
+    @Override
+    public String getRuntimeProperty(@NotNull String key) {
+        return runtimeProperties.get(key);
+    }
+
+    @Override
+    public void setRuntimeProperty(@NotNull String key, String value) {
+        runtimeProperties.put(key, value);
     }
 
     @Override
@@ -633,6 +647,18 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     @Override
     public String getSecretSubjectId() {
         return "project/" + getId();
+    }
+
+    private boolean fileExistsAndNonEmpty(@NotNull Path path) {
+        boolean fileNotEmpty = false;
+        if (Files.exists(path)) {
+            try {
+                return Files.size(path) > 0;
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
+            }
+        }
+        return fileNotEmpty;
     }
 
 }

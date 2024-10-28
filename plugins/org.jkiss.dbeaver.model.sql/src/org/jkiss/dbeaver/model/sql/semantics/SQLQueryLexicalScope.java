@@ -31,11 +31,21 @@ public class SQLQueryLexicalScope {
     @Nullable
     private SQLQueryDataContext context = null;
     @NotNull
-    private final List<SQLQueryLexicalScopeItem> items = new ArrayList<>();
+    private final List<SQLQueryLexicalScopeItem> items;
     @NotNull
-    private final List<STMTreeNode> syntaxNodes = new ArrayList<>();
+    private final List<STMTreeNode> syntaxNodes;
     @Nullable
     private Interval interval = null;
+
+    public SQLQueryLexicalScope() {
+        this.items = new ArrayList<>();
+        this.syntaxNodes = new ArrayList<>();
+    }
+
+    public SQLQueryLexicalScope(int capacity) {
+        this.items = new ArrayList<>(capacity);
+        this.syntaxNodes = new ArrayList<>(capacity);
+    }
 
     /**
      * Returns a text interval for this lexical scope
@@ -50,8 +60,8 @@ public class SQLQueryLexicalScope {
             ).mapToInt(x -> x).min().orElse(0);
 
             int b = Stream.concat(
-                items.stream().map(x -> x.getSyntaxNode().getRealInterval().b),
-                syntaxNodes.stream().map(x -> x.getRealInterval().b)
+                items.stream().map(x -> { Interval r = x.getSyntaxNode().getRealInterval(); return r.b + r.length(); }),
+                syntaxNodes.stream().map(x -> { Interval r = x.getRealInterval(); return r.b + r.length(); })
             ).mapToInt(x -> x).max().orElse(Integer.MAX_VALUE);
 
             this.interval = Interval.of(a, b);
@@ -99,5 +109,13 @@ public class SQLQueryLexicalScope {
            .filter(t -> t.getSyntaxNode().getRealInterval().properlyContains(Interval.of(position, position)))
            .min(Comparator.comparingInt(t -> t.getSyntaxNode().getRealInterval().a))
            .orElse(null);
+    }
+
+    @Nullable
+    public SQLQueryLexicalScopeItem findNearestItem(int position) {
+        return this.items.stream()
+            .filter(t -> t.getSyntaxNode().getRealInterval().b <= position)
+            .max(Comparator.comparingInt(t -> t.getSyntaxNode().getRealInterval().b))
+            .orElse(null);
     }
 }

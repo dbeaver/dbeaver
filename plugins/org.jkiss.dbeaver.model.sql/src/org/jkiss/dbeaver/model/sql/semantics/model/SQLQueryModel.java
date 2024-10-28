@@ -18,10 +18,14 @@ package org.jkiss.dbeaver.model.sql.semantics.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryLexicalScope;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryLexicalScopeItem;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
+import org.jkiss.dbeaver.utils.ListNode;
+import org.jkiss.utils.Pair;
 
 import java.util.Collection;
 import java.util.Set;
@@ -82,12 +86,53 @@ public class SQLQueryModel extends SQLQueryNodeModel {
      */
     public SQLQueryNodeModel findNodeContaining(int textOffset) {
         SQLQueryNodeModel node = this;
-        SQLQueryNodeModel nested = node.findChildNodeContaining(textOffset); 
+        SQLQueryNodeModel nested = node.findChildNodeContaining(textOffset);
         while (nested != null) {
             node = nested;
             nested = nested.findChildNodeContaining(textOffset);
         }
         return node;
+    }
+
+    /**
+     * Returns nested node of the query model for the specified offset in the source text
+     */
+    public Pair<SQLQueryDataContext, SQLQueryLexicalScopeItem> findLexicalContext(int textOffset) {
+        ListNode<SQLQueryNodeModel> stack = ListNode.of(this);
+        SQLQueryDataContext deepestContext;
+        { // walk down through the model till the deepest node describing given position
+            SQLQueryNodeModel node = this;
+            SQLQueryNodeModel nested = node.findChildNodeContaining(textOffset);
+            while (nested != null) {
+                stack = ListNode.push(stack, nested);
+                node = nested;
+                nested = nested.findChildNodeContaining(textOffset);
+            }
+            deepestContext = node.getGivenDataContext();
+        }
+
+        SQLQueryDataContext context = null;
+        SQLQueryLexicalScopeItem lexicalItem = null;
+        SQLQueryLexicalScope scope = null;
+
+        // walk up till the lexical scope covering given position
+        // TODO consider corner-cases with adjacent scopes, maybe better use condition on lexicalItem!=null instead of the scope?
+        while (stack != null && scope == null) {
+            SQLQueryNodeModel node = stack.data;
+            scope = node.findLexicalScope(textOffset);
+            if (scope != null) {
+                context = scope.getContext();
+                lexicalItem = scope.findNearestItem(textOffset);
+            }
+            stack = stack.next;
+        }
+
+        // if context was not provided by the lexical scope, use one from the deepest model node
+        if (context == null) {
+            context = deepestContext;
+        }
+
+        return Pair.of(context, lexicalItem);
     }
 
     @Override

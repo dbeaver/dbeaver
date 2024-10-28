@@ -5,7 +5,7 @@
     <extension-point id="org.jkiss.dbeaver.resourceHandler" name="%extension-point.org.jkiss.dbeaver.resourceHandler.name" schema="schema/org.jkiss.dbeaver.resourceHandler.exsd"/>
 
     <extension point="org.jkiss.dbeaver.navigator">
-        <extender id="dbfs" root="true" class="org.jkiss.dbeaver.model.navigator.DBFNavigatorExtender"/>
+        <extender id="dbfs" root="true" class="org.jkiss.dbeaver.model.navigator.RCPNavigatorExtender"/>
     </extension>
 
     <extension point="org.eclipse.core.resources.natures" id="org.jkiss.dbeaver.DBeaverNature"

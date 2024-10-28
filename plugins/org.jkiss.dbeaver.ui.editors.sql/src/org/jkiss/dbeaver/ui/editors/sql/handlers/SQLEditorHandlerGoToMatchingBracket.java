@@ -27,6 +27,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 public class SQLEditorHandlerGoToMatchingBracket extends AbstractHandler {
@@ -35,13 +36,15 @@ public class SQLEditorHandlerGoToMatchingBracket extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         SQLEditorBase editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditorBase.class);
         if (editor != null) {
-            gotoMatchingBracket(editor);
+            gotoMatchingBracket(
+                editor,
+                SQLEditorCommands.CMD_SQL_SELECT_TO_MATCHING_BRACKET.equals(event.getCommand().getId()));
         }
         return null;
     }
 
     // copied from JDT code
-    private void gotoMatchingBracket(SQLEditorBase editor) {
+    private void gotoMatchingBracket(SQLEditorBase editor, boolean selectText) {
 
         ISourceViewer sourceViewer = editor.getViewer();
         if (sourceViewer == null) {
@@ -62,16 +65,16 @@ public class SQLEditorHandlerGoToMatchingBracket extends AbstractHandler {
         int offset = region.getOffset();
         int length = region.getLength();
 
-        if (length < 1)
+        if (length < 1) {
             return;
+        }
 
         int anchor = characterPairMatcher.getAnchor();
         // http://dev.eclipse.org/bugs/show_bug.cgi?id=34195
         int targetOffset = (ICharacterPairMatcher.RIGHT == anchor) ? offset + 1 : offset + length - 1;
 
         boolean visible = false;
-        if (sourceViewer instanceof ITextViewerExtension5) {
-            ITextViewerExtension5 extension = (ITextViewerExtension5) sourceViewer;
+        if (sourceViewer instanceof ITextViewerExtension5 extension) {
             visible = (extension.modelOffset2WidgetOffset(targetOffset) > -1);
         } else {
             IRegion visibleRegion = sourceViewer.getVisibleRegion();
@@ -84,11 +87,16 @@ public class SQLEditorHandlerGoToMatchingBracket extends AbstractHandler {
         }
 
         int adjustment = getOffsetAdjustment(document, selection.getOffset() + selection.getLength(), selection.getLength());
+
         targetOffset += adjustment;
         int direction = Integer.compare(selection.getLength(), 0);
 
-        sourceViewer.setSelectedRange(targetOffset, direction);
-        sourceViewer.revealRange(targetOffset, direction);
+        if (selectText) {
+            sourceViewer.setSelectedRange(offset + 1, length - 2);
+        } else {
+            sourceViewer.setSelectedRange(targetOffset, direction);
+            sourceViewer.revealRange(targetOffset, direction);
+        }
     }
 
     // copied from JDT code

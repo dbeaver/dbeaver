@@ -66,6 +66,6 @@ body:
       placeholder: |
         Example:
         1. Tunnels and proxy: SSH, SOCKS, etc
-        2. Extensions: Office extension, Darkest Dark extension, etc
+        2. Extensions: Office extension, Git extension, etc
     validations:
       required: false

@@ -69,13 +69,18 @@ public interface DBCStatement extends DBPObject, DBRBlockingObject, DBPCloseable
      * Adds statement to execution batch (if supported)
      * @throws DBCException on error
      */
-    void addToBatch() throws DBCException;
+    default void addToBatch() throws DBCException {
+        throw new DBCFeatureNotSupportedException("Statement batches are not supported");
+    }
 
     /**
      * Executes batch of statements
+     *
      * @throws DBCException on error
      */
-    int[] executeStatementBatch() throws DBCException;
+    default long[] executeStatementBatch() throws DBCException {
+        throw new DBCFeatureNotSupportedException("Statement batches are not supported");
+    }
 
     /**
      * Returns result set. Valid only on after {@link #executeStatement} invocation.
@@ -91,7 +96,9 @@ public interface DBCStatement extends DBPObject, DBRBlockingObject, DBPCloseable
      * @throws DBCException on error
      */
     @Nullable
-    DBCResultSet openGeneratedKeysResultSet() throws DBCException;
+    default DBCResultSet openGeneratedKeysResultSet() throws DBCException {
+        throw new DBCFeatureNotSupportedException("Generated keys reading not supported");
+    }
 
     /**
      * Returns number of rows updated by this statement executed.
@@ -123,7 +130,6 @@ public interface DBCStatement extends DBPObject, DBRBlockingObject, DBPCloseable
 
     /**
      * Sets statement execution timeout (in seconds)
-     * @throws DBCException
      */
     void setStatementTimeout(int timeout) throws DBCException;
 

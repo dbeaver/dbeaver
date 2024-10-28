@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.qm.QMConstants;
 import org.jkiss.dbeaver.model.qm.QMObjectType;
 import org.jkiss.dbeaver.ui.screenreaders.ScreenReader;
 import org.jkiss.dbeaver.ui.screenreaders.ScreenReaderPreferences;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
@@ -76,8 +75,6 @@ public class DesktopPreferencesInitializer extends AbstractPreferenceInitializer
         PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_QUERY_TYPES,
             DBCExecutionPurpose.USER + "," + DBCExecutionPurpose.USER_FILTERED + "," + DBCExecutionPurpose.USER_SCRIPT);
         PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_STORE_LOG_FILE, false);
-        PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_LOG_DIRECTORY,
-            GeneralUtils.getMetadataFolder().toAbsolutePath().toString());
 
         // Logs
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.LOGS_DEBUG_ENABLED, true);

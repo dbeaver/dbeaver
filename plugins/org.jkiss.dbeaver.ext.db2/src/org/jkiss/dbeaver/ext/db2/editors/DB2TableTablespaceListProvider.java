@@ -50,6 +50,6 @@ public class DB2TableTablespaceListProvider implements IPropertyValueListProvide
                 validTablespaces.add(db2Tablespace);
             }
         }
-        return validTablespaces.toArray(new DB2Tablespace[validTablespaces.size()]);
+        return validTablespaces.toArray(new DB2Tablespace[0]);
     }
 }

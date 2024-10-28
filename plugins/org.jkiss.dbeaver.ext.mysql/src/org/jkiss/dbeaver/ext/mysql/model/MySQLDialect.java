@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -208,6 +209,12 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
     @Override
     public String[][] getIdentifierQuoteStrings() {
         return MYSQL_QUOTE_STRINGS;
+    }
+
+    @NotNull
+    @Override
+    public DBPIdentifierCase storesQuotedCase() {
+        return DBPIdentifierCase.MIXED;
     }
 
     @NotNull

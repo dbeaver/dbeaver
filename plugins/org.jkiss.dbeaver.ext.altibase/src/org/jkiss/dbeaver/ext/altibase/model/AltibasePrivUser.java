@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.altibase.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.altibase.AltibaseUtils;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;

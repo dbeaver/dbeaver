@@ -38,4 +38,7 @@ public abstract class SQLQueryLexicalScopeItem {
      */
     @NotNull
     public abstract STMTreeNode[] getSyntaxComponents();
+
+    @NotNull
+    public abstract SQLQuerySymbolClass getSymbolClass();
 }
