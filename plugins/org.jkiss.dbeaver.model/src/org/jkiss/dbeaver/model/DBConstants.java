@@ -52,6 +52,12 @@ public class DBConstants {
     public static final String VAR_CONTEXT_ID = "context.id";
 
     /////////////////////////////////
+    // Object context parameters
+
+    public static final String CONTEXT_PARAMETER_PROJECT = "dbeaver.project";
+    public static final String CONTEXT_PARAMETER_DATA_SOURCE = "dbeaver.datasource";
+
+    /////////////////////////////////
     // Misc
     public static final String IS_WINDOWS_STORE_APP = "dbeaver.windows.store.app";
 

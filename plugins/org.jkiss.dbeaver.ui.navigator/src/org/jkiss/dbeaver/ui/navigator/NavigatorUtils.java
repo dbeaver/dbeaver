@@ -38,6 +38,7 @@ import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
@@ -403,13 +404,29 @@ public class NavigatorUtils {
         return null;
     }
 
-    public static void filterSelection(final ISelection selection, boolean exclude)
-    {
-        if (selection instanceof IStructuredSelection) {
+    public static void filterSelection(final ISelection selection, boolean exclude) {
+        if (!(selection instanceof IStructuredSelection structuredSelection)) {
+            log.error("Invalid selection type: " + selection);
+            return;
+        }
+        try {
             Map<DBNDatabaseNode, DBSObjectFilter> folders = new HashMap<>();
-            for (Object item : ((IStructuredSelection)selection).toArray()) {
-                if (item instanceof DBNNode node && node.getParentNode() instanceof DBNDatabaseNode parentNode) {
-                    DBXTreeItem nodeMeta = DBNUtils.getNodeMetaForFilters(node, parentNode);
+            for (Object item : structuredSelection.toArray()) {
+                if (!(item instanceof DBNDatabaseNode node)) {
+                    continue;
+                }
+                DBNDatabaseNode parentNode = node.getParentNode() instanceof DBNDatabaseNode parent ? parent : node;
+                {
+                    DBXTreeItem nodeMeta = UIUtils.runWithMonitor(monitor -> {
+                        DBXTreeItem meta = DBNUtils.getValidItemsMeta(monitor, node);
+                        if (meta == null && node != parentNode) {
+                            meta = DBNUtils.getValidItemsMeta(monitor, parentNode);
+                        }
+                        return meta;
+                    });
+                    if (nodeMeta == null) {
+                        continue;
+                    }
 
                     DBSObjectFilter nodeFilter = folders.get(parentNode);
                     if (nodeFilter == null) {
@@ -430,8 +447,13 @@ public class NavigatorUtils {
             // Save folders
             Set<DBPDataSourceContainer> changedContainers = new HashSet<>();
             for (Map.Entry<DBNDatabaseNode, DBSObjectFilter> entry : folders.entrySet()) {
-                entry.getKey().setNodeFilter(entry.getKey().getItemsMeta(), entry.getValue(), false);
-                changedContainers.add(entry.getKey().getDataSourceContainer());
+                DBNDatabaseNode targetNode = entry.getKey();
+                DBXTreeItem nodeMeta = UIUtils.runWithMonitor(monitor -> DBNUtils.getValidItemsMeta(monitor, targetNode));
+                targetNode.setNodeFilter(
+                    nodeMeta,
+                    entry.getValue(),
+                    false);
+                changedContainers.add(targetNode.getDataSourceContainer());
             }
             // Save configs
             for (DBPDataSourceContainer ds : changedContainers) {
@@ -439,14 +461,15 @@ public class NavigatorUtils {
             }
             // Refresh all folders
             NavigatorHandlerRefresh.refreshNavigator(folders.keySet());
+        } catch (DBException e) {
+            log.error(e);
         }
     }
 
     public static boolean syncEditorWithNavigator(INavigatorModelView navigatorView, IEditorPart activeEditor) {
-        if (!(activeEditor instanceof IDataSourceContainerUpdate)) {
+        if (!(activeEditor instanceof IDataSourceContainerUpdate dsProvider)) {
             return false;
         }
-        IDataSourceContainerUpdate dsProvider = (IDataSourceContainerUpdate) activeEditor;
         Viewer navigatorViewer = navigatorView.getNavigatorViewer();
         if (navigatorViewer == null) {
             return false;

@@ -221,7 +221,7 @@ public class ItemListControl extends NodeListControl
             }
         }
         contributionManager.add(new Separator());
-        if (rootNode instanceof DBNDatabaseFolder && ((DBNDatabaseFolder) rootNode).getItemsMeta() != null) {
+        if (rootNode instanceof DBNDatabaseNode dbNode && dbNode.getItemsMeta() != null) {
             contributionManager.add(new Action(
                 UINavigatorMessages.obj_editor_properties_control_action_filter_setting,
                 DBeaverIcons.getImageDescriptor(UIIcon.FILTER))
@@ -229,7 +229,7 @@ public class ItemListControl extends NodeListControl
                 @Override
                 public void run()
                 {
-                    NavigatorHandlerFilterConfig.configureFilters(getShell(), rootNode);
+                    NavigatorHandlerFilterConfig.configureFilters(getShell(), dbNode);
                 }
             });
         }

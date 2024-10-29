@@ -827,7 +827,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         return null;
     }
 
-    public void setNodeFilter(DBXTreeItem meta, DBSObjectFilter filter, boolean saveConfiguration) {
+    public boolean setNodeFilter(DBXTreeItem meta, DBSObjectFilter filter, boolean saveConfiguration) {
         DBPDataSourceContainer dataSource = getDataSourceContainer();
         Class<?> childrenClass = this.getChildrenOrFolderClass(meta);
         if (childrenClass != null) {
@@ -842,8 +842,10 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             if (saveConfiguration) {
                 dataSource.persistConfiguration();
             }
+            return true;
         } else {
             log.error("Cannot detect child node type - can't save filter configuration");
+            return false;
         }
     }
 
