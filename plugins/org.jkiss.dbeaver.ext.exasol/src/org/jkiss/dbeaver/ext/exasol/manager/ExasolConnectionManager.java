@@ -41,7 +41,7 @@ public class ExasolConnectionManager
         extends SQLObjectEditor<ExasolConnection, ExasolDataSource> implements DBEObjectRenamer<ExasolConnection> {
     
     @Override
-    public long getMakerOptions(DBPDataSource dataSource)
+    public long getMakerOptions(@NotNull DBPDataSource dataSource)
     {
         return FEATURE_SAVE_IMMEDIATELY;
     }
@@ -56,8 +56,8 @@ public class ExasolConnectionManager
     }
     
     @Override
-    protected ExasolConnection createDatabaseObject(DBRProgressMonitor monitor,
-                                                    DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) {
+    protected ExasolConnection createDatabaseObject(@NotNull DBRProgressMonitor monitor,
+                                                    @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options) {
         return new ExasolConnection((ExasolDataSource) container, null, null, null, null, null);
     }
     
@@ -73,8 +73,8 @@ public class ExasolConnectionManager
     }
     
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
-                                          ObjectCreateCommand command, Map<String, Object> options)
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
+                                          @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options)
     {
         final ExasolConnection con = command.getObject();
         
@@ -104,8 +104,8 @@ public class ExasolConnectionManager
     }
     
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
-                                          ObjectRenameCommand command, Map<String, Object> options)
+    protected void addObjectRenameActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
+                                          @NotNull ObjectRenameCommand command, @NotNull Map<String, Object> options)
     {
         ExasolConnection obj = command.getObject();
         actions.add(
@@ -117,8 +117,8 @@ public class ExasolConnectionManager
     }
     
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
-                                          ObjectDeleteCommand command, Map<String, Object> options)
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
+                                          @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options)
     {
         final ExasolConnection con = command.getObject();
         actions.add(
@@ -127,8 +127,8 @@ public class ExasolConnectionManager
     }
     
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList,
-                                          ObjectChangeCommand command, Map<String, Object> options)
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList,
+                                          @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options)
     {
         ExasolConnection con = command.getObject();
         

@@ -28,7 +28,10 @@ import org.eclipse.ui.model.WorkbenchAdapter;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
-import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
@@ -100,16 +103,16 @@ public class NavigatorAdapterFactory implements IAdapterFactory
         } else if (IResource.class.isAssignableFrom(adapterType)) {
             if (adaptableObject instanceof DBNResource) {
                 return ((DBNResource) adaptableObject).getAdapter(adapterType);
-            } else if (adaptableObject instanceof DBNNodeWithResource) {
-                final IResource resource = ((DBNNodeWithResource) adaptableObject).getResource();
+            } else if (adaptableObject instanceof DBNNode node) {
+                final IResource resource = node.getAdapter(IResource.class);
                 if (adapterType.isInstance(resource)) {
                     return adapterType.cast(resource);
                 }
             }
         } else if (adapterType == IPropertySource.class) {
             DBPObject dbObject = null;
-            if (adaptableObject instanceof DBSWrapper) {
-                dbObject = ((DBSWrapper) adaptableObject).getObject();
+            if (adaptableObject instanceof DBSWrapper wrapper) {
+                dbObject = wrapper.getObject();
             } else if (adaptableObject instanceof DBPObject) {
                 dbObject = (DBPObject) adaptableObject;
             }
@@ -119,12 +122,12 @@ public class NavigatorAdapterFactory implements IAdapterFactory
             if (dbObject instanceof DBPPropertySource) {
                 return adapterType.cast(new PropertySourceDelegate((DBPPropertySource) dbObject));
             }
-            if (dbObject instanceof IAdaptable) {
-                Object adapter = ((IAdaptable) dbObject).getAdapter(IPropertySource.class);
+            if (dbObject instanceof IAdaptable adaptable) {
+                Object adapter = adaptable.getAdapter(IPropertySource.class);
                 if (adapter != null) {
                     return adapterType.cast(adapter);
                 }
-                adapter = ((IAdaptable) dbObject).getAdapter(DBPPropertySource.class);
+                adapter = adaptable.getAdapter(DBPPropertySource.class);
                 if (adapter != null) {
                     return adapterType.cast(new PropertySourceDelegate((DBPPropertySource) adapter));
                 }
@@ -132,9 +135,8 @@ public class NavigatorAdapterFactory implements IAdapterFactory
             if (dbObject != null) {
                 PropertyCollector props = new PropertyCollector(adaptableObject, dbObject , true);
                 props.collectProperties();
-                if (props.isEmpty() && adaptableObject instanceof DBSObject) {
+                if (props.isEmpty() && adaptableObject instanceof DBSObject meta) {
                     // Add default properties
-                    DBSObject meta = (DBSObject)adaptableObject;
                     props.addProperty(null, DBConstants.PROP_ID_NAME, ModelMessages.model_navigator_Name, meta.getName()); //$NON-NLS-1$
                     props.addProperty(null, "desc", ModelMessages.model_navigator_Description, meta.getDescription()); //$NON-NLS-1$
                 }
@@ -142,8 +144,7 @@ public class NavigatorAdapterFactory implements IAdapterFactory
             }
         } else if (adapterType == IWorkbenchAdapter.class) {
             // Workbench adapter
-            if (adaptableObject instanceof DBNNode) {
-                final DBNNode node = (DBNNode)adaptableObject;
+            if (adaptableObject instanceof DBNNode node) {
                 WorkbenchAdapter workbenchAdapter = new WorkbenchAdapter() {
                     @Override
                     public ImageDescriptor getImageDescriptor(Object object) {

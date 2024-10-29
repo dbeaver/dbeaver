@@ -88,8 +88,8 @@ public class ExasolTableColumnManager extends SQLTableColumnManager<ExasolTableC
     // ------
 
     @Override
-    protected ExasolTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container,
-                                                     Object copyFrom, Map<String, Object> options) throws DBException {
+    protected ExasolTableColumn createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container,
+                                                     Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
         ExasolTableColumn column = new ExasolTableColumn((ExasolTableBase) container);
         column.setName(getNewColumnName(monitor, context, (ExasolTableBase) container));
         return column;
@@ -100,7 +100,7 @@ public class ExasolTableColumnManager extends SQLTableColumnManager<ExasolTableC
     // Alter
     // -----
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options) {
         ExasolTableColumn exasolColumn = command.getObject();
         Map<Object,Object> props = command.getProperties();
 
@@ -183,7 +183,7 @@ public class ExasolTableColumnManager extends SQLTableColumnManager<ExasolTableC
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
+    protected void addObjectRenameActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectRenameCommand command, @NotNull Map<String, Object> options) {
         final ExasolTableColumn column = command.getObject();
 
         actions.add(

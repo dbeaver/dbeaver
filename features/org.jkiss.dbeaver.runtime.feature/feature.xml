@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.runtime.feature"
         label="%featureName"
-        version="24.1.4.qualifier"
+        version="24.2.4.qualifier"
         provider-name="%providerName"
         plugin="org.jkiss.dbeaver.model">
 
@@ -17,12 +17,6 @@
     <license url="%licenseURL">
         %license
     </license>
-
-    <requires>
-        <import plugin="org.eclipse.core.runtime"/>
-        <import plugin="org.eclipse.core.resources"/>
-        <import plugin="org.eclipse.core.expressions"/>
-    </requires>
 
     <!-- 3rd party -->
     <plugin id="slf4j.api" version="0.0.0" />
@@ -52,6 +46,7 @@
     <plugin id="org.jkiss.dbeaver.model" version="0.0.0" />
     <plugin id="org.jkiss.dbeaver.model.jdbc" version="0.0.0" />
     <plugin id="org.jkiss.dbeaver.model.sql" version="0.0.0" />
+    <plugin id="org.jkiss.dbeaver.model.sql.jdbc" version="0.0.0" />
     <plugin id="org.jkiss.dbeaver.model.lsm" version="0.0.0" />
     <plugin id="org.jkiss.dbeaver.registry" version="0.0.0" />
     <plugin id="org.jkiss.dbeaver.net.ssh" version="0.0.0" />
@@ -71,6 +66,5 @@
     <plugin id="org.jkiss.bundle.gis" version="0.0.0" />
     <plugin id="org.jkiss.bundle.sshj" version="0.0.0" />
     <plugin id="org.jkiss.bundle.antlr4" version="0.0.0" />
-    <plugin id="org.jkiss.bundle.jsvg" version="0.0.0" />
 
 </feature>

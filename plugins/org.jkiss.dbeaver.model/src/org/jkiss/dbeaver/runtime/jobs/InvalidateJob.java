@@ -215,7 +215,11 @@ public class InvalidateJob extends DataSourceJob
                     continue;
                 }
 
-                var results = invalidateInstances(monitor, container.getDataSource(), phase);
+                DBPDataSource dataSource = container.getDataSource();
+                if (dataSource == null) {
+                    continue;
+                }
+                var results = invalidateInstances(monitor, dataSource, phase);
 
                 if (anyFailed(results)) {
                     failed.put(container, Severity.FINE);

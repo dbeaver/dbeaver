@@ -116,7 +116,7 @@ public class ExasolTablePartitionColumn extends AbstractTableIndexColumn {
 		@Override
 		public Object[] getPossibleValues(ExasolTablePartitionColumn object) {
 			try {
-				return ((ExasolTable) object.getTable()).getAvailableColumns(new VoidProgressMonitor()).toArray();
+				return object.getTable().getAvailableColumns(new VoidProgressMonitor()).toArray();
 			} catch (DBException e) {
 				log.error("Failed to get list of available columns",e);
 				return new Object[0];

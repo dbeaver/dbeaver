@@ -16,12 +16,16 @@
  */
 package org.jkiss.dbeaver.dpi.app;
 
-import org.eclipse.core.resources.IProject;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
-import org.jkiss.dbeaver.registry.BaseProjectImpl;
+import org.jkiss.dbeaver.model.impl.app.BaseProjectImpl;
+import org.jkiss.dbeaver.model.task.DBTTaskManager;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.registry.task.TaskConstants;
+import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
 
 import java.nio.file.Path;
 
@@ -54,12 +58,6 @@ public class DPIVirtualProject extends BaseProjectImpl {
         return Path.of(projectName);
     }
 
-    @Nullable
-    @Override
-    public IProject getEclipseProject() {
-        return null;
-    }
-
     @Override
     public boolean isOpen() {
         return true;
@@ -73,5 +71,19 @@ public class DPIVirtualProject extends BaseProjectImpl {
     @Override
     public boolean isUseSecretStorage() {
         return false;
+    }
+
+    @NotNull
+    @Override
+    public DBTTaskManager getTaskManager() {
+        return new TaskManagerImpl(
+            this,
+            getWorkspace().getMetadataFolder().resolve(TaskConstants.TASK_STATS_FOLDER));
+    }
+
+    @NotNull
+    @Override
+    protected DBPDataSourceRegistry createDataSourceRegistry() {
+        return new DataSourceRegistry(this);
     }
 }

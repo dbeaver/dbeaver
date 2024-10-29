@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.data.DBDReference;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 
 import java.sql.Ref;
@@ -76,19 +77,13 @@ public class JDBCReference implements DBDReference {
 
     @Override
     public Object getReferencedObject(DBCSession session) throws DBCException {
-        if (refObject == null && value instanceof Ref) {
+        if (refObject == null && value instanceof Ref ref) {
             try {
-                session.getProgressMonitor().beginTask("Retrieve references object", 3);
-                try {
-                    session.getProgressMonitor().worked(1);
-                    Object refValue = ((Ref) value).getObject();
-                    session.getProgressMonitor().worked(1);
-                    DBDValueHandler valueHandler = DBUtils.findValueHandler(session, type);
-                    refObject = valueHandler.getValueFromObject(session, type, refValue, false, false);
-                    session.getProgressMonitor().worked(1);
-                } finally {
-                    session.getProgressMonitor().done();
-                }
+                DBRProgressMonitor monitor = session.getProgressMonitor();
+                monitor.subTask("Read reference '" + type.getName() + "'");
+                Object refValue = ref.getObject();
+                DBDValueHandler valueHandler = DBUtils.findValueHandler(session, type);
+                refObject = valueHandler.getValueFromObject(session, type, refValue, false, false);
             } catch (SQLException e) {
                 throw new DBCException("Can't obtain object reference");
             }

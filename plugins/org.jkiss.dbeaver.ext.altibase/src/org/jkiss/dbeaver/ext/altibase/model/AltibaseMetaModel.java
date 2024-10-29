@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -226,10 +225,49 @@ public class AltibaseMetaModel extends GenericMetaModel {
      */
     public String getSynonymDDL(DBRProgressMonitor monitor, AltibaseSynonym sourceObject, 
             Map<String, Object> options) throws DBException {
-        return getDDLFromDbmsMetadata(monitor, sourceObject, sourceObject.getParentObject().getName(), "SYNONYM");
+        return getDDLFromDbmsMetadata(monitor, sourceObject, (String) options.get("SCHEMA"), "SYNONYM");
     }
 
-
+    /**
+     * Get a specific Replication DDL
+     */
+    public String getReplicationDDL(@NotNull DBRProgressMonitor monitor, @NotNull  AltibaseReplication sourceObject, 
+            @NotNull Map<String, Object> options) throws DBException {
+        return getDDLFromDbmsMetadata(monitor, sourceObject, null, "REPLICATION");
+    }
+    
+    /**
+     * Get a specific Job DDL
+     */
+    public String getJobDDL(DBRProgressMonitor monitor, AltibaseJob sourceObject, 
+            Map<String, Object> options) throws DBException {
+        return getDDLFromDbmsMetadata(monitor, sourceObject, null, "JOB");
+    }
+    
+    /**
+     * Get a specific DbLink DDL
+     */
+    public String getDbLinkDDL(DBRProgressMonitor monitor, AltibaseDbLink sourceObject, 
+            Map<String, Object> options) throws DBException {
+        return getDDLFromDbmsMetadata(monitor, sourceObject, (String) options.get("SCHEMA"), "DB_LINK");
+    }
+    
+    /**
+     * Get a specific Library DDL
+     */
+    public String getLibraryDDL(DBRProgressMonitor monitor, AltibaseLibrary sourceObject, 
+            Map<String, Object> options) throws DBException {
+        return getDDLFromDbmsMetadata(monitor, sourceObject, null, "LIBRARY");
+    }
+    
+    /**
+     * Get a specific Directory DDL
+     */
+    public String getDirectoryDDL(DBRProgressMonitor monitor, AltibaseDirectory sourceObject, 
+            Map<String, Object> options) throws DBException {
+        return getDDLFromDbmsMetadata(monitor, sourceObject, null, "DIRECTORY");
+    }
+    
     @Override
     public String getViewDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericView sourceObject,
                              @NotNull Map<String, Object> options) throws DBException {
@@ -1184,5 +1222,96 @@ public class AltibaseMetaModel extends GenericMetaModel {
                 indexName,
                 indexType,
                 persisted);
+    }
+    
+    //////////////////////////////////////////////////////
+    // Database Links
+    
+    /**
+     * Statement to load DbLink
+     */
+    public JDBCStatement prepareDbLinkLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container,
+            @Nullable AltibaseDbLink object, @Nullable String objectName) throws SQLException {
+        boolean isNullObject = object == null && objectName == null;
+        final JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT u.user_name, l.* FROM system_.sys_database_links_ l, system_.sys_users_ u"
+                + " WHERE l.user_id = u.user_id AND u.user_name = ?"
+                + (isNullObject ? "" : " AND l.link_name = ?")
+                + " ORDER BY link_name ASC");
+        
+        dbStat.setString(1, container.getName());
+        if (!isNullObject) {
+            dbStat.setString(2, object != null ? object.getName() : objectName);
+        }
+        
+        return dbStat;
+    }
+    
+    /**
+     * Create DbLink implementation
+     */
+    public AltibaseDbLink createDbLinkImpl(GenericStructContainer container, JDBCResultSet resultSet) {
+        return new AltibaseDbLink(container, resultSet);
+    }
+    
+    //////////////////////////////////////////////////////
+    // Library
+    
+    /**
+     * Statement to load Library
+     */
+    public JDBCStatement prepareLibraryLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container,
+            @Nullable AltibaseLibrary object, @Nullable String objectName) throws SQLException {
+        boolean isNullObject = object == null && objectName == null;
+        final JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT l.* FROM system_.sys_users_ u, system_.sys_libraries_ l "
+                + "WHERE u.user_id = l.user_id AND u.user_name =  ? "
+                + (isNullObject ? "" : " AND l.library_name = ?")
+                + " ORDER BY library_name ASC");
+        
+        dbStat.setString(1, container.getName());
+        if (!isNullObject) {
+            dbStat.setString(2, object != null ? object.getName() : objectName);
+        }
+        
+        return dbStat;
+    }
+    
+    /**
+     * Create Library implementation
+     */
+    public AltibaseLibrary createLibraryImpl(GenericStructContainer container, JDBCResultSet resultSet) {
+        return new AltibaseLibrary(container, resultSet);
+    }
+    
+    //////////////////////////////////////////////////////
+    // Directory
+    
+    /**
+     * Statement to load Directory
+     */
+    public JDBCStatement prepareDirectoryLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container,
+            @Nullable AltibaseDirectory object, @Nullable String objectName) throws SQLException {
+        boolean isNullObject = object == null && objectName == null;
+        final JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT d.* FROM system_.sys_users_ u, system_.sys_directories_ d "
+                + "WHERE u.user_id = d.user_id AND u.user_name =  ? "
+                + (isNullObject ? "" : " AND d.directory_name = ?")
+                + " ORDER BY directory_name ASC");
+        
+        dbStat.setString(1, container.getName());
+        
+        if (!isNullObject) {
+            dbStat.setString(2, object != null ? object.getName() : objectName);
+        }
+        
+        return dbStat;
+    }
+    
+    /**
+     * Create Directory implementation
+     */
+    public AltibaseDirectory createDirectoryImpl(GenericStructContainer container, JDBCResultSet resultSet) {
+        return new AltibaseDirectory(container, resultSet);
     }
 }

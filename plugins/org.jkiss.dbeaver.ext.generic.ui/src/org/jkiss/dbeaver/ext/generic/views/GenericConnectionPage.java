@@ -325,6 +325,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             site.getActiveDataSource().getConnectionConfiguration().setUrl(null);
         }
         parseSampleURL(driver);
+        setupConnectionModeSelection(urlText, this.isCustomURL(), controlGroupsByUrl);
         saveAndUpdate();
     }
 
@@ -445,7 +446,10 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
                     setMessage(e.getMessage());
                 }
             }
-            if (connectionInfo.getUrl() != null) {
+
+            if (isCustomURL() && typeURLRadio != null && !typeURLRadio.isVisible() && CommonUtils.isEmpty(connectionInfo.getUrl())) {
+                urlText.setText(CommonUtils.notEmpty(dataSource.getDriver().getSampleURL()));
+            } else if (connectionInfo.getUrl() != null) {
                 urlText.setText(CommonUtils.notEmpty(connectionInfo.getUrl()));
             } else {
                 urlText.setText(""); //$NON-NLS-1$
@@ -511,23 +515,35 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
     private void parseSampleURL(DBPDriver driver) {
         metaURL = null;
 
-        if (!CommonUtils.isEmpty(driver.getSampleURL())) {
-            isCustom = false;
+        boolean useCustomUrl = CommonUtils.isEmpty(driver.getSampleURL());
+
+        if (!useCustomUrl) {
             try {
                 metaURL = DatabaseURL.parseSampleURL(driver.getSampleURL());
             } catch (DBException e) {
                 setErrorMessage(e.getMessage());
             }
             final Set<String> properties = metaURL.getAvailableProperties();
-            urlText.setEditable(false);
+            boolean isSampleUrlUsable = properties.contains(DBConstants.PROP_HOST) ||
+                properties.contains(DBConstants.PROP_DATABASE) ||
+                properties.contains(DBConstants.PROP_SERVER) ||
+                properties.contains(DBConstants.PROP_FOLDER) ||
+                properties.contains(DBConstants.PROP_FILE);
+            if (isSampleUrlUsable) {
+                isCustom = false;
+                showControlGroup(GROUP_HOST, properties.contains(DBConstants.PROP_HOST));
+                showControlGroup(GROUP_SERVER, properties.contains(DBConstants.PROP_SERVER));
+                showControlGroup(GROUP_DB, properties.contains(DBConstants.PROP_DATABASE));
+                showControlGroup(GROUP_PATH, properties.contains(DBConstants.PROP_FOLDER) || properties.contains(DBConstants.PROP_FILE));
+                showControlGroup(GROUP_CONNECTION_MODE, true);
+                urlText.setEditable(false);
+                controlGroupsByUrl = properties.stream().map(controlGroupByUrlProp::get).collect(Collectors.toSet());
+            } else {
+                useCustomUrl = true;
+            }
+        }
 
-            showControlGroup(GROUP_HOST, properties.contains(DBConstants.PROP_HOST));
-            showControlGroup(GROUP_SERVER, properties.contains(DBConstants.PROP_SERVER));
-            showControlGroup(GROUP_DB, properties.contains(DBConstants.PROP_DATABASE));
-            showControlGroup(GROUP_PATH, properties.contains(DBConstants.PROP_FOLDER) || properties.contains(DBConstants.PROP_FILE));
-            showControlGroup(GROUP_CONNECTION_MODE, true);
-            controlGroupsByUrl = properties.stream().map(controlGroupByUrlProp::get).collect(Collectors.toSet());
-        } else {
+        if (useCustomUrl) {
             isCustom = true;
             showControlGroup(GROUP_HOST, false);
             showControlGroup(GROUP_SERVER, false);

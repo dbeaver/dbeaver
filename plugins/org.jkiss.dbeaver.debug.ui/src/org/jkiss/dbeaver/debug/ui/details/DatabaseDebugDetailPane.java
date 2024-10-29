@@ -34,8 +34,8 @@ import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.IWorkbenchPartConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.debug.ui.Widgets;
 import org.jkiss.dbeaver.ui.ActionBars;
-import org.jkiss.dbeaver.ui.Widgets;
 
 import java.util.HashSet;
 import java.util.Set;

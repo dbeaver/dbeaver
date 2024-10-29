@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
@@ -76,8 +77,6 @@ public class EditorUtils {
     private static final String PROP_EXECUTION_CONTEXT = "sql-editor-execution-context"; //$NON-NLS-1$
     private static final String PROP_INPUT_FILE = "sql-editor-input-file"; //$NON-NLS-1$
 
-    public static final String PROP_NAMESPACE = "org.jkiss.dbeaver"; //$NON-NLS-1$
-
     public static final String COLORS_AND_FONTS_PAGE_ID = "org.eclipse.ui.preferencePages.ColorsAndFonts"; //$NON-NLS-1$
 
     private static final Log log = Log.getLog(EditorUtils.class);
@@ -88,6 +87,18 @@ public class EditorUtils {
     @Nullable
     public static DBPProject getFileProject(@Nullable IEditorInput editorInput) {
         if (editorInput != null) {
+            if (editorInput instanceof ILazyEditorInput lei) {
+                return lei.getProject();
+            }
+            if (editorInput instanceof IDatabaseEditorInput dei) {
+                DBSObject dbo = dei.getDatabaseObject();
+                if (dbo != null) {
+                    DBPDataSource dataSource = dbo.getDataSource();
+                    if (dataSource != null) {
+                        return dataSource.getContainer().getProject();
+                    }
+                }
+            }
             IFile curFile = EditorUtils.getFileFromInput(editorInput);
             if (curFile != null) {
                 return DBPPlatformDesktop.getInstance().getWorkspace().getProject(curFile.getProject());
@@ -100,13 +111,13 @@ public class EditorUtils {
     public static IFile getFileFromInput(IEditorInput editorInput) {
         if (editorInput == null) {
             return null;
-        } else if (editorInput instanceof IFileEditorInput) {
-            return ((IFileEditorInput) editorInput).getFile();
-        } else if (editorInput instanceof IPathEditorInput) {
-            final IPath path = ((IPathEditorInput) editorInput).getPath();
+        } else if (editorInput instanceof IFileEditorInput fei) {
+            return fei.getFile();
+        } else if (editorInput instanceof IPathEditorInput pei) {
+            final IPath path = pei.getPath();
             return path == null ? null : ResourceUtils.convertPathToWorkspaceFile(path);
-        } else if (editorInput instanceof IInMemoryEditorInput) {
-            IFile file = (IFile) ((IInMemoryEditorInput) editorInput).getProperty(PROP_INPUT_FILE);
+        } else if (editorInput instanceof IInMemoryEditorInput mei) {
+            IFile file = (IFile) mei.getProperty(PROP_INPUT_FILE);
             if (file != null) {
                 return file;
             }
@@ -124,7 +135,7 @@ public class EditorUtils {
         try {
             Method getFileMethod = editorInput.getClass().getMethod("getFile");
             if (IFile.class.isAssignableFrom(getFileMethod.getReturnType())) {
-                return IFile.class.cast(getFileMethod.invoke(editorInput));
+                return (IFile) getFileMethod.invoke(editorInput);
             }
         } catch (Exception e) {
             //log.debug("Error getting file from editor input with reflection: " + e.getMessage());
@@ -134,26 +145,26 @@ public class EditorUtils {
     }
 
     public static IStorage getStorageFromInput(Object element) {
-        if (element instanceof IStorageEditorInput) {
+        if (element instanceof IStorageEditorInput sei) {
             try {
-                return ((IStorageEditorInput) element).getStorage();
+                return sei.getStorage();
             } catch (CoreException e) {
                 log.error(e);
             }
         }
-        if (element instanceof IAdaptable) {
-            IStorage storage = ((IAdaptable) element).getAdapter(IStorage.class);
+        if (element instanceof IAdaptable adaptable) {
+            IStorage storage = adaptable.getAdapter(IStorage.class);
             if (storage != null) {
                 return storage;
             }
         }
-        if (element instanceof IEditorInput) {
-            IFile file = getFileFromInput((IEditorInput) element);
+        if (element instanceof IEditorInput ei) {
+            IFile file = getFileFromInput(ei);
             if (file != null) {
                 return file;
             }
-            if (element instanceof IURIEditorInput) {
-                URI uri = ((IURIEditorInput) element).getURI();
+            if (element instanceof IURIEditorInput uriei) {
+                URI uri = uriei.getURI();
                 File localFile = new File(uri);
                 if (localFile.exists()) {
                     return new LocalFileStorage(localFile, StandardCharsets.UTF_8.name());
@@ -164,15 +175,15 @@ public class EditorUtils {
     }
 
     public static File getLocalFileFromInput(Object element) {
-        if (element instanceof IEditorInput) {
-            IFile file = getFileFromInput((IEditorInput) element);
+        if (element instanceof IEditorInput ei) {
+            IFile file = getFileFromInput(ei);
             if (file != null) {
                 IPath location = file.getLocation();
                 return location == null ? null : location.toFile();
             }
-            if (element instanceof IURIEditorInput) {
+            if (element instanceof IURIEditorInput uriei) {
                 try {
-                    final File localFile = new File(((IURIEditorInput) element).getURI());
+                    final File localFile = new File(uriei.getURI());
                     if (localFile.exists()) {
                         return localFile;
                     }
@@ -186,8 +197,8 @@ public class EditorUtils {
     }
 
     public static Path getPathFromInput(Object element) {
-        if (element instanceof IEditorInput) {
-            IFile file = getFileFromInput((IEditorInput) element);
+        if (element instanceof IEditorInput ei) {
+            IFile file = getFileFromInput(ei);
             if (file != null) {
                 IPath location = file.getLocation();
                 return location == null ? null : location.toPath();
@@ -201,12 +212,11 @@ public class EditorUtils {
     // Datasource <-> resource manipulations
 
     @Nullable
-    public static Object getResourceProperty(@NotNull DBPProject project, @NotNull IResource resource, @NotNull String propName) {
+    public static Object getResourceProperty(@NotNull RCPProject project, @NotNull IResource resource, @NotNull String propName) {
         return project.getResourceProperty(project.getResourcePath(resource), propName);
     }
 
-    @Nullable
-    public static void setResourceProperty(@NotNull DBPProject project, @NotNull IResource resource, @NotNull String propName, @Nullable Object value) {
+    public static void setResourceProperty(@NotNull RCPProject project, @NotNull IResource resource, @NotNull String propName, @Nullable Object value) {
         project.setResourceProperty(project.getResourcePath(resource), propName, value);
     }
 
@@ -225,8 +235,8 @@ public class EditorUtils {
     }
 
     public static DBPDataSourceContainer getInputDataSource(IEditorInput editorInput) {
-        if (editorInput instanceof IDatabaseEditorInput) {
-            final DBSObject object = ((IDatabaseEditorInput) editorInput).getDatabaseObject();
+        if (editorInput instanceof IDatabaseEditorInput dei) {
+            final DBSObject object = dei.getDatabaseObject();
             if (object != null && object.getDataSource() != null) {
                 return object.getDataSource().getContainer();
             }
@@ -234,8 +244,8 @@ public class EditorUtils {
                 return containerProvider.getDataSourceContainer();
             }
             return null;
-        } else if (editorInput instanceof IInMemoryEditorInput) {
-            return (DBPDataSourceContainer) ((IInMemoryEditorInput) editorInput).getProperty(PROP_SQL_DATA_SOURCE_CONTAINER);
+        } else if (editorInput instanceof IInMemoryEditorInput mei) {
+            return (DBPDataSourceContainer) mei.getProperty(PROP_SQL_DATA_SOURCE_CONTAINER);
         } else {
             IFile file = getFileFromInput(editorInput);
             if (file != null) {
@@ -271,14 +281,14 @@ public class EditorUtils {
         String defaultDatasource = null;
         String defaultCatalogName = null;
         String defaultSchema = null;
-        if (editorInput instanceof IInMemoryEditorInput) {
-            defaultDatasource = (String) ((IInMemoryEditorInput) editorInput).getProperty(PROP_CONTEXT_DEFAULT_DATASOURCE);
-            defaultCatalogName = (String) ((IInMemoryEditorInput) editorInput).getProperty(PROP_CONTEXT_DEFAULT_CATALOG);
-            defaultSchema= (String) ((IInMemoryEditorInput) editorInput).getProperty(PROP_CONTEXT_DEFAULT_SCHEMA);
+        if (editorInput instanceof IInMemoryEditorInput mei) {
+            defaultDatasource = (String) mei.getProperty(PROP_CONTEXT_DEFAULT_DATASOURCE);
+            defaultCatalogName = (String) mei.getProperty(PROP_CONTEXT_DEFAULT_CATALOG);
+            defaultSchema= (String) mei.getProperty(PROP_CONTEXT_DEFAULT_SCHEMA);
         } else {
             IFile file = getFileFromInput(editorInput);
             if (file != null) {
-                DBPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
+                RCPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
                 if (projectMeta != null) {
                     defaultDatasource = (String) EditorUtils.getResourceProperty(projectMeta, file, PROP_CONTEXT_DEFAULT_DATASOURCE);
                     defaultCatalogName = (String) EditorUtils.getResourceProperty(projectMeta, file, PROP_CONTEXT_DEFAULT_CATALOG);
@@ -306,7 +316,7 @@ public class EditorUtils {
         if (!file.exists()) {
             return null;
         }
-        DBPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
+        RCPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
         if (projectMeta != null) {
             Object dataSourceId = EditorUtils.getResourceProperty(projectMeta, file, PROP_CONTEXT_DEFAULT_DATASOURCE);
             if (dataSourceId != null) {
@@ -398,7 +408,7 @@ public class EditorUtils {
     }
 
     public static void setFileDataSource(@NotNull IFile file, @NotNull DatabaseEditorContext context) {
-        DBPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
+        RCPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
         if (projectMeta == null) {
             return;
         }
@@ -407,6 +417,8 @@ public class EditorUtils {
 
         String resourcePath = projectMeta.getResourcePath(file);
         projectMeta.setResourceProperty(resourcePath, PROP_CONTEXT_DEFAULT_DATASOURCE, dataSourceId);
+        projectMeta.setResourceProperty(resourcePath, PROP_CONTEXT_DEFAULT_CATALOG, null);
+        projectMeta.setResourceProperty(resourcePath, PROP_CONTEXT_DEFAULT_SCHEMA, null);
         if (!isDefaultContextSettings(context)) {
             String defaultCatalogName = getDefaultCatalogName(context);
             if (!CommonUtils.isEmpty(defaultCatalogName)) {
@@ -426,7 +438,7 @@ public class EditorUtils {
     private static String getDefaultCatalogName(DatabaseEditorContext context) {
         DBCExecutionContext executionContext = context.getExecutionContext();
         if (executionContext != null) {
-            DBCExecutionContextDefaults contextDefaults = executionContext.getContextDefaults();
+            DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
             if (contextDefaults != null) {
                 DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
                 if (defaultCatalog != null) {
@@ -448,7 +460,7 @@ public class EditorUtils {
     private static String getDefaultSchemaName(DatabaseEditorContext context) {
         DBCExecutionContext executionContext = context.getExecutionContext();
         if (executionContext != null) {
-            DBCExecutionContextDefaults contextDefaults = executionContext.getContextDefaults();
+            DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
             if (contextDefaults != null) {
                 DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
                 if (defaultSchema != null) {
@@ -567,7 +579,7 @@ public class EditorUtils {
         if (project == null || project.getWorkspace().getProjects().size() < 2) {
             return;
         }
-        if (tip.length() > 0 && tip.charAt(tip.length() - 1) != '\n') {
+        if (!tip.isEmpty() && tip.charAt(tip.length() - 1) != '\n') {
             tip.append('\n');
         }
         tip.append(EditorsMessages.database_editor_project).append(": ").append(project.getName());

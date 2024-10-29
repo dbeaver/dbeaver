@@ -24,6 +24,8 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
+import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueTupleReferenceExpression;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.ArrayList;
@@ -70,7 +72,7 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
     /**
      * Add single column to the selection result model
      */
-    public void addColumnSpec(@NotNull STMTreeNode syntaxNode, @NotNull SQLQueryValueExpression valueExpression) {
+    public void addColumnSpec(@NotNull STMTreeNode syntaxNode, @Nullable SQLQueryValueExpression valueExpression) {
         this.registerSublist(new SQLQuerySelectionResultColumnSpec(this, syntaxNode, valueExpression));
     }
 
@@ -80,7 +82,7 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
      */
     public void addColumnSpec(
         @NotNull STMTreeNode syntaxNode,
-        @NotNull SQLQueryValueExpression valueExpression,
+        @Nullable SQLQueryValueExpression valueExpression,
         @Nullable SQLQuerySymbolEntry alias
     ) {
         this.registerSublist(new SQLQuerySelectionResultColumnSpec(this, syntaxNode, valueExpression, alias));

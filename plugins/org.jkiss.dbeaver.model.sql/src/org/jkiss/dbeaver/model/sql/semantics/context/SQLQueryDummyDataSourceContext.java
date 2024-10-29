@@ -20,6 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.impl.struct.AbstractObjectType;
+import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.semantics.*;
@@ -35,7 +37,7 @@ import java.util.*;
 
 public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
 
-    private final SQLQueryModelContext context;
+    private final SQLDialect dialect;
 
     private final DummyDbObject dummyDataSource;
     private final DummyDbObject defaultDummyCatalog;
@@ -309,7 +311,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
 
         @Override
         public SQLDialect getSQLDialect() {
-            return context.getDialect();
+            return dialect;
         }
 
         @Override
@@ -338,11 +340,12 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     }
 
     public SQLQueryDummyDataSourceContext(
-        @NotNull SQLQueryModelContext context,
+        @NotNull SQLDialect dialect,
         @NotNull Set<String> knownColumnNames,
         @NotNull Set<List<String>> knownTableNames
     ) {
-        this.context = context;
+        this.dialect = dialect;
+
         this.knownColumnNames = knownColumnNames;
         this.knownTableNames = new HashSet<>();
         this.knownSchemaNames = new HashSet<>();
@@ -430,16 +433,27 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
             null
         );
     }
-    
+
     @NotNull
     @Override
     public List<SQLQueryResultColumn> getColumnsList() {
         return Collections.emptyList();
     }
-    
+    @Override
+    public boolean hasUndresolvedSource() {
+        return false;
+    }
+
+
+    @NotNull
+    @Override
+    public List<SQLQueryResultPseudoColumn> getPseudoColumnsList() {
+        return Collections.emptyList();
+    }
+
     @Override
     public DBSEntity findRealTable(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
-        List<String> rawTableName = tableName.stream().map(this.context.getDialect()::getUnquotedIdentifier).toList();
+        List<String> rawTableName = tableName.stream().map(this.dialect::getUnquotedIdentifier).toList();
         DummyDbObject catalog = rawTableName.size() > 2
             ? this.dummyDataSource.getChildrenMapImpl().get(rawTableName.get(rawTableName.size() - 3)) : this.defaultDummyCatalog;
         DummyDbObject schema = rawTableName.size() > 1
@@ -451,33 +465,58 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     public SQLQueryRowsSourceModel findRealSource(@NotNull DBSEntity table) {
         return null;
     }
-    
+
+    @Nullable
+    @Override
+    public DBSObject findRealObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObjectType objectType,
+        @NotNull List<String> objectName
+    ) {
+        return objectType.isCompatibleWith(RelationalObjectType.TYPE_TABLE) || objectType.isCompatibleWith(RelationalObjectType.TYPE_VIEW)
+            ? this.findRealTable(monitor, objectName)
+            : null;
+    }
+
     @Override
     public SQLQueryResultColumn resolveColumn(@NotNull DBRProgressMonitor monitor, @NotNull String simpleName) {
         return null;
     }
-    
+
+    @Nullable
+    @Override
+    public SQLQueryResultPseudoColumn resolvePseudoColumn(DBRProgressMonitor monitor, @NotNull String name) {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public SQLQueryResultPseudoColumn resolveGlobalPseudoColumn(DBRProgressMonitor monitor, @NotNull String name) {
+        return null;
+    }
+
     @NotNull
     @Override
     public SQLDialect getDialect() {
-        return this.context.getDialect();
-    }
-    
-    @NotNull
-    @Override
-    public SQLQueryRowsSourceModel getDefaultTable(@NotNull STMTreeNode syntaxNode) {
-        return new DummyTableRowsSource(context, syntaxNode);
+        return this.dialect;
     }
     
     @Override
     protected void collectKnownSourcesImpl(@NotNull KnownSourcesInfo result) {
         // no sources have been referenced yet, so nothing to register
     }
-    
+
+    @Override
+    protected List<SQLQueryResultPseudoColumn> prepareRowsetPseudoColumns(@NotNull SQLQueryRowsSourceModel source) {
+        return Collections.emptyList();
+    }
+
     public class DummyTableRowsSource extends SQLQueryRowsTableDataModel {
         
-        public DummyTableRowsSource(SQLQueryModelContext context, @NotNull STMTreeNode syntaxNode) {
-            super(context, syntaxNode, new SQLQueryQualifiedName(syntaxNode, new SQLQuerySymbolEntry(syntaxNode, "DummyTable", "DummyTable")));
+        public DummyTableRowsSource(@NotNull STMTreeNode syntaxNode) {
+            super(syntaxNode, new SQLQueryQualifiedName(
+                syntaxNode, Collections.emptyList(), new SQLQuerySymbolEntry(syntaxNode, "DummyTable", "DummyTable"), 0
+            ), false);
         }
 
         @NotNull
@@ -492,13 +531,12 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
             try {
                 List<? extends DBSEntityAttribute> attributes = defaultDummyTable.getAttributes(statistics.getMonitor());
                 if (attributes != null) {
-                    List<SQLQueryResultColumn> columns = this.prepareResultColumnsList(
+                    context = context.overrideResultTuple(this, this.prepareResultColumnsList(
                         this.getName().entityName, context, statistics, attributes
-                    );
-                    context = context.overrideResultTuple(columns);
+                    ));
                 }
             } catch (DBException ex) {
-                statistics.appendError(this.getName().entityName, "Failed to resolve table", ex);
+                statistics.appendError(this.getName().entityName, "Failed to resolve table " + this.getName().toIdentifierString(), ex);
             }
             return context;
         }

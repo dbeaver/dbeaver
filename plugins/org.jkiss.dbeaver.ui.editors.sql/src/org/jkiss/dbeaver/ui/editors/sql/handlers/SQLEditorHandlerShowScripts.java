@@ -31,6 +31,8 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceTypeDescriptor;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.navigator.NavigatorResources;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.registry.ResourceTypeRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -50,30 +52,30 @@ public class SQLEditorHandlerShowScripts extends SQLEditorHandlerOpenEditor {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
-        if (activeProject == null) {
+        DBPProject project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+        if (!(project instanceof RCPProject rcpProject)) {
             return null;
         }
         try {
             DBNProject projectNode = NavigatorViewBase.getGlobalNavigatorModel()
-                .getRoot().getProjectNode(activeProject);
+                .getRoot().getProjectNode(rcpProject);
 
-            if (projectNode == null || !activeProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_VIEW)) {
+            if (projectNode == null || !rcpProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_VIEW)) {
                 return null;
             }
 
             DBPDataSourceContainer ds = getActiveDataSourceContainer(event, true);
             if (ds != null) {
                 SQLNavigatorContext context = new SQLNavigatorContext(ds);
-                SQLEditorUtils.ResourceInfo res = SQLEditorUtils.findRecentScript(activeProject, context);
+                SQLEditorUtils.ResourceInfo res = SQLEditorUtils.findRecentScript(rcpProject, context);
                 if (res != null) {
                     showResourceInExplorer(event, projectNode, res.getResource());
                 }
             } else {
                 DBPResourceTypeDescriptor resourceType = ResourceTypeRegistry.getInstance().getResourceType(ScriptsHandlerImpl.RESOURCE_TYPE_ID_SQL_SCRIPT);
-                String defaultRoot = resourceType.getDefaultRoot(activeProject);
+                String defaultRoot = resourceType.getDefaultRoot(rcpProject);
                 if (defaultRoot != null) {
-                    IContainer rootResource = activeProject.getRootResource();
+                    IContainer rootResource = rcpProject.getRootResource();
                     if (rootResource != null) {
                         IResource scriptsRoot = rootResource.findMember(defaultRoot);
                         if (scriptsRoot instanceof IFolder) {
@@ -89,7 +91,7 @@ public class SQLEditorHandlerShowScripts extends SQLEditorHandlerOpenEditor {
     }
 
     private static boolean showResourceInExplorer(ExecutionEvent event, DBNProject projectNode, IResource resource1) throws PartInitException {
-        DBNResource resource = projectNode.findResource(resource1);
+        DBNResource resource = NavigatorResources.findResource(projectNode, resource1);
         if (resource != null) {
             ProjectExplorerView projectExplorer = getProjectExplorerView(event);
             if (projectExplorer != null) {

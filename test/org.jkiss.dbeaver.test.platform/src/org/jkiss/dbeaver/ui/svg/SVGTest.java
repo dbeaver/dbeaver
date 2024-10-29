@@ -16,8 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.svg;
 
-import com.github.weisj.jsvg.SVGDocument;
-import com.github.weisj.jsvg.parser.SVGLoader;
+//import com.github.weisj.jsvg.SVGDocument;
+//import com.github.weisj.jsvg.parser.SVGLoader;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.junit.Assert;
@@ -25,7 +26,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -85,29 +85,30 @@ public class SVGTest {
 
     @Nullable
     private static BufferedImage getImage(@NotNull InputStream is, float factor) {
-        final SVGLoader loader = new SVGLoader();
-        final SVGDocument document = loader.load(is);
-
-        if (document == null) {
-            return null;
-        }
-
-        final int width = (int) (document.size().width * factor);
-        final int height = (int) (document.size().height * factor);
-
-        final BufferedImage target = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        final Graphics2D graphics = target.createGraphics();
-
-        try {
-            graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_DEFAULT);
-            graphics.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_DEFAULT);
-            graphics.scale(factor, factor);
-
-            document.render(null, graphics);
-        } finally {
-            graphics.dispose();
-        }
-
-        return target;
+        return null;
+//        final SVGLoader loader = new SVGLoader();
+//        final SVGDocument document = loader.load(is);
+//
+//        if (document == null) {
+//            return null;
+//        }
+//
+//        final int width = (int) (document.size().width * factor);
+//        final int height = (int) (document.size().height * factor);
+//
+//        final BufferedImage target = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+//        final Graphics2D graphics = target.createGraphics();
+//
+//        try {
+//            graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_DEFAULT);
+//            graphics.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_DEFAULT);
+//            graphics.scale(factor, factor);
+//
+//            document.render(null, graphics);
+//        } finally {
+//            graphics.dispose();
+//        }
+//
+//        return target;
     }
 }

@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.exasol.manager;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolSchema;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolScript;
@@ -44,7 +45,7 @@ public class ExasolScriptManager extends SQLObjectEditor<ExasolScript, ExasolSch
     }
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_EDITOR_ON_CREATE;
     }
 
@@ -59,8 +60,8 @@ public class ExasolScriptManager extends SQLObjectEditor<ExasolScript, ExasolSch
     
 
     @Override
-    protected ExasolScript createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
-                                                Object container, Object copyFrom, Map<String, Object> options) throws DBException {
+    protected ExasolScript createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context,
+                                                Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
         ExasolScript newScript =  new ExasolScript((ExasolSchema) container);
         newScript.setName("new_script");
         newScript.setObjectDefinitionText("CREATE OR REPLACE LUA SCRIPT new_script () RETURNS TABLE AS");
@@ -92,21 +93,21 @@ public class ExasolScriptManager extends SQLObjectEditor<ExasolScript, ExasolSch
     }
     
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
-                                          ObjectCreateCommand command, Map<String, Object> options) {
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
+                                          @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options) {
         createOrReplaceScriptQuery(actions, command.getObject(), false);
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
-                                          ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
+                                          @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options) {
         actions.add(
                 new SQLDatabasePersistAction("Create Script", dropScript(command.getObject())));
     }
     
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList,
-                                          ObjectChangeCommand command, Map<String, Object> options)
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList,
+                                          @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options)
     {
         if (command.getProperties().size() > 1 || command.getProperty("description") == null )
         {
@@ -115,8 +116,8 @@ public class ExasolScriptManager extends SQLObjectEditor<ExasolScript, ExasolSch
     }
     
     @Override
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
-                                         NestedObjectCommand<ExasolScript, PropertyHandler> command, Map<String, Object> options)
+    protected void addObjectExtraActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
+                                         @NotNull NestedObjectCommand<ExasolScript, PropertyHandler> command, @NotNull Map<String, Object> options)
     {
         if (command.getProperty("description") != null) {
             actions.add(new SQLDatabasePersistAction("Comment on Script","COMMENT ON SCRIPT " + 

@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructContainer;
 import org.jkiss.dbeaver.model.struct.rdb.*;
+import org.jkiss.dbeaver.registry.RuntimeProjectPropertiesConstant;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressPainter;
@@ -170,8 +171,8 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         this.setItemRenderer(new DefaultNavigatorNodeRenderer());
 
         {
-            //tree.addListener(SWT.EraseItem, event -> onEraseItem(tree, event));
             tree.addListener(SWT.PaintItem, event -> onPaintItem(tree, event));
+            tree.getHorizontalBar().addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> tree.redraw()));
             if (false) {
                 // See comments for StatisticsNavigatorNodeRenderer.PAINT_ACTION_HOVER
                 Listener mouseListener = e -> {
@@ -194,7 +195,10 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                     if (item != null) {
                         Object element = item.getData();
                         if (element instanceof DBNNode node) {
-                            itemRenderer.handleHover(node, tree, item, e);
+                            Cursor cursor = itemRenderer.getCursor(node, tree, e);
+                            if (tree.getCursor() != cursor) {
+                                tree.setCursor(cursor);
+                            }
                         }
                     }
                 };
@@ -251,15 +255,6 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
     void setItemRenderer(INavigatorItemRenderer itemRenderer) {
         this.itemRenderer = itemRenderer;
-    }
-
-    private void onEraseItem(Tree tree, Event event) {
-        if (itemRenderer != null) {
-            Object element = event.item.getData();
-            if (element instanceof DBNNode node) {
-                itemRenderer.drawNodeBackground(node, tree, event.gc, event);
-            }
-        }
     }
 
     private void onPaintItem(Tree tree, Event event) {
@@ -369,6 +364,11 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 // Disable redraw during expand (its blinking)
                 getTree().setRedraw(false);
                 try {
+                    if (event.item != null && event.item.getData() instanceof DBNProject dbnProject) {
+                        //manual opening
+                        dbnProject.getProject().setRuntimeProperty(RuntimeProjectPropertiesConstant.IS_USER_DECLINE_PROJECT_DECRYPTION,
+                            Boolean.FALSE.toString());
+                    }
                     super.handleTreeExpand(event);
                 } finally {
                     getTree().setRedraw(true);

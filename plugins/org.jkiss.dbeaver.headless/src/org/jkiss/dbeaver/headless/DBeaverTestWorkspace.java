@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.headless;
 import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
-import org.jkiss.dbeaver.registry.DesktopWorkspaceImpl;
+import org.jkiss.dbeaver.model.rcp.DesktopWorkspaceImpl;
 
 /**
  * DBeaver test workspace.

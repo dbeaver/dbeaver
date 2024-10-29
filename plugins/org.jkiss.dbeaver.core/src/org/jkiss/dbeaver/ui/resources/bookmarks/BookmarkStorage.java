@@ -59,8 +59,7 @@ public class BookmarkStorage {
     private String dataSourceId;
     private List<String> dataSourcePath;
 
-    public BookmarkStorage(IFile file, boolean loadImage) throws DBException, CoreException
-    {
+    public BookmarkStorage(IFile file, boolean loadImage) throws DBException, CoreException {
         this.title = file.getFullPath().removeFileExtension().lastSegment();
         try (InputStream contents = file.getContents(true)) {
             final Document document = XMLUtils.parseDocument(contents);
@@ -93,8 +92,7 @@ public class BookmarkStorage {
         }
     }
 
-    BookmarkStorage(String title, String description, DBPImage image, String dataSourceId, List<String> dataSourcePath)
-    {
+    BookmarkStorage(String title, String description, DBPImage image, String dataSourceId, List<String> dataSourcePath) {
         this.title = title;
         this.description = description;
         this.image = image;
@@ -102,47 +100,41 @@ public class BookmarkStorage {
         this.dataSourcePath = dataSourcePath;
     }
 
-    public void dispose()
-    {
+    public void dispose() {
+        if (image != null) {
+            image.dispose();
+        }
     }
 
-    public String getTitle()
-    {
+    public String getTitle() {
         return title;
     }
 
-    public void setTitle(String title)
-    {
+    public void setTitle(String title) {
         this.title = title;
     }
 
-    public String getDescription()
-    {
+    public String getDescription() {
         return description;
     }
 
-    public DBPImage getImage()
-    {
+    public DBPImage getImage() {
         return image;
     }
 
-    public void setImage(DBPImage image)
-    {
+    public void setImage(DBPImage image) {
         this.image = image;
     }
 
-    public String getDataSourceId()
-    {
+    public String getDataSourceId() {
         return dataSourceId;
     }
 
-    public List<String> getDataSourcePath()
-    {
+    public List<String> getDataSourcePath() {
         return dataSourcePath;
     }
 
-    public ByteArrayInputStream serialize() throws IOException
-    {
+    public ByteArrayInputStream serialize() throws IOException {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream(5000);
         XMLBuilder xml = new XMLBuilder(buffer, GeneralUtils.getDefaultFileEncoding());
         xml.startElement(TAG_BOOKMARK);
@@ -162,7 +154,7 @@ public class BookmarkStorage {
 
             Image realImage = DBeaverIcons.getImage(this.image);
             ImageLoader loader = new ImageLoader();
-            loader.data = new ImageData[] {realImage.getImageData()};
+            loader.data = new ImageData[]{realImage.getImageData()};
             ByteArrayOutputStream imageBuffer = new ByteArrayOutputStream(5000);
             loader.save(imageBuffer, SWT.IMAGE_PNG);
             xml.addText(Base64.encode(imageBuffer.toByteArray()));

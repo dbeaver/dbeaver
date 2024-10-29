@@ -130,7 +130,7 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
                         for (int i = 0; i < geomAttrs.size(); i++) {
                             final GeometryDataUtils.GeomAttrs ga = geomAttrs.get(i);
                             if (ga.geomAttr.matches(attr, false)) {
-                                GeometryDataUtils.setGeometryProperties(resultSetController, ga, geometry, GeometryDataUtils.makeGeometryColor(i), row);
+                                GeometryDataUtils.setGeometryProperties(resultSetController, ga, geometry, i, row);
                                 break;
                             }
                         }

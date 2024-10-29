@@ -131,24 +131,18 @@ public class ItemListControl extends NodeListControl
     }
 
     @Override
-    public void fillCustomActions(IContributionManager contributionManager)
-    {
+    public void fillCustomActions(IContributionManager contributionManager) {
+        IWorkbenchSite workbenchSite = getWorkbenchSite();
+        // Save/revert
+        if (workbenchSite instanceof MultiPageEditorSite) {
+            final MultiPageEditorPart editor = ((MultiPageEditorSite) workbenchSite).getMultiPageEditor();
+            if (editor instanceof EntityEditor) {
+                DatabaseEditorUtils.contributeStandardEditorActions(workbenchSite, contributionManager);
+                contributionManager.add(new Separator());
+            }
+        }
         super.fillCustomActions(contributionManager);
         final DBNNode rootNode = getRootNode();
-        if (rootNode instanceof DBNDatabaseFolder && ((DBNDatabaseFolder) rootNode).getItemsMeta() != null) {
-            contributionManager.add(new Action(
-                UINavigatorMessages.obj_editor_properties_control_action_filter_setting,
-                DBeaverIcons.getImageDescriptor(UIIcon.FILTER))
-            {
-                @Override
-                public void run()
-                {
-                    NavigatorHandlerFilterConfig.configureFilters(getShell(), rootNode);
-                }
-            });
-        }
-        addColumnConfigAction(contributionManager);
-        IWorkbenchSite workbenchSite = getWorkbenchSite();
 //        if (workbenchSite != null) {
 //            contributionManager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_REFRESH));
 //        }
@@ -226,15 +220,20 @@ public class ItemListControl extends NodeListControl
                     ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.NAVIGATE_EXPAND_ALL, null, UIIcon.TREE_EXPAND_ALL));
             }
         }
-
-        // Save/revert
-        if (workbenchSite instanceof MultiPageEditorSite) {
-            final MultiPageEditorPart editor = ((MultiPageEditorSite) workbenchSite).getMultiPageEditor();
-            if (editor instanceof EntityEditor) {
-                contributionManager.add(new Separator());
-                DatabaseEditorUtils.contributeStandardEditorActions(workbenchSite, contributionManager);
-            }
+        contributionManager.add(new Separator());
+        if (rootNode instanceof DBNDatabaseNode dbNode && dbNode.getItemsMeta() != null) {
+            contributionManager.add(new Action(
+                UINavigatorMessages.obj_editor_properties_control_action_filter_setting,
+                DBeaverIcons.getImageDescriptor(UIIcon.FILTER))
+            {
+                @Override
+                public void run()
+                {
+                    NavigatorHandlerFilterConfig.configureFilters(getShell(), dbNode);
+                }
+            });
         }
+        addColumnConfigAction(contributionManager);
     }
 
     @Override

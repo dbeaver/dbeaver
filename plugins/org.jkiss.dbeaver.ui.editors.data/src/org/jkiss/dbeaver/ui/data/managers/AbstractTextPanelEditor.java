@@ -55,6 +55,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
@@ -279,7 +280,9 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
         if (getPanelSettings().getBoolean(PREF_TEXT_EDITOR_WORD_WRAP)) {
             // It must be execute in async mode. Otherwise StyledText goes mad and freezes UI
             UIUtils.asyncExec(() -> {
-                textWidget.setWordWrap(true);
+                if (!textWidget.isDisposed()) {
+                    textWidget.setWordWrap(true);
+                }
             });
         }
     }
@@ -319,6 +322,9 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
         StyledText editorControl = editor.getEditorControl();
         if (editorControl == null) {
             return;
+        }
+        if (valueController.isReadOnly()) {
+            editorControl.setBackground(UIStyles.getDefaultWidgetBackground());
         }
         try {
 

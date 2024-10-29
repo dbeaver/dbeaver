@@ -7,7 +7,6 @@
     <extension-point id="org.jkiss.dbeaver.sqlCommand" name="%extension-point.org.jkiss.dbeaver.sqlCommand.name" schema="schema/org.jkiss.dbeaver.sqlCommand.exsd"/>
     <extension-point id="org.jkiss.dbeaver.sqlDialect" name="%extension-point.org.jkiss.dbeaver.sqlDialect.name" schema="schema/org.jkiss.dbeaver.sqlDialect.exsd"/>
     <extension-point id="org.jkiss.dbeaver.sqlInsertMethod" name="%extension-point.org.jkiss.dbeaver.sqlInsertMethod" schema="schema/org.jkiss.dbeaver.sqlInsertMethod.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.sqlBackup" name="Backup" schema="schema/org.jkiss.dbeaver.sqlBackup.exsd"/>
 
     <extension point="org.eclipse.core.runtime.preferences">
         <initializer class="org.jkiss.dbeaver.model.sql.internal.SQLModelPreferencesInitializer"/>

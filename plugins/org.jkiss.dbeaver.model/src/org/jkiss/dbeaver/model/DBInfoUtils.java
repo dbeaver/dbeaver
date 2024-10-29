@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.Strictness;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -37,7 +38,7 @@ import java.io.StringWriter;
 public final class DBInfoUtils {
 
     public static final Gson SECRET_GSON = new GsonBuilder()
-        .setLenient()
+        .setStrictness(Strictness.LENIENT)
         .serializeNulls()
         .setPrettyPrinting()
         .create();

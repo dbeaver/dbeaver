@@ -124,8 +124,7 @@ public class WebUtils {
         final URLConnection connection = (proxy == null ? url.openConnection() : url.openConnection(proxy));
         connection.setReadTimeout(timeout);
         connection.setConnectTimeout(timeout);
-        if (connection instanceof HttpURLConnection) {
-            final HttpURLConnection httpConnection = (HttpURLConnection) connection;
+        if (connection instanceof HttpURLConnection httpConnection) {
             httpConnection.setRequestMethod(method); //$NON-NLS-1$
             httpConnection.setInstanceFollowRedirects(true);
             HttpURLConnection.setFollowRedirects(true);
@@ -154,8 +153,7 @@ public class WebUtils {
         } else {
             try {
                 connection.connect();
-                if (connection instanceof HttpURLConnection) {
-                    final HttpURLConnection httpConnection = (HttpURLConnection) connection;
+                if (connection instanceof HttpURLConnection httpConnection) {
                     final int responseCode = httpConnection.getResponseCode();
                     if (responseCode != 200) {
                         if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP || responseCode == HttpURLConnection.HTTP_MOVED_PERM || responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
@@ -167,6 +165,7 @@ public class WebUtils {
                 }
             } catch (Exception e) {
                 String message = String.format("Exception during a connection to %s", connection.getURL().toString());
+                log.debug(message, e);
                 IOException ioException = new IOException(message, e);
                 if (monitor instanceof ProgressMonitorWithExceptionContext monitorWithExceptionContext) {
                     monitorWithExceptionContext.addException(ioException);

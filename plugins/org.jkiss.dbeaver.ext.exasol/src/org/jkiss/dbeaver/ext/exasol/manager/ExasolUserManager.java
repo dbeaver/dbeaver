@@ -44,7 +44,7 @@ import java.util.Map;
 public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSource> implements DBEObjectRenamer<ExasolUser> {
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_SAVE_IMMEDIATELY;
     }
 
@@ -57,15 +57,15 @@ public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSou
     }
 
     @Override
-    protected ExasolUser createDatabaseObject(DBRProgressMonitor monitor,
-                                              DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
+    protected ExasolUser createDatabaseObject(@NotNull DBRProgressMonitor monitor,
+                                              @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options)
         throws DBException {
     	return new ExasolUser((ExasolDataSource) container, "user", "", "", "password", "", ExasolUserType.LOCAL);
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
-                                          ObjectCreateCommand command, Map<String, Object> options) {
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
+                                          @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options) {
         ExasolUser obj = command.getObject();
 
         StringBuilder script = new StringBuilder("CREATE USER " + DBUtils.getQuotedIdentifier(obj) + " IDENTIFIED ");
@@ -90,8 +90,8 @@ public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSou
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
-                                          ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
+                                          @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options) {
         ExasolUser obj = command.getObject();
         actions.add(new SQLDatabasePersistAction("Drop User", "DROP USER " + DBUtils.getQuotedIdentifier(obj)));
     }
@@ -110,8 +110,8 @@ public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSou
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
-                                          ObjectRenameCommand command, Map<String, Object> options) {
+    protected void addObjectRenameActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
+                                          @NotNull ObjectRenameCommand command, @NotNull Map<String, Object> options) {
         ExasolUser obj = command.getObject();
         actions.add(
             new SQLDatabasePersistAction(
@@ -126,8 +126,8 @@ public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSou
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList,
-                                          ObjectChangeCommand command, Map<String, Object> options) {
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList,
+                                          @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options) {
         ExasolUser obj = command.getObject();
 
         if (command.getProperties().containsKey("description")) {

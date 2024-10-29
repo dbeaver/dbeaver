@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.model.impl.data;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDValue;
+import org.jkiss.dbeaver.model.data.DBDValueSurrogate;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.PrintWriter;
@@ -26,7 +26,7 @@ import java.io.StringWriter;
 /**
  * DBDValueError
  */
-public final class DBDValueError implements DBDValue {
+public final class DBDValueError implements DBDValueSurrogate {
 
     private final Throwable error;
 

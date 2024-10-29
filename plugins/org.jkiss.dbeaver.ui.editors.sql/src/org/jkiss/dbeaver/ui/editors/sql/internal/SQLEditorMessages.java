@@ -24,7 +24,7 @@ public class SQLEditorMessages extends NLS {
 
     public static String dialog_view_sql_button_copy;
     public static String dialog_view_sql_button_refresh;
-    public static String dialog_view_sql_button_persist;
+    public static String dialog_view_sql_button_execute;
 
     public static String dialog_sql_param_title;
     public static String dialog_sql_param_column_name;
@@ -47,6 +47,8 @@ public class SQLEditorMessages extends NLS {
     public static String editors_sql_editor_presentation;
     public static String editors_sql_error_cant_execute_query_message;
     public static String editors_sql_error_cant_execute_query_title;
+    public static String editors_sql_error_cant_execute_permissions_query_message;
+    public static String editors_sql_error_cant_execute_readonly_query_message;
     public static String editors_sql_error_cant_obtain_session;
     public static String editors_sql_error_execution_plan_message;
     public static String editors_sql_error_execution_plan_title;

@@ -22,7 +22,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBPMessageType;
-import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
@@ -32,6 +34,16 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 
     private static final Log log = Log.getLog(SQLAutoIndentStrategy.class);
+
+    static final SQLBlockCompletions DEFAULT_SQL_BLOCK_COMPLETIONS = new SQLBlockCompletionsCollection() {{
+        registerCompletionPair("BEGIN", "END");
+        registerCompletionPair("CASE", "END");
+        registerCompletionPair("LOOP", "END", "LOOP");
+        registerCompletionInfo("IF", new String[] { " THEN", SQLBlockCompletions.NEW_LINE_COMPLETION_PART,
+            SQLBlockCompletions.ONE_INDENT_COMPLETION_PART, SQLBlockCompletions.NEW_LINE_COMPLETION_PART, "END IF", SQLBlockCompletions.NEW_LINE_COMPLETION_PART
+        }, "END", "IF");
+    }};
+
     private static final int MINIMUM_SOUCE_CODE_LENGTH = 10;
     private static final boolean KEYWORD_INDENT_ENABLED = false;
 
@@ -316,7 +328,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         String lastTokenString = scanner.getLastToken();
         int nextToken = scanner.nextToken(command.offset, SQLHeuristicScanner.UNBOUND);
 
-        SQLBlockCompletionInfo completion = isBlocksCompletionEnabled() ? syntaxManager.getDialect().getBlockCompletions().findCompletionByHead(previousToken) : null;
+        SQLBlockCompletionInfo completion = isBlocksCompletionEnabled() ? DEFAULT_SQL_BLOCK_COMPLETIONS.findCompletionByHead(previousToken) : null;
         int prevPreviousToken = completion == null || completion.getHeadCancelTokenId() == null ?
             SQLHeuristicScanner.NOT_FOUND : scanner.previousToken(previousTokenPos, SQLHeuristicScanner.UNBOUND);
         boolean autoCompletionSupported = completion != null && (

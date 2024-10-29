@@ -30,7 +30,8 @@ import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.impl.net.SocksConstants;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
-import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
+import org.jkiss.dbeaver.registry.configurator.DBPConnectionEditIntention;
+import org.jkiss.dbeaver.ui.AbstractObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
@@ -38,7 +39,7 @@ import org.jkiss.utils.CommonUtils;
 /**
  * SOCKS proxy configuration
  */
-public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> {
+public class SocksProxyConfiguratorUI extends AbstractObjectPropertyConfigurator<Object, DBWHandlerConfiguration> {
 
     public static final String NETWORK_PREF_PAGE_ID = "org.eclipse.ui.net.NetPreferences";
 
@@ -87,6 +88,11 @@ public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<Obj
                 dialog.open();
             }
         });
+
+        if (this.getEditIntention() == DBPConnectionEditIntention.CREDENTIALS_ONLY) {
+            hostText.setEditable(false);
+            portText.setEnabled(false);
+        }
     }
 
     @Override
@@ -123,4 +129,5 @@ public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<Obj
     public boolean isComplete() {
         return true;
     }
+
 }

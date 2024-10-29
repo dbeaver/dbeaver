@@ -50,4 +50,15 @@ public class STMTreeTermErrorNode extends ErrorNodeImpl implements STMTreeNode {
         return new Interval(this.getSymbol().getStartIndex(), this.getSymbol().getStopIndex());
     }
 
+    @NotNull
+    @Override
+    public String getTextContent() {
+        Interval textRange = this.getRealInterval();
+        return this.getSymbol().getInputStream().getText(textRange);
+    }
+
+    @Override
+    public boolean hasErrorChildren() {
+        return false;
+    }
 }

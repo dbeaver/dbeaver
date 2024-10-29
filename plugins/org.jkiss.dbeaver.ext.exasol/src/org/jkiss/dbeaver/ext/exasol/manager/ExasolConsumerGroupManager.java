@@ -42,7 +42,7 @@ import java.util.Map;
 public class ExasolConsumerGroupManager extends SQLObjectEditor<ExasolConsumerGroup, ExasolDataSource> implements DBEObjectRenamer<ExasolConsumerGroup> {
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_SAVE_IMMEDIATELY;
     }
 
@@ -52,8 +52,8 @@ public class ExasolConsumerGroupManager extends SQLObjectEditor<ExasolConsumerGr
     }
 
     @Override
-    protected ExasolConsumerGroup createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
-                                                       Object container, Object copyFrom, Map<String, Object> options) throws DBException {
+    protected ExasolConsumerGroup createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context,
+                                                       Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
         return new ExasolConsumerGroup(
             (ExasolDataSource) container,
             "PG",
@@ -66,9 +66,9 @@ public class ExasolConsumerGroupManager extends SQLObjectEditor<ExasolConsumerGr
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
-                                          ObjectCreateCommand command,
-                                          Map<String, Object> options) {
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
+                                          @NotNull ObjectCreateCommand command,
+                                          @NotNull Map<String, Object> options) {
         final ExasolConsumerGroup group = command.getObject();
 
         String script = String.format("CREATE CONSUMER GROUP %s WITH CPU_WEIGHT = %d", DBUtils.getQuotedIdentifier(group), group.getCpuWeight());
@@ -101,9 +101,9 @@ public class ExasolConsumerGroupManager extends SQLObjectEditor<ExasolConsumerGr
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList,
-                                          ObjectChangeCommand command,
-                                          Map<String, Object> options) throws DBException {
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList,
+                                          @NotNull ObjectChangeCommand command,
+                                          @NotNull Map<String, Object> options) throws DBException {
         ExasolConsumerGroup group = command.getObject();
 
         Map<Object, Object> com = command.getProperties();
@@ -140,9 +140,9 @@ public class ExasolConsumerGroupManager extends SQLObjectEditor<ExasolConsumerGr
 
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
-                                          ObjectDeleteCommand command,
-                                          Map<String, Object> options) {
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
+                                          @NotNull ObjectDeleteCommand command,
+                                          @NotNull Map<String, Object> options) {
 
         ExasolConsumerGroup group = command.getObject();
 
@@ -158,9 +158,9 @@ public class ExasolConsumerGroupManager extends SQLObjectEditor<ExasolConsumerGr
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
-                                          ObjectRenameCommand command,
-                                          Map<String, Object> options) {
+    protected void addObjectRenameActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
+                                          @NotNull ObjectRenameCommand command,
+                                          @NotNull Map<String, Object> options) {
         ExasolConsumerGroup group = command.getObject();
 
         String script = String.format(

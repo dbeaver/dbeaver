@@ -24,6 +24,7 @@ import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
@@ -88,8 +89,8 @@ public class ProjectNavigatorView extends DecoratedProjectView
     @Override
     public void configureView() {
         DBPProject project = NavigatorUtils.getSelectedProject();
-        if (project != null) {
-            UIUtils.showPreferencesFor(getSite().getShell(), project.getEclipseProject(), PrefPageProjectResourceSettings.PAGE_ID);
+        if (project instanceof RCPProject rcpProject) {
+            UIUtils.showPreferencesFor(getSite().getShell(), rcpProject.getEclipseProject(), PrefPageProjectResourceSettings.PAGE_ID);
         } else {
             ActionUtils.runCommand(IWorkbenchCommandConstants.WINDOW_PREFERENCES, UIUtils.getActiveWorkbenchWindow());
         }

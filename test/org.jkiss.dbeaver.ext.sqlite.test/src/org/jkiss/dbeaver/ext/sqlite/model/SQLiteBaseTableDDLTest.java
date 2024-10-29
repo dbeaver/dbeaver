@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.utils.StandardConstants;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,7 +43,7 @@ import java.util.List;
 @RunWith(MockitoJUnitRunner.class)
 public class SQLiteBaseTableDDLTest {
 
-    private final String lineBreak = System.getProperty(StandardConstants.ENV_LINE_SEPARATOR);
+    private final String lineBreak = System.lineSeparator();
 
     @Mock
     private DBRProgressMonitor mockMonitor;
@@ -112,6 +111,40 @@ public class SQLiteBaseTableDDLTest {
         Assert.assertEquals(script, expectedDDL);
     }
 
+    @Test
+    public void generateCreateNewTableWithTwoColumnsThenDropColumn() throws Exception {
+        TestCommandContext commandContext = new TestCommandContext(executionContext, false);
+
+        GenericTableBase table = objectMaker.createNewObject(
+            mockMonitor,
+            commandContext,
+            container,
+            null,
+            Collections.emptyMap());
+        DBEObjectMaker<SQLiteTableColumn, SQLiteTable> objectManager = getManagerForClass(SQLiteTableColumn.class);
+        SQLiteTableColumn column1 = objectManager.createNewObject(
+                mockMonitor,
+                commandContext,
+                table,
+                null,
+                Collections.emptyMap());
+        objectManager.createNewObject(mockMonitor, commandContext, table, null, Collections.emptyMap());
+        objectManager.deleteObject(commandContext, column1, Collections.emptyMap());
+        List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(
+            mockMonitor,
+            commandContext,
+            executionContext,
+            Collections.emptyMap(),
+            null);
+        String script = SQLUtils.generateScript(dataSource, actions.toArray(new DBEPersistAction[0]), false);
+
+        String expectedDDL = "CREATE TABLE NewTable (" + lineBreak +
+                "\tColumn2 INTEGER" + lineBreak +
+                ");" + lineBreak;
+
+        Assert.assertEquals(script, expectedDDL);
+    }
+    
     @Test
     public void generateCreateNewTableWithTwoColumnsOneNotNullOneNullableStatement() throws Exception {
         TestCommandContext commandContext = new TestCommandContext(executionContext, false);

@@ -39,7 +39,7 @@ import java.util.List;
  */
 public class DBNBookmark extends DBNResource
 {
-    private BookmarkStorage storage;
+    private final BookmarkStorage storage;
 
     DBNBookmark(DBNNode parentNode, IResource resource, DBPResourceHandler handler) throws DBException, CoreException
     {

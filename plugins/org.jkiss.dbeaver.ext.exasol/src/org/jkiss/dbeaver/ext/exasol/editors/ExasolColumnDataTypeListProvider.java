@@ -42,6 +42,6 @@ public class ExasolColumnDataTypeListProvider implements IPropertyValueListProvi
         if (!dataTypes.contains(column.getDataType())) {
             dataTypes.add(column.getDataType());
         }
-        return dataTypes.toArray(new DBSDataType[dataTypes.size()]);
+        return dataTypes.toArray(new DBSDataType[0]);
     }
 }

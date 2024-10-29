@@ -16,12 +16,13 @@
  */
 package org.jkiss.dbeaver.ext.mysql.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 
 public class MySQLPartitionTableManager extends MySQLTableManager {
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         // Creating partitions separately is not supported in MySQL/MariaDB
         return false;
     }
@@ -32,7 +33,7 @@ public class MySQLPartitionTableManager extends MySQLTableManager {
     }
 
     @Override
-    public boolean canDeleteObject(MySQLTableBase object) {
+    public boolean canDeleteObject(@NotNull MySQLTableBase object) {
         return false;
     }
 }

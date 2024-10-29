@@ -17,15 +17,16 @@
 package org.jkiss.dbeaver.model.sql.semantics.model.select;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -35,13 +36,15 @@ import java.util.List;
 public class SQLQueryRowsTableValueModel extends SQLQueryRowsSourceModel {
     @NotNull
     private final List<SQLQueryValueExpression> values;
+    private final boolean isIncomplete;
     
     public SQLQueryRowsTableValueModel(
-        @NotNull SQLQueryModelContext context,
         @NotNull STMTreeNode syntaxNode,
-        @NotNull List<SQLQueryValueExpression> values) {
-        super(context, syntaxNode);
+        @NotNull List<SQLQueryValueExpression> values,
+        boolean isIncomplete) {
+        super(syntaxNode);
         this.values = values;
+        this.isIncomplete = isIncomplete;
     }
 
     @NotNull
@@ -60,7 +63,13 @@ public class SQLQueryRowsTableValueModel extends SQLQueryRowsSourceModel {
             value.propagateContext(context, statistics);
             resultColumns.addLast(new SQLQueryResultColumn(resultColumns.size(), new SQLQuerySymbol("?"), this, null, null, SQLQueryExprType.UNKNOWN));
         }
-        return context.hideSources().overrideResultTuple(List.copyOf(resultColumns));
+        context = context.hideSources().overrideResultTuple(this, List.copyOf(resultColumns), Collections.emptyList());
+
+        if (this.isIncomplete) {
+            context = context.markHasUnresolvedSource();
+        }
+
+        return context;
     }
 
     @Override

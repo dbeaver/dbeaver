@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPObjectWithOrdinalPosition;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -458,6 +459,11 @@ public abstract class JDBCCompositeCache<
             // Cache children lists (we do it in the end because children caching may operate with other model objects)
             for (Map.Entry<PARENT, Map<String, ObjectInfo>> colEntry : parentObjectMap.entrySet()) {
                 for (ObjectInfo objectInfo : colEntry.getValue().values()) {
+                    // Sort rows using order comparator
+                    if (objectInfo.rows.size() > 1 && objectInfo.rows.get(0) instanceof DBPObjectWithOrdinalPosition) {
+                        objectInfo.rows.sort((Comparator<? super ROW_REF>) DBUtils.orderComparator());
+                    }
+
                     if (objectInfo.needsCaching) {
                         cacheChildren(monitor, objectInfo.object, objectInfo.rows);
                     }

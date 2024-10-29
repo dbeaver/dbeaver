@@ -78,12 +78,12 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     }
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR);
     }
 
     @Override
-    public boolean canDeleteObject(OBJECT_TYPE object) {
+    public boolean canDeleteObject(@NotNull OBJECT_TYPE object) {
         return DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR);
     }
 
@@ -94,7 +94,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     public final OBJECT_TYPE createNewObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext commandContext,
-        Object container,
+        @NotNull Object container,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) throws DBException {
@@ -142,7 +142,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     }
 
     @Override
-    public void deleteObject(DBECommandContext commandContext, OBJECT_TYPE object, Map<String, Object> options) throws DBException {
+    public void deleteObject(@NotNull DBECommandContext commandContext, @NotNull OBJECT_TYPE object, @NotNull Map<String, Object> options) throws DBException {
         commandContext.addCommand(
                 new ObjectDeleteCommand(object, ModelMessages.model_jdbc_delete_object),
                 new DeleteObjectReflector<>(this),

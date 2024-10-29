@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model.select;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelContext;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
+import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
@@ -30,6 +27,7 @@ import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -42,7 +40,6 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
     private final SQLQueryRowsSetCorrespondingOperationKind kind;
 
     public SQLQueryRowsSetCorrespondingOperationModel(
-        @NotNull SQLQueryModelContext context,
         @NotNull Interval range,
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryRowsSourceModel left,
@@ -50,7 +47,7 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
         @NotNull List<SQLQuerySymbolEntry> correspondingColumnNames,
         @NotNull SQLQueryRowsSetCorrespondingOperationKind kind
     ) {
-        super(context, range, syntaxNode, left, right);
+        super(range, syntaxNode, left, right);
         this.correspondingColumnNames = correspondingColumnNames;
         this.kind = kind;
     }
@@ -103,9 +100,23 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
                 } else if (i >= rightColumns.size()) {
                     resultColumns.add(leftColumns.get(i));
                     nonMatchingColumnSets = true;
-                } else { // TODO validate corresponding names to be the same?
-                    SQLQueryExprType type = this.obtainCommonType(leftColumns.get(i), rightColumns.get(i));
-                    SQLQuerySymbol symbol = leftColumns.get(i).symbol.merge(rightColumns.get(i).symbol);
+                } else {
+                    SQLQueryResultColumn leftColumn = leftColumns.get(i);
+                    SQLQueryResultColumn rightColumn = rightColumns.get(i);
+                    SQLQueryExprType type = this.obtainCommonType(leftColumn, rightColumn);
+                    SQLQuerySymbol symbol;
+                    if (leftColumn.symbol.getName().equalsIgnoreCase(rightColumn.symbol.getName())) {
+                        SQLQuerySymbolClass leftClass = leftColumn.symbol.getSymbolClass();
+                        SQLQuerySymbolDefinition leftDef = leftColumn.symbol.getDefinition();
+                        // new symbol after merge carries underlying info of the left column and combined entries set
+                        symbol = leftColumn.symbol.merge(rightColumn.symbol);
+                        symbol.setDefinition(leftDef);
+                        if (symbol.getSymbolClass() == SQLQuerySymbolClass.UNKNOWN) {
+                            symbol.setSymbolClass(leftClass);
+                        }
+                    } else {
+                        symbol = leftColumn.symbol;
+                    }
                     resultColumns.add(new SQLQueryResultColumn(i, symbol, this, null, null, type));
                 }
             }
@@ -130,10 +141,11 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
         }
 
         if (nonMatchingColumnSets) {
-            statistics.appendError((STMTreeNode) null, "UNION, EXCEPT and INTERSECT require subsets column tuples to match"); // TODO detailed messages per column
+            // TODO detailed messages per column
+            statistics.appendError(this.getSyntaxNode(), "UNION, EXCEPT and INTERSECT require subsets column tuples to match");
         }
-
-        return correspondingColumnNames.isEmpty() ? left : context.overrideResultTuple(resultColumns); // TODO multiple definitions per symbol
+        // TODO multiple definitions per symbol
+        return context.overrideResultTuple(this, resultColumns, Collections.emptyList());
     }
 
     @Override

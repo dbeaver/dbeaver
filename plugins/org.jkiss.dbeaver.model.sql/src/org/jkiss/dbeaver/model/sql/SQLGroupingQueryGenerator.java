@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
@@ -32,6 +33,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -128,6 +130,11 @@ public class SQLGroupingQueryGenerator {
                     PlainSelect select = (PlainSelect) ((Select) statement).getSelectBody();
                     select.setOrderByElements(null);
 
+                    SQLDialect sqlDialect = dataSource.getSQLDialect();
+                    if (select.getFromItem() instanceof Table table) {
+                        select.setFromItem(new FormattedTable(table, sqlDialect));
+                    }
+
                     List<SelectItem> selectItems = new ArrayList<>();
                     select.setSelectItems(selectItems);
                     for (String groupAttribute : groupAttributes) {
@@ -205,4 +212,27 @@ public class SQLGroupingQueryGenerator {
         return funcAliases;
     }
 
+    /**
+     * Represents a formatted table in an SQL query.
+     * This class is used to format the table name according to the specified SQL dialect.
+     * It is necessary because `net.sf.jsqlparser.schema.Table` only supports a dot as a separator.
+     */
+    // TODO: Remove this class when https://github.com/dbeaver/pro/issues/3140 will be resolved
+    private static class FormattedTable extends Table {
+        private final SQLDialect sqlDialect;
+
+        public FormattedTable(Table table, SQLDialect sqlDialect) {
+            super(table.getDatabase(), table.getSchemaName(), table.getName());
+            this.sqlDialect = sqlDialect;
+        }
+
+        @Override
+        public String getFullyQualifiedName() {
+            String databaseName = !CommonUtils.isEmpty(getDatabase().getDatabaseName())
+                    ? getDatabase().getDatabaseName() + sqlDialect.getCatalogSeparator()
+                    : "";
+            String schemaName = getSchemaName() != null ? getSchemaName() + sqlDialect.getStructSeparator() : "";
+            return databaseName + schemaName + getName();
+        }
+    }
 }

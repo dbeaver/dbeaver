@@ -86,6 +86,7 @@ class GridCellRenderer extends AbstractRenderer {
         {"\u001F", "US"},
         {"\u007F", "DEL"}
     };
+    private static final int LEVEL_INDENT = 5;
 
     protected Color colorLineFocused;
 
@@ -142,6 +143,10 @@ class GridCellRenderer extends AbstractRenderer {
 
         int columnAlign = cellInfo.align;
         int x = image == null ? LEFT_MARGIN : LEFT_MARGIN / 2;
+
+        if (columnAlign == IGridContentProvider.ALIGN_LEFT) {
+            x += row.getLevel() * LEVEL_INDENT;
+        }
 
         if (image != null && columnAlign != IGridContentProvider.ALIGN_RIGHT) {
             int y = bounds.y + (bounds.height - imageBounds.height) / 2;
@@ -286,6 +291,7 @@ class GridCellRenderer extends AbstractRenderer {
                 }
                 imageBounds = image.getBounds();
             }
+            x -= rowElement.getLevel() * LEVEL_INDENT;
             int verMargin = (grid.getItemHeight() - imageBounds.height) / 2;
 
             int leftMargin = LEFT_MARGIN / 2;

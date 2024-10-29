@@ -66,7 +66,7 @@ public class IDEF1XDiagramNotation extends ERDNotationBase implements ERDNotatio
         }
         conn.setLineWidth(1);
         if (!identifying || constraintType.isLogical()) {
-            ERDConnectionRouterDescriptor defConnectionRouter = ERDConnectionRouterRegistry.getInstance().getActiveDescriptor();
+            ERDConnectionRouterDescriptor defConnectionRouter = ERDConnectionRouterRegistry.getInstance().getActiveRouter();
             if (defConnectionRouter.supportedAttributeAssociation()) {
                 conn.setLineStyle(SWT.LINE_CUSTOM);
             } else {

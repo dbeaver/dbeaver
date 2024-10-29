@@ -485,7 +485,9 @@ public class PrefPageDataFormat extends TargetPrefPage
     @Override
     public void dispose()
     {
-        boldFont.dispose();
+        if (boldFont != null) {
+            boldFont.dispose();
+        }
         super.dispose();
     }
 

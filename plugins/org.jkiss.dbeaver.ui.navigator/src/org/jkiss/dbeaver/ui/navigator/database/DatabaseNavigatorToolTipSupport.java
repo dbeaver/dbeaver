@@ -23,7 +23,6 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.DefaultViewerToolTipSupport;
-import org.jkiss.dbeaver.ui.navigator.INavigatorItemRenderer;
 
 class DatabaseNavigatorToolTipSupport extends DefaultViewerToolTipSupport {
     private DatabaseNavigatorTree databaseNavigatorTree;
@@ -40,15 +39,8 @@ class DatabaseNavigatorToolTipSupport extends DefaultViewerToolTipSupport {
         if (item == null) {
             return false;
         }
-        Rectangle bounds = item.getBounds(0);
-        if (event.x >= bounds.x && event.x <= bounds.x + bounds.width) {
-            return super.shouldCreateToolTip(event);
-        }
-        // Over details area
-        INavigatorItemRenderer itemRenderer = this.databaseNavigatorTree.getItemRenderer();
-        Object data = item.getData();
-        if (data instanceof DBNNode) {
-            itemRenderer.showDetailsToolTip((DBNNode) data, tree, event);
+        if (item.getData() instanceof DBNNode node) {
+            tree.setToolTipText(databaseNavigatorTree.getItemRenderer().getToolTipText(node, tree, event));
         }
         return false;
     }

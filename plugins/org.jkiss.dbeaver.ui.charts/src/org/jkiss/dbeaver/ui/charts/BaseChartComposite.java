@@ -166,16 +166,20 @@ public class BaseChartComposite extends ChartComposite {
 
     protected void doCopyToClipboard() {
         Image image = new Image(Display.getDefault(), this.getBounds());
-        GC gc = new GC(image);
         try {
-            this.print(gc);
-        } finally {
-            gc.dispose();
-        }
+            GC gc = new GC(image);
+            try {
+                this.print(gc);
+            } finally {
+                gc.dispose();
+            }
 
-        ImageTransfer imageTransfer = ImageTransfer.getInstance();
-        Clipboard clipboard = new Clipboard(Display.getCurrent());
-        clipboard.setContents(new Object[] {image.getImageData()}, new Transfer[]{imageTransfer});
+            ImageTransfer imageTransfer = ImageTransfer.getInstance();
+            Clipboard clipboard = new Clipboard(Display.getCurrent());
+            clipboard.setContents(new Object[] {image.getImageData()}, new Transfer[]{imageTransfer});
+        } finally {
+            image.dispose();
+        }
     }
 
     protected boolean hasConfigurationDialog() {

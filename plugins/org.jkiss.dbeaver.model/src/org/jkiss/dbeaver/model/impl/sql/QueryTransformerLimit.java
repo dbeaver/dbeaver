@@ -80,17 +80,18 @@ public class QueryTransformerLimit implements DBCQueryTransformer {
             limitSet = false;
             newQuery = query.getText();
         } else {
+            String normalizedQuery = SQLUtils.removeQueryDelimiter(dialect, query.getText());
             if (supportsExtendedLimit) {
-                newQuery = query.getText() + "\n" + KEYWORD_LIMIT + " " + offset + ", " + length;
+                newQuery = normalizedQuery + "\n" + KEYWORD_LIMIT + " " + offset + ", " + length;
             } else if (supportsOffsetKeyword) {
                 // LIMIT + OFFSET
-                newQuery = query.getText() + "\n" + KEYWORD_LIMIT + " " + length.longValue();
+                newQuery = normalizedQuery + "\n" + KEYWORD_LIMIT + " " + length.longValue();
                 if (offset.longValue() > 0) {
                     newQuery += " " + KEYWORD_OFFSET + " " + offset.longValue();
                 }
             } else {
                 // We can limit only total row number
-                newQuery = query.getText() + "\n" + KEYWORD_LIMIT + " " + (offset.longValue() + length.longValue());
+                newQuery = normalizedQuery + "\n" + KEYWORD_LIMIT + " " + (offset.longValue() + length.longValue());
             }
             limitSet = supportsExtendedLimit || supportsOffsetKeyword;
         }

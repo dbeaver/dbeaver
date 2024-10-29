@@ -110,14 +110,6 @@ public class ResultSetRow {
         changes.put(attr, oldValue);
     }
 
-    @Nullable
-    public Object getOriginalValue(@NotNull DBDAttributeBinding attr) {
-        if (changes != null) {
-            return changes.get(attr);
-        }
-        return null;
-    }
-
     public void resetChange(DBDAttributeBinding attr) {
         assert changes != null;
         changes.remove(attr);

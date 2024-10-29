@@ -192,7 +192,9 @@ class DriverDependenciesTree {
     private void grayOutInstalledArtifact(DBPDriverDependencies.DependencyNode node, TreeItem item) {
         Path localFile = node.library.getLocalFile();
         try {
-            if (editable && localFile != null && Files.exists(localFile) && Files.size(localFile) > 0) {
+            if (node.library.isInvalidLibrary()) {
+                item.setForeground(filesTree.getDisplay().getSystemColor(SWT.COLOR_RED));
+            } else if (editable && localFile != null && Files.exists(localFile) && Files.size(localFile) > 0) {
                 item.setForeground(filesTree.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
             }
         } catch (IOException ex) {
@@ -225,7 +227,7 @@ class DriverDependenciesTree {
             WebUtils.openConnection(NETWORK_TEST_URL, GeneralUtils.getProductTitle());
         } catch (IOException e) {
             String message;
-            if (RuntimeUtils.isWindows() && e instanceof SSLHandshakeException) {
+            if (RuntimeUtils.isWindows() && GeneralUtils.hasCause(e, SSLHandshakeException.class)) {
                 if (DBWorkbench.getPlatform()
                     .getApplication().hasProductFeature(DBConnectionConstants.PRODUCT_FEATURE_SIMPLE_TRUSTSTORE)) {
                     message = UIConnectionMessages.dialog_driver_download_network_unavailable_cert_msg;

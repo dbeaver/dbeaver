@@ -95,6 +95,7 @@ public class ComplexObjectEditor extends TreeViewer {
     private final Color backgroundAdded;
     private final Color backgroundDeleted;
     private final Color backgroundModified;
+    private final Color foregroundReadOnly;
 
     private final CopyAction copyNameAction;
     private final CopyAction copyValueAction;
@@ -117,6 +118,7 @@ public class ComplexObjectEditor extends TreeViewer {
         this.backgroundAdded = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_NEW_BACK);
         this.backgroundDeleted = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_DELETED_BACK);
         this.backgroundModified = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_MODIFIED_BACK);
+        this.foregroundReadOnly = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_NULL_FOREGROUND);
 
         final Tree treeControl = super.getTree();
         treeControl.setHeaderVisible(true);
@@ -146,7 +148,7 @@ public class ComplexObjectEditor extends TreeViewer {
             column.getColumn().setWidth(200);
             column.getColumn().setMoveable(true);
             column.getColumn().setText(UIMessages.ui_properties_name);
-            column.setLabelProvider(new PropsLabelProvider());
+            column.setLabelProvider(new PropsLabelProvider(true));
         }
 
         {
@@ -154,7 +156,7 @@ public class ComplexObjectEditor extends TreeViewer {
             column.getColumn().setWidth(120);
             column.getColumn().setMoveable(true);
             column.getColumn().setText(UIMessages.ui_properties_value);
-            column.setLabelProvider(new PropsLabelProvider());
+            column.setLabelProvider(new PropsLabelProvider(false));
         }
 
         treeEditor = new TreeEditor(treeControl);
@@ -239,7 +241,7 @@ public class ComplexObjectEditor extends TreeViewer {
             this.executionContext = executionContext;
             this.cache.clear();
             setInput(wrap(null, value));
-            expandToLevel(2);
+            expandAll();
             updateActions();
         } finally {
             getTree().setRedraw(true);
@@ -598,6 +600,11 @@ public class ComplexObjectEditor extends TreeViewer {
     }
 
     private class PropsLabelProvider extends CellLabelProvider {
+        private final boolean title;
+        public PropsLabelProvider(boolean isTitle) {
+            this.title = isTitle;
+        }
+
         @Override
         public String getToolTipText(Object obj) {
             if (obj instanceof CompositeElement.Item) {
@@ -618,6 +625,9 @@ public class ComplexObjectEditor extends TreeViewer {
                 cell.setBackground(backgroundModified);
             } else {
                 cell.setBackground(null);
+            }
+            if (!title && isComplexType(element)) {
+                cell.setForeground(foregroundReadOnly);
             }
         }
 
@@ -680,22 +690,34 @@ public class ComplexObjectEditor extends TreeViewer {
         @Override
         public void run() {
             disposeOldEditor();
+            final CollectionElement collection = getElement();
+            if (collection != null && collection.source instanceof DBDFixedSizeCollection) {
+                try {
+                    Object populatedCollection = ((DBDFixedSizeCollection) collection.source).populateCollection();
+                    ComplexObjectEditor.this.setModel(executionContext, populatedCollection);
+                } catch (DBCException e) {
+                    log.error("Failed to populate the collection");
+                }
+                refresh();
+            } else {
+                final CollectionElement.Item item = new CollectionElement.Item(collection, null);
 
-            final ComplexElementItem element = (ComplexElementItem) getStructuredSelection().getFirstElement();
-            final CollectionElement collection = GeneralUtils.adapt(element, CollectionElement.class);
-            final CollectionElement.Item item = new CollectionElement.Item(collection, null);
+                collection.items.add(item);
+                item.created = true;
+                refresh();
+                final TreeItem treeItem = (TreeItem) findItem(item);
 
-            collection.items.add(item);
-            item.created = true;
-
-            refresh();
-
-            final TreeItem treeItem = (TreeItem) findItem(item);
-            if (treeItem != null) {
-                showEditor(treeItem, false);
+                if (treeItem != null) {
+                    showEditor(treeItem, false);
+                }
             }
-
             autoUpdateComplexValue();
+        }
+
+        @Nullable
+        private CollectionElement getElement() {
+            final ComplexElementItem element = (ComplexElementItem) getStructuredSelection().getFirstElement();
+            return GeneralUtils.adapt(element, CollectionElement.class);
         }
 
     }
@@ -790,11 +812,14 @@ public class ComplexObjectEditor extends TreeViewer {
             final CollectionElement collection = item.collection;
             final boolean child = !(collection instanceof CollectionRootElement);
             final int index = collection.items.indexOf(item);
-
-            addElementAction.setEnabled(extendable);
-            removeElementAction.setEnabled(child);
-            moveElementUpAction.setEnabled(child && index > 0);
-            moveElementDownAction.setEnabled(child && index < collection.items.size() - 1);
+            boolean isFixedSize = collection.source instanceof DBDFixedSizeCollection;
+            if (isFixedSize) {
+                setToNullAction.setEnabled(setToNullAction.isEnabled() && ((DBDFixedSizeCollection) collection.source).canSetElementsToNull());
+            }
+            addElementAction.setEnabled(extendable && (!isFixedSize | collection.source.isEmpty()));
+            removeElementAction.setEnabled(child && !isFixedSize);
+            moveElementUpAction.setEnabled(child && index > 0 && !isFixedSize);
+            moveElementDownAction.setEnabled(child && index < collection.items.size() - 1 && !isFixedSize);
         } else {
             addElementAction.setEnabled(editable && extendable);
             removeElementAction.setEnabled(false);

@@ -35,13 +35,13 @@ public enum WSEventType {
         WSEventTopic.SERVER_CONFIG,
         WSServerConfigurationChangedEvent.class
     ),
+    SERVER_STATE("cb_server_state_updated", WSEventTopic.SERVER_STATE, WSServerStateEvent.class),
 
     SESSION_LOG_UPDATED(
         "cb_session_log_updated",
         WSEventTopic.SESSION_LOG,
         WSSessionLogUpdatedEvent.class
     ),
-
     SESSION_WEBSOCKET_CONNECTED("cb_session_websocket_connected", WSEventTopic.SESSION, WSSocketConnectedEvent.class),
     SESSION_STATE("cb_session_state", WSEventTopic.SESSION, WSSessionStateEvent.class),
     SESSION_EXPIRED("cb_session_expired", WSEventTopic.SESSION, WSSessionExpiredEvent.class),

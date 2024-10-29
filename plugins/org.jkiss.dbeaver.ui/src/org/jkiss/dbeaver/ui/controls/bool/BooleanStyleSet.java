@@ -72,6 +72,11 @@ public class BooleanStyleSet {
     }
 
     @NotNull
+    public BooleanStyle getStyle(@NotNull BooleanState state) {
+        return state.choose(checkedStyle, uncheckedStyle, nullStyle);
+    }
+
+    @NotNull
     public BooleanStyle getCheckedStyle() {
         return checkedStyle;
     }

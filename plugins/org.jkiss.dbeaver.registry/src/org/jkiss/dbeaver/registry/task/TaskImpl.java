@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.registry.task;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.Strictness;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -45,7 +46,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
     private static final Log log = Log.getLog(TaskImpl.class);
     private static final int MAX_RUNS_IN_STATS = 100;
     private static final Gson gson = new GsonBuilder()
-        .setLenient()
+        .setStrictness(Strictness.LENIENT)
         .setDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN)
         .create();
 
@@ -57,7 +58,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
     private Date updateTime;
     private DBTTaskType type;
     private Map<String, Object> properties;
-    private List<DBTTaskRun> runs;
+    private volatile List<DBTTaskRun> runs;
     private DBTTaskFolder taskFolder;
     private int maxExecutionTime;
 

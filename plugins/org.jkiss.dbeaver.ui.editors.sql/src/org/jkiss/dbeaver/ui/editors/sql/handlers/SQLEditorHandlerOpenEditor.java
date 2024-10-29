@@ -33,17 +33,14 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.navigator.DBNDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.rm.RMConstants;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
@@ -61,7 +58,6 @@ import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDataSourceDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
@@ -138,7 +134,7 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
         return null;
     }
 
-    private static void openEditor(ExecutionEvent event) throws ExecutionException, CoreException, InterruptedException {
+    private static void openEditor(ExecutionEvent event) throws CoreException, InterruptedException {
         SQLNavigatorContext editorContext = getCurrentContext(event);
         IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
 
@@ -146,7 +142,7 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
     }
 
     private static void openEditor(IWorkbenchWindow workbenchWindow, SQLNavigatorContext editorContext) throws CoreException {
-        DBPProject project = editorContext.getProject();
+        RCPProject project = editorContext.getProject();
         checkProjectIsOpen(project);
 
         final IFolder rootFolder = SQLEditorUtils.getScriptsFolder(project, true);
@@ -186,7 +182,6 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
     }
 
     private static void openNewEditor(ExecutionEvent event) throws CoreException, InterruptedException {
-        IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
         SQLNavigatorContext context = getCurrentContext(event);
 
         openNewEditor(context, HandlerUtil.getCurrentSelection(event));
@@ -231,8 +226,12 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
         return null;
     }
 
-    public static void openRecentScript(@NotNull IWorkbenchWindow workbenchWindow, @NotNull SQLNavigatorContext editorContext, @Nullable IFolder scriptFolder) throws CoreException {
-        final DBPProject project = editorContext.getProject();
+    public static void openRecentScript(
+        @NotNull IWorkbenchWindow workbenchWindow,
+        @NotNull SQLNavigatorContext editorContext,
+        @Nullable IFolder scriptFolder
+    ) throws CoreException {
+        final RCPProject project = editorContext.getProject();
         checkProjectIsOpen(project);
         SQLEditorUtils.ResourceInfo res = SQLEditorUtils.findRecentScript(project, editorContext);
         if (res != null) {

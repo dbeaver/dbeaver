@@ -28,23 +28,9 @@
     <extension-point id="org.jkiss.dbeaver.navigator" name="%extension-point.org.jkiss.dbeaver.navigator.name" schema="schema/org.jkiss.dbeaver.navigator.exsd"/>
     <extension-point id="org.jkiss.dbeaver.settings" name="DBeaver Settings" schema="schema/org.jkiss.dbeaver.settings.exsd"/>
 
-    <extension point="org.eclipse.core.resources.natures" id="org.jkiss.dbeaver.DBeaverNature"
-               name="%extension.org.jkiss.dbeaver.DBeaverNature.name">
-        <runtime>
-            <run class="org.jkiss.dbeaver.runtime.resource.DBeaverNature">
-            </run>
-        </runtime>
-    </extension>
-
     <extension point="org.jkiss.dbeaver.expressions">
         <namespace id="math" class="java.lang.Math" description="Math functions"/>
         <namespace id="content" class="org.jkiss.dbeaver.registry.expressions.ContentExpressionFunctions" description="Content handling functions"/>
-    </extension>
-
-    <extension point="org.eclipse.core.filesystem.filesystems">
-        <filesystem scheme="dbvfs">
-            <run class="org.jkiss.dbeaver.model.fs.nio.EFSNIOFileSystem"/>
-        </filesystem>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataFormatter">
@@ -216,10 +202,6 @@
 
     </extension>
 
-
-    <extension point="org.jkiss.dbeaver.navigator">
-        <extender id="dbfs" root="true" class="org.jkiss.dbeaver.model.navigator.fs.DBFNavigatorExtender"/>
-    </extension>
 
     <extension point="org.jkiss.dbeaver.settings">
         <propertyGroup id="editors" label="Editors">

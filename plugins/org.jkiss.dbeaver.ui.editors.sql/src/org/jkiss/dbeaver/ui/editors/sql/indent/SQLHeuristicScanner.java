@@ -21,7 +21,6 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.jface.text.TextUtilities;
 import org.jkiss.dbeaver.model.DBPKeywordType;
-import org.jkiss.dbeaver.model.sql.SQLBlockCompletionInfo;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 
@@ -263,7 +262,7 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
     private int getToken(String s) {
         assert (s != null);
 
-        Integer tokenKindId = this.syntaxManager.getDialect().getBlockCompletions().findTokenId(s);
+        Integer tokenKindId = SQLAutoIndentStrategy.DEFAULT_SQL_BLOCK_COMPLETIONS.findTokenId(s);
         if (tokenKindId != null) {
             return tokenKindId;
         }

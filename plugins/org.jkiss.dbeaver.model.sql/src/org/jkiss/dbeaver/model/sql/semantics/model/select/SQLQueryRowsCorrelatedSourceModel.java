@@ -38,13 +38,12 @@ public class SQLQueryRowsCorrelatedSourceModel extends SQLQueryRowsSourceModel {
     private final List<SQLQuerySymbolEntry> correlationColumNames;
 
     public SQLQueryRowsCorrelatedSourceModel(
-        @NotNull SQLQueryModelContext context,
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryRowsSourceModel source,
         @NotNull SQLQuerySymbolEntry alias,
         @NotNull List<SQLQuerySymbolEntry> correlationColumNames
     ) {
-        super(context, syntaxNode, source);
+        super(syntaxNode, source);
         this.source = source;
         this.alias = alias;
         this.correlationColumNames = correlationColumNames;
@@ -108,7 +107,7 @@ public class SQLQueryRowsCorrelatedSourceModel extends SQLQueryRowsSourceModel {
                     columns.set(i, new SQLQueryResultColumn(i, correlatedName, columnsSource, null, null, oldColumn.type));
                 }
             }
-            context = context.overrideResultTuple(columns);
+            context = context.overrideResultTuple(columnsSource, columns, context.getPseudoColumnsList());
         }
         return context;
     }

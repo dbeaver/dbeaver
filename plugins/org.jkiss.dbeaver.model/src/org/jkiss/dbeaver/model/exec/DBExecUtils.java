@@ -839,6 +839,7 @@ public class DBExecUtils {
                             // Probably it is an alias which conflicts with column name
                             // Do not update entity attribute.
                             // It is a silly workaround for PG-like databases
+                            log.debug("Cannot bind attribute '" + bindingMeta.getName() + "'");
                         } else if (bindingMeta.setEntityAttribute(tableColumn, updateColumnHandler) && rows != null) {
                             // We have new type and new value handler.
                             // We have to fix already fetched values.
@@ -922,7 +923,9 @@ public class DBExecUtils {
     private static boolean isSameDataTypes(@NotNull DBSEntityAttribute tableColumn, @NotNull DBCAttributeMetaData resultSetAttributeMeta) {
         if (tableColumn instanceof DBSTypedObjectEx) {
             DBSDataType columnDataType = ((DBSTypedObjectEx) tableColumn).getDataType();
-            return columnDataType != null && columnDataType.isStructurallyConsistentTypeWith(resultSetAttributeMeta);
+            if (columnDataType != null) {
+                return columnDataType.isStructurallyConsistentTypeWith(resultSetAttributeMeta);
+            }
         }
         return tableColumn.getDataKind().isComplex() == resultSetAttributeMeta.getDataKind().isComplex();
     }

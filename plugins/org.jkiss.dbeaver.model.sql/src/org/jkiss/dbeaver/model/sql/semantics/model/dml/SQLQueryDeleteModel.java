@@ -19,15 +19,15 @@ package org.jkiss.dbeaver.model.sql.semantics.model.dml;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelContext;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsCorrelatedSourceModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
-import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
@@ -43,32 +43,32 @@ public class SQLQueryDeleteModel extends SQLQueryDMLStatementModel {
     @Nullable 
     private final SQLQueryRowsCorrelatedSourceModel aliasedTableModel;
 
-    public static SQLQueryModelContent createModel(SQLQueryModelContext context, STMTreeNode node) {
-        STMTreeNode tableNameNode = node.findChildOfName(STMKnownRuleNames.tableName);
-        SQLQueryRowsTableDataModel tableModel = tableNameNode == null ? null : context.collectTableReference(tableNameNode);
+    @NotNull
+    public static SQLQueryModelContent recognize(@NotNull SQLQueryModelRecognizer recognizer, @NotNull STMTreeNode node) {
+        STMTreeNode tableNameNode = node.findFirstChildOfName(STMKnownRuleNames.tableName);
+        SQLQueryRowsTableDataModel tableModel = tableNameNode == null ? null : recognizer.collectTableReference(tableNameNode, false);
 
-        STMTreeNode aliasNode = node.findChildOfName(STMKnownRuleNames.correlationName);
-        SQLQuerySymbolEntry alias = aliasNode == null ? null : context.collectIdentifier(aliasNode);
+        STMTreeNode aliasNode = node.findFirstChildOfName(STMKnownRuleNames.correlationName);
+        SQLQuerySymbolEntry alias = aliasNode == null ? null : recognizer.collectIdentifier(aliasNode);
 
-        STMTreeNode whereClauseNode = node.findChildOfName(STMKnownRuleNames.whereClause);
-        SQLQueryValueExpression whereClauseExpr = whereClauseNode == null ? null : context.collectValueExpression(whereClauseNode);
+        STMTreeNode whereClauseNode = node.findFirstChildOfName(STMKnownRuleNames.whereClause);
+        SQLQueryValueExpression whereClauseExpr = whereClauseNode == null ? null : recognizer.collectValueExpression(whereClauseNode);
 
-        return new SQLQueryDeleteModel(context, node, tableModel, alias, whereClauseExpr);
+        return new SQLQueryDeleteModel(node, tableModel, alias, whereClauseExpr);
     }
 
     private SQLQueryDeleteModel(
-        @NotNull SQLQueryModelContext context,
         @NotNull STMTreeNode syntaxNode,
         @Nullable SQLQueryRowsTableDataModel tableModel,
         @Nullable SQLQuerySymbolEntry alias,
         @Nullable SQLQueryValueExpression whereClause
     ) {
-        super(context, syntaxNode, tableModel);
+        super(syntaxNode, tableModel);
         this.whereClause = whereClause;
         
         if (alias != null && tableModel != null) {
             Interval correlatedRegion = Interval.of(tableModel.getInterval().a, alias.getInterval().b);
-            this.aliasedTableModel = new SQLQueryRowsCorrelatedSourceModel(context, syntaxNode, tableModel, alias, Collections.emptyList());
+            this.aliasedTableModel = new SQLQueryRowsCorrelatedSourceModel(syntaxNode, tableModel, alias, Collections.emptyList());
         } else {
             this.aliasedTableModel  = null;
         }

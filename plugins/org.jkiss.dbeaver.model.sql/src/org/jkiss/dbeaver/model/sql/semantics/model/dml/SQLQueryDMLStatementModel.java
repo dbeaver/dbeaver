@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model.dml;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelContext;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
@@ -37,11 +37,10 @@ public abstract class SQLQueryDMLStatementModel extends SQLQueryModelContent {
     private SQLQueryDataContext resultContext = null;
     
     public SQLQueryDMLStatementModel(
-        @NotNull SQLQueryModelContext context,
         @NotNull STMTreeNode syntaxNode,
         @Nullable SQLQueryRowsTableDataModel tableModel
     ) {
-        super(context, syntaxNode.getRealInterval(), syntaxNode, tableModel);
+        super(syntaxNode.getRealInterval(), syntaxNode, tableModel);
         this.tableModel = tableModel;
     }
 

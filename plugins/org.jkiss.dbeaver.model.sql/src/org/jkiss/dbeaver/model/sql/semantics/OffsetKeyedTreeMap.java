@@ -175,26 +175,29 @@ public class OffsetKeyedTreeMap<T> {
     }
     
     public T put(int pos, T value, RemappingFunction<T> remappingFunction) {
-        T result;
+        T oldValue;
 
         if (this.root.isSentinel()) {
             this.root = new Node<>(pos, value, false, null, null);
             this.root.refreshBlackHeight();
             this.size++;
-            result = value;
+            oldValue = null;
         } else {
             NodeAndParentAtOffset<T> location = this.findImpl(pos);
             if (location.node.isNotSentinel()) {
-                if (location.node.content == null) {
+                oldValue = location.node.content;
+                T newValue;
+                if (oldValue == null) {
                     this.tombstonesCount--;
-                    result = value;
+                    newValue = value;
                 } else if (remappingFunction == null) {
-                    result = value;
+                    newValue = value;
                 } else {
-                    result = remappingFunction.apply(pos, value, location.node.content);
+                    newValue = remappingFunction.apply(pos, value, oldValue);
                 }
-                location.node.content = result;
+                location.node.content = newValue;
             } else {
+                oldValue = null;
                 Node<T> newNode = new Node<>(location.offset, value, true, null, null);
                 Node<T> parent = location.parent;
               
@@ -207,12 +210,10 @@ public class OffsetKeyedTreeMap<T> {
                 this.size++;
         
                 this.restoreAfterInsert(newNode);
-                
-                result = value;
             }
         }
         
-        return result;
+        return oldValue;
     }
 
     ///<summary>

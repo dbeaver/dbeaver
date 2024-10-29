@@ -33,6 +33,9 @@ import java.util.List;
 
 /**
  * Describes object reference
+ * @apiNote
+ * TODO remove objectType and treat this as non-table rows source like table-producing procedures, no matter builtin or not
+ *      (see something like {@code SELECT * FROM proc()}  )
  */
 public class SQLQueryObjectDataModel extends SQLQueryRowsSourceModel implements SQLQuerySymbolDefinition {
 
@@ -45,11 +48,10 @@ public class SQLQueryObjectDataModel extends SQLQueryRowsSourceModel implements 
     private DBSObject object = null;
 
     public SQLQueryObjectDataModel(
-        @NotNull SQLQueryModelContext context,
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryQualifiedName name,
         @NotNull DBSObjectType objectType) {
-        super(context, syntaxNode);
+        super(syntaxNode);
         this.name = name;
         this.objectType = objectType;
     }
@@ -84,6 +86,8 @@ public class SQLQueryObjectDataModel extends SQLQueryRowsSourceModel implements 
 
             if (this.object != null) {
                 this.name.setDefinition(object);
+            } else {
+                statistics.appendError(getSyntaxNode(), "Object " + this.name.toIdentifierString() + " not found in the database");
             }
         }
         return context;

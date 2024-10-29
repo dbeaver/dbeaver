@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.handler;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.Strictness;
 import com.google.gson.stream.JsonWriter;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
@@ -35,7 +36,7 @@ class CopyAsConfigurationStorage {
     private static final String COPY_AS_CFG = "CopyAsConfig";
 
     private static final Gson GSON = new GsonBuilder()
-        .setLenient()
+        .setStrictness(Strictness.LENIENT)
         .serializeNulls()
         .setPrettyPrinting()
         .create();

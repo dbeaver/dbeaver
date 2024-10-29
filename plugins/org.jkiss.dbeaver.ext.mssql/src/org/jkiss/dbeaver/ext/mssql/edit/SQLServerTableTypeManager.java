@@ -49,7 +49,7 @@ public class SQLServerTableTypeManager extends SQLServerBaseTableManager<SQLServ
     }
 
     @Override
-    protected SQLServerTableType createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
+    protected SQLServerTableType createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
         throw new IllegalStateException("Not implemented");
     }
 

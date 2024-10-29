@@ -18,16 +18,16 @@ package org.jkiss.dbeaver.model.sql.semantics.model.dml;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelContext;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueColumnReferenceExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
-import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryValueColumnReferenceExpression;
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
@@ -43,37 +43,36 @@ public class SQLQueryInsertModel extends SQLQueryDMLStatementModel {
     @Nullable
     private final SQLQueryRowsSourceModel valuesRows;
 
-
-    public static SQLQueryModelContent createModel(SQLQueryModelContext context, STMTreeNode node) {
-        STMTreeNode tableNameNode = node.findChildOfName(STMKnownRuleNames.tableName);
-        SQLQueryRowsTableDataModel tableModel = tableNameNode == null ? null : context.collectTableReference(tableNameNode);
+    @NotNull
+    public static SQLQueryModelContent recognize(@NotNull SQLQueryModelRecognizer recognizer, @NotNull STMTreeNode node) {
+        STMTreeNode tableNameNode = node.findFirstChildOfName(STMKnownRuleNames.tableName);
+        SQLQueryRowsTableDataModel tableModel = tableNameNode == null ? null : recognizer.collectTableReference(tableNameNode, false);
 
         List<SQLQuerySymbolEntry> columnNames;
         SQLQueryRowsSourceModel valuesRows;
 
-        STMTreeNode insertColumnsAndSource = node.findChildOfName(STMKnownRuleNames.insertColumnsAndSource);
+        STMTreeNode insertColumnsAndSource = node.findFirstChildOfName(STMKnownRuleNames.insertColumnsAndSource);
         if (insertColumnsAndSource != null) {
-            STMTreeNode insertColumnList = insertColumnsAndSource.findChildOfName(STMKnownRuleNames.insertColumnList);
-            columnNames = insertColumnList == null ? null : context.collectColumnNameList(insertColumnList);
+            STMTreeNode insertColumnList = insertColumnsAndSource.findFirstChildOfName(STMKnownRuleNames.insertColumnList);
+            columnNames = insertColumnList == null ? null : recognizer.collectColumnNameList(insertColumnList);
 
-            STMTreeNode valuesNode = insertColumnsAndSource.findChildOfName(STMKnownRuleNames.queryExpression);
-            valuesRows = valuesNode == null ? null : context.collectQueryExpression(valuesNode);
+            STMTreeNode valuesNode = insertColumnsAndSource.findFirstChildOfName(STMKnownRuleNames.queryExpression);
+            valuesRows = valuesNode == null ? null : recognizer.collectQueryExpression(valuesNode);
         } else {
             columnNames = Collections.emptyList();
             valuesRows = null; // use default table?
         }
 
-        return new SQLQueryInsertModel(context, node, tableModel, columnNames, valuesRows);
+        return new SQLQueryInsertModel(node, tableModel, columnNames, valuesRows);
     }
 
     private SQLQueryInsertModel(
-        @NotNull SQLQueryModelContext context,
         @NotNull STMTreeNode syntaxNode,
         @Nullable SQLQueryRowsTableDataModel tableModel,
         @Nullable List<SQLQuerySymbolEntry> columnNames,
         @Nullable SQLQueryRowsSourceModel valuesRows
     ) {
-        super(context, syntaxNode, tableModel);
+        super(syntaxNode, tableModel);
         this.columnNames = columnNames;
         this.valuesRows = valuesRows;
     }
@@ -94,7 +93,9 @@ public class SQLQueryInsertModel extends SQLQueryDMLStatementModel {
             for (SQLQuerySymbolEntry columnName : this.columnNames) {
                 if (columnName.isNotClassified()) {
                     SQLQueryResultColumn column = context.resolveColumn(statistics.getMonitor(), columnName.getName());
-                    SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(columnName, column, statistics);
+                    if (column != null || !context.hasUndresolvedSource()) {
+                        SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(columnName, column, statistics);
+                    }
                 }
             }
         }

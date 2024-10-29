@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -37,7 +38,7 @@ public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> e
     long FEATURE_SUPPORTS_COPY              = 1 << 4;
     long FEATURE_CLOSE_EXISTING_CONNECTIONS = 1 << 5;
 
-    long getMakerOptions(DBPDataSource dataSource);
+    long getMakerOptions(@NotNull DBPDataSource dataSource);
 
     /**
      * Provides access to objects cache.
@@ -48,9 +49,9 @@ public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> e
     @Nullable
     DBSObjectCache<? extends DBSObject, OBJECT_TYPE> getObjectsCache(OBJECT_TYPE object);
 
-    boolean canCreateObject(Object container);
+    boolean canCreateObject(@NotNull Object container);
 
-    boolean canDeleteObject(OBJECT_TYPE object);
+    boolean canDeleteObject(@NotNull OBJECT_TYPE object);
 
     /**
      * Creates new object and sets it as manager's object.
@@ -67,11 +68,11 @@ public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> e
      * @return null if no additional actions should be performed
      */
     OBJECT_TYPE createNewObject(
-        DBRProgressMonitor monitor,
-        DBECommandContext commandContext,
-        Object container,
-        Object copyFrom,
-        Map<String, Object> options) throws DBException;
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext commandContext,
+        @NotNull Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options) throws DBException;
 
     /**
      * Deletes specified object.
@@ -81,5 +82,8 @@ public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> e
      * @param object object
      * @param options delete options. Options are set by delete wizard.
      */
-    void deleteObject(DBECommandContext commandContext, OBJECT_TYPE object, Map<String, Object> options) throws DBException;
+    void deleteObject(
+        @NotNull DBECommandContext commandContext,
+        @NotNull OBJECT_TYPE object,
+        @NotNull Map<String, Object> options) throws DBException;
 }

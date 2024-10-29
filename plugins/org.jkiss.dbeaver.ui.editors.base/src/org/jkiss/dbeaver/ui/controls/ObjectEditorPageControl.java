@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -114,11 +113,6 @@ public class ObjectEditorPageControl extends ProgressPageControl {
 
             }
         };
-    }
-
-    @Override
-    public void fillCustomActions(IContributionManager contributionManager) {
-        super.fillCustomActions(contributionManager);
     }
 
     @Override

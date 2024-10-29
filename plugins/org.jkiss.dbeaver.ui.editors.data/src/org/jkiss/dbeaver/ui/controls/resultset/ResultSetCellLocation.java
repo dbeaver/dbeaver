@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.utils.ArrayUtils;
 
@@ -61,7 +62,7 @@ public class ResultSetCellLocation {
     public static DBDAttributeBinding getLeafAttribute(@NotNull DBDAttributeBinding attribute, @Nullable int[] indexes) {
         DBDAttributeBinding leaf = attribute;
 
-        if (!ArrayUtils.isEmpty(indexes)) {
+        if (leaf.getDataKind() == DBPDataKind.STRUCT && !ArrayUtils.isEmpty(indexes)) {
             for (int index : indexes) {
                 final List<DBDAttributeBinding> nestedBindings = leaf.getNestedBindings();
                 if (nestedBindings == null || index >= nestedBindings.size()) {

@@ -43,7 +43,6 @@ public class TextWithOpenFile extends TextWithOpen {
     private final String title;
     private String[] filterExt;
     private final int style;
-    private final boolean binary;
     private boolean openFolder = false;
 
     public TextWithOpenFile(Composite parent, String title, String[] filterExt, int style, boolean binary) {
@@ -51,11 +50,10 @@ public class TextWithOpenFile extends TextWithOpen {
     }
     
     public TextWithOpenFile(Composite parent, String title, String[] filterExt, int style, boolean binary, boolean multiFS, boolean secured) {
-        super(parent, multiFS, secured);
+        super(parent, multiFS, secured, binary);
         this.title = title;
         this.filterExt = filterExt;
         this.style = style;
-        this.binary = binary;
     }
 
     public TextWithOpenFile(Composite parent, String title, String[] filterExt) {
@@ -78,11 +76,6 @@ public class TextWithOpenFile extends TextWithOpen {
         this.filterExt = filterExtensions;
     }
 
-    @Override
-    protected boolean isBinaryContents() {
-        return binary;
-    }
-
     protected void openBrowser(boolean remoteFS) {
         String selected;
         if (remoteFS) {
@@ -90,7 +83,7 @@ public class TextWithOpenFile extends TextWithOpen {
                 title,
                 openFolder,
                 style,
-                binary,
+                isBinaryContents(),
                 filterExt,
                 getText());
             selected = selPath != null ? DBFUtils.getUriFromPath(selPath.getPath()).toString() : null;
@@ -119,7 +112,7 @@ public class TextWithOpenFile extends TextWithOpen {
         if (selected != null && isShowFileContentEditor()) {
             Path filePath = IOUtils.getPathFromString(selected);
             try {
-                if (binary) {
+                if (isBinaryContents()) {
                     byte[] bytes = Files.readAllBytes(filePath);
                     selected = Base64.getEncoder().encodeToString(bytes);
                 } else {

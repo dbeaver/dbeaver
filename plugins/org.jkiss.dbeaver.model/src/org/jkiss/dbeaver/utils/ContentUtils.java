@@ -239,6 +239,18 @@ public class ContentUtils {
         return true;
     }
 
+    public static boolean isAsciiText(@Nullable byte[] bytes) {
+        if (bytes == null || bytes.length == 0) {
+            return false;
+        }
+        for (byte b : bytes) {
+            if (b < ' ' || '~' < b) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public static boolean isXML(DBDContent content) {
         return MimeTypes.TEXT_XML.equalsIgnoreCase(content.getContentType());
     }

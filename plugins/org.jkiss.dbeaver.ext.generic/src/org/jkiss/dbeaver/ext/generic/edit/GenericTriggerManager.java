@@ -16,11 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.generic.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableTrigger;
 import org.jkiss.dbeaver.ext.generic.model.GenericTrigger;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -33,48 +33,50 @@ import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import java.util.List;
 import java.util.Map;
 
-public class GenericTriggerManager extends SQLTriggerManager<GenericTrigger, GenericTableBase> {
+public class GenericTriggerManager<
+    TRIGGER extends GenericTrigger<?>>
+    extends SQLTriggerManager<TRIGGER, GenericTableBase> {
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return false;
     }
 
     @Override
-    public boolean canDeleteObject(GenericTrigger object) {
+    public boolean canDeleteObject(@NotNull TRIGGER object) {
         return true;
     }
 
     @Override
     protected void createOrReplaceTriggerQuery(
-        DBRProgressMonitor monitor,
-        DBCExecutionContext executionContext,
-        List<DBEPersistAction> actions,
-        GenericTrigger trigger,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull TRIGGER trigger,
         boolean create
     ) {
         throw new IllegalStateException("Not implemented");
     }
 
     @Override
-    protected GenericTableTrigger createDatabaseObject(
-        DBRProgressMonitor monitor,
-        DBECommandContext context,
+    protected TRIGGER createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
         Object container,
         Object copyFrom,
-        Map<String, Object> options
+        @NotNull Map<String, Object> options
     ) throws DBException {
         throw new DBException("Not Implemented");
     }
 
     @Nullable
     @Override
-    public DBSObjectCache<? extends DBSObject, GenericTrigger> getObjectsCache(GenericTrigger object) {
+    public DBSObjectCache<? extends DBSObject, TRIGGER> getObjectsCache(TRIGGER object) {
         DBSObject container = object.getContainer();
-        if (container instanceof GenericStructContainer) {
-            return ((GenericStructContainer) container).getTableTriggerCache();
-        } else if (container instanceof GenericTableBase) {
-            return ((GenericTableBase) container).getContainer().getTableTriggerCache();
+        if (container instanceof GenericStructContainer structContainer) {
+            return (DBSObjectCache) structContainer.getTableTriggerCache();
+        } else if (container instanceof GenericTableBase tableBase) {
+            return (DBSObjectCache) tableBase.getContainer().getTableTriggerCache();
         }
         return null;
     }

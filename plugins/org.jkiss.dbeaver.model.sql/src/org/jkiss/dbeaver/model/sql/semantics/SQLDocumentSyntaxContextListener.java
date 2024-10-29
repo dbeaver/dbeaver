@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.sql.semantics;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 /**
@@ -25,11 +26,12 @@ public interface SQLDocumentSyntaxContextListener {
     /**
      * Occurs when a new script item is introduced to the document syntax context
      */
-    void onScriptItemIntroduced(@Nullable SQLDocumentScriptItemSyntaxContext item);
+    void onScriptItemIntroduced(@NotNull SQLDocumentScriptItemSyntaxContext item);
+
     /**
      * Occurs when the script item is removed from the document syntax context
      */
-    void onScriptItemInvalidated(@Nullable SQLDocumentScriptItemSyntaxContext item);
+    void onScriptItemInvalidated(@NotNull SQLDocumentScriptItemSyntaxContext item);
 
     /**
      * Occurs when all script item are removed to the document syntax context

@@ -44,12 +44,12 @@ public class HiveTableColumnManager extends GenericTableColumnManager {
     private static final Log log = Log.getLog(HiveTableColumnManager.class);
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return true;
     }
 
     @Override
-    public boolean canDeleteObject(GenericTableColumn object) {
+    public boolean canDeleteObject(@NotNull GenericTableColumn object) {
         return true;
     }
 
@@ -70,7 +70,7 @@ public class HiveTableColumnManager extends GenericTableColumnManager {
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) throws DBException {
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options) throws DBException {
         HiveTableColumn hiveTableColumn = (HiveTableColumn) command.getObject();
         HiveTable table = (HiveTable) hiveTableColumn.getParentObject();
         try {

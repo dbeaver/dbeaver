@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlanNodeKind;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -33,11 +34,14 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
     private static final String COST = "cost";
     private static final String CLASS = "class";
     private static Map<String, String> classNode = new HashMap<>();
+    private static Map<String, String> terms = new HashMap<>();
     private String fullText;
     private String nodeName;
     private String name;
-    private Number cost;
-    private Number row;
+    private String index;
+    private String term;
+    private long cost;
+    private long row;
     private Map<String, String> nodeProps = new HashMap<>();
     private CubridPlanNode parent;
     private List<CubridPlanNode> nested;
@@ -66,33 +70,55 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
     @Property(order = 1, viewable = true)
     @Override
     public String getNodeName() {
-        return classNode.get(nodeName);
+        return this.getNameOrTotal(true);
     }
-    
+
     @NotNull
     @Property(order = 2, viewable = true)
-    public Number getCost() {
-        return cost;
+    public String getIndex() {
+        return index;
     }
-    
+
     @NotNull
     @Property(order = 3, viewable = true)
-    public Number getCardinality() {
+    public String getTerms() {
+        return getTermExtra(true);
+    }
+
+    @Property(order = 4, viewable = true)
+    public long getCost() {
+        return cost;
+    }
+
+    @Property(order = 5, viewable = true)
+    public long getCardinality() {
         return row;
     }
-    
+
     @NotNull
-    @Property(order = 4, length = PropertyLength.MULTILINE)
+    @Property(order = 6, viewable = true)
+    public String getTotal() {
+        return this.getNameOrTotal(false);
+    }
+
+    @NotNull
+    @Property(order = 7, viewable = true)
+    public String getExtra() {
+        return getTermExtra(false);
+    }
+
+    @NotNull
+    @Property(order = 8, length = PropertyLength.MULTILINE)
     public String getFullText() {
         return fullText;
     }
-    
+
     @Nullable
     @Override
     public CubridPlanNode getParent() {
         return parent;
     }
-    
+
     @Nullable
     @Override
     public Collection<CubridPlanNode> getNested() {
@@ -138,10 +164,15 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
         for (String key : nodeProps.keySet()) {
             if (key.contains(CLASS)) {
                 this.nodeName = nodeProps.get(CLASS).split(" ")[1];
+            } else if (key.equals("index")) {
+                this.index = nodeProps.get(key).split(" ")[0];
+                this.term = nodeProps.get(key).split(" ")[1];
+            } else if (key.equals("sargs")) {
+                this.term = nodeProps.get(key);
             } else if (key.equals(COST)) {
                 String[] values = nodeProps.get(key).split(" card ");
-                this.cost = Integer.parseInt(values[0]);
-                this.row = Integer.parseInt(values[1]);
+                this.cost = Long.parseLong(values[0]);
+                this.row = Long.parseLong(values[1]);
             }
         }
     }
@@ -167,19 +198,55 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
             }
         }
     }
-    
+
+    @Nullable
+    private String getTermExtra(boolean isTerm) {
+        
+        String termValue = terms.get(term);
+        if(CommonUtils.isNotEmpty(termValue)) {
+            String[] values = termValue.split(" \\(sel");
+            if (isTerm)
+                return values[0].trim();
+            else
+                return "(sel" + values[1].trim();
+        }
+        return null;
+    }
+
+    @Nullable
+    private String getNameOrTotal(boolean isName) {
+        String classNodeValue = classNode.get(nodeName);
+        if(CommonUtils.isNotEmpty(classNodeValue)){
+            Pattern p;
+            if (isName) {
+                p = Pattern.compile("\\w+ \\w+");
+            } else {
+                p = Pattern.compile("\\w+\\/\\w+");
+            }
+            Matcher m = p.matcher(classNodeValue);
+            if (m.find()) {
+                return m.group(0);
+            }
+        }
+        
+        return null;
+    }
+
     @NotNull
     private List<String> getSegments() {
         Pattern pattern =
                 Pattern.compile(
-                        "(inner|outer|class|cost|Query plan|node\\[..):\\s*([^\\n\\r]*)");
+                        "(inner|outer|class|cost|index|sargs|Query plan|term\\[..|node\\[..):\\s*([^\\n\\r]*)");
         Matcher matcher = pattern.matcher(fullText);
         List<String> segments = new ArrayList<String>();
         while (matcher.find()) {
             String segment = matcher.group().trim();
-            if (segment.split(OPTIONS_SEPARATOR)[0].startsWith("node")) {
+            if (segment.startsWith("node")) {
                 String[] values = segment.split(OPTIONS_SEPARATOR);
-                classNode.put(values[0], values[1].split("\\(")[0].trim());
+                classNode.put(values[0], values[1]);
+            } else if (segment.startsWith("term")) {
+                String[] values = segment.split(OPTIONS_SEPARATOR);
+                terms.put(values[0], values[1]);
             } else {
                 segments.add(segment);
             }

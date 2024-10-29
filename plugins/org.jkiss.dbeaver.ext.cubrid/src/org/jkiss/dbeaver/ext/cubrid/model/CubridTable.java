@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -92,7 +91,7 @@ public class CubridTable extends GenericTable
     }
 
     @Nullable
-    public Collection<? extends GenericTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor)
+    public List<CubridTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor)
             throws DBException {
         return getParent().getCubridIndexCache().getObjects(monitor, getContainer(), this);
     }

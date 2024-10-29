@@ -16,10 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.json;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import org.eclipse.jface.text.formatter.ContextBasedFormattingStrategy;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.jkiss.utils.CommonUtils;
@@ -51,7 +48,7 @@ public class JSONFormattingStrategy extends ContextBasedFormattingStrategy {
             .serializeNulls()
             .disableHtmlEscaping()
             .setPrettyPrinting()
-            .setLenient()
+            .setStrictness(Strictness.LENIENT)
             .create();
         return gson.toJson(jsonElement);
     }

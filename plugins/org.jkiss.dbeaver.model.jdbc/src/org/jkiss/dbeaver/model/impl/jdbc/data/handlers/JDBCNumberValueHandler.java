@@ -20,7 +20,11 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBValueFormatting;
-import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.DBDDataFormatter;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
+import org.jkiss.dbeaver.model.data.DBDValueDefaultGenerator;
+import org.jkiss.dbeaver.model.data.DBDValueHandlerConfigurable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -190,7 +194,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
                                 value = resultSet.getDouble(index);
                             }
                         }
-                    } catch (SQLException e) {
+                    } catch (SQLException | NumberFormatException e) {
                         // Last chance - get it as string. Sometimes columns marked as numbers are actually not numbers
                         return resultSet.getString(index);
                     }

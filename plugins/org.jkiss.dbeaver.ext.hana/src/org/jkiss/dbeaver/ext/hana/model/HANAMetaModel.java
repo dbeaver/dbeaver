@@ -377,6 +377,7 @@ public class HANAMetaModel extends GenericMetaModel
     public boolean isSystemSchema(GenericSchema schema) {
         String schemaName = schema.getName();
         return schemaName.startsWith("_SYS_") ||
+            schemaName.startsWith("_SAP_") ||
             schemaName.startsWith("SAP_") ||
             schemaName.startsWith("HANA_") ||
             schemaName.equals("SYS") ||

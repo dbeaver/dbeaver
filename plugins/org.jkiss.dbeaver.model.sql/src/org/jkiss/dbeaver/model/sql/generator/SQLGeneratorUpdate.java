@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.model.sql.generator;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.impl.sql.ChangeTableDataStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLQueryGeneratorUpdate;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -35,8 +35,7 @@ public class SQLGeneratorUpdate extends SQLGeneratorTable {
         Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor, object);
         String entityName = getEntityName(object);
         String separator = getLineSeparator();
-        if (object instanceof ChangeTableDataStatement) {
-            ChangeTableDataStatement tableDataStatement = (ChangeTableDataStatement) object;
+        if (object instanceof SQLQueryGeneratorUpdate tableDataStatement) {
             sql.append(tableDataStatement.generateTableUpdateBegin(entityName));
             String updateSet = tableDataStatement.generateTableUpdateSet();
             if (CommonUtils.isNotEmpty(updateSet)) {

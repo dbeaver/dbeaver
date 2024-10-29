@@ -146,7 +146,7 @@ public class DiagramPart extends PropertyAwarePart {
         }
         ERDConnectionRouterDescriptor routerDescriptor = getEditor().getDiagramRouter();
         if (routerDescriptor == null) {
-            routerDescriptor = ERDConnectionRouterRegistry.getInstance().getActiveDescriptor();
+            routerDescriptor = ERDConnectionRouterRegistry.getInstance().getActiveRouter();
         }
         router = routerDescriptor.createRouter();
         router.setContainer(figure);

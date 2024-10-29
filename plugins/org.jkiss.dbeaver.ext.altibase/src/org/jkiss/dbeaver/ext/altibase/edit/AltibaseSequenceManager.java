@@ -36,7 +36,7 @@ import java.util.Map;
 public class AltibaseSequenceManager extends GenericSequenceManager {
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_EDITOR_ON_CREATE;
     }
     
@@ -72,8 +72,8 @@ public class AltibaseSequenceManager extends GenericSequenceManager {
     protected void addObjectModifyActions(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext executionContext,
-        List<DBEPersistAction> actionList,
-        ObjectChangeCommand command,
+        @NotNull List<DBEPersistAction> actionList,
+        @NotNull ObjectChangeCommand command,
         @NotNull Map<String, Object> options
     ) {
         actionList.add(new SQLDatabasePersistAction("Alter sequence", 

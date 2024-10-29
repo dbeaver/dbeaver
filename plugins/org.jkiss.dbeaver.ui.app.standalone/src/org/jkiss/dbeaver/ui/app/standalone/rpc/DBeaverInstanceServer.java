@@ -164,7 +164,7 @@ public class DBeaverInstanceServer implements IInstanceController {
 
         final IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
         final Shell shell = window.getShell();
-        UIUtils.syncExec(() -> {
+        UIUtils.asyncExec(() -> {
             for (String filePath : fileNames) {
                 File file = new File(filePath);
                 if (file.exists()) {

@@ -190,7 +190,7 @@ public class PostgreExtension implements PostgreObject, PostgreScriptObject, DBP
         {
             try {
                 Collection<PostgreSchema> schemas = object.getDatabase().getSchemas(new VoidProgressMonitor());
-                return schemas.toArray(new Object[schemas.size()]);
+                return schemas.toArray(new Object[0]);
             } catch (DBException e) {
                 log.error(e);
                 return new Object[0];

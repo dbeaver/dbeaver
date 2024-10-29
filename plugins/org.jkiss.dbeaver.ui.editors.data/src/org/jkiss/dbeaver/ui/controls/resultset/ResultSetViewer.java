@@ -430,7 +430,11 @@ public class ResultSetViewer extends Viewer
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
                 if (!getControl().isDisposed()) {
-                    UIUtils.syncExec(ResultSetViewer.this::applyCurrentPresentationThemeSettings);
+                    UIUtils.syncExec(() -> {
+                        if (!getControl().isDisposed()) {
+                            applyCurrentPresentationThemeSettings();
+                        }
+                    });
                     lastThemeUpdateTime = System.currentTimeMillis();
                 }
                 return Status.OK_STATUS;
@@ -2358,14 +2362,14 @@ public class ResultSetViewer extends Viewer
         if (serverSideOrdering) {
             this.refreshData(null);
         } else {
-            this.reorderLocally();
+            this.reorderLocally(columnElement);
         }
     }
 
-    private void reorderLocally()
+    private void reorderLocally(DBDAttributeBinding columnElement)
     {
         this.rejectChanges();
-        this.getModel().resetOrdering();
+        this.getModel().resetOrdering(columnElement);
         this.getActivePresentation().refreshData(false, false, true);
         this.updateFiltersText();
     }
@@ -4079,7 +4083,9 @@ public class ResultSetViewer extends Viewer
     }
 
     public void updateRowCount() {
-        rowCountLabel.executeAction();
+        if (rowCountLabel != null) {
+            rowCountLabel.executeAction();
+        }
     }
 
     public void setSelectionStatistics(String stats) {

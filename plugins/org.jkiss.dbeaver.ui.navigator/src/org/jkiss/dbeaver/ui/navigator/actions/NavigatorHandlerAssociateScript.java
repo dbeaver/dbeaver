@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
-import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.model.navigator.NavigatorResources;
 import org.jkiss.dbeaver.ui.IDataSourceContainerUpdate;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.SimpleDatabaseEditorContext;
@@ -82,7 +82,7 @@ public class NavigatorHandlerAssociateScript extends NavigatorHandlerObjectBase 
                     project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(script.getProject());
                 }
                 if (project != null) {
-                    DBNUtils.refreshNavigatorResource(project, script, dataSource);
+                    NavigatorResources.refreshNavigatorResource(project, script, dataSource);
                 }
             }
         }

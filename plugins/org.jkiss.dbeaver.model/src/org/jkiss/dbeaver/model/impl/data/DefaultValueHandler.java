@@ -17,6 +17,9 @@
 package org.jkiss.dbeaver.model.impl.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -57,7 +60,8 @@ public class DefaultValueHandler extends BaseValueHandler {
         int index,
         Object value) throws DBCException
     {
-        throw new DBCException("Object parameter [" + DBValueFormatting.getDefaultValueDisplayString(value, DBDDisplayFormat.UI) + "] binding not supported");
+        String objectName = type instanceof DBPNamedObject namedObject ? DBUtils.getObjectFullName(namedObject, DBPEvaluationContext.UI) : type.getTypeName();
+        throw new DBCException("Parameter [" + objectName + "] value [" + DBValueFormatting.getDefaultValueDisplayString(value, DBDDisplayFormat.UI) + "] binding not supported");
     }
 
     @Override

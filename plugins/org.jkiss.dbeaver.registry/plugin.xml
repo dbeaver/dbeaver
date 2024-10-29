@@ -13,7 +13,6 @@
     <extension-point id="org.jkiss.dbeaver.dataSourceHandler" name="%extension-point.org.jkiss.dbeaver.dataSourceHandler.name" schema="schema/org.jkiss.dbeaver.dataSourceHandler.exsd"/>
     <extension-point id="org.jkiss.dbeaver.driverManager" name="%extension-point.org.jkiss.dbeaver.driverManager.name" schema="schema/org.jkiss.dbeaver.driverManager.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resourceType" name="%extension-point.org.jkiss.dbeaver.resourceType.name" schema="schema/org.jkiss.dbeaver.resourceType.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.resourceHandler" name="%extension-point.org.jkiss.dbeaver.resourceHandler.name" schema="schema/org.jkiss.dbeaver.resourceHandler.exsd"/>
     <extension-point id="org.jkiss.dbeaver.networkHandler" name="%extension-point.org.jkiss.dbeaver.networkHandler.name" schema="schema/org.jkiss.dbeaver.networkHandler.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resources" name="%extension-point.org.jkiss.dbeaver.resources.name" schema="schema/org.jkiss.dbeaver.resources.exsd"/>
     <extension-point id="org.jkiss.dbeaver.product.bundles" name="%extension-point.org.jkiss.dbeaver.product.bundles.name" schema="schema/org.jkiss.dbeaver.product.bundles.exsd"/>
@@ -22,20 +21,22 @@
     <extension-point id="org.jkiss.dbeaver.task" name="%extension-point.org.jkiss.dbeaver.task.name" schema="schema/org.jkiss.dbeaver.task.exsd"/>
     <extension-point id="org.jkiss.dbeaver.productFeature" name="%extension-point.org.jkiss.dbeaver.productFeature.name" schema="schema/org.jkiss.dbeaver.productFeature.exsd"/>
 
+    <!-- Language names should be written in their respective languages. Do not localize them -->
     <extension point="org.jkiss.dbeaver.language">
-        <language code="en" label="%language.en.label"/>
-        <language code="fr" label="%language.fr.label"/>
-        <language code="de" label="%language.de.label"/>
-        <language code="it" label="%language.it.label"/>
-        <language code="ja" label="%language.ja.label"/>
-        <language code="ko" label="%language.ko.label"/>
-        <language code="pt_BR" label="%language.pt_BR.label"/>
-        <language code="ro" label="%language.ro.label"/>
-        <language code="ru" label="%language.ru.label"/>
-        <language code="zh" label="%language.zh.label"/>
-        <language code="es" label="%language.es.label"/>
-        <language code="tw" label="%language.tw.label"/>
-        <language code="uk" label="%language.uk.label"/>
+        <language code="en" label="English"/>
+        <language code="fr" label="Français"/>
+        <language code="de" label="Deutsch"/>
+        <language code="it" label="Italiano"/>
+        <language code="ja" label="日本語"/>
+        <language code="ko" label="한국어"/>
+        <language code="pt_BR" label="Português (BR)"/>
+        <language code="ro" label="Română"/>
+        <language code="ru" label="Русский"/>
+        <language code="zh" label="简体中文"/>
+        <language code="es" label="Español"/>
+        <language code="tw" label="繁體中文"/>
+        <language code="uk" label="Українська"/>
+        <language code="ar" label="العربية"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.driverManager">
@@ -101,16 +102,6 @@
 
     <extension point="org.jkiss.dbeaver.resourceType">
         <type id="default"/>
-        <type id="project">
-            <resourceTypeBinding resourceType="org.eclipse.core.resources.IProject"/>
-        </type>
-        <type id="bookmark" name="Navigator bookmarks" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/bookmark_folder.png" managable="true">
-            <root folder="Bookmarks"/>
-            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.bookmark"/>
-        </type>
-        <type id="shortcut">
-            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.shortcut"/>
-        </type>
     </extension>
 
 </plugin>

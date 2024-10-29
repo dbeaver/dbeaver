@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
@@ -51,7 +52,7 @@ public abstract class SQLServerBaseTableManager<OBJECT extends SQLServerTableBas
     }
 
     @Override
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, NestedObjectCommand<OBJECT, PropertyHandler> command, Map<String, Object> options) throws DBException {
+    protected void addObjectExtraActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList, @NotNull NestedObjectCommand<OBJECT, PropertyHandler> command, @NotNull Map<String, Object> options) throws DBException {
         final OBJECT table = command.getObject();
         if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
             boolean isUpdate = SQLServerUtils.isCommentSet(
@@ -93,7 +94,7 @@ public abstract class SQLServerBaseTableManager<OBJECT extends SQLServerTableBas
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
+    protected void addObjectRenameActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectRenameCommand command, @NotNull Map<String, Object> options)
     {
         OBJECT object = command.getObject();
         actions.add(
@@ -111,7 +112,7 @@ public abstract class SQLServerBaseTableManager<OBJECT extends SQLServerTableBas
     }
 
     @Override
-    public boolean canDeleteObject(OBJECT object) {
+    public boolean canDeleteObject(@NotNull OBJECT object) {
         return !SQLServerUtils.isTableType(object) && super.canDeleteObject(object);
     }
 

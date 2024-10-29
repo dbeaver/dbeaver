@@ -134,6 +134,7 @@ public class SQLQueryTranslator implements SQLTranslator {
     ) {
 
         List<SQLScriptElement> extraQueries = null;
+        List<SQLScriptElement> postExtraQueries = new ArrayList<>();
 
         boolean defChanged = false;
         SQLDialect targetDialect = sqlTranslateContext.getTargetDialect();
@@ -176,6 +177,11 @@ public class SQLQueryTranslator implements SQLTranslator {
                                         extraQueries = new ArrayList<>();
                                     }
                                     extraQueries.add(new SQLQuery(null, createSeqQuery));
+
+                                    String linkSeqWithTable =
+                                        "ALTER SEQUENCE " + sequenceName + " OWNED BY " + createTable.getTable()
+                                            .getFullyQualifiedName() + "." + cd.getColumnName();
+                                    postExtraQueries.add(new SQLQuery(null, linkSeqWithTable));
                                 } else if (extendedDialect != null) {
                                     int indexOf = cd.getColumnSpecs().indexOf(columnSpec);
                                     defChanged = true;
@@ -234,6 +240,7 @@ public class SQLQueryTranslator implements SQLTranslator {
                 extraQueries = new ArrayList<>();
             }
             extraQueries.add(query);
+            extraQueries.addAll(postExtraQueries);
         }
         if (extraQueries == null) {
             return Collections.singletonList(query);
@@ -243,7 +250,10 @@ public class SQLQueryTranslator implements SQLTranslator {
 
     private boolean translateColumnDataType(ColumnDefinition cd, SQLDialectDDLExtension extendedDialect, SQLDialect targetDialect) {
         String newDataType = null;
-        switch (cd.getColDataType().getDataType().toUpperCase(Locale.ENGLISH)) {
+        var colDataType = cd.getColDataType() != null
+            ? cd.getColDataType().getDataType().toUpperCase(Locale.ENGLISH)
+            : "";
+        switch (colDataType) {
             case "CLOB":
                 newDataType = (extendedDialect != null) ? extendedDialect.getClobDataType() : "varchar";
                 break;

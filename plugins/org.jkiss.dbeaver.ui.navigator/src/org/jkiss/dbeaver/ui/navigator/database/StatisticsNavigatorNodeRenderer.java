@@ -20,11 +20,10 @@ package org.jkiss.dbeaver.ui.navigator.database;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.PlatformUI;
@@ -33,8 +32,12 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPObjectStatistics;
+import org.jkiss.dbeaver.model.DBPObjectStatisticsCollector;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
+import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -50,7 +53,6 @@ import org.jkiss.dbeaver.ui.internal.registry.NavigatorExtensionsRegistry;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.INavigatorNodeActionHandler;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 
@@ -58,7 +60,6 @@ import java.lang.reflect.Method;
 import java.text.Format;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -68,8 +69,10 @@ import java.util.Map;
  */
 public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRenderer {
     private static final Log log = Log.getLog(StatisticsNavigatorNodeRenderer.class);
+
+    private static final int ELEMENT_MARGIN = 3;
     private static final int PERCENT_FILL_WIDTH = 50;
-    //public static final String ITEM_WIDTH_ATTR = "item.width";
+
     private static final String HOST_NAME_FOREGROUND_COLOR = "org.jkiss.dbeaver.ui.navigator.node.foreground";
     private static final String TABLE_STATISTICS_BACKGROUND_COLOR = "org.jkiss.dbeaver.ui.navigator.node.statistics.background";
 
@@ -111,376 +114,410 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
         return view;
     }
 
+    @Override
     public void paintNodeDetails(DBNNode node, Tree tree, GC gc, Event event) {
         super.paintNodeDetails(node, tree, gc, event);
 
-        boolean scrollEnabled = isHorizontalScrollbarEnabled(tree);
-        Object element = event.item.getData();
+        if (!(node instanceof DBNDatabaseNode databaseNode)) {
+            return;
+        }
 
-        if (element instanceof DBNDatabaseNode) {
-            final DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
-            int widthOccupied = 0;
-            if (element instanceof DBNDataSource) {
-                if (!scrollEnabled && preferenceStore.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS)) {
-                    widthOccupied += renderDataSourceNodeActions((DBNDatabaseNode) element, tree, gc, event);
-                }
-                if (preferenceStore.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME)) {
-                    renderDataSourceHostName((DBNDataSource) element, tree, gc, event, widthOccupied);
-                }
+        Rectangle client = getClientArea(tree);
+        Rectangle item = getItemBounds(client, (TreeItem) event.item);
+
+        boolean hovering = (event.detail & SWT.HOT) != 0;
+
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+
+        if (node instanceof DBNDataSource dataSourceNode) {
+            if (store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS)) {
+                drawDataSourceActions(gc, dataSourceNode, item, client, hovering);
             }
-            if (!scrollEnabled && preferenceStore.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO)) {
-                widthOccupied += renderObjectStatistics((DBNDatabaseNode) element, tree, gc, event);
+            if (store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME)) {
+                drawDataSourceAddress(gc, dataSourceNode, item);
             }
-            if (element instanceof DBNDatabaseItem && preferenceStore.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_OBJECTS_DESCRIPTION)) {
-                renderObjectDescription((DBNDatabaseItem) element, tree, gc, event, widthOccupied);
+        } else {
+            if (store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO)) {
+                drawObjectStatistics(gc, databaseNode, item, event);
+            }
+            if (node instanceof DBNDatabaseItem && store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_OBJECTS_DESCRIPTION)) {
+                drawObjectDescription(gc, databaseNode, item);
             }
         }
     }
 
-    @Override
-    public void showDetailsToolTip(DBNNode node, Tree tree, Event event) {
-        String detailsTip = getDetailsTipText(node, tree, event);
-        if (detailsTip != null) {
-            tree.setToolTipText(detailsTip);
-        } else {
-            tree.setToolTipText(null);
+    private void drawDataSourceAddress(@NotNull GC gc, @NotNull DBNDataSource node, @NotNull Rectangle bounds) {
+        drawText(gc, DataSourceUtils.getDataSourceAddressText(node.getDataSourceContainer()), bounds);
+    }
+
+    private void drawDataSourceActions(
+        @NotNull GC gc,
+        @NotNull DBNDataSource node,
+        @NotNull Rectangle item,
+        @NotNull Rectangle client,
+        boolean hovering
+    ) {
+        var actions = NavigatorExtensionsRegistry.getInstance().getNodeActions(getView(), node);
+        if (actions.isEmpty()) {
+            return;
         }
+
+        // Compute width required to draw all actions
+        int width = (actions.size() - 1) * ELEMENT_MARGIN;
+        for (INavigatorNodeActionHandler action : actions) {
+            Image image = DBeaverIcons.getImage(action.getNodeActionIcon(getView(), node));
+            Rectangle size = image.getBounds();
+            width += size.width;
+        }
+
+        // Allow to show action button even if it does not fit into the bounds
+        boolean overdraw = hovering && item.width < width;
+        Rectangle bounds = item;
+        if (overdraw) {
+            bounds = new Rectangle(client.x, bounds.y, client.width, bounds.height);
+        }
+
+        // Draw actions
+        for (int i = actions.size() - 1; i >= 0; i--) {
+            INavigatorNodeActionHandler action = actions.get(i);
+            Image image = DBeaverIcons.getImage(action.getNodeActionIcon(getView(), node));
+            Rectangle size = image.getBounds();
+
+            if (bounds.width < size.width) {
+                return;
+            }
+
+            if (overdraw) {
+                gc.setBackground(gc.getDevice().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+                gc.fillRectangle(bounds.x + bounds.width - size.width - ELEMENT_MARGIN, bounds.y, size.width + ELEMENT_MARGIN * 2, bounds.height);
+            }
+
+            gc.drawImage(image, bounds.x + bounds.width - size.width, bounds.y + (bounds.height - size.height) / 2);
+            bounds.width -= size.width + ELEMENT_MARGIN;
+        }
+
+        // Draw delimiter between whatever is left from the tree item and the actions
+        if (overdraw) {
+            gc.setBackground(gc.getDevice().getSystemColor(SWT.COLOR_LIST_SELECTION));
+            gc.fillRectangle(bounds.x + bounds.width - 1, bounds.y, 1, bounds.height);
+            item.width -= client.width - bounds.width;
+        }
+    }
+
+    private void drawObjectDescription(@NotNull GC gc, @NotNull DBNDatabaseNode node, @NotNull Rectangle bounds) {
+        DBSObject object = node.getObject();
+        if (object != null) {
+            String description = object.getDescription();
+            if (!CommonUtils.isEmptyTrimmed(description)) {
+                drawText(gc, description, bounds);
+            }
+        }
+    }
+
+    private void drawObjectStatistics(@NotNull GC gc, @NotNull DBNDatabaseNode node, @NotNull Rectangle bounds, @NotNull Event event) {
+        if (bounds.width < PERCENT_FILL_WIDTH) {
+            return;
+        }
+
+        ObjectStatistics statistics = getObjectStatistics(node, event);
+        if (statistics == null) {
+            return;
+        }
+
+        String text;
+        int percentFull;
+
+        if (statistics instanceof ObjectStatistics.Known known) {
+            text = known.format.format(known.statObjectSize);
+            percentFull = known.maxObjectSize == 0 ? 0 : (int) (known.statObjectSize * 100 / known.maxObjectSize);
+        } else {
+            text = "...";
+            percentFull = 0;
+        }
+
+        Point textSize = gc.textExtent(text);
+        Tree tree = (Tree) event.widget;
+
+        // Frame
+        gc.setForeground(statisticsFrameColor);
+        gc.drawRectangle(bounds.x + bounds.width - PERCENT_FILL_WIDTH, bounds.y + 1, PERCENT_FILL_WIDTH, bounds.height - 3);
+
+        // Bar
+        int width = Math.max((int) Math.ceil((PERCENT_FILL_WIDTH - 3) * percentFull / 100.0), 1);
+        gc.setBackground(statisticsFrameColor);
+        gc.fillRectangle(bounds.x + bounds.width - PERCENT_FILL_WIDTH, bounds.y + 3, width, bounds.height - 6);
+
+        // Text
+        if (UIStyles.isDarkHighContrastTheme() && PERCENT_FILL_WIDTH - width < PERCENT_FILL_WIDTH / 2) {
+            gc.setForeground(tree.getBackground());
+        } else {
+            gc.setForeground(tree.getForeground());
+        }
+        gc.setFont(tree.getFont());
+        gc.drawText(text, bounds.x + bounds.width - textSize.x, bounds.y + (bounds.height - textSize.y) / 2, true);
+
+        bounds.width -= PERCENT_FILL_WIDTH + ELEMENT_MARGIN;
+    }
+
+    private void drawText(@NotNull GC gc, @NotNull String text, @NotNull Rectangle bounds) {
+        if (text.isEmpty()) {
+            return;
+        }
+
+        Color foreground = gc.getForeground();
+        Font font = gc.getFont();
+
+        try {
+            gc.setForeground(hostNameColor);
+            gc.setFont(fontItalic);
+
+            drawTextClipped(gc, text, bounds);
+        } finally {
+            gc.setFont(font);
+            gc.setForeground(foreground);
+        }
+    }
+
+    private static void drawTextClipped(@NotNull GC gc, @NotNull String text, @NotNull Rectangle bounds) {
+        Point extent = gc.textExtent(text);
+
+        if (extent.x > bounds.width) {
+            int low = 0;
+            int high = text.length();
+            String clipped = text;
+
+            while (low <= high) {
+                int mid = (low + high) >>> 1;
+                clipped = text.substring(0, mid);
+                int ext = gc.textExtent(clipped + "...").x;
+
+                if (ext < bounds.width) {
+                    low = mid + 1;
+                } else if (ext > bounds.width) {
+                    high = mid - 1;
+                } else {
+                    break;
+                }
+            }
+
+            if (clipped.isEmpty()) {
+                return;
+            }
+
+            drawTextSegment(gc, clipped, bounds);
+            drawTextSegment(gc, "...", bounds);
+        } else {
+            drawTextSegment(gc, text, bounds);
+        }
+    }
+
+    private static void drawTextSegment(@NotNull GC gc, @NotNull String text, @NotNull Rectangle bounds) {
+        Point extent = gc.textExtent(text);
+        gc.drawText(text, bounds.x, bounds.y + (bounds.height - extent.y) / 2, true);
+        bounds.x += extent.x;
+        bounds.width -= extent.x;
+    }
+
+    @NotNull
+    private static Rectangle getClientArea(@NotNull Tree tree) {
+        Rectangle client = tree.getClientArea();
+        client.x += ELEMENT_MARGIN;
+        client.width -= ELEMENT_MARGIN * 2;
+        return client;
+    }
+
+    @NotNull
+    private static Rectangle getItemBounds(@NotNull Rectangle client, @NotNull TreeItem item) {
+        Rectangle bounds = item.getBounds();
+        return new Rectangle(
+            client.x + bounds.x + bounds.width,
+            bounds.y,
+            client.width - bounds.x - bounds.width,
+            bounds.height
+        );
+    }
+
+    @Nullable
+    @Override
+    public String getToolTipText(@NotNull DBNNode node, @NotNull Tree tree, @NotNull Event event) {
+        if (node instanceof DBNDatabaseNode node1) {
+            if (node instanceof DBNDataSource dataSource) {
+                INavigatorNodeActionHandler overActionButton = getActionButton(node, tree, event);
+                if (overActionButton != null) {
+                    return overActionButton.getNodeActionToolTip(view, node);
+                }
+                if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME)) {
+                    return DataSourceUtils.getDataSourceAddressText(dataSource.getDataSourceContainer());
+                }
+                return null;
+            }
+
+            if (isOverObjectStatistics(node1, tree, event)) {
+                DBSObject object = node1.getObject();
+                if (object instanceof DBPObjectStatistics statistics && statistics.hasStatistics()) {
+                    long statObjectSize = statistics.getStatObjectSize();
+                    if (statObjectSize > 0) {
+                        String formattedSize;
+                        try {
+                            DBDDataFormatterProfile profile = object.getDataSource().getContainer().getDataFormatterProfile();
+                            DBDDataFormatter formatter = profile.createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER, null);
+                            formattedSize = formatter.formatValue(statObjectSize);
+                        } catch (Exception e) {
+                            formattedSize = String.valueOf(statObjectSize);
+                        }
+                        return NLS.bind("Object size on disk: {0} bytes", formattedSize);
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     @Override
     public void performAction(DBNNode node, Tree tree, Event event, boolean defaultAction) {
         if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS)) {
             // Detect active action
-            INavigatorNodeActionHandler overActionButton = getActionButtonFor(node, tree, event);
+            INavigatorNodeActionHandler overActionButton = getActionButton(node, tree, event);
             if (overActionButton != null) {
                 overActionButton.handleNodeAction(view, node, event, defaultAction);
             }
         }
     }
 
+    @Nullable
     @Override
-    public void handleHover(DBNNode node, Tree tree, TreeItem item, Event event) {
-        super.handleHover(node, tree, item, event);
-
-        boolean scrollEnabled = isHorizontalScrollbarEnabled(tree);
-        Object element = item.getData();
-
-        if (element instanceof DBNDatabaseNode) {
-            if (element instanceof DBNDataSource) {
-                if (!scrollEnabled && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS)) {
-                    if (isOverActionButton((DBNDatabaseNode) element, tree, item, event.gc, event)) {
-                        tree.setCursor(tree.getDisplay().getSystemCursor(SWT.CURSOR_HAND));
-                        return;
-                    }
-                }
-            }
+    public Cursor getCursor(@NotNull DBNNode node, @NotNull Tree tree, @NotNull Event event) {
+        if (node instanceof DBNDataSource n && isOverActionButton(n, tree, event)) {
+            return tree.getDisplay().getSystemCursor(SWT.CURSOR_HAND);
+        } else if (node instanceof DBNDatabaseNode n && isOverObjectStatistics(n, tree, event)) {
+            return tree.getDisplay().getSystemCursor(SWT.CURSOR_HELP);
+        } else {
+            return null;
         }
-        tree.setCursor(null);
     }
 
-    private String getDetailsTipText(DBNNode element, Tree tree, Event event) {
-        if (element instanceof DBNDatabaseNode) {
-            if (element instanceof DBNDataSource) {
-                if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS)) {
-                    // Detect active action
-                    INavigatorNodeActionHandler overActionButton = getActionButtonFor(element, tree, event);
-                    if (overActionButton != null) {
-                        return overActionButton.getNodeActionToolTip(view, element);
-                    }
-                }
-                if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME)) {
-                    return DataSourceUtils.getDataSourceAddressText(((DBNDataSource) element).getDataSourceContainer());
-                }
+    private boolean isOverActionButton(@NotNull DBNNode node, @NotNull Tree tree, @NotNull Event event) {
+        return getActionButton(node, tree, event) != null;
+    }
+
+    @Nullable
+    private INavigatorNodeActionHandler getActionButton(@NotNull DBNNode node, @NotNull Tree tree, @NotNull Event event) {
+        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS)) {
+            return null;
+        }
+
+        var actions = NavigatorExtensionsRegistry.getInstance().getNodeActions(getView(), node);
+        if (actions.isEmpty()) {
+            return null;
+        }
+
+        var item = tree.getItem(new Point(event.x, event.y));
+        if (item == null) {
+            return null;
+        }
+
+        Rectangle bounds = item.getBounds();
+        Rectangle client = getClientArea(tree);
+        client.y = bounds.y;
+        client.height = bounds.height;
+
+        for (int i = actions.size() - 1; i >= 0; i--) {
+            INavigatorNodeActionHandler action = actions.get(i);
+            Image image = DBeaverIcons.getImage(action.getNodeActionIcon(getView(), node));
+            Rectangle size = image.getBounds();
+
+            if (client.width < size.width || event.y < client.y || event.y >= client.y + client.height) {
                 return null;
             }
 
-            if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO)) {
-                if (event.x > getTreeWidth(tree) - PERCENT_FILL_WIDTH) {
-                    DBSObject object = ((DBNDatabaseNode) element).getObject();
-                    if (object instanceof DBPObjectStatistics && ((DBPObjectStatistics) object).hasStatistics()) {
-                        long statObjectSize = ((DBPObjectStatistics) object).getStatObjectSize();
-                        if (statObjectSize > 0) {
-                            String formattedSize;
-                            try {
-                                DBDDataFormatter formatter = object.getDataSource().getContainer().getDataFormatterProfile().createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER, null);
-                                formattedSize = formatter.formatValue(statObjectSize);
-                            } catch (Exception e) {
-                                formattedSize = String.valueOf(statObjectSize);
-                            }
-                            return "Object size on disk: " + formattedSize + " bytes";
-                        }
-                    }
-                }
-                //renderObjectStatistics((DBNDatabaseNode) element, tree, gc, event);
+            if (event.x >= client.x + client.width - size.width && event.x < client.x + client.width) {
+                return action;
             }
+
+            client.width -= size.width + ELEMENT_MARGIN;
         }
+
         return null;
     }
 
-    private INavigatorNodeActionHandler getActionButtonFor(DBNNode element, Tree tree, Event event) {
-        List<INavigatorNodeActionHandler> nodeActions = NavigatorExtensionsRegistry.getInstance().getNodeActions(getView(), element);
-        if (isHorizontalScrollbarEnabled(tree)) {
+    private boolean isOverObjectStatistics(@NotNull DBNDatabaseNode node, @NotNull Tree tree, @NotNull Event event) {
+        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO)) {
+            return false;
+        }
+
+        if (!(node.getObject() instanceof DBPObjectStatistics statistics) || !statistics.hasStatistics() || statistics.getStatObjectSize() <= 0) {
+            return false;
+        }
+
+        var treeItem = tree.getItem(new Point(event.x, event.y));
+        if (treeItem == null) {
+            return false;
+        }
+
+        Rectangle client = getClientArea(tree);
+        Rectangle item = getItemBounds(client, treeItem);
+
+        return event.x < item.x + item.width
+            && event.x >= item.x + item.width - PERCENT_FILL_WIDTH
+            && item.width >= PERCENT_FILL_WIDTH;
+    }
+
+    @Nullable
+    private ObjectStatistics getObjectStatistics(@NotNull DBNDatabaseNode node, @NotNull Event event) {
+        DBSObject object = node.getObject();
+        if (!(object instanceof DBPObjectStatistics statistics)) {
             return null;
         }
-        int widthOccupied = 0;
-        for (INavigatorNodeActionHandler nah : nodeActions) {
-            if (!nah.isSticky(view, element)) {
-                // Non-sticky buttons are active only for selected or hovered items
-                boolean isSelected = (event.stateMask & SWT.SELECTED) != 0;
-                boolean isHover = false;
-                if (!isSelected && !isHover) {
-                    return null;
-                }
-            }
-            widthOccupied += 2; // Margin
 
-            DBPImage icon = nah.getNodeActionIcon(getView(), element);
-            if (icon != null) {
-                Image image = DBeaverIcons.getImage(icon);
-
-                Rectangle imageBounds = image.getBounds();
-                int imageSize = imageBounds.height;
-                widthOccupied += imageSize;
-
-                if (event.x > tree.getClientArea().width - widthOccupied) {
-                    return nah;
-                }
-            }
+        boolean statsWasRead;
+        DBNNode parentNode = getParentItem(node);
+        DBSObject parentObject = parentNode instanceof DBNDatabaseNode pn ? DBUtils.getPublicObject(pn.getObject()) : null;
+        if (parentObject instanceof DBPObjectStatisticsCollector) { // && !((DBPObjectStatisticsCollector) parentObject).isStatisticsCollected()
+            statsWasRead = ((DBPObjectStatisticsCollector) parentObject).isStatisticsCollected();
+        } else {
+            // If there is no stats collector then do not check for stats presence
+            // Because it will trigger stats read job which won't read any statistics (as there is no way to load it for individual object).
+            statsWasRead = true;// statistics.hasStatistics();
         }
-        return null;
-    }
 
-    private void renderObjectDescription(@NotNull DBNDatabaseItem element, @NotNull Tree tree, @NotNull GC gc, @NotNull Event event, int widthOccupied) {
-        final DBSObject object = element.getObject();
-        if (object != null) {
-            final String description = object.getDescription();
-            if (!CommonUtils.isEmptyTrimmed(description)) {
-                drawText(description, null, tree, gc, event, widthOccupied);
+        long maxObjectSize = statsWasRead ? getMaxObjectSize((TreeItem) event.item) : -1;
+        if (statsWasRead && maxObjectSize >= 0) {
+            long statObjectSize = statistics.getStatObjectSize();
+            if (statObjectSize <= 0) {
+                // Empty or no size - nothing to show
+                return null;
             }
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////
-    // Host name
-
-    private void renderDataSourceHostName(DBNDataSource element, Tree tree, GC gc, Event event, int widthOccupied) {
-        final DBPDataSourceContainer container = element.getDataSourceContainer();
-        final String text = DataSourceUtils.getDataSourceAddressText(container);
-        final Color background = UIUtils.getConnectionColor(container.getConnectionConfiguration());
-        drawText(text, background, tree, gc, event, widthOccupied);
-    }
-
-    private void drawText(@Nullable String text, @Nullable Color bgColor, Tree tree, GC gc, Event event, int widthOccupied) {
-        if (!CommonUtils.isEmpty(text)) {
-            Font oldFont = gc.getFont();
-            gc.setForeground(this.hostNameColor);
-            gc.setFont(fontItalic);
-            Point hostTextSize = gc.stringExtent(text);
-
-            int xOffset = RuntimeUtils.isLinux() ? 16 : 2;
-            ScrollBar hSB = tree.getHorizontalBar();
-            boolean scrollEnabled = (hSB != null && hSB.isVisible());
-
-            if (!scrollEnabled) {
-                // In case of visible scrollbar it must respect full scrollable area size
-                int treeWidth = tree.getClientArea().width;
-
-                gc.setClipping(
-                    event.x + event.width + xOffset,
-                    event.y + ((event.height - hostTextSize.y) / 2),
-                    treeWidth - (event.x + event.width + xOffset + widthOccupied),
-                    event.height
-                );
-            }
-            gc.drawText(" - " + text,
-                event.x + event.width + xOffset,
-                event.y + ((event.height - hostTextSize.y) / 2),
-                true);
-            if (!scrollEnabled) {
-                gc.setClipping((Rectangle) null);
-            }
-            gc.setFont(oldFont);
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////
-    // Node actions
-
-    private int renderDataSourceNodeActions(DBNDatabaseNode element, Tree tree, GC gc, Event event) {
-        List<INavigatorNodeActionHandler> nodeActions = NavigatorExtensionsRegistry.getInstance().getNodeActions(getView(), element);
-
-        int xWidth = getTreeWidth(tree);
-        int xPos = xWidth;
-        int widthOccupied = 0;
-        for (INavigatorNodeActionHandler nah : nodeActions) {
-            if (!nah.isSticky(view, element)) {
-                // Non-sticky buttons are active only for selected or hovered items
-                boolean isSelected = (event.stateMask & SWT.SELECTED) != 0;
-                boolean isHover = false;
-                if (!isSelected && !isHover) {
-                    return widthOccupied;
-                }
-            }
-            widthOccupied += 2; // Margin
-
-            DBPImage icon = nah.getNodeActionIcon(getView(), element);
-            if (icon != null) {
-                Image image = DBeaverIcons.getImage(icon);
-
-                Rectangle imageBounds = image.getBounds();
-                int imageSize = imageBounds.height;
-                    // event.height * 2 / 3;
-                xPos -= imageSize;
-                widthOccupied += imageSize;
-                Point mousePos = tree.getDisplay().getCursorLocation();
-                Point itemPos = tree.toDisplay(xPos, event.y + (event.height - imageSize) / 2);
-
-                if (PAINT_ACTION_HOVER) {
-                    if (mousePos.x >= itemPos.x - 1 && mousePos.x <= itemPos.x + imageBounds.width + 2 &&
-                        mousePos.y > itemPos.y - 1 && mousePos.y < itemPos.y + imageBounds.height + 2) {
-                        Color oldBackground = gc.getBackground();
-                        Color overBG = UIUtils.getSharedColor(new RGB(200, 200, 255));
-                        gc.setBackground(overBG);
-                        gc.fillRoundRectangle(xPos - 1, event.y + (event.height - imageSize) / 2 - 1, imageBounds.width + 2, imageBounds.height + 2, 2, 2);
-                        gc.setBackground(oldBackground);
-                    }
-                }
-                gc.drawImage(image, xPos, event.y + (event.height - imageSize) / 2);
-
-//                gc.drawImage(image,
-//                    0, 0, imageBounds.width, imageBounds.height,
-//                    xPos, event.y + (event.height - imageSize) / 2, imageBounds.width, imageBounds.height);
-            }
-//            gc.setForeground(tree.getForeground());
-//            int x = xWidth - textSize.x - 2;
-//            gc.drawText(sizeText, x + 2, event.y, true);
-
-        }
-        //System.out.println(nodeActions);
-        return widthOccupied;
-    }
-
-    private boolean isOverActionButton(DBNDatabaseNode element, Tree tree, TreeItem item, GC gc, Event event) {
-        List<INavigatorNodeActionHandler> nodeActions = NavigatorExtensionsRegistry.getInstance().getNodeActions(getView(), element);
-        int xPos = getTreeWidth(tree);
-        for (INavigatorNodeActionHandler nah : nodeActions) {
-            if (!nah.isSticky(view, element)) {
-                continue;
-            }
-            DBPImage icon = nah.getNodeActionIcon(getView(), element);
-            if (icon != null) {
-                Image image = DBeaverIcons.getImage(icon);
-
-                Rectangle imageBounds = image.getBounds();
-                int imageSize = imageBounds.width;
-                // event.height * 2 / 3;
-                xPos -= imageSize;
-                if (event.x >= xPos && event.x < xPos + imageSize) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    ///////////////////////////////////////////////////////////////////
-    // Statistics renderer
-
-    private int renderObjectStatistics(DBNDatabaseNode element, Tree tree, GC gc, Event event) {
-        DBSObject object = element.getObject();
-        if (object instanceof DBPObjectStatistics) {
-            String sizeText;
-            int percentFull;
-            boolean statsWasRead = false;
-            DBNNode parentNode = getParentItem(element);
-            DBSObject parentObject = parentNode instanceof DBNDatabaseNode ? DBUtils.getPublicObject(((DBNDatabaseNode) parentNode).getObject()) : null;
-            if (parentObject instanceof DBPObjectStatisticsCollector) { // && !((DBPObjectStatisticsCollector) parentObject).isStatisticsCollected()
-                statsWasRead = ((DBPObjectStatisticsCollector) parentObject).isStatisticsCollected();
-            } else {
-                // If there is no stats collector then do not check for stats presence
-                // Because it will trigger stats read job which won't read any statistics (as there is no way to load it for individual object).
-                statsWasRead = true;//((DBPObjectStatistics) object).hasStatistics();
-            }
-
-            long maxObjectSize = statsWasRead ? getMaxObjectSize((TreeItem) event.item) : -1;
-            if (statsWasRead && maxObjectSize >= 0) {
-                long statObjectSize = ((DBPObjectStatistics) object).getStatObjectSize();
-                if (statObjectSize <= 0) {
-                    // Empty or no size - nothing to show
-                    return 0;
-                }
-                percentFull = maxObjectSize == 0 ? 0 : (int) (statObjectSize * 100 / maxObjectSize);
-                if (percentFull < 0 || percentFull > 100) {
-                    log.debug("Object stat > 100%!");
-                    percentFull = 100;
-                }
-                Format format;
-                synchronized (classFormatMap) {
-                    format = classFormatMap.get(object.getClass().getName());
-                    if (format == null) {
-                        try {
-                            Method getStatObjectSizeMethod = object.getClass().getMethod("getStatObjectSize");
-                            Property propAnnotation = getStatObjectSizeMethod.getAnnotation(Property.class);
-                            if (propAnnotation != null) {
-                                Class<? extends Format> formatterClass = propAnnotation.formatter();
-                                if (formatterClass != Format.class) {
-                                    format = formatterClass.getConstructor().newInstance();
-                                }
+            Format format;
+            synchronized (classFormatMap) {
+                format = classFormatMap.get(object.getClass().getName());
+                if (format == null) {
+                    try {
+                        Method getStatObjectSizeMethod = object.getClass().getMethod("getStatObjectSize");
+                        Property propAnnotation = getStatObjectSizeMethod.getAnnotation(Property.class);
+                        if (propAnnotation != null) {
+                            Class<? extends Format> formatterClass = propAnnotation.formatter();
+                            if (formatterClass != Format.class) {
+                                format = formatterClass.getConstructor().newInstance();
                             }
-                        } catch (Exception e) {
-                            log.debug(e);
                         }
-                        if (format == null) {
-                            format = numberFormat;
-                        }
-                        classFormatMap.put(object.getClass().getName(), format);
+                    } catch (Exception e) {
+                        log.debug(e);
                     }
-                }
-                sizeText = format.format(statObjectSize);
-            } else {
-                sizeText = "...";
-                percentFull = 0;
-                if (parentNode instanceof DBNDatabaseNode) {
-                    DBSObject realParentObject = DBUtils.getPublicObject(((DBNDatabaseNode)parentNode).getObject());
-                    if (!readObjectStatistics(
-                        element.getParentNode(),
-                        realParentObject,
-                        ((TreeItem) event.item).getParentItem())) {
-                        return 0;
+                    if (format == null) {
+                        format = numberFormat;
                     }
+                    classFormatMap.put(object.getClass().getName(), format);
                 }
             }
-            Point textSize = gc.stringExtent(sizeText);
-            textSize.x += 4;
-
-            //int caWidth = tree.getClientArea().width;
-            int occupiedWidth = event.x + event.width + 4;
-            int xWidth = getTreeWidth(tree);
-
-            if (xWidth - occupiedWidth > Math.max(PERCENT_FILL_WIDTH, textSize.x)) {
-                // Frame
-                gc.setForeground(statisticsFrameColor);
-                gc.drawRectangle(xWidth - PERCENT_FILL_WIDTH - 2, event.y + 1, PERCENT_FILL_WIDTH, event.height - 3);
-
-                // Bar
-                final int width = Math.max((int) Math.ceil((PERCENT_FILL_WIDTH - 3) * percentFull / 100.0), 1);
-                gc.setBackground(statisticsFrameColor);
-                gc.fillRectangle(xWidth - PERCENT_FILL_WIDTH, event.y + 3, width, event.height - 6);
-
-                // Text
-                if (UIStyles.isDarkHighContrastTheme() && PERCENT_FILL_WIDTH - width < PERCENT_FILL_WIDTH / 2) {
-                    gc.setForeground(tree.getBackground());
-                } else {
-                    gc.setForeground(tree.getForeground());
-                }
-                gc.setFont(tree.getFont());
-                gc.drawText(sizeText, xWidth - textSize.x, event.y + (event.height - textSize.y) / 2, true);
-
-                return Math.max(PERCENT_FILL_WIDTH, textSize.x);
-            }
+            return new ObjectStatistics.Known(statObjectSize, maxObjectSize, format);
+        } else if (parentNode instanceof DBNDatabaseNode) {
+            DBSObject realParentObject = DBUtils.getPublicObject(((DBNDatabaseNode) parentNode).getObject());
+            TreeItem parentItem = ((TreeItem) event.item).getParentItem();
+            getObjectStatistics(node.getParentNode(), realParentObject, parentItem);
         }
 
-        return 0;
+        return new ObjectStatistics.Unknown();
     }
 
     private DBNNode getParentItem(DBNDatabaseNode element) {
@@ -502,7 +539,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
         return -1;
     }
 
-    private boolean readObjectStatistics(DBNNode parentNode, DBSObject parentObject, TreeItem parentItem) {
+    private void getObjectStatistics(DBNNode parentNode, DBSObject parentObject, TreeItem parentItem) {
         // Read stats always event if it is already collected.
         // Because we need to calc max object size anyway
         synchronized (statReaders) {
@@ -513,7 +550,14 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                 statReadJob.schedule();
             }
         }
-        return true;
+    }
+
+    private sealed interface ObjectStatistics {
+        record Unknown() implements ObjectStatistics {
+        }
+
+        record Known(long statObjectSize, long maxObjectSize, @NotNull Format format) implements ObjectStatistics {
+        }
     }
 
     private static class StatReadJob extends AbstractJob {
@@ -577,34 +621,5 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
             }
             return Status.OK_STATUS;
         }
-    }
-
-    ///////////////////////////////////////////////////////////////////
-    // Utils
-
-    private int getTreeWidth(Tree tree) {
-        int treeWidth;
-        int xShift;
-        ScrollBar hSB = tree.getHorizontalBar();
-        if (hSB == null || !hSB.isVisible()) {
-            treeWidth = tree.getClientArea().width;
-            xShift = 0;
-        } else {
-            treeWidth = hSB.getMaximum();
-            xShift = hSB.getSelection();
-        }
-
-        return treeWidth - xShift;
-    }
-
-    private static boolean isHorizontalScrollbarEnabled(Tree tree) {
-        ScrollBar horizontalBar = tree.getHorizontalBar();
-        if (horizontalBar == null) {
-            return false;
-        }
-        if (RuntimeUtils.isLinux()) {
-            return tree.getClientArea().width != horizontalBar.getMaximum();
-        }
-        return horizontalBar.isVisible();
     }
 }

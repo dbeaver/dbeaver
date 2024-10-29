@@ -43,7 +43,7 @@ import java.util.StringJoiner;
 
 public class PostgreJobScheduleManager extends SQLObjectEditor<PostgreJobSchedule, PostgreJob> implements DBEObjectRenamer<PostgreJobSchedule> {
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_EDITOR_ON_CREATE;
     }
 
@@ -54,7 +54,7 @@ public class PostgreJobScheduleManager extends SQLObjectEditor<PostgreJobSchedul
     }
 
     @Override
-    protected PostgreJobSchedule createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
+    protected PostgreJobSchedule createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
         final PostgreJob job = (PostgreJob) container;
         final String name = DBUtils.makeNewObjectName(monitor, "Schedule{0}", job, PostgreJobSchedule.class, PostgreJob::getSchedule, context);
         return new PostgreJobSchedule(job, name);
@@ -66,7 +66,7 @@ public class PostgreJobScheduleManager extends SQLObjectEditor<PostgreJobSchedul
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) throws DBException {
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options) throws DBException {
         actions.add(new SQLDatabasePersistAction(
             "Create schedule",
             getCreateDDL(command.getObject(), false)
@@ -74,7 +74,7 @@ public class PostgreJobScheduleManager extends SQLObjectEditor<PostgreJobSchedul
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) throws DBException {
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options) throws DBException {
         final PostgreJobSchedule schedule = command.getObject();
         actions.add(new SQLDatabasePersistAction(
             "Delete schedule",
@@ -83,7 +83,7 @@ public class PostgreJobScheduleManager extends SQLObjectEditor<PostgreJobSchedul
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options) throws DBException {
         final PostgreJobSchedule schedule = command.getObject();
         final StringJoiner values = new StringJoiner(",\n\t");
 
@@ -104,7 +104,7 @@ public class PostgreJobScheduleManager extends SQLObjectEditor<PostgreJobSchedul
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
+    protected void addObjectRenameActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectRenameCommand command, @NotNull Map<String, Object> options) {
         final PostgreJobSchedule schedule = command.getObject();
         actions.add(new SQLDatabasePersistAction(
             "Rename schedule",

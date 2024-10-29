@@ -176,10 +176,6 @@ public class DataSourceRegistryRM extends DataSourceRegistry {
 
     @NotNull
     private String getRemoteProjectId() {
-        if (getProject().getEclipseProject() == null) {
-            return getProject().getId();
-        } else {
-            return getProject().getEclipseProject().getLocation().lastSegment();
-        }
+        return getProject().getId();
     }
 }

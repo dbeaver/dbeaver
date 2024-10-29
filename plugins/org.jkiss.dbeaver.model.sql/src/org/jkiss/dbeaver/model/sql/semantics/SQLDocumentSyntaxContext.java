@@ -177,9 +177,17 @@ public class SQLDocumentSyntaxContext {
         int length,
         boolean hasContextBoundaryAtLength
     ) {
-        SQLDocumentScriptItemSyntaxContext scriptItem = new SQLDocumentScriptItemSyntaxContext(elementOriginalText, queryModel, length);
+        SQLDocumentScriptItemSyntaxContext scriptItem = new SQLDocumentScriptItemSyntaxContext(
+            offset,
+            elementOriginalText,
+            queryModel,
+            length
+        );
         scriptItem.setHasContextBoundaryAtLength(hasContextBoundaryAtLength);
-        this.scriptItems.put(offset, scriptItem);
+        SQLDocumentScriptItemSyntaxContext oldScriptItem = this.scriptItems.put(offset, scriptItem);
+        if (oldScriptItem != scriptItem && oldScriptItem != null) {
+            this.forEachListener(l -> l.onScriptItemInvalidated(oldScriptItem));
+        }
         this.forEachListener(l -> l.onScriptItemIntroduced(scriptItem));
         return scriptItem;
     }
@@ -214,7 +222,7 @@ public class SQLDocumentSyntaxContext {
                     SQLDocumentScriptItemSyntaxContext currItem2 = it.getCurrValue();
                     if (currOffset <= offset && currOffset + currItem2.length() > offset) {
                         keyOffsetsToRemove = ListNode.push(keyOffsetsToRemove, currOffset);
-                        this.forEachListener(l -> l.onScriptItemInvalidated(currItem));
+                        this.forEachListener(l -> l.onScriptItemInvalidated(currItem2));
                         lastAffectedOffset = currOffset + currItem2.length();
                     }
                 } else {
@@ -248,7 +256,9 @@ public class SQLDocumentSyntaxContext {
             SQLScriptItemAtOffset scriptItem = this.findScriptItem(offset);
             if (scriptItem != null) {
                 scriptItem.item.applyDelta(offset, oldLength, newLength);
-                affectedRegion = new Region(scriptItem.offset, scriptItem.item.length());
+                int affectedStart = Math.min(scriptItem.offset, offset);
+                int affectedEnd = Math.max(scriptItem.offset + scriptItem.item.length(), offset + newLength);
+                affectedRegion = new Region(affectedStart, affectedEnd - affectedStart);
             } else {
                 NodesIterator<SQLDocumentScriptItemSyntaxContext> it = this.scriptItems.nodesIteratorAt(offset);
                 int start = it.prev() && it.getCurrValue() != null ? it.getCurrOffset() + it.getCurrValue().length() : 0;
@@ -315,6 +325,6 @@ public class SQLDocumentSyntaxContext {
             droppedCount++;
         }
 
-        return new Interval(actualStart, actualEnd);
+        return actualEnd >= actualStart ? new Interval(actualStart, actualEnd) : new Interval(actualStart, 0);
     }
 }

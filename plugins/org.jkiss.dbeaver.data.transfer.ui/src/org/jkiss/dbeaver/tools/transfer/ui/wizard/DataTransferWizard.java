@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
@@ -105,8 +106,11 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
                         }
                     }
 
-                    if (databaseObject instanceof DBPContextProvider) {
-                        saveTaskContext(((DBPContextProvider) databaseObject).getExecutionContext());
+                    if (databaseObject instanceof DBPContextProvider contextProvider) {
+                        DBCExecutionContext executionContext = contextProvider.getExecutionContext();
+                        if (executionContext != null) {
+                            saveTaskContext(executionContext);
+                        }
                     }
                 }
             }

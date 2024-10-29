@@ -74,7 +74,10 @@ public class SQLiteDataSource extends GenericDataSource {
     }
 
     @Override
-    public DBSDataType getLocalDataType(String typeName) {
+    public DBSDataType getLocalDataType(@Nullable String typeName) {
+        if (typeName == null) {
+            return super.getLocalDataType(defaultAffinity().name());
+        }
         // Resolve type name according to https://www.sqlite.org/datatype3.html
         typeName = typeName.toUpperCase(Locale.ENGLISH);
         SQLiteAffinity affinity;
@@ -86,10 +89,18 @@ public class SQLiteDataSource extends GenericDataSource {
             affinity = SQLiteAffinity.BLOB;
         } else if (typeName.startsWith("REAL") || typeName.startsWith("FLOA") || typeName.startsWith("DOUB")) {
             affinity = SQLiteAffinity.REAL;
-        } else {
+        } else if (typeName.contains(SQLConstants.DATA_TYPE_INT) || typeName.contains("NUMERIC") || typeName.contains("DECIMAL") ||
+            typeName.contains("BOOL") || typeName.contains("GUID")) {
             affinity = SQLiteAffinity.NUMERIC;
+        } else {
+            affinity = defaultAffinity();
         }
         return super.getLocalDataType(affinity.name());
+    }
+
+    private static SQLiteAffinity defaultAffinity() {
+        // If type is unknown, let's assume it's a text. Otherwise, search and data editor doesn't work right.
+        return SQLiteAffinity.TEXT;
     }
 
     @Override

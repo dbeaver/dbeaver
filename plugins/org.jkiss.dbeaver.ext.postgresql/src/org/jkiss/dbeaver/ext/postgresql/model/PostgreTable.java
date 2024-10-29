@@ -23,10 +23,12 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.ext.postgresql.internal.PostgreSQLMessages;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttributeType;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -42,11 +44,13 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.cache.SimpleObjectCache;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * PostgreTable
@@ -153,8 +157,7 @@ public abstract class PostgreTable extends PostgreTableReal
     }
 
     @Override
-    public boolean isView()
-    {
+    public boolean isView() {
         return false;
     }
 
@@ -227,13 +230,22 @@ public abstract class PostgreTable extends PostgreTableReal
         return DBStructUtils.generateTableDDL(monitor, this, options, false);
     }
 
+    private boolean hasOidPseudoAttribute() {
+        return this.hasOids && getDataSource().getServerType().supportsOids();
+    }
+
     @Override
     public DBDPseudoAttribute[] getPseudoAttributes() {
-        if (this.hasOids && getDataSource().getServerType().supportsOids()) {
+        if (this.hasOidPseudoAttribute()) {
             return new DBDPseudoAttribute[]{PostgreConstants.PSEUDO_ATTR_OID};
         } else {
             return null;
         }
+    }
+
+    @Override
+    public DBDPseudoAttribute[] getAllPseudoAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return DBDPseudoAttribute.EMPTY_ARRAY;
     }
 
     @Association

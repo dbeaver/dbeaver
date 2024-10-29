@@ -42,12 +42,12 @@ import java.util.Map;
 
 public class GenericSequenceManager extends SQLObjectEditor<GenericSequence, GenericStructContainer> {
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_SAVE_IMMEDIATELY;
     }
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return false;
     }
 

@@ -25,17 +25,19 @@ class GridRowNested implements IGridRow {
     private final int position;
     private final int index;
     private final int level;
+    private final Object element;
 
-    public GridRowNested(IGridRow parent, int position, int index, int level) {
+    public GridRowNested(IGridRow parent, int position, int index, int level, Object element) {
         this.parent = parent;
         this.position = position;
         this.index = index;
         this.level = level;
+        this.element = element;
     }
 
     @Override
     public Object getElement() {
-        return parent.getElement();
+        return element;
     }
 
     @Override

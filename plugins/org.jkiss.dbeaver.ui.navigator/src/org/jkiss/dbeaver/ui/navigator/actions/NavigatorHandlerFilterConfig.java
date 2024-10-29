@@ -25,83 +25,105 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseItem;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.dialogs.EditObjectFilterDialog;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBase implements IElementUpdater {
+    private static final Log log = Log.getLog(NavigatorHandlerFilterConfig.class);
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
         DBNNode node = NavigatorUtils.getSelectedNode(selection);
-        if (node instanceof DBNDatabaseItem) {
-            node = node.getParentNode();
-        }
-        if (node instanceof DBNDatabaseFolder) {
-            configureFilters(HandlerUtil.getActiveShell(event), node);
+        if (node instanceof DBNDatabaseNode dbNode) {
+            configureFilters(HandlerUtil.getActiveShell(event), dbNode);
         }
         return null;
     }
 
-    public static void configureFilters(Shell shell, DBNNode node)
-    {
-        final DBNDatabaseFolder folder = (DBNDatabaseFolder) node;
-        DBXTreeItem itemsMeta = folder.getItemsMeta();
-        if (itemsMeta != null) {
-            DBSObjectFilter objectFilter = folder.getNodeFilter(itemsMeta, true);
-            if (objectFilter == null) {
-                objectFilter = new DBSObjectFilter();
-            }
-            final DBPDataSourceRegistry dsRegistry = folder.getOwnerProject().getDataSourceRegistry();
-            final boolean globalFilter = folder.getValueObject() instanceof DBPDataSource;
-            String parentName = "?";
-            if (folder.getValueObject() instanceof DBSObject) {
-                parentName = ((DBSObject) folder.getValueObject()).getName();
-            }
-            EditObjectFilterDialog dialog = new EditObjectFilterDialog(
-                shell,
-                dsRegistry,
-                globalFilter ? "All " + node.getNodeTypeLabel() : node.getNodeTypeLabel() + " of " + parentName,
-                objectFilter,
-                globalFilter);
-            switch (dialog.open()) {
-                case IDialogConstants.OK_ID:
-                    folder.setNodeFilter(itemsMeta, dialog.getFilter(), true);
-                    NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(folder));
-                    break;
-                case EditObjectFilterDialog.SHOW_GLOBAL_FILTERS_ID:
-                    objectFilter = folder.getDataSource().getContainer().getObjectFilter(folder.getChildrenClass(), null, true);
-                    dialog = new EditObjectFilterDialog(
-                        shell,
-                            dsRegistry, "All " + node.getNodeTypeLabel(),
-                        objectFilter != null  ?objectFilter : new DBSObjectFilter(),
-                        true);
-                    if (dialog.open() == IDialogConstants.OK_ID) {
-                        // Set global filter
-                        folder.getDataSource().getContainer().setObjectFilter(folder.getChildrenClass(), null, dialog.getFilter());
-                        folder.getDataSource().getContainer().persistConfiguration();
-                        NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(folder));
+    public static void configureFilters(Shell shell, DBNDatabaseNode dbNode) {
+        try {
+            DBNDatabaseNode parentNode = !(dbNode instanceof DBNDatabaseFolder) &&
+                                         dbNode.getParentNode() instanceof DBNDatabaseNode parent ? parent : dbNode;
+            DBXTreeItem itemsMeta = UIUtils.runWithMonitor(monitor -> DBNUtils.getValidItemsMeta(monitor, parentNode));
+            if (itemsMeta != null) {
+                DBSObjectFilter objectFilter = parentNode.getNodeFilter(itemsMeta, true);
+                if (objectFilter == null) {
+                    objectFilter = new DBSObjectFilter();
+                }
+                final DBPDataSourceRegistry dsRegistry = dbNode.getOwnerProject().getDataSourceRegistry();
+                final boolean globalFilter = dbNode.getValueObject() instanceof DBPDataSource;
+                String parentName = "?";
+                if (dbNode.getValueObject() instanceof DBSObject dbsObject) {
+                    parentName = dbsObject.getName();
+                }
+                EditObjectFilterDialog dialog = new EditObjectFilterDialog(
+                    shell,
+                    dsRegistry,
+                    globalFilter ? "All " + dbNode.getNodeTypeLabel() : dbNode.getNodeTypeLabel() + " of " + parentName,
+                    objectFilter,
+                    globalFilter);
+                switch (dialog.open()) {
+                    case IDialogConstants.OK_ID:
+                        parentNode.setNodeFilter(itemsMeta, dialog.getFilter(), true);
+                        NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(parentNode));
+                        break;
+                    case EditObjectFilterDialog.SHOW_GLOBAL_FILTERS_ID: {
+                        Class<?> childrenClass = null;
+                        if (dbNode instanceof DBNDatabaseFolder folder) {
+                            childrenClass = folder.getChildrenClass();
+                        } else {
+                            List<DBXTreeNode> childMeta = dbNode.getMeta().getChildren(dbNode);
+                            if (!childMeta.isEmpty() && childMeta.get(0) instanceof DBXTreeItem item) {
+                                childrenClass = dbNode.getChildrenClass(item);
+                            }
+                        }
+                        if (childrenClass == null) {
+                            DBWorkbench.getPlatformUI().showMessageBox(
+                                "Bad node", "Cannot use node '" + dbNode.getNodeUri() + "' for filters", true);
+                            return;
+                        }
+                        DBPDataSourceContainer dataSourceContainer = dbNode.getDataSourceContainer();
+                        objectFilter = dataSourceContainer.getObjectFilter(childrenClass, null, true);
+                        dialog = new EditObjectFilterDialog(
+                            shell,
+                            dsRegistry, "All " + dbNode.getNodeTypeLabel(),
+                            objectFilter != null ? objectFilter : new DBSObjectFilter(),
+                            true);
+                        if (dialog.open() == IDialogConstants.OK_ID) {
+                            // Set global filter
+                            dataSourceContainer.setObjectFilter(childrenClass, null, dialog.getFilter());
+                            dataSourceContainer.persistConfiguration();
+                            NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(parentNode));
+                        }
+                        break;
                     }
-                    break;
+                }
             }
+        } catch (DBException e) {
+            log.error(e);
         }
     }
 
     @Override
-    public void updateElement(UIElement element, Map parameters)
-    {
+    public void updateElement(UIElement element, Map parameters) {
         if (!updateUI) {
             return;
         }

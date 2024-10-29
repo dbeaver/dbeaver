@@ -33,6 +33,11 @@ public class SQLQueryPureResultTupleContext extends SQLQuerySyntaxContext {
         super(parent);
     }
 
+    @Override
+    public boolean hasUndresolvedSource() {
+        return false;
+    }
+
     @Nullable
     @Override
     public SourceResolutionResult resolveSource(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {

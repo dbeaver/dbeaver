@@ -172,7 +172,7 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
     public Object getAttributeValue(@NotNull DBSAttributeBase attribute) {
         int position = attribute.getOrdinalPosition();
         if (position >= values.length) {
-            log.debug("Attribute index is out of range (" + position + ">=" + values.length + ")");
+            log.debug("Index for attribute '" + attribute.getName() + "' is out of range (" + position + ">=" + values.length + ")");
             return null;
         }
         return values[position];

@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.cache.SimpleObjectCache;
@@ -108,6 +109,16 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             PostgreConstants.PROP_SHOW_DATABASE_STATISTICS));
     }
 
+    public PostgreDataSource(@NotNull DBRProgressMonitor monitor,
+                             @NotNull DBPDataSourceContainer container,
+                             @NotNull SQLDialect dialect) throws DBException {
+        super(monitor, container, dialect);
+
+        // Statistics was disabled then mark it as already read
+        this.hasStatistics = !CommonUtils.getBoolean(container.getConnectionConfiguration()
+                    .getProviderProperty(PostgreConstants.PROP_SHOW_DATABASE_STATISTICS));
+    }
+
     // Constructor for tests
     @ForTest
     public PostgreDataSource(DBPDataSourceContainer container, String serverVersion, String activeDatabaseName) {
@@ -136,28 +147,13 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     @Override
     protected void initializeRemoteInstance(@NotNull DBRProgressMonitor monitor) throws DBException {
         DBPConnectionConfiguration configuration = getContainer().getActualConnectionConfiguration();
-        if (configuration.getConfigurationType() == DBPDriverConfigurationType.MANUAL) {
-            activeDatabaseName = configuration.getBootstrap().getDefaultCatalogName();
-            if (CommonUtils.isEmpty(activeDatabaseName)) {
-                activeDatabaseName = configuration.getDatabaseName();
+        String activeDatabaseName = PostgreUtils.getDatabaseNameFromConfiguration(configuration);
+        if (CommonUtils.isEmpty(activeDatabaseName)) {
+            if (!CommonUtils.isEmpty(configuration.getUserName())) {
+                activeDatabaseName = configuration.getUserName();
+            } else {
+                activeDatabaseName = PostgreConstants.DEFAULT_DATABASE;
             }
-        } else {
-            String url = configuration.getUrl();
-            int divPos = url.lastIndexOf('/');
-            if (divPos > 0) {
-                int lastPos = -1;
-                for (int i = divPos + 1; i < url.length(); i++) {
-                    char c = url.charAt(i);
-                    if (!Character.isLetterOrDigit(c) && c != '_' && c != '$' && c != '.') {
-                        lastPos = i;
-                    }
-                }
-                if (lastPos < 0) lastPos = url.length();
-                activeDatabaseName = url.substring(divPos + 1, lastPos);
-            }
-        }
-        if (CommonUtils.isEmpty(activeDatabaseName) && CommonUtils.isEmpty(configuration.getUserName())) {
-            activeDatabaseName = PostgreConstants.DEFAULT_DATABASE;
         }
 
         databaseCache = new DatabaseCache();
@@ -176,7 +172,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         getDefaultInstance().checkInstanceConnection(monitor, false);
         try {
             // Preload some settings, if available
-            settingCache.getAllObjects(monitor, this);
+            settingCache.getObject(monitor, this, PostgreConstants.OPTION_STANDARD_CONFORMING_STRINGS);
         } catch (DBException e) {
             // ignore
         }
@@ -207,7 +203,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                 }
             }
         } catch (SQLException e) {
-            throw new DBException("Can't connect ot remote PostgreSQL server", e);
+            throw new DBException("Can't connect to remote PostgreSQL server", e);
         } finally {
             DBExecUtils.finishContextInitiation(getContainer());
         }
@@ -216,8 +212,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     // True if we need multiple databases
     protected boolean isReadDatabaseList(DBPConnectionConfiguration configuration) {
         // It is configurable by default
-        return configuration.getConfigurationType() != DBPDriverConfigurationType.URL &&
-            CommonUtils.getBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB), false);
+        return CommonUtils.getBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB), false);
     }
 
     protected PreparedStatement prepareReadDatabaseListStatement(
@@ -229,7 +224,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         DBSObjectFilter catalogFilters = getContainer().getObjectFilter(PostgreDatabase.class, null, false);
         StringBuilder catalogQuery = new StringBuilder("SELECT db.oid,db.* FROM pg_catalog.pg_database db WHERE 1 = 1");
         boolean addExclusionName = false;
-        String connectionDBName = getContainer().getConnectionConfiguration().getDatabaseName();
+        String connectionDBName = PostgreUtils.getDatabaseNameFromConfiguration(getContainer().getConnectionConfiguration());
         {
             final boolean showTemplates = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB));
             final boolean showUnavailable = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB));
@@ -529,30 +524,24 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                 TimezoneRegistry.setDefaultZone(ZoneId.of(PostgreConstants.LEGACY_UA_TIMEZONE), false);
                 timezoneOverridden = true;
             }
-            if (conConfig.getConfigurationType() != DBPDriverConfigurationType.URL &&
-                instance instanceof PostgreDatabase &&
-                !CommonUtils.equalObjects(instance.getName(), conConfig.getDatabaseName())
-            ) {
-                // If database was changed then use new name for connection
-                final DBPConnectionConfiguration originalConfig = new DBPConnectionConfiguration(conConfig);
-                try {
-                    // Patch URL with new database name
-                    if (CommonUtils.isEmpty(conConfig.getUrl()) || !CommonUtils.isEmpty(conConfig.getHostName())) {
-                        conConfig.setDatabaseName(instance.getName());
-                        final DBPDriver driver = getContainer().getDriver();
-                        String newURL = DatabaseURL.generateUrlByTemplate(driver, conConfig);
-                        if (CommonUtils.isEmpty(newURL)) {
-                            newURL = driver.getDataSourceProvider().getConnectionURL(driver, conConfig);
-                        }
-                        conConfig.setUrl(newURL);
-                    }
 
-                    pgConnection = super.openConnection(monitor, context, purpose);
+            if (instance instanceof PostgreDatabase && !CommonUtils.equalObjects(instance.getName(), PostgreUtils.getDatabaseNameFromConfiguration(conConfig))) {
+                // If database was changed then use new name for connection
+                DBPConnectionConfiguration newConfig = new DBPConnectionConfiguration(conConfig);
+                newConfig.setDatabaseName(instance.getName());
+                String newURL = newConfig.getUrl();
+                if (newConfig.getConfigurationType() == DBPDriverConfigurationType.MANUAL) {
+                    // Generate URL with new database name
+                    if (CommonUtils.isEmpty(newConfig.getUrl()) || !CommonUtils.isEmpty(newConfig.getHostName())) {
+                        final DBPDriver driver = getContainer().getDriver();
+                        newURL = driver.getDataSourceProvider().getConnectionURL(driver, newConfig);
+                    }
+                } else {
+                    // Patch connection URL with new database name
+                    newURL = PostgreUtils.updateDatabaseNameInURL(newConfig.getUrl(), instance.getName());
                 }
-                finally {
-                    conConfig.setDatabaseName(originalConfig.getDatabaseName());
-                    conConfig.setUrl(originalConfig.getUrl());
-                }
+                newConfig.setUrl(newURL);
+                pgConnection = super.openConnection(monitor, context, newConfig, purpose);
             } else {
                 pgConnection = super.openConnection(monitor, context, purpose);
             }

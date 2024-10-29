@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -383,6 +384,11 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                 return;
             }
             Class<?> nodeItemClass = node.getObject().getClass();
+            if (nodeItemClass == DataSourceDescriptor.class) {
+                // Use interface instead of implementation.
+                // Otherwise ClassNotFoundException may happen
+                nodeItemClass = DBPDataSourceContainer.class;
+            }
             DBNNode parentNode = node.getParentNode();
             if (isCreateSupported(
                 parentNode,

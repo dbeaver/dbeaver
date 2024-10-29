@@ -21,14 +21,16 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.app.*;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -46,7 +48,6 @@ import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.runtime.OperationSystemState;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * DataSourceMonitorJob.
@@ -315,9 +316,6 @@ public class DataSourceMonitorJob extends AbstractJob {
     }
 
     public static long getDisconnectTimeoutSeconds(@NotNull DBPDataSourceContainer container) {
-        if (container.getDriver().isEmbedded() && !DBWorkbench.getPlatform().getApplication().isMultiuser()) {
-            return 0;
-        }
         DBPConnectionConfiguration config = container.getConnectionConfiguration();
         if (!config.isCloseIdleConnection()) {
             return 0;
@@ -359,11 +357,11 @@ public class DataSourceMonitorJob extends AbstractJob {
     }
 
     public static long getLastUserActivityTime(long lastUserActivityTime) {
-        if (DBWorkbench.getPlatform().getApplication() instanceof DBPApplicationDesktop app) {
-            lastUserActivityTime = app.getLastUserActivityTime();
+        long lat = DBWorkbench.getPlatform().getApplication().getLastUserActivityTime();
+        if (lat <= 0) {
+            return lastUserActivityTime;
         }
-
-        return lastUserActivityTime;
+        return lat;
     }
 
     protected void showNotification(@NotNull DBPDataSource dataSource) {

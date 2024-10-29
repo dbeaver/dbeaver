@@ -105,19 +105,19 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
     }
 
     @Override
-    public boolean canCreateObject(Object container)
+    public boolean canCreateObject(@NotNull Object container)
     {
         return container instanceof DBSTable && !((DBSTable) container).isView();
     }
 
     @Override
-    public boolean canDeleteObject(OBJECT_TYPE object)
+    public boolean canDeleteObject(@NotNull OBJECT_TYPE object)
     {
         return canEditObject(object);
     }
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource)
+    public long getMakerOptions(@NotNull DBPDataSource dataSource)
     {
         return FEATURE_EDITOR_ON_CREATE;
     }

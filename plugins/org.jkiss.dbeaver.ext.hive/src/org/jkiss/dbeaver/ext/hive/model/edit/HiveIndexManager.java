@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.hive.model.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.edit.GenericIndexManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndexColumn;
@@ -36,22 +37,22 @@ import java.util.Map;
 public class HiveIndexManager extends GenericIndexManager {
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return true;
     }
 
     @Override
-    public boolean canDeleteObject(GenericTableIndex object) {
+    public boolean canDeleteObject(@NotNull GenericTableIndex object) {
         return true;
     }
 
     @Override
-    protected GenericTableIndex createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object from, Map<String, Object> options) {
+    protected GenericTableIndex createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object from, @NotNull Map<String, Object> options) {
         return new HiveIndex((HiveTable) container, "NewIndex",false, "", "Compact", null);
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options) {
         HiveIndex tableIndex = (HiveIndex) command.getObject();
         DBSIndexType indexType = tableIndex.getIndexType();
         String indexName = tableIndex.getName();
@@ -80,7 +81,7 @@ public class HiveIndexManager extends GenericIndexManager {
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options) {
         GenericTableIndex tableIndex = command.getObject();
         actions.add(new SQLDatabasePersistAction("Drop index table", "DROP INDEX " + tableIndex.getName() +
                             " ON " + tableIndex.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL))); //$NON-NLS-2$

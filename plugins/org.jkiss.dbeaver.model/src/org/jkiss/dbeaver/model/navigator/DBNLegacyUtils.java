@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
@@ -188,9 +189,12 @@ public class DBNLegacyUtils {
         @NotNull String item
     ) {
         if (path.type == DBNNode.NodePathType.resource) {
-            return child instanceof DBNProject && ((DBNProject) child).getProject().getId().equals(item)
-                || child instanceof DBNResource && ((DBNResource) child).getResource().getName().equals(item)
-                || child instanceof DBNProjectDatabases && child.getName().equals(item);
+            if (child instanceof DBNProject && ((DBNProject) child).getProject().getId().equals(item) ||
+                child instanceof DBNProjectDatabases && child.getName().equals(item)) {
+                return true;
+            }
+            Path filePath = child.getAdapter(Path.class);
+            return filePath != null && filePath.getFileName().toString().equals(item);
         } else if (path.type == DBNNode.NodePathType.folder) {
             return child instanceof DBNLocalFolder && child.getName().equals(item);
         } else if (child instanceof DBNDataSource) {
@@ -208,10 +212,4 @@ public class DBNLegacyUtils {
         return child.getName().equals(item);
     }
 
-    public static DBNDataSource getDataSourceByPath(
-        @NotNull DBNProject projectNode,
-        @NotNull DBNModel.NodePath nodePath
-    ) {
-        return projectNode.getDatabases().getDataSource(nodePath.first());
-    }
 }

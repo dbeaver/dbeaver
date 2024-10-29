@@ -20,17 +20,24 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.UIWidgets;
 import org.jkiss.dbeaver.ui.controls.ValueFormatSelector;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCopySettings;
@@ -46,7 +53,11 @@ import java.util.Map;
  */
 public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements IElementUpdater {
 
+    public static final Log log = Log.getLog(ResultSetHandlerCopySpecial.class);
     public static final String CMD_COPY_SPECIAL = IActionConstants.CMD_COPY_SPECIAL;
+    public static final String CMD_COPY_SPECIAL_LAST = IActionConstants.CMD_COPY_SPECIAL_LAST;
+    private static ResultSetCopySettings copySettingsLast = null;
+
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -59,15 +70,26 @@ public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements
             case CMD_COPY_SPECIAL:
                 showAdvancedCopyDialog(resultSet, HandlerUtil.getActiveShell(event));
                 break;
+            case CMD_COPY_SPECIAL_LAST:
+                if (copySettingsLast == null) {
+                    showAdvancedCopyDialog(resultSet, HandlerUtil.getActiveShell(event));
+                } else {
+                    ResultSetUtils.copyToClipboard(
+                        resultSet.getActivePresentation().copySelection(copySettingsLast));
+                }
+                break;
+            default:
+                log.warn(String.format("Unexpected command id: %s",  event.getCommand().getId()));
+                break;
         }
         return null;
     }
 
-    public static void showAdvancedCopyDialog(IResultSetController resultSet, Shell shell) {
+    public void showAdvancedCopyDialog(IResultSetController resultSet, Shell shell) {
         AdvancedCopyConfigDialog configDialog = new AdvancedCopyConfigDialog(shell);
         if (configDialog.open() == IDialogConstants.OK_ID) {
-            ResultSetUtils.copyToClipboard(
-                resultSet.getActivePresentation().copySelection(configDialog.copySettings));
+            copySettingsLast = configDialog.copySettings;
+            ResultSetUtils.copyToClipboard(resultSet.getActivePresentation().copySelection(configDialog.copySettings));
         }
     }
 
@@ -121,9 +143,16 @@ public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements
             ((GridLayout)group.getLayout()).numColumns = 2;
 
             createControlsBefore(group);
-            colDelimCombo = UIUtils.createDelimiterCombo(group, ResultSetMessages.copy_special_column_delimiter, new String[] {"\t", ";", ","}, copySettings.getColumnDelimiter(), false);
-            rowDelimCombo = UIUtils.createDelimiterCombo(group, ResultSetMessages.copy_special_row_delimiter, new String[] {"\n", "|", "^"}, copySettings.getRowDelimiter(), false);
-            quoteStringCombo = UIUtils.createDelimiterCombo(group, ResultSetMessages.copy_special_quote_character, new String[] {"\"", "'"}, copySettings.getQuoteString(), false);
+            colDelimCombo = UIWidgets.createDelimiterCombo(group, ResultSetMessages.copy_special_column_delimiter, new String[] {"\t", ";", ","}, copySettings.getColumnDelimiter(), false);
+            rowDelimCombo = UIWidgets.createDelimiterCombo(group, ResultSetMessages.copy_special_row_delimiter, new String[] {"\n", "|", "^"}, copySettings.getRowDelimiter(), false);
+            quoteStringCombo = UIWidgets.createDelimiterCombo(group, ResultSetMessages.copy_special_quote_character, new String[] {"\"", "'"}, copySettings.getQuoteString(), false);
+
+            Composite placeholder = UIUtils.createPlaceholder(group, 2);
+
+            placeholder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+            UIUtils.createLabel(placeholder, NLS.bind(ResultSetMessages.copy_special_hint_for_hotkey,
+                ActionUtils.findCommandDescription(CMD_COPY_SPECIAL_LAST, PlatformUI.getWorkbench(), true)
+            ));
             createControlsAfter(group);
             return group;
         }

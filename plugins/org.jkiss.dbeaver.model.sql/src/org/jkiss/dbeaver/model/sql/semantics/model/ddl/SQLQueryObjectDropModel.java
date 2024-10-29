@@ -18,8 +18,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model.ddl;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelContext;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryQualifiedName;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
@@ -28,37 +27,43 @@ import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
+import java.util.Objects;
+
 public class SQLQueryObjectDropModel extends SQLQueryModelContent {
 
+    @Nullable
     private final SQLQueryObjectDataModel object;
     private final boolean ifExists;
 
     @Nullable
     private SQLQueryDataContext dataContext = null;
 
-    public static SQLQueryModelContent createModel(SQLQueryModelContext context, STMTreeNode node, DBSObjectType objectType) {
-        SQLQueryObjectDataModel procedure =
-            node.getChildren().stream().filter(n -> n.getNodeName().equals(STMKnownRuleNames.qualifiedName))
-            .map(n -> new SQLQueryObjectDataModel(
-                context,
-                n, new SQLQueryQualifiedName(n, context.collectIdentifier(n.getFirstStmChild())),
-                objectType))
+    @NotNull
+    public static SQLQueryModelContent recognize(
+        @NotNull SQLQueryModelRecognizer recognizer,
+        @NotNull STMTreeNode node,
+        @NotNull DBSObjectType objectType
+    ) {
+        SQLQueryObjectDataModel procedure = node.findChildrenOfName(STMKnownRuleNames.qualifiedName).stream()
+            .map(recognizer::collectQualifiedName)
+            .filter(Objects::nonNull)
+            .map(n -> new SQLQueryObjectDataModel(n.getSyntaxNode(), n, objectType))
             .findFirst().orElse(null);
-        boolean ifExists = node.findChildOfName(STMKnownRuleNames.ifExistsSpec) != null; // "IF EXISTS" presented
-        return new SQLQueryObjectDropModel(context, node, procedure, ifExists);
+        boolean ifExists = node.findFirstChildOfName(STMKnownRuleNames.ifExistsSpec) != null; // "IF EXISTS" presented
+        return new SQLQueryObjectDropModel(node, procedure, ifExists);
     }
 
     private SQLQueryObjectDropModel(
-        @NotNull SQLQueryModelContext context,
         @NotNull STMTreeNode syntaxNode,
         @Nullable SQLQueryObjectDataModel object,
         boolean ifExists
     ) {
-        super(context, syntaxNode.getRealInterval(), syntaxNode);
+        super(syntaxNode.getRealInterval(), syntaxNode);
         this.object = object;
         this.ifExists = ifExists;
     }
 
+    @Nullable
     public SQLQueryObjectDataModel getObject() {
         return object;
     }

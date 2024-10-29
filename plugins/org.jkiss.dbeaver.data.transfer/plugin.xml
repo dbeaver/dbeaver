@@ -107,8 +107,12 @@
                     label="%dataTransfer.processor.json.name"
                     contentType="text/json">
                 <propertyGroup label="%dataTransfer.processor.json.propertyGroup.general.label">
-                    <property id="printTableName" label="%dataTransfer.processor.json.property.printTableName.label" type="boolean" defaultValue="true"/>
-                    <property id="formatDateISO" label="%dataTransfer.processor.json.property.formatDateISO.label" type="boolean" defaultValue="true"/>
+                    <property id="printTableName" label="%dataTransfer.processor.json.property.printTableName.label"
+                              type="boolean" defaultValue="true" validValues="true,false"/>
+                    <property id="formatDateISO" label="%dataTransfer.processor.json.property.formatDateISO.label"
+                              type="boolean" defaultValue="true" validValues="true,false"/>
+                    <property id="exportJsonAsString" label="%dataTransfer.processor.json.property.exportJsonAsString.label"
+                              type="boolean" defaultValue="true" validValues="true,false"/>
                     <property id="extension" label="%dataTransfer.processor.json.property.extension.label" defaultValue="json"/>
                 </propertyGroup>
             </processor>

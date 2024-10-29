@@ -11,7 +11,7 @@
 
 	<properties>
 		<reficio-p2-version>2.1.0</reficio-p2-version>
-		<tycho-version>4.0.8</tycho-version>
+		<tycho-version>4.0.9</tycho-version>
 		<repo-name>DBeaver CE Update</repo-name>
 	</properties>
 
@@ -33,6 +33,7 @@
 
 								<artifact><id>org.apache.commons:commons-jexl3:3.1</id></artifact>
 								<artifact><id>commons-cli:commons-cli:1.3.1</id></artifact>
+								<artifact><id>commons-jxpath:jxpath:1.4</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:commons-jxpath -->
 
 								<artifact><id>com.ibm.icu:com.ibm.icu.base:58.2.0</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
 								<artifact><id>org.bouncycastle:bcpkix-jdk18on:1.78.1</id><transitive>false</transitive><source>false</source><override>false</override></artifact>

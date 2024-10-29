@@ -44,21 +44,23 @@
             <supports dataSource="greenplum"/>
             <supports dataSource="redshift"/>
             <supports dataSource="enterprisedb"/>
+            <supports dataSource="gaussdb"/>
         </editorContribution>
         <editorContribution editorId="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreLockEditor" category="connectionEditor" label="%editor.lock_manager.name" icon="#locked" visibleIf="connected &amp;&amp; dataSource.serverType.supportsLocks()">
             <supports dataSource="postgresql"/>
             <supports dataSource="greenplum"/>
             <supports dataSource="enterprisedb"/>
+            <supports dataSource="gaussdb"/>
         </editorContribution>
     </extension>
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
 
-        <editor id="postgresql.role.permissions" class="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgresRolePrivilegesEditor"
+        <editor id="postgresql.role.permissions" class="org.jkiss.dbeaver.ext.postgresql.ui.editors.privileges.RolePermissionsEditor"
                 label="%db.editor.role.permission.name" description="%db.editor.role.permission.description" icon="#permissions" position="additions_middle" type="folder">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreRole"/>
         </editor>
-        <editor id="postgresql.table.permissions" class="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgresRolePrivilegesEditor"
+        <editor id="postgresql.table.permissions" class="org.jkiss.dbeaver.ext.postgresql.ui.editors.privileges.ObjectPermissionsEditor"
                 label="%db.editor.table.permission.name" description="%db.editor.table.permission.description" icon="#permissions" position="additions_middle" type="folder">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase" if="object.dataSource.supportsRoles()"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn" if="object.dataSource.supportsRoles()"/>
