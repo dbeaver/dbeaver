@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.jkiss.api.ObjectWithContextParameters;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
@@ -193,6 +194,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
                 } catch (Throwable e) {
                     log.debug("Error in " + driverInstance.getClass().getName() + ".acceptsURL() - " + url, e);
                 }
+                initializeDriverContext(driverInstance);
             }
 
             JDBCConnectionOpener connectTask = new JDBCConnectionOpener(
@@ -257,6 +259,13 @@ public abstract class JDBCDataSource extends AbstractDataSource
         }
         catch (Throwable e) {
             throw new DBCConnectException("Unexpected driver error occurred while connecting to the database", e);
+        }
+    }
+
+    private void initializeDriverContext(Driver driverInstance) {
+        if (driverInstance instanceof ObjectWithContextParameters owcp) {
+            owcp.setObjectContextParameter(DBConstants.CONTEXT_PARAMETER_PROJECT, getContainer().getProject());
+            owcp.setObjectContextParameter(DBConstants.CONTEXT_PARAMETER_DATA_SOURCE, getContainer());
         }
     }
 

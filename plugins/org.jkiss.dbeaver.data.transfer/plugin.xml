@@ -111,8 +111,8 @@
                               type="boolean" defaultValue="true" validValues="true,false"/>
                     <property id="formatDateISO" label="%dataTransfer.processor.json.property.formatDateISO.label"
                               type="boolean" defaultValue="true" validValues="true,false"/>
-                    <property id="exportJsonAsString" label="%dataTransfer.processor.json.property.exportJsonAsString.label"
-                              type="boolean" defaultValue="true" validValues="true,false"/>
+                    <property id="exportJsonValues" label="%dataTransfer.processor.json.property.exportJsonValues.label"
+                              type="string" defaultValue="string" validValues="string,json"/>
                     <property id="extension" label="%dataTransfer.processor.json.property.extension.label" defaultValue="json"/>
                 </propertyGroup>
             </processor>
