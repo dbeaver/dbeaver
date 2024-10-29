@@ -147,6 +147,11 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
             options.append(" PASSWORD ").append("'").append(role.getDataSource().getSQLDialect().escapeString(role.getPassword())).append("'");
             command.setDisableSessionLogging(true); // Hide password from Query Manager
         }
+
+        if (role.getValidUntil() != null) {
+            options.append(" VALID UNTIL ").append(SQLUtils.quoteString(role, role.getValidUntil().toString()));
+        }
+
         if (options.length() != 0 && extension instanceof PostgreServerCockroachDB) {
             // FIXME: use some generic approach
             script.append(" WITH");

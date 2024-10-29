@@ -480,7 +480,7 @@ public class SQLQueryJob extends DataSourceJob
         monitor.subTask("Initialize context");
         try {
             // Prepare statement
-            closeStatement();
+            //closeStatement();
 
             // Check and invalidate connection
             if (!connectionInvalidated && dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE)) {
@@ -749,6 +749,7 @@ public class SQLQueryJob extends DataSourceJob
         finally {
             try {
                 curResult.addWarnings(dbcStatement.getStatementWarnings());
+                log.info("warnings: " + curResult.getWarnings());
             } catch (Throwable e) {
                 log.warn("Can't read execution warnings", e);
             }
@@ -757,7 +758,7 @@ public class SQLQueryJob extends DataSourceJob
             }
             //monitor.subTask("Close query");
             if (!keepStatementOpen()) {
-                closeStatement();
+                //closeStatement();
             }
         }
     }
@@ -901,11 +902,14 @@ public class SQLQueryJob extends DataSourceJob
 
             // Fetch all rows
             rowsFetched = 0;
-            while ((!hasLimits() || !fetchProgress.isMaxRowsFetched(rsMaxRows)) && !fetchProgress.isCanceled() && resultSet.nextRow()) {
+            while ((!hasLimits() || !fetchProgress.isMaxRowsFetched(rsMaxRows)) && !fetchProgress.isCanceled() && resultSet.nextRow() && rowsFetched < 10) {
                 dataReceiver.fetchRow(session, resultSet);
                 rowsFetched++;
                 fetchProgress.monitorRowFetch();
             }
+
+            log.info("=========== Fetched " + rowsFetched + " rows in " + (System.currentTimeMillis() - fetchStartTime) + "ms");
+
             if (updateStatistics) {
                 statistics.addFetchTime(System.currentTimeMillis() - fetchStartTime);
             }
