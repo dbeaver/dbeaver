@@ -56,7 +56,7 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
     public static final String PROP_PRINT_TABLE_NAME = "printTableName";
     public static final String PROP_EXPORT_JSON_VALUES = "exportJsonValues";
     public static final String PROP_EXPORT_JSON_VALUES_AS_STRING = "string";
-    public static final String PROP_EXPORT_JSON_VALUES_AS_JSON = "embedded JSON";
+    public static final String PROP_EXPORT_JSON_VALUES_AS_JSON = "json";
 
 
     private DBDAttributeBinding[] columns;
