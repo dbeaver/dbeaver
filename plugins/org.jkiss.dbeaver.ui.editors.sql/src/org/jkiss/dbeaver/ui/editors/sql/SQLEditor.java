@@ -98,8 +98,6 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
-import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
-import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceMonitorJob;
@@ -2504,7 +2502,7 @@ public class SQLEditor extends SQLEditorBase implements
                 DBCPlan plan = planner.planQueryExecution(session, sqlQuery.getText(), configuration);
                 planQueryString[0] = plan.getPlanQueryString();
             } catch (Exception e) {
-                log.error(e);
+                DBWorkbench.getPlatformUI().showError("Explain error", "Failed to explain execution plan", e);
             }
         };
         if (RuntimeUtils.runTask(queryObtainTask, "Retrieve plan query", 5000) && !CommonUtils.isEmpty(planQueryString[0])) {
