@@ -28,8 +28,6 @@
 #   0 - Success
 #   1 - Missing dependencies or invalid directory structure
 #
-# Author: [Your Name]
-# Last Updated: [Date]
 ###############################################################################
 
 # Exit on any error
