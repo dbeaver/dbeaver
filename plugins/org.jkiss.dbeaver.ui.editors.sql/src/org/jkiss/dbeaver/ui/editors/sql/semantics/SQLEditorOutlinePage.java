@@ -288,9 +288,6 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
     }
 
     private static class SQLOutlineLabelProvider implements ILabelProvider, IFontProvider, IStyledLabelProvider {
-        @NotNull
-        private final Styler extraTextStyler = StyledString.createColorRegistryStyler(JFacePreferences.DECORATIONS_COLOR, null);
-
         @Override
         public void addListener(@Nullable ILabelProviderListener listener) {
             // no listeners
@@ -336,7 +333,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
                 String extra = node.getExtraText(); 
                 if (extra != null) {
                     result.append(extra);
-                    result.setStyle(text.length(), extra.length(), extraTextStyler);
+                    result.setStyle(text.length(), extra.length(), StyledString.DECORATIONS_STYLER);
                 }
             } else {
                 result.append(element.toString());
@@ -960,7 +957,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
                     if (naturalJoin.getCondition() != null) {
                         // TODO add expression text to the ON node and remove its immediate and only child with the same text
                         this.makeNode(node, naturalJoin.getCondition(), SQLConstants.KEYWORD_ON + " ", DBIcon.TREE_UNIQUE_KEY, naturalJoin.getCondition());
-                    } else if (naturalJoin.getColumsToJoin() != null) {
+                    } else if (naturalJoin.getColumsToJoin() != null && naturalJoin.getColumsToJoin().size() > 0) {
                         String suffix = naturalJoin.getColumsToJoin().stream()
                             .map(SQLQuerySymbolEntry::getRawName)
                             .collect(Collectors.joining(", ", "(", ")"));

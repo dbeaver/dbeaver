@@ -42,6 +42,7 @@ public class SystemVariablesResolver implements IVariableResolver {
     public static final String VAR_LOCAL_IP = "local.ip";
 
     private static Properties configuration;
+    private static String installPath;
 
     public static void setConfiguration(Properties configuration) {
         SystemVariablesResolver.configuration = configuration;
@@ -88,7 +89,10 @@ public class SystemVariablesResolver implements IVariableResolver {
     }
 
     public static String getInstallPath() {
-        return getPlainPath(Platform.getInstallLocation().getURL());
+        if (installPath == null) {
+            installPath = getPlainPath(Platform.getInstallLocation().getURL());
+        }
+        return installPath;
     }
 
     public static String getWorkspacePath() {

@@ -62,7 +62,7 @@
             <command commandId="org.jkiss.dbeaver.test.connection.validate"/>
         </menuContribution>
        <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=help">
-            <menu id="test" label="&amp;Test">
+            <menu id="org.jkiss.dbeaver.ui.test.menu" label="&amp;Test">
                 <command commandId="org.jkiss.dbeaver.test.dialog"/>
                 <command commandId="org.jkiss.dbeaver.test.showNotification"/>
                 <command commandId="org.jkiss.dbeaver.test.showIcons"/>

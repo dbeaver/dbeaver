@@ -820,7 +820,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     }
 
     @Override
-    public DBSDataType getLocalDataType(String typeName) {
+    public DBSDataType getLocalDataType(@Nullable String typeName) {
         return dataTypeCache.getCachedObject(typeName);
     }
 

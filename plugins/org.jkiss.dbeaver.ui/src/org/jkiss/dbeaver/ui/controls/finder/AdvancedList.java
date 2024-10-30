@@ -414,7 +414,7 @@ public class AdvancedList extends Canvas {
 
         redraw();
 
-        if (isFocusControl()) {
+        if (isFocusControl() && item != null) {
             //getAccessible().sendEvent(ACC.EVENT_SELECTION_CHANGED, new Object[]{null, item.getData()});
             getAccessible().sendEvent(ACC.EVENT_NAME_CHANGED, new Object[]{null, item.getData()});
         }

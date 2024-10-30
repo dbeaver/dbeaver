@@ -33,8 +33,8 @@ public abstract class PeriodicJob extends AbstractJob {
         this.platform = platform;
         this.periodMs = periodMs;
 
-        setUser(true);
-        setSystem(false);
+        setUser(false);
+        setSystem(true);
     }
 
     @Override

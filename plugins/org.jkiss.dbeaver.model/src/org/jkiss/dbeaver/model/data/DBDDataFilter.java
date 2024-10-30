@@ -31,6 +31,7 @@ public class DBDDataFilter {
 
     private final List<DBDAttributeConstraint> constraints;
     private boolean anyConstraint; // means OR condition
+    private boolean useDisjunctiveNormalForm; // see setUseDisjunctiveNormalForm
     private String order;
     private String where;
 
@@ -50,6 +51,7 @@ public class DBDDataFilter {
         this.order = source.order;
         this.where = source.where;
         this.anyConstraint = source.anyConstraint;
+        this.useDisjunctiveNormalForm = source.useDisjunctiveNormalForm;
     }
 
     public List<DBDAttributeConstraint> getConstraints() {
@@ -320,4 +322,31 @@ public class DBDDataFilter {
 
     }
 
+    /**
+     * Changes interpretation of constraint values as disjunctive normal form (DNF).
+     * <p>
+     * Let's say we have two constraints:
+     * <ul>
+     *     <li>{@code x IN (1, 2, 3)}</li>
+     *     <li>{@code y IN (4, 5, 6)}</li>
+     * </ul>
+     * <p>
+     * If {@code useDisjunctiveNormalForm} is {@code true} constraints will be transformed as follows:
+     * <ul>
+     *     <li>{@code (x = 1 AND y = 4) OR (x = 2 AND y = 5) OR (x = 3 AND y = 6)}</li>
+     * </ul>
+     * <p>
+     * <b>Limitations:</b>
+     * <ul>
+     *     <li>All constraints must use the {@code IN} operator</li>
+     *     <li>All constraints must have the same number of values</li>
+     * </ul>
+     */
+    public void setUseDisjunctiveNormalForm(boolean useDisjunctiveNormalForm) {
+        this.useDisjunctiveNormalForm = useDisjunctiveNormalForm;
+    }
+
+    public boolean isUseDisjunctiveNormalForm() {
+        return useDisjunctiveNormalForm;
+    }
 }
