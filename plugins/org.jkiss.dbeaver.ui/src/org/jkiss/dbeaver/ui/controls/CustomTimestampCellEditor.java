@@ -21,13 +21,10 @@ import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.viewers.DialogCellEditor;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.FocusAdapter;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -39,25 +36,29 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.JDBCType;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
-public class CustomInstantCellEditor extends DialogCellEditor {
+public class CustomTimestampCellEditor extends DialogCellEditor {
     private Text textEditor;
     private FocusAdapter textFocusListener;
 
-    public CustomInstantCellEditor(Composite parent) {
+    public CustomTimestampCellEditor(@NotNull Composite parent) {
         super(parent);
     }
 
+    @Nullable
     @Override
-    protected Button createButton(Composite parent) {
+    protected Button createButton(@NotNull Composite parent) {
         Button result = new Button(parent, SWT.DOWN | SWT.NO_FOCUS);
         result.setImage(DBeaverIcons.getImage(UIIcon.DOTS_BUTTON)); //$NON-NLS-1$
         return result;
     }
 
+    @Nullable
     @Override
-    protected Control createContents(Composite cell) {
+    protected Control createContents(@NotNull Composite cell) {
         textEditor = new Text(cell, SWT.LEFT);
         textEditor.setFont(cell.getFont());
         textEditor.setBackground(cell.getBackground());
@@ -72,17 +73,41 @@ public class CustomInstantCellEditor extends DialogCellEditor {
             @Override
             public void focusLost(FocusEvent e) {
                 applyEditorValueFromText(textEditor.getText(), new Shell(cell.getShell()));
-                if (!UIUtils.hasFocus(cell)) {
-                    CustomInstantCellEditor.this.fireApplyEditorValue();
-                }
+                UIUtils.asyncExec(() -> {
+                    if (!UIUtils.hasFocus(cell)) {
+                        CustomTimestampCellEditor.this.fireApplyEditorValue();
+                    }
+                });
             }
         };
         textEditor.addFocusListener(textFocusListener);
+        textEditor.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseDoubleClick(MouseEvent e) {
+                openDialogBox(cell);
+            }
+
+            @Override
+            public void mouseDown(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseUp(MouseEvent e) {
+
+            }
+        });
 
         return textEditor;
     }
 
-    private void applyEditorValueFromText(String text, Shell shell) {
+    @Nullable
+    @Override
+    protected Object doGetValue() {
+        return truncateToSeconds((Timestamp) super.doGetValue());
+    }
+
+    private void applyEditorValueFromText(@Nullable String text, @NotNull Shell shell) {
         if (CommonUtils.isEmpty(text)) {
             setValue(null);
             return;
@@ -101,26 +126,35 @@ public class CustomInstantCellEditor extends DialogCellEditor {
         }
     }
 
+    @Nullable
     @Override
     protected Object openDialogBox(Control cellEditorWindow) {
         textEditor.removeFocusListener(textFocusListener);
 
-        CustomTimeEditorDialog customTimeEditorDialog = new CustomTimeEditorDialog(cellEditorWindow.getShell());
-        int returnCode = customTimeEditorDialog.open();
+        Object currentValue = doGetValue();
+        var initialValue = currentValue != null
+            ? (Timestamp) currentValue
+            // Default to 30 days from now
+            : Timestamp.valueOf(LocalDateTime.now().plusDays(30));
 
-        Object result = null;
-        if (returnCode == Window.CANCEL) {
-            result = doGetValue();
-        } else {
-            result = customTimeEditorDialog.result();
-        }
+        CustomTimeEditorDialog customTimeEditorDialog = new CustomTimeEditorDialog(
+            cellEditorWindow.getShell(),
+            initialValue
+        );
+
+        int returnCode = customTimeEditorDialog.open();
+        Object result = switch (returnCode) {
+            case Window.OK -> customTimeEditorDialog.result();
+            case Window.CANCEL -> currentValue;
+            default -> null;
+        };
 
         textEditor.addFocusListener(textFocusListener);
         return result;
     }
 
     @Override
-    protected void updateContents(Object value) {
+    protected void updateContents(@Nullable Object value) {
         if (value == null) {
             textEditor.setText("");
             return;
@@ -131,47 +165,47 @@ public class CustomInstantCellEditor extends DialogCellEditor {
     }
 
     @Override
-    protected void doSetValue(Object value) {
-        super.doSetValue(value);
-    }
-
-    @Override
-    protected Object doGetValue() {
-        return super.doGetValue();
-    }
-
-    @Override
     protected void doSetFocus() {
         textEditor.setFocus();
     }
 
-    private class CustomTimeEditorDialog extends BaseDialog {
+    @Override
+    protected void doSetValue(@Nullable Object value) {
+        super.doSetValue(truncateToSeconds((Timestamp) value));
+    }
+
+    private Timestamp truncateToSeconds(@Nullable Timestamp timestamp) {
+        if (timestamp == null) {
+            return null;
+        }
+
+        return Timestamp.valueOf(timestamp.toLocalDateTime().truncatedTo(ChronoUnit.SECONDS));
+    }
+
+    private static class CustomTimeEditorDialog extends BaseDialog {
         private static final Log log = Log.getLog(CustomTimeEditorDialog.class);
 
-        private Timestamp result;
+        @Nullable
+        private Timestamp value;
 
         public CustomTimeEditorDialog(
-            Shell parent
+            @NotNull Shell parent,
+            @Nullable Timestamp value
         ) {
             super(parent, "Select Date and Time", null);
+            this.value = value;
         }
 
         @Override
-        protected Composite createDialogArea(Composite parent) {
-            // Create the main composite
-            Composite mainComposite = new Composite(parent, SWT.NONE);
-            mainComposite.setLayout(new GridLayout(1, false));
-            mainComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-
-            // Initialize CustomTimeEditor
-            CustomTimeEditor customTimeEditor = new CustomTimeEditor(mainComposite, SWT.NONE, false, false);
+        protected Composite createDialogArea(@NotNull Composite parent) {
+            CustomTimeEditor customTimeEditor = new CustomTimeEditor(parent, SWT.NONE, false, false);
             customTimeEditor.createDateFormat(JDBCType.TIMESTAMP);
             GridData layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
             customTimeEditor.getControl().setLayoutData(layoutData);
             customTimeEditor.setEditable(true);
 
             try {
-                customTimeEditor.setValue(doGetValue());
+                customTimeEditor.setValue(value);
             } catch (DBCException e) {
                 log.error("Error setting initial value", e);
             }
@@ -179,19 +213,18 @@ public class CustomInstantCellEditor extends DialogCellEditor {
             customTimeEditor.addSelectionAdapter(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    result = Optional.ofNullable(customTimeEditor.getValueAsDate())
+                    value = Optional.ofNullable(customTimeEditor.getValueAsDate())
                         .map(v -> Timestamp.from(v.toInstant()))
                         .orElse(null);
                 }
             });
 
-            return mainComposite;
+            return customTimeEditor.getControl();
         }
 
         @Nullable
         public Timestamp result() {
-            return result;
+            return value;
         }
     }
-
 }

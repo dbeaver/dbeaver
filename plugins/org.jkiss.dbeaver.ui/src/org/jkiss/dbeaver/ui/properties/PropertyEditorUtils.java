@@ -37,7 +37,6 @@ import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Timestamp;
-import java.time.Instant;
 
 /**
  * PropertyEditorUtils
@@ -120,7 +119,7 @@ public class PropertyEditorUtils {
                 strings,
                 SWT.DROP_DOWN | SWT.READ_ONLY);
         } else if (Timestamp.class.isAssignableFrom(propertyType)) {
-            return new CustomInstantCellEditor(parent);
+            return new CustomTimestampCellEditor(parent);
         } else {
             log.warn("Unsupported property type: " + propertyType.getName());
             return null;
