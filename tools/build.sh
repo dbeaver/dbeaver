@@ -119,8 +119,8 @@ fi
 
 # Execute Maven build
 log "Starting Maven build..."
-cd "$AGGREGATE_DIR"
-mvn clean install -Pall-platforms -T 1C
+
+mvn clean install -Pall-platforms -T 1C -f "$AGGREGATE_DIR"
 
 log "Build completed successfully"
 
