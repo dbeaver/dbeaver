@@ -179,10 +179,11 @@ public class PrefPageSQLFormat extends TargetPrefPage
             previewGroup.setLayoutData(gd);
             previewGroup.setLayout(new FillLayout());
 
+            TargetPrefPage parentTargetPrefPage = this;
             sqlViewer = new SQLEditorBase() {
                 @Override
                 public DBCExecutionContext getExecutionContext() {
-                    final DBPDataSourceContainer container = getDataSourceContainer();
+                    final DBPDataSourceContainer container = parentTargetPrefPage.getDataSourceContainer();
                     if (container != null) {
                         final DBPDataSource dataSource = container.getDataSource();
                         if (dataSource != null) {
