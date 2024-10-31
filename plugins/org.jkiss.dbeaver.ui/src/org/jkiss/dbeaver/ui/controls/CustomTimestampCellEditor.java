@@ -21,7 +21,10 @@ import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.viewers.DialogCellEditor;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
@@ -42,7 +45,7 @@ import java.util.Optional;
 
 public class CustomTimestampCellEditor extends DialogCellEditor {
     private Text textEditor;
-    private FocusAdapter textFocusListener;
+    private FocusListener textFocusListener;
 
     public CustomTimestampCellEditor(@NotNull Composite parent) {
         super(parent);
@@ -69,34 +72,19 @@ public class CustomTimestampCellEditor extends DialogCellEditor {
                 focusLost();
             }
         });
-        textFocusListener = new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                applyEditorValueFromText(textEditor.getText(), new Shell(cell.getShell()));
-                UIUtils.asyncExec(() -> {
-                    if (!UIUtils.hasFocus(cell)) {
-                        CustomTimestampCellEditor.this.fireApplyEditorValue();
-                    }
-                });
-            }
-        };
-        textEditor.addFocusListener(textFocusListener);
-        textEditor.addMouseListener(new MouseListener() {
-            @Override
-            public void mouseDoubleClick(MouseEvent e) {
-                openDialogBox(cell);
-            }
 
-            @Override
-            public void mouseDown(MouseEvent e) {
 
-            }
-
-            @Override
-            public void mouseUp(MouseEvent e) {
-
-            }
+        textFocusListener = FocusListener.focusLostAdapter(e -> {
+            applyEditorValueFromText(textEditor.getText(), new Shell(cell.getShell()));
+            UIUtils.asyncExec(() -> {
+                if (!UIUtils.hasFocus(cell)) {
+                    CustomTimestampCellEditor.this.fireApplyEditorValue();
+                }
+            });
         });
+
+        textEditor.addFocusListener(textFocusListener);
+        textEditor.addMouseListener(MouseListener.mouseDoubleClickAdapter(e -> openDialogBox(cell)));
 
         return textEditor;
     }
