@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
+import org.jkiss.dbeaver.model.impl.app.BaseProjectImpl;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
@@ -141,6 +142,17 @@ public class DBNUtils {
                     }
                 } else if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST)) {
                     Arrays.sort(children, NodeFolderComparator.INSTANCE);
+                }
+
+                if (firstChild instanceof DBNProject) {
+                    Arrays.sort(children, Comparator.comparing((DBNNode n) -> {
+                        if (n instanceof DBNProject projectNode) {
+                            Object index = projectNode.getProject().getProjectProperty(BaseProjectImpl.PROP_PROJECT_INDEX);
+                            return CommonUtils.toInt(index, 0);
+                        } else {
+                            return 0;
+                        }
+                    }));
                 }
             }
         }

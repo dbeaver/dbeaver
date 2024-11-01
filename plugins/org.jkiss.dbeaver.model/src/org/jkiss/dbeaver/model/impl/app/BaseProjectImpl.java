@@ -62,6 +62,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     public static final String SETTINGS_STORAGE_FILE = "project-settings.json";
     public static final String METADATA_STORAGE_FILE = "project-metadata.json";
     public static final String PROP_PROJECT_ID = "id";
+    public static final String PROP_PROJECT_INDEX = "index";
 
     public enum ProjectFormat {
         UNKNOWN,    // Project is not open or corrupted
