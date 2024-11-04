@@ -25,12 +25,14 @@ import org.jkiss.dbeaver.model.websocket.event.WSEventType;
 public class WSSessionTaskInfoEvent extends WSAbstractSessionEvent {
     private final String statusName;
     private final int taskId;
+    private final int progress;
     private final int totalWork;
 
-    public WSSessionTaskInfoEvent(@NotNull WSEventType eventType, int taskId, String statusName, int totalWork) {
+    public WSSessionTaskInfoEvent(@NotNull WSEventType eventType, int taskId, String statusName, int progress, int totalWork) {
         super(eventType);
         this.taskId = taskId;
         this.statusName = statusName;
+        this.progress = progress;
         this.totalWork = totalWork;
     }
 
@@ -41,16 +43,27 @@ public class WSSessionTaskInfoEvent extends WSAbstractSessionEvent {
     public String getStatusName() {
         return statusName;
     }
+    
+    public int getProgress() {
+        return progress;
+    }
 
     public int getTotalWork() {
         return totalWork;
     }
 
+    @NotNull
     public static WSSessionTaskInfoEvent start(int taskId, String statusName, int totalWork) {
-        return new WSSessionTaskInfoEvent(WSEventType.SESSION_TASK_INFO_STARTED, taskId, statusName, totalWork);
+        return new WSSessionTaskInfoEvent(WSEventType.SESSION_TASK_INFO_STARTED, taskId, statusName, 0, totalWork);
     }
 
-    public static WSSessionTaskInfoEvent finish(int taskId) {
-        return new WSSessionTaskInfoEvent(WSEventType.SESSION_TASK_INFO_FINISHED, taskId, null, 0);
+    @NotNull
+    public static WSSessionTaskInfoEvent update(int taskId, String statusName, int progress, int totalWork) {
+        return new WSSessionTaskInfoEvent(WSEventType.SESSION_TASK_INFO_UPDATED, taskId, statusName, progress, totalWork);
+    }
+
+    @NotNull
+    public static WSSessionTaskInfoEvent finish(int taskId, int progress) {
+        return new WSSessionTaskInfoEvent(WSEventType.SESSION_TASK_INFO_FINISHED, taskId, null, progress, progress);
     }
 }
