@@ -5,18 +5,10 @@ Bundle-SymbolicName: org.jkiss.dbeaver.ext.oracle.ui;singleton:=true
 Bundle-Version: 1.0.130.qualifier
 Bundle-Release-Date: 20241118
 Bundle-Activator: org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIActivator
-Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime,
- org.eclipse.ui.views,
- org.eclipse.jface,
- org.eclipse.jface.text,
- org.jkiss.dbeaver.ext.config.migration,
+Require-Bundle: org.jkiss.dbeaver.ext.config.migration,
  org.jkiss.dbeaver.ext.ui.locks,
- org.eclipse.ui.workbench.texteditor,
- org.eclipse.ui.editors,
  com.github.jsqlparser,
  com.google.gson,
- org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.net.ssh,
  org.jkiss.dbeaver.ext.oracle,
