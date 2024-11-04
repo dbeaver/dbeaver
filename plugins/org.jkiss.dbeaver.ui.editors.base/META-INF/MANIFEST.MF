@@ -7,19 +7,14 @@ Bundle-Version: 1.0.143.qualifier
 Bundle-Release-Date: 20241118
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
-Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.core.resources,
- org.eclipse.core.expressions,
- org.eclipse.core.filesystem,
- org.eclipse.jface.text,
+Require-Bundle: org.eclipse.core.resources;visibility:=reexport,
+ org.eclipse.core.filesystem;visibility:=reexport,
  org.eclipse.help,
- org.eclipse.ui;visibility:=reexport,
- org.eclipse.ui.editors;visibility:=reexport,
  org.eclipse.ui.ide;visibility:=reexport,
- org.eclipse.ui.workbench.texteditor,
+ org.eclipse.ui.workbench.texteditor;visibility:=reexport,
  org.eclipse.e4.ui.css.swt.theme,
  org.jkiss.dbeaver.model;visibility:=reexport,
- org.jkiss.dbeaver.ui
+ org.jkiss.dbeaver.ui;visibility:=reexport
 Bundle-ClassPath: .
 Export-Package: org.jkiss.dbeaver.ui.actions,
  org.jkiss.dbeaver.ui.controls,

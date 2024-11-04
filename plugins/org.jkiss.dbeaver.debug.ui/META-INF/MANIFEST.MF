@@ -8,17 +8,11 @@ Bundle-Vendor: DBeaver Corp
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Activator: org.jkiss.dbeaver.debug.ui.internal.DebugUIActivator
 Bundle-ActivationPolicy: lazy
-Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.core.expressions,
- org.eclipse.jface.text,
- org.eclipse.ui;visibility:=reexport,
- org.eclipse.ui.editors,
- org.eclipse.ui.workbench.texteditor,
- org.eclipse.ui.ide,
+Require-Bundle: org.eclipse.ui.ide,
  org.eclipse.debug.ui;visibility:=reexport,
+ org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.ui,
- org.jkiss.dbeaver.core,
- org.jkiss.dbeaver.ui,
+ org.jkiss.dbeaver.ui.editors.sql,
  org.jkiss.dbeaver.debug.core
 Export-Package: org.jkiss.dbeaver.debug.ui,
  org.jkiss.dbeaver.debug.ui.actions,

@@ -4,10 +4,7 @@ Bundle-Name: DBeaver Clickhouse UI
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.clickhouse.ui;singleton:=true
 Bundle-Version: 1.0.147.qualifier
 Bundle-Release-Date: 20241118
-Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime,
- org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.ext.clickhouse,
+Require-Bundle: org.jkiss.dbeaver.ext.clickhouse,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.editors.connection,
  org.jkiss.dbeaver.ui.editors.data,

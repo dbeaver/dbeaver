@@ -6,10 +6,7 @@ Bundle-Version: 1.0.68.qualifier
 Bundle-Release-Date: 20241118
 Bundle-Activator: org.jkiss.dbeaver.data.office.ui.OfficeUIActivator
 Require-Bundle: org.jkiss.dbeaver.data.office,
- org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.editors.data,
- org.eclipse.ui,
  org.jkiss.dbeaver.data.transfer
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17
