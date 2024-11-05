@@ -267,6 +267,13 @@
                 class="org.jkiss.dbeaver.tools.transfer.processor.ExecuteCommandEventProcessor"
                 nodes="streamTransferConsumer"/>
 
+        <eventProcessor
+                id="failedExportFileCleaner"
+                label="%dataTransfer.eventProcessor.failedExportFileCleaner.label"
+                description="%dataTransfer.eventProcessor.failedExportFileCleaner.description"
+                class="org.jkiss.dbeaver.tools.transfer.processor.FailedExportFileCleanerProcessor"
+                nodes="streamTransferConsumer"/>
+
     </extension>
 
     <extension point="org.jkiss.dbeaver.task">
