@@ -54,7 +54,10 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
 
     public static final String PROP_FORMAT_DATE_ISO = "formatDateISO";
     public static final String PROP_PRINT_TABLE_NAME = "printTableName";
-    public static final String PROP_EXPORT_JSON_AS_STRING = "exportJsonAsString";
+    public static final String PROP_EXPORT_JSON_VALUES = "exportJsonValues";
+    public static final String PROP_EXPORT_JSON_VALUES_AS_STRING = "string";
+    public static final String PROP_EXPORT_JSON_VALUES_AS_JSON = "json";
+
 
     private DBDAttributeBinding[] columns;
     private String tableName;
@@ -62,14 +65,14 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
 
     private boolean printTableName = true;
     private boolean formatDateISO = true;
-    private boolean exportJsonAsString = true;
+    private String exportJsonAs = PROP_EXPORT_JSON_VALUES_AS_STRING;
 
     @Override
     public void init(IStreamDataExporterSite site) throws DBException {
         super.init(site);
         formatDateISO = CommonUtils.getBoolean(site.getProperties().get(PROP_FORMAT_DATE_ISO), true);
         printTableName = CommonUtils.getBoolean(site.getProperties().get(PROP_PRINT_TABLE_NAME), true);
-        exportJsonAsString = CommonUtils.getBoolean(site.getProperties().get(PROP_EXPORT_JSON_AS_STRING), true);
+        exportJsonAs = (String) site.getProperties().getOrDefault(PROP_EXPORT_JSON_VALUES, PROP_EXPORT_JSON_VALUES_AS_STRING);
     }
 
     @Override
@@ -120,7 +123,7 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
                     out.write(cellValue.toString());
                 } else if (cellValue instanceof Date && formatDateISO) {
                     writeTextCell(JSONUtils.formatDate((Date) cellValue), true);
-                } else if (!exportJsonAsString && hasJsonDataType(column)) {
+                } else if (PROP_EXPORT_JSON_VALUES_AS_JSON.equalsIgnoreCase(exportJsonAs) && hasJsonDataType(column)) {
                     writeTextCell(super.getValueDisplayString(column, cellValue), false);
                 } else {
                     writeTextCell(super.getValueDisplayString(column, cellValue), true);
@@ -205,7 +208,7 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
         DBDContentStorage cs
     ) throws IOException {
         try (Reader in = cs.getContentReader()) {
-            if (!exportJsonAsString && ContentUtils.isJSON(content)) {
+            if (PROP_EXPORT_JSON_VALUES_AS_JSON.equalsIgnoreCase(exportJsonAs) && ContentUtils.isJSON(content)) {
                 writeCellValue(in, false);
             } else {
                 getWriter().write("\"");

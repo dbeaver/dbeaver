@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -33,6 +34,13 @@ public class NavigatorHandlerProjectRefresh extends NavigatorHandlerObjectBase {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
+        if (CommonUtils.toBoolean(event.getParameter("singleProject"))) {
+            NavigatorHandlerRefresh.refreshInNavigator(
+                event,
+                HandlerUtil.getActivePart(event),
+                true);
+            return null;
+        }
         try {
             workbenchWindow.run(true, true, monitor -> {
                 try {

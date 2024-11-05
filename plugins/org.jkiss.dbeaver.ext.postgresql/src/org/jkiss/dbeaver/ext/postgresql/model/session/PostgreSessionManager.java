@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -75,16 +76,22 @@ public class PostgreSessionManager implements DBAServerSessionManager<PostgreSes
     }
 
     @Override
-    public void alterSession(@NotNull DBCSession session, @NotNull PostgreSession sessionType, @NotNull Map<String, Object> options) throws DBException
+    public void alterSession(@NotNull DBCSession session, @NotNull String sessionId, @NotNull Map<String, Object> options) throws DBException
     {
         try {
             try (Statement dbStat = ((JDBCSession) session).createStatement()) {
-                dbStat.execute("SELECT pg_catalog.pg_terminate_backend(" + sessionType.getPid() + ")");
+                dbStat.execute("SELECT pg_catalog.pg_terminate_backend(" + sessionId + ")");
             }
         }
         catch (SQLException e) {
             throw new DBDatabaseException(e, session.getDataSource());
         }
+    }
+
+    @NotNull
+    @Override
+    public Map<String, Object> getTerminateOptions() {
+        return Map.of();
     }
 
     @Override

@@ -59,7 +59,7 @@
                     <!-- In order to circumvent previous version of JDBC bug: ROLE -->
                     <parameter name="schema-filters-enabled" value="true"/>
                     <parameter name="split-procedures-and-functions" value="true"/>
-                    <parameter name="query-get-active-db"  value="SELECT user_name()"/>
+                    <parameter name="query-get-active-db"  value="SELECT db_name FROM V$DATABASE"/>
                     <parameter name="active-entity-type" value="schema"/>
                 </driver>
              </drivers>

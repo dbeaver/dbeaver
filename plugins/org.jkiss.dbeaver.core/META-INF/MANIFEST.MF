@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver Desktop Application Core
 Bundle-SymbolicName: org.jkiss.dbeaver.core;singleton:=true
-Bundle-Version: 24.2.4.qualifier
-Bundle-Release-Date: 20241104
+Bundle-Version: 24.2.5.qualifier
+Bundle-Release-Date: 20241118
 Bundle-Activator: org.jkiss.dbeaver.core.DBeaverActivator
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17
@@ -34,21 +34,11 @@ Export-Package: org.jkiss.dbeaver,
 Bundle-ClassPath: .,
  lib/awt.injector-1.0.0.jar
 Require-Bundle: org.osgi.service.event,
- org.eclipse.core.runtime,
  org.eclipse.core.filesystem,
- org.eclipse.core.resources,
- org.eclipse.core.expressions,
  org.eclipse.core.net,
  org.eclipse.equinox.security,
- org.eclipse.ui,
- org.eclipse.ui.forms,
- org.eclipse.ui.views,
  org.eclipse.ui.browser,
- org.eclipse.ui.workbench,
  org.eclipse.ui.ide,
- org.eclipse.swt,
- org.eclipse.jface,
- org.eclipse.jface.text,
  org.eclipse.e4.core.contexts,
  org.eclipse.e4.core.services,
  org.eclipse.e4.ui.model.workbench,
@@ -57,7 +47,6 @@ Require-Bundle: org.osgi.service.event,
  org.eclipse.e4.ui.workbench.swt,
  org.eclipse.e4.ui.workbench.renderers.swt,
  org.jkiss.dbeaver.registry;visibility:=reexport,
- org.jkiss.dbeaver.ui;visibility:=reexport,
  org.jkiss.dbeaver.ui.editors.base;visibility:=reexport,
  org.jkiss.dbeaver.ui.editors.connection;visibility:=reexport,
  org.jkiss.dbeaver.ui.editors.sql;visibility:=reexport,
