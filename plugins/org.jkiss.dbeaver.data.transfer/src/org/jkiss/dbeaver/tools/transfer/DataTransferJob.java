@@ -107,6 +107,7 @@ public class DataTransferJob extends AbstractJob {
                 jobMonitor.worked(1);
             } catch (Exception e) {
                 // Report as an OK status to avoid showing the error in the UI (it's handled by the caller)
+                IDataTransferConsumer<?, ?> consumer = transferPipe.getConsumer();
                 return new Status(IStatus.OK, getClass(), "Data transfer failed", e);
             }
         }
