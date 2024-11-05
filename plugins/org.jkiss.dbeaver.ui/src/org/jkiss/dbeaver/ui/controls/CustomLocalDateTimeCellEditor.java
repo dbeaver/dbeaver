@@ -38,16 +38,17 @@ import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.JDBCType;
-import java.sql.Timestamp;
+import java.text.MessageFormat;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
-public class CustomTimestampCellEditor extends DialogCellEditor {
+public class CustomLocalDateTimeCellEditor extends DialogCellEditor {
     private Text textEditor;
     private FocusListener textFocusListener;
 
-    public CustomTimestampCellEditor(@NotNull Composite parent) {
+    public CustomLocalDateTimeCellEditor(@NotNull Composite parent) {
         super(parent);
     }
 
@@ -76,15 +77,31 @@ public class CustomTimestampCellEditor extends DialogCellEditor {
 
         textFocusListener = FocusListener.focusLostAdapter(e -> {
             applyEditorValueFromText(textEditor.getText(), new Shell(cell.getShell()));
+
             UIUtils.asyncExec(() -> {
                 if (!UIUtils.hasFocus(cell)) {
-                    CustomTimestampCellEditor.this.fireApplyEditorValue();
+                    CustomLocalDateTimeCellEditor.this.fireApplyEditorValue();
                 }
             });
         });
 
         textEditor.addFocusListener(textFocusListener);
-        textEditor.addMouseListener(MouseListener.mouseDoubleClickAdapter(e -> openDialogBox(cell)));
+        textEditor.addMouseListener(MouseListener.mouseDoubleClickAdapter(e -> {
+                Object newValue = openDialogBox(cell);
+
+                if (newValue != null) {
+                    boolean newValidState = isCorrect(newValue);
+                    if (newValidState) {
+                        markDirty();
+                        doSetValue(newValue);
+                    } else {
+                        // try to insert the current value into the error message.
+                        setErrorMessage(MessageFormat.format(getErrorMessage(), newValue.toString()));
+                    }
+                    fireApplyEditorValue();
+                }
+            }
+        ));
 
         return textEditor;
     }
@@ -92,7 +109,7 @@ public class CustomTimestampCellEditor extends DialogCellEditor {
     @Nullable
     @Override
     protected Object doGetValue() {
-        return truncateToSeconds((Timestamp) super.doGetValue());
+        return truncateToSeconds((LocalDateTime) super.doGetValue());
     }
 
     private void applyEditorValueFromText(@Nullable String text, @NotNull Shell shell) {
@@ -102,7 +119,7 @@ public class CustomTimestampCellEditor extends DialogCellEditor {
         }
 
         try {
-            Timestamp timestamp = Timestamp.valueOf(text);
+            LocalDateTime timestamp = LocalDateTime.parse(text);
             setValue(timestamp);
         } catch (Exception ex) {
             ErrorDialog.openError(
@@ -121,9 +138,9 @@ public class CustomTimestampCellEditor extends DialogCellEditor {
 
         Object currentValue = doGetValue();
         var initialValue = currentValue != null
-            ? (Timestamp) currentValue
+            ? (LocalDateTime) currentValue
             // Default to 30 days from now
-            : Timestamp.valueOf(LocalDateTime.now().plusDays(30));
+            : LocalDateTime.now().plusDays(30);
 
         CustomTimeEditorDialog customTimeEditorDialog = new CustomTimeEditorDialog(
             cellEditorWindow.getShell(),
@@ -137,6 +154,7 @@ public class CustomTimestampCellEditor extends DialogCellEditor {
             default -> null;
         };
 
+        textEditor.clearSelection();
         textEditor.addFocusListener(textFocusListener);
         return result;
     }
@@ -159,26 +177,26 @@ public class CustomTimestampCellEditor extends DialogCellEditor {
 
     @Override
     protected void doSetValue(@Nullable Object value) {
-        super.doSetValue(truncateToSeconds((Timestamp) value));
+        super.doSetValue(truncateToSeconds((LocalDateTime) value));
     }
 
-    private Timestamp truncateToSeconds(@Nullable Timestamp timestamp) {
-        if (timestamp == null) {
+    private LocalDateTime truncateToSeconds(@Nullable LocalDateTime value) {
+        if (value == null) {
             return null;
         }
 
-        return Timestamp.valueOf(timestamp.toLocalDateTime().truncatedTo(ChronoUnit.SECONDS));
+        return value.truncatedTo(ChronoUnit.SECONDS);
     }
 
     private static class CustomTimeEditorDialog extends BaseDialog {
         private static final Log log = Log.getLog(CustomTimeEditorDialog.class);
 
         @Nullable
-        private Timestamp value;
+        private LocalDateTime value;
 
         public CustomTimeEditorDialog(
             @NotNull Shell parent,
-            @Nullable Timestamp value
+            @Nullable LocalDateTime value
         ) {
             super(parent, "Select Date and Time", null);
             this.value = value;
@@ -202,7 +220,7 @@ public class CustomTimestampCellEditor extends DialogCellEditor {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     value = Optional.ofNullable(customTimeEditor.getValueAsDate())
-                        .map(v -> Timestamp.from(v.toInstant()))
+                        .map(v -> v.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())
                         .orElse(null);
                 }
             });
@@ -211,7 +229,7 @@ public class CustomTimestampCellEditor extends DialogCellEditor {
         }
 
         @Nullable
-        public Timestamp result() {
+        public LocalDateTime result() {
             return value;
         }
     }

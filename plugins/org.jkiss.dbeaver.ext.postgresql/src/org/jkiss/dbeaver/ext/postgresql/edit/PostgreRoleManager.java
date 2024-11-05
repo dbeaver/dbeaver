@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
@@ -149,7 +150,8 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
         }
 
         if (role.getValidUntil() != null) {
-            options.append(" VALID UNTIL ").append(SQLUtils.quoteString(role, role.getValidUntil().toString()));
+            Timestamp timestamp = Timestamp.valueOf(role.getValidUntil());
+            options.append(" VALID UNTIL ").append(SQLUtils.quoteString(role, timestamp.toString()));
         }
 
         if (options.length() != 0 && extension instanceof PostgreServerCockroachDB) {
