@@ -9,7 +9,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.ext.postgresql,
- org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.debug.core
 Export-Package: org.jkiss.dbeaver.ext.postgresql.debug,
  org.jkiss.dbeaver.ext.postgresql.debug.core

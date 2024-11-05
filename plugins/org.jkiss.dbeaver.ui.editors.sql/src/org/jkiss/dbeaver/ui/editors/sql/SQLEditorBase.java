@@ -102,10 +102,7 @@ import java.util.ResourceBundle;
 /**
  * SQL Executor
  */
-public abstract class SQLEditorBase extends BaseTextEditor implements
-    DBPContextProvider,
-    IErrorVisualizer,
-    DBPPreferenceListener {
+public abstract class SQLEditorBase extends BaseTextEditor implements DBPContextProvider, IErrorVisualizer, DBPPreferenceListener {
 
     static protected final Log log = Log.getLog(SQLEditorBase.class);
     public static final long MAX_FILE_LENGTH_FOR_RULES = 1024 * 1000 * 2; // 2MB
@@ -839,13 +836,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         IDocument document = getDocument();
         syntaxManager.init(dialect, getActivePreferenceStore());
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
-        ruleManager.loadRules(getDataSourceContainer(), !SQLEditorUtils.isSQLSyntaxParserApplied(getEditorInput()));
-        ruleScanner.refreshRules(getDataSourceContainer(), ruleManager, this);
-        if (getDataSource() != null) {
-            parserContext = new SQLParserContext(getDataSource(), syntaxManager, ruleManager, document != null ? document : new Document());
-        } else {
-            parserContext = new SQLParserContext(getDataSourceContainer(), syntaxManager, ruleManager, document != null ? document : new Document());
-        }
+        ruleManager.loadRules(getDataSource(), !SQLEditorUtils.isSQLSyntaxParserApplied(getEditorInput()));
+        ruleScanner.refreshRules(getDataSource(), ruleManager, this);
+        parserContext = new SQLParserContext(getDataSource(), syntaxManager, ruleManager, document != null ? document : new Document());
 
         if (document instanceof IDocumentExtension3) {
             IDocumentPartitioner partitioner = new FastPartitioner(
@@ -956,7 +949,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         if (parserContext == null) {
             return null;
         }
-
         return SQLScriptParser.extractScriptQueries(parserContext, startOffset, length, scriptMode, keepDelimiters, parseParameters);
     }
 
@@ -972,12 +964,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         if (parserContext == null) {
             return null;
         }
-        SQLParserContext context;
-        if (getDataSource() != null) {
-            context = new SQLParserContext(getDataSource(), parserContext.getSyntaxManager(), parserContext.getRuleManager(), new Document(query.getText()));
-        } else {
-            context = new SQLParserContext(getDataSourceContainer(), parserContext.getSyntaxManager(), parserContext.getRuleManager(), new Document(query.getText()));
-        }
+        SQLParserContext context = new SQLParserContext(getDataSource(), parserContext.getSyntaxManager(), parserContext.getRuleManager(), new Document(query.getText()));
         return SQLScriptParser.parseParametersAndVariables(context, 0, query.getLength());
     }
 
@@ -1320,12 +1307,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
             return true;
         }
         return super.isNavigationTarget(annotation);
-    }
-
-    @Nullable
-    protected DBPDataSourceContainer getDataSourceContainer() {
-        DBPDataSource dataSource = getDataSource();
-        return dataSource == null ? null : dataSource.getContainer();
     }
 
     ////////////////////////////////////////////////////////

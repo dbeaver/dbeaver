@@ -35,7 +35,6 @@ import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -67,8 +66,10 @@ import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * SSH tunnel configuration
@@ -410,7 +411,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             );
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError(
-                CoreMessages.dialog_connection_wizard_start_dialog_error_title,
+                "SSH error",
                 e.getMessage(),
                 e
             );
@@ -480,7 +481,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
         } catch (InvocationTargetException ex) {
             if (ex.getTargetException() != null) {
                 DBWorkbench.getPlatformUI().showError(
-                    CoreMessages.dialog_connection_wizard_start_dialog_error_title,
+                    "SSH error",
                     null,
                     GeneralUtils.makeExceptionStatus(ex.getTargetException())
                 );
