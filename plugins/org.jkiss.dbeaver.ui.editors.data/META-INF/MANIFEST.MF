@@ -8,24 +8,13 @@ Bundle-Release-Date: 20241118
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsActivator
-Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.core.filesystem,
- org.eclipse.core.resources,
- org.eclipse.core.expressions,
- org.eclipse.ui,
- org.eclipse.jface.text,
- org.eclipse.ui.editors,
- org.eclipse.ui.ide,
- org.eclipse.ui.views,
- org.eclipse.ui.workbench.texteditor,
+Require-Bundle: org.eclipse.ui.workbench.texteditor,
  org.jkiss.dbeaver.data.transfer.ui,
- org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.tasks.ui,
- org.jkiss.dbeaver.ui,
- org.jkiss.dbeaver.ui.editors.base,
- org.jkiss.dbeaver.ui.editors.entity,
- org.jkiss.dbeaver.ui.navigator,
+ org.jkiss.dbeaver.ui.editors.base;visibility:=reexport,
+ org.jkiss.dbeaver.ui.editors.entity;visibility:=reexport,
+ org.jkiss.dbeaver.ui.navigator;visibility:=reexport,
  org.jkiss.dbeaver.registry,
  com.google.gson
 Bundle-ClassPath: .

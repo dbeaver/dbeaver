@@ -5,13 +5,8 @@ Bundle-SymbolicName: org.jkiss.dbeaver.ext.wmi;singleton:=true
 Bundle-Version: 2.0.245.qualifier
 Bundle-Release-Date: 20241118
 Bundle-Activator: org.jkiss.dbeaver.ext.wmi.Activator
-Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime,
- org.eclipse.ui.views,
- org.eclipse.jface,
- org.eclipse.jface.text,
- org.jkiss.dbeaver.core,
- org.jkiss.dbeaver.model,
+Require-Bundle: org.jkiss.dbeaver.ui,
+ org.jkiss.dbeaver.ui.editors.connection,
  org.eclipse.ui.workbench.texteditor
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17

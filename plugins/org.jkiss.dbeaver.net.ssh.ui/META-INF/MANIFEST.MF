@@ -10,12 +10,9 @@ Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.ui.net.ssh.Activator
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.equinox.security,
- org.eclipse.core.runtime,
  org.eclipse.core.resources,
- org.eclipse.jface.text,
- org.eclipse.ui,
- org.eclipse.ui.forms,
- org.jkiss.dbeaver.core,
+ org.jkiss.dbeaver.ui,
+ org.jkiss.dbeaver.ui.navigator,
  org.jkiss.dbeaver.net.ssh,
  org.jkiss.dbeaver.net.ssh.jsch,
  com.jcraft.jsch,
