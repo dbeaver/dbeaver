@@ -343,6 +343,12 @@ public class SQLEditor extends SQLEditorBase implements
         return null;
     }
 
+    @Nullable
+    @Override
+    protected DBPDataSourceContainer getDataSourceContainerForSyntaxRuleReloading() {
+        return dataSourceContainer;
+    }
+
     public SQLScriptContext getGlobalScriptContext() {
         return globalScriptContext;
     }
@@ -3222,7 +3228,7 @@ public class SQLEditor extends SQLEditorBase implements
     public void handleDataSourceEvent(final DBPEvent event) {
         final boolean dsEvent = event.getObject() == getDataSourceContainer();
         final boolean objectEvent = event.getObject() != null && event.getObject().getDataSource() == getDataSource();
-        final boolean registryEvent = getDataSourceContainer() != null && event.getData() == getDataSourceContainer().getRegistry(); 
+        final boolean registryEvent = getDataSourceContainer() != null && event.getData() == getDataSourceContainer().getRegistry();
         if (dsEvent || objectEvent || registryEvent) {
             UIUtils.asyncExec(
                 () -> {

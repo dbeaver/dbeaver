@@ -839,12 +839,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         IDocument document = getDocument();
         syntaxManager.init(dialect, getActivePreferenceStore());
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
-        ruleManager.loadRules(getDataSourceContainer(), !SQLEditorUtils.isSQLSyntaxParserApplied(getEditorInput()));
-        ruleScanner.refreshRules(getDataSourceContainer(), ruleManager, this);
+        ruleManager.loadRules(getDataSourceContainerForSyntaxRuleReloading(), !SQLEditorUtils.isSQLSyntaxParserApplied(getEditorInput()));
+        ruleScanner.refreshRules(getDataSourceContainerForSyntaxRuleReloading(), ruleManager, this);
         if (getDataSource() != null) {
             parserContext = new SQLParserContext(getDataSource(), syntaxManager, ruleManager, document != null ? document : new Document());
         } else {
-            parserContext = new SQLParserContext(getDataSourceContainer(), syntaxManager, ruleManager, document != null ? document : new Document());
+            parserContext = new SQLParserContext(getDataSourceContainerForSyntaxRuleReloading(), syntaxManager, ruleManager, document != null ? document : new Document());
         }
 
         if (document instanceof IDocumentExtension3) {
@@ -976,7 +976,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         if (getDataSource() != null) {
             context = new SQLParserContext(getDataSource(), parserContext.getSyntaxManager(), parserContext.getRuleManager(), new Document(query.getText()));
         } else {
-            context = new SQLParserContext(getDataSourceContainer(), parserContext.getSyntaxManager(), parserContext.getRuleManager(), new Document(query.getText()));
+            context = new SQLParserContext(getDataSourceContainerForSyntaxRuleReloading(), parserContext.getSyntaxManager(), parserContext.getRuleManager(), new Document(query.getText()));
         }
         return SQLScriptParser.parseParametersAndVariables(context, 0, query.getLength());
     }
@@ -1323,7 +1323,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     }
 
     @Nullable
-    protected DBPDataSourceContainer getDataSourceContainer() {
+    protected DBPDataSourceContainer getDataSourceContainerForSyntaxRuleReloading() {
         DBPDataSource dataSource = getDataSource();
         return dataSource == null ? null : dataSource.getContainer();
     }

@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.processor.ExecuteCommandEventProcessor;
+import org.jkiss.dbeaver.tools.transfer.processor.FailedExportFileCleanerProcessor;
 import org.jkiss.dbeaver.tools.transfer.processor.ShowInExplorerEventProcessor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -332,6 +333,7 @@ public class StreamConsumerSettings implements IDataTransferConsumerSettings {
         maxOutFileSize = CommonUtils.toLong(settings.get("maxOutFileSize"), maxOutFileSize);
 
         final boolean openFolderOnFinish = CommonUtils.getBoolean(settings.get("openFolderOnFinish"), false);
+        final boolean deleteFileInCaseOfFail = CommonUtils.getBoolean(settings.get("deleteFileInCaseOfFail"), true);
         final boolean executeProcessOnFinish = CommonUtils.getBoolean(settings.get("executeProcessOnFinish"), false);
         final String finishProcessCommand = CommonUtils.toString(settings.get("finishProcessCommand"));
 
@@ -380,6 +382,10 @@ public class StreamConsumerSettings implements IDataTransferConsumerSettings {
 
         if (openFolderOnFinish && !eventProcessors.containsKey(ShowInExplorerEventProcessor.ID)) {
             eventProcessors.put(ShowInExplorerEventProcessor.ID, new HashMap<>());
+        }
+
+        if (deleteFileInCaseOfFail && !eventProcessors.containsKey(FailedExportFileCleanerProcessor.ID)) {
+            eventProcessors.put(FailedExportFileCleanerProcessor.ID, new HashMap<>());
         }
 
         if (executeProcessOnFinish && !eventProcessors.containsKey(ExecuteCommandEventProcessor.ID)) {

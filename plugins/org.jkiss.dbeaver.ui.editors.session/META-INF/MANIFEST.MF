@@ -7,14 +7,7 @@ Bundle-Version: 1.0.121.qualifier
 Bundle-Release-Date: 20241118
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
-Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.core.expressions,
- org.eclipse.jface.text,
- org.eclipse.ui,
- org.eclipse.ui.ide,
- org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.ui,
- org.jkiss.dbeaver.ui.editors.base,
+Require-Bundle: org.jkiss.dbeaver.ui.editors.base,
  org.jkiss.dbeaver.ui.editors.sql,
  org.jkiss.dbeaver.ui.navigator
 Export-Package: org.jkiss.dbeaver.ui.views.session

@@ -4,35 +4,22 @@ Bundle-Name: DBeaver PostgreSQL UI
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.postgresql.ui;singleton:=true
 Bundle-Version: 1.0.119.qualifier
 Bundle-Release-Date: 20241118
-Require-Bundle: org.eclipse.e4.core.services,
- org.eclipse.e4.core.contexts,
- org.eclipse.core.runtime,
- org.eclipse.ui,
- org.eclipse.ui.views,
- org.eclipse.jface,
- org.eclipse.jface.text,
- org.eclipse.ui.workbench,
- org.eclipse.ui.workbench.texteditor,
- org.eclipse.ui.editors,
- org.eclipse.gef,
- org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.registry,
- org.jkiss.dbeaver.ext.postgresql,
- org.jkiss.dbeaver.ext.generic,
- org.jkiss.dbeaver.ext.generic.ui,
+Require-Bundle: org.eclipse.e4.core.contexts,
+ org.eclipse.e4.core.services,
+ org.jkiss.dbeaver.registry;visibility:=reexport,
+ org.jkiss.dbeaver.ext.postgresql;visibility:=reexport,
+ org.jkiss.dbeaver.ext.generic;visibility:=reexport,
+ org.jkiss.dbeaver.ext.generic.ui;visibility:=reexport,
  org.jkiss.dbeaver.ext.ui.locks,
- org.jkiss.dbeaver.data.gis;visibility:=reexport,
  org.jkiss.dbeaver.tasks.native.ui,
  org.jkiss.dbeaver.ui.navigator,
- org.jkiss.dbeaver.ui.editors.base,
- org.jkiss.dbeaver.ui.editors.connection,
- org.jkiss.dbeaver.ui.editors.data,
+ org.jkiss.dbeaver.ui.editors.connection;visibility:=reexport,
+ org.jkiss.dbeaver.ui.editors.data;visibility:=reexport,
  org.jkiss.dbeaver.ui.editors.entity,
- org.jkiss.dbeaver.ui.editors.sql,
+ org.jkiss.dbeaver.ui.editors.sql;visibility:=reexport,
  org.jkiss.dbeaver.ui.editors.session,
  org.jkiss.dbeaver.tasks.native.ui,
- org.jkiss.dbeaver.tasks.ui,
- org.jkiss.bundle.gis;visibility:=reexport
+ org.jkiss.dbeaver.tasks.ui
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp
