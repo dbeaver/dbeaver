@@ -8,12 +8,8 @@ Bundle-Vendor: DBeaver Corp
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.ui.editors.sql.terminal.internal.SQLTerminalActivator
-Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.ui.console,
- org.eclipse.osgi,
- org.jkiss.dbeaver.ui,
- org.eclipse.swt,
- org.jkiss.dbeaver.core,
+Require-Bundle: org.eclipse.ui.console,
+ org.jkiss.dbeaver.ui.navigator,
  org.jkiss.dbeaver.ui.editors.data,
  org.jkiss.dbeaver.ui.editors.sql
 Export-Package: org.jkiss.dbeaver.ui.editors.sql.terminal

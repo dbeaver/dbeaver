@@ -8,7 +8,6 @@ Bundle-Vendor: DBeaver Corp
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime,
- org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.debug.core,
  org.jkiss.dbeaver.debug.ui,
  org.jkiss.dbeaver.ext.postgresql,

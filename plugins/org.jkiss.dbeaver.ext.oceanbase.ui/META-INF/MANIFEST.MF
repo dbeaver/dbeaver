@@ -4,10 +4,7 @@ Bundle-Name: DBeaver OceanBase UI
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.oceanbase.ui;singleton:=true
 Bundle-Version: 1.0.81.qualifier
 Bundle-Release-Date: 20241118
-Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime,
- org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.model.sql,
+Require-Bundle: org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.ext.mysql,
  org.jkiss.dbeaver.ext.mysql.ui,

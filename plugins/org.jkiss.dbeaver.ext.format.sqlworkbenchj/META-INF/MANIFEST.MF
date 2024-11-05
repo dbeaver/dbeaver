@@ -6,7 +6,6 @@ Bundle-Version: 1.0.150.qualifier
 Bundle-Release-Date: 20241118
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.ui,

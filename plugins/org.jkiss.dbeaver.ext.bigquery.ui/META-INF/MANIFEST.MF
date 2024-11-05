@@ -5,10 +5,8 @@ Bundle-SymbolicName: org.jkiss.dbeaver.ext.bigquery.ui;singleton:=true
 Bundle-Version: 1.0.113.qualifier
 Bundle-Release-Date: 20241118
 Bundle-Activator: org.jkiss.dbeaver.ext.bigquery.ui.BigQueryActivator
-Require-Bundle: org.eclipse.ui,
+Require-Bundle: org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.editors.connection,
- org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ext.bigquery
 Export-Package: org.jkiss.dbeaver.ext.bigquery.ui.config,
  org.jkiss.dbeaver.ext.bigquery.ui.views

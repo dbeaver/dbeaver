@@ -15,16 +15,12 @@ Export-Package: org.jkiss.dbeaver.ui.editors.sql.ai,
 Bundle-Release-Date: 20241118
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
-Require-Bundle: org.jkiss.dbeaver.model,
- org.jkiss.bundle.gpt3,
+Require-Bundle: org.jkiss.bundle.gpt3,
  org.jkiss.dbeaver.model.ai,
  org.jkiss.dbeaver.ui.navigator,
  org.eclipse.ui.workbench,
  org.jkiss.dbeaver.ui,
- org.eclipse.swt,
- org.eclipse.jface,
  org.eclipse.ui.forms,
- org.eclipse.core.expressions,
  org.jkiss.dbeaver.model.ai,
  org.jkiss.dbeaver.ui.editors.sql,
  org.jkiss.dbeaver.ui.editors.base,
