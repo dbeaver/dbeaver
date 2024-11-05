@@ -102,7 +102,10 @@ import java.util.ResourceBundle;
 /**
  * SQL Executor
  */
-public abstract class SQLEditorBase extends BaseTextEditor implements DBPContextProvider, IErrorVisualizer, DBPPreferenceListener {
+public abstract class SQLEditorBase extends BaseTextEditor implements
+    DBPContextProvider,
+    IErrorVisualizer,
+    DBPPreferenceListener {
 
     static protected final Log log = Log.getLog(SQLEditorBase.class);
     public static final long MAX_FILE_LENGTH_FOR_RULES = 1024 * 1000 * 2; // 2MB
@@ -953,6 +956,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         if (parserContext == null) {
             return null;
         }
+
         return SQLScriptParser.extractScriptQueries(parserContext, startOffset, length, scriptMode, keepDelimiters, parseParameters);
     }
 
