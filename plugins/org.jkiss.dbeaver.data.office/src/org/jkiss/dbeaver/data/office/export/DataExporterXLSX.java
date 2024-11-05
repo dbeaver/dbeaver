@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.stream.IAppendableDataExporter;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.tools.transfer.stream.exporter.StreamExporterAbstract;
@@ -106,6 +107,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
     private boolean exportSql = false;
     private boolean splitSqlText = false;
     private AppendStrategy appendStrategy = AppendStrategy.CREATE_NEW_SHEETS;
+    private String exportTableName = "Sheet0";
 
     private int splitByRowCount = EXCEL2007MAXROWS;
     private int splitByCol = 0;
@@ -283,6 +285,10 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
             DBExecUtils.bindAttributes(session, srcEntity, null, columns, null);
         }
         decorator = GeneralUtils.adapt(getSite().getSource(), DBDAttributeDecorator.class);
+
+        if (columns != null && columns.length > 0) {
+            exportTableName = DTUtils.getTableName(columns[0].getDataSource(), getSite().getSource(), true);
+        }
     }
 
     private void printHeader(DBCResultSet resultSet, Worksheet wsh) throws DBException {
@@ -392,7 +398,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
             sheet = wb.getSheetAt(sheetIndex++);
             worksheet = new Worksheet(sheet, colValue, getPhysicalNumberOfRows(sheet));
         } else {
-            sheet = wb.createSheet();
+            sheet = wb.createSheet(exportTableName);
             worksheet = new Worksheet(sheet, colValue, 0);
         }
         printHeader(resultSet, worksheet);
