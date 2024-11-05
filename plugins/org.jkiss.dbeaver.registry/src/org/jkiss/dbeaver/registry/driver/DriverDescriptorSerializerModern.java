@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * DriverDescriptorSerializerModern
@@ -99,7 +100,7 @@ public class DriverDescriptorSerializerModern extends DriverDescriptorSerializer
                         }
 
                         if (!export) {
-                            List<DriverDescriptor.DriverFileInfo> files = driver.getResolvedFiles().get(lib);
+                            Set<DriverDescriptor.DriverFileInfo> files = driver.getResolvedFiles().get(lib);
                             if (!CommonUtils.isEmpty(files)) {
                                 json.name("files");
                                 json.beginObject();

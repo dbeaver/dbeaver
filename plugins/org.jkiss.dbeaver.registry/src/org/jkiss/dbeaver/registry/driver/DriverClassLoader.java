@@ -25,6 +25,7 @@ import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
 
 /**
  * DriverClassLoader
@@ -48,7 +49,7 @@ public class DriverClassLoader extends URLClassLoader
                 Path localFile = driverFile.getLocalFile();
                 if (localFile == null) {
                     // Check library files cache
-                    List<DriverDescriptor.DriverFileInfo> cachedFiles = driver.getCachedFiles(driverFile);
+                    Set<DriverDescriptor.DriverFileInfo> cachedFiles = driver.getCachedFiles(driverFile);
                     if (!CommonUtils.isEmpty(cachedFiles)) {
                         for (DriverDescriptor.DriverFileInfo fileInfo : cachedFiles) {
                             if (fileInfo.getFile() != null && fileInfo.getFile().getFileName().toString().equalsIgnoreCase(nativeName)) {

@@ -37,6 +37,7 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * DriverLibraryLocal
@@ -95,9 +96,9 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
         String localFilePath = this.getLocalFilePath();
         if (DBWorkbench.isDistributed() || DBWorkbench.getPlatform().getApplication().isMultiuser()) {
             Path resolvedCache;
-            List<DriverDescriptor.DriverFileInfo> driverFileInfos = driver.getResolvedFiles().get(this);
+            Set<DriverDescriptor.DriverFileInfo> driverFileInfos = driver.getResolvedFiles().get(this);
             if (!CommonUtils.isEmpty(driverFileInfos) && driverFileInfos.size() == 1) {
-                DriverDescriptor.DriverFileInfo driverFileInfo = driverFileInfos.get(0);
+                DriverDescriptor.DriverFileInfo driverFileInfo = driverFileInfos.iterator().next();
                 resolvedCache = resolveCacheDir().resolve(driverFileInfo.getFile().toString());
             } else {
                 // need to correct driver initialization, otherwise, if at least one file was copied,

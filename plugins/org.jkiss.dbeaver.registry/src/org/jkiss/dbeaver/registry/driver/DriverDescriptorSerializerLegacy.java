@@ -40,6 +40,7 @@ import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -166,7 +167,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         }
                     }
 
-                    List<DriverDescriptor.DriverFileInfo> files = driver.getResolvedFiles().get(lib);
+                    Set<DriverDescriptor.DriverFileInfo> files = driver.getResolvedFiles().get(lib);
                     if (files != null) {
                         for (DriverDescriptor.DriverFileInfo file : files) {
                             try (XMLBuilder.Element e2 = xml.startElement(RegistryConstants.TAG_FILE)) {

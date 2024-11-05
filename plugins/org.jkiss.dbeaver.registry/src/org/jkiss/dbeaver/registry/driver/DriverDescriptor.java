@@ -135,6 +135,19 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         public String toString() {
             return file != null ? file.getFileName().toString() : this.id;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            DriverFileInfo that = (DriverFileInfo) o;
+            return fileCRC == that.fileCRC && Objects.equals(id, that.id) && Objects.equals(version, that.version) && type == that.type && Objects.equals(file.toAbsolutePath(), that.file.toAbsolutePath());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(id, version, type, file.toAbsolutePath(), fileCRC);
+        }
     }
 
     private static class ReplaceInfo {
@@ -220,7 +233,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private final Map<String, Object> customConnectionProperties = new HashMap<>();
     private final Map<String, Object> originalConnectionProperties = new HashMap<>();
 
-    private final Map<DBPDriverLibrary, List<DriverFileInfo>> resolvedFiles = new HashMap<>();
+    private final Map<DBPDriverLibrary, Set<DriverFileInfo>> resolvedFiles = new HashMap<>();
 
     private Class<?> driverClass;
     private boolean isLoaded;
@@ -539,7 +552,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return customParameters;
     }
 
-    Map<DBPDriverLibrary, List<DriverFileInfo>> getResolvedFiles() {
+    Map<DBPDriverLibrary, Set<DriverFileInfo>> getResolvedFiles() {
         return resolvedFiles;
     }
 
@@ -1105,7 +1118,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     public void addLibraryFile(DBPDriverLibrary library, DriverFileInfo fileInfo) {
-        List<DriverFileInfo> files = resolvedFiles.computeIfAbsent(library, k -> new ArrayList<>());
+        Set<DriverFileInfo> files = resolvedFiles.computeIfAbsent(library, k -> new LinkedHashSet<>());
         files.add(fileInfo);
     }
 
@@ -1474,7 +1487,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 if (resetVersions) {
                     allExists = false;
                 } else {
-                    List<DriverFileInfo> files = resolvedFiles.get(library);
+                    Set<DriverFileInfo> files = resolvedFiles.get(library);
                     if (files == null) {
                         allExists = false;
                     } else {
@@ -1506,7 +1519,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             }
             downloaded = true;
             for (DBPDriverDependencies.DependencyNode node : dependencies.getLibraryMap()) {
-                List<DriverFileInfo> info = new ArrayList<>();
+                Set<DriverFileInfo> info = new LinkedHashSet<>();
                 resolvedFiles.put(node.library, info);
                 collectLibraryFiles(node, info);
             }
@@ -1521,7 +1534,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 continue;
             }
             if (library.isDownloadable()) {
-                List<DriverFileInfo> files = resolvedFiles.get(library);
+                Set<DriverFileInfo> files = resolvedFiles.get(library);
                 if (files != null) {
                     for (DriverFileInfo file : files) {
                         if (file.file != null && !result.contains(file.file)) {
@@ -1612,7 +1625,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                     }
                 }
             }
-            List<DriverFileInfo> files = resolvedFiles.get(library);
+            Set<DriverFileInfo> files = resolvedFiles.get(library);
             if (files != null) {
                 for (DriverFileInfo depFile : files) {
                     if (monitor.isCanceled()) {
@@ -1704,7 +1717,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return getWorkspaceDriversStorageFolder().resolve(getProviderId()).resolve(getId());
     }
 
-    List<DriverFileInfo> getCachedFiles(DBPDriverLibrary library) {
+    Set<DriverFileInfo> getCachedFiles(DBPDriverLibrary library) {
         return resolvedFiles.get(library);
     }
 
@@ -1730,7 +1743,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return resolvedFiles.get(library);
     }
 
-    private void collectLibraryFiles(DBPDriverDependencies.DependencyNode node, List<DriverFileInfo> files) {
+    private void collectLibraryFiles(DBPDriverDependencies.DependencyNode node, Set<DriverFileInfo> files) {
         if (node.duplicate) {
             return;
         }
@@ -1854,7 +1867,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             // - Local files are linked directly
             // - Local folders are linked to folder's contents
             if (library instanceof DriverLibraryLocal && !library.isDownloadable()) {
-                List<DriverFileInfo> libraryFiles = new ArrayList<>();
+                Set<DriverFileInfo> libraryFiles = new LinkedHashSet<>();
 
                 if (library.isCustom()) {
                     // Resolve custom libraries directly from file
@@ -1931,7 +1944,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         libraries.remove(library);
     }
 
-    private void resolveDirectories(Path targetFileLocation, DBPDriverLibrary library, Path srcLocalFile, Path trgLocalFile, List<DriverFileInfo> libraryFiles) throws IOException {
+    private void resolveDirectories(Path targetFileLocation, DBPDriverLibrary library, Path srcLocalFile, Path trgLocalFile, Set<DriverFileInfo> libraryFiles) throws IOException {
         // Resolve directory contents
         try (Stream<Path> list = Files.list(srcLocalFile)) {
             List<Path> srcDirFiles = list.toList();
