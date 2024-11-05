@@ -4,7 +4,8 @@
 <plugin>
 
     <extension point="org.jkiss.dbeaver.generic.meta">
-        <meta id="sqlite" class="org.jkiss.dbeaver.ext.sqlite.model.SQLiteMetaModel" driverClass="org.sqlite.JDBC" dialect="sqlite"/>
+        <meta id="sqlite" class="org.jkiss.dbeaver.ext.sqlite.model.SQLiteMetaModel"
+              driverClass="org.sqlite.JDBC,com.dbeaver.jdbc.driver.libsql.LibSqlDriver" dialect="sqlite"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
@@ -14,14 +15,14 @@
                 id="sqlite"
                 parent="generic"
                 label="SQLite"
-                icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/sqlite_icon.png"
+                icon="icons/sqlite_icon.png"
                 dialect="sqlite">
             <drivers managable="true">
                 <driver
                         id="sqlite_jdbc"
                         label="SQLite"
-                        icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/sqlite_icon.png"
-                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/sqlite_icon_big.png"
+                        icon="icons/sqlite_icon.png"
+                        iconBig="icons/sqlite_icon_big.png"
                         class="org.sqlite.JDBC"
                         sampleURL="jdbc:sqlite:{file}"
                         supportedConfigurationTypes="MANUAL,URL"
@@ -50,6 +51,29 @@
                     <parameter name="supports-stored-code" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
                 </driver>
+
+                <!-- LibSQL / Turso-->
+                <driver
+                        id="libsql_jdbc"
+                        label="LibSQL"
+                        class="com.dbeaver.jdbc.driver.libsql.LibSqlDriver"
+                        icon="icons/libsql_icon.png"
+                        iconBig="icons/libsql_icon_big.png"
+                        sampleURL="jdbc:dbeaver:libsql:{server}"
+                        defaultDatabase="http://localhost"
+                        description="LibSQL DBeaver JDBC driver. Works with standalone LibSQL server and with Turso."
+                        webURL="https://github.com/tursodatabase/libsql"
+                        databaseDocumentationSuffixURL="Database-driver-LibSQL"
+                        singleConnection="true"
+                        supportedConfigurationTypes="MANUAL,URL"
+                        categories="sql">
+                    <parameter name="supports-references" value="true"/>
+                    <parameter name="supports-struct-cache" value="true"/>
+                    <parameter name="supports-indexes" value="true"/>
+                    <parameter name="supports-stored-code" value="false"/>
+                    <parameter name="supports-truncate" value="false"/>
+                </driver>
+
             </drivers>
         </datasource>
     </extension>
@@ -79,7 +103,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
-        <dialect id="sqlite" parent="generic" class="org.jkiss.dbeaver.ext.sqlite.model.SQLiteSQLDialect" label="SQLite" description="SQLite dialect." icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/sqlite_icon.png">
+        <dialect id="sqlite" parent="generic" class="org.jkiss.dbeaver.ext.sqlite.model.SQLiteSQLDialect" label="SQLite" description="SQLite dialect." icon="icons/sqlite_icon.png">
             <property name="insertMethods" value="sqLiteInsertIgnore,sqLiteReplaceIgnore"/>
         </dialect>
     </extension>

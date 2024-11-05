@@ -14,36 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.bigquery.model;
+package org.jkiss.dbeaver.ext.sqlite.model;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
+import org.jkiss.dbeaver.ext.generic.model.GenericDataSourceInfo;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 
-/**
- * BigQuery SQL dialect
- */
-public class BigQuerySQLDialect extends GenericSQLDialect {
+public class SQLiteDataSourceInfo extends GenericDataSourceInfo {
 
-    private static String[] EXEC_KEYWORDS = {"CALL"};
+    private final boolean isRemote;
 
-    public BigQuerySQLDialect() {
-        super("BigQuery", "google_bigquery");
+    public SQLiteDataSourceInfo(DBPDriver driver, JDBCDatabaseMetaData metaData) {
+        super(driver, metaData);
+        this.isRemote = !driver.isEmbedded();
     }
 
-    @NotNull
+    // In LibSQL we don't have proper resulset metadata
     @Override
-    public MultiValueInsertMode getDefaultMultiValueInsertMode() {
-        return MultiValueInsertMode.GROUP_ROWS;
-    }
-
-    @Override
-    public char getStringEscapeCharacter() {
-        return '\\';
-    }
-
-    @NotNull
-    @Override
-    public String[] getExecuteKeywords() {
-        return EXEC_KEYWORDS;
+    public boolean needsTableMetaForColumnResolution() {
+        return !isRemote;
     }
 }
