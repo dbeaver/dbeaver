@@ -25,7 +25,6 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.perspective.DBeaverPerspective;
 
 public class DebugUIEventListener implements IDebugEventSetListener {
 
@@ -48,9 +47,6 @@ public class DebugUIEventListener implements IDebugEventSetListener {
     private void showDebugViews(boolean show) {
         IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
         IWorkbenchPage activePage = window.getActivePage();
-        if (!DBeaverPerspective.PERSPECTIVE_ID.equals(activePage.getPerspective().getId())) {
-            return;
-        }
 
         UIUtils.asyncExec(() -> {
             try {
