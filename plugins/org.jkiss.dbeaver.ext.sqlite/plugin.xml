@@ -65,6 +65,7 @@
                         webURL="https://github.com/tursodatabase/libsql"
                         databaseDocumentationSuffixURL="Database-driver-LibSQL"
                         singleConnection="true"
+                        supportedConfigurationTypes="MANUAL,URL"
                         categories="sql">
                     <parameter name="supports-references" value="true"/>
                     <parameter name="supports-struct-cache" value="true"/>
