@@ -177,6 +177,7 @@ public class DTUIMessages extends NLS {
     public static String stream_producer_column_mapping_error_title;
     public static String stream_producer_column_mapping_error_message;
     public static String stream_producer_select_input_file;
+    public static String stream_producer_page_input_files_hint;
     public static String stream_producer_page_preview_title_load_entity_meta;
     public static String stream_producer_page_preview_message_entity_attributes;
     public static String stream_producer_page_preview_title_preview_data;
@@ -206,7 +207,7 @@ public class DTUIMessages extends NLS {
 
     public static String page_configure_metadata_title;
     public static String page_configure_table_properties_tab_title;
-    public static String page_configure_table_DDL_button_persist;
+    public static String page_configure_table_DDL_button_execute;
     public static String page_configure_table_DDL_button_copy;
     public static String page_configure_table_properties_text;
     public static String page_configure_table_properties_no_properties;

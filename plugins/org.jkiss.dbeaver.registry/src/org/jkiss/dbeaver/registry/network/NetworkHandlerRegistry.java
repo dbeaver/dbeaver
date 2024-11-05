@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry.network;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWHandlerRegistry;
@@ -62,13 +63,14 @@ public class NetworkHandlerRegistry implements DBWHandlerRegistry {
         }
     }
 
+    @NotNull
     public List<NetworkHandlerDescriptor> getDescriptors() {
         List<NetworkHandlerDescriptor> descList = new ArrayList<>(descriptors);
         descList.removeIf(nhd -> nhd.getReplacedBy() != null);
         return descList;
     }
 
-    public NetworkHandlerDescriptor getDescriptor(String id) {
+    public NetworkHandlerDescriptor getDescriptor(@NotNull String id) {
         for (NetworkHandlerDescriptor descriptor : descriptors) {
             if (descriptor.getId().equals(id)) {
                 if (descriptor.getReplacedBy() != null) {
@@ -80,11 +82,13 @@ public class NetworkHandlerRegistry implements DBWHandlerRegistry {
         return null;
     }
 
-    public List<NetworkHandlerDescriptor> getDescriptors(DBPDataSourceContainer dataSource) {
+    @NotNull
+    public List<NetworkHandlerDescriptor> getDescriptors(@NotNull DBPDataSourceContainer dataSource) {
         return getDescriptors(dataSource.getDriver());
     }
 
-    public List<NetworkHandlerDescriptor> getDescriptors(DBPDriver driver) {
+    @NotNull
+    public List<NetworkHandlerDescriptor> getDescriptors(@NotNull DBPDriver driver) {
         List<NetworkHandlerDescriptor> result = new ArrayList<>();
         for (NetworkHandlerDescriptor d : descriptors) {
             if (d.getReplacedBy() == null && !d.hasObjectTypes() || d.matches(driver)) {

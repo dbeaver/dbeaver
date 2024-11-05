@@ -22,6 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Base data policy provider designed to provide specific policy property value.
@@ -54,18 +55,24 @@ public class BasePolicyDataProvider {
     }
 
     @Nullable
-    public String getPolicyValue(@NotNull String propertyName) {
+    public Object getPolicyValue(@NotNull String propertyName) {
         return getPolicyProperty(propertyName);
     }
 
-    private boolean convertToBooleanValue(String value) {
-        if (value == null || value.isBlank()) {
+    private boolean convertToBooleanValue(Object value) {
+        if (value == null) {
             return false;
         }
-        return value.equalsIgnoreCase("true") ||
-            value.equalsIgnoreCase("yes") ||
-            value.equalsIgnoreCase("on") ||
-            value.equals("1");
+        if (value instanceof String str) {
+            return str.equalsIgnoreCase("true") ||
+                   str.equalsIgnoreCase("yes") ||
+                   str.equalsIgnoreCase("on") ||
+                   str.equals("1");
+        }
+        if (value instanceof Number num) {
+            return num.intValue() > 0;
+        }
+        return CommonUtils.toBoolean(value);
     }
 
     /**
@@ -75,8 +82,8 @@ public class BasePolicyDataProvider {
      * @return policy data value or {@code null} if not found
      */
     @Nullable
-    public String getPolicyProperty(@NotNull String property) {
-        String value = System.getProperty(property);
+    public Object getPolicyProperty(@NotNull String property) {
+        Object value = System.getProperty(property);
         if (value != null) {
             return value;
         }
@@ -91,7 +98,7 @@ public class BasePolicyDataProvider {
     }
 
     @Nullable
-    private static String getRegistryPolicyValue(@NotNull WinReg.HKEY root, @NotNull String property) {
+    private static Object getRegistryPolicyValue(@NotNull WinReg.HKEY root, @NotNull String property) {
         if (!RuntimeUtils.isWindows()) {
             return null;
         }
@@ -100,7 +107,7 @@ public class BasePolicyDataProvider {
             if (Advapi32Util.registryKeyExists(root, DBEAVER_REGISTRY_POLICY_NODE) &&
                 Advapi32Util.registryValueExists(root, DBEAVER_REGISTRY_POLICY_NODE, property)
             ) {
-                return Advapi32Util.registryGetStringValue(root, DBEAVER_REGISTRY_POLICY_NODE, property);
+                return Advapi32Util.registryGetValue(root, DBEAVER_REGISTRY_POLICY_NODE, property);
             }
         } catch (Throwable e) {
             log.error("Error reading Windows registry", e);

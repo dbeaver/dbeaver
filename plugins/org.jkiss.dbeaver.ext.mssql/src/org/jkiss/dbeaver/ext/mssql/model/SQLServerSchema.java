@@ -239,7 +239,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
     }
 
     @Association
-    public Collection<SQLServerTableType> getTablesType(DBRProgressMonitor monitor) throws DBException {
+    public Collection<SQLServerTableType> getTablesTypes(DBRProgressMonitor monitor) throws DBException {
         return tableCache.getTypedObjects(monitor, this, SQLServerTableType.class);
     }
 
@@ -250,7 +250,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
     @Nullable
     public SQLServerTableType getTableType(@NotNull DBRProgressMonitor monitor, long tableId) throws DBException {
-        for (SQLServerTableBase table : getTables(monitor)) {
+        for (SQLServerTableBase table : tableCache.getAllObjects(monitor, this)) {
             if (table.getObjectId() == tableId && table instanceof SQLServerTableType tt) {
                 return tt;
             }

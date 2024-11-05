@@ -58,13 +58,17 @@ public class ConfirmationRegistry {
         return confirmations.values();
     }
 
-    public int confirmAction(@Nullable Shell shell, @NotNull String id, int type, int imageType, @NotNull Object... args) {
-        final ConfirmationDescriptor descriptor = confirmations.get(id);
-
+    @NotNull
+    public ConfirmationDescriptor getConfirmation(@NotNull String id) {
+        ConfirmationDescriptor descriptor = confirmations.get(id);
         if (descriptor == null) {
             throw new IllegalArgumentException("Can't find confirmation '" + id + "'");
         }
+        return descriptor;
+    }
 
+    public int confirmAction(@Nullable Shell shell, @NotNull String id, int type, int imageType, @NotNull Object... args) {
+        ConfirmationDescriptor descriptor = getConfirmation(id);
         return ConfirmationDialog.open(
             type,
             imageType == -1 ? type : imageType,

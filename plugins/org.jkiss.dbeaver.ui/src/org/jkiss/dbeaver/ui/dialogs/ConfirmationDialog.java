@@ -70,6 +70,31 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
         return dialogArea;
     }
 
+    /**
+     * Retrieves persisted confirmation state for the given key.
+     *
+     * @param id   identifier of a confirmation
+     * @param kind kind of the confirmation
+     * @return {@code true} if the persisted answer is "okay" or "yes",
+     * {@code false} if the persisted answer is "no",
+     * or {@code null} is no persisted answer is present
+     */
+    @Nullable
+    public static Boolean getPersistedState(@NotNull String id, int kind) {
+        String key = ConfirmationDialog.PREF_KEY_PREFIX + id;
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+
+        if (ConfirmationDialog.ALWAYS.equals(store.getString(key))) {
+            return true;
+        } else if (ConfirmationDialog.NEVER.equals(store.getString(key))) {
+            // These dialog all have OK and maybe CANCEL buttons.
+            // It makes no sense to return CANCEL_ID here as it's not a valid decision like YES or NO
+            return kind != QUESTION && kind != QUESTION_WITH_CANCEL;
+        } else {
+            return null;
+        }
+    }
+
     public static int open(
         int kind,
         int imageKind,

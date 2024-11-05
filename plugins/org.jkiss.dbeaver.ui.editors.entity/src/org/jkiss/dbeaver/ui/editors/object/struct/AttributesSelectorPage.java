@@ -40,7 +40,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -51,7 +51,6 @@ import org.jkiss.dbeaver.ui.controls.TableColumnSortListener;
 import org.jkiss.dbeaver.ui.editors.object.internal.ObjectEditorMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.*;
@@ -62,27 +61,26 @@ import java.util.function.Predicate;
  *
  * @author Serge Rider
  */
-public abstract class AttributesSelectorPage extends BaseObjectEditPage {
+public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRIBUTE extends DBSAttributeBase & DBSObject> extends BaseObjectEditPage {
 
-    protected DBSEntity entity;
+    protected T_OBJECT object;
     protected Table columnsTable;
 
-    protected List<AttributeInfo> attributes = new ArrayList<>();
+    protected List<AttributeInfo<T_ATTRIBUTE>> attributes = new ArrayList<>();
     protected Button toggleButton;
     protected Composite columnsGroup;
 
-    protected static class AttributeInfo {
-        DBSEntityAttribute attribute;
+    protected static class AttributeInfo<T extends DBSAttributeBase> {
+        T attribute;
         int position;
         Map<String, Object> properties = new HashMap<>();
 
-        public AttributeInfo(DBSEntityAttribute attribute)
-        {
+        public AttributeInfo(T attribute) {
             this.attribute = attribute;
             this.position = -1;
         }
 
-        public DBSEntityAttribute getAttribute() {
+        public T getAttribute() {
             return attribute;
         }
 
@@ -108,21 +106,18 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
         }
     }
 
-    public AttributesSelectorPage(
-        String title,
-        DBSEntity entity)
-    {
-        super(NLS.bind(ObjectEditorMessages.dialog_struct_columns_select_title, title, entity.getName()));
-        this.entity = entity;
+    protected AttributesSelectorPage(String title, T_OBJECT object) {
+        super(NLS.bind(ObjectEditorMessages.dialog_struct_columns_select_title, title, DBUtils.getObjectFullName(object, DBPEvaluationContext.UI)));
+        this.object = object;
     }
 
     protected AttributesSelectorPage() {
         super(null);
-        this.entity = null;
+        this.object = null;
     }
 
-    public Map<String, Object> getAttributeProperties(DBSEntityAttribute attr) {
-        for (AttributeInfo attrInfo : attributes) {
+    public Map<String, Object> getAttributeProperties(T_ATTRIBUTE attr) {
+        for (AttributeInfo<T_ATTRIBUTE> attrInfo : attributes) {
             if (attrInfo.attribute == attr) {
                 return attrInfo.properties;
             }
@@ -130,8 +125,8 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
         return Collections.emptyMap();
     }
 
-    public Object getAttributeProperty(DBSEntityAttribute attr, String propName) {
-        for (AttributeInfo attrInfo : attributes) {
+    public Object getAttributeProperty(T_ATTRIBUTE attr, String propName) {
+        for (AttributeInfo<T_ATTRIBUTE> attrInfo : attributes) {
             if (attrInfo.attribute == attr) {
                 return attrInfo.properties.get(propName);
             }
@@ -152,7 +147,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
 
         createColumnsGroup(panel);
         createContentsAfterColumns(panel);
-        fillAttributes(entity);
+        fillAttributes(object);
         return panel;
     }
 
@@ -236,14 +231,14 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
         colType.addListener(SWT.Selection, new TableColumnSortListener(columnsTable, 2));
     }
 
-    protected int fillAttributeColumns(DBSEntityAttribute attribute, AttributeInfo attributeInfo, TableItem columnItem) {
+    protected int fillAttributeColumns(T_ATTRIBUTE attribute, AttributeInfo<T_ATTRIBUTE> attributeInfo, TableItem columnItem) {
         columnItem.setText(0, attribute.getName());
         //columnItem.setText(1, String.valueOf(attribute.getOrdinalPosition()));
         columnItem.setText(2, attribute.getFullTypeName());
         return 2;
     }
 
-    protected Control createCellEditor(Table table, int index, TableItem item, AttributeInfo data) {
+    protected Control createCellEditor(Table table, int index, TableItem item, AttributeInfo<T_ATTRIBUTE> data) {
 /*
         final Text text = new Text(table, SWT.BORDER);
         text.setText(item.getText(index));
@@ -253,30 +248,34 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
         return null;
     }
 
-    protected void saveCellValue(Control control, int index, TableItem item, AttributeInfo data) {
+    protected void saveCellValue(Control control, int index, TableItem item, AttributeInfo<T_ATTRIBUTE> data) {
         //item.setText(index, control.getText());
     }
 
-    protected void setEntity(DBSEntity entity) {
-        this.entity = entity;
+    protected void setObject(@Nullable T_OBJECT object) {
+        this.object = object;
         this.attributes.clear();
         this.columnsTable.removeAll();
-        fillAttributes(entity);
+        fillAttributes(object);
     }
 
-    private void fillAttributes(final DBSEntity entity)
-    {
-        if (entity == null) {
+    @NotNull
+    protected abstract List<? extends T_ATTRIBUTE> getAttributes(@NotNull DBRProgressMonitor monitor, @NotNull T_OBJECT object) throws DBException;
+
+    private void fillAttributes(@Nullable T_OBJECT object) {
+        if (object == null) {
             return;
         }
-        final List<DBSEntityAttribute> attrList = new ArrayList<>();
+        final List<T_ATTRIBUTE> attrList = new ArrayList<>();
         AbstractJob loadJob = new AbstractJob("Load entity attributes") {
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
                 monitor.beginTask("Load attributes", 1);
                 try {
-                    for (DBSEntityAttribute attr : CommonUtils.safeCollection(entity.getAttributes(monitor))) {
-                        if (isShowHiddenAttributes() || !DBUtils.isHiddenObject(attr) || DBUtils.isRowIdAttribute(attr)) {
+                    for (T_ATTRIBUTE attr : getAttributes(monitor, object)) {
+                        if ((isShowHiddenAttributes() || !DBUtils.isHiddenObject(attr)) ||
+                            (attr instanceof DBSEntityAttribute ea && DBUtils.isRowIdAttribute(ea))
+                        ) {
                             attrList.add(attr);
                             // Preload node - required later to display its icon
                             DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(monitor, attr, true);
@@ -294,10 +293,10 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
             @Override
             public void done(IJobChangeEvent event) {
                 UIUtils.syncExec(() -> {
-                    for (DBSEntityAttribute attribute : attrList) {
+                    for (T_ATTRIBUTE attribute : attrList) {
                         TableItem columnItem = new TableItem(columnsTable, SWT.NONE);
 
-                        AttributeInfo col = new AttributeInfo(attribute);
+                        AttributeInfo<T_ATTRIBUTE> col = new AttributeInfo<>(attribute);
                         attributes.add(col);
 
                         DBNDatabaseNode attributeNode = DBWorkbench.getPlatform().getNavigatorModel().findNode(attribute);
@@ -332,10 +331,9 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
             TableItem[] tableColumns = columnsTable.getItems();
             for (TableItem tableItem: tableColumns) {
                 Object data = tableItem.getData();
-                if (!(data instanceof AttributesSelectorPage.AttributeInfo)) {
+                if (!(data instanceof AttributeInfo<?> attributeInfo)) {
                     continue;
                 }
-                AttributesSelectorPage.AttributeInfo attributeInfo = (AttributesSelectorPage.AttributeInfo) data;
                 if (Objects.equals(dbsObject, attributeInfo.attribute)) {
                     tableItem.setChecked(true);
                     handleItemSelect(tableItem, true);
@@ -376,16 +374,16 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
         UIUtils.createLabelText(
             tableGroup,
             ObjectEditorMessages.dialog_struct_columns_select_label_table,
-            DBUtils.getObjectFullName(entity, DBPEvaluationContext.UI), SWT.BORDER | SWT.READ_ONLY, new GridData(GridData.FILL_HORIZONTAL));
+            DBUtils.getObjectFullName(object, DBPEvaluationContext.UI), SWT.BORDER | SWT.READ_ONLY, new GridData(GridData.FILL_HORIZONTAL));
         return tableGroup;
     }
 
     void handleItemSelect(TableItem item, boolean notify) {
-        final AttributeInfo col = (AttributeInfo) item.getData();
+        final AttributeInfo<?> col = (AttributeInfo<?>) item.getData();
         if (item.getChecked() && col.position < 0) {
             // Checked
             col.position = 0;
-            for (AttributeInfo tmp : attributes) {
+            for (AttributeInfo<T_ATTRIBUTE> tmp : attributes) {
                 if (tmp != col && tmp.position >= col.position) {
                     col.position = tmp.position + 1;
                 }
@@ -395,7 +393,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
             // Unchecked
             item.setText(1, ""); //$NON-NLS-1$
             TableItem[] allItems = columnsTable.getItems();
-            for (AttributeInfo tmp : attributes) {
+            for (AttributeInfo<T_ATTRIBUTE> tmp : attributes) {
                 if (tmp != col && tmp.position >= col.position) {
                     tmp.position--;
                     for (TableItem ai : allItems) {
@@ -418,7 +416,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
     private boolean hasCheckedColumns()
     {
         boolean hasCheckedColumns = false;
-        for (AttributeInfo tmp : attributes) {
+        for (AttributeInfo<T_ATTRIBUTE> tmp : attributes) {
             if (tmp.position >= 0) {
                 hasCheckedColumns = true;
                 break;
@@ -437,12 +435,11 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
     }
 
     @NotNull
-    public List<DBSEntityAttribute> getSelectedAttributes()
-    {
-        List<DBSEntityAttribute> tableColumns = new ArrayList<>();
-        Set<AttributeInfo> orderedAttributes = new TreeSet<>(Comparator.comparingInt(o -> o.position));
+    public List<T_ATTRIBUTE> getSelectedAttributes() {
+        List<T_ATTRIBUTE> tableColumns = new ArrayList<>();
+        Set<AttributeInfo<T_ATTRIBUTE>> orderedAttributes = new TreeSet<>(Comparator.comparingInt(o -> o.position));
         orderedAttributes.addAll(attributes);
-        for (AttributeInfo col : orderedAttributes) {
+        for (AttributeInfo<T_ATTRIBUTE> col : orderedAttributes) {
             if (col.position >= 0) {
                 tableColumns.add(col.attribute);
             }
@@ -464,11 +461,12 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
         return true;
     }
 
-    public void updateColumnSelection(@NotNull Predicate<DBSEntityAttribute> predicate) {
+    public void updateColumnSelection(@NotNull Predicate<T_ATTRIBUTE> predicate) {
         for (TableItem item : columnsTable.getItems()) {
             item.setChecked(false);
-            if (item.getData() instanceof AttributeInfo) {
-                DBSEntityAttribute attribute = ((AttributeInfo) item.getData()).getAttribute();
+            if (item.getData() instanceof AttributeInfo<?> info) {
+                @SuppressWarnings("unchecked")
+                T_ATTRIBUTE attribute = (T_ATTRIBUTE) info.getAttribute();
                 if (predicate.test(attribute)) {
                     item.setChecked(true);
                 }
@@ -482,7 +480,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
         updateColumnSelection(this::isColumnSelected);
     }
 
-    public boolean isColumnSelected(DBSEntityAttribute attribute)
+    public boolean isColumnSelected(T_ATTRIBUTE attribute)
     {
         return false;
     }

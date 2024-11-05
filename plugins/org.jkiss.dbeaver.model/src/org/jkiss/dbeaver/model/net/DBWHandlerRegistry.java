@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.net;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 
@@ -26,11 +28,15 @@ import java.util.List;
  */
 public interface DBWHandlerRegistry {
 
+    @NotNull
     List<? extends DBWHandlerDescriptor> getDescriptors();
 
-    DBWHandlerDescriptor getDescriptor(String id);
+    @Nullable
+    DBWHandlerDescriptor getDescriptor(@NotNull String id);
 
-    List<? extends DBWHandlerDescriptor> getDescriptors(DBPDataSourceContainer dataSource);
-    List<? extends DBWHandlerDescriptor> getDescriptors(DBPDriver driver);
+    @NotNull
+    List<? extends DBWHandlerDescriptor> getDescriptors(@NotNull DBPDataSourceContainer dataSource);
+    @NotNull
+    List<? extends DBWHandlerDescriptor> getDescriptors(@NotNull DBPDriver driver);
 
 }

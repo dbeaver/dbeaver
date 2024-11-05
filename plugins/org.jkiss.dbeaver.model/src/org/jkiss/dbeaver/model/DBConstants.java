@@ -52,6 +52,12 @@ public class DBConstants {
     public static final String VAR_CONTEXT_ID = "context.id";
 
     /////////////////////////////////
+    // Object context parameters
+
+    public static final String CONTEXT_PARAMETER_PROJECT = "dbeaver.project";
+    public static final String CONTEXT_PARAMETER_DATA_SOURCE = "dbeaver.datasource";
+
+    /////////////////////////////////
     // Misc
     public static final String IS_WINDOWS_STORE_APP = "dbeaver.windows.store.app";
 
@@ -142,6 +148,7 @@ public class DBConstants {
     public static final String LOCAL_DOMAIN_NAME = "local";
 
     public static final String HOST_LOCALHOST = "localhost";
+    public static final String HOST_LOCALHOST_IP = "127.0.0.1";
 
 
     public static final String DRIVER_PARAM_DISABLE_NETWORK_PARAMETERS = "disableNetworkParameters";

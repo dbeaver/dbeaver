@@ -175,7 +175,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             ));
 
         }
-        if (isStandalone && !RuntimeUtils.isLinux()) {
+        if (isStandalone) {
             Group groupObjects = UIUtils.createControlGroup(
                 composite,
                 CoreMessages.pref_page_ui_general_group_browser, 2,
@@ -238,9 +238,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             if (!ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
                 automaticUpdateCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
             }
-            if (!RuntimeUtils.isLinux()) {
-                useEmbeddedBrowserAuth.setSelection(store.getBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH));
-            }
+            useEmbeddedBrowserAuth.setSelection(store.getBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH));
         }
         final String timezone = store.getString(ModelPreferences.CLIENT_TIMEZONE);
         if (clientTimezone != null) {
@@ -256,9 +254,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     protected void performDefaults() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         if (isStandalone) {
-            if (!RuntimeUtils.isLinux()) {
-                useEmbeddedBrowserAuth.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH));
-            }
+            useEmbeddedBrowserAuth.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH));
             if (!ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
                 automaticUpdateCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
             }
@@ -288,9 +284,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         if (isStandalone) {
-            if (!RuntimeUtils.isLinux()) {
-                store.setValue(DBeaverPreferences.UI_USE_EMBEDDED_AUTH, useEmbeddedBrowserAuth.getSelection());
-            }
+            store.setValue(DBeaverPreferences.UI_USE_EMBEDDED_AUTH, useEmbeddedBrowserAuth.getSelection());
             if (!ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
                 store.setValue(DBeaverPreferences.UI_AUTO_UPDATE_CHECK, automaticUpdateCheck.getSelection());
             } else {

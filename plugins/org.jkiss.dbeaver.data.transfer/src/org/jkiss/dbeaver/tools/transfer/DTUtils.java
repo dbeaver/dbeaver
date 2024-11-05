@@ -23,6 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.*;
@@ -45,6 +46,8 @@ import org.jkiss.dbeaver.tools.transfer.serialize.SerializerRegistry;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -53,7 +56,6 @@ import java.util.*;
 public class DTUtils {
 
     private static final Log log = Log.getLog(DTUtils.class);
-
     private static final int MAX_SAMPLE_ROWS = 1000;
 
     public static void addSummary(StringBuilder summary, String option, Object value) {
@@ -84,16 +86,16 @@ public class DTUtils {
                 DBUtils.getObjectFullName(source, DBPEvaluationContext.UI);
         } else {
             String tableName = null;
-            if (source instanceof SQLQueryContainer) {
-                tableName = getTableNameFromQuery(dataSource, (SQLQueryContainer) source, shortName);
-            } else if (source instanceof IAdaptable) {
-                SQLQueryContainer queryContainer = ((IAdaptable) source).getAdapter(SQLQueryContainer.class);
+            if (source instanceof SQLQueryContainer queryContainer) {
+                tableName = getTableNameFromQuery(dataSource, queryContainer, shortName);
+            } else if (source instanceof IAdaptable adaptable) {
+                SQLQueryContainer queryContainer = adaptable.getAdapter(SQLQueryContainer.class);
                 if (queryContainer != null) {
                     tableName = getTableNameFromQuery(dataSource, queryContainer, shortName);
                 }
             }
-            if (tableName == null && source instanceof IAdaptable) {
-                DBSDataContainer dataContainer = ((IAdaptable) source).getAdapter(DBSDataContainer.class);
+            if (tableName == null && source instanceof IAdaptable adaptable) {
+                DBSDataContainer dataContainer = adaptable.getAdapter(DBSDataContainer.class);
                 if (dataContainer instanceof DBSEntity) {
                     tableName = shortName ?
                         DBUtils.getQuotedIdentifier(dataContainer) :
@@ -199,14 +201,19 @@ public class DTUtils {
     }
 
     @NotNull
-    public static List<DBSAttributeBase> getAttributes(@NotNull DBRProgressMonitor monitor, @NotNull DBSDataContainer container, @NotNull Object controller) throws DBException {
-        final List<DBSAttributeBase> attributes = new ArrayList<>();
+    @SuppressWarnings("unchecked")
+    public static <T extends DBSAttributeBase & DBSObject> List<T> getAttributes(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSDataContainer container,
+        @NotNull Object controller
+    ) throws DBException {
+        final List<T> attributes = new ArrayList<>();
         if (container instanceof DBSEntity && !(container instanceof DBSDocumentContainer)) {
             for (DBSEntityAttribute attr : CommonUtils.safeList(((DBSEntity) container).getAttributes(monitor))) {
                 if (DBUtils.isHiddenObject(attr)) {
                     continue;
                 }
-                attributes.add(attr);
+                attributes.add((T) attr);
             }
         } else {
             // Seems to be a dynamic query. Execute it to get metadata
@@ -219,7 +226,12 @@ public class DTUtils {
             DBExecUtils.tryExecuteRecover(monitor, context.getDataSource(), monitor1 -> {
                 final MetadataReceiver receiver = new MetadataReceiver(container);
                 try (DBCSession session = context.openSession(monitor1, DBCExecutionPurpose.META, "Read query meta data")) {
-                    container.readData(new AbstractExecutionSource(container, session.getExecutionContext(), controller), session, receiver, null, 0, 1, DBSDataContainer.FLAG_NONE, 1);
+                    AbstractExecutionSource executionSource = new AbstractExecutionSource(
+                        container,
+                        session.getExecutionContext(),
+                        controller
+                    );
+                    container.readData(executionSource, session, receiver, null, 0, 1, DBSDataContainer.FLAG_NONE, 1);
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
                 }
@@ -230,7 +242,7 @@ public class DTUtils {
                     if (DBUtils.isHiddenObject(attr)) {
                         continue;
                     }
-                    attributes.add(attr);
+                    attributes.add((T) attr);
                 }
             });
         }
@@ -378,6 +390,14 @@ public class DTUtils {
                 addLeafBindings(result, nested);
             }
         }
+    }
+
+    public static Path findProjectFile(@NotNull DBPProject project, @NotNull String filePath) {
+        Path file = project.getAbsolutePath().resolve(filePath);
+        if (Files.exists(file) && Files.isRegularFile(file)) {
+            return file;
+        }
+        return null;
     }
 
     private static class MetadataReceiver implements DBDDataReceiver {

@@ -114,7 +114,7 @@ public class ViewSQLDialog extends BaseSQLDialog {
             createButton(parent, IDialogConstants.OPEN_ID, ResultSetMessages.dialog_text_view_open_editor, true);
         }
         if (showSaveButton) {
-            createButton(parent, IDialogConstants.PROCEED_ID, SQLEditorMessages.dialog_view_sql_button_persist, true);
+            createButton(parent, IDialogConstants.PROCEED_ID, SQLEditorMessages.dialog_view_sql_button_execute, true);
             createCopyButton(parent);
             createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
         } else {

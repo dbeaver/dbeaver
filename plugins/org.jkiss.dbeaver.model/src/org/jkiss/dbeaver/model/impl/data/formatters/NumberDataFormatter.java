@@ -139,6 +139,8 @@ public class NumberDataFormatter implements DBDDataFormatter {
         } else if (value instanceof Float || value instanceof Double) {
             // Convert to BigDecimal so we don't have rounding issues with high minimum fraction digits set
             value = new BigDecimal(value.toString());
+        } else if (!(value instanceof Number)) {
+            return value.toString();
         }
         try {
             synchronized (this) {

@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.model.sql.generator;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.impl.sql.SelectTableGenerator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLQueryGeneratorSelect;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
@@ -33,9 +33,9 @@ public class SQLGeneratorSelect extends SQLGeneratorTable {
 
     @Override
     public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntity object) throws DBException {
-        if (object instanceof SelectTableGenerator) {
+        if (object instanceof SQLQueryGeneratorSelect) {
             // It can be non relation database, which have another SELECT statement
-            ((SelectTableGenerator) object).createSelectStatement(monitor, sql);
+            ((SQLQueryGeneratorSelect) object).createSelectStatement(monitor, sql);
             return;
         }
         sql.append("SELECT ");

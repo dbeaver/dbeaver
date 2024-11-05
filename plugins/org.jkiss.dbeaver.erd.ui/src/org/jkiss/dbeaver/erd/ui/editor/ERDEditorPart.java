@@ -59,17 +59,26 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.*;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
-import org.jkiss.dbeaver.erd.ui.action.*;
+import org.jkiss.dbeaver.erd.ui.action.DiagramLayoutAction;
+import org.jkiss.dbeaver.erd.ui.action.DiagramToggleGridAction;
+import org.jkiss.dbeaver.erd.ui.action.DiagramToggleHandAction;
+import org.jkiss.dbeaver.erd.ui.action.ERDEditorPropertyTester;
 import org.jkiss.dbeaver.erd.ui.directedit.StatusLineValidationMessageHandler;
 import org.jkiss.dbeaver.erd.ui.dnd.DataEditDropTargetListener;
 import org.jkiss.dbeaver.erd.ui.dnd.NodeDropTargetListener;
-import org.jkiss.dbeaver.erd.ui.editor.tools.*;
+import org.jkiss.dbeaver.erd.ui.editor.tools.ChangeZOrderAction;
+import org.jkiss.dbeaver.erd.ui.editor.tools.ResetPartColorAction;
+import org.jkiss.dbeaver.erd.ui.editor.tools.SetPartColorAction;
+import org.jkiss.dbeaver.erd.ui.editor.tools.SetPartSettingsAction;
 import org.jkiss.dbeaver.erd.ui.export.ERDExportFormatHandler;
 import org.jkiss.dbeaver.erd.ui.export.ERDExportFormatRegistry;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
-import org.jkiss.dbeaver.erd.ui.model.*;
 import org.jkiss.dbeaver.erd.ui.model.ERDContainerDecorated.NodeVisualInfo;
+import org.jkiss.dbeaver.erd.ui.model.ERDContentProviderDecorated;
+import org.jkiss.dbeaver.erd.ui.model.ERDDecorator;
+import org.jkiss.dbeaver.erd.ui.model.ERDDecoratorDefault;
+import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationDescriptor;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationRegistry;
 import org.jkiss.dbeaver.erd.ui.part.*;
@@ -102,8 +111,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -244,7 +253,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         configPropertyListener = new ConfigPropertyListener();
         ERDUIActivator.getDefault().getPreferenceStore().addPropertyChangeListener(configPropertyListener);
         if (routerStyle == null) {
-            routerStyle = ERDConnectionRouterRegistry.getInstance().getActiveDescriptor();
+            routerStyle = ERDConnectionRouterRegistry.getInstance().getActiveRouter();
         }
         if (notationStyle == null) {
             notationStyle = ERDNotationRegistry.getInstance().getActiveDescriptor();
@@ -1275,7 +1284,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 doSave(new NullProgressMonitor());
                 refreshDiagram(true, false);
             } else if (ERDUIConstants.PREF_ROUTING_TYPE.equals(event.getProperty())) {
-                ERDConnectionRouterDescriptor defaultRouter = ERDConnectionRouterRegistry.getInstance().getActiveDescriptor();
+                ERDConnectionRouterDescriptor defaultRouter = ERDConnectionRouterRegistry.getInstance().getActiveRouter();
                 setDiagramRouter(defaultRouter);
                 doSave(new NullProgressMonitor());
                 refreshDiagram(true, false);
@@ -1316,7 +1325,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         public ProgressVisualizer<EntityDiagram> createLoadVisualizer()
         {
-            getGraphicalControl().setBackground(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
+            Control graphicalControl = getGraphicalControl();
+            if (graphicalControl != null) {
+                graphicalControl.setBackground(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
+            }
             return new LoadVisualizer();
         }
 

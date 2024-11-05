@@ -120,7 +120,6 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_viewer_hide_columns_error_title;
     public static String controls_resultset_viewer_hide_columnss_error_text;
     public static String controls_resultset_viewer_show_hidden_columns;
-    public static String controls_resultset_viewer_collection_size_text;
 
     public static String controls_resultset_ref_menu_no_references;
     public static String controls_resultset_ref_menu_references;
@@ -318,7 +317,7 @@ public class ResultSetMessages extends NLS {
     public static String dialog_save_script_button_delete_cascade_tip;
     public static String dialog_save_script_button_delete_deep_cascade;
     public static String dialog_save_script_button_delete_deep_cascade_tip;
-    public static String dialog_save_script_button_bar_button_persist;
+    public static String dialog_save_script_button_bar_button_execute;
     public static String dialog_save_script_button_bar_button_copy;
 
     //Preference/Properties

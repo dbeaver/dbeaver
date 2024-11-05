@@ -22,13 +22,13 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
-import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
+import org.jkiss.dbeaver.ui.AbstractObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 
 /**
  * SSL configuration
  */
-public abstract class SSLConfiguratorAbstractUI implements IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> {
+public abstract class SSLConfiguratorAbstractUI extends AbstractObjectPropertyConfigurator<Object, DBWHandlerConfiguration> {
 
     @Override
     public void resetSettings(@NotNull DBWHandlerConfiguration configuration) {

@@ -32,13 +32,13 @@ import org.jkiss.dbeaver.model.impl.data.ExecuteInsertBatchImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStringValueHandler;
-import org.jkiss.dbeaver.model.impl.sql.ChangeTableDataStatement;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTable;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLExpressionFormatter;
+import org.jkiss.dbeaver.model.sql.SQLQueryGeneratorUpdate;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
@@ -56,7 +56,7 @@ import java.util.stream.Collectors;
  */
 public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER extends DBSObject>
     extends AbstractTable<DATASOURCE, CONTAINER>
-    implements DBSDictionary, DBSDataManipulator, DBPSaveableObject, ChangeTableDataStatement
+    implements DBSDictionary, DBSDataManipulator, DBPSaveableObject, SQLQueryGeneratorUpdate
 {
     private static final Log log = Log.getLog(JDBCTable.class);
 

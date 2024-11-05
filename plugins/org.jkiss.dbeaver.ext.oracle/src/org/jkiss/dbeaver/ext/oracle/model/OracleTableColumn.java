@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
@@ -35,7 +34,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import java.sql.ResultSet;
 import java.sql.Types;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -44,7 +42,6 @@ import java.util.List;
 public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implements
     DBSTableColumn, DBSTypedObjectEx, DBSTypedObjectExt3, DBPHiddenObject, DBPNamedObject2, DBSTypedObjectExt4<OracleDataType>, DBPObjectWithLazyDescription
 {
-    private static final Log log = Log.getLog(OracleTableColumn.class);
 
     private OracleDataType type;
     private OracleDataTypeModifier typeMod;
@@ -250,8 +247,8 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
             if (!dataTypes.contains(column.getDataType())) {
                 dataTypes.add(column.getDataType());
             }
-            Collections.sort(dataTypes, DBUtils.nameComparator());
-            return dataTypes.toArray(new DBSDataType[dataTypes.size()]);
+            dataTypes.sort(DBUtils.nameComparator());
+            return dataTypes.toArray(new DBSDataType[0]);
         }
     }
 

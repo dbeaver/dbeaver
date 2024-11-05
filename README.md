@@ -7,14 +7,13 @@
 # DBeaver
 
 Free multi-platform database tool for developers, SQL programmers, database administrators and analysts.  
-Supports any database which has JDBC driver (which basically means - ANY database). 
-<a href="https://dbeaver.com/download/">Commercial versions</a> also support non-JDBC datasources such as 
+Supports any database which has JDBC driver (which basically means - ANY database).
+<a href="https://dbeaver.com/download/">Commercial versions</a> also support non-JDBC datasources such as
 MongoDB, Cassandra, Couchbase, Redis, BigTable, ScyllaDB, DynamoDB, etc.
-You can find the list of all databases supported in commercial versions 
+You can find the list of all databases supported in commercial versions
 <a href="https://dbeaver.com/databases/">here</a>.
 
 * Has a lot of <a href="https://github.com/dbeaver/dbeaver/wiki">features</a> including metadata editor, SQL editor, rich data editor, ERD, data export/import/migration, SQL execution plans, etc.
-* Based on <a href="https://wiki.eclipse.org/Rich_Client_Platform">Eclipse</a> platform.
 * Uses plugins architecture and provides additional functionality for the following databases: MySQL/MariaDB, PostgreSQL, Greenplum, Oracle, IBM Db2, Exasol, SQL Server, Sybase/SAP ASE, SQLite, Firebird, H2, HSQLDB, Derby, Teradata, Vertica, Netezza, Informix, etc.
 
 <a href="https://dbeaver.io/product/dbeaver-ss-mock.png"><img src="https://dbeaver.io/product/dbeaver-ss-mock.png" width="400"/></a>
@@ -47,6 +46,7 @@ You can change default JDK version by replacing directory `jre` in dbeaver insta
 ## Feedback
 
 - For bug reports and feature requests - please <a href="https://github.com/dbeaver/dbeaver/issues">create a ticket</a>.
+- To promote <a href="https://github.com/dbeaver/dbeaver/issues?q=is%3Aissue+is%3Aopen+sort%3Areactions-%2B1-desc+label%3A%22wait+for+votes%22">a ticket</a> to a higher priority - please vote for it with 👍 under the ticket description.
 - If you have any questions, ideas, etc - please <a href="https://github.com/dbeaver/dbeaver/discussions">start a discussion</a>.
 - Pull requests are welcome.
 - Visit https://dbeaver.com for more information.
@@ -58,7 +58,7 @@ You can change default JDK version by replacing directory `jre` in dbeaver insta
 Hooray, we have reached 35k+ stars on GitHub and continue to grow!  
 That's really cool, and we are glad that you like DBeaver.
 
-- We are actively looking for new source code contributors. We have added labels “Good first issue” and “Help wanted” to some tickets. If you want to be a part of our development team, just be brave and take a ticket.
+- We are actively looking for new source code contributors. We have added labels “Good first issue” and “Help wanted” to some tickets. If you want to be a part of our development team, just be brave and take a ticket. <a href="https://dbeaver.com/help-dbeaver/">We are happy to reward</a> our most active contributors every major sprint.
 - You can buy <a href="https://dbeaver.com/buy/">one of our commercial versions</a>. They include NoSQL databases support, additional extensions, and official online support. Also, licensed users have priorities in bug fixes and the development of new features.
 
 Thank you!  
@@ -69,6 +69,5 @@ Thank you!
 
 <a href="https://github.com/dbeaver/cloudbeaver/"><img src="https://github.com/dbeaver/cloudbeaver/wiki/images/cloudbeaver-logo.png" width="250"/></a>
 
-DBeaver is a desktop client.  
-If you are looking for a web-based database management tool - check our new product: <a href="https://cloudbeaver.io/">CloudBeaver</a>.  
-It is based on DBeaver platform and thus supports any database and most of DBeaver features.
+<a href="https://github.com/dbeaver/cloudbeaver">CloudBeaver</a> is a web-based database management tool built on the DBeaver platform. It brings the capabilities of DBeaver to the browser, enabling database management from any device with an internet connection and eliminating the need for local installation. Supporting any database, CloudBeaver incorporates most of DBeaver's features and includes advanced access management for secure collaboration.
+Designed with a user-friendly interface, CloudBeaver simplifies complex database operations and is suitable for both individual developers and organizations. Its scalable architecture accommodates various needs, making it a convenient solution for managing databases anytime and anywhere through web-based accessibility.

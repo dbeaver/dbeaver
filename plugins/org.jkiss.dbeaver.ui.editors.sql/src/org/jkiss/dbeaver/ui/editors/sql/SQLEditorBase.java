@@ -82,7 +82,10 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLBackgroundParsingJob;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLEditorOutlinePage;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLEditorSemanticMarkersManager;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLSemanticErrorAnnotation;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.*;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCharacterPairMatcher;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLEditorCompletionContext;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLProblemAnnotation;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleScanner;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
@@ -214,8 +217,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     @Nullable
-    public SQLQueryCompletionContext obtainCompletionContext(int position) {
-        return backgroundParsingJob == null ? null : backgroundParsingJob.obtainCompletionContext(position);
+    public SQLQueryCompletionContext obtainCompletionContext(DBRProgressMonitor monitor, @NotNull Position completionRequestPostion) {
+        return backgroundParsingJob == null ? null : backgroundParsingJob.obtainCompletionContext(monitor, completionRequestPostion);
     }
 
     @Override
@@ -535,7 +538,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         return hasVerticalRuler ? super.createVerticalRuler() : new VerticalRuler(0);
     }
 
-    void setHasVerticalRuler(boolean hasVerticalRuler) {
+    protected void setHasVerticalRuler(boolean hasVerticalRuler) {
         this.hasVerticalRuler = hasVerticalRuler;
     }
 

@@ -72,6 +72,8 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     final ReplicationCache replCache;
     final JobCache jobCache;
     final DbLinkCache dbLinkCache;
+    final MemoryModuleCache memoryModuleCache;
+    
     private boolean hasStatistics;
 
     private GenericSchema publicSchema;
@@ -89,6 +91,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         replCache = new ReplicationCache(this);
         jobCache = new JobCache();
         dbLinkCache = new DbLinkCache();
+        memoryModuleCache = new MemoryModuleCache();
     }
 
     @Override
@@ -122,6 +125,11 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     @NotNull
     public AltibaseMetaModel getMetaModel() {
         return (AltibaseMetaModel) super.getMetaModel();
+    }
+
+    @Override
+    public boolean isOmitCatalog() {
+        return true;
     }
 
     /**
@@ -158,6 +166,19 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         this.initialize(monitor);
 
         return this;
+    }
+
+    @Nullable
+    @Override
+    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
+        DBSObject child = super.getChild(monitor, childName);
+
+        // If it's unable to find the target object in schema, then need to find it from non-schema objects
+        if (child == null) {
+            child = this.getReplication(monitor, childName);
+        }
+
+        return child;
     }
 
     @Nullable
@@ -432,10 +453,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                     "SELECT"
                             + " r.replication_name,"
-                            + " DECODE( r.is_started,"
-                                + " 0, 'Stop', "
-                                + " 1,'Start', "
-                                + " 'Unknown') AS status,"
+                            + " r.is_started,"
                             + " DECODE( r.conflict_resolution,"
                                 + " 0, 'Default', "
                                 + " 1, 'Master', "
@@ -568,7 +586,40 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     public Collection<AltibaseJob> getJobs(@NotNull DBRProgressMonitor monitor) throws DBException {
         return jobCache.getAllObjects(monitor, this);
     }
-    
+
+    ///////////////////////////////////////////////
+    // Modules
+
+    @Association
+    public Collection<AltibaseMemoryModule> getMemoryModules(DBRProgressMonitor monitor) throws DBException {
+        return memoryModuleCache.getAllObjects(monitor, this);
+    }
+
+    public MemoryModuleCache getModuleCache() {
+        return memoryModuleCache;
+    }
+
+    static class MemoryModuleCache extends JDBCObjectCache<GenericStructContainer, AltibaseMemoryModule> {
+
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, 
+                @NotNull GenericStructContainer owner) throws SQLException {
+            return session.prepareStatement("SELECT * FROM v$memstat ORDER BY max_total_size DESC");
+        }
+
+        @Override
+        protected AltibaseMemoryModule fetchObject(@NotNull JDBCSession session, 
+                @NotNull GenericStructContainer owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+            return new AltibaseMemoryModule(owner, dbResult);
+        }
+    }
+
+    @Association
+    public Collection<AltibaseMemoryModule> getModules(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return memoryModuleCache.getAllObjects(monitor, this);
+    }
+
     ///////////////////////////////////////////////
     // Public DB Links
     

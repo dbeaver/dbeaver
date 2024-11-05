@@ -127,13 +127,11 @@ public class NavigatorHandlerLinkEditor extends AbstractHandler {
     }
 
     private void showResourceInNavigator(NavigatorViewBase activePart, IFile editorFile) {
-        DBNProject projectNode = NavigatorViewBase.getGlobalNavigatorModel()
-            .getRoot().getProjectNode(editorFile.getProject());
-        if (projectNode != null) {
-            DBNResource resource = projectNode.findResource(editorFile);
-            if (resource != null) {
-                activePart.showNode(resource);
-            }
+        DBNProject projectNode = NavigatorResources.getProjectNode(
+            NavigatorViewBase.getGlobalNavigatorModel().getRoot(), editorFile.getProject());
+        DBNResource resource = NavigatorResources.findResource(projectNode, editorFile);
+        if (resource != null) {
+            activePart.showNode(resource);
         }
     }
 }

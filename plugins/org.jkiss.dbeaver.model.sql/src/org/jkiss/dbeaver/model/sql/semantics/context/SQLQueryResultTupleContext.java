@@ -24,9 +24,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -39,11 +37,14 @@ public class SQLQueryResultTupleContext extends SQLQuerySyntaxContext {
     private final List<SQLQueryResultColumn> columns;
     @NotNull
     private final Set<DBSEntity> realSources;
+    @NotNull
+    private final List<SQLQueryResultPseudoColumn> pseudoColumns;
 
-    public SQLQueryResultTupleContext(@NotNull SQLQueryDataContext parent, @NotNull List<SQLQueryResultColumn> columns) {
+    public SQLQueryResultTupleContext(@NotNull SQLQueryDataContext parent, @NotNull List<SQLQueryResultColumn> columns, @NotNull List<SQLQueryResultPseudoColumn> pseudoColumns) {
         super(parent);
         this.columns = columns;
         this.realSources = columns.stream().map(c -> c.realSource).filter(Objects::nonNull).collect(Collectors.toSet());
+        this.pseudoColumns = pseudoColumns;
     }
 
     @NotNull
@@ -52,10 +53,16 @@ public class SQLQueryResultTupleContext extends SQLQuerySyntaxContext {
         return this.columns;
     }
 
+    @NotNull
+    @Override
+    public List<SQLQueryResultPseudoColumn> getPseudoColumnsList() {
+        return this.pseudoColumns;
+    }
+
     @Nullable
     @Override
     public SQLQueryResultColumn resolveColumn(@NotNull DBRProgressMonitor monitor, @NotNull String columnName) {  // TODO consider reporting ambiguity
-        SQLQueryResultColumn result = columns.stream()
+        SQLQueryResultColumn result = this.columns.stream()
             .filter(c -> c.symbol.getName().equals(columnName))
             .findFirst()
             .orElse(null);
@@ -69,7 +76,7 @@ public class SQLQueryResultTupleContext extends SQLQuerySyntaxContext {
             try {
                 DBSEntityAttribute attr = source.getAttribute(monitor, unquoted);
                 if (attr != null) {
-                    result = columns.stream()
+                    result = this.columns.stream()
                         .filter(c -> c.realAttr == attr)
                         .findFirst()
                         .orElse(null);
@@ -85,6 +92,17 @@ public class SQLQueryResultTupleContext extends SQLQuerySyntaxContext {
         }
         
         return null;
+    }
+
+    @Override
+    @Nullable
+    public SQLQueryResultPseudoColumn resolvePseudoColumn(DBRProgressMonitor monitor, @NotNull String name) {
+        SQLQueryResultPseudoColumn result = this.pseudoColumns.stream()
+            .filter(c -> c.symbol.getName().equals(name))
+            .findFirst()
+            .orElse(null);
+
+        return result;
     }
 }
 

@@ -72,7 +72,9 @@ public class ProgressPainter {
 
     public void close() {
         if (loadingListener != null) {
-            control.removePaintListener(loadingListener);
+            if (!control.isDisposed()) {
+                control.removePaintListener(loadingListener);
+            }
             loadingListener = null;
         }
     }

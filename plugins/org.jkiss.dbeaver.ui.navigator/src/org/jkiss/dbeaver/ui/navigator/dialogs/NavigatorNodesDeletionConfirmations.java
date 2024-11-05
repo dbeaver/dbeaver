@@ -30,7 +30,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNNodeWithResource;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -161,9 +160,9 @@ public final class NavigatorNodesDeletionConfirmations {
             DBNNode node = (DBNNode) obj;
             TableItem item = new TableItem(objectsTable, SWT.NONE);
             item.setImage(DBeaverIcons.getImage(node.getNodeIcon()));
-            if (node instanceof DBNNodeWithResource) {
+            if (node.getAdapter(IResource.class) != null) {
+                IResource resource = node.getAdapter(IResource.class);
                 item.setText(0, node.getName());
-                IResource resource = ((DBNNodeWithResource) node).getResource();
                 IPath resLocation = resource.getLocation();
                 item.setText(1, "File");
                 item.setText(2, resLocation == null ? "" : resLocation.toString());

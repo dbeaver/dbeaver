@@ -25,9 +25,9 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueColumnReferenceExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
-import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueColumnReferenceExpression;
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
@@ -45,18 +45,18 @@ public class SQLQueryInsertModel extends SQLQueryDMLStatementModel {
 
     @NotNull
     public static SQLQueryModelContent recognize(@NotNull SQLQueryModelRecognizer recognizer, @NotNull STMTreeNode node) {
-        STMTreeNode tableNameNode = node.findChildOfName(STMKnownRuleNames.tableName);
-        SQLQueryRowsTableDataModel tableModel = tableNameNode == null ? null : recognizer.collectTableReference(tableNameNode);
+        STMTreeNode tableNameNode = node.findFirstChildOfName(STMKnownRuleNames.tableName);
+        SQLQueryRowsTableDataModel tableModel = tableNameNode == null ? null : recognizer.collectTableReference(tableNameNode, false);
 
         List<SQLQuerySymbolEntry> columnNames;
         SQLQueryRowsSourceModel valuesRows;
 
-        STMTreeNode insertColumnsAndSource = node.findChildOfName(STMKnownRuleNames.insertColumnsAndSource);
+        STMTreeNode insertColumnsAndSource = node.findFirstChildOfName(STMKnownRuleNames.insertColumnsAndSource);
         if (insertColumnsAndSource != null) {
-            STMTreeNode insertColumnList = insertColumnsAndSource.findChildOfName(STMKnownRuleNames.insertColumnList);
+            STMTreeNode insertColumnList = insertColumnsAndSource.findFirstChildOfName(STMKnownRuleNames.insertColumnList);
             columnNames = insertColumnList == null ? null : recognizer.collectColumnNameList(insertColumnList);
 
-            STMTreeNode valuesNode = insertColumnsAndSource.findChildOfName(STMKnownRuleNames.queryExpression);
+            STMTreeNode valuesNode = insertColumnsAndSource.findFirstChildOfName(STMKnownRuleNames.queryExpression);
             valuesRows = valuesNode == null ? null : recognizer.collectQueryExpression(valuesNode);
         } else {
             columnNames = Collections.emptyList();
@@ -93,7 +93,9 @@ public class SQLQueryInsertModel extends SQLQueryDMLStatementModel {
             for (SQLQuerySymbolEntry columnName : this.columnNames) {
                 if (columnName.isNotClassified()) {
                     SQLQueryResultColumn column = context.resolveColumn(statistics.getMonitor(), columnName.getName());
-                    SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(columnName, column, statistics);
+                    if (column != null || !context.hasUndresolvedSource()) {
+                        SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(columnName, column, statistics);
+                    }
                 }
             }
         }

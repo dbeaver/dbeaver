@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.model.sql.parser;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
+import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
-import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.parser.StringProvider;
@@ -41,9 +41,9 @@ import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.impl.sql.SQLDialectQueryGenerator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLQueryGenerator;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -130,7 +130,7 @@ public class SQLSemanticProcessor {
      *  Solution - always wrap query in subselect + add patched WHERE and ORDER
      *  It is configurable
      *
-     * @deprecated Use {@link SQLDialectQueryGenerator#getQueryWithAppliedFilters(DBRProgressMonitor, DBPDataSource, String, DBDDataFilter)} instead
+     * @deprecated Use {@link SQLQueryGenerator#getQueryWithAppliedFilters(DBRProgressMonitor, DBPDataSource, String, DBDDataFilter)} instead
      */
     @Deprecated
     public static String addFiltersToQuery(DBRProgressMonitor monitor, final DBPDataSource dataSource, String sqlQuery, final DBDDataFilter dataFilter) {
@@ -160,7 +160,7 @@ public class SQLSemanticProcessor {
 
     /**
      *
-     * @deprecated Use {@link SQLDialectQueryGenerator#getWrappedFilterQuery(DBPDataSource, String, DBDDataFilter)} instead
+     * @deprecated Use {@link SQLQueryGenerator#getWrappedFilterQuery(DBPDataSource, String, DBDDataFilter)} instead
      */
     public static String wrapQuery(final DBPDataSource dataSource, String sqlQuery, final DBDDataFilter dataFilter) {
         return dataSource.getSQLDialect().getQueryGenerator().getWrappedFilterQuery(dataSource, sqlQuery, dataFilter);
@@ -344,12 +344,13 @@ public class SQLSemanticProcessor {
 
     @Nullable
     public static Table findTableByNameOrAlias(Select select, String tableName) {
-        if (select instanceof PlainSelect plainSelect) {
-            FromItem fromItem = plainSelect.getFromItem();
+        SelectBody selectBody = select.getSelectBody();
+        if (selectBody instanceof PlainSelect) {
+            FromItem fromItem = ((PlainSelect) selectBody).getFromItem();
             if (fromItem instanceof Table && equalTables((Table) fromItem, tableName)) {
                 return (Table) fromItem;
             }
-            for (Join join : CommonUtils.safeCollection(plainSelect.getJoins())) {
+            for (Join join : CommonUtils.safeCollection(((PlainSelect) selectBody).getJoins())) {
                 if (join.getRightItem() instanceof Table && equalTables((Table) join.getRightItem(), tableName)) {
                     return (Table) join.getRightItem();
                 }
@@ -379,7 +380,7 @@ public class SQLSemanticProcessor {
         if (sourceWhere == null) {
             select.setWhere(conditionExpr);
         } else {
-            select.setWhere(new AndExpression(new ParenthesedExpressionList<>(sourceWhere), conditionExpr));
+            select.setWhere(new AndExpression(new Parenthesis(sourceWhere), conditionExpr));
         }
     }
 

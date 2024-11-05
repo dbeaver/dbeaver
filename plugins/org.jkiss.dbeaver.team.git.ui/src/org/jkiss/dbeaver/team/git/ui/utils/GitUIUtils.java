@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 
@@ -50,15 +51,15 @@ public class GitUIUtils {
     }
 
     public static IProject extractProject(ISelection selection) {
-        if (selection != null && !selection.isEmpty() && selection instanceof IStructuredSelection) {
-            Object e = ((IStructuredSelection) selection).getFirstElement();
-            if (e instanceof DBNResource) {
-                IResource resource = ((DBNResource) e).getResource();
+        if (selection != null && !selection.isEmpty() && selection instanceof IStructuredSelection ss) {
+            Object e = ss.getFirstElement();
+            if (e instanceof DBNResource resNode) {
+                IResource resource = resNode.getResource();
                 return resource == null ? null : resource.getProject();
-            } else if (e instanceof DBNNode) {
-                for (DBNNode n = (DBNNode) e; n != null; n = ((DBNNode) n).getParentNode()) {
-                    if (n instanceof DBNProject) {
-                        return ((DBNProject) n).getProject().getEclipseProject();
+            } else if (e instanceof DBNNode node) {
+                for (DBNNode n = node; n != null; n = n.getParentNode()) {
+                    if (n instanceof DBNProject projectNode && projectNode.getProject() instanceof RCPProject rcpProject) {
+                        return rcpProject.getEclipseProject();
                     }
                 }
                 return null;
@@ -72,10 +73,10 @@ public class GitUIUtils {
 
     public static IProject extractProject(IEditorPart activeEditor) {
         IEditorInput editorInput = activeEditor.getEditorInput();
-        if (editorInput instanceof IDatabaseEditorInput) {
-            DBNDatabaseNode node = ((IDatabaseEditorInput) editorInput).getNavigatorNode();
-            if (node != null) {
-                return node.getOwnerProject().getEclipseProject();
+        if (editorInput instanceof IDatabaseEditorInput dei) {
+            DBNDatabaseNode node = dei.getNavigatorNode();
+            if (node != null && node.getOwnerProject() instanceof RCPProject rcpProject) {
+                return rcpProject.getEclipseProject();
             }
         } else {
             IFile input = EditorUtils.getFileFromInput(editorInput);

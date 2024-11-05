@@ -53,7 +53,7 @@ public class WSEventController {
      * Add cb event to the event pool
      */
     public void addEvent(@NotNull WSEvent event) {
-        if (forceSkipEvents) {
+        if (!event.isForceProcessed() && forceSkipEvents) {
             return;
         }
         synchronized (eventsPool) {

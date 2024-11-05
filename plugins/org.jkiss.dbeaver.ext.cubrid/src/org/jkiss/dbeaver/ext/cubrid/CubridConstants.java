@@ -29,5 +29,7 @@ public class CubridConstants
     public static final String NAME = "name";
     public static final String COMMENT = "comment";
     public static final String DBA = "dba";
+    public static final String DEFAULT_HOST = "localhost";
+    public static final String DEFAULT_PORT = "30000";
     public static final String AUTO_INCREMENT = "auto_increment";
 }

@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.apache.commons.jexl3.JexlContext;
-import org.eclipse.core.resources.IResource;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -31,6 +30,8 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -40,6 +41,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -71,10 +73,10 @@ public class DBNUtils {
     public static DBNDatabaseNode getChildFolder(DBRProgressMonitor monitor, DBNDatabaseNode node, Class<?> folderType) {
         try {
             for (DBNDatabaseNode childNode : node.getChildren(monitor)) {
-                if (!(childNode instanceof DBNDatabaseFolder)) {
+                if (!(childNode instanceof DBNDatabaseFolder folder)) {
                     continue;
                 }
-                final DBXTreeFolder meta = ((DBNDatabaseFolder) childNode).getMeta();
+                final DBXTreeFolder meta = folder.getMeta();
                 if (!CommonUtils.isEmpty(meta.getType())) {
                     final Class<?> objectClass = meta.getSource().getObjectClass(meta.getType());
                     if (objectClass != null && folderType.isAssignableFrom(objectClass)) {
@@ -108,10 +110,8 @@ public class DBNUtils {
                 if (node instanceof DBPHiddenObject hiddenObject && hiddenObject.isHidden()) {
                     continue;
                 }
-                if (node instanceof DBNDatabaseNode dbNode) {
-                    if (dbNode.getMeta() != null && !dbNode.getMeta().isNavigable()) {
-                        continue;
-                    }
+                if (node instanceof DBNDatabaseNode dbNode && !dbNode.getMeta().isNavigable()) {
+                    continue;
                 }
                 filtered.add(node);
             }
@@ -131,7 +131,7 @@ public class DBNUtils {
         // and if children are not folders
         if (children.length > 0) {
             DBNNode firstChild = children[0];
-            boolean isResources = firstChild instanceof DBNNodeWithResource;
+            boolean isResources = firstChild.getAdapter(Path.class) != null;
             {
                 if (isResources) {
                     Arrays.sort(children, NodeFolderComparator.INSTANCE);
@@ -148,15 +148,15 @@ public class DBNUtils {
     }
 
     private static boolean isMergedEntity(DBNNode node) {
-        return node instanceof DBNDatabaseNode &&
-            ((DBNDatabaseNode) node).getObject() instanceof DBSEntity &&
-            ((DBNDatabaseNode) node).getObject().getDataSource().getContainer().getNavigatorSettings().isMergeEntities();
+        return node instanceof DBNDatabaseNode dbNode &&
+           dbNode.getObject() instanceof DBSEntity &&
+           dbNode.getObject().getDataSource().getContainer().getNavigatorSettings().isMergeEntities();
     }
 
     public static boolean isDefaultElement(Object element)
     {
-        if (element instanceof DBSWrapper) {
-            DBSObject object = ((DBSWrapper) element).getObject();
+        if (element instanceof DBSWrapper wrapper) {
+            DBSObject object = wrapper.getObject();
             if (object != null) {
                 // Get default context from default instance - not from active object
                 DBCExecutionContext defaultContext = DBUtils.getDefaultContext(object.getDataSource(), false);
@@ -169,25 +169,9 @@ public class DBNUtils {
                 }
             }
         } else if (element instanceof DBNProject nodeProject) {
-            if (nodeProject.getProject() == DBWorkbench.getPlatform().getWorkspace().getActiveProject()) {
-                return true;
-            }
+            return nodeProject.getProject() == DBWorkbench.getPlatform().getWorkspace().getActiveProject();
         }
         return false;
-    }
-
-    public static void refreshNavigatorResource(@NotNull DBPProject project, @NotNull IResource resource, Object source) {
-        DBNModel navigatorModel = project.getNavigatorModel();
-        if (navigatorModel == null) {
-            return;
-        }
-        final DBNProject projectNode = navigatorModel.getRoot().getProjectNode(resource.getProject());
-        if (projectNode != null) {
-            final DBNResource fileNode = projectNode.findResource(resource);
-            if (fileNode != null) {
-                fileNode.refreshResourceState(source);
-            }
-        }
     }
 
     @NotNull
@@ -198,9 +182,38 @@ public class DBNUtils {
 
     public static boolean isReadOnly(DBNNode node)
     {
-        return node instanceof DBNDatabaseNode &&
+        return node instanceof DBNDatabaseNode dbNode &&
             !(node instanceof DBNDataSource) &&
-            !((DBNDatabaseNode) node).getDataSourceContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA);
+            !dbNode.getDataSourceContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA);
+    }
+
+    public static boolean isFolderNode(DBNNode node) {
+        return node.allowsChildren();
+    }
+
+    public static DBXTreeItem getValidItemsMeta(DBRProgressMonitor monitor, DBNDatabaseNode dbNode) throws DBException {
+        DBXTreeItem itemsMeta = dbNode.getItemsMeta();
+        if (itemsMeta != null && itemsMeta.isOptional()) {
+            // Maybe we need nested item.
+            // Specifically this handles optional catalogs and schemas in Generic driver
+            Class<?> expectedChildrenType = dbNode.getChildrenOrFolderClass(itemsMeta);
+            if (expectedChildrenType != null) {
+                List<DBXTreeNode> childMetas = itemsMeta.getChildren(dbNode);
+                if (childMetas.size() == 1 && childMetas.get(0) instanceof DBXTreeItem nestedMeta) {
+                    Class<?> expectedNestedType = dbNode.getChildrenOrFolderClass(nestedMeta);
+                    DBNDatabaseNode[] nodeChildren = dbNode.getChildren(monitor);
+                    if (nodeChildren.length > 0 &&
+                        !expectedChildrenType.isInstance(nodeChildren[0].getObject()))
+                    {
+                        // Note: We should've check expectedNestedType.isInstance(nodeChildren[0].getObject())
+                        // but we cannot. Because after filters are applied child nodes may contain deeper nested type
+                        // FIXME: support it for databases which support only tables
+                        itemsMeta = nestedMeta;
+                    }
+                }
+            }
+        }
+        return itemsMeta;
     }
 
     private static class NodeNameComparator implements Comparator<DBNNode> {
@@ -269,8 +282,8 @@ public class DBNUtils {
 
             @Override
             public boolean has(String name) {
-                return node instanceof DBNDatabaseNode && name.equals("object")
-                    && ((DBNDatabaseNode) node).getValueObject() != null;
+                return node instanceof DBNDatabaseNode dbNode && name.equals("object")
+                    && dbNode.getValueObject() != null;
             }
         };
     }
@@ -293,6 +306,11 @@ public class DBNUtils {
      */
     public static String encodeNodePath(@NotNull String path) {
         return path.replace("%", "%25").replace("/", "%2F");
+    }
+
+
+    public static void disposeNode(DBNNode node, boolean reflect) {
+        node.dispose(reflect);
     }
 
 }

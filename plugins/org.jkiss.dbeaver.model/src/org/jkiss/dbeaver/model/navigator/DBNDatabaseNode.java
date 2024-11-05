@@ -296,7 +296,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             }
         }
         if (childNode != null) {
-            childNode.dispose(true);
+            DBNUtils.disposeNode(childNode, true);
         }
     }
 
@@ -411,7 +411,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         }
         if (childrenCopy != null) {
             for (DBNNode child : childrenCopy) {
-                child.dispose(reflect);
+                DBNUtils.disposeNode(child, reflect);
             }
         }
     }
@@ -775,7 +775,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                 }
                 if (!found) {
                     // Remove old child object
-                    oldChild.dispose(true);
+                    DBNUtils.disposeNode(oldChild, true);
                 }
             }
         }
@@ -827,7 +827,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         return null;
     }
 
-    public void setNodeFilter(DBXTreeItem meta, DBSObjectFilter filter, boolean saveConfiguration) {
+    public boolean setNodeFilter(DBXTreeItem meta, DBSObjectFilter filter, boolean saveConfiguration) {
         DBPDataSourceContainer dataSource = getDataSourceContainer();
         Class<?> childrenClass = this.getChildrenOrFolderClass(meta);
         if (childrenClass != null) {
@@ -842,8 +842,10 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             if (saveConfiguration) {
                 dataSource.persistConfiguration();
             }
+            return true;
         } else {
             log.error("Cannot detect child node type - can't save filter configuration");
+            return false;
         }
     }
 
@@ -999,7 +1001,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         return BeanUtils.getCollectionType(propType);
     }
 
-    private Class<?> getChildrenOrFolderClass(DBXTreeItem childMeta) {
+    public Class<?> getChildrenOrFolderClass(DBXTreeItem childMeta) {
         Class<?> childrenClass = this.getChildrenClass(childMeta);
         if (childrenClass == null && this instanceof DBNContainer) {
             childrenClass = ((DBNContainer) this).getChildrenClass();

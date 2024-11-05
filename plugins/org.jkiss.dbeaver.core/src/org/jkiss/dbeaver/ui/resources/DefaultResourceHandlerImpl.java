@@ -33,15 +33,11 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.fs.DBFFileStoreProvider;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNNodeWithResource;
-import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ProgramInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.ByteNumberFormat;
-import org.jkiss.utils.CommonUtils;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -82,37 +78,13 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
         return "";
     }
 
-    @NotNull
-    @Override
-    public DBNResource makeNavigatorNode(@NotNull DBNNode parentNode, @NotNull IResource resource) throws CoreException, DBException {
-        DBNResource node = super.makeNavigatorNode(parentNode, resource);
-        updateNavigatorNodeFromResource(node, resource);
-        return node;
-    }
-
-    @Override
-    public void updateNavigatorNodeFromResource(@NotNull DBNNodeWithResource node, @NotNull IResource resource) {
-        super.updateNavigatorNodeFromResource(node, resource);
-        String fileExtension = resource.getFileExtension();
-        if (!CommonUtils.isEmpty(fileExtension)) {
-            setNodeIconFromFileType(node, fileExtension);
-        }
-    }
-
-    public void setNodeIconFromFileType(@NotNull DBNNodeWithResource node, @NotNull String fileExt) {
-        ProgramInfo program = ProgramInfo.getProgram(fileExt);
-        if (program != null && program.getImage() != null) {
-            node.setResourceImage(program.getImage());
-        }
-    }
-
     @Override
     public void openResource(@NotNull IResource resource) throws CoreException, DBException {
         if (resource instanceof DBFFileStoreProvider) {
             IFileStore fileStore = ((DBFFileStoreProvider) resource).getFileStore();
             long length = fileStore.fetchInfo().getLength();
-            if (!UIUtils.confirmAction(null, "Open resource '" + resource.getFullPath() +
-                "'?\nSize = " + ByteNumberFormat.getInstance().format(length))) {
+            if (!UIUtils.confirmAction(resource.getFullPath().toString(), "Open remote resource '" + resource.getFullPath() +
+                "'?\nSize = " + ByteNumberFormat.getInstance().format(length) + " bytes")) {
                 return;
             }
 

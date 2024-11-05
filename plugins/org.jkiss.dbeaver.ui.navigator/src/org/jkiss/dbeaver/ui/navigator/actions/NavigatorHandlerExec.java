@@ -31,10 +31,10 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -72,7 +72,7 @@ public class NavigatorHandlerExec extends AbstractHandler {
         new AbstractJob("Calling native execution") {
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
-                DBPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(script.getProject());
+                RCPProject project = (RCPProject) DBPPlatformDesktop.getInstance().getWorkspace().getProject(script.getProject());
                 String resourcePath = project.getResourcePath(script);
                 String catalog = (String) project.getResourceProperty(
                     resourcePath,

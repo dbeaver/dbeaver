@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLDialectRelational;
 import org.jkiss.dbeaver.model.sql.SQLStateType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.ArrayUtils;
@@ -31,7 +32,7 @@ import java.util.*;
 /**
  * Basic SQL Dialect
  */
-public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQLDialect {
+public class BasicSQLDialect extends AbstractSQLDialect implements SQLDialectRelational {
 
     public static final String ID = "basic";
 
@@ -115,6 +116,11 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
     @Override
     public String[] getDDLKeywords() {
         return DDL_KEYWORDS;
+    }
+
+    @NotNull
+    public GlobalVariableInfo[] getGlobalVariables() {
+        return GlobalVariableInfo.EMPTY_ARRAY;
     }
 
     @NotNull

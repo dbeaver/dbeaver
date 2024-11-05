@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.editors.entity;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
@@ -268,8 +269,7 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
     }
 
     private boolean canOpenNode(DBNNode node) {
-        return node instanceof DBNDatabaseNode ||
-            (node instanceof DBNNodeWithResource && ((DBNNodeWithResource) node).getResource() instanceof IFile);
+        return node instanceof DBNDatabaseNode || node.getAdapter(IResource.class) instanceof IFile;
     }
 
 }

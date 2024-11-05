@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.debug.ui.DebugUI;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -108,7 +109,7 @@ public class ToggleProcedureBreakpointTarget implements IToggleBreakpointsTarget
 
     public static IResource resolveWorkspaceResource(DBSObject dbsObject) {
         DBNDatabaseNode node = DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(dbsObject);
-        return node == null || node.getOwnerProject() == null ? null : node.getOwnerProject().getEclipseProject();
+        return node == null || !(node.getOwnerProject() instanceof RCPProject rcpProject) ? null : rcpProject.getEclipseProject();
     }
 
     @Override

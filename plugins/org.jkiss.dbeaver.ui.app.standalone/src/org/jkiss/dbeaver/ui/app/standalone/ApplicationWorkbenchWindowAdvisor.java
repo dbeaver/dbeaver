@@ -580,7 +580,7 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
             }
         }
         if (ps.getBoolean("SHOW_PRODUCT_IN_TITLE")) {
-            sj.add(GeneralUtils.getProductTitle());
+            sj.add(computeProductTitle());
         }
         IWorkbenchWindow window = getWindowConfigurer().getWindow();
         if (window != null) {
@@ -593,6 +593,11 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
             }
         }
         return sj.toString();
+    }
+
+    @NotNull
+    protected String computeProductTitle() {
+        return GeneralUtils.getProductTitle();
     }
 
 }

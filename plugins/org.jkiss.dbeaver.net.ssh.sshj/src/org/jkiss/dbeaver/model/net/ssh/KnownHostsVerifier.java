@@ -40,8 +40,8 @@ public class KnownHostsVerifier extends OpenSSHKnownHosts {
 
     @Override
     public boolean verify(String hostname, int port, PublicKey key) {
-        if (hostname.equals(DBConstants.HOST_LOCALHOST)) {
-            return super.verify(actualHostConfiguration.hostname(), actualHostConfiguration.port(), key);
+        if (hostname.equals(DBConstants.HOST_LOCALHOST) || hostname.equals(DBConstants.HOST_LOCALHOST_IP)) {
+            return true;
         } else {
             return super.verify(hostname, port, key);
         }

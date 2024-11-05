@@ -254,7 +254,9 @@
         <command id="org.jkiss.dbeaver.core.object.filter.toggle" name="%command.org.jkiss.dbeaver.core.object.filter.toggle.name" description="%command.org.jkiss.dbeaver.core.object.filter.toggle.description" categoryId="org.jkiss.dbeaver.core.database"/>
 
         <command id="org.jkiss.dbeaver.core.project.create" name="%command.org.jkiss.dbeaver.core.project.create.name" description="%command.org.jkiss.dbeaver.core.project.create.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
-        <command id="org.jkiss.dbeaver.core.project.refresh" name="%command.org.jkiss.dbeaver.core.project.refresh.name" description="%command.org.jkiss.dbeaver.core.project.refresh.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.core.project.refresh" name="%command.org.jkiss.dbeaver.core.project.refresh.name" description="%command.org.jkiss.dbeaver.core.project.refresh.description" categoryId="org.jkiss.dbeaver.core.navigator">
+            <commandParameter id="singleProject" name="Refresh just active project" optional="true"/>
+        </command>
         <command id="org.jkiss.dbeaver.core.project.active" name="%command.org.jkiss.dbeaver.core.project.active.name" description="%command.org.jkiss.dbeaver.core.project.active.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.project.select" name="%command.org.jkiss.dbeaver.core.project.select.name" description="%command.org.jkiss.dbeaver.core.project.select.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.resource.create.file" name="%command.org.jkiss.dbeaver.core.resource.create.file.name" description="%command.org.jkiss.dbeaver.core.resource.create.file.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
@@ -351,12 +353,12 @@
                     <count value="+"/>
                     <iterate operator="and">
                         <or>
-                            <adapt type="org.jkiss.dbeaver.model.navigator.DBNNodeWithResource">
+                            <adapt type="org.jkiss.dbeaver.model.navigator.DBNNode">
                                 <test property="org.jkiss.dbeaver.core.object.projectResourceViewable"/>
                             </adapt>
                             <adapt type="org.jkiss.dbeaver.model.navigator.DBNNode">
                                 <not>
-                                    <adapt type="org.jkiss.dbeaver.model.navigator.DBNNodeWithResource"/>
+                                    <adapt type="org.eclipse.core.resources.IResource"/>
                                 </not>
                             </adapt>
                         </or>

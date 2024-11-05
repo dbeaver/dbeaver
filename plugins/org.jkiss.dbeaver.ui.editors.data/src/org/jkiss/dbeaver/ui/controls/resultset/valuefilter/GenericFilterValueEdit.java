@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.UIWidgets;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
@@ -214,7 +215,7 @@ class GenericFilterValueEdit {
     }
 
     void addContextMenu(Action[] actions) {
-        UIUtils.createTableContextMenu(tableViewer.getTable(), menu -> {
+        UIWidgets.createTableContextMenu(tableViewer.getTable(), menu -> {
             for (Action act : actions) {
                 menu.add(act);
             }

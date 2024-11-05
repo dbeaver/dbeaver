@@ -26,12 +26,6 @@
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
         <propertyTester
-            class="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester"
-            id="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester"
-            namespace="org.jkiss.dbeaver.core.datasource"
-            properties="connected,connecting,transactional,synchronizable,transactionActive,supportsTransactions,editable,projectResourceEditable,projectResourceViewable"
-            type="org.jkiss.dbeaver.model.DBPContextProvider"/>
-        <propertyTester
             class="org.jkiss.dbeaver.ui.actions.DataSourceContainerPropertyTester"
             id="org.jkiss.dbeaver.ui.actions.DataSourceContainerPropertyTester"
             namespace="org.jkiss.dbeaver.core.datasourceContainer"
@@ -148,13 +142,6 @@
                 <equals value="org.jkiss.dbeaver.ui.qm.log"/>
             </with>
         </definition>
-        <definition id="org.jkiss.dbeaver.core.transactionActive">
-            <with variable="activeEditor">
-                <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
-                    <test property="org.jkiss.dbeaver.core.datasource.transactionActive" value="true"/>
-                </adapt>
-            </with>
-        </definition>
 <!--
         <definition id="org.jkiss.dbeaver.core.ui.inlineWidgetEditor">
             <with variable="activeFocusControlId">
@@ -196,24 +183,6 @@
             </or>
         </definition>
 
-        <definition id="org.jkiss.dbeaver.core.datasource.connected">
-            <or>
-                <with variable="selection">
-                    <count value="1"/>
-                    <iterate operator="and">
-                        <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
-                            <test property="org.jkiss.dbeaver.core.datasource.connected" value="true"/>
-                        </adapt>
-                    </iterate>
-                </with>
-                <with variable="activePart">
-                    <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
-                        <test property="org.jkiss.dbeaver.core.datasource.connected" value="true"/>
-                    </adapt>
-                </with>
-            </or>
-        </definition>
-
         <definition id="org.jkiss.dbeaver.core.folder.connected">
             <with variable="selection">
                 <count value="+"/>
@@ -223,60 +192,6 @@
                     </adapt>
                 </iterate>
             </with>
-        </definition>
-
-        <definition id="org.jkiss.dbeaver.core.datasource.connecting">
-            <or>
-                <with variable="selection">
-                    <count value="1"/>
-                    <iterate operator="and">
-                        <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
-                            <test property="org.jkiss.dbeaver.core.datasource.connecting"/>
-                        </adapt>
-                    </iterate>
-                </with>
-                <with variable="activePart">
-                    <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
-                        <test property="org.jkiss.dbeaver.core.datasource.connecting"/>
-                    </adapt>
-                </with>
-            </or>
-        </definition>
-
-        <definition id="org.jkiss.dbeaver.core.datasource.disconnected">
-            <or>
-                <with variable="selection">
-                    <count value="1"/>
-                    <iterate operator="and">
-                        <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
-                            <test property="org.jkiss.dbeaver.core.datasource.connected" value="false"/>
-                        </adapt>
-                    </iterate>
-                </with>
-                <with variable="activePart">
-                    <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
-                        <test property="org.jkiss.dbeaver.core.datasource.connected" value="false"/>
-                    </adapt>
-                </with>
-            </or>
-        </definition>
-
-        <definition id="org.jkiss.dbeaver.core.datasource.synchronizable">
-            <or>
-                <with variable="selection">
-                    <count value="1"/>
-                    <iterate operator="and">
-                        <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
-                            <test property="org.jkiss.dbeaver.core.datasource.synchronizable" value="true"/>
-                        </adapt>
-                    </iterate>
-                </with>
-                <with variable="activePart">
-                    <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
-                        <test property="org.jkiss.dbeaver.core.datasource.synchronizable" value="true"/>
-                    </adapt>
-                </with>
-            </or>
         </definition>
 
     </extension>
@@ -803,19 +718,19 @@
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=navigator_additions_end">
             <separator name="copy" visible="true"/>
 
-            <command commandId="org.eclipse.ui.edit.copy" label="%command.org.eclipse.ui.edit.copy.name">
+            <command commandId="org.eclipse.ui.edit.copy">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <command commandId="org.eclipse.ui.edit.paste" label="%command.org.eclipse.ui.edit.paste.name">
+            <command commandId="org.eclipse.ui.edit.paste">
                 <visibleWhen checkEnabled="true"/>
             </command>
             <command commandId="org.jkiss.dbeaver.core.edit.copy.special" label="%command.org.jkiss.dbeaver.core.edit.copy.adv_info">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <command commandId="org.eclipse.ui.edit.delete" label="%command.org.eclipse.ui.edit.delete.name">
+            <command commandId="org.eclipse.ui.edit.delete">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <command commandId="org.eclipse.ui.edit.rename" label="%command.org.eclipse.ui.edit.rename.name">
+            <command commandId="org.eclipse.ui.edit.rename">
                 <visibleWhen checkEnabled="true"/>
             </command>
             
@@ -913,6 +828,9 @@
             <command commandId="org.eclipse.ui.navigate.collapseAll"/>
             <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
             <command commandId="org.jkiss.dbeaver.core.navigator.preferences"/>
+            <command commandId="org.jkiss.dbeaver.core.project.refresh">
+                <parameter name="singleProject" value="true"/>
+            </command>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.databaseNavigator">
@@ -1313,6 +1231,14 @@
         <notification id="reconnect.success" name="Datasource invalidation success"/>
         <notification id="reconnect.failure" name="Datasource invalidation failure"/>
         <notification id="agent.notify" name="Long-time operations" description="This is a notification for long-time operations.&#10;It will be shown for all operations that have exceeded the specified timeout." soundEnabled="true"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.clearHistoryHandler">
+        <handler
+            id="clearBrowserCookies"
+            name="%handler.clearBrowserCookies.name"
+            description="%handler.clearBrowserCookies.description"
+            handler="org.jkiss.dbeaver.ui.browser.handlers.BrowserClearCookiesHandler"/>
     </extension>
 
 </plugin>

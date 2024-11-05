@@ -91,6 +91,11 @@ public class GridColumn implements IGridColumn {
         return level;
     }
 
+    @Override
+    public int getRelativeIndex() {
+        return parent == null ? -1 : parent.getChildren().indexOf(this);
+    }
+
     /**
      * Returns the width of the column.
      *

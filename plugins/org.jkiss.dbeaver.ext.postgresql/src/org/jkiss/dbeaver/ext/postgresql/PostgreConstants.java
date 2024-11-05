@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.postgresql;
 
+import org.jkiss.dbeaver.ext.postgresql.internal.PostgreSQLMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
@@ -93,8 +94,15 @@ public class PostgreConstants {
     // Workaround for EnterpriseDB
     public static final String EDB_OBJECT_CLASS = "com.edb.util.PGobject";
 
-    public static final DBDPseudoAttribute PSEUDO_ATTR_OID = new DBDPseudoAttribute(DBDPseudoAttributeType.ROWID, "oid",
-        "oid", "oid", "Row identifier", false);
+    public static final DBDPseudoAttribute PSEUDO_ATTR_OID = new DBDPseudoAttribute(
+        DBDPseudoAttributeType.ROWID,
+        "oid",
+        "oid",
+        "oid",
+        PostgreSQLMessages.pseudo_column_oid_description,
+        false,
+        DBDPseudoAttribute.PropagationPolicy.TABLE_LOCAL
+    );
 
     public static final String TYPE_CHAR = "char";
     public static final String TYPE_TEXT = "text";

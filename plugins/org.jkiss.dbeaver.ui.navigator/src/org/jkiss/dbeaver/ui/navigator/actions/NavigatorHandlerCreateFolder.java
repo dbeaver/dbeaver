@@ -35,6 +35,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
@@ -48,8 +49,7 @@ public class NavigatorHandlerCreateFolder extends NavigatorHandlerObjectBase {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
 
-        if (selection instanceof IStructuredSelection) {
-            final IStructuredSelection structSelection = (IStructuredSelection)selection;
+        if (selection instanceof IStructuredSelection structSelection) {
             final IResource resource = GeneralUtils.adapt(structSelection.getFirstElement(), IResource.class);
 
             if (resource == null) {
@@ -86,8 +86,8 @@ public class NavigatorHandlerCreateFolder extends NavigatorHandlerObjectBase {
         try {
             if (resource instanceof IProject) {
                 DBPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject((IProject) resource);
-                if (project != null) {
-                    resource = project.getRootResource();
+                if (project instanceof RCPProject rcpProject) {
+                    resource = rcpProject.getRootResource();
                 }
             }
             if (resource instanceof IProject) {
@@ -96,8 +96,7 @@ public class NavigatorHandlerCreateFolder extends NavigatorHandlerObjectBase {
                     throw new DBException("Folder '" + folderName + "' already exists in project '" + resource.getName() + "'");
                 }
                 newFolder.create(true, true, new NullProgressMonitor());
-            } else if (resource instanceof IFolder) {
-                IFolder parentFolder = (IFolder) resource;
+            } else if (resource instanceof IFolder parentFolder) {
                 if (!parentFolder.exists()) {
                     parentFolder.create(true, true, new NullProgressMonitor());
                 }

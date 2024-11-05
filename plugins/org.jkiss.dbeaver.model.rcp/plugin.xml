@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+    <extension-point id="org.jkiss.dbeaver.resourceHandler" name="%extension-point.org.jkiss.dbeaver.resourceHandler.name" schema="schema/org.jkiss.dbeaver.resourceHandler.exsd"/>
+
+    <extension point="org.jkiss.dbeaver.navigator">
+        <extender id="dbfs" root="true" class="org.jkiss.dbeaver.model.navigator.RCPNavigatorExtender"/>
+    </extension>
+
+    <extension point="org.eclipse.core.resources.natures" id="org.jkiss.dbeaver.DBeaverNature"
+               name="%extension.org.jkiss.dbeaver.DBeaverNature.name">
+        <runtime>
+            <run class="org.jkiss.dbeaver.model.rcp.DBeaverNature">
+            </run>
+        </runtime>
+    </extension>
+
+    <extension point="org.eclipse.core.filesystem.filesystems">
+        <filesystem scheme="dbvfs">
+            <run class="org.jkiss.dbeaver.model.fs.nio.EFSNIOFileSystem"/>
+        </filesystem>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.resourceType">
+        <type id="project">
+            <resourceTypeBinding resourceType="org.eclipse.core.resources.IProject"/>
+        </type>
+        <type id="bookmark" name="Navigator bookmarks" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/bookmark_folder.png" managable="true">
+            <root folder="Bookmarks"/>
+            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.bookmark"/>
+        </type>
+        <type id="shortcut">
+            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.shortcut"/>
+        </type>
+    </extension>
+
+</plugin>

@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -147,7 +148,7 @@ public abstract class SQLObjectDocumentProvider extends BaseTextDocumentProvider
         DBSObject databaseObject = getProviderObject();
         if (databaseObject != null) {
             DBNDatabaseNode node = DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(databaseObject);
-            IResource resource = node == null || node.getOwnerProject() == null ? null : node.getOwnerProject().getEclipseProject();
+            IResource resource = node == null || !(node.getOwnerProject() instanceof RCPProject rcpProject) ? null : rcpProject.getEclipseProject();
             if (resource != null) {
                 return new DatabaseMarkerAnnotationModel(databaseObject, node, resource);
             }

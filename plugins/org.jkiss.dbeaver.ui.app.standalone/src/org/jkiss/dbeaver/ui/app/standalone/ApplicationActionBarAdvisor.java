@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.*;
 import org.eclipse.ui.actions.ActionFactory;
@@ -371,9 +372,14 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             });
 
             tzItem.setDoubleClickListener(() -> {
-                UIUtils.showMessageBox(null, "Time zone", "You can change time zone by changing 'client timezone' in 'Settings' -> 'User Interface' or by adding parameter:\n" +
-                        "-D" + StandardConstants.ENV_USER_TIMEZONE + "=<TimeZone>\n" +
-                        "in the end of file'\n" + DBWorkbench.getPlatform().getApplicationConfiguration().toAbsolutePath() + "'\n" , SWT.ICON_INFORMATION
+                UIUtils.showMessageBox(
+                    null,
+                    CoreApplicationMessages.timezone_change_info_title,
+                    NLS.bind(
+                        CoreApplicationMessages.timezone_change_info_message,
+                        StandardConstants.ENV_USER_TIMEZONE,
+                        DBWorkbench.getPlatform().getApplicationConfiguration().toAbsolutePath()),
+                    SWT.ICON_INFORMATION
                 );
             });
             statusLine.add(tzItem);
@@ -383,10 +389,13 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             localeItem.setText(Locale.getDefault().toString());
             localeItem.setToolTip(Locale.getDefault().getDisplayName());
             localeItem.setDoubleClickListener(() -> {
-                UIUtils.showMessageBox(null, "Locale", "You can change locale by adding parameters\n" +
-                    "-nl\n<language_iso_code>\n" +
-                    "in file '" + DBWorkbench.getPlatform().getApplicationConfiguration().toAbsolutePath() + "'.\n" +
-                    "Or by passing command line parameter -nl <language_iso_code>", SWT.ICON_INFORMATION);
+                UIUtils.showMessageBox(
+                    null,
+                    CoreApplicationMessages.locale_change_info_title,
+                    NLS.bind(
+                        CoreApplicationMessages.locale_change_info_message,
+                        DBWorkbench.getPlatform().getApplicationConfiguration().toAbsolutePath()),
+                    SWT.ICON_INFORMATION);
             });
             statusLine.add(localeItem);
         }

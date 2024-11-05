@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.dpi.DPIController;
 import org.jkiss.dbeaver.model.dpi.DPIProcessController;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.rest.RestClient;
@@ -91,6 +92,7 @@ public class DPIProcessControllerImpl implements DPIProcessController {
             dpiRestClient = RestClient
                 .builder(getRemoteEndpoint(), DPIController.class)
                 .setGson(DPISerializer.createClientSerializer(dpiContext))
+                .setUserAgent(GeneralUtils.getProductTitle())
                 .create();
 
             validateRestClient();

@@ -103,14 +103,13 @@ public class SQLQueryTableAlterModel extends SQLQueryModelContent {
     }
 
     public static SQLQueryTableAlterModel recognize(SQLQueryModelRecognizer recognizer, STMTreeNode node) {
-        SQLQueryQualifiedName tableName = recognizer.collectTableName(node);
+        SQLQueryRowsTableDataModel targetTable = recognizer.collectTableReference(node, true);
 
         LinkedList<SQLQueryTableAlterActionSpec> alterActions = new LinkedList<>();
 
-        for (int i = 0; i < node.getChildCount(); i++) {
-            STMTreeNode subnode = node.getStmChild(i);
-            if (subnode.getNodeKindId() == SQLStandardParser.RULE_alterTableAction) {
-                STMTreeNode actionNode = subnode.getStmChild(0);
+        for (STMTreeNode subnode : node.findChildrenOfName(STMKnownRuleNames.alterTableAction)) {
+            STMTreeNode actionNode = subnode.findFirstNonErrorChild();
+            if (actionNode != null) {
                 SQLQueryTableAlterActionKind actionKind = alterActionKindByNodeName.get(actionNode.getNodeName());
 
                 SQLQueryColumnSpec columnSpec = null;
@@ -121,25 +120,26 @@ public class SQLQueryTableAlterModel extends SQLQueryModelContent {
                 if (actionKind != null) {
                     switch (actionKind) {
                         case ADD_COLUMN ->
-                                columnSpec = Optional.ofNullable(actionNode.findChildOfName(STMKnownRuleNames.columnDefinition))
-                                        .map(n -> SQLQueryColumnSpec.recognize(recognizer, n)).orElse(null);
+                            columnSpec = Optional.ofNullable(actionNode.findFirstChildOfName(STMKnownRuleNames.columnDefinition))
+                                .map(n -> SQLQueryColumnSpec.recognize(recognizer, n)).orElse(null);
                         case ALTER_COLUMN, RENAME_COLUMN, DROP_COLUMN ->
-                                columnName = Optional.ofNullable(actionNode.findChildOfName(STMKnownRuleNames.columnName))
-                                        .map(recognizer::collectIdentifier).orElse(null);
-                        case ADD_TABLE_CONSTRAINT ->
-                                tableConstraintSpec = Optional.ofNullable(actionNode.findChildOfName(STMKnownRuleNames.tableConstraintDefinition))
-                                        .map(n -> SQLQueryTableConstraintSpec.recognize(recognizer, n)).orElse(null);
+                            columnName = Optional.ofNullable(actionNode.findFirstChildOfName(STMKnownRuleNames.columnName))
+                                .map(recognizer::collectIdentifier).orElse(null);
+                        case ADD_TABLE_CONSTRAINT -> tableConstraintSpec =
+                            Optional.ofNullable(actionNode.findFirstChildOfName(STMKnownRuleNames.tableConstraintDefinition))
+                                .map(n -> SQLQueryTableConstraintSpec.recognize(recognizer, n)).orElse(null);
                         case DROP_TABLE_CONSTRAINT ->
-                                tableConstraintName = Optional.ofNullable(actionNode.findChildOfName(STMKnownRuleNames.constraintName))
-                                        .map(recognizer::collectQualifiedName).orElse(null);
+                            tableConstraintName = Optional.ofNullable(actionNode.findFirstChildOfName(STMKnownRuleNames.constraintName))
+                                .map(recognizer::collectQualifiedName).orElse(null);
                     }
 
-                    alterActions.addLast(new SQLQueryTableAlterActionSpec(actionNode, actionKind, columnSpec, columnName, tableConstraintSpec, tableConstraintName));
+                    alterActions.addLast(new SQLQueryTableAlterActionSpec(
+                        actionNode, actionKind, columnSpec, columnName, tableConstraintSpec, tableConstraintName
+                    ));
                 }
             }
         }
 
-        SQLQueryRowsTableDataModel targetTable = tableName == null ? null : new SQLQueryRowsTableDataModel(tableName.getSyntaxNode(), tableName);
         return new SQLQueryTableAlterModel(node, targetTable, alterActions);
     }
 }

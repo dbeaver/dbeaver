@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -40,8 +41,10 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.*;
+import java.util.Set;
 
 
 class ProjectExportWizardPage extends WizardPage {
@@ -90,9 +93,8 @@ class ProjectExportWizardPage extends WizardPage {
 
         Set<DBPProject> projectList = new LinkedHashSet<>();
         final ISelection selection = UIUtils.getActiveWorkbenchWindow().getActivePage().getSelection();
-        if (selection != null && !selection.isEmpty() && selection instanceof IStructuredSelection) {
-            for (Iterator<?> iter = ((IStructuredSelection) selection).iterator(); iter.hasNext(); ) {
-                Object element = iter.next();
+        if (selection != null && !selection.isEmpty() && selection instanceof IStructuredSelection ss) {
+            for (Object element : ss) {
                 IResource resource = RuntimeUtils.getObjectAdapter(element, IResource.class);
                 if (resource != null) {
                     projectList.add(DBPPlatformDesktop.getInstance().getWorkspace().getProject(resource.getProject()));
@@ -211,18 +213,18 @@ class ProjectExportWizardPage extends WizardPage {
             fileNameText.getText());
     }
 
-    private List<DBPProject> getProjectsToExport()
+    private List<RCPProject> getProjectsToExport()
     {
-        List<DBPProject> result = new ArrayList<>();
+        List<RCPProject> result = new ArrayList<>();
         for (TableItem item : projectsTable.getItems()) {
             if (item.getChecked()) {
-                result.add((DBPProject) item.getData());
+                result.add((RCPProject) item.getData());
             }
         }
         return result;
     }
 
-    static String getArchiveFileName(List<DBPProject> projects)
+    static String getArchiveFileName(List<RCPProject> projects)
     {
         String archiveName = CoreMessages.dialog_project_export_wizard_start_archive_name_prefix;
         if (projects.size() == 1) {

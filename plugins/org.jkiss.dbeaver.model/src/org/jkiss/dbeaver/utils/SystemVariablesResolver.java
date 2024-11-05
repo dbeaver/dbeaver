@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.utils;
 
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.utils.StandardConstants;
 
@@ -41,6 +42,7 @@ public class SystemVariablesResolver implements IVariableResolver {
     public static final String VAR_LOCAL_IP = "local.ip";
 
     private static Properties configuration;
+    private static String installPath;
 
     public static void setConfiguration(Properties configuration) {
         SystemVariablesResolver.configuration = configuration;
@@ -87,11 +89,14 @@ public class SystemVariablesResolver implements IVariableResolver {
     }
 
     public static String getInstallPath() {
-        return getPlainPath(Platform.getInstallLocation().getURL());
+        if (installPath == null) {
+            installPath = getPlainPath(Platform.getInstallLocation().getURL());
+        }
+        return installPath;
     }
 
     public static String getWorkspacePath() {
-        return getPlainPath(Platform.getInstanceLocation().getURL());
+        return DBWorkbench.getPlatform().getWorkspace().getAbsolutePath().toString();
     }
 
     public static String getUserHome() {

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.altibase.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.altibase.AltibaseUtils;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericView;
 import org.jkiss.dbeaver.model.DBPStatefulObject;

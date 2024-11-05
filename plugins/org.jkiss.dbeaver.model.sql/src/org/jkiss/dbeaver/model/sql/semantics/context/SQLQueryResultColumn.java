@@ -28,7 +28,6 @@ public class SQLQueryResultColumn {
     @NotNull
     public final SQLQuerySymbol symbol;
     @NotNull
-
     public final SQLQueryRowsSourceModel source;
     @Nullable
     public final DBSEntity realSource;

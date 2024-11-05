@@ -88,7 +88,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
 
     @Nullable
     @Override
-    public OBJECT getCachedObject(@NotNull String name) {
+    public OBJECT getCachedObject(@Nullable String name) {
         synchronized (cacheSync) {
             return objectList == null || name == null ? null : getObjectMap().get(caseSensitive ? name : name.toUpperCase());
         }

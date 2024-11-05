@@ -18,8 +18,6 @@ package org.jkiss.dbeaver.model.navigator.fs;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.app.DBPWorkspace;
-import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNStreamData;
@@ -42,11 +40,6 @@ public class DBNPath extends DBNPathBase implements DBNStreamData {
     public DBNPath(DBNNode parentNode, Path path) {
         super(parentNode);
         this.path = path;
-
-        DBPWorkspace workspace = getOwnerProject().getWorkspace();
-        if (workspace instanceof DBPWorkspaceDesktop) {
-            ((DBPWorkspaceDesktop)workspace).getDefaultResourceHandler().updateNavigatorNodeFromResource(this, getResource());
-        }
     }
 
     @Override

@@ -20,8 +20,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.impl.sql.ChangeTableDataStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLQueryGeneratorUpdate;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
@@ -45,8 +45,7 @@ public class SQLGeneratorUpdateFromData extends SQLGeneratorResultSet {
         for (ResultSetRow firstRow : getSelectedRows()) {
             Collection<DBDAttributeBinding> keyAttributes = getKeyAttributes(monitor, object);
             Collection<? extends DBSAttributeBase> valueAttributes = getValueAttributes(monitor, object, keyAttributes);
-            if (dbsEntity instanceof ChangeTableDataStatement) {
-                ChangeTableDataStatement dataStatement = (ChangeTableDataStatement) dbsEntity;
+            if (dbsEntity instanceof SQLQueryGeneratorUpdate dataStatement) {
                 sql.append(dataStatement.generateTableUpdateBegin(entityName));
                 String updateSet = dataStatement.generateTableUpdateSet();
                 if (CommonUtils.isNotEmpty(updateSet)) {

@@ -219,6 +219,11 @@ public class SQLServerSession extends AbstractServerSession {
     }
 
     @Override
+    public String getSessionId() {
+        return String.valueOf(id);
+    }
+
+    @Override
     public String toString()
     {
         if (databaseName != null) {

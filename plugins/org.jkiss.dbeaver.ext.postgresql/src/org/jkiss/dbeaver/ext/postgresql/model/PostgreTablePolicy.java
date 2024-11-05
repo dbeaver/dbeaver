@@ -36,6 +36,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * An object describing row-level security policy.
@@ -63,7 +64,9 @@ public class PostgreTablePolicy implements DBSObject, DBPNamedObject2, DBPSaveab
 
         this.table = table;
         this.name = JDBCUtils.safeGetString(results, "policyname");
-        this.role = database.getRoleByName(monitor, database, JDBCUtils.<String[]>safeGetArray(results, "roles")[0]);
+        this.role = database.getRoleByReference(monitor, new PostgreRoleReference(
+            database, Objects.requireNonNull(JDBCUtils.<String[]>safeGetArray(results, "roles"))[0],null
+        ));
         this.type = CommonUtils.valueOf(PolicyType.class, JDBCUtils.safeGetString(results, "permissive"));
         this.event = CommonUtils.valueOf(PolicyEvent.class, JDBCUtils.safeGetString(results, "cmd"));
         this.using = JDBCUtils.safeGetString(results, "qual");

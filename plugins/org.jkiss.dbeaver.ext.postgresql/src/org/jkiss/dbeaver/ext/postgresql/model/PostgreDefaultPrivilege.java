@@ -26,7 +26,11 @@ public class PostgreDefaultPrivilege extends PostgreObjectPrivilege {
 
     private PostgrePrivilegeGrant.Kind underKind;
 
-    public PostgreDefaultPrivilege(PostgrePrivilegeOwner owner, String grantee, List<PostgrePrivilegeGrant> privileges) {
+    public PostgreDefaultPrivilege(
+        @Nullable PostgrePrivilegeOwner owner,
+        @Nullable PostgreRoleReference grantee,
+        @NotNull List<PostgrePrivilegeGrant> privileges
+    ) {
         super(owner, grantee, privileges);
     }
 

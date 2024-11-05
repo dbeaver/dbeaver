@@ -80,6 +80,13 @@ public class DatabaseEditorUtils {
     {
         contributionManager.add(ActionUtils.makeCommandContribution(
             workbenchSite,
+            IWorkbenchCommandConstants.FILE_REFRESH,
+            EditorsMessages.database_editor_command_refresh_name,
+            UIIcon.REFRESH,
+            EditorsMessages.database_editor_command_refresh_tip,
+            true));
+        contributionManager.add(ActionUtils.makeCommandContribution(
+            workbenchSite,
             IWorkbenchCommandConstants.FILE_SAVE,
             EditorsMessages.database_editor_command_save_name,
             UIIcon.SAVE,
@@ -91,13 +98,6 @@ public class DatabaseEditorUtils {
             EditorsMessages.database_editor_command_revert_name,
             UIIcon.RESET,
             EditorsMessages.database_editor_command_revert_tip,
-            true));
-        contributionManager.add(ActionUtils.makeCommandContribution(
-            workbenchSite,
-            IWorkbenchCommandConstants.FILE_REFRESH,
-            EditorsMessages.database_editor_command_refresh_name,
-            UIIcon.REFRESH,
-            EditorsMessages.database_editor_command_refresh_tip,
             true));
     }
 

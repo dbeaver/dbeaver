@@ -16,8 +16,13 @@
  */
 package org.jkiss.dbeaver.model.stm;
 
+import org.antlr.v4.runtime.misc.Interval;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
+import org.antlr.v4.runtime.tree.Tree;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.function.Function;
@@ -57,7 +62,7 @@ public class STMUtils {
 
         while (stack.size() > 0) {
             STMTreeNode node = stack.pop();
-            
+
             if (node instanceof STMTreeTermNode term) {
                 result.add(term);
             } else {
@@ -77,7 +82,7 @@ public class STMUtils {
 
         while (stack.size() > 0) {
             STMTreeNode node = stack.pop();
-            
+
             if (node instanceof STMTreeTermNode term) {
                 result.add(term.getText());
             } else {
@@ -181,5 +186,31 @@ public class STMUtils {
         symbols.addAll(leftColumns);
         symbols.addAll(rightColumns);
         return symbols;
+    }
+
+    /**
+     * Returns text covered by the provided node
+     */
+    @NotNull
+    public static String getTextContent(Tree node) {
+        String result = null;
+        if (node instanceof STMTreeNode stmNode) {
+            result = stmNode.getTextContent();
+        } else {
+            Tree first = node;
+            Tree last = node;
+
+            while (!(first instanceof TerminalNode) && first.getChildCount() > 0) {
+                first = first.getChild(0);
+            }
+            while (!(last instanceof TerminalNode) && last.getChildCount() > 0) {
+                last = last.getChild(last.getChildCount() - 1);
+            }
+            if (first instanceof TerminalNode a && last instanceof TerminalNode b) {
+                Interval textRange = Interval.of(a.getSymbol().getStartIndex(), b.getSymbol().getStopIndex());
+                result = b.getSymbol().getTokenSource().getInputStream().getText(textRange);
+            }
+        }
+        return CommonUtils.notEmpty(result);
     }
 }

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.app.standalone.cli;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.Strictness;
 import com.google.gson.stream.JsonWriter;
 import org.apache.commons.cli.CommandLine;
 import org.eclipse.core.runtime.Platform;
@@ -56,7 +57,7 @@ public class DataBaseInfoHandler implements CommandLineParameterHandler {
     private static final String DB_ADITIONAL_FEATURE_LABEL = "pro"; //$NON-NLS-1$
     private static final Log log = Log.getLog(DataBaseInfoHandler.class);
     private static final Gson DB_GSON = new GsonBuilder()
-        .setLenient()
+        .setStrictness(Strictness.LENIENT)
         .serializeNulls()
         .create();
 

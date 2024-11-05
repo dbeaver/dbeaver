@@ -17,10 +17,13 @@
 
 package org.jkiss.dbeaver.model.app;
 
-import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.content.IContentType;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+
+import java.util.Collection;
 
 /**
  * Resource handler info
@@ -51,5 +54,9 @@ public interface DBPResourceTypeDescriptor {
 
     boolean isManagable();
 
-    boolean isApplicableTo(@NotNull IResource resource, boolean testContent);
+    Collection<IContentType> getContentTypes();
+
+    Collection<AbstractDescriptor.ObjectType> getResourceTypes();
+
+
 }

@@ -27,7 +27,10 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.app.*;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -354,11 +357,11 @@ public class DataSourceMonitorJob extends AbstractJob {
     }
 
     public static long getLastUserActivityTime(long lastUserActivityTime) {
-        if (DBWorkbench.getPlatform().getApplication() instanceof DBPApplicationDesktop app) {
-            lastUserActivityTime = app.getLastUserActivityTime();
+        long lat = DBWorkbench.getPlatform().getApplication().getLastUserActivityTime();
+        if (lat <= 0) {
+            return lastUserActivityTime;
         }
-
-        return lastUserActivityTime;
+        return lat;
     }
 
     protected void showNotification(@NotNull DBPDataSource dataSource) {

@@ -33,6 +33,9 @@ import java.util.List;
 
 /**
  * Describes object reference
+ * @apiNote
+ * TODO remove objectType and treat this as non-table rows source like table-producing procedures, no matter builtin or not
+ *      (see something like {@code SELECT * FROM proc()}  )
  */
 public class SQLQueryObjectDataModel extends SQLQueryRowsSourceModel implements SQLQuerySymbolDefinition {
 

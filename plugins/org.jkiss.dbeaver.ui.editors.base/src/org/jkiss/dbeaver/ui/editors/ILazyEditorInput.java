@@ -20,12 +20,16 @@ import org.eclipse.ui.IEditorInput;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * An editor input that is initialized on demand.
  */
 public interface ILazyEditorInput extends IEditorInput, IUnloadableEditorInput {
+
+    @NotNull
+    DBPProject getProject();
 
     /**
      * Initializes real editor input.

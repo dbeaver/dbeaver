@@ -112,4 +112,5 @@ public interface DBPDriverLibrary {
 
     boolean isSecureDownload(@NotNull DBRProgressMonitor monitor);
 
+    boolean isInvalidLibrary();
 }

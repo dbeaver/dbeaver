@@ -16,8 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.oracle.ui.tools.toad;
 
-import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizard;
-import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizardPage;
+import org.jkiss.dbeaver.ext.config.migration.wizards.ConfigImportWizard;
+import org.jkiss.dbeaver.ext.config.migration.wizards.ConfigImportWizardPage;
 
 import java.io.File;
 

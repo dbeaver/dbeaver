@@ -23,12 +23,12 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBACertificateStorage;
+import org.jkiss.dbeaver.model.impl.app.BaseApplicationImpl;
 import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMRegistry;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.registry.BaseApplicationImpl;
 import org.jkiss.dbeaver.registry.BasePlatformImpl;
 import org.jkiss.dbeaver.runtime.qm.QMRegistryImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -97,8 +97,13 @@ public class DPIPlatform extends BasePlatformImpl {
         }
 
         // Register properties adapter
-        this.workspace = new DPIWorkspace(this);
-        this.workspace.initializeProjects();
+        try {
+            Path workspacePath = Path.of(Platform.getInstanceLocation().getURL().toURI());
+            this.workspace = new DPIWorkspace(this, workspacePath);
+            this.workspace.initializeProjects();
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot initialize DPI workspace", e);
+        }
 
         QMUtils.initApplication(this);
         this.qmController = new QMRegistryImpl();
