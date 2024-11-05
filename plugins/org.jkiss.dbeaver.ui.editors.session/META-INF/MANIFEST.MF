@@ -3,18 +3,11 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver UI Editors - Session Manager
 Bundle-SymbolicName: org.jkiss.dbeaver.ui.editors.session;singleton:=true
-Bundle-Version: 1.0.120.qualifier
-Bundle-Release-Date: 20241104
+Bundle-Version: 1.0.121.qualifier
+Bundle-Release-Date: 20241118
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
-Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.core.expressions,
- org.eclipse.jface.text,
- org.eclipse.ui,
- org.eclipse.ui.ide,
- org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.ui,
- org.jkiss.dbeaver.ui.editors.base,
+Require-Bundle: org.jkiss.dbeaver.ui.editors.base,
  org.jkiss.dbeaver.ui.editors.sql,
  org.jkiss.dbeaver.ui.navigator
 Export-Package: org.jkiss.dbeaver.ui.views.session

@@ -26,4 +26,9 @@ public abstract class AbstractServerSession implements DBAServerSession {
     public Object getActiveQueryId() {
         return null;
     }
+
+    @Override
+    public String getSessionId() {
+        return null;
+    }
 }

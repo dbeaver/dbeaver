@@ -37,7 +37,14 @@ public interface DBAServerSessionManager<SESSION_TYPE extends DBAServerSession> 
     Collection<SESSION_TYPE> getSessions(@NotNull DBCSession session, @NotNull Map<String, Object> options)
         throws DBException;
 
-    void alterSession(@NotNull DBCSession session, @NotNull SESSION_TYPE sessionType, @NotNull Map<String, Object> options)
+    void alterSession(@NotNull DBCSession session, @NotNull String sessionId, @NotNull Map<String, Object> options)
         throws DBException;
+
+    /**
+     * Returns the options for terminating sessions.
+     * @return map containing session termination options, with option keys and their corresponding values
+     */
+    @NotNull
+    Map<String, Object> getTerminateOptions();
 
 }
