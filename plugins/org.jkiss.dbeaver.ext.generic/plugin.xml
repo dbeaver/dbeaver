@@ -1246,8 +1246,8 @@
                 <driver
                         id="db2_luw_old"
                         label="Db2 for LUW (Old 8.x)"
-                        icon="icons/db2_icon.png"
-                        iconBig="icons/db2_icon_big.png"
+                        icon="platform:/plugin/org.jkiss.dbeaver.ext.db2/icons/db2_icon.png"
+                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.db2/icons/db2_icon_big.png"
                         category="Db2"
                         class="com.ibm.db2.jcc.DB2Driver"
                         sampleURL="jdbc:db2://{host}[:{port}]/{database}"
@@ -1268,11 +1268,7 @@
                     <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
 
-                    <fileSource url="https://www-304.ibm.com/support/docview.wss?rs=4020&amp;uid=swg21385217"
-                                name="DB2 drivers"
-                                instruction="Download JDBC (JCC) client driver. Extract downloaded archive and copy db2jcc4.jar in some directory. Then add db2jcc4.jar as a library in DBeaver driver editor dialog.">
-                        <file name="db2jcc4.jar" description="JDBC driver"/>
-                    </fileSource>
+                    <file type="jar" path="maven:/com.ibm.db2:jcc:RELEASE[11.5.9.0]" bundle="!drivers.db2"/>
                     <file type="license" path="drivers/db2/LICENSE.txt" bundle="drivers.db2"/>
                     <file type="jar" path="drivers/db2" bundle="drivers.db2"/>
                 </driver>
