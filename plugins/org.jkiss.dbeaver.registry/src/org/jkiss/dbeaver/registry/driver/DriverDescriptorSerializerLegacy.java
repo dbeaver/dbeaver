@@ -410,9 +410,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                                     }
                                 }
                                 if (DBWorkbench.isDistributed()) {
-                                    for (DriverDescriptor driver : curProvider.getDrivers()) {
-                                        driver.resetDriverInstance();
-                                    }
+                                    curDriver.resetDriverInstance();
                                 }
                                 curDriver.addLibraryFile(curLibrary, info);
                             }
