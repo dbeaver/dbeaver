@@ -5,15 +5,8 @@ Bundle-SymbolicName: org.jkiss.dbeaver.ext.mysql.ui;singleton:=true
 Bundle-Version: 1.0.135.qualifier
 Bundle-Release-Date: 20241118
 Bundle-Activator: org.jkiss.dbeaver.ext.mysql.ui.MySQLUIActivator
-Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime,
- org.eclipse.ui.views,
- org.eclipse.jface,
- org.eclipse.jface.text,
- org.eclipse.ui.workbench.texteditor,
- org.eclipse.ui.editors,
- org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.model.sql,
+Require-Bundle: org.jkiss.dbeaver.model.sql,
+ org.jkiss.dbeaver.data.gis,
  org.jkiss.dbeaver.ext.mysql,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.registry,
@@ -28,7 +21,6 @@ Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.ui.navigator,
  org.jkiss.dbeaver.tasks.native.ui,
  org.jkiss.dbeaver.tasks.ui,
- org.jkiss.dbeaver.data.gis,
  com.google.gson
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17
