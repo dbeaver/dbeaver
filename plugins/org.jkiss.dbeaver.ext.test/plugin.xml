@@ -24,6 +24,7 @@
 
         <command id="org.jkiss.dbeaver.test.object.validate" name="Node - Validate" categoryId="org.jkiss.dbeaver.test"/>
         <command id="org.jkiss.dbeaver.test.connection.validate" name="Connection - Validate" categoryId="org.jkiss.dbeaver.test"/>
+        <command id="org.jkiss.dbeaver.test.connection.stressTest" name="Connection - Stress Test" categoryId="org.jkiss.dbeaver.test"/>
         <command id="org.jkiss.dbeaver.test.dialog" name="Show dialog" categoryId="org.jkiss.dbeaver.test"/>
         <command id="org.jkiss.dbeaver.test.showNotification" name="Show notification" categoryId="org.jkiss.dbeaver.test"/>
         <command id="org.jkiss.dbeaver.test.showIcons" name="Show icons" categoryId="org.jkiss.dbeaver.test"/>
@@ -45,6 +46,14 @@
                 </with>
             </activeWhen>
         </handler>
+        <handler commandId="org.jkiss.dbeaver.test.connection.stressTest"
+                 class="org.jkiss.dbeaver.ext.test.handlers.HandlerConnectionStressTest">
+            <activeWhen>
+                <with variable="selection">
+                    <count value="+"/>
+                </with>
+            </activeWhen>
+        </handler>
         <handler commandId="org.jkiss.dbeaver.test.dialog" class="org.jkiss.dbeaver.ext.test.handlers.HandlerDialog"/>
         <handler commandId="org.jkiss.dbeaver.test.showNotification" class="org.jkiss.dbeaver.ext.test.handlers.ShowNotificationHandler"/>
         <handler commandId="org.jkiss.dbeaver.test.showIcons" class="org.jkiss.dbeaver.ext.test.handlers.ShowIconsHandler"/>
@@ -60,6 +69,7 @@
                </visibleWhen>
             </command>
             <command commandId="org.jkiss.dbeaver.test.connection.validate"/>
+            <command commandId="org.jkiss.dbeaver.test.connection.stressTest"/>
         </menuContribution>
        <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=help">
             <menu id="org.jkiss.dbeaver.ui.test.menu" label="&amp;Test">

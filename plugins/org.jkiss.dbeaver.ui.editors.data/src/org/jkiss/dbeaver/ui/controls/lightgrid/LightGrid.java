@@ -51,7 +51,8 @@ public abstract class LightGrid extends Canvas {
 
     private static final Log log = Log.getLog(LightGrid.class);
 
-    private static final int MAX_TOOLTIP_LENGTH = 1000;
+    private static final int MAX_CELL_TEXT_LENGTH = 1000;
+    private static final int MAX_TOOLTIP_LENGTH = 250;
 
     protected static final int Event_ChangeSort = 1000;
     protected static final int Event_NavigateLink = 1001;
@@ -4759,8 +4760,8 @@ public abstract class LightGrid extends Canvas {
     String getCellText(Object cellValue) {
         String text = String.valueOf(cellValue);
         // Truncate too long texts (they are really bad for performance)
-        if (text.length() > MAX_TOOLTIP_LENGTH) {
-            text = text.substring(0, MAX_TOOLTIP_LENGTH) + " ...";
+        if (text.length() > MAX_CELL_TEXT_LENGTH) {
+            text = text.substring(0, MAX_CELL_TEXT_LENGTH) + "...";
         }
 
         return text;
@@ -4776,6 +4777,10 @@ public abstract class LightGrid extends Canvas {
         if (toolTip == null) {
             return null;
         }
+        if (toolTip.length() > MAX_TOOLTIP_LENGTH) {
+            toolTip = toolTip.substring(0, MAX_TOOLTIP_LENGTH) + "...";
+        }
+        //fixme delete code bellow?
         // Show tooltip only if it's larger than column width
         GC sizingGC = new GC(this);
         Point ttSize = sizingGC.textExtent(toolTip);
