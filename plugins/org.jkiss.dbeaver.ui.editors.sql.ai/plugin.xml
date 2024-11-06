@@ -64,7 +64,11 @@
 	<extension point="org.eclipse.ui.handlers">
 		<handler commandId="org.jkiss.dbeaver.ui.editors.sql.ai.showCompletion" class="org.jkiss.dbeaver.ui.editors.sql.ai.internal.AITranslateHandler">
 			<enabledWhen>
-				<reference definitionId="org.jkiss.dbeaver.core.ai.completion.enabled"/>
+				<with variable="activeEditor">
+					<adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
+						<test property="org.jkiss.dbeaver.ui.editors.sql.canExecute" value="script"/>
+					</adapt>
+				</with>
 			</enabledWhen>
 		</handler>
 	</extension>
