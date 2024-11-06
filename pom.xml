@@ -28,6 +28,9 @@
     </properties>
 
     <modules>
+        <!-- dbeaver-jdbc-libsql-->
+        <module>../dbeaver-jdbc-libsql</module>
+
         <module>plugins</module>
         <module>features</module>
     </modules>

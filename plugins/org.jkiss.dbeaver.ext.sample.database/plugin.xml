@@ -28,7 +28,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
-        <image commandId="org.jkiss.dbeaver.ext.sample.database.commands.create" icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/sqlite_icon.png"/>
+        <image commandId="org.jkiss.dbeaver.ext.sample.database.commands.create" icon="platform:/plugin/org.jkiss.dbeaver.ext.sqlite/icons/sqlite_icon.png"/>
     </extension>
 
     <extension point="org.eclipse.ui.menus">

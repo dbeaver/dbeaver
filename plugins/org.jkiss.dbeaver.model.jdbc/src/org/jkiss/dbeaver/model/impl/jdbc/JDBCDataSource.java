@@ -847,6 +847,10 @@ public abstract class JDBCDataSource extends AbstractDataSource
             statement.cancel();
         }
         catch (SQLException e) {
+            if (e instanceof SQLFeatureNotSupportedException) {
+                // ignore
+                return;
+            }
             throw new DBDatabaseException(e, this);
         }
     }
