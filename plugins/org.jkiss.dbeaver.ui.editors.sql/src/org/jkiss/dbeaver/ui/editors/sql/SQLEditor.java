@@ -81,6 +81,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.DefaultServerOutputReader;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.NavigatorResources;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -340,6 +341,12 @@ public class SQLEditor extends SQLEditorBase implements
             return DBUtils.getDefaultContext(getDataSource(), false);
         }
         return null;
+    }
+
+    @Nullable
+    @Override
+    protected DBPDataSourceContainer getDataSourceContainerForSyntaxRuleReloading() {
+        return dataSourceContainer;
     }
 
     public SQLScriptContext getGlobalScriptContext() {
@@ -671,6 +678,27 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     public boolean isActiveTask() {
         return getTotalQueryRunning() > 0;
+    }
+
+    @NotNull
+    @Override
+    public SQLDialect getSQLDialect() {
+        DBPDataSource dataSource = getDataSource();
+        if (dataSource != null) {
+            return dataSource.getSQLDialect();
+        }
+        if (dataSourceContainer == null) {
+            return BasicSQLDialect.INSTANCE;
+        }
+        SQLDialectMetadata scriptDialect = dataSourceContainer.getScriptDialect();
+        if (scriptDialect != null) {
+            try {
+                return scriptDialect.createInstance();
+            } catch (DBException e) {
+                log.warn(String.format("Can't create sql dialect for %s:%s", scriptDialect.getId(), scriptDialect.getLabel()));
+            }
+        }
+        return BasicSQLDialect.INSTANCE;
     }
 
     @Override
@@ -3200,7 +3228,7 @@ public class SQLEditor extends SQLEditorBase implements
     public void handleDataSourceEvent(final DBPEvent event) {
         final boolean dsEvent = event.getObject() == getDataSourceContainer();
         final boolean objectEvent = event.getObject() != null && event.getObject().getDataSource() == getDataSource();
-        final boolean registryEvent = getDataSourceContainer() != null && event.getData() == getDataSourceContainer().getRegistry(); 
+        final boolean registryEvent = getDataSourceContainer() != null && event.getData() == getDataSourceContainer().getRegistry();
         if (dsEvent || objectEvent || registryEvent) {
             UIUtils.asyncExec(
                 () -> {
@@ -5093,7 +5121,7 @@ public class SQLEditor extends SQLEditorBase implements
             TextViewer textViewer = getTextViewer();
             boolean focusInEditor = textViewer != null && textViewer.getTextWidget().isFocusControl();
             if (!focusInEditor) {
-                if (rsv != null && rsv.getActivePresentation().getControl().isFocusControl()) {
+                if (rsv != null && rsv.getActivePresentation().getControl() != null && rsv.getActivePresentation().getControl().isFocusControl()) {
                     focusInEditor = false;
                 } else {
                     focusInEditor = lastFocusInEditor;

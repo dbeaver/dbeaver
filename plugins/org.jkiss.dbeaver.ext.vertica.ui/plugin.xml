@@ -10,11 +10,11 @@
                 targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
                 label="%dialog.connection.header"
                 class="org.jkiss.dbeaver.ext.vertica.ui.views.VerticaConnectionPage"
-                icon="platform:/plugin/org.jkiss.dbeaver.ext.vertica/icons/icons/vertica_icon.png">
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.vertica/icons/vertica_icon.png">
         </view>
         <view
                 class="org.jkiss.dbeaver.ext.vertica.ui.views.VerticaConnectionPage"
-                icon="platform:/plugin/org.jkiss.dbeaver.ext.vertica/icons/icons/vertica_icon.png"
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.vertica/icons/vertica_icon.png"
                 id="org.jkiss.dbeaver.ext.vertica.dataSourceEditorView"
                 dataSource="vertica"
                 label="%dialog.connection.header"

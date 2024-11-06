@@ -123,7 +123,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.keywords">
-        <keyword id="org.jkiss.dbeaver.keyword.pref.ui.misc" label="holiday decoration christmas snow"/>
+        <keyword id="org.jkiss.dbeaver.keyword.pref.ui.misc" label="checkbox bool boolean holiday decoration christmas snow"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.network.expert" label="ip ipv4 ipv6 protocol"/>
     </extension>
 
