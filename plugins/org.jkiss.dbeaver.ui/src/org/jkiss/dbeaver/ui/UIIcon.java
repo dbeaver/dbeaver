@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.ui;
 
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.ui.controls.HolidayDecorations;
+import org.jkiss.dbeaver.ui.controls.decorations.HolidayDecorations;
 
 /**
  * UI Icons
