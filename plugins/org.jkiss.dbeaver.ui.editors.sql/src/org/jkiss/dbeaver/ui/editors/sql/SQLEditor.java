@@ -3260,7 +3260,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     private boolean isContextChanged(DBPEvent event) {
         DBPEvent.Action eventAction = event.getAction();
-        boolean isEditorContext = event.getData() == this.getExecutionContext();
+        boolean isEditorContext = event.getObject() == this.getDataSourceContainer() || event.getData() == this.getExecutionContext();
         boolean contextChanged = isEditorContext && eventAction.equals(DBPEvent.Action.OBJECT_UPDATE);
         if (!contextChanged && isEditorContext && eventAction.equals(DBPEvent.Action.OBJECT_SELECT) && event.getEnabled()) {
             DBCExecutionContext execContext = this.getExecutionContext();

@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.ext.hive.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableIndexColumn;
+import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPImageProvider;
@@ -45,10 +42,16 @@ import java.util.Collection;
 import java.util.List;
 
 public class HiveTable extends GenericTable implements DBPImageProvider, DBPNamedObject2 {
-    final public IndexCache indexCache = new IndexCache();
+    private final HiveTableIndexCache hiveIndexCache;
 
     public HiveTable(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
+
+        if (!container.getDataSource().isServerVersionAtLeast(4, 0)) {
+            hiveIndexCache = new HiveTableIndexCache();
+        } else {
+            hiveIndexCache = null;
+        }
     }
 
     @Nullable
@@ -58,13 +61,17 @@ public class HiveTable extends GenericTable implements DBPImageProvider, DBPName
     }
 
     @Override
-    public Collection<HiveIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return indexCache.getObjects(monitor, getContainer(), this);
+    public Collection<? extends GenericTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return hiveIndexCache == null ?
+            super.getIndexes(monitor) :
+            hiveIndexCache.getObjects(monitor, getContainer(), this);
     }
 
     @Override
     public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        indexCache.clearCache();
+        if (hiveIndexCache != null) {
+            hiveIndexCache.clearCache();
+        }
         return super.refreshObject(monitor);
     }
 
@@ -97,8 +104,8 @@ public class HiveTable extends GenericTable implements DBPImageProvider, DBPName
     /**
      * Index cache implementation
      */
-    class IndexCache extends JDBCCompositeCache<GenericStructContainer, HiveTable, HiveIndex, GenericTableIndexColumn> {
-        IndexCache()
+    class HiveTableIndexCache extends JDBCCompositeCache<GenericStructContainer, HiveTable, HiveIndex, GenericTableIndexColumn> {
+        HiveTableIndexCache()
         {
             super(getCache(), HiveTable.class, "tab_name", "idx_name");
         }
