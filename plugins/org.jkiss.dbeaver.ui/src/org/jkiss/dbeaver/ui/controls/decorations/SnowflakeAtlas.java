@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.controls.decorations;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.internal.DPIUtil;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.services.IDisposable;
 import org.jkiss.code.NotNull;
@@ -45,18 +46,22 @@ record SnowflakeAtlas(
         int step,
         int mips
     ) {
-        int width = size * images.size();
-        int height = size * mips - sum(mips - 1);
-        var data = generateAtlasData(display, images, size, step, mips, width, height);
+        var data = generateAtlasData(display, images, size, step, mips);
 
         var handle = MethodHandles.byteArrayViewVarHandle(int[].class, ByteOrder.LITTLE_ENDIAN);
         var pixels = data.data;
         var filler = color.red << 16 | color.green << 8 | color.blue;
-        for (int i = 0; i < width * height; i++) {
+        for (int i = 0; i < data.width * data.height; i++) {
             handle.set(pixels, i * 4, filler);
         }
 
-        return new SnowflakeAtlas(new Image(display, data), images.size(), size, step, mips);
+        return new SnowflakeAtlas(
+            new Image(display, data),
+            images.size(),
+            DPIUtil.autoScaleUp(size),
+            DPIUtil.autoScaleUp(step),
+            mips
+        );
     }
 
     @NotNull
@@ -65,10 +70,10 @@ record SnowflakeAtlas(
         @NotNull List<? extends DBPImage> images,
         int size,
         int step,
-        int mips,
-        int width,
-        int height
+        int mips
     ) {
+        int width = size * images.size();
+        int height = size * mips - sum(mips - 1) * step;
         var data = new ImageData(width, height, 24, new PaletteData(0xFF0000, 0xFF00, 0xFF));
         data.alphaData = new byte[width * height];
 
