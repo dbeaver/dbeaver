@@ -30,6 +30,12 @@ public class BigQuerySQLDialect extends GenericSQLDialect {
         super("BigQuery", "google_bigquery");
     }
 
+    @NotNull
+    @Override
+    public MultiValueInsertMode getDefaultMultiValueInsertMode() {
+        return MultiValueInsertMode.GROUP_ROWS;
+    }
+
     @Override
     public char getStringEscapeCharacter() {
         return '\\';

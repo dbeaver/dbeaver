@@ -22,16 +22,18 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 
+import java.time.Duration;
+
 public abstract class PeriodicJob extends AbstractJob {
     private static final Log log = Log.getLog(PeriodicJob.class);
     @NotNull
     protected final DBPPlatform platform;
-    private final long periodMs;
+    private final Duration period;
 
-    public PeriodicJob(@NotNull String name, @NotNull DBPPlatform platform, long periodMs) {
+    public PeriodicJob(@NotNull String name, @NotNull DBPPlatform platform, @NotNull Duration period) {
         super(name);
         this.platform = platform;
-        this.periodMs = periodMs;
+        this.period = period;
 
         setUser(false);
         setSystem(true);
@@ -56,7 +58,7 @@ public abstract class PeriodicJob extends AbstractJob {
 
     protected abstract void doJob(@NotNull DBRProgressMonitor monitor);
 
-    public void scheduleMonitor() {
-        schedule(periodMs);
+    public final void scheduleMonitor() {
+        schedule(period);
     }
 }

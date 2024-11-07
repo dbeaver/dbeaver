@@ -13,7 +13,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.editors,
  org.eclipse.ui.ide,
  org.eclipse.ui.workbench.texteditor,
- org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.ext.generic.ui,
  org.jkiss.dbeaver.model,
@@ -25,7 +24,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.ext.altibase,
  org.jkiss.dbeaver.ui.editors.session,
  org.jkiss.dbeaver.tasks.native.ui,
- org.jkiss.dbeaver.tasks.ui
+ org.jkiss.dbeaver.tasks.ui,
+ org.jkiss.dbeaver.ext.ui.locks
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp

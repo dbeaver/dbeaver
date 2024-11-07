@@ -315,6 +315,13 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
 
     protected void afterExecute() {
         this.connection.getExecutionContext().unlockQueryExecution();
+        if (JDBCUtils.LOG_JDBC_WARNINGS) {
+            try {
+                JDBCUtils.reportWarnings(getSession(), this.getWarnings());
+            } catch (Throwable e) {
+                log.debug("Error reading JDBC warnings: " + e.getMessage());
+            }
+        }
 
         this.endBlock();
         if (isQMLoggingEnabled()) {
