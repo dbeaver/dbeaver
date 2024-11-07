@@ -409,6 +409,9 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                                         info.setFileCRC(crc);
                                     }
                                 }
+                                if (DBWorkbench.isDistributed()) {
+                                    curDriver.resetDriverInstance();
+                                }
                                 curDriver.addLibraryFile(curLibrary, info);
                             }
                         }
