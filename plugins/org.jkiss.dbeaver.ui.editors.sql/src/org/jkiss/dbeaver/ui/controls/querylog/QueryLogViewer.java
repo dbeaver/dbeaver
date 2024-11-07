@@ -152,6 +152,12 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         String getToolTipText(QMEvent event) {
             return timestampFormat.format(event.getObject().getOpenTime());
         }
+
+        @Nullable
+        @Override
+        Comparator<QMEvent> getComparator() {
+            return Comparator.comparingLong(e -> QMUtils.getObjectEventTime(e.getObject(), e.getAction()));
+        }
     };
     private static LogColumn COLUMN_TYPE = new LogColumn("type", ModelMessages.controls_querylog_column_type_name, ModelMessages.controls_querylog_column_type_tooltip, 100) { //$NON-NLS-1$
         @Override
