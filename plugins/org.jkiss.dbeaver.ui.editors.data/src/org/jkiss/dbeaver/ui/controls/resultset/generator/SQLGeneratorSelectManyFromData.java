@@ -59,7 +59,7 @@ public class SQLGeneratorSelectManyFromData extends SQLGeneratorResultSet {
             hasAttr = false;
             for (DBDAttributeBinding binding : keyAttributes) {
                 if (hasAttr) sql.append(",");
-                appendAttributeValue(getController(), sql, binding, firstRow);
+                appendAttributeValue(getController(), sql, binding, firstRow, true);
                 hasAttr = true;
             }
             if (multiKey) sql.append(")");
