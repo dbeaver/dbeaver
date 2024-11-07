@@ -540,17 +540,24 @@ public final class SQLUtils {
     public static String convertValueToSQL(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject attribute, @Nullable Object value) {
         DBDValueHandler valueHandler = DBUtils.findValueHandler(dataSource, attribute);
 
-        return convertValueToSQL(dataSource, attribute, valueHandler, value, DBDDisplayFormat.NATIVE);
+        return convertValueToSQL(dataSource, attribute, valueHandler, value, DBDDisplayFormat.NATIVE, false);
     }
 
-    public static String convertValueToSQL(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject attribute, @NotNull DBDValueHandler valueHandler, @Nullable Object value, DBDDisplayFormat displayFormat) {
+    public static String convertValueToSQL(
+        @NotNull DBPDataSource dataSource,
+        @NotNull DBSTypedObject attribute,
+        @NotNull DBDValueHandler valueHandler,
+        @Nullable Object value,
+        DBDDisplayFormat displayFormat,
+        boolean isInCondition
+    ) {
         if (DBUtils.isNullValue(value)) {
             return SQLConstants.NULL_VALUE;
         }
 
         return dataSource.getSQLDialect().getTypeCastClause(
             attribute,
-            convertValueToSQLFormat(dataSource, attribute, valueHandler, value, displayFormat), false);
+            convertValueToSQLFormat(dataSource, attribute, valueHandler, value, displayFormat), isInCondition);
     }
 
     private static String convertValueToSQLFormat(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject attribute, @NotNull DBDValueHandler valueHandler, @Nullable Object value, DBDDisplayFormat displayFormat) {
