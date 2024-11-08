@@ -79,6 +79,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.sqlite.edit.SQLitePrimaryKeyManager" objectType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteUniqueKey"/>
         <manager class="org.jkiss.dbeaver.ext.sqlite.edit.SQLiteTableManager" objectType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteTable"/>
         <manager class="org.jkiss.dbeaver.ext.sqlite.edit.SQLiteTableColumnManager" objectType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteTableColumn"/>
         <manager class="org.jkiss.dbeaver.ext.sqlite.edit.SQLiteTableForeignKeyManager" objectType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteTableForeignKey"/>
