@@ -116,6 +116,11 @@ public abstract class AbstractDataSourceInfo implements DBPDataSourceInfo
     }
 
     @Override
+    public boolean isMultipleResultsFailsOnMaxRows() {
+        return false;
+    }
+
+    @Override
     public DBSObjectType[] getSupportedObjectTypes() {
         return new DBSObjectType[0];
     }
