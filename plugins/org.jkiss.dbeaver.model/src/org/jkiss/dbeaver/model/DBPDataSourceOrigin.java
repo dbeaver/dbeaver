@@ -54,4 +54,9 @@ public interface DBPDataSourceOrigin extends DBPObjectWithDetails<DBPDataSourceC
     @NotNull
     Map<String, Object> getDataSourceConfiguration();
 
+    @NotNull
+    default String getFullType(){
+        return getType() + (getSubType() == null ? "" : "." + getSubType());
+    }
+
 }
