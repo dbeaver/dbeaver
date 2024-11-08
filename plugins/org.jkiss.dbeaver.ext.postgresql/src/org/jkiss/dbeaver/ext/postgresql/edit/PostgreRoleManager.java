@@ -39,7 +39,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.Timestamp;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
@@ -47,6 +47,7 @@ import java.util.Map;
  * PostgreRoleManager
  */
 public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreDataSource> implements DBEObjectRenamer<PostgreRole> {
+    private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
     public long getMakerOptions(@NotNull DBPDataSource dataSource)
@@ -150,8 +151,7 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
         }
 
         if (role.getValidUntil() != null) {
-            Timestamp timestamp = Timestamp.valueOf(role.getValidUntil());
-            options.append(" VALID UNTIL ").append(SQLUtils.quoteString(role, timestamp.toString()));
+            options.append(" VALID UNTIL ").append(SQLUtils.quoteString(role, TIMESTAMP_FORMATTER.format(role.getValidUntil())));
         }
 
         if (options.length() != 0 && extension instanceof PostgreServerCockroachDB) {
