@@ -844,15 +844,15 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                             }
                         }
 
-                        if (refTable instanceof DBSTable) {
+                        if (refTable instanceof DBSTable dbsTable) {
                             // Get indexes
-                            final Collection<? extends DBSTableIndex> indexes = ((DBSTable) refTable).getIndexes(monitor);
+                            final Collection<? extends DBSTableIndex> indexes = dbsTable.getIndexes(monitor);
                             if (!CommonUtils.isEmpty(indexes)) {
-                                for (DBSTableIndex constraint : indexes) {
-                                    if (constraint.isUnique() &&
-                                        isConstraintIndex(monitor, curConstraints, constraint) &&
-                                        isValidRefConstraint(monitor, constraint)) {
-                                        curConstraints.add(constraint);
+                                for (DBSTableIndex index : indexes) {
+                                    if (index.isUnique() &&
+                                        !isConstraintIndex(monitor, curConstraints, index) &&
+                                        isValidRefConstraint(monitor, index)) {
+                                        curConstraints.add(index);
                                     }
                                 }
                             }
@@ -932,11 +932,13 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     }
 
     private boolean isConstraintIndex(DBRProgressMonitor monitor, List<DBSEntityConstraint> constraints, DBSTableIndex index) throws DBException {
-        List<? extends DBSTableIndexColumn> iAttrs = index.getAttributeReferences(monitor);
+        List<? extends DBSEntityAttribute> iAttrs = Objects.requireNonNull(index.getAttributeReferences(monitor))
+            .stream().map(DBSEntityAttributeRef::getAttribute).toList();
 
         for (DBSEntityConstraint constraint : constraints) {
-            if (constraint instanceof DBSEntityReferrer) {
-                List<? extends DBSEntityAttributeRef> cAttrs = ((DBSEntityReferrer) constraint).getAttributeReferences(monitor);
+            if (constraint instanceof DBSEntityReferrer referrer) {
+                List<? extends DBSEntityAttribute> cAttrs = Objects.requireNonNull(referrer.getAttributeReferences(monitor))
+                    .stream().map(DBSEntityAttributeRef::getAttribute).toList();
                 if (CommonUtils.equalObjects(iAttrs, cAttrs)) {
                     return true;
                 }
