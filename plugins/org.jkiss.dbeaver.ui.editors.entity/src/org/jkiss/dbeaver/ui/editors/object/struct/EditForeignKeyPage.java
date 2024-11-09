@@ -184,9 +184,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                             options.put(SQLObjectEditor.OPTION_SKIP_CONFIGURATION, true);
                             DBSObject newColumn = objectManager.createNewObject(monitor, commandContext, entity, null, options);
                             if (newColumn instanceof DBSEntityAttribute attr) {
-                                if (newColumn instanceof DBSTypedObjectExt2 toe) {
-                                    toe.setRequired(customNotNull);
-                                }
+                                setNewColumnDataType(newColumn);
                                 if (newColumn instanceof DBPNamedObject2 no) {
                                     no.setName(customName);
                                     ownColumn = attr;
@@ -198,6 +196,34 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                 }
             }
             throw new DBException("Cannot create new column in table '" + DBUtils.getObjectFullName(entity, DBPEvaluationContext.UI) + "'");
+        }
+
+        private void setNewColumnDataType(DBSObject newColumn) throws DBException {
+            if (newColumn instanceof DBSTypedObjectExt2 toe) {
+                toe.setRequired(customNotNull);
+                toe.setMaxLength(refColumn.getMaxLength());
+                toe.setScale(refColumn.getScale());
+                toe.setPrecision(refColumn.getPrecision());
+            }
+            if (refColumn != null) {
+                // Set new column data type
+                if (newColumn instanceof DBSTypedObjectExt4 toe4 && refColumn instanceof DBSTypedObjectEx refTO) {
+                    DBSDataType refDataType = refTO.getDataType();
+                    if (refDataType instanceof DBSDataTypeSerial dts && dts.isSerialDataType()) {
+                        DBSDataType sbDataType = dts.getBaseDataType();
+                        if (sbDataType == null) {
+                            log.debug("Base data type for serial data type '" + dts.getFullTypeName() + "'");
+                        } else {
+                            refDataType = sbDataType;
+                        }
+                    }
+                    toe4.setDataType(refDataType);
+                } else if (newColumn instanceof DBSTypedObjectExt3 toe3) {
+                    toe3.setFullTypeName(refColumn.getFullTypeName());
+                } else if (newColumn instanceof DBSTypedObjectExt2 toe) {
+                    toe.setTypeName(refColumn.getTypeName());
+                }
+            }
         }
 
         public String getCustomName() {
