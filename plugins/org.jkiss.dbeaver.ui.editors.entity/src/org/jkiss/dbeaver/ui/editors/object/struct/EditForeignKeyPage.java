@@ -564,6 +564,8 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         if (dialog.open() == IDialogConstants.OK_ID) {
             fkColumnInfo.customName = dialog.columnName;
             fkColumnInfo.customNotNull = dialog.columnRequired;
+            TableItem item = columnsTable.getSelection()[0];
+            item.setText(0, "<" + fkColumnInfo.customName + ">");
         }
     }
 
