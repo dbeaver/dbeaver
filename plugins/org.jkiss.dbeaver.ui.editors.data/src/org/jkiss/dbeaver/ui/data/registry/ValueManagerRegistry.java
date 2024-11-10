@@ -71,7 +71,7 @@ public class ValueManagerRegistry extends AbstractValueBindingRegistry<IValueMan
         return managers;
     }
 
-    @Nullable
+    @NotNull
     @Override
     protected IValueManager getDefaultManager() {
         return DefaultValueManager.INSTANCE;

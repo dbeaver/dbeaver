@@ -46,6 +46,7 @@ public abstract class AbstractValueBindingDescriptor<TYPE> extends AbstractDescr
     private static final String ATTR_EXTENSION = "extension";
 
     private final String id;
+    private final String description;
     protected ObjectType implType;
     protected final List<SupportInfo> supportInfos = new ArrayList<>();
     private TYPE instance;
@@ -85,12 +86,24 @@ public abstract class AbstractValueBindingDescriptor<TYPE> extends AbstractDescr
                 }
             }
         }
+
+        @Override
+        public String toString() {
+            StringBuilder str = new StringBuilder();
+            if (valueType != null) str.append("valueType=").append(valueType.getImplName()).append("; ");
+            if (typeName != null) str.append("typeName=").append(typeName).append(";");
+            if (dataKind != null) str.append("dataKind=").append(dataKind).append(";");
+            if (extension != null) str.append("extension=").append(extension).append(";");
+            if (dataSource != null) str.append("dataSource=").append(dataSource).append(";");
+            return str.toString();
+        }
     }
 
     public AbstractValueBindingDescriptor(IConfigurationElement config) {
         super(config);
 
         this.id = config.getAttribute("id");
+        this.description = config.getAttribute("description");
         this.implType = new ObjectType(config.getAttribute("class"));
 
         IConfigurationElement[] typeElements = config.getChildren(TAG_SUPPORTS);
@@ -103,6 +116,10 @@ public abstract class AbstractValueBindingDescriptor<TYPE> extends AbstractDescr
 
     public String getId() {
         return id;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
     @NotNull

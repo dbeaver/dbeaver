@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.ui.data.IDataController;
+import org.jkiss.dbeaver.ui.data.IValueHintContext;
 
 import java.util.List;
 
@@ -198,6 +199,9 @@ public interface IResultSetController extends IDataController, DBPContextProvide
 
     ////////////////////////////////////////
     // Presentation & panels
+
+    @NotNull
+    IValueHintContext getHintContext();
 
     /**
      * Active presentation

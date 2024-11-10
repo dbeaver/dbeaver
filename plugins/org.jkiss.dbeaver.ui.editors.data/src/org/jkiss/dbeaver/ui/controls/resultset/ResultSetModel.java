@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.data.IValueHintContext;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -56,6 +57,7 @@ public class ResultSetModel {
     private DBDDataFilter dataFilter;
     private DBSEntity singleSourceEntity;
     private DBCExecutionSource executionSource;
+    private ResultSetHintContext hintContext;
 
     // Data
     private List<ResultSetRow> curRows = new ArrayList<>();
@@ -74,12 +76,14 @@ public class ResultSetModel {
     private transient boolean metadataDynamic;
 
     public static class AttributeColorSettings {
-        private DBCLogicalOperator operator;
-        private boolean rangeCheck;
-        private boolean singleColumn;
-        private Object[] attributeValues;
-        private Color colorForeground, colorForeground2;
-        private Color colorBackground, colorBackground2;
+        private final DBCLogicalOperator operator;
+        private final boolean rangeCheck;
+        private final boolean singleColumn;
+        private final Object[] attributeValues;
+        private final Color colorForeground;
+        private final Color colorForeground2;
+        private final Color colorBackground;
+        private final Color colorBackground2;
 
         AttributeColorSettings(DBVColorOverride co) {
             this.operator = co.getOperator();
@@ -104,7 +108,7 @@ public class ResultSetModel {
         }
     }
 
-    private final Comparator<DBDAttributeBinding> POSITION_SORTER = new Comparator<DBDAttributeBinding>() {
+    private final Comparator<DBDAttributeBinding> POSITION_SORTER = new Comparator<>() {
         @Override
         public int compare(DBDAttributeBinding o1, DBDAttributeBinding o2) {
             final DBDAttributeConstraint c1 = dataFilter.getConstraint(o1);
@@ -122,7 +126,12 @@ public class ResultSetModel {
     };
 
     public ResultSetModel() {
-        dataFilter = createDataFilter();
+        this.hintContext = new ResultSetHintContext(this::getDataContainer);
+        this.dataFilter = createDataFilter();
+    }
+
+    public IValueHintContext getHintContext() {
+        return hintContext;
     }
 
     @NotNull
@@ -505,7 +514,7 @@ public class ResultSetModel {
             row.changes.put(attr, topAttribute);
         }
 
-        if (value instanceof DBDValue dbValue) {
+        if (value instanceof DBDValue) {
             // New value if also a complex value. Probably DBDContent
             // In this case it must be root attribute
             if (attr != topAttribute && valueToEdit instanceof DBDValue ownerValue) {
@@ -627,6 +636,10 @@ public class ResultSetModel {
                     documentAttribute = realAttr;
                 }
             }
+        }
+
+        if (metadataChanged) {
+            hintContext.resetCache();
         }
     }
 

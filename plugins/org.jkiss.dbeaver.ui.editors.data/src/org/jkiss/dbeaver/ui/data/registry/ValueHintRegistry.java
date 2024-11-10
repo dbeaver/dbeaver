@@ -21,7 +21,6 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.data.IValueHintProvider;
 
 import java.util.ArrayList;
@@ -59,9 +58,9 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<IValueHintPr
         return descriptors;
     }
 
-    @Nullable
+    @NotNull
     @Override
     protected IValueHintProvider getDefaultManager() {
-        return null;
+        return VoidHintProvider.INSTANCE;
     }
 }

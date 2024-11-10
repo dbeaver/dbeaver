@@ -32,7 +32,7 @@ public abstract class AbstractValueBindingRegistry<TYPE, DESC extends AbstractVa
     @NotNull
     protected abstract List<DESC> getDescriptors();
 
-    @Nullable
+    @NotNull
     protected abstract TYPE getDefaultManager();
 
     @NotNull
@@ -49,7 +49,7 @@ public abstract class AbstractValueBindingRegistry<TYPE, DESC extends AbstractVa
             manager = findManager(dataSource, type, valueType, false, false);
         }
         if (manager == null) {
-            return getDefaultManager();
+            manager = getDefaultManager();
         }
         return manager;
     }

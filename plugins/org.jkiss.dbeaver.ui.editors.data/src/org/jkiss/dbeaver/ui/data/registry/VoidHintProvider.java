@@ -14,36 +14,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.jkiss.dbeaver.ui.data;
+package org.jkiss.dbeaver.ui.data.registry;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.ui.data.IValueHint;
+import org.jkiss.dbeaver.ui.data.IValueHintContext;
+import org.jkiss.dbeaver.ui.data.IValueHintProvider;
 
 import java.util.EnumSet;
 
 /**
- * Value hint provider
+ * DBD Value Controller
  */
-public interface IValueHintProvider {
+public class VoidHintProvider implements IValueHintProvider {
 
-    int HINT_INLINE = 1;
-    int HINT_ADVANCED = 1 << 1;
+    public static final VoidHintProvider INSTANCE = new VoidHintProvider();
 
     @Nullable
-    IValueHint[] getValueHint(
-        @NotNull IValueHintContext context,
-        @NotNull DBDAttributeBinding attribute,
+    @Override
+    public IValueHint[] getValueHint(
+        @NotNull IValueHintContext context, @NotNull DBDAttributeBinding attribute,
         @Nullable Object value,
         @NotNull EnumSet<IValueHint.HintType> types,
-        int options);
+        int options
+    ) {
+        return null;
+    }
 
-    void cacheRequiredData(
+    @Override
+    public void cacheRequiredData(
         @NotNull DBRProgressMonitor monitor,
         @NotNull IValueHintContext context,
-        @NotNull DBDAttributeBinding[] attributes) throws DBException;
+        @NotNull DBDAttributeBinding[] attributes
+    ) throws DBException {
+        // noop
+    }
 
 }

@@ -19,31 +19,24 @@ package org.jkiss.dbeaver.ui.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-
-import java.util.EnumSet;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 
 /**
- * Value hint provider
+ * Value hint context.
+ * It is usually a data viewer presentation.
+ * Context remains the same for a data container (e.g. a table).
+ * Context can be used by hint providers to keep cache related to data container.
+ * Every hint provider may get/set any number of custom attributes here
  */
-public interface IValueHintProvider {
-
-    int HINT_INLINE = 1;
-    int HINT_ADVANCED = 1 << 1;
+public interface IValueHintContext {
 
     @Nullable
-    IValueHint[] getValueHint(
-        @NotNull IValueHintContext context,
-        @NotNull DBDAttributeBinding attribute,
-        @Nullable Object value,
-        @NotNull EnumSet<IValueHint.HintType> types,
-        int options);
+    DBSDataContainer getDataContainer();
 
-    void cacheRequiredData(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull IValueHintContext context,
-        @NotNull DBDAttributeBinding[] attributes) throws DBException;
+    @Nullable
+    Object getHintContextAttribute(@NotNull String name);
+
+    void setHintContextAttribute(@NotNull String name, @Nullable Object value);
 
 }

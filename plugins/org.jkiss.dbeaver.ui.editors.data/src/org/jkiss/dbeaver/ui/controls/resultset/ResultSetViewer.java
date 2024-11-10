@@ -95,6 +95,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.virtual.*;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.data.IValueHintContext;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageDataFormat;
@@ -1633,6 +1634,12 @@ public class ResultSetViewer extends Viewer
         } finally {
             if (statusBar != null) statusBar.setRedraw(true);
         }
+    }
+
+    @NotNull
+    @Override
+    public IValueHintContext getHintContext() {
+        return model.getHintContext();
     }
 
     public void redrawData(boolean attributesChanged, boolean rowsChanged) {
