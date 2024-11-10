@@ -33,28 +33,28 @@ public abstract class AbstractValueBindingRegistry<TYPE, DESC extends AbstractVa
     protected abstract List<DESC> getDescriptors();
 
     @NotNull
-    protected abstract TYPE getDefaultManager();
+    protected abstract TYPE getDefaultValueBinding();
 
     @NotNull
-    public TYPE getManager(@Nullable DBPDataSource dataSource, @NotNull DBSTypedObject type, @NotNull Class<?> valueType) {
+    public TYPE getValueBinding(@Nullable DBPDataSource dataSource, @NotNull DBSTypedObject type, @NotNull Class<?> valueType) {
         // Check starting from most restrictive to less restrictive
-        TYPE manager = findManager(dataSource, type, valueType, true, true);
-        if (manager == null) {
-            manager = findManager(dataSource, type, valueType, false, true);
+        TYPE valueBinding = findValueBinding(dataSource, type, valueType, true, true);
+        if (valueBinding == null) {
+            valueBinding = findValueBinding(dataSource, type, valueType, false, true);
         }
-        if (manager == null) {
-            manager = findManager(dataSource, type, valueType, true, false);
+        if (valueBinding == null) {
+            valueBinding = findValueBinding(dataSource, type, valueType, true, false);
         }
-        if (manager == null) {
-            manager = findManager(dataSource, type, valueType, false, false);
+        if (valueBinding == null) {
+            valueBinding = findValueBinding(dataSource, type, valueType, false, false);
         }
-        if (manager == null) {
-            manager = getDefaultManager();
+        if (valueBinding == null) {
+            valueBinding = getDefaultValueBinding();
         }
-        return manager;
+        return valueBinding;
     }
 
-    private TYPE findManager(@Nullable DBPDataSource dataSource, DBSTypedObject typedObject, Class<?> valueType, boolean checkDataSource, boolean checkType) {
+    private TYPE findValueBinding(@Nullable DBPDataSource dataSource, DBSTypedObject typedObject, Class<?> valueType, boolean checkDataSource, boolean checkType) {
         for (DESC desc : getDescriptors()) {
             if (desc.supportsType(dataSource, typedObject, valueType, checkDataSource, checkType)) {
                 return desc.getInstance();

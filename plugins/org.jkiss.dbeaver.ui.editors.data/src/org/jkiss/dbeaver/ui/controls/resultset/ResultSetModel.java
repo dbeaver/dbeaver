@@ -57,7 +57,7 @@ public class ResultSetModel {
     private DBDDataFilter dataFilter;
     private DBSEntity singleSourceEntity;
     private DBCExecutionSource executionSource;
-    private ResultSetHintContext hintContext;
+    private final ResultSetHintContext hintContext;
 
     // Data
     private List<ResultSetRow> curRows = new ArrayList<>();

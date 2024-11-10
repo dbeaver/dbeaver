@@ -73,13 +73,13 @@ public class ValueManagerRegistry extends AbstractValueBindingRegistry<IValueMan
 
     @NotNull
     @Override
-    protected IValueManager getDefaultManager() {
+    protected IValueManager getDefaultValueBinding() {
         return DefaultValueManager.INSTANCE;
     }
 
     @NotNull
     public static IValueManager findValueManager(@Nullable DBPDataSource dataSource, @NotNull DBSTypedObject typedObject, @NotNull Class<?> valueType) {
-        return getInstance().getManager(dataSource, typedObject, valueType);
+        return getInstance().getValueBinding(dataSource, typedObject, valueType);
     }
 
     @NotNull

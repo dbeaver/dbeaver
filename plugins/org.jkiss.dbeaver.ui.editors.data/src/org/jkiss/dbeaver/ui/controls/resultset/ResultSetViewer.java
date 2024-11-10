@@ -486,7 +486,12 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private void handleDataPropertyChange(@Nullable DBPDataSourceContainer dataSource, @NotNull String property, @Nullable Object oldValue, @Nullable Object newValue) {
+    private void handleDataPropertyChange(
+        @Nullable DBPDataSourceContainer dataSource,
+        @NotNull String property,
+        @Nullable Object oldValue,
+        @Nullable Object newValue
+    ) {
         if (ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES.equals(property)) {
             scheduleThemeUpdate();
         }
@@ -2347,19 +2352,11 @@ public class ResultSetViewer extends Viewer
             return;
         }
 
-        boolean serverSideOrdering;
-
-        switch (orderingMode) {
-            case CLIENT_SIDE:
-                serverSideOrdering = false;
-                break;
-            case SERVER_SIDE:
-                serverSideOrdering = true;
-                break;
-            default:
-                serverSideOrdering = isHasMoreData();
-                break;
-        }
+        boolean serverSideOrdering = switch (orderingMode) {
+            case CLIENT_SIDE -> false;
+            case SERVER_SIDE -> true;
+            default -> isHasMoreData();
+        };
 
         if (serverSideOrdering && getDataSource() != null && !getDataSource().getInfo().supportsResultSetOrdering()) {
             ConfirmationDialog.confirmAction(getControl().getShell(), CONFIRM_SERVER_SIDE_ORDERING_UNAVAILABLE, ConfirmationDialog.WARNING);
@@ -2647,7 +2644,7 @@ public class ResultSetViewer extends Viewer
         {
             DBSEntityReferrer descReferrer = ResultSetUtils.getEnumerableConstraint(curAttribute);
             if (descReferrer instanceof DBSEntityAssociation) {
-                // FK to disctionary - simple query
+                // FK to dictionary - simple query
                 isExpensiveFilter = false;
             } else {
                 // Column enumeration is expensive

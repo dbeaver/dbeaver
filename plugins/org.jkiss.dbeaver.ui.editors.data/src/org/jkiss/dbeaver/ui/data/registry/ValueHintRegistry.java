@@ -60,7 +60,7 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<IValueHintPr
 
     @NotNull
     @Override
-    protected IValueHintProvider getDefaultManager() {
+    protected IValueHintProvider getDefaultValueBinding() {
         return VoidHintProvider.INSTANCE;
     }
 }
