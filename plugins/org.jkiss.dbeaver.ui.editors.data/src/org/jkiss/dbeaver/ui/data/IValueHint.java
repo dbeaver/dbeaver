@@ -14,29 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.data.registry;
 
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.jkiss.dbeaver.ui.data.IValueManager;
+package org.jkiss.dbeaver.ui.data;
+
+import org.jkiss.dbeaver.model.DBPImage;
 
 /**
- * ValueManagerDescriptor
+ * Value hint
  */
-public class ValueManagerDescriptor extends AbstractValueBindingDescriptor<IValueManager> {
+public interface IValueHint {
 
-    public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataManager"; //$NON-NLS-1$
-    public static final String TAG_MANAGER = "manager"; //$NON-NLS-1$
-
-    private IValueManager instance;
-
-    public ValueManagerDescriptor(IConfigurationElement config) {
-        super(config);
+    enum HintType {
+        NONE,
+        STRING,
+        IMAGE,
+        SOUND,
+        WEB
     }
 
-    @Override
-    protected Class<IValueManager> getImplClass() {
-        return IValueManager.class;
-    }
+    HintType getHintType();
 
+    String getHintText();
+
+    String getHintDescription();
+
+    DBPImage getHintIcon();
 
 }

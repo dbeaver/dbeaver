@@ -17,26 +17,24 @@
 package org.jkiss.dbeaver.ui.data.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.jkiss.dbeaver.ui.data.IValueManager;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ui.data.IValueHintProvider;
 
 /**
- * ValueManagerDescriptor
+ * ValueHintProviderDescriptor
  */
-public class ValueManagerDescriptor extends AbstractValueBindingDescriptor<IValueManager> {
+public class ValueHintProviderDescriptor extends AbstractValueBindingDescriptor<IValueHintProvider> {
+    private static final Log log = Log.getLog(ValueHintProviderDescriptor.class);
 
-    public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataManager"; //$NON-NLS-1$
-    public static final String TAG_MANAGER = "manager"; //$NON-NLS-1$
+    public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataHintProvider"; //$NON-NLS-1$
 
-    private IValueManager instance;
-
-    public ValueManagerDescriptor(IConfigurationElement config) {
+    public ValueHintProviderDescriptor(IConfigurationElement config) {
         super(config);
     }
 
     @Override
-    protected Class<IValueManager> getImplClass() {
-        return IValueManager.class;
+    protected Class<IValueHintProvider> getImplClass() {
+        return IValueHintProvider.class;
     }
-
 
 }
