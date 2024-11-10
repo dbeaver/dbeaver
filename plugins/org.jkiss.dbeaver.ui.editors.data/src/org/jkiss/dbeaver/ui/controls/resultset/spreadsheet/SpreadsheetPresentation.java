@@ -2323,7 +2323,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
             }
 
-            info.align = getCellAlign(attr, row, cellValue);
+            if (CommonUtils.isBitSet(info.state, STATE_LINK)) {
+                info.align = ALIGN_LEFT;
+            } else {
+                info.align = getCellAlign(attr, row, cellValue);
+            }
 
             if (attr != null && cellValue != DBDVoid.INSTANCE) {
                 // Image
@@ -2721,6 +2725,12 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 return text.toString();
             }
             return "";
+        }
+
+        @Nullable
+        @Override
+        public String getCellHintText(IGridColumn colElement, IGridRow rowElement, CellInformation cellInfo) {
+            return CommonUtils.isBitSet(cellInfo.state, STATE_LINK) ? "<zzz>" : null;
         }
 
         @Override

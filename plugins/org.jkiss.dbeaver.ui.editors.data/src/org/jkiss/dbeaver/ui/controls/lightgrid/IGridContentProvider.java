@@ -38,6 +38,7 @@ public interface IGridContentProvider extends IContentProvider {
     int STATE_TRANSFORMED = 1 << 2;
     int STATE_TOGGLE = 1 << 3;
     int STATE_DECORATED = 1 << 4;
+    int STATE_HINT = 1 << 8;
 
     int ALIGN_LEFT = 0;
     int ALIGN_CENTER = 1;
@@ -107,6 +108,9 @@ public interface IGridContentProvider extends IContentProvider {
 
     @NotNull
     String getCellLinkText(IGridColumn colElement, IGridRow rowElement);
+
+    @Nullable
+    String getCellHintText(IGridColumn colElement, IGridRow rowElement, CellInformation cellInfo);
 
     // Resets all cached colors
     void resetColors();

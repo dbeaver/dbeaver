@@ -172,6 +172,7 @@ class GridCellRenderer extends AbstractRenderer {
             final Font font = cellInfo.font;
             gc.setFont(font != null ? font : grid.normalFont);
 
+            int textTopPos = bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN;
             switch (columnAlign) {
                 // Center
                 case IGridContentProvider.ALIGN_CENTER: {
@@ -179,7 +180,7 @@ class GridCellRenderer extends AbstractRenderer {
                     gc.drawString(
                         text,
                         bounds.x + (bounds.width - textSize.x) / 2,
-                        bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN,
+                        textTopPos,
                         isTransparent
                     );
                     break;
@@ -209,7 +210,7 @@ class GridCellRenderer extends AbstractRenderer {
                     gc.drawString(
                         text,
                         bounds.x + bounds.width - (textSize.x + RIGHT_MARGIN + imageMargin),
-                        bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN,
+                        textTopPos,
                         isTransparent
                     );
                     if (useClipping) {
@@ -221,7 +222,7 @@ class GridCellRenderer extends AbstractRenderer {
                     if (CommonUtils.isBitSet(state, IGridContentProvider.STATE_DECORATED)) {
                         drawCellTextDecorated(gc, originalText, cellInfo, new Rectangle(
                             bounds.x + x,
-                            bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN,
+                            textTopPos,
                             bounds.width - LEFT_MARGIN - RIGHT_MARGIN,
                             bounds.height
                         ));
@@ -229,10 +230,28 @@ class GridCellRenderer extends AbstractRenderer {
                         gc.drawString(
                             text,
                             bounds.x + x,
-                            bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN,
+                            textTopPos,
                             isTransparent
                         );
                     }
+
+                    String hintText = grid.getContentProvider().getCellHintText(col, row, cellInfo);
+                    if (!CommonUtils.isEmpty(hintText)) {
+                        Point textSize = gc.textExtent(text);
+                        if (textSize.x < bounds.width - LEFT_MARGIN) {
+                            int hintPos = bounds.x + x + textSize.x + LEFT_MARGIN;
+                            final Color disabledForeground = getDisabledForeground(cellInfo);
+
+                            gc.setForeground(disabledForeground);
+                            gc.drawString(
+                                hintText,
+                                hintPos,
+                                textTopPos,
+                                isTransparent
+                            );
+                        }
+                    }
+
                     break;
                 }
             }
@@ -252,6 +271,11 @@ class GridCellRenderer extends AbstractRenderer {
                 gc.drawRectangle(bounds.x + 2, bounds.y + 1, bounds.width - 4, bounds.height - 3);
             }
         }
+    }
+
+    private static @NotNull Color getDisabledForeground(IGridContentProvider.CellInformation cellInfo) {
+        return UIUtils.getSharedColor(
+            UIUtils.blend(cellInfo.foreground.getRGB(), cellInfo.background.getRGB(), 50));
     }
 
     boolean isOverLink(GridColumn column, int row, int x, int y) {
@@ -332,8 +356,7 @@ class GridCellRenderer extends AbstractRenderer {
 
     private void drawCellTextDecorated(@NotNull GC gc, @NotNull String text, @NotNull IGridContentProvider.CellInformation cellInfo, @NotNull Rectangle bounds) {
         final Color activeForeground = cellInfo.foreground;
-        final Color activeBackground = cellInfo.background;
-        final Color disabledForeground = UIUtils.getSharedColor(UIUtils.blend(activeForeground.getRGB(), activeBackground.getRGB(), 50));
+        final Color disabledForeground = getDisabledForeground(cellInfo);
 
         int start = 0;
         int index = 0;
