@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -36,7 +37,7 @@ public abstract class AbstractValueBindingRegistry<TYPE, DESC extends AbstractVa
     protected abstract TYPE getDefaultValueBinding();
 
     @NotNull
-    public TYPE getValueBinding(@Nullable DBPDataSource dataSource, @NotNull DBSTypedObject type, @NotNull Class<?> valueType) {
+    public TYPE getValueBinding(@Nullable DBPDataSource dataSource, @NotNull DBSTypedObject type, @Nullable Class<?> valueType) {
         // Check starting from most restrictive to less restrictive
         TYPE valueBinding = findValueBinding(dataSource, type, valueType, true, true);
         if (valueBinding == null) {
@@ -61,6 +62,17 @@ public abstract class AbstractValueBindingRegistry<TYPE, DESC extends AbstractVa
             }
         }
         return null;
+    }
+
+    @NotNull
+    public List<TYPE> getAllValueBindings(@Nullable DBPDataSource dataSource, @NotNull DBSTypedObject type, @Nullable Class<?> valueType) {
+        List<TYPE> result = new ArrayList<>();
+        for (DESC desc : getDescriptors()) {
+            if (desc.supportsAnyType(dataSource, type, valueType)) {
+                result.add(desc.getInstance());
+            }
+        }
+        return result;
     }
 
 

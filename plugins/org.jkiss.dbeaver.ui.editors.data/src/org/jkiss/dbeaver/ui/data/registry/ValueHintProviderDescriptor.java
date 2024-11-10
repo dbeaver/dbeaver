@@ -27,6 +27,7 @@ public class ValueHintProviderDescriptor extends AbstractValueBindingDescriptor<
     private static final Log log = Log.getLog(ValueHintProviderDescriptor.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataHintProvider"; //$NON-NLS-1$
+    public static final String TAG_HINT_PROVIDER = "hintProvider"; //$NON-NLS-1$
 
     public ValueHintProviderDescriptor(IConfigurationElement config) {
         super(config);

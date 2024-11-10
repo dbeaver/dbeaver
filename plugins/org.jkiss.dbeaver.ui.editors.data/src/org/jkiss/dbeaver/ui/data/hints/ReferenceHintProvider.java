@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.data.registry;
+package org.jkiss.dbeaver.ui.data.hints;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -28,11 +28,9 @@ import org.jkiss.dbeaver.ui.data.IValueHintProvider;
 import java.util.EnumSet;
 
 /**
- * Void hint provider. Stub for no hints
+ * Reference hint provider
  */
-public class VoidHintProvider implements IValueHintProvider {
-
-    public static final VoidHintProvider INSTANCE = new VoidHintProvider();
+public class ReferenceHintProvider implements IValueHintProvider {
 
     @Nullable
     @Override

@@ -44,9 +44,9 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<IValueHintPr
 
     private ValueHintRegistry(IExtensionRegistry registry) {
         // Load datasource providers from external plugins
-        IConfigurationElement[] extElements = registry.getConfigurationElementsFor(ValueManagerDescriptor.EXTENSION_ID);
+        IConfigurationElement[] extElements = registry.getConfigurationElementsFor(ValueHintProviderDescriptor.EXTENSION_ID);
         for (IConfigurationElement ext : extElements) {
-            if (ValueManagerDescriptor.TAG_MANAGER.equals(ext.getName())) {
+            if (ValueHintProviderDescriptor.TAG_HINT_PROVIDER.equals(ext.getName())) {
                 descriptors.add(new ValueHintProviderDescriptor(ext));
             }
         }

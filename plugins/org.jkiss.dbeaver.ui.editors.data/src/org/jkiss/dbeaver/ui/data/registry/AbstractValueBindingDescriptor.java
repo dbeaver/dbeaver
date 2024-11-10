@@ -149,7 +149,7 @@ public abstract class AbstractValueBindingDescriptor<TYPE> extends AbstractDescr
                     return true;
                 }
             }
-            if (info.valueType != null) {
+            if (info.valueType != null && valueType != null) {
                 if (info.valueType.matchesType(valueType) && info.dataKind == null || info.dataKind == dataKind) {
                     return true;
                 }
@@ -178,6 +178,40 @@ public abstract class AbstractValueBindingDescriptor<TYPE> extends AbstractDescr
              provider != null;
              provider = provider.getParentProvider()) {
             if (info.dataSource.equals(provider.getId()) || info.dataSource.equals(dataSource.getClass().getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean supportsAnyType(@Nullable DBPDataSource dataSource, DBSTypedObject typedObject, Class<?> valueType) {
+        if (supportInfos.isEmpty()) {
+            return true;
+        }
+        final DBPDataKind dataKind = typedObject.getDataKind();
+        for (SupportInfo info : supportInfos) {
+            if (dataSource != null && info.dataSource != null) {
+                if (!supportsAnyProvider(dataSource, info)) {
+                    return false;
+                }
+            }
+            if (info.typeName != null && info.typeName.equalsIgnoreCase(typedObject.getTypeName())) {
+                return true;
+            }
+            if (info.valueType != null && valueType != null &&
+                info.valueType.matchesType(valueType) && (info.dataKind == null || info.dataKind == dataKind)) {
+                return true;
+            }
+            if (info.dataKind != null && info.dataKind == dataKind) {
+                return true;
+            }
+            if (info.extension != null) {
+                DBSDataType dataType = DBUtils.getDataType(typedObject);
+                if (dataType != null && CommonUtils.equalObjects(info.extension, CommonUtils.toString(dataType.geTypeExtension()))) {
+                    return true;
+                }
+            }
+            if (info.valueType == null && info.dataKind == null && info.typeName == null && info.extension == null) {
                 return true;
             }
         }
