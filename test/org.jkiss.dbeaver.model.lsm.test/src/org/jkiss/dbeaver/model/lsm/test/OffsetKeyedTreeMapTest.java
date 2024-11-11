@@ -14,6 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2024 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.jkiss.dbeaver.model.lsm.test;
 
 import org.antlr.v4.runtime.misc.Interval;
@@ -60,20 +76,20 @@ import java.util.stream.*;
 @RunWith(MockitoJUnitRunner.class)
 public class OffsetKeyedTreeMapTest {
 
-    private static final IntStream SERIES = Stream.of(
+    private static final Supplier<IntStream> SERIES = () -> Stream.of(
         IntStream.range(0, 26),
         IntStream.of(50, 100, 150)
     ).flatMapToInt(x -> x);
 
-    private static final IntStream INTERMIXED_SERIES = Stream.of(
+    private static final Supplier<IntStream> INTERMIXED_SERIES = () -> Stream.of(
         IntStream.of(50, 100, 150)
     ).flatMapToInt(x -> x);
 
     private static class Tester {
         public final TestScenarioBuilder sb = new TestScenarioBuilder();
 
-        public void doInsertionsAllConsequentRemovals(Stream<TestEntry> insertions, boolean applyOffsets, boolean removalsForward) {
-            int count = (int) insertions.count();
+        public void doInsertionsAllConsequentRemovals(Supplier<Stream<TestEntry>> insertions, boolean applyOffsets, boolean removalsForward) {
+            int count = (int) insertions.get().count();
             OffsetGeneratorParameters offsetParameters = OffsetGeneratorParameters.makeExclusiveAndExact(0, count, count / 2, 5);
             sb.appendInsertions(insertions);
             if (applyOffsets) {
@@ -90,8 +106,8 @@ public class OffsetKeyedTreeMapTest {
             sb.complete().run();
         }
 
-        public void doInsertionsAllRandomRemovals(Stream<TestEntry> insertions, boolean applyOffsets) {
-            int count = (int) insertions.count();
+        public void doInsertionsAllRandomRemovals(Supplier<Stream<TestEntry>> insertions, boolean applyOffsets) {
+            int count = (int) insertions.get().count();
             sb.appendInsertions(insertions);
             sb.appendRemovalsRandom(0, count, count < 10 ? count : count / 2);
             sb.complete().run();
@@ -100,7 +116,7 @@ public class OffsetKeyedTreeMapTest {
 
     @Test
     public void testInsertionsThenRemovals() {
-        for (int i : SERIES.toArray()) {
+        for (int i : SERIES.get().toArray()) {
             var t = new Tester();
             t.doInsertionsAllConsequentRemovals(t.sb.makeEntriesGeneratorAscending(i, 1, 5), false, true);
             t.doInsertionsAllConsequentRemovals(t.sb.makeEntriesGeneratorAscending(i, 1, 5), false, false);
@@ -116,7 +132,7 @@ public class OffsetKeyedTreeMapTest {
 
     @Test
     public void testInsertionsThenApplyOffsetsThenRemovals() {
-        for (int i : SERIES.toArray()) {
+        for (int i : SERIES.get().toArray()) {
             var t = new Tester();
             t.doInsertionsAllConsequentRemovals(t.sb.makeEntriesGeneratorAscending(i, 1, 5), true, true);
             t.doInsertionsAllConsequentRemovals(t.sb.makeEntriesGeneratorAscending(i, 1, 5), true, false);
@@ -132,7 +148,7 @@ public class OffsetKeyedTreeMapTest {
 
     @Test
     public void testIntermixedInsertionsAndRemovals() {
-        for (int count : INTERMIXED_SERIES.toArray()) {
+        for (int count : INTERMIXED_SERIES.get().toArray()) {
             TestScenarioBuilder sb = new TestScenarioBuilder();
             int presented = Math.max(25, count / 3);
             int dynamic = (count - presented);
@@ -140,14 +156,14 @@ public class OffsetKeyedTreeMapTest {
 
             sb.appendInsertions(sb.makeEntriesGeneratorRandom(presented, 1, 4000));
             sb.append(makeProportionalSeries(
-                Stream.of(
+                StreamSupplier.of(
                     sb.makeInsertions(sb.makeEntriesGeneratorRandom(dynamic, 1, 4000)),
                     sb.makeRemovalsRandom(0, presented, dynamic),
                     sb.makeCheckIteratorAtRandomOffset(offsetParams, true),
                     sb.makeCheckIteratorAtRandomOffset(offsetParams, false)
                 ),
                 // 6 iterations for 4 sets of operations, each turn for 1/6 of dynamically introduced entries
-                IntStream.range(0, 6 * 4).mapToDouble(n -> 100 / 6.0)
+                () -> IntStream.range(0, 6 * 4).mapToDouble(n -> 100 / 6.0)
             ));
         }
     }
@@ -214,6 +230,14 @@ public class OffsetKeyedTreeMapTest {
             Entry<?> entry = (Entry<?>) o;
             return offset == entry.offset && Objects.equals(data, entry.data);
         }
+
+        @Override
+        public String toString() {
+            return "Entry{" +
+                "offset=" + offset +
+                ", data=" + data +
+                '}';
+        }
     }
 
     private static class ArrayBackedOffsetKeyedCollection<T> implements IOKMCollection<T> {
@@ -263,8 +287,10 @@ public class OffsetKeyedTreeMapTest {
                         return position;
                     } else if (this.index >= 0 && this.index < list.size()) {
                         return list.get(this.index).offset;
+                    } else if (this.index >= list.size()) {
+                        return Integer.MAX_VALUE;
                     } else {
-                        return 0;
+                        return Integer.MIN_VALUE;
                     }
                 }
 
@@ -433,61 +459,68 @@ public class OffsetKeyedTreeMapTest {
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(it, 0), false);
     }
 
-    private static <T, R> Stream<R> mapIndexed(Stream<T> seq, BiFunction<Integer, T, R> function) {
-        Iterator<T> seqIt = seq.iterator();
-        Iterator<R> it = new Iterator<R>() {
-            private int index = 0;
+    private static <T, R> Supplier<Stream<R>> mapIndexed(Supplier<Stream<T>> seq, BiFunction<Integer, T, R> function) {
+        return () -> {
+            Iterator<T> seqIt = seq.get().iterator();
+            Iterator<R> it = new Iterator<R>() {
+                private int index = 0;
 
-            @Override
-            public boolean hasNext() {
-                return seqIt.hasNext();
-            }
+                @Override
+                public boolean hasNext() {
+                    return seqIt.hasNext();
+                }
 
-            @Override
-            public R next() {
-                return function.apply(index++, seqIt.next());
-            }
+                @Override
+                public R next() {
+                    return function.apply(index++, seqIt.next());
+                }
+            };
+            return StreamSupport.stream(Spliterators.spliteratorUnknownSize(it, 0), false);
         };
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(it, 0), false);
     }
 
-    private static <T> Stream<T> makeExactSeries(Stream<Stream<T>> sequences, LongStream seriesSizes) {
-        List<Iterator<T>> iterators = sequences.map(s -> s.iterator()).toList();
+    private static <T> Supplier<Stream<T>> makeExactSeries(Supplier<Stream<Stream<T>>> sequences, Supplier<LongStream> seriesSizes) {
+        return () -> {
+            List<Iterator<T>> iterators = sequences.get().map(s -> s.iterator()).toList();
 
-        class BatchIterator implements Iterator<T> {
-            private final long limit;
-            private final Iterator<T> it;
-            private long index = 0;
+            class BatchIterator<T2> implements Iterator<T2> {
+                private final long limit;
+                private final Iterator<T2> it;
+                private long index = 0;
 
-            public BatchIterator(long limit, Iterator<T> it) {
-                this.limit = limit;
-                this.it = it;
+                public BatchIterator(long limit, Iterator<T2> it) {
+                    this.limit = limit;
+                    this.it = it;
+                }
+
+                @Override
+                public boolean hasNext() {
+                    return this.index < this.limit && this.it.hasNext();
+                }
+
+                @Override
+                public T2 next() {
+                    this.index++;
+                    return this.it.next();
+                }
             }
 
-            @Override
-            public boolean hasNext() {
-                return this.index < this.limit && this.it.hasNext();
-            }
-
-            @Override
-            public T next() {
-                return this.it.next();
-            }
-        }
-
-        return mapIndexed(seriesSizes.mapToObj(x -> x), (n, s) -> new BatchIterator(s, iterators.get(n % iterators.size())))
-                .flatMap(it -> StreamSupport.stream(Spliterators.spliteratorUnknownSize(it, 0), false));
+            return mapIndexed(() -> seriesSizes.get().mapToObj(x -> x), (n, s) -> new BatchIterator<T>(s, iterators.get(n % iterators.size())))
+                .get().flatMap(it -> StreamSupport.stream(Spliterators.spliteratorUnknownSize(it, 0), false));
+        };
     }
 
-    private static <T> Stream<T> makeProportionalSeries(Stream<Stream<T>> sequences, DoubleStream proportionPercents) {
-        Assert.assertTrue(sequences.allMatch(s -> s.spliterator().hasCharacteristics(Spliterator.SIZED)));
-        long[] streamSize = sequences.mapToLong(Stream::count).toArray();
-        return makeExactSeries(
-            sequences,
-            mapIndexed(
-                    proportionPercents.mapToObj(x -> x), (n, p) -> (long) (streamSize[n % streamSize.length] * p / 100.0)
-            ).mapToLong(y -> y)
-        );
+    private static <T> Supplier<Stream<T>> makeProportionalSeries(Supplier<Stream<Stream<T>>> sequences, Supplier<DoubleStream> proportionPercents) {
+        Assert.assertTrue(sequences.get().allMatch(s -> s.spliterator().hasCharacteristics(Spliterator.SIZED)));
+        return () -> {
+            long[] streamSize = sequences.get().mapToLong(Stream::count).toArray();
+            return makeExactSeries(
+                sequences,
+                () -> mapIndexed(
+                    () -> proportionPercents.get().mapToObj(x -> x), (n, p) -> (long) (streamSize[n % streamSize.length] * p / 100.0)
+                ).get().mapToLong(y -> y)
+            ).get();
+        };
     }
 
     private static <T> void assertCollectionsEqual(IOKMCollection<T> a, IOKMCollection<T> b) {
@@ -543,16 +576,16 @@ public class OffsetKeyedTreeMapTest {
             this.ops = Stream.concat(this.ops, Stream.of(op));
         }
 
-        public void append(Stream<TestOperation> ops) {
-            this.ops = Stream.concat(this.ops, ops);
+        public void append(Supplier<Stream<TestOperation>> ops) {
+            this.ops = Stream.concat(this.ops, ops.get());
         }
 
-        public void appendInsertions(Stream<TestEntry> entries) {
+        public void appendInsertions(Supplier<Stream<TestEntry>> entries) {
             this.append(this.makeInsertions(entries));
         }
 
-        public Stream<TestOperation> makeInsertions(Stream<TestEntry> entries) {
-            return entries.map(p -> this.makeOperation("insert " + p.data + " at " + p.offset, true, s -> {
+        public Supplier<Stream<TestOperation>> makeInsertions(Supplier<Stream<TestEntry>> entries) {
+            return () -> entries.get().map(p -> this.makeOperation("insert " + p.data + " at " + p.offset, true, s -> {
                 s.arrayBacked.put(p.offset, p.data);
                 s.treeBacked.put(p.offset, p.data);
             }));
@@ -562,9 +595,9 @@ public class OffsetKeyedTreeMapTest {
             this.append(this.makeRemovalsConsequent(index, amount, forward));
         }
 
-        public Stream<TestOperation> makeRemovalsConsequent(int index, int amount, boolean forward) {
-            return IntStream.range(0, amount).mapToObj(n -> this.makeOperation("remove at offset of entry #" + (forward ? index : (index - n)), true, s -> {
-                var entry = s.arrayBacked.toListOfEntries().get(forward ? index : (index - n));
+        public Supplier<Stream<TestOperation>> makeRemovalsConsequent(int index, int amount, boolean forward) {
+            return () -> IntStream.range(0, amount).mapToObj(n -> this.makeOperation("remove at offset of entry #" + (forward ? index : (index - n)), true, s -> {
+                var entry = s.arrayBacked.toListOfEntries().get(forward ? index : Math.max(0, index - n));
                 s.arrayBacked.removeAt(entry.offset);
                 s.treeBacked.removeAt(entry.offset);
             }));
@@ -574,18 +607,21 @@ public class OffsetKeyedTreeMapTest {
             this.append(this.makeRemovalsRandom(indexFrom, indexTo, amount));
         }
 
-        public Stream<TestOperation> makeRemovalsRandom(int indexFrom, int indexTo, int amount) {
+        public Supplier<Stream<TestOperation>> makeRemovalsRandom(int indexFrom, int indexTo, int amount) {
             if (indexTo - indexFrom < amount) {
                 throw new IllegalArgumentException();
             }
-            var rnd = new Random(staticRandom.nextInt());
-            var indexes = Interval.of(indexFrom, indexTo);
-            return IntStream.range(0, amount).mapToObj(n -> this.makeOperation("remove at offset of random entry #" + indexFrom + "-#" + (indexTo - n), true, s -> {
-                var entry = s.arrayBacked.toListOfEntries().get(rnd.nextInt(indexes.a, indexes.b));
-                s.arrayBacked.removeAt(entry.offset);
-                s.treeBacked.removeAt(entry.offset);
-                indexes.b--;
-            }));
+            int seed = staticRandom.nextInt();
+            return () -> {
+                var rnd = new Random(seed);
+                var indexes = Interval.of(indexFrom, indexTo);
+                return IntStream.range(0, amount).mapToObj(n -> this.makeOperation("remove at offset of random entry #" + indexFrom + "-#" + (indexTo - n), true, s -> {
+                    var entry = s.arrayBacked.toListOfEntries().get(rnd.nextInt(indexes.a, indexes.b));
+                    s.arrayBacked.removeAt(entry.offset);
+                    s.treeBacked.removeAt(entry.offset);
+                    indexes.b--;
+                }));
+            };
         }
 
         public void appendApplyOffsetAt(int pos, int delta) {
@@ -599,53 +635,58 @@ public class OffsetKeyedTreeMapTest {
             this.append(this.makeApplyOffsetRandom(offsetParams));
         }
 
-        public Stream<TestOperation> makeApplyOffsetRandom(OffsetGeneratorParameters offsetParams) {
-            Random rnd = new Random(staticRandom.nextInt());
-            return this.makeOpsAtRandomOffsets(
-                offsetParams, "apply offset at random entry #" + offsetParams.indexFrom + "-#" + offsetParams.indexTo, true,  (s, entry, offset, index) -> {
-                    int delta = rnd.nextInt(1, offsetParams.deltaLimit);
+        public Supplier<Stream<TestOperation>> makeApplyOffsetRandom(OffsetGeneratorParameters offsetParams) {
+            int seed = staticRandom.nextInt();
+            return () -> {
+                Random rnd = new Random(seed);
+                return this.makeOpsAtRandomOffsets(
+                    offsetParams, "apply offset at random entry #" + offsetParams.indexFrom + "-#" + offsetParams.indexTo, true, (s, entry, offset, index) -> {
+                        int delta = rnd.nextInt(1, offsetParams.deltaLimit);
 
-                    s.arrayBacked.applyOffset(offset, delta);
-                    s.treeBacked.applyOffset(offset, delta);
-                }
-            );
+                        s.arrayBacked.applyOffset(offset, delta);
+                        s.treeBacked.applyOffset(offset, delta);
+                    }
+                ).get();
+            };
         }
 
-        public Stream<TestOperation> makeOpsAtRandomOffsets(
+        public Supplier<Stream<TestOperation>> makeOpsAtRandomOffsets(
                 OffsetGeneratorParameters offsetParams,
                 String description, boolean isMutation, ObjObjIntIntConsumer<TestState, Entry<Item>> action) {
             if (offsetParams.indexTo - offsetParams.indexFrom < offsetParams.amount) {
                 throw new IllegalArgumentException();
             }
 
-            var rnd = new Random(staticRandom.nextInt());
-            var indexes = Interval.of(
+            return () -> {
+                var rnd = new Random(staticRandom.nextInt());
+                var indexes = Interval.of(
                     offsetParams.fromInclusive ? offsetParams.indexFrom - 1 : offsetParams.indexFrom,
                     offsetParams.toInclusive ? offsetParams.indexTo : offsetParams.indexTo + 1
-            );
-            return IntStream.range(0, offsetParams.amount).mapToObj(n -> this.makeOperation(description, isMutation, s -> {
-                int entryIndex = rnd.nextInt(indexes.a, indexes.b);
-                var entries = s.arrayBacked.toListOfEntries();
-                // TODO consider limits
-                var entry = entryIndex >= 0 ? entries.get(entryIndex) : null;
-                var nextEntry = entryIndex < entries.size() ? entries.get(entryIndex + 1) : null;
+                );
+                return IntStream.range(0, offsetParams.amount).mapToObj(n -> this.makeOperation(description, isMutation, s -> {
+                    int entryIndex = rnd.nextInt(indexes.a, indexes.b);
+                    var entries = s.arrayBacked.toListOfEntries();
+                    // TODO consider limits
+                    var entry = entryIndex >= 0 ? entries.get(entryIndex) : null;
+                    var nextEntry = entryIndex < entries.size() ? entries.get(entryIndex + 1) : null;
 
-                int offsetFrom, offsetTo;
-                if (entry == null) {
-                    offsetFrom = 0;
-                    offsetTo = nextEntry.offset;
-                } else {
-                    offsetFrom = offsetParams.excludeExact ? entry.offset + 1 : entry.offset;
-                    if (nextEntry == null) {
-                        offsetTo = entry.offset + offsetParams.deltaLimit;
-                    } else {
+                    int offsetFrom, offsetTo;
+                    if (entry == null) {
+                        offsetFrom = 0;
                         offsetTo = nextEntry.offset;
+                    } else {
+                        offsetFrom = offsetParams.excludeExact ? entry.offset + 1 : entry.offset;
+                        if (nextEntry == null) {
+                            offsetTo = entry.offset + offsetParams.deltaLimit;
+                        } else {
+                            offsetTo = nextEntry.offset;
+                        }
                     }
-                }
 
-                int offset = rnd.nextInt(offsetFrom, offsetTo);
-                action.accept(s, entry, offset, entryIndex);
-            }));
+                    int offset = rnd.nextInt(offsetFrom, offsetTo);
+                    action.accept(s, entry, offset, entryIndex);
+                }));
+            };
         }
 
         public TestScenario complete() {
@@ -671,9 +712,9 @@ public class OffsetKeyedTreeMapTest {
             this.append(this.makeCheckFindRandomOffset(offsetParams));
         }
 
-        public Stream<TestOperation> makeCheckFindRandomOffset(OffsetGeneratorParameters offsetParams) {
+        public Supplier<Stream<TestOperation>> makeCheckFindRandomOffset(OffsetGeneratorParameters offsetParams) {
             return this.makeOpsAtRandomOffsets(
-                offsetParams, "check find  offset at random entry #" + offsetParams.indexFrom + "-#" + offsetParams.indexTo, true,  (s, entry, offset, index) -> {
+                offsetParams, "check find offset at random entry #" + offsetParams.indexFrom + "-#" + offsetParams.indexTo, true,  (s, entry, offset, index) -> {
                     Assert.assertEquals(entry == null ? null : entry.data, s.treeBacked.find(offset));
                 }
             );
@@ -695,7 +736,7 @@ public class OffsetKeyedTreeMapTest {
             this.append(this.makeCheckIteratorAtRandomOffset(offsetParams, forward));
         }
 
-        public Stream<TestOperation> makeCheckIteratorAtRandomOffset(OffsetGeneratorParameters offsetParams, boolean forward) {
+        public Supplier<Stream<TestOperation>> makeCheckIteratorAtRandomOffset(OffsetGeneratorParameters offsetParams, boolean forward) {
             return this.makeOpsAtRandomOffsets(
                 offsetParams, "check "  + (forward ? "forward" : "backward") + " iterator from offset at random entry #" + offsetParams.indexFrom + "-#" + offsetParams.indexTo, false,  (s, entry, offset, index) -> {
                     this.checkIteratorAtOffset(forward, s, entry, offset, index);
@@ -703,36 +744,80 @@ public class OffsetKeyedTreeMapTest {
             );
         }
 
+
         private void checkIteratorAtOffset(boolean forward, TestState s, Entry<Item> entry, int offset, int index) {
-            List<Entry<Item>> example = s.arrayBacked.toListOfEntries();
-            List<Entry<Item>> sublist = example.subList(forward ? index : 0, forward ? example.size() : index + 1);
-            LinkedList<Entry<Item>> items = new LinkedList<>();
-
-            Consumer<Entry<Item>> aggregateAction = forward ? items::addLast : items::addFirst;
-            OffsetKeyedTreeMap.NodesIterator<Item> it = s.treeBacked.nodesIteratorAt(offset);
-            Assert.assertEquals(offset, it.getCurrOffset());
-            Assert.assertEquals(entry == null ? null : entry.data, it.getCurrValue());
-            while (forward ? it.next() : it.prev()) {
-                aggregateAction.accept(new Entry<>(it.getCurrOffset(), it.getCurrValue()));
+            Predicate<OffsetKeyedTreeMap.NodesIterator<Item>> nextOp = forward ? it -> it.next() : it -> it.prev();
+            OffsetKeyedTreeMap.NodesIterator<Item> it1 = s.treeBacked.nodesIteratorAt(offset);
+            OffsetKeyedTreeMap.NodesIterator<Item> it2 = s.arrayBacked.nodesIteratorAt(offset);
+            Assert.assertEquals(entry == null ? null : entry.data, it1.getCurrValue());
+            Assert.assertEquals(it1.getCurrValue(), it2.getCurrValue());
+            if (it1.getCurrValue() != null) {
+                Assert.assertEquals(offset, it1.getCurrOffset());
             }
-            assertEntryStreamsEqual(sublist.stream(), items.stream());
+            //Assert.assertEquals(it1.getCurrOffset(), it2.getCurrOffset());
+            boolean a, b;
+            do {
+                a = nextOp.test(it1);
+                b = nextOp.test(it2);
+                Assert.assertEquals(a, b);
+                Assert.assertEquals(it1.getCurrOffset(), it2.getCurrOffset());
+                Assert.assertEquals(it1.getCurrValue(), it2.getCurrValue());
+            } while (a && b);
         }
 
-        public Stream<TestEntry> makeEntriesGeneratorAscending(int count, int from, int step) {
-            return IntStream.range(0, count).mapToObj(n -> new TestEntry(from + n * step, new Item()));
+//        private void checkIteratorAtOffset(boolean forward, TestState s, Entry<Item> entry, int offset, int index) {
+//            LinkedList<Entry<Item>> items = new LinkedList<>();
+//            Consumer<Entry<Item>> aggregateAction = forward ? items::addLast : items::addFirst;
+//            List<Entry<Item>> example = s.arrayBacked.toListOfEntries();
+//            int sublistStart = forward ? (entry != null || offset >= example.get(index).offset ? index : index + 1) : 0;
+//            int sublistEnd = forward ? example.size() : (entry != null || offset <= example.get(index).offset ? index + 1 : index);
+//
+//            System.out.println("sublist start = " + sublistStart);
+//            System.out.println("sublist end = " + sublistEnd);
+//            List<Entry<Item>> sublist = example.subList(sublistStart, sublistEnd);
+//            System.out.println("sublist size = " + sublist.size());
+//            System.out.println(" >>>>> checkIteratorAtOffset for offset " + offset + " and index " + index);
+//            System.out.println("forward = " + forward);
+//            System.out.println("entry = " + entry);
+//            System.out.println("\tEXAMPLE");
+//            example.forEach(System.out::println);
+//            System.out.println("\tTREE");
+//            s.treeBacked.toListOfEntries().forEach(System.out::println);
+//            System.out.println("\tSUBLIST");
+//            sublist.forEach(System.out::println);
+//
+//            OffsetKeyedTreeMap.NodesIterator<Item> it = s.treeBacked.nodesIteratorAt(offset);
+//            if (it.getCurrValue() != null) {
+//                Assert.assertEquals(offset, it.getCurrOffset());
+//            }
+//            Assert.assertEquals(entry == null ? null : entry.data, it.getCurrValue());
+//            while (forward ? it.next() : it.prev()) {
+//                aggregateAction.accept(new Entry<>(it.getCurrOffset(), it.getCurrValue()));
+//            }
+//            System.out.println("\tITEMS");
+//            items.forEach(System.out::println);
+//
+//            assertEntryStreamsEqual(sublist.stream(), items.stream());
+//        }
+
+        public Supplier<Stream<TestEntry>> makeEntriesGeneratorAscending(int count, int from, int step) {
+            return () -> IntStream.range(0, count).mapToObj(n -> new TestEntry(from + n * step, new Item()));
         }
 
-        public Stream<TestEntry> makeEntriesGeneratorDescending(int count, int from, int step) {
-            return IntStream.range(0, count).mapToObj(n -> new TestEntry(from - n * step, new Item()));
+        public Supplier<Stream<TestEntry>> makeEntriesGeneratorDescending(int count, int from, int step) {
+            return () -> IntStream.range(0, count).mapToObj(n -> new TestEntry(from - n * step, new Item()));
         }
 
-        public Stream<TestEntry> makeEntriesGeneratorRandom(int count, int min, int max) {
+        public Supplier<Stream<TestEntry>> makeEntriesGeneratorRandom(int count, int min, int max) {
             if (max - min < count) {
                 throw new IllegalArgumentException();
             }
 
-            Random rnd = new Random(staticRandom.nextInt());
-            return IntStream.range(1, count).mapToObj(n -> new TestEntry(rnd.nextInt(min, max), new Item()));
+            int seed = staticRandom.nextInt();
+            return () -> {
+                Random rnd = new Random(seed);
+                return IntStream.range(1, count).mapToObj(n -> new TestEntry(rnd.nextInt(min, max), new Item()));
+            };
         }
     }
 
@@ -772,5 +857,15 @@ public class OffsetKeyedTreeMapTest {
 
     }
 
+    private static class StreamSupplier {
+        public static <T> Supplier<Stream<Stream<T>>> of(Supplier<Stream<T>> ... sources) {
+            return () -> Stream.of(sources).map(Supplier::get);
+        }
+    }
+
+    public static void main(String[] args) {
+        OffsetKeyedTreeMapTest t = new OffsetKeyedTreeMapTest();
+        t.testInsertionsThenRemovals();
+    }
 }
 
