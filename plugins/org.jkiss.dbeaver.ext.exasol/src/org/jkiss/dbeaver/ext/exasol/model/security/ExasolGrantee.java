@@ -242,10 +242,10 @@ public abstract class ExasolGrantee
 				if (dataSource.getUserPriviliges().hasConsumerGroups())
 				{
 					Collection<ExasolConsumerGroup> consumerGroups = dataSource.getConsumerGroups(new VoidProgressMonitor());
-					return consumerGroups.toArray(new Object[consumerGroups.size()]);
+					return consumerGroups.toArray(new Object[0]);
 				} else {
 					Collection<ExasolPriorityGroup> priorityGroups = dataSource.getPriorityGroups(new VoidProgressMonitor());
-					return priorityGroups.toArray(new Object[priorityGroups.size()]);
+					return priorityGroups.toArray(new Object[0]);
 				}
 			} catch (DBException e) {
 				log.error(e);

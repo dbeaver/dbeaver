@@ -182,6 +182,8 @@
                 <module>org.jkiss.dbeaver.ext.gaussdb.ui</module>
 
                 <module>org.jkiss.dbeaver.team.git.ui</module>
+
+                <module>org.jkiss.dbeaver.ext.test</module>
             </modules>
         </profile>
     </profiles>

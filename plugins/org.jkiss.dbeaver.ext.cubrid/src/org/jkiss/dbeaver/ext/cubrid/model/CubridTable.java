@@ -110,6 +110,12 @@ public class CubridTable extends GenericTable
         return partitionCache.getAllObjects(monitor, this);
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<CubridTrigger> getTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return (List<CubridTrigger>) super.getTriggers(monitor);
+    }
+
     @Nullable
     @Override
     @Property(viewable = true, editable = true, updatable = true, listProvider = OwnerListProvider.class, order = 2)

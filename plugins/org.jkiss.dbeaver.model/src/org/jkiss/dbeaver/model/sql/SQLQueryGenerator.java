@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.dpi.DPIObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Contains methods used for query generation
@@ -67,12 +68,15 @@ public interface SQLQueryGenerator {
      * @param query query to append conditions to
      * @param inlineCriteria does query has inlineCriteria
      */
-    void appendConditionString(@NotNull DBDDataFilter filter,
+    default void appendConditionString(
+        @NotNull DBDDataFilter filter,
         @NotNull DBPDataSource dataSource,
         @Nullable String conditionTable,
         @NotNull StringBuilder query,
-        boolean inlineCriteria);
-
+        boolean inlineCriteria
+    ) {
+        appendConditionString(filter, dataSource, conditionTable, query, inlineCriteria, false);
+    }
 
     /**
      * Appends filter conditions to query
@@ -84,12 +88,19 @@ public interface SQLQueryGenerator {
      * @param inlineCriteria does query has inlineCriteria
      * @param subQuery is query part of another query
      */
-    void appendConditionString(@NotNull DBDDataFilter filter,
+    default void appendConditionString(
+        @NotNull DBDDataFilter filter,
         @NotNull DBPDataSource dataSource,
         @Nullable String conditionTable,
         @NotNull StringBuilder query,
         boolean inlineCriteria,
-        boolean subQuery);
+        boolean subQuery
+    ) {
+        List<DBDAttributeConstraint> constraints = filter.getConstraints().stream()
+            .filter(x -> x.getCriteria() != null || x.getOperator() != null)
+            .collect(Collectors.toList());
+        appendConditionString(filter, constraints, dataSource, conditionTable, query, inlineCriteria, subQuery);
+    }
 
     /**
      * Appends filter conditions to query
@@ -102,13 +113,15 @@ public interface SQLQueryGenerator {
      * @param inlineCriteria does query has inlineCriteria
      * @param subQuery is query part of another query
      */
-    void appendConditionString(@NotNull DBDDataFilter filter,
+    void appendConditionString(
+        @NotNull DBDDataFilter filter,
         @NotNull List<DBDAttributeConstraint> constraints,
         @NotNull DBPDataSource dataSource,
         @Nullable String conditionTable,
         @NotNull StringBuilder query,
         boolean inlineCriteria,
-        boolean subQuery);
+        boolean subQuery
+    );
 
     /**
      * Applies filters to the existing user queries

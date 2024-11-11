@@ -108,13 +108,13 @@ public class SQLQueryModelRecognizer {
             .createAnalyzer(LSMAnalyzerParameters.forDialect(this.dialect, this.recognitionContext.getSyntaxManager()));
         STMTreeRuleNode tree = analyzer.parseSqlQueryTree(querySource, new STMSkippingErrorListener());
 
-        if (tree == null) {
-            return null;
+        if (tree == null || (tree.start == tree.stop && !LSMInspections.prepareOffquerySyntaxInspection().predictedTokensIds.contains(tree.start.getType()))) {
+            return tree == null ? null : new SQLQueryModel(tree, null, Collections.emptySet());
         }
         this.queryDataContext = this.prepareDataContext(tree);
         STMTreeNode queryNode = tree.findFirstNonErrorChild();
         if (queryNode == null) {
-            return null;
+            return new SQLQueryModel(tree, null, Collections.emptySet());
         }
         SQLQueryModelContent contents = switch (queryNode.getNodeKindId()) {
             case SQLStandardParser.RULE_directSqlDataStatement -> {
@@ -465,8 +465,8 @@ public class SQLQueryModelRecognizer {
     );
 
     @NotNull
-    public SQLQueryRowsTableDataModel collectTableReference(@NotNull STMTreeNode node) {
-        return new SQLQueryRowsTableDataModel(node, this.collectTableName(node));
+    public SQLQueryRowsTableDataModel collectTableReference(@NotNull STMTreeNode node, boolean forDDL) {
+        return new SQLQueryRowsTableDataModel(node, this.collectTableName(node), forDDL);
     }
 
     @Nullable

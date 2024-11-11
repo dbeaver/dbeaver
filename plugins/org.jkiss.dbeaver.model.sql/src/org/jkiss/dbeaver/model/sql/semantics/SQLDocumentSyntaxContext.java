@@ -256,7 +256,9 @@ public class SQLDocumentSyntaxContext {
             SQLScriptItemAtOffset scriptItem = this.findScriptItem(offset);
             if (scriptItem != null) {
                 scriptItem.item.applyDelta(offset, oldLength, newLength);
-                affectedRegion = new Region(scriptItem.offset, scriptItem.item.length());
+                int affectedStart = Math.min(scriptItem.offset, offset);
+                int affectedEnd = Math.max(scriptItem.offset + scriptItem.item.length(), offset + newLength);
+                affectedRegion = new Region(affectedStart, affectedEnd - affectedStart);
             } else {
                 NodesIterator<SQLDocumentScriptItemSyntaxContext> it = this.scriptItems.nodesIteratorAt(offset);
                 int start = it.prev() && it.getCurrValue() != null ? it.getCurrOffset() + it.getCurrValue().length() : 0;
@@ -323,6 +325,6 @@ public class SQLDocumentSyntaxContext {
             droppedCount++;
         }
 
-        return new Interval(actualStart, actualEnd);
+        return actualEnd >= actualStart ? new Interval(actualStart, actualEnd) : new Interval(actualStart, 0);
     }
 }

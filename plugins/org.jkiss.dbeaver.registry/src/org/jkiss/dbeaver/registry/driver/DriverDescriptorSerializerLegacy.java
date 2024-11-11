@@ -288,7 +288,10 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                     if (curDriver == null) {
                         curDriver = new DriverDescriptor(curProvider, idAttr);
                         curProvider.addDriver(curDriver);
+                    } else if (DBWorkbench.isDistributed()) {
+                        curDriver.resetDriverInstance();
                     }
+
                     if (providedDrivers || curProvider.isDriversManagable()) {
                         String category = atts.getValue(RegistryConstants.ATTR_CATEGORY);
                         if (!CommonUtils.isEmpty(category)) {

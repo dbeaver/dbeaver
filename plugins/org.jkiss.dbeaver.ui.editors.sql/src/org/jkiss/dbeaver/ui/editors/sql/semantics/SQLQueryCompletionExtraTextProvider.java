@@ -25,13 +25,19 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.utils.CommonUtils;
 
 public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionItemVisitor<String> {
 
+    public static SQLQueryCompletionExtraTextProvider INSTANCE = new SQLQueryCompletionExtraTextProvider();
+
+    private SQLQueryCompletionExtraTextProvider() {
+    }
+
     @NotNull
     @Override
-    public String visitSubqueryAlias(@Nullable SQLSubqueryAliasCompletionItem subqueryAlias) {
-        return " - Subquery alias";
+    public String visitSubqueryAlias(@Nullable SQLRowsSourceAliasCompletionItem rowsSourceAlias) {
+        return rowsSourceAlias.sourceInfo.tableOrNull != null ? " - Table alias" : " - Subquery alias";
     }
 
     @NotNull
@@ -68,6 +74,6 @@ public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionIt
                 typeName = "";
             }
         }
-        return " - " + typeName;
+        return CommonUtils.isEmpty(typeName) ? null : (" - " + typeName);
     }
 }

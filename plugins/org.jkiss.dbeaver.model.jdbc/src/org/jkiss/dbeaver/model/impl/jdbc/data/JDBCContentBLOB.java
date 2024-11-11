@@ -190,7 +190,7 @@ public class JDBCContentBLOB extends JDBCContentLOB {
                                 }
                             }
                         }
-                    } catch (SQLFeatureNotSupportedException e1) {
+                    } catch (SQLFeatureNotSupportedException | UnsupportedOperationException | IncompatibleClassChangeError e1) {
                         // Stream values seems to be unsupported
                         // Let's try bytes
                         int contentLength = (int) storage.getContentLength();

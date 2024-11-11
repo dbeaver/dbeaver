@@ -81,7 +81,7 @@ public class PrefPageMiscellaneous extends PrefPageMiscellaneousAbstract impleme
         final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         {
-            Group groupEditors = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_boolean, 3, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Group groupEditors = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_boolean, 3, GridData.FILL_HORIZONTAL, 0);
 
             UIUtils.createControlLabel(groupEditors, CoreMessages.pref_page_ui_general_boolean_label_mode);
 

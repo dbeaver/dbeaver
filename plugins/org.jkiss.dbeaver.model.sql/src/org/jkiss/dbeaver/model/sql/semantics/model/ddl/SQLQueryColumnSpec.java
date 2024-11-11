@@ -159,7 +159,7 @@ public class SQLQueryColumnSpec extends SQLQueryNodeModel {
                     case REFERENCES -> {
                         STMTreeNode refNode = constraintNode.findFirstChildOfName(STMKnownRuleNames.referencedTableAndColumns);
                         if (refNode != null) {
-                            referencedTable = recognizer.collectTableReference(refNode);
+                            referencedTable = recognizer.collectTableReference(refNode, true);
                             referencedColumns = recognizer.collectColumnNameList(refNode);
                         }
                     }

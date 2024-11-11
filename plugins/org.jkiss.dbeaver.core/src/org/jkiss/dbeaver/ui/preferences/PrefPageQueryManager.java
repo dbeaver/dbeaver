@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.qm.QMObjectType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -122,7 +123,8 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
                 }
             });
             textOutputFolder = DialogUtils.createOutputFolderChooser(storageSettings, CoreMessages.pref_page_query_manager_logs_folder, null, false, null);
-            textOutputFolder.setText(store.getString(QMConstants.PROP_LOG_DIRECTORY));
+
+            textOutputFolder.setText(getQMLogStorePath(store));
             textHistoryDays = UIUtils.createLabelText(
                 storageSettings,
                 CoreMessages.pref_page_query_manager_label_days_to_store_log,
@@ -231,5 +233,13 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
     public void setElement(IAdaptable element)
     {
 
+    }
+
+    private String getQMLogStorePath(@NotNull DBPPreferenceStore store) {
+        String qmStorePath = store.getString(QMConstants.PROP_LOG_DIRECTORY);
+        if (CommonUtils.isEmpty(qmStorePath)) {
+            qmStorePath = GeneralUtils.getMetadataFolder().toAbsolutePath().toString();
+        }
+        return qmStorePath;
     }
 }

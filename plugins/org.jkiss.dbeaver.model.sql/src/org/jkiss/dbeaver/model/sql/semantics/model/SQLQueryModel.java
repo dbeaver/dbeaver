@@ -116,6 +116,7 @@ public class SQLQueryModel extends SQLQueryNodeModel {
         SQLQueryLexicalScope scope = null;
 
         // walk up till the lexical scope covering given position
+        // TODO consider corner-cases with adjacent scopes, maybe better use condition on lexicalItem!=null instead of the scope?
         while (stack != null && scope == null) {
             SQLQueryNodeModel node = stack.data;
             scope = node.findLexicalScope(textOffset);

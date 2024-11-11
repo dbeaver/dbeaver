@@ -52,10 +52,7 @@ import org.jkiss.dbeaver.tools.transfer.stream.StreamProducerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.ShellUtils;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
@@ -137,7 +134,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             filesTable.setLinesVisible(true);
 
             if (showLocalFS || showRemoteFS) {
-                UIUtils.setControlContextMenu(filesTable, manager -> {
+                UIWidgets.setControlContextMenu(filesTable, manager -> {
                     if (showLocalFS) {
                         manager.add(new SelectInputFileAction(false));
                     }

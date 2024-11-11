@@ -30,6 +30,8 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -187,6 +189,31 @@ public class DBNUtils {
 
     public static boolean isFolderNode(DBNNode node) {
         return node.allowsChildren();
+    }
+
+    public static DBXTreeItem getValidItemsMeta(DBRProgressMonitor monitor, DBNDatabaseNode dbNode) throws DBException {
+        DBXTreeItem itemsMeta = dbNode.getItemsMeta();
+        if (itemsMeta != null && itemsMeta.isOptional()) {
+            // Maybe we need nested item.
+            // Specifically this handles optional catalogs and schemas in Generic driver
+            Class<?> expectedChildrenType = dbNode.getChildrenOrFolderClass(itemsMeta);
+            if (expectedChildrenType != null) {
+                List<DBXTreeNode> childMetas = itemsMeta.getChildren(dbNode);
+                if (childMetas.size() == 1 && childMetas.get(0) instanceof DBXTreeItem nestedMeta) {
+                    Class<?> expectedNestedType = dbNode.getChildrenOrFolderClass(nestedMeta);
+                    DBNDatabaseNode[] nodeChildren = dbNode.getChildren(monitor);
+                    if (nodeChildren.length > 0 &&
+                        !expectedChildrenType.isInstance(nodeChildren[0].getObject()))
+                    {
+                        // Note: We should've check expectedNestedType.isInstance(nodeChildren[0].getObject())
+                        // but we cannot. Because after filters are applied child nodes may contain deeper nested type
+                        // FIXME: support it for databases which support only tables
+                        itemsMeta = nestedMeta;
+                    }
+                }
+            }
+        }
+        return itemsMeta;
     }
 
     private static class NodeNameComparator implements Comparator<DBNNode> {

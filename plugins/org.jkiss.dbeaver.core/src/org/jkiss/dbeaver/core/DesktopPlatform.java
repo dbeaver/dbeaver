@@ -123,8 +123,6 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
             }
         }
 
-        DBRFeatureRegistry.getInstance().startTracking();
-
         if (getPreferenceStore().getBoolean(DBeaverPreferences.SECURITY_USE_BOUNCY_CASTLE)) {
             // Register BC security provider
             SecurityProviderUtils.registerSecurityProvider();
@@ -146,6 +144,8 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
         this.queryManager.registerMetaListener(qmLogWriter);
 
         super.initialize();
+
+        DBRFeatureRegistry.getInstance().startTracking();
 
         log.debug("Platform initialized (" + (System.currentTimeMillis() - startTime) + "ms)");
     }

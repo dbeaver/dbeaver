@@ -24,15 +24,16 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
+import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 import org.jkiss.utils.Pair;
 
 import java.util.ArrayList;
@@ -54,9 +55,12 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
     @Nullable
     private DBSEntity table = null;
 
-    public SQLQueryRowsTableDataModel(@NotNull STMTreeNode syntaxNode, @Nullable SQLQueryQualifiedName name) {
+    private final boolean forDdl;
+
+    public SQLQueryRowsTableDataModel(@NotNull STMTreeNode syntaxNode, @Nullable SQLQueryQualifiedName name, boolean forDdl) {
         super(syntaxNode);
         this.name = name;
+        this.forDdl = forDdl;
     }
 
     @Nullable
@@ -156,10 +160,15 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
                         return context.overrideResultTuple(this, Collections.emptyList(), Collections.emptyList());
                     }
 
-                    this.table = context.findRealTable(statistics.getMonitor(), nameStrings);
+                    DBSObject refTarget = context.findRealObject(statistics.getMonitor(), RelationalObjectType.TYPE_UNKNOWN, nameStrings);
+                    DBSObject obj = forDdl
+                        ? refTarget
+                        : SQLQueryDataSourceContext.expandAliases(statistics.getMonitor(), refTarget);
+
+                    this.table = obj instanceof DBSEntity e && (obj instanceof DBSTable || obj instanceof DBSView) ? e : null;
 
                     if (this.table != null) {
-                        this.name.setDefinition(table);
+                        this.name.setDefinition(refTarget);
                         context = context.extendWithRealTable(this.table, this);
 
                         try {
@@ -192,18 +201,26 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
                             );
                         }
                     } else {
-                        context = context.markHasUnresolvedSource();
-                        SourceResolutionResult rr = context.resolveSource(statistics.getMonitor(), nameStrings);
-                        if (rr != null && rr.tableOrNull == null && rr.source != null && rr.aliasOrNull != null && nameStrings.size() == 1) {
-                            // seems cte reference resolved
-                            this.name.entityName.setDefinition(rr.aliasOrNull.getDefinition());
-                            context = context.overrideResultTuple(this, rr.source.getResultDataContext().getColumnsList(), Collections.emptyList());
+                        if (refTarget != null) {
+                            String typeName = obj instanceof DBSObjectWithType to
+                                ? to.getObjectType().getTypeName()
+                                : obj.getClass().getSimpleName();
+                            this.name.setDefinition(refTarget);
+                            statistics.appendError(this.name.entityName, "Expected table name while given " + typeName);
                         } else {
-                            SQLQuerySymbolClass tableSymbolClass = statistics.isTreatErrorsAsWarnings()
-                                ? SQLQuerySymbolClass.TABLE
-                                : SQLQuerySymbolClass.ERROR;
-                            this.name.setSymbolClass(tableSymbolClass);
-                            statistics.appendError(this.name.entityName, "Table " + this.name.toIdentifierString() + " not found");
+                            context = context.markHasUnresolvedSource();
+                            SourceResolutionResult rr = context.resolveSource(statistics.getMonitor(), nameStrings);
+                            if (rr != null && rr.tableOrNull == null && rr.source != null && rr.aliasOrNull != null && nameStrings.size() == 1) {
+                                // seems cte reference resolved
+                                this.name.entityName.setDefinition(rr.aliasOrNull.getDefinition());
+                                context = context.overrideResultTuple(this, rr.source.getResultDataContext().getColumnsList(), Collections.emptyList());
+                            } else {
+                                SQLQuerySymbolClass tableSymbolClass = statistics.isTreatErrorsAsWarnings()
+                                    ? SQLQuerySymbolClass.TABLE
+                                    : SQLQuerySymbolClass.ERROR;
+                                this.name.setSymbolClass(tableSymbolClass);
+                                statistics.appendError(this.name.entityName, "Table " + this.name.toIdentifierString() + " not found");
+                            }
                         }
                     }
                 }

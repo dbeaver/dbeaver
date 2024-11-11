@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionAnalyzer;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionContext;
+import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItem;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItem.*;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItemVisitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -74,7 +75,7 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
 
     @NotNull
     @Override
-    public String visitSubqueryAlias(@NotNull SQLSubqueryAliasCompletionItem subqueryAlias) {
+    public String visitSubqueryAlias(@NotNull SQLRowsSourceAliasCompletionItem subqueryAlias) {
         return subqueryAlias.symbol.getName();
     }
 
@@ -183,12 +184,7 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
     }
 
     private String prepareQualifiedName(@NotNull DBSObject object) {
-        LinkedList<String> parts = new LinkedList<>();
-        for (DBSObject o = object; o != null; o = o.getParentObject()) {
-            if (o instanceof DBSStructContainer) {
-                parts.addFirst(DBUtils.getQuotedIdentifier(o));
-            }
-        }
+        List<String> parts = SQLQueryCompletionItem.prepareQualifiedNameParts(object);
         return String.join(Character.toString(object.getDataSource().getSQLDialect().getStructSeparator()), parts);
     }
 

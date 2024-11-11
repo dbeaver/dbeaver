@@ -550,6 +550,7 @@
                     <parameter name="serverType" value="redshift"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
+                    <property name="client_protocol_version" value="0"/>
                 </driver>
 
                 <driver
@@ -679,7 +680,7 @@
 
             <nativeClients>
                 <client id="postgresql_client" label="PostgreSQL Binaries">
-                    <dist os="win32" targetPath="clients/postgresql/win/15" remotePath="repo:/drivers/postgresql/client/win/15" resourcePath="clients/postgresql/win/15">
+                    <dist os="win32" targetPath="clients/postgresql/win/17" remotePath="repo:/drivers/postgresql/client/win/17" resourcePath="clients/postgresql/win/17">
                         <file type="exec" name="psql.exe"/>
                         <file type="exec" name="pg_dump.exe"/>
                         <file type="exec" name="pg_dumpall.exe"/>
@@ -692,7 +693,6 @@
                         <file type="lib" name="libpq.dll"/>
                         <file type="lib" name="libssl-3-x64.dll"/>
                         <file type="lib" name="libwinpthread-1.dll"/>
-                        <file type="lib" name="zlib1.dll"/>
                     </dist>
                 </client>
             </nativeClients>

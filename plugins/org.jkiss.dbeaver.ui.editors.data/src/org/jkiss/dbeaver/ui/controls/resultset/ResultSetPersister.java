@@ -110,6 +110,7 @@ class ResultSetPersister {
     private final List<DataStatementInfo> insertStatements = new ArrayList<>();
     private final List<DataStatementInfo> deleteStatements = new ArrayList<>();
     private final List<DataStatementInfo> updateStatements = new ArrayList<>();
+    private final List<DBDValue> clonedValues = new ArrayList<>();
 
     private final List<DBEPersistAction> script = new ArrayList<>();
 
@@ -431,10 +432,13 @@ class ResultSetPersister {
                         // Try to find old key oldValue
                         if (changes.containsKey(metaColumn)) {
                             keyValue = changes.get(metaColumn);
-                            if (keyValue instanceof DBDContent content) {
+                            if (keyValue instanceof DBDContent) {
                                 if (keyValue instanceof DBDValueCloneable vc) {
                                     keyValue = vc.cloneValue(monitor);
-                                    content.resetContents();
+                                    if (keyValue instanceof DBDContent copiedContext) {
+                                        clonedValues.add(copiedContext);
+                                        copiedContext.resetContents();
+                                    }
                                 } else {
                                     throw new DBCException("Column '" + metaColumn.getFullyQualifiedName(DBPEvaluationContext.UI) +
                                        "' can't be used as a key. Value clone is not supported.");
@@ -583,6 +587,7 @@ class ResultSetPersister {
                 }
             }
         }
+
         model.refreshChangeCount();
         return rowsChanged;
     }
@@ -706,6 +711,11 @@ class ResultSetPersister {
                 error = executeStatements(monitor);
             } finally {
                 model.setUpdateInProgress(null);
+
+                for (DBDValue value : clonedValues) {
+                    value.release();
+                }
+                clonedValues.clear();
             }
 
             if (!generateScript) {

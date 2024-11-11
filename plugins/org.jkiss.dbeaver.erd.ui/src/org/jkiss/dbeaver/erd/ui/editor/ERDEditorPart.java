@@ -1325,7 +1325,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         public ProgressVisualizer<EntityDiagram> createLoadVisualizer()
         {
-            getGraphicalControl().setBackground(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
+            Control graphicalControl = getGraphicalControl();
+            if (graphicalControl != null) {
+                graphicalControl.setBackground(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
+            }
             return new LoadVisualizer();
         }
 

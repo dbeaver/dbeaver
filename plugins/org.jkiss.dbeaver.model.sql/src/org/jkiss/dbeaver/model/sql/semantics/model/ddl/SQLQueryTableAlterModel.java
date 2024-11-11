@@ -103,7 +103,7 @@ public class SQLQueryTableAlterModel extends SQLQueryModelContent {
     }
 
     public static SQLQueryTableAlterModel recognize(SQLQueryModelRecognizer recognizer, STMTreeNode node) {
-        SQLQueryRowsTableDataModel targetTable = recognizer.collectTableReference(node);
+        SQLQueryRowsTableDataModel targetTable = recognizer.collectTableReference(node, true);
 
         LinkedList<SQLQueryTableAlterActionSpec> alterActions = new LinkedList<>();
 

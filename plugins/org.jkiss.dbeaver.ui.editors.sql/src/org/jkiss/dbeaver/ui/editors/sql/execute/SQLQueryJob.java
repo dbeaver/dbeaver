@@ -726,18 +726,24 @@ public class SQLQueryJob extends DataSourceJob
                     }
                 }
 
-                if (session.getDataSource().getInfo().supportsMultipleResults()) {
-                    try {
-                        hasResultSet = dbcStatement.nextResults();
-                    } catch (DBCException e) {
-                        if (session.getDataSource().getInfo().isMultipleResultsFetchBroken()) {
-                            statistics.addWarning(e);
-                            statistics.setError(e);
-                            // #2792: Check this twice. Some drivers (e.g. Sybase jConnect)
-                            // throw error on n'th result fetch - but it still can keep fetching next results
+                DBPDataSourceInfo dataSourceInfo = session.getDataSource().getInfo();
+                if (dataSourceInfo.supportsMultipleResults()) {
+                    if (hasLimits() && rowsFetched >= rsMaxRows && dataSourceInfo.isMultipleResultsFailsOnMaxRows()) {
+                        log.trace("Max rows exceeded. Additional resultsets extraction is disabled");
+                        hasResultSet = false;
+                    } else {
+                        try {
                             hasResultSet = dbcStatement.nextResults();
-                        } else {
-                            throw e;
+                        } catch (DBCException e) {
+                            if (dataSourceInfo.isMultipleResultsFetchBroken()) {
+                                statistics.addWarning(e);
+                                statistics.setError(e);
+                                // #2792: Check this twice. Some drivers (e.g. Sybase jConnect)
+                                // throw error on n'th result fetch - but it still can keep fetching next results
+                                hasResultSet = dbcStatement.nextResults();
+                            } else {
+                                throw e;
+                            }
                         }
                     }
                     updateCount = hasResultSet ? -1 : 0;

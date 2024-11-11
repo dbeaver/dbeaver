@@ -59,6 +59,12 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem {
 
     @NotNull
     @Override
+    public SQLQuerySymbolClass getSymbolClass() {
+        return entityName != null ? this.entityName.getSymbolClass() : SQLQuerySymbolClass.UNKNOWN;
+    }
+
+    @NotNull
+    @Override
     public STMTreeNode[] getSyntaxComponents() {
         if (this.scopeName.isEmpty()) {
             return new STMTreeNode[] {
@@ -80,24 +86,33 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem {
         this.scopeName.forEach(e -> e.getSymbol().setSymbolClass(symbolClass));
     }
 
+    public void setDefinition(@NotNull DBSObject realObject) {
+        SQLQuerySymbolClass entityNameClass  = realObject instanceof DBSTable || realObject instanceof DBSView
+            ? SQLQuerySymbolClass.TABLE
+            : SQLQuerySymbolClass.OBJECT;
+        this.setDefinition(realObject, entityNameClass);
+    }
+
     /**
      * Set the definition to the qualified name components based on the database metadata
      */
-    public void setDefinition(@NotNull DBSObject realObject) {
-        if (realObject instanceof DBSTable || realObject instanceof DBSView) {
-            this.entityName.getSymbol().setSymbolClass(SQLQuerySymbolClass.TABLE);
-        }
+    public void setDefinition(@NotNull DBSObject realObject, SQLQuerySymbolClass entityNameClass) {
+        this.entityName.setDefinition(new SQLQuerySymbolByDbObjectDefinition(realObject, entityNameClass));
         DBSObject object = realObject.getParentObject();
         int scopeNameIndex = this.scopeName.size() - 1;
         while (object != null && scopeNameIndex >= 0) {
             SQLQuerySymbolEntry nameEntry = this.scopeName.get(scopeNameIndex);
             String objectName = SQLUtils.identifierToCanonicalForm(object.getDataSource().getSQLDialect(), DBUtils.getQuotedIdentifier(object), false, true);
             if (objectName.equalsIgnoreCase(nameEntry.getName())) {
+                SQLQuerySymbolClass objectNameClass;
                 if (object instanceof DBSSchema) {
-                    nameEntry.getSymbol().setSymbolClass(SQLQuerySymbolClass.SCHEMA);
+                    objectNameClass = SQLQuerySymbolClass.SCHEMA;
                 } else if (object instanceof DBSCatalog) {
-                    nameEntry.getSymbol().setSymbolClass(SQLQuerySymbolClass.CATALOG);
+                    objectNameClass = SQLQuerySymbolClass.CATALOG;
+                } else {
+                    objectNameClass = SQLQuerySymbolClass.UNKNOWN; // TODO consider OBJECT is not necessarily TABLE
                 }
+                nameEntry.setDefinition(new SQLQuerySymbolByDbObjectDefinition(object, objectNameClass));
                 scopeNameIndex--;
             }
             object = object.getParentObject();

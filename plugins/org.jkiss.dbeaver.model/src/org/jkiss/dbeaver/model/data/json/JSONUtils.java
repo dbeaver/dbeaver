@@ -257,7 +257,7 @@ public class JSONUtils {
             } else if (propValue instanceof Collection collectionValue) {
                 serializeObjectList(json, fieldName, collectionValue);
             } else if (propValue instanceof Map mapValue) {
-                serializeProperties(json, fieldName, mapValue);
+                serializeProperties(json, fieldName, mapValue, allowsEmptyValue);
             } else if (propValue instanceof Enum anEnum) {
                 field(json, fieldName, anEnum.name());
             } else if (propValue instanceof URI uri) {

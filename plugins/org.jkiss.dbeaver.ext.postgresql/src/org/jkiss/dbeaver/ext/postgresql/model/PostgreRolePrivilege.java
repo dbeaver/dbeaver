@@ -31,14 +31,18 @@ import java.util.List;
  * PostgreRolePrivilege
  */
 public class PostgreRolePrivilege extends PostgrePrivilege {
-
-    private static final Log log = Log.getLog(PostgreRolePrivilege.class);
+    private final String schemaName;
+    private final String objectName;
 
     private PostgrePrivilegeGrant.Kind kind;
-    private String schemaName;
-    private String objectName;
 
-    public PostgreRolePrivilege(PostgrePrivilegeOwner owner, PostgrePrivilegeGrant.Kind kind, String schemaName, String objectName, List<PostgrePrivilegeGrant> privileges) {
+    public PostgreRolePrivilege(
+        PostgrePrivilegeOwner owner,
+        PostgrePrivilegeGrant.Kind kind,
+        String schemaName,
+        String objectName,
+        List<PostgrePrivilegeGrant> privileges
+    ) {
         super(owner, privileges);
         this.kind = kind;
         this.schemaName = schemaName;
@@ -52,8 +56,7 @@ public class PostgreRolePrivilege extends PostgrePrivilege {
     }
 
     @Override
-    public PostgreObject getTargetObject(DBRProgressMonitor monitor) throws DBException
-    {
+    public PostgreObject getTargetObject(DBRProgressMonitor monitor) throws DBException {
         final PostgreSchema schema = owner.getDatabase().getSchema(monitor, schemaName);
         if (schema != null) {
             JDBCTable childTable = schema.getChild(monitor, objectName);

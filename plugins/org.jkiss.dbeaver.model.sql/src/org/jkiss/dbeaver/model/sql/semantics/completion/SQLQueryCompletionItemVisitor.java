@@ -17,23 +17,24 @@
 package org.jkiss.dbeaver.model.sql.semantics.completion;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItem.*;
 
 public interface SQLQueryCompletionItemVisitor<R> {
 
-    @NotNull
-    R visitSubqueryAlias(@NotNull SQLSubqueryAliasCompletionItem subqueryAlias);
+    @Nullable
+    R visitSubqueryAlias(@NotNull SQLRowsSourceAliasCompletionItem rowsSourceAlias);
 
-    @NotNull
+    @Nullable
     R visitColumnName(@NotNull SQLColumnNameCompletionItem columnName);
 
-    @NotNull
+    @Nullable
     R visitTableName(@NotNull SQLTableNameCompletionItem tableName);
 
-    @NotNull
+    @Nullable
     R visitReservedWord(@NotNull SQLReservedWordCompletionItem reservedWord);
 
-    @NotNull
+    @Nullable
     R visitNamedObject(@NotNull SQLDbNamedObjectCompletionItem namedObject);
 
 }

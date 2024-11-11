@@ -64,23 +64,23 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
 
         // If navigator refresh is possible then do not refresh active part directly
         // Because active part should be refresh in navigator event handler
-        if (refreshInNavigator(event, workbenchPart)) {
+        if (refreshInNavigator(event, workbenchPart, false)) {
             return null;
         }
 
         // Try to refresh as refreshable part
-        if (workbenchPart instanceof IRefreshablePart) {
-            if (workbenchPart instanceof IDatabaseEditor) {
-                IEditorInput editorInput = ((IDatabaseEditor) workbenchPart).getEditorInput();
-                if (editorInput instanceof IDatabaseEditorInput) {
-                    DBSObject databaseObject = ((IDatabaseEditorInput) editorInput).getDatabaseObject();
+        if (workbenchPart instanceof IRefreshablePart refreshablePart) {
+            if (workbenchPart instanceof IDatabaseEditor databaseEditor) {
+                IEditorInput editorInput = databaseEditor.getEditorInput();
+                if (editorInput instanceof IDatabaseEditorInput databaseEditorInput) {
+                    DBSObject databaseObject = databaseEditorInput.getDatabaseObject();
                     if (databaseObject == null || !databaseObject.isPersisted()) {
                         // Do not refresh non-persistent objects
                         return null;
                     }
                 }
             }
-            if (((IRefreshablePart) workbenchPart).refreshPart(this, true) == IRefreshablePart.RefreshResult.CANCELED) {
+            if (refreshablePart.refreshPart(this, true) == IRefreshablePart.RefreshResult.CANCELED) {
                 return null;
             }
             //return null;
@@ -89,7 +89,7 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
         return null;
     }
 
-    private boolean refreshInNavigator(ExecutionEvent event, IWorkbenchPart workbenchPart) {
+    static boolean refreshInNavigator(ExecutionEvent event, IWorkbenchPart workbenchPart, boolean refreshRoot) {
         // Try to get navigator view and refresh node
         INavigatorModelView navigatorView = GeneralUtils.adapt(workbenchPart, INavigatorModelView.class);
         if (navigatorView == null) {
@@ -101,16 +101,15 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
 
         DBNNode rootNode = navigatorView.getRootNode();
         if (rootNode == null) {
-            if (workbenchPart instanceof IEditorPart) {
-                if (((IEditorPart) workbenchPart).getEditorInput() instanceof IDatabaseEditorInput) {
-                    rootNode = ((IDatabaseEditorInput) ((IEditorPart) workbenchPart).getEditorInput()).getNavigatorNode();
+            if (workbenchPart instanceof IEditorPart editorPart) {
+                if (editorPart.getEditorInput() instanceof IDatabaseEditorInput databaseEditorInput) {
+                    rootNode = databaseEditorInput.getNavigatorNode();
                 }
             }
         }
-        if (rootNode != null && rootNode.getParentNode() instanceof DBNDatabaseNode) {
+        if (rootNode != null && rootNode.getParentNode() instanceof DBNDatabaseNode || (refreshRoot && rootNode instanceof DBNProjectDatabases)) {
             refreshObjects.add(rootNode);
-        } else if (selection instanceof IStructuredSelection) {
-            final IStructuredSelection structSelection = (IStructuredSelection)selection;
+        } else if (selection instanceof IStructuredSelection structSelection) {
 
             for (Object object : structSelection) {
                 if (object instanceof DBNNode) {
@@ -128,7 +127,7 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
                     for (Iterator<DBNNode> iter = refreshObjects.iterator(); iter.hasNext(); ) {
                         DBNNode nextNode = iter.next();
                         if (nextNode == editorNode || editorNode.isChildOf(nextNode) || nextNode.isChildOf(editorNode)) {
-                            if (((IRefreshablePart) editorPart).refreshPart(this, true) == IRefreshablePart.RefreshResult.CANCELED) {
+                            if (((IRefreshablePart) editorPart).refreshPart(navigatorView, true) == IRefreshablePart.RefreshResult.CANCELED) {
                                 return true;
                             }
                             if (nextNode == editorNode) {
