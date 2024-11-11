@@ -21,11 +21,19 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
+import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.data.IValueHint;
 import org.jkiss.dbeaver.ui.data.IValueHintContext;
 import org.jkiss.dbeaver.ui.data.IValueHintProvider;
+import org.jkiss.dbeaver.ui.data.registry.ValueHintText;
+import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 
 /**
  * Reference hint provider
@@ -35,11 +43,25 @@ public class ReferenceHintProvider implements IValueHintProvider {
     @Nullable
     @Override
     public IValueHint[] getValueHint(
-        @NotNull IValueHintContext context, @NotNull DBDAttributeBinding attribute,
+        @NotNull IValueHintContext context,
+        @NotNull DBDAttributeBinding attribute,
         @Nullable Object value,
         @NotNull EnumSet<IValueHint.HintType> types,
         int options
     ) {
+        List<DBSEntityReferrer> referrers = attribute.getReferrers();
+        if (!CommonUtils.isEmpty(referrers)) {
+            List<IValueHint> refHints = new ArrayList<>();
+            for (DBSEntityReferrer referrer : referrers) {
+                if (referrer instanceof DBSEntityAssociation ea) {
+                    DBSEntityConstraint refConstr = ea.getReferencedConstraint();
+                    refHints.add(
+                        new ValueHintText(refConstr.getParentObject().getName(), "Table '" + refConstr.getParentObject().getName() + "' reference", UIIcon.LINK)
+                    );
+                }
+            }
+            return refHints.toArray(new IValueHint[0]);
+        }
         return null;
     }
 

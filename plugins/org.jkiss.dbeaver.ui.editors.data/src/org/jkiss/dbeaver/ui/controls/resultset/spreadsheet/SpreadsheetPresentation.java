@@ -79,10 +79,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetPropertyTester;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer.ValueViewerPanel;
-import org.jkiss.dbeaver.ui.data.IMultiController;
-import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.data.IValueEditor;
-import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
+import org.jkiss.dbeaver.ui.data.*;
 import org.jkiss.dbeaver.ui.data.editors.BaseValueEditor;
 import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
@@ -2730,7 +2727,27 @@ public class SpreadsheetPresentation extends AbstractPresentation
         @Nullable
         @Override
         public String getCellHintText(IGridColumn colElement, IGridRow rowElement, CellInformation cellInfo) {
-            return CommonUtils.isBitSet(cellInfo.state, STATE_LINK) ? "<zzz>" : null;
+            DBDAttributeBinding attr = getAttributeFromGrid(colElement, rowElement);
+            if (attr == null) {
+                return null;
+            }
+            for (IValueHintProvider hintProvider : controller.getModel().getHintProviders(attr)) {
+                IValueHint[] valueHints = hintProvider.getValueHint(
+                    controller.getModel().getHintContext(),
+                    attr,
+                    cellInfo.value,
+                    EnumSet.of(IValueHint.HintType.STRING),
+                    IValueHintProvider.HINT_INLINE);
+                if (!ArrayUtils.isEmpty(valueHints)) {
+                    for (IValueHint hint : valueHints) {
+                        String hintText = hint.getHintText();
+                        if (!CommonUtils.isEmpty(hintText)) {
+                            return hintText;
+                        }
+                    }
+                }
+            }
+            return null;
         }
 
         @Override

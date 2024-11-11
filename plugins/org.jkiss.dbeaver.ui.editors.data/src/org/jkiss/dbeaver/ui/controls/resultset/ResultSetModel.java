@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
@@ -39,7 +38,6 @@ import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IValueHintContext;
 import org.jkiss.dbeaver.ui.data.IValueHintProvider;
-import org.jkiss.dbeaver.ui.data.registry.ValueHintRegistry;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -62,7 +60,6 @@ public class ResultSetModel {
     private DBCExecutionSource executionSource;
 
     private final ResultSetHintContext hintContext;
-    private Map<DBDAttributeBinding, Object> hintProviders = new IdentityHashMap<>();
 
     // Data
     private List<ResultSetRow> curRows = new ArrayList<>();
@@ -137,6 +134,10 @@ public class ResultSetModel {
 
     public IValueHintContext getHintContext() {
         return hintContext;
+    }
+
+    public List<IValueHintProvider> getHintProviders(DBDAttributeBinding attr) {
+        return hintContext.getHintProviders(attr);
     }
 
     @NotNull
@@ -645,19 +646,7 @@ public class ResultSetModel {
 
         if (metadataChanged) {
             hintContext.resetCache();
-            hintProviders.clear();
-
-            try {
-                DBSDataContainer dataContainer = getDataContainer();
-                DBPDataSource ds = dataContainer == null ? null : dataContainer.getDataSource();
-                //DBPDataSourceContainer dsContainer = ds == null ? null : ds.getContainer();
-                for (DBDAttributeBinding attr : attributes) {
-                    List<IValueHintProvider> attrHintProviders = ValueHintRegistry.getInstance().getAllValueBindings(ds, attr, null);
-                    hintProviders.put(attr, attrHintProviders);
-                }
-            } catch (Throwable e) {
-                log.error("Error loading hint providers", e);
-            }
+            hintContext.initProviders(attributes);
         }
     }
 

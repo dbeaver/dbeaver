@@ -18,20 +18,37 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.data.IValueHintContext;
+import org.jkiss.dbeaver.ui.data.IValueHintProvider;
+import org.jkiss.dbeaver.ui.data.registry.ValueHintRegistry;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 
 /**
  * Result set hint context
  */
 class ResultSetHintContext implements IValueHintContext {
+    private static final Log log = Log.getLog(ResultSetHintContext.class);
 
     private final Supplier<DBSDataContainer> dataContainerSupplier;
-    private final Map<String, Object> attributes = new HashMap<>();
+    private final Map<String, Object> contextAttributes = new HashMap<>();
+
+    private final Map<IValueHintProvider, HintProviderInfo> hintProviders = new IdentityHashMap<>();
+
+    private static class HintProviderInfo {
+        final IValueHintProvider provider;
+        boolean enabled;
+        final Set<DBDAttributeBinding> attributes = new LinkedHashSet<>();
+
+        private HintProviderInfo(IValueHintProvider provider) {
+            this.provider = provider;
+        }
+    }
 
     ResultSetHintContext(Supplier<DBSDataContainer> dataContainerSupplier) {
         this.dataContainerSupplier = dataContainerSupplier;
@@ -46,15 +63,44 @@ class ResultSetHintContext implements IValueHintContext {
     @Nullable
     @Override
     public Object getHintContextAttribute(@NotNull String name) {
-        return attributes.get(name);
+        return contextAttributes.get(name);
     }
 
     @Override
     public void setHintContextAttribute(@NotNull String name, @Nullable Object value) {
-        this.attributes.put(name, value);
+        this.contextAttributes.put(name, value);
+    }
+
+    List<IValueHintProvider> getHintProviders(DBDAttributeBinding attr) {
+        List<IValueHintProvider> result = new ArrayList<>();
+        for (HintProviderInfo pi : hintProviders.values()) {
+            if (pi.enabled && pi.attributes.contains(attr)) {
+                result.add(pi.provider);
+            }
+        }
+        return result;
     }
 
     void resetCache() {
-        this.attributes.clear();
+        this.contextAttributes.clear();
+        this.hintProviders.clear();
     }
+
+    void initProviders(DBDAttributeBinding[] attributes) {
+        try {
+            DBSDataContainer dataContainer = getDataContainer();
+            DBPDataSource ds = dataContainer == null ? null : dataContainer.getDataSource();
+            for (DBDAttributeBinding attr : attributes) {
+                List<IValueHintProvider> attrHintProviders = ValueHintRegistry.getInstance().getAllValueBindings(ds, attr, null);
+                for (IValueHintProvider provider : attrHintProviders) {
+                    HintProviderInfo providerInfo = hintProviders.computeIfAbsent(provider, HintProviderInfo::new);
+                    providerInfo.enabled = true;
+                    providerInfo.attributes.add(attr);
+                }
+            }
+        } catch (Throwable e) {
+            log.error("Error loading hint providers", e);
+        }
+    }
+
 }
