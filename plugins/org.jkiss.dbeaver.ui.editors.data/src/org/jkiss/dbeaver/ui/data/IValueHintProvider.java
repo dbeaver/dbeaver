@@ -33,6 +33,9 @@ public interface IValueHintProvider {
     int HINT_INLINE = 1;
     int HINT_ADVANCED = 1 << 1;
 
+    /**
+     * Get all hints available for specified value.
+     */
     @Nullable
     IValueHint[] getValueHint(
         @NotNull IValueHintContext context,
@@ -41,6 +44,9 @@ public interface IValueHintProvider {
         @NotNull EnumSet<IValueHint.HintType> types,
         int options);
 
+    /**
+     * Read all necessary data which is needed to render hints.
+     */
     void cacheRequiredData(
         @NotNull DBRProgressMonitor monitor,
         @NotNull IValueHintContext context,

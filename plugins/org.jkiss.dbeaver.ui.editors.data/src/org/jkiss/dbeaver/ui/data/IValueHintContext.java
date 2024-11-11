@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 
 /**
@@ -34,9 +33,15 @@ public interface IValueHintContext {
     @Nullable
     DBSDataContainer getDataContainer();
 
+    /**
+     * Get context attribute value
+     */
     @Nullable
     Object getHintContextAttribute(@NotNull String name);
 
+    /**
+     * Set context attribute value
+     */
     void setHintContextAttribute(@NotNull String name, @Nullable Object value);
 
 }

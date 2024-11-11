@@ -109,6 +109,9 @@ public interface IGridContentProvider extends IContentProvider {
     @NotNull
     String getCellLinkText(IGridColumn colElement, IGridRow rowElement);
 
+    /**
+     * Return hint for specified cell
+     */
     @Nullable
     String getCellHintText(IGridColumn colElement, IGridRow rowElement, CellInformation cellInfo);
 

@@ -64,7 +64,9 @@ public abstract class AbstractValueBindingDescriptor<TYPE> extends AbstractDescr
             String className = cfg.getAttribute(ATTR_TYPE);
             String ext = cfg.getAttribute(ATTR_EXTENSION);
             String dspId = cfg.getAttribute(ATTR_DATA_SOURCE);
-            if (!CommonUtils.isEmpty(kindName) || !CommonUtils.isEmpty(typeName) || !CommonUtils.isEmpty(className) || !CommonUtils.isEmpty(dspId) || !CommonUtils.isEmpty(ext)) {
+            if (!CommonUtils.isEmpty(kindName) || !CommonUtils.isEmpty(typeName) ||
+                !CommonUtils.isEmpty(className) || !CommonUtils.isEmpty(dspId) || !CommonUtils.isEmpty(ext)
+            ) {
                 if (!CommonUtils.isEmpty(kindName)) {
                     try {
                         this.dataKind = DBPDataKind.valueOf(kindName);
@@ -134,7 +136,13 @@ public abstract class AbstractValueBindingDescriptor<TYPE> extends AbstractDescr
         return instance;
     }
 
-    public boolean supportsType(@Nullable DBPDataSource dataSource, DBSTypedObject typedObject, Class<?> valueType, boolean checkDataSource, boolean checkType) {
+    public boolean supportsType(
+        @Nullable DBPDataSource dataSource,
+        DBSTypedObject typedObject,
+        Class<?> valueType,
+        boolean checkDataSource,
+        boolean checkType
+    ) {
         final DBPDataKind dataKind = typedObject.getDataKind();
         for (SupportInfo info : supportInfos) {
             if (dataSource != null && info.dataSource != null) {
@@ -184,7 +192,11 @@ public abstract class AbstractValueBindingDescriptor<TYPE> extends AbstractDescr
         return false;
     }
 
-    public boolean supportsAnyType(@Nullable DBPDataSource dataSource, DBSTypedObject typedObject, Class<?> valueType) {
+    public boolean supportsAnyType(
+        @Nullable DBPDataSource dataSource,
+        DBSTypedObject typedObject,
+        Class<?> valueType
+    ) {
         if (supportInfos.isEmpty()) {
             return true;
         }
@@ -207,7 +219,10 @@ public abstract class AbstractValueBindingDescriptor<TYPE> extends AbstractDescr
             }
             if (info.extension != null) {
                 DBSDataType dataType = DBUtils.getDataType(typedObject);
-                if (dataType != null && CommonUtils.equalObjects(info.extension, CommonUtils.toString(dataType.geTypeExtension()))) {
+                if (dataType != null && CommonUtils.equalObjects(
+                    info.extension,
+                    CommonUtils.toString(dataType.geTypeExtension()))
+                ) {
                     return true;
                 }
             }
