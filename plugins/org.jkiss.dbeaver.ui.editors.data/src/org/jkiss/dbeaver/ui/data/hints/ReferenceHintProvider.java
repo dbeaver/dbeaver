@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
@@ -32,15 +33,28 @@ import org.jkiss.dbeaver.ui.data.IValueHintProvider;
 import org.jkiss.dbeaver.ui.data.registry.ValueHintText;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 
 /**
  * Reference hint provider
  */
 public class ReferenceHintProvider implements IValueHintProvider {
+
+    private static class AttributeDictCache {
+        Map<DBSEntity, Map<Object, String>> entityValues = new IdentityHashMap<>();
+
+        public Map<Object, String> getValueCache(DBSEntity entity) {
+            return entityValues.computeIfAbsent(entity, b -> new HashMap<>());
+        }
+    }
+
+    private static class ReferenceCache {
+        Map<DBDAttributeBinding, AttributeDictCache> dictsCache = new IdentityHashMap<>();
+
+        public AttributeDictCache getDictCache(DBDAttributeBinding attr) {
+            return dictsCache.computeIfAbsent(attr, b -> new AttributeDictCache());
+        }
+    }
 
     @Nullable
     @Override
@@ -74,7 +88,34 @@ public class ReferenceHintProvider implements IValueHintProvider {
         @NotNull Collection<DBDAttributeBinding> attributes,
         @NotNull Collection<ResultSetRow> rows
     ) throws DBException {
-        // noop
+        if (rows.isEmpty()) {
+            return;
+        }
+        ReferenceCache referenceCache = getReferenceCache(context);
+        for (DBDAttributeBinding attr : attributes) {
+            if (!CommonUtils.isEmpty(attr.getReferrers())) {
+                AttributeDictCache dictCache = referenceCache.getDictCache(attr);
+                for (DBSEntityReferrer er : attr.getReferrers()) {
+                    if (er instanceof DBSEntityAssociation ea) {
+                        DBSEntityConstraint refConstraint = ea.getReferencedConstraint();
+                        if (refConstraint != null) {
+                            DBSEntity entity = refConstraint.getParentObject();
+
+                            Map<Object, String> valueCache = dictCache.getValueCache(entity);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private ReferenceCache getReferenceCache(IValueHintContext context) {
+        ReferenceCache cache = (ReferenceCache) context.getHintContextAttribute("dictCache");
+        if (cache == null) {
+            cache = new ReferenceCache();
+            context.setHintContextAttribute("dictCache", cache);
+        }
+        return cache;
     }
 
 }
