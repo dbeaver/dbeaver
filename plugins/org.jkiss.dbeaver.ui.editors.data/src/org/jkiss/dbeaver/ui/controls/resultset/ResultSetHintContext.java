@@ -18,9 +18,11 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.data.IValueHintContext;
 import org.jkiss.dbeaver.ui.data.IValueHintProvider;
@@ -100,6 +102,18 @@ class ResultSetHintContext implements IValueHintContext {
             }
         } catch (Throwable e) {
             log.error("Error loading hint providers", e);
+        }
+    }
+
+    public void cacheRequiredData(@NotNull DBRProgressMonitor monitor, @NotNull List<ResultSetRow> rows) throws DBException {
+        for (HintProviderInfo pi : hintProviders.values()) {
+            if (pi.enabled) {
+                pi.provider.cacheRequiredData(
+                    monitor,
+                    this,
+                    pi.attributes,
+                    rows);
+            }
         }
     }
 

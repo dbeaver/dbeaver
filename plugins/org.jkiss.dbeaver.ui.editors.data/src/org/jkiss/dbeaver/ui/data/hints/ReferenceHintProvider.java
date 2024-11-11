@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.data.IValueHint;
 import org.jkiss.dbeaver.ui.data.IValueHintContext;
 import org.jkiss.dbeaver.ui.data.IValueHintProvider;
@@ -32,6 +33,7 @@ import org.jkiss.dbeaver.ui.data.registry.ValueHintText;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -69,7 +71,8 @@ public class ReferenceHintProvider implements IValueHintProvider {
     public void cacheRequiredData(
         @NotNull DBRProgressMonitor monitor,
         @NotNull IValueHintContext context,
-        @NotNull DBDAttributeBinding[] attributes
+        @NotNull Collection<DBDAttributeBinding> attributes,
+        @NotNull Collection<ResultSetRow> rows
     ) throws DBException {
         // noop
     }

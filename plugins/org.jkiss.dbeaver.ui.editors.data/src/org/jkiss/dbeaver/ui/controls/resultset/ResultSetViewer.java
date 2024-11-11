@@ -2393,13 +2393,13 @@ public class ResultSetViewer extends Viewer
         activePresentation.clearMetaData();
     }
 
-    void setData(List<Object[]> rows, int focusRow)
+    void setData(@NotNull DBRProgressMonitor monitor, List<Object[]> rows, int focusRow)
     {
         if (viewerPanel.isDisposed()) {
             return;
         }
         this.curRow = null;
-        this.model.setData(rows);
+        this.model.setData(monitor, rows);
         this.curRow = (this.model.getRowCount() > 0 ? this.model.getRow(0) : null);
         if (focusRow > 0 && focusRow < model.getRowCount()) {
             this.curRow = model.getRow(focusRow);
@@ -2436,8 +2436,8 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    void appendData(List<Object[]> rows, boolean resetOldRows) {
-        model.appendData(rows, resetOldRows);
+    void appendData(@NotNull DBRProgressMonitor monitor, List<Object[]> rows, boolean resetOldRows) {
+        model.appendData(monitor, rows, resetOldRows);
 
         UIUtils.asyncExec(() -> {
             String message = NLS.bind(ResultSetMessages.controls_resultset_viewer_status_rows_size, model.getRowCount(),

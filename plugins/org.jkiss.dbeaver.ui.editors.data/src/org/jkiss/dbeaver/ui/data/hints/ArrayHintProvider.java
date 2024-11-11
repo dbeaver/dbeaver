@@ -21,10 +21,12 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.data.IValueHint;
 import org.jkiss.dbeaver.ui.data.IValueHintContext;
 import org.jkiss.dbeaver.ui.data.IValueHintProvider;
 
+import java.util.Collection;
 import java.util.EnumSet;
 
 /**
@@ -47,8 +49,8 @@ public class ArrayHintProvider implements IValueHintProvider {
     public void cacheRequiredData(
         @NotNull DBRProgressMonitor monitor,
         @NotNull IValueHintContext context,
-        @NotNull DBDAttributeBinding[] attributes
-    ) throws DBException {
+        @NotNull Collection<DBDAttributeBinding> attributes,
+        @NotNull Collection<ResultSetRow> rows) throws DBException {
         // noop
     }
 

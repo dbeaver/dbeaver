@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.trace.DBCTrace;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVColorOverride;
@@ -683,7 +684,7 @@ public class ResultSetModel {
         }
     }
 
-    public void setData(@NotNull List<Object[]> rows) {
+    public void setData(@NotNull DBRProgressMonitor monitor, @NotNull List<Object[]> rows) {
         // Clear previous data
         this.releaseAllData();
         this.clearData();
@@ -714,7 +715,7 @@ public class ResultSetModel {
 
         // Add new data
         updateColorMapping(false);
-        appendData(rows, true);
+        appendData(monitor, rows, true);
         updateDataFilter();
 
         this.visibleAttributes.sort(POSITION_SORTER);
@@ -845,7 +846,7 @@ public class ResultSetModel {
         }
     }
 
-    void appendData(@NotNull List<Object[]> rows, boolean resetOldRows) {
+    void appendData(@NotNull DBRProgressMonitor monitor, @NotNull List<Object[]> rows, boolean resetOldRows) {
         if (resetOldRows) {
             curRows.clear();
         }
@@ -859,6 +860,12 @@ public class ResultSetModel {
         curRows.addAll(newRows);
 
         updateRowColors(resetOldRows, newRows);
+
+        try {
+            hintContext.cacheRequiredData(monitor, newRows);
+        } catch (Exception e) {
+            log.debug("Error caching data for column hints", e);
+        }
     }
 
     void clearData() {
