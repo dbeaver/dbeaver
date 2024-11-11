@@ -118,7 +118,7 @@ public class SQLTerminalEditorAddIn implements SQLEditorAddIn {
             tabItem.setControl(view.getControl());
             tabItem.setText(SQLTerminalMessages.sql_terminal_item_text);
             tabItem.setToolTipText("");
-            tabItem.setImage(DBeaverIcons.getImageDescriptor(UIIcon.SQL_CONSOLE).createImage());
+            tabItem.setImage(DBeaverIcons.getImage(UIIcon.SQL_CONSOLE));
             tabItem.setData(view);
             tabsContainer.addCTabFolder2Listener(new CTabFolder2Adapter() {
                 @Override
