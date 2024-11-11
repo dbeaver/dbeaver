@@ -22,17 +22,13 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.navigator.DBNDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNEvent;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.INavigatorListener;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 /**
  * DatabaseEditorListener
  */
-public class DatabaseEditorListener implements INavigatorListener
-{
+public class DatabaseEditorListener implements INavigatorListener {
     private final IDatabaseEditor databaseEditor;
     private DBPDataSourceContainer dataSourceContainer;
 
@@ -40,10 +36,9 @@ public class DatabaseEditorListener implements INavigatorListener
         this.databaseEditor = databaseEditor;
         // Acquire datasource
         IEditorInput editorInput = databaseEditor.getEditorInput();
-        if (editorInput instanceof IDatabaseEditorInput) {
-            IDatabaseEditorInput databaseEditorInput = (IDatabaseEditorInput)editorInput;
-            if (databaseEditorInput.getDatabaseObject() instanceof DBPDataSourceContainer) {
-                dataSourceContainer = (DBPDataSourceContainer) databaseEditorInput.getDatabaseObject();
+        if (editorInput instanceof IDatabaseEditorInput databaseEditorInput) {
+            if (databaseEditorInput.getDatabaseObject() instanceof DBPDataSourceContainer container) {
+                dataSourceContainer = container;
             } else if (databaseEditorInput.getNavigatorNode() != null) {
                 dataSourceContainer = databaseEditorInput.getNavigatorNode().getDataSourceContainer();
             }
@@ -55,8 +50,7 @@ public class DatabaseEditorListener implements INavigatorListener
         DBWorkbench.getPlatform().getNavigatorModel().addListener(this);
     }
 
-    public void dispose()
-    {
+    public void dispose() {
         // Release datasource
         if (dataSourceContainer != null) {
             dataSourceContainer.release(databaseEditor);
@@ -68,16 +62,14 @@ public class DatabaseEditorListener implements INavigatorListener
     }
 
     @Override
-    public void nodeChanged(final DBNEvent event)
-    {
+    public void nodeChanged(final DBNEvent event) {
         if (isValuableNode(event.getNode())) {
             Strategy strategy = Strategy.DO_NOTHING;
             if (event.getAction() == DBNEvent.Action.REMOVE) {
                 strategy = Strategy.CLOSE;
             } else if (event.getAction() == DBNEvent.Action.UPDATE) {
                 if (event.getNodeChange() == DBNEvent.NodeChange.REFRESH ||
-                    event.getNodeChange() == DBNEvent.NodeChange.LOAD)
-                {
+                    event.getNodeChange() == DBNEvent.NodeChange.LOAD) {
                     if (isSameNode(event.getNode())) {
                         databaseEditor.refreshPart(
                             event,
@@ -145,8 +137,8 @@ public class DatabaseEditorListener implements INavigatorListener
     private DBNNode getEditorNode() {
         final IEditorInput input = databaseEditor.getEditorInput();
 
-        if (input instanceof INavigatorEditorInput) {
-            return ((INavigatorEditorInput) input).getNavigatorNode();
+        if (input instanceof INavigatorEditorInput navigatorEditorInput) {
+            return navigatorEditorInput.getNavigatorNode();
         } else {
             return null;
         }
@@ -156,10 +148,11 @@ public class DatabaseEditorListener implements INavigatorListener
     private String getEditorNodePath() {
         final IEditorInput input = databaseEditor.getEditorInput();
 
-        if (input instanceof DatabaseLazyEditorInput) {
-            return ((DatabaseLazyEditorInput) input).getNodePath();
-        } else if (input instanceof IDatabaseEditorInput) {
-            return ((DBNNode) ((IDatabaseEditorInput) input).getNavigatorNode()).getNodeUri();
+        if (input instanceof DatabaseLazyEditorInput lazyEditorInput) {
+            return lazyEditorInput.getNodePath();
+        } else if (input instanceof IDatabaseEditorInput databaseEditorInput) {
+            DBNDatabaseNode navigatorNode = databaseEditorInput.getNavigatorNode();
+            return navigatorNode == null ? null : navigatorNode.getNodeUri();
         } else {
             return null;
         }

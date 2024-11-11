@@ -525,10 +525,16 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                 timezoneOverridden = true;
             }
 
-            if (instance instanceof PostgreDatabase && !CommonUtils.equalObjects(instance.getName(), PostgreUtils.getDatabaseNameFromConfiguration(conConfig))) {
+            if (isReadDatabaseList(conConfig) || !CommonUtils.isEmpty(conConfig.getBootstrap().getDefaultCatalogName())) {
                 // If database was changed then use new name for connection
+                String databaseName;
+                if (instance != null) {
+                    databaseName = instance.getName();
+                } else {
+                    databaseName = PostgreUtils.getDatabaseNameFromConfiguration(conConfig);
+                }
                 DBPConnectionConfiguration newConfig = new DBPConnectionConfiguration(conConfig);
-                newConfig.setDatabaseName(instance.getName());
+                newConfig.setDatabaseName(databaseName);
                 String newURL = newConfig.getUrl();
                 if (newConfig.getConfigurationType() == DBPDriverConfigurationType.MANUAL) {
                     // Generate URL with new database name
@@ -538,7 +544,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                     }
                 } else {
                     // Patch connection URL with new database name
-                    newURL = PostgreUtils.updateDatabaseNameInURL(newConfig.getUrl(), instance.getName());
+                    newURL = PostgreUtils.updateDatabaseNameInURL(newConfig.getUrl(), databaseName);
                 }
                 newConfig.setUrl(newURL);
                 pgConnection = super.openConnection(monitor, context, newConfig, purpose);

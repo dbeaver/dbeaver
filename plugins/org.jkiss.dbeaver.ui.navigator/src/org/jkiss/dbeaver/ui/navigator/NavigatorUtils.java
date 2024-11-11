@@ -38,6 +38,7 @@ import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
@@ -48,7 +49,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.fs.nio.EFSNIOResource;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
-import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -404,13 +404,29 @@ public class NavigatorUtils {
         return null;
     }
 
-    public static void filterSelection(final ISelection selection, boolean exclude)
-    {
-        if (selection instanceof IStructuredSelection) {
+    public static void filterSelection(final ISelection selection, boolean exclude) {
+        if (!(selection instanceof IStructuredSelection structuredSelection)) {
+            log.error("Invalid selection type: " + selection);
+            return;
+        }
+        try {
             Map<DBNDatabaseNode, DBSObjectFilter> folders = new HashMap<>();
-            for (Object item : ((IStructuredSelection)selection).toArray()) {
-                if (item instanceof DBNNode node && node.getParentNode() instanceof DBNDatabaseNode parentNode) {
-                    DBXTreeItem nodeMeta = getNodeMetaForFilters(node, parentNode);
+            for (Object item : structuredSelection.toArray()) {
+                if (!(item instanceof DBNDatabaseNode node)) {
+                    continue;
+                }
+                DBNDatabaseNode parentNode = node.getParentNode() instanceof DBNDatabaseNode parent ? parent : node;
+                {
+                    DBXTreeItem nodeMeta = UIUtils.runWithMonitor(monitor -> {
+                        DBXTreeItem meta = DBNUtils.getValidItemsMeta(monitor, node);
+                        if (meta == null && node != parentNode) {
+                            meta = DBNUtils.getValidItemsMeta(monitor, parentNode);
+                        }
+                        return meta;
+                    });
+                    if (nodeMeta == null) {
+                        continue;
+                    }
 
                     DBSObjectFilter nodeFilter = folders.get(parentNode);
                     if (nodeFilter == null) {
@@ -431,8 +447,13 @@ public class NavigatorUtils {
             // Save folders
             Set<DBPDataSourceContainer> changedContainers = new HashSet<>();
             for (Map.Entry<DBNDatabaseNode, DBSObjectFilter> entry : folders.entrySet()) {
-                entry.getKey().setNodeFilter(entry.getKey().getItemsMeta(), entry.getValue(), false);
-                changedContainers.add(entry.getKey().getDataSourceContainer());
+                DBNDatabaseNode targetNode = entry.getKey();
+                DBXTreeItem nodeMeta = UIUtils.runWithMonitor(monitor -> DBNUtils.getValidItemsMeta(monitor, targetNode));
+                targetNode.setNodeFilter(
+                    nodeMeta,
+                    entry.getValue(),
+                    false);
+                changedContainers.add(targetNode.getDataSourceContainer());
             }
             // Save configs
             for (DBPDataSourceContainer ds : changedContainers) {
@@ -440,33 +461,15 @@ public class NavigatorUtils {
             }
             // Refresh all folders
             NavigatorHandlerRefresh.refreshNavigator(folders.keySet());
+        } catch (DBException e) {
+            log.error(e);
         }
-    }
-
-    public static DBXTreeItem getNodeMetaForFilters(DBNNode node, DBNDatabaseNode parentNode) {
-        DBXTreeItem nodeMeta = parentNode.getItemsMeta();
-
-        if (node instanceof DBNDatabaseItem dbItem && nodeMeta.isOptional()) {
-            // We filter db item - it may be optional
-            Class<?> assumeChildType = dbItem.getChildrenClass(nodeMeta);
-            if (assumeChildType == null || !assumeChildType.isInstance(dbItem.getObject())) {
-                // Node object has different type
-                List<DBXTreeNode> childMetas = nodeMeta.getChildren(node);
-                if (!childMetas.isEmpty() && childMetas.get(0) instanceof DBXTreeItem nestedItem &&
-                    parentNode.getChildrenClass(nestedItem) != null
-                ) {
-                    nodeMeta = nestedItem;
-                }
-            }
-        }
-        return nodeMeta;
     }
 
     public static boolean syncEditorWithNavigator(INavigatorModelView navigatorView, IEditorPart activeEditor) {
-        if (!(activeEditor instanceof IDataSourceContainerUpdate)) {
+        if (!(activeEditor instanceof IDataSourceContainerUpdate dsProvider)) {
             return false;
         }
-        IDataSourceContainerUpdate dsProvider = (IDataSourceContainerUpdate) activeEditor;
         Viewer navigatorViewer = navigatorView.getNavigatorViewer();
         if (navigatorViewer == null) {
             return false;

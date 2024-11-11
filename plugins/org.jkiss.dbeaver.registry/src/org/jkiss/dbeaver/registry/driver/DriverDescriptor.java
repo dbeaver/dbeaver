@@ -795,9 +795,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.driverClass = null;
         this.isLoaded = false;
 
-        if (!DBWorkbench.isDistributed()) {
-            this.resolvedFiles.clear();
-        }
+        this.resolvedFiles.clear();
     }
 
     private Object createDriverInstance()

@@ -72,6 +72,8 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     final ReplicationCache replCache;
     final JobCache jobCache;
     final DbLinkCache dbLinkCache;
+    final MemoryModuleCache memoryModuleCache;
+    
     private boolean hasStatistics;
 
     private GenericSchema publicSchema;
@@ -89,6 +91,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         replCache = new ReplicationCache(this);
         jobCache = new JobCache();
         dbLinkCache = new DbLinkCache();
+        memoryModuleCache = new MemoryModuleCache();
     }
 
     @Override
@@ -583,7 +586,40 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     public Collection<AltibaseJob> getJobs(@NotNull DBRProgressMonitor monitor) throws DBException {
         return jobCache.getAllObjects(monitor, this);
     }
-    
+
+    ///////////////////////////////////////////////
+    // Modules
+
+    @Association
+    public Collection<AltibaseMemoryModule> getMemoryModules(DBRProgressMonitor monitor) throws DBException {
+        return memoryModuleCache.getAllObjects(monitor, this);
+    }
+
+    public MemoryModuleCache getModuleCache() {
+        return memoryModuleCache;
+    }
+
+    static class MemoryModuleCache extends JDBCObjectCache<GenericStructContainer, AltibaseMemoryModule> {
+
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, 
+                @NotNull GenericStructContainer owner) throws SQLException {
+            return session.prepareStatement("SELECT * FROM v$memstat ORDER BY max_total_size DESC");
+        }
+
+        @Override
+        protected AltibaseMemoryModule fetchObject(@NotNull JDBCSession session, 
+                @NotNull GenericStructContainer owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+            return new AltibaseMemoryModule(owner, dbResult);
+        }
+    }
+
+    @Association
+    public Collection<AltibaseMemoryModule> getModules(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return memoryModuleCache.getAllObjects(monitor, this);
+    }
+
     ///////////////////////////////////////////////
     // Public DB Links
     

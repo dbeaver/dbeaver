@@ -39,7 +39,7 @@ import java.util.Map;
  */
 public class DB2ServerApplicationManager implements DBAServerSessionManager<DB2ServerApplication>, DBAServerSessionManagerSQL {
 
-    private static final String FORCE_APP_CMD = "FORCE APPLICATION (%d)";
+    private static final String FORCE_APP_CMD = "FORCE APPLICATION (%s)";
 
     private final DB2DataSource dataSource;
 
@@ -67,14 +67,20 @@ public class DB2ServerApplicationManager implements DBAServerSessionManager<DB2S
     }
 
     @Override
-    public void alterSession(@NotNull DBCSession session, @NotNull DB2ServerApplication sessionType, @NotNull Map<String, Object> options) throws DBException
+    public void alterSession(@NotNull DBCSession session, @NotNull String sessionId, @NotNull Map<String, Object> options) throws DBException
     {
         try {
-            String cmd = String.format(FORCE_APP_CMD, sessionType.getAgentId());
+            String cmd = String.format(FORCE_APP_CMD, sessionId);
             DB2Utils.callAdminCmd(session.getProgressMonitor(), dataSource, cmd);
         } catch (SQLException e) {
             throw new DBDatabaseException(e, session.getDataSource());
         }
+    }
+
+    @NotNull
+    @Override
+    public Map<String, Object> getTerminateOptions() {
+        return Map.of();
     }
 
     @Override

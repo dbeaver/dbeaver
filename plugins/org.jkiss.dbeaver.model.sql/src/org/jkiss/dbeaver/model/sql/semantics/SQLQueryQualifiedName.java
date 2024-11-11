@@ -59,6 +59,12 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem {
 
     @NotNull
     @Override
+    public SQLQuerySymbolClass getSymbolClass() {
+        return entityName != null ? this.entityName.getSymbolClass() : SQLQuerySymbolClass.UNKNOWN;
+    }
+
+    @NotNull
+    @Override
     public STMTreeNode[] getSyntaxComponents() {
         if (this.scopeName.isEmpty()) {
             return new STMTreeNode[] {

@@ -270,6 +270,15 @@ public class OracleServerSession extends AbstractServerSession {
     }
 
     @Override
+    public String getSessionId() {
+        String sessionId = sid + "," + serial;
+        if (instId != 0 && instId != 1) {
+            sessionId += ",@" + instId;
+        }
+        return sessionId;
+    }
+
+    @Override
     public String toString() {
         return sid + " - " + event;
     }

@@ -47,22 +47,22 @@ public class PostgreSession extends AbstractServerSession {
 
     public PostgreSession(ResultSet dbResult) {
         this.pid = JDBCUtils.safeGetInt(dbResult, "pid");
-        this.user = JDBCUtils.safeGetString(dbResult, "usename");
-        this.clientHost = JDBCUtils.safeGetString(dbResult, "client_hostname");
+        this.user = JDBCUtils.safeGetStringTrimmed(dbResult, "usename");
+        this.clientHost = JDBCUtils.safeGetStringTrimmed(dbResult, "client_hostname");
         if (CommonUtils.isEmpty(this.clientHost)) {
-            this.clientHost = JDBCUtils.safeGetString(dbResult, "client_addr");
+            this.clientHost = JDBCUtils.safeGetStringTrimmed(dbResult, "client_addr");
         }
-        this.clientPort = JDBCUtils.safeGetString(dbResult, "client_port");
-        this.db = JDBCUtils.safeGetString(dbResult, "datname");
-        this.query = JDBCUtils.safeGetString(dbResult, "query");
+        this.clientPort = JDBCUtils.safeGetStringTrimmed(dbResult, "client_port");
+        this.db = JDBCUtils.safeGetStringTrimmed(dbResult, "datname");
+        this.query = JDBCUtils.safeGetStringTrimmed(dbResult, "query");
 
         this.backendStart = JDBCUtils.safeGetTimestamp(dbResult, "backend_start");
         this.xactStart = JDBCUtils.safeGetTimestamp(dbResult, "xact_start");
         this.queryStart = JDBCUtils.safeGetTimestamp(dbResult, "query_start");
         this.stateChange = JDBCUtils.safeGetTimestamp(dbResult, "state_change");
 
-        this.state = JDBCUtils.safeGetString(dbResult, "state");
-        this.appName = JDBCUtils.safeGetString(dbResult, "application_name");
+        this.state = JDBCUtils.safeGetStringTrimmed(dbResult, "state");
+        this.appName = JDBCUtils.safeGetStringTrimmed(dbResult, "application_name");
     }
 
     @Property(viewable = true, order = 1)
@@ -127,8 +127,8 @@ public class PostgreSession extends AbstractServerSession {
 
     @Property(viewable = true, order = 100)
     public String getBriefQuery() {
-        if (query != null && query.length() > 50) {
-            return CommonUtils.truncateString(query, 50) + " ...";
+        if (query != null && query.length() > 500) {
+            return CommonUtils.truncateString(query, 500) + " ...";
         } else {
             return query;
         }
@@ -138,6 +138,11 @@ public class PostgreSession extends AbstractServerSession {
     public String getActiveQuery()
     {
         return query;
+    }
+
+    @Override
+    public String getSessionId() {
+        return String.valueOf(pid);
     }
 
     @Override

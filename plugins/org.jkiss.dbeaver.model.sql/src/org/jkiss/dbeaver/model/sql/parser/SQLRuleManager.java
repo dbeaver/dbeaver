@@ -89,12 +89,19 @@ public class SQLRuleManager {
     }
 
     public void loadRules() {
-        loadRules(null, false);
+        loadRules((DBPDataSourceContainer) null, false);
     }
 
     public void loadRules(@Nullable DBPDataSource dataSource, boolean minimalRules) {
+        if (dataSource == null) {
+            loadRules((DBPDataSourceContainer) null, minimalRules);
+        } else {
+            loadRules(dataSource.getContainer(), minimalRules);
+        }
+    }
+
+    public void loadRules(@Nullable DBPDataSourceContainer dataSourceContainer, boolean minimalRules) {
         SQLDialect dialect = syntaxManager.getDialect();
-        DBPDataSourceContainer dataSourceContainer = dataSource == null ? null : dataSource.getContainer();
 
         final TPToken keywordToken = new TPTokenDefault(SQLTokenType.T_KEYWORD);
         final TPToken typeToken = new TPTokenDefault(SQLTokenType.T_TYPE);
@@ -240,6 +247,8 @@ public class SQLRuleManager {
                     wordRule.addWord(reservedWord, keywordToken);
                 }
             }
+
+            DBPDataSource dataSource = dataSourceContainer != null ? dataSourceContainer.getDataSource() : null;
             if (dataSource != null) {
                 for (String type : dialect.getDataTypes(dataSource)) {
                     wordRule.addWord(type, typeToken);

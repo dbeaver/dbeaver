@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
@@ -158,6 +159,18 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
     @NotNull
     public List<DBNNode> getExtraNodes() {
         return extraNodes;
+    }
+
+    @Override
+    public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException {
+        if (this.getParentNode() != null) {
+            return this.getParentNode().refreshNode(monitor, source);
+        } else {
+            for (DBNProject project : projects) {
+                project.refreshNode(monitor, source);
+            }
+            return this;
+        }
     }
 
     @Override

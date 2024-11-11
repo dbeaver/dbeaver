@@ -194,7 +194,7 @@ class SessionTable<SESSION_TYPE extends DBAServerSession> extends DatabaseObject
                 Throwable lastError = null;
                 for (SESSION_TYPE dbaSession : this.sessions) {
                     try {
-                        sessionManager.alterSession(session, dbaSession, options);
+                        sessionManager.alterSession(session, dbaSession.getSessionId(), options);
                     } catch (Exception e) {
                         log.error("Error killing session " + session, e);
                         lastError = e;
