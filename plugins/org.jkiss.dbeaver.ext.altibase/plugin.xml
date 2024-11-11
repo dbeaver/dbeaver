@@ -328,7 +328,7 @@
                         </items>
                     </folder>
                 </folder>
-                <folder label="%tree.administer.node.name"  id="maintenanceSettings" icon="#folder_admin" description="Maintenance/Settings">
+                <folder id="maintenanceSettings" label="%tree.administer.node.name" description="%tree.administer.node.name" icon="#folder_admin">
                     <treeContribution category="connectionEditor"/>
                 </folder>
                 <folder label="%tree.system_info.node.name" icon="#folder_info" id="folderInfo" description="%tree.system_info.node.tip">

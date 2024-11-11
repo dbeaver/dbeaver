@@ -18,4 +18,5 @@ Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ext.altibase
 Export-Package: org.jkiss.dbeaver.ext.altibase,
  org.jkiss.dbeaver.ext.altibase.model,
+ org.jkiss.dbeaver.ext.altibase.model.lock,
  org.jkiss.dbeaver.ext.altibase.model.session

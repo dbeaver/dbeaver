@@ -182,7 +182,7 @@ public class ExecuteInsertBatchImpl extends ExecuteBatchImpl {
                 if (valueHandler instanceof DBDValueBinder) {
                     rowValuesPart.add(((DBDValueBinder) valueHandler).makeQueryBind(attribute, attributeValues[k]));
                 } else if (skipBindValues) {
-                    rowValuesPart.add(SQLUtils.convertValueToSQL(session.getDataSource(), attribute, valueHandler, attributeValues[k], DBDDisplayFormat.NATIVE));
+                    rowValuesPart.add(SQLUtils.convertValueToSQL(session.getDataSource(), attribute, valueHandler, attributeValues[k], DBDDisplayFormat.NATIVE, false));
                 } else if (allNulls && attributeHasDefaultValue(attribute)) {
                     rowValuesPart.add("DEFAULT");
                 } else {
