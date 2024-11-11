@@ -37,7 +37,9 @@ public class ArrayHintProvider implements IValueHintProvider {
     @Nullable
     @Override
     public IValueHint[] getValueHint(
-        @NotNull IValueHintContext context, @NotNull DBDAttributeBinding attribute,
+        @NotNull IValueHintContext context,
+        @NotNull DBDAttributeBinding attribute,
+        @NotNull ResultSetRow row,
         @Nullable Object value,
         @NotNull EnumSet<IValueHint.HintType> types,
         int options

@@ -2731,10 +2731,15 @@ public class SpreadsheetPresentation extends AbstractPresentation
             if (attr == null) {
                 return null;
             }
+            ResultSetRow row = getResultRowFromGrid(colElement, rowElement);
+            if (row == null) {
+                return null;
+            }
             for (IValueHintProvider hintProvider : controller.getModel().getHintProviders(attr)) {
                 IValueHint[] valueHints = hintProvider.getValueHint(
                     controller.getModel().getHintContext(),
                     attr,
+                    row,
                     cellInfo.value,
                     EnumSet.of(IValueHint.HintType.STRING),
                     IValueHintProvider.HINT_INLINE);

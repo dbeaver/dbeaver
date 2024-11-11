@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.data.hints;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -61,19 +62,28 @@ public class ReferenceHintProvider implements IValueHintProvider {
     public IValueHint[] getValueHint(
         @NotNull IValueHintContext context,
         @NotNull DBDAttributeBinding attribute,
+        @NotNull ResultSetRow row,
         @Nullable Object value,
         @NotNull EnumSet<IValueHint.HintType> types,
         int options
     ) {
+        if (DBUtils.isNullValue(value)) {
+            return null;
+        }
         List<DBSEntityReferrer> referrers = attribute.getReferrers();
         if (!CommonUtils.isEmpty(referrers)) {
             List<IValueHint> refHints = new ArrayList<>();
             for (DBSEntityReferrer referrer : referrers) {
                 if (referrer instanceof DBSEntityAssociation ea) {
                     DBSEntityConstraint refConstr = ea.getReferencedConstraint();
-                    refHints.add(
-                        new ValueHintText(refConstr.getParentObject().getName(), "Table '" + refConstr.getParentObject().getName() + "' reference", UIIcon.LINK)
-                    );
+                    if (refConstr != null) {
+                        refHints.add(
+                            new ValueHintText(
+                                refConstr.getParentObject().getName(),
+                                "Table '" + refConstr.getParentObject().getName() + "' reference",
+                                UIIcon.LINK)
+                        );
+                    }
                 }
             }
             return refHints.toArray(new IValueHint[0]);
