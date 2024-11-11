@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
 import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
 import org.jkiss.dbeaver.ext.sqlite.model.SQLiteTableColumn;
 import org.jkiss.dbeaver.ext.sqlite.model.SQLiteTableForeignKey;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
@@ -33,6 +34,8 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -76,6 +79,16 @@ public class SQLiteTableManager extends GenericTableManager implements DBEObject
             throw new DBException("View rename is not supported");
         }
         processObjectRename(commandContext, object, options, newName);
+    }
+
+    @Override
+    protected boolean isIncludeConstraintInDDL(DBRProgressMonitor monitor, DBSEntityConstraint constraint) {
+        if (constraint.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY && constraint instanceof GenericUniqueKey) {
+            if (((GenericUniqueKey)constraint).getAttributeReferences(monitor).size() == 1 && ((GenericUniqueKey)constraint).getAttributeReferences(monitor).get(0).getAttribute().isAutoIncrement()) {
+                return false;
+            }
+        }
+        return super.isIncludeConstraintInDDL(monitor, constraint);
     }
 
     @Override
