@@ -19,36 +19,23 @@ package org.jkiss.dbeaver.ext.sqlite.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.generic.model.TableCache;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.data.DBDAttributeValue;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.meta.EntityAttributes;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTrigger;
-import org.jkiss.dbeaver.model.virtual.DBVUtils;
 
 import java.sql.SQLException;
 import java.util.*;
-import java.util.stream.Collectors;
 
-public class SQLiteDataSource extends GenericDataSource implements DBSVisibilityScopeProvider {
-
-    private List<DBSObjectContainer> cachedSystemObjectsContainer = null;
+public class SQLiteDataSource extends GenericDataSource {
 
     public SQLiteDataSource(
         @NotNull DBRProgressMonitor monitor,
@@ -146,18 +133,4 @@ public class SQLiteDataSource extends GenericDataSource implements DBSVisibility
         return super.discoverErrorType(error);
     }
 
-    @Override
-    public List<DBSObjectContainer> getPublicScopes(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return this.cachedSystemObjectsContainer != null ? this.cachedSystemObjectsContainer : (this.cachedSystemObjectsContainer = this.prepareSystemObjectsContainer(monitor));
-    }
-
-    private @NotNull List<DBSObjectContainer> prepareSystemObjectsContainer(@NotNull DBRProgressMonitor monitor) throws DBCException {
-        return List.of(SQLiteSystemTablesContainer.collectSysTablesInformation(monitor, this));
-    }
-
-    @Override
-    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        this.cachedSystemObjectsContainer = null;
-        return super.refreshObject(monitor);
-    }
 }
