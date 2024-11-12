@@ -232,6 +232,9 @@ public class SQLSearchUtils
         @NotNull List<String> names)
         throws DBException {
         for (int i = 0; i < names.size(); i++) {
+            if (monitor.isCanceled()) {
+                break;
+            }
             String childName = names.get(i);
             parent.cacheStructure(monitor, DBSObjectContainer.STRUCT_ENTITIES);
             DBSObject child = parent.getChild(monitor, childName);
