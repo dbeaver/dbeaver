@@ -30,7 +30,9 @@ import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.actions.exec.SQLNativeExecutorDescriptor;
 import org.jkiss.dbeaver.ui.actions.exec.SQLNativeExecutorRegistry;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationDescriptor.QueryMode;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * SQLEditorPropertyTester
@@ -67,9 +69,15 @@ public class SQLEditorPropertyTester extends PropertyTester
         }
         boolean hasConnection = editor.getDataSourceContainer() != null;
         switch (property) {
-            case PROP_CAN_EXECUTE:
-                // Do not check hasActiveQuery - sometimes jface don't update action enablement after cursor change/typing
-                return true;/* && (!"statement".equals(expectedValue) || editor.hasActiveQuery())*/
+            case PROP_CAN_EXECUTE: {
+                var descriptor = editor.getActivePresentationDescriptor();
+                var mode = descriptor != null ? descriptor.getQueryMode() : QueryMode.MULTIPLE;
+                return switch (CommonUtils.toString(expectedValue)) {
+                    case "statement" -> mode != QueryMode.NONE;
+                    case "script" -> mode == QueryMode.MULTIPLE;
+                    default -> false;
+                };
+            }
             case PROP_CAN_EXECUTE_NATIVE: {
                 try {
                     if (editor.getDataSourceContainer() == null) {
