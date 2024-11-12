@@ -107,12 +107,11 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
     @Nullable
     private DBSObject findRealObjectImpl(@NotNull DBRProgressMonitor monitor, @NotNull List<String> objectName) {
         if (this.executionContext.getDataSource() instanceof DBSObjectContainer container) {
-            List<String> objectName2 = new ArrayList<>(objectName);
             DBSObject obj = SQLSearchUtils.findObjectByFQN(
                 monitor,
                 container,
                 this.executionContext,
-                objectName2,
+                objectName,
                 false,
                 identifierDetector
             );
@@ -123,8 +122,7 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
                 if (scopeProvider != null) {
                     try {
                         for (DBSObjectContainer scope : scopeProvider.getPublicScopes(monitor)) {
-                            List<String> objectName3 = new ArrayList<>(objectName);
-                            obj = SQLSearchUtils.findObjectByFQN(monitor, scope, this.executionContext, objectName3, false, identifierDetector);
+                            obj = SQLSearchUtils.findObjectByFQN(monitor, scope, this.executionContext, objectName, false, identifierDetector);
                             if (obj != null) {
                                 break;
                             }
