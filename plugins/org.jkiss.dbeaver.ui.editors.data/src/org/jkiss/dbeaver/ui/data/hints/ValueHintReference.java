@@ -61,7 +61,7 @@ public class ValueHintReference implements IValueHint, IValueHintAction {
     @Override
     public String getHintText() {
         DBSEntity entity = association.getAssociatedEntity();
-        return "Navigate to " + (entity == null ? "???" : entity.getName());
+        return entity == null ? "???" : entity.getName();
     }
 
     @Override

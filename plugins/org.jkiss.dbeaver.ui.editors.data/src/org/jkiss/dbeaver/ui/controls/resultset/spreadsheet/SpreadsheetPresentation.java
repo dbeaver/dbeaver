@@ -105,6 +105,8 @@ import java.util.stream.Collectors;
 public class SpreadsheetPresentation extends AbstractPresentation
     implements IResultSetEditor, IResultSetDisplayFormatProvider, ISelectionProvider, IStatefulControl, DBPAdaptable, IGridController {
     public static final String PRESENTATION_ID = "spreadsheet";
+    public static final EnumSet<IValueHint.HintType> INLINE_HINT_TYPES = EnumSet.of(
+        IValueHint.HintType.STRING, IValueHint.HintType.ACTION, IValueHint.HintType.IMAGE);
 
     private static final Log log = Log.getLog(SpreadsheetPresentation.class);
 
@@ -2753,6 +2755,37 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
             }
             return null;
+        }
+
+        @Override
+        public List<IGridHint> getCellHints(IGridColumn colElement, IGridRow rowElement, CellInformation cellInfo) {
+            DBDAttributeBinding attr = getAttributeFromGrid(colElement, rowElement);
+            if (attr == null) {
+                return null;
+            }
+            ResultSetRow row = getResultRowFromGrid(colElement, rowElement);
+            if (row == null) {
+                return null;
+            }
+            List<IGridHint> gridHints = null;
+            for (IValueHintProvider hintProvider : controller.getModel().getHintProviders(attr)) {
+                IValueHint[] valueHints = hintProvider.getValueHint(
+                    controller.getModel().getHintContext(),
+                    attr,
+                    row,
+                    cellInfo.value,
+                    INLINE_HINT_TYPES,
+                    IValueHintProvider.HINT_INLINE);
+                if (valueHints != null) {
+                    for (IValueHint hint : valueHints) {
+                        if (gridHints == null) {
+                            gridHints = new ArrayList<>();
+                        }
+                        gridHints.add(new SpreadsheetHint(getController(), hint));
+                    }
+                }
+            }
+            return gridHints;
         }
 
         @Override

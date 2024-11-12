@@ -24,6 +24,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
 
+import java.util.List;
+
 public interface IGridContentProvider extends IContentProvider {
 
     enum ElementState {
@@ -114,6 +116,7 @@ public interface IGridContentProvider extends IContentProvider {
      */
     @Nullable
     String getCellHintText(IGridColumn colElement, IGridRow rowElement, CellInformation cellInfo);
+    List<IGridHint> getCellHints(IGridColumn colElement, IGridRow rowElement, CellInformation cellInfo);
 
     // Resets all cached colors
     void resetColors();

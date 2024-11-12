@@ -27,6 +27,8 @@ import org.jkiss.dbeaver.ui.UITextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
+
 /**
  * Grid cell renderer
  */
@@ -235,20 +237,46 @@ class GridCellRenderer extends AbstractRenderer {
                         );
                     }
 
-                    String hintText = grid.getContentProvider().getCellHintText(col, row, cellInfo);
-                    if (!CommonUtils.isEmpty(hintText)) {
+                    // Render hints
+                    List<IGridHint> cellHints = grid.getContentProvider().getCellHints(col, row, cellInfo);
+                    if (!CommonUtils.isEmpty(cellHints)) {
+                        boolean textHintRendered = false;
                         Point textSize = gc.textExtent(text);
-                        if (textSize.x < bounds.width - LEFT_MARGIN) {
-                            int hintPos = bounds.x + x + textSize.x + LEFT_MARGIN;
-                            final Color disabledForeground = getDisabledForeground(cellInfo);
+                        int hintLeftPos = bounds.x + x + textSize.x + LEFT_MARGIN;
+                        for (IGridHint hint : cellHints) {
+                            if (x > bounds.x + bounds.width) {
+                                // No more space
+                                break;
+                            }
+                            DBPImage hintIcon = hint.getIcon();
+                            if (hintIcon != null) {
+                                Image hintImage = DBeaverIcons.getImage(hintIcon);
+                                Rectangle iconSize = hintImage.getBounds();
+                                int iconY = bounds.y + (bounds.height - iconSize.height) / 2;
+                                gc.drawImage(
+                                    hintImage,
+                                    hintLeftPos,
+                                    iconY
+                                );
+                                hintLeftPos += iconSize.width + LEFT_MARGIN;
+                            }
+                            if (!textHintRendered) {
+                                String hintText = hint.getText();
+                                if (!CommonUtils.isEmpty(hintText)) {
+                                    textHintRendered = true;
+                                    if (textSize.x < bounds.width - LEFT_MARGIN) {
+                                        final Color disabledForeground = getDisabledForeground(cellInfo);
 
-                            gc.setForeground(disabledForeground);
-                            gc.drawString(
-                                hintText,
-                                hintPos,
-                                textTopPos,
-                                isTransparent
-                            );
+                                        gc.setForeground(disabledForeground);
+                                        gc.drawString(
+                                            hintText,
+                                            hintLeftPos,
+                                            textTopPos,
+                                            isTransparent
+                                        );
+                                    }
+                                }
+                            }
                         }
                     }
 
