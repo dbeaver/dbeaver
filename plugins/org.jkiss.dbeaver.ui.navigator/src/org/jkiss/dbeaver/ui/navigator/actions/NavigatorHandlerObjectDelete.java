@@ -146,9 +146,13 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                                     changeDependentObjectsList(monitor, dependentObjectsList);
                                     if (!CommonUtils.isEmpty(dependentObjectsList)) {
                                         for (Object object : dependentObjectsList) {
-                                            if (object instanceof DBSObject) {
-                                                DBNDatabaseNode node = DBNUtils.getNodeByObject(monitor, (DBSObject) object, false);
-                                                dependentObjectsListNodes.add(node);
+                                            if (object instanceof DBSObject objToDelete) {
+                                                DBNDatabaseNode node = DBNUtils.getNodeByObject(monitor, objToDelete, false);
+                                                if (node != null) {
+                                                    dependentObjectsListNodes.add(node);
+                                                } else {
+                                                    log.warn("Node not found for object " + object);
+                                                }
                                             }
                                         }
                                     }

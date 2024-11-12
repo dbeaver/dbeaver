@@ -32,6 +32,7 @@ public class GenericDataSourceInfo extends JDBCDataSourceInfo {
     public boolean supportsCatalogSelection;
     public boolean supportsSchemaSelection;
     private boolean supportsMultipleResults;
+    private boolean multipleResultsFailsOnMaxRows;
     private boolean supportsNullableUniqueConstraints;
     private final boolean supportsTransactionsForDDL;
     private final boolean supportsConstraints;
@@ -42,6 +43,7 @@ public class GenericDataSourceInfo extends JDBCDataSourceInfo {
         supportsLimits = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_LIMITS), true);
         setSupportsResultSetScroll(CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_SCROLL), false));
         supportsMultipleResults = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_MULTIPLE_RESULTS), false);
+        multipleResultsFailsOnMaxRows = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_MULTIPLE_RESULTS_FAILS_ON_MAX_ROWS), false);
         supportsTransactionsForDDL = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_TRANSACTIONS_FOR_DDL), true);
         setReadOnlyData(CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_READ_ONLY_DATA), false));
         setReadOnlyMetaData(CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_READ_ONLY_META_DATA), false));
@@ -105,6 +107,11 @@ public class GenericDataSourceInfo extends JDBCDataSourceInfo {
     @Override
     public boolean supportsMultipleResults() {
         return supportsMultipleResults;
+    }
+
+    @Override
+    public boolean isMultipleResultsFailsOnMaxRows() {
+        return multipleResultsFailsOnMaxRows;
     }
 
     @Override
