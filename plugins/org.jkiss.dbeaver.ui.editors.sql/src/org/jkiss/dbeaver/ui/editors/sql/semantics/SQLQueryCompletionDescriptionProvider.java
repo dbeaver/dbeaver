@@ -57,7 +57,8 @@ public class SQLQueryCompletionDescriptionProvider implements SQLQueryCompletion
             } else if (columnName.columnInfo.symbol.getDefinition() instanceof SQLQueryResultPseudoColumn pseudoColumn) {
                 return pseudoColumn.description;
             } else {
-                return "Computed column "; // TODO deliver the column expression to the model
+                return "Computed column #" + columnName.columnInfo.index + // TODO deliver the column expression from the SQLQuerySelectionResultColumnSpec?
+                    " from the subquery \n" + columnName.columnInfo.source.getSyntaxNode().getTextContent();
             }
         }
     }

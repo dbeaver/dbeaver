@@ -87,6 +87,11 @@ public class CustomTimeEditor {
         disposeNotNeededEditors();
     }
 
+    public void createDateFormat(JDBCType jdbcType) {
+        this.jdbcType = jdbcType;
+        disposeNotNeededEditors();
+    }
+
     private void disposeNotNeededEditors() {
         if (jdbcType != null) {
             switch (jdbcType) {
