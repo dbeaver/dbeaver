@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.dbeaver.common</groupId>
         <artifactId>com.dbeaver.common.main</artifactId>
-        <version>2.3.0-SNAPSHOT</version>
+        <version>2.3.1-SNAPSHOT</version>
         <relativePath>../dbeaver-common/pom.xml</relativePath>
     </parent>
 
