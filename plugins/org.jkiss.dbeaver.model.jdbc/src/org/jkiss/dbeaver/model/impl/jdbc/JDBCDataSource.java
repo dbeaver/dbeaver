@@ -18,8 +18,8 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.api.ObjectWithContextParameters;
-import org.jkiss.api.verification.DriverAccessVerifier;
-import org.jkiss.api.verification.VerifiableDriver;
+import org.jkiss.api.verification.FileSystemAccessVerifyer;
+import org.jkiss.api.verification.ObjectWithVerification;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
@@ -270,11 +270,11 @@ public abstract class JDBCDataSource extends AbstractDataSource
             DBPProject project = getContainer().getProject();
             owcp.setObjectContextParameter(DBConstants.CONTEXT_PARAMETER_PROJECT, getContainer().getProject());
             owcp.setObjectContextParameter(DBConstants.CONTEXT_PARAMETER_DATA_SOURCE, getContainer());
-            if (driverInstance instanceof VerifiableDriver
+            if (driverInstance instanceof ObjectWithVerification
                 && DBWorkbench.getPlatform().getApplication().isMultiuser()
             ) {
-                owcp.setObjectContextParameter(ObjectWithContextParameters.CONTEXT_PARAMETER_DRIVER_VERIFIER,
-                    (DriverAccessVerifier) path -> {
+                owcp.setObjectContextParameter(ObjectWithVerification.CONTEXT_PARAMETER_DRIVER_VERIFIER,
+                    (FileSystemAccessVerifyer) path -> {
                         if (IOUtils.isFileFromDefaultFS(path)) {
                             return path.normalize().startsWith(project.getAbsolutePath());
                         }
