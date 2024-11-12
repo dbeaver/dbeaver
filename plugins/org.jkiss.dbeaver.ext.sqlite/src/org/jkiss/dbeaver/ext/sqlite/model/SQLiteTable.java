@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
-import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
 import org.jkiss.dbeaver.ext.sqlite.internal.SQLiteMessages;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
@@ -46,7 +45,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class SQLiteTable extends GenericTable implements DBDPseudoAttributeContainer,DBPNamedObject2 {
+public class SQLiteTable extends GenericTable implements DBDPseudoAttributeContainer, DBPNamedObject2 {
 
     private static final DBDPseudoAttribute PSEUDO_ATTR_ROWID = new DBDPseudoAttribute(
         DBDPseudoAttributeType.ROWID,

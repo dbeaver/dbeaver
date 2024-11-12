@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -30,7 +29,5 @@ public interface DBSVisibilityScopeProvider {
     /**
      * Returns additional globally visible scopes, like information_schema
      */
-    default List<DBSObjectContainer> getPublicScopes(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return Collections.emptyList();
-    }
+    List<DBSObjectContainer> getPublicScopes(@NotNull DBRProgressMonitor monitor) throws DBException;
 }
