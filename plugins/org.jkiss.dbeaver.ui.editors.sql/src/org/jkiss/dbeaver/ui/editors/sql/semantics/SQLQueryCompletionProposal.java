@@ -227,7 +227,7 @@ public class SQLQueryCompletionProposal implements ICompletionProposal, IComplet
         if (this.filterString != null && CommonUtils.isNotEmpty(this.filterString.filterString)) {
             try {
                 int filterKeyStart = this.filterString.offset >= 0 ? this.filterString.offset : this.proposalContext.getRequestOffset();
-                if (offset >= document.getLength()) {
+                if (offset > document.getLength()) {
                     return false;
                 } else {
                     String filterKey = document.get(filterKeyStart, offset - filterKeyStart);
