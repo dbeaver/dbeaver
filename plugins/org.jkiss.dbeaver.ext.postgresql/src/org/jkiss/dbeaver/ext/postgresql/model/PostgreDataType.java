@@ -54,7 +54,7 @@ import java.util.*;
  * PostgreTypeType
  */
 public class PostgreDataType extends JDBCDataType<PostgreSchema> 
-    implements PostgreClass, PostgreScriptObject, DBPQualifiedObject, DBPImageProvider, DBSBindableDataType, DBPNamedObject2 {
+    implements PostgreClass, DBSDataTypeSerial, PostgreScriptObject, DBPQualifiedObject, DBPImageProvider, DBSBindableDataType, DBPNamedObject2 {
 
     private static final Log log = Log.getLog(PostgreDataType.class);
 
@@ -260,6 +260,17 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
         alias = false;
         ownerId = 0;
         attributeCache = null;
+    }
+
+    @Override
+    public boolean isSerialDataType() {
+        return PostgreConstants.SERIAL_TYPES.containsKey(getFullTypeName());
+    }
+
+    @Override
+    public DBSDataType getBaseDataType() {
+        String baseTypeName = PostgreConstants.SERIAL_TYPES.get(getFullTypeName());
+        return getDataSource().getLocalDataType(baseTypeName);
     }
 
     void resolveValueTypeFromBaseType(DBRProgressMonitor monitor) {
