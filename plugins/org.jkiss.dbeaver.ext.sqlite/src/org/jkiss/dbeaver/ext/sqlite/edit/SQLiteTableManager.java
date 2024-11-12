@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableConstraintColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
 import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
 import org.jkiss.dbeaver.ext.sqlite.model.SQLiteTableColumn;
@@ -83,8 +84,9 @@ public class SQLiteTableManager extends GenericTableManager implements DBEObject
 
     @Override
     protected boolean isIncludeConstraintInDDL(DBRProgressMonitor monitor, DBSEntityConstraint constraint) {
-        if (constraint.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY && constraint instanceof GenericUniqueKey) {
-            if (((GenericUniqueKey)constraint).getAttributeReferences(monitor).size() == 1 && ((GenericUniqueKey)constraint).getAttributeReferences(monitor).get(0).getAttribute().isAutoIncrement()) {
+        if (constraint.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY && constraint instanceof GenericUniqueKey key) {
+			List<GenericTableConstraintColumn> columns = key.getAttributeReferences(monitor);
+            if (columns.size() == 1 && columns.get(0).getAttribute().isAutoIncrement()) {
                 return false;
             }
         }
