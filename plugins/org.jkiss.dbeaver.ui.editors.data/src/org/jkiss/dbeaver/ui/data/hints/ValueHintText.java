@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.data.registry;
+package org.jkiss.dbeaver.ui.data.hints;
 
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.data.IValueHint;

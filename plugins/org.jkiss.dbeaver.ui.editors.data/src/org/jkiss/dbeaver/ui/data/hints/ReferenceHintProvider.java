@@ -26,12 +26,10 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.data.IValueHint;
 import org.jkiss.dbeaver.ui.data.IValueHintContext;
 import org.jkiss.dbeaver.ui.data.IValueHintProvider;
-import org.jkiss.dbeaver.ui.data.registry.ValueHintText;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -78,11 +76,10 @@ public class ReferenceHintProvider implements IValueHintProvider {
                     DBSEntityConstraint refConstr = ea.getReferencedConstraint();
                     if (refConstr != null) {
                         refHints.add(
-                            new ValueHintText(
-                                refConstr.getParentObject().getName(),
-                                "Table '" + refConstr.getParentObject().getName() + "' reference",
-                                UIIcon.LINK)
-                        );
+                            new ValueHintReference(
+                                attribute,
+                                row,
+                                ea));
                     }
                 }
             }

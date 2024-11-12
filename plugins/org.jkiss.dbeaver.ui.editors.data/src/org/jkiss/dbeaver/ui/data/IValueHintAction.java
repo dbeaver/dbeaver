@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ui.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 
 /**
@@ -25,6 +26,6 @@ import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
  */
 public interface IValueHintAction {
 
-    void performAction(@NotNull IResultSetController controller, long state);
+    void performAction(@NotNull IResultSetController controller, long state) throws DBException;
 
 }
