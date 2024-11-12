@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.api.ObjectWithContextParameters;
+import org.jkiss.api.verification.FileSystemAccessVerifyer;
+import org.jkiss.api.verification.ObjectWithVerification;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
@@ -27,6 +29,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
@@ -264,8 +267,22 @@ public abstract class JDBCDataSource extends AbstractDataSource
 
     private void initializeDriverContext(Driver driverInstance) {
         if (driverInstance instanceof ObjectWithContextParameters owcp) {
+            DBPProject project = getContainer().getProject();
             owcp.setObjectContextParameter(DBConstants.CONTEXT_PARAMETER_PROJECT, getContainer().getProject());
             owcp.setObjectContextParameter(DBConstants.CONTEXT_PARAMETER_DATA_SOURCE, getContainer());
+            if (driverInstance instanceof ObjectWithVerification
+                && DBWorkbench.getPlatform().getApplication().isMultiuser()
+            ) {
+                owcp.setObjectContextParameter(ObjectWithVerification.CONTEXT_PARAMETER_FILE_SYSTEM_VERIFIER,
+                    (FileSystemAccessVerifyer) path -> {
+                        if (IOUtils.isFileFromDefaultFS(path)) {
+                            return path.normalize().startsWith(project.getAbsolutePath());
+                        }
+                        //allow all files from external storage
+                        return true;
+                    });
+
+            }
         }
     }
 

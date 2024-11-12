@@ -896,8 +896,14 @@ public class SQLEditor extends SQLEditorBase implements
         return super.isDirty();
     }
 
+    @Nullable
     public SQLEditorPresentation getActivePresentation() {
         return extraPresentationManager.activePresentation;
+    }
+
+    @Nullable
+    public SQLPresentationDescriptor getActivePresentationDescriptor() {
+        return extraPresentationManager.activePresentationDescriptor;
     }
 
     @Nullable
@@ -5214,6 +5220,8 @@ public class SQLEditor extends SQLEditorBase implements
                 activePresentationDescriptor = null;
                 activePresentation = null;
                 activePresentationPanel = null;
+
+                SQLEditorPropertyTester.firePropertyChange(SQLEditorPropertyTester.PROP_CAN_EXECUTE);
                 return true;
             }
 
@@ -5239,6 +5247,7 @@ public class SQLEditor extends SQLEditorBase implements
                     activePresentation.showPresentation(SQLEditor.this, true);
                     presentations.put(descriptor, activePresentation);
 
+                    SQLEditorPropertyTester.firePropertyChange(SQLEditorPropertyTester.PROP_CAN_EXECUTE);
                     return true;
                 }
             } else {
@@ -5250,6 +5259,8 @@ public class SQLEditor extends SQLEditorBase implements
                     activePresentationDescriptor = descriptor;
                     activePresentation = presentation;
                     activePresentation.showPresentation(SQLEditor.this, false);
+
+                    SQLEditorPropertyTester.firePropertyChange(SQLEditorPropertyTester.PROP_CAN_EXECUTE);
                     return true;
                 }
             }

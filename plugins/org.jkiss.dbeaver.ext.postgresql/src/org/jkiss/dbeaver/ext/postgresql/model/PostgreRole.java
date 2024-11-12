@@ -44,6 +44,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.*;
 
 /**
@@ -79,7 +81,7 @@ public class PostgreRole implements
     protected boolean bypassRls;
     protected int connLimit;
     protected String password;
-    protected String validUntil;
+    protected LocalDateTime validUntil;
     protected String description;
     protected boolean persisted;
     private final MembersCache membersCache = new MembersCache(true);
@@ -143,7 +145,9 @@ public class PostgreRole implements
         this.bypassRls = JDBCUtils.safeGetBoolean(dbResult, "rolbypassrls");
         this.connLimit = JDBCUtils.safeGetInt(dbResult, "rolconnlimit");
         this.password = JDBCUtils.safeGetString(dbResult, "rolpassword");
-        this.validUntil = JDBCUtils.safeGetString(dbResult, "rolvaliduntil");
+        this.validUntil = Optional.ofNullable(JDBCUtils.safeGetTimestamp(dbResult, "rolvaliduntil"))
+            .map(Timestamp::toLocalDateTime)
+            .orElse(null);
         this.description = JDBCUtils.safeGetString(dbResult, "description");
     }
 
@@ -294,11 +298,11 @@ public class PostgreRole implements
     }
 
     @Property(category = CAT_SETTINGS, editable = true, updatable = true, order = 22)
-    public String getValidUntil() {
+    public LocalDateTime getValidUntil() {
         return validUntil;
     }
 
-    public void setValidUntil(String validUntil) {
+    public void setValidUntil(LocalDateTime validUntil) {
         this.validUntil = validUntil;
     }
 

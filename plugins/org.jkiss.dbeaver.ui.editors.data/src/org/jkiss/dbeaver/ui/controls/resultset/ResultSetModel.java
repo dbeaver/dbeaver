@@ -66,7 +66,7 @@ public class ResultSetModel {
     private volatile DataSourceJob updateInProgress = null;
 
     // Coloring
-    private Map<DBDAttributeBinding, List<AttributeColorSettings>> colorMapping = new HashMap<>();
+    private final Map<DBDAttributeBinding, List<AttributeColorSettings>> colorMapping = new LinkedHashMap<>();
 
     private DBCStatistics statistics;
     private DBCTrace trace;

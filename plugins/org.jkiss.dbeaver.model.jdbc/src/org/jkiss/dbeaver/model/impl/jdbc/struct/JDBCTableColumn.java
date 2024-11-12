@@ -121,9 +121,9 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
             DBSDataType dataType = dataTypeProvider.getLocalDataType(typeName);
             if (dataType != null) {
                 this.valueType = dataType.getTypeID();
-                if (this instanceof DBSTypedObjectExt4) {
+                if (this instanceof DBSTypedObjectExt4 toe) {
                     try {
-                        ((DBSTypedObjectExt4) this).setDataType(dataType);
+                        toe.setDataType(dataType);
                     } catch (Throwable e) {
                         log.debug(e);
                     }
