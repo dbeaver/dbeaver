@@ -273,7 +273,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
             if (driverInstance instanceof ObjectWithVerification
                 && DBWorkbench.getPlatform().getApplication().isMultiuser()
             ) {
-                owcp.setObjectContextParameter(ObjectWithVerification.CONTEXT_PARAMETER_DRIVER_VERIFIER,
+                owcp.setObjectContextParameter(ObjectWithVerification.CONTEXT_PARAMETER_FILE_SYSTEM_VERIFIER,
                     (FileSystemAccessVerifyer) path -> {
                         if (IOUtils.isFileFromDefaultFS(path)) {
                             return path.normalize().startsWith(project.getAbsolutePath());
