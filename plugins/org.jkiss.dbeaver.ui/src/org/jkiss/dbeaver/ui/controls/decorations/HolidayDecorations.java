@@ -110,9 +110,6 @@ public class HolidayDecorations implements IDisposable {
     }
 
     private static boolean isEnabled0() {
-        if (true) {
-            return true;
-        }
         if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_UI_SHOW_HOLIDAY_DECORATIONS)) {
             return false;
         }

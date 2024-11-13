@@ -71,7 +71,6 @@ final class SnowflakePainter implements Painter {
 
     private void paint(@NotNull GC gc, @NotNull Particle particle) {
         var clip = atlas.getClip(particle.type, particle.mip);
-
         gc.drawImage(
             atlas.image(),
             clip.x,
@@ -88,7 +87,6 @@ final class SnowflakePainter implements Painter {
     @Override
     public void update(int width, int height, double dt) {
         int limit = computeMaxSnowflakes(width, height);
-
         for (var it = particles.iterator(); it.hasNext(); ) {
             Particle particle = it.next();
             particle.update(dt);
