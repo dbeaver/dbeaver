@@ -24,9 +24,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 
-import java.lang.invoke.MethodHandles;
-import java.nio.ByteOrder;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -48,7 +45,7 @@ record SnowflakeAtlas(
     ) {
         var data = generateAtlasData(display, images, color, size, step, mips);
         var image = new Image(display, data);
-        var scale = image.getImageData().width / (float) (size * images.size());
+        var scale = image.getBounds().width / (float) (size * images.size());
 
         return new SnowflakeAtlas(
             image,
@@ -68,18 +65,7 @@ record SnowflakeAtlas(
         int step,
         int mips
     ) {
-        var data = new ImageData(
-            size * images.size(),
-            size * mips - sum(mips - 1) * step,
-            24,
-            new PaletteData(0xFF0000, 0xFF00, 0xFF)
-        );
-
-        data.alphaData = new byte[data.width * data.height]; // enforce image to be 32 bit per pixel
-        Arrays.fill(data.alphaData, (byte) 255); // make the image opaque
-        Arrays.fill(data.data, (byte) 255); // fill with white color
-
-        var image = new Image(display, data);
+        var image = new Image(display, size * images.size(), size * mips - sum(mips - 1) * step);
         var transform = new Transform(display);
         var gc = new GC(image);
 
@@ -89,40 +75,43 @@ record SnowflakeAtlas(
             gc.setAntialias(SWT.ON);
             gc.setInterpolation(SWT.HIGH);
 
+            // fill the background with something contrast
+            gc.setBackground(display.getSystemColor(SWT.COLOR_MAGENTA));
+            gc.fillRectangle(0, 0, image.getBounds().width, image.getBounds().height);
+
             for (int i = 0; i < images.size(); i++) {
                 for (int j = 0; j < mips; j++) {
                     var sprite = DBeaverIcons.getImage(images.get(i));
                     var bounds = sprite.getBounds();
-                    var rotation = random.nextInt(360);
-                    var scale = size - j * step;
-                    var scale2 = (int) (scale * 0.5f);
+
+                    int scale = size - j * step;
+                    int center = (int) (scale * 0.5f);
+                    int angle = random.nextInt(360);
 
                     int x = i * scale;
                     int y = size * j - sum(j - 1) * step;
 
-                    transform.translate(x + scale2, y + scale2);
-                    transform.rotate(rotation);
+                    transform.identity();
+                    transform.translate(x + center, y + center);
+                    transform.rotate(angle);
 
                     gc.setTransform(transform);
-                    gc.drawImage(sprite, 0, 0, bounds.width, bounds.height, -scale2, -scale2, scale, scale);
-
-                    transform.rotate(-rotation);
-                    transform.translate(-(x + scale2), -(y + scale2));
+                    gc.drawImage(sprite, bounds.x, bounds.y, bounds.width, bounds.height, -center, -center, scale, scale);
                 }
             }
 
-            data = image.getImageData();
-            data.alphaData = new byte[data.width * data.height];
+            var result = image.getImageData();
+            var filler = result.palette.getPixel(color);
 
-            var handle = MethodHandles.byteArrayViewVarHandle(int[].class, ByteOrder.BIG_ENDIAN);
-            var filler = data.palette.getPixel(color);
-
-            for (int i = 0; i < data.alphaData.length; i++) {
-                data.alphaData[i] = (byte) (255 - data.data[i * 4]); // sample pixel
-                handle.set(data.data, i * 4, filler); // fill pixel with color
+            for (int y = 0; y < result.height; y++) {
+                for (int x = 0; x < result.width; x++) {
+                    var pixel = result.palette.getRGB(result.getPixel(x, y));
+                    result.setAlpha(x, y, 255 - pixel.red); // use any channel since images are BW
+                    result.setPixel(x, y, filler);
+                }
             }
 
-            return data;
+            return result;
         } finally {
             transform.dispose();
             gc.dispose();
