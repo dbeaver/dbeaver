@@ -39,6 +39,8 @@ public interface JDBCSession extends DBCSession, Connection {
     Connection getOriginal()
         throws SQLException;
 
+    void setBlockThread(Thread blockThread);
+
     @NotNull
     JDBCExecutionContext getExecutionContext();
 

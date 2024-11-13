@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
 Bundle-Name: DBeaver Denodo Model
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.denodo;singleton:=true
-Bundle-Version: 1.0.89.qualifier
-Bundle-Release-Date: 20241118
+Bundle-Version: 1.0.90.qualifier
+Bundle-Release-Date: 20241202
 Bundle-Vendor: DBeaver Corp
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Require-Bundle: org.jkiss.dbeaver.model,

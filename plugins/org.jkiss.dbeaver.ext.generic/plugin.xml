@@ -1421,15 +1421,6 @@
                     <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.cassandra.reason"/>
                 </driver>
                 <driver
-                        id="dynamodb-ce"
-                        label="DynamoDB"
-                        description="AWS DynamoDB Driver"
-                        iconBig="icons/dynamodb_pro_icon.png"
-                        supportsDistributedMode="false"
-                        categories="nosql,aws">
-                    <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.dynamodb.reason"/>
-                </driver>
-                <driver
                         id="salesforce-ce"
                         label="Salesforce"
                         description="Salesforce JDBC driver"
@@ -1437,15 +1428,6 @@
                         supportsDistributedMode="false"
                         categories="sql">
                     <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.salesforce.reason"/>
-                </driver>
-                <driver
-                        id="firestore-ce"
-                        label="Firestore"
-                        description="Google FireStore Driver"
-                        iconBig="icons/firestore_pro_icon.png"
-                        supportsDistributedMode="false"
-                        categories="nosql,bigdata,document,gcp">
-                    <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.firestore.reason"/>
                 </driver>
                 <driver
                         id="couchbase-ce"

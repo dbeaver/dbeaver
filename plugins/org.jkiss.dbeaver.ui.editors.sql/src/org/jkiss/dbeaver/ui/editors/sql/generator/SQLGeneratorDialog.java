@@ -154,7 +154,6 @@ class SQLGeneratorDialog extends ViewSQLDialog {
                             setSQLText("Error running DDL generation");
                         }
                     });
-                    log.error(e);
                     return Status.error("Error running DDL generation", e);
                 }
             }
