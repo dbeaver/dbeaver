@@ -303,6 +303,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
         this.updateCount = -1;
         this.executeError = null;
         this.connection.getExecutionContext().lockQueryExecution();
+        this.connection.setBlockThread(Thread.currentThread());
 
         if (isQMLoggingEnabled()) {
             QMUtils.getDefaultHandler().handleStatementExecuteBegin(this);
@@ -314,6 +315,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     }
 
     protected void afterExecute() {
+        this.connection.setBlockThread(null);
         this.connection.getExecutionContext().unlockQueryExecution();
         if (JDBCUtils.LOG_JDBC_WARNINGS) {
             try {

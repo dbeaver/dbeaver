@@ -100,6 +100,11 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         return dbCon;
     }
 
+    @Nullable
+    public Connection getConnectionOrNull() {
+        return this.connection;
+    }
+
     public void connect(DBRProgressMonitor monitor) throws DBCException {
         connect(monitor, null, null, null, true);
     }

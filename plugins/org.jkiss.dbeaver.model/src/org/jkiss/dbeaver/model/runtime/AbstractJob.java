@@ -257,7 +257,7 @@ public abstract class AbstractJob extends Job
         {
             if (!finished) {
                 try {
-                    BlockCanceler.cancelBlock(progressMonitor, block, getActiveThread());
+                    BlockCanceler.cancelBlock(progressMonitor, block);
                 } catch (DBException e) {
                     log.debug("Block cancel error", e); //$NON-N LS-1$
                     if (!isSkipErrorOnCanceling()) {

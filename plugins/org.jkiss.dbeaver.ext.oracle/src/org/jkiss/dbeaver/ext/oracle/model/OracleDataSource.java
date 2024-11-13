@@ -651,6 +651,16 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         }
     }
 
+    @Override
+    public boolean cancelCurrentExecution(@NotNull Connection connection, @Nullable Thread connectionThread) throws DBException {
+        try {
+            BeanUtils.invokeObjectMethod(connection, "cancel");
+            return true;
+        } catch (Throwable e) {
+            throw new DBDatabaseException("Can't cancel session queries", e, this);
+        }
+    }
+
     private boolean driverSupportsQueryCancel() {
         return true;
     }

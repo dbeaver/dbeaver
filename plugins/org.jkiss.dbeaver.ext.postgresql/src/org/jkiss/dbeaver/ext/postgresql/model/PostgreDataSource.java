@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -612,6 +613,17 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             }
         }
         return super.getAdapter(adapter);
+    }
+
+    @Override
+    public boolean cancelCurrentExecution(@NotNull Connection connection, @Nullable Thread connectionThread) throws DBException {
+        try {
+            BeanUtils.invokeObjectMethod(connection, "cancelQuery");
+            return true;
+        } catch (Throwable e) {
+            throw new DBDatabaseException("Can't cancel connection query", e, this);
+        }
+
     }
 
     @Nullable

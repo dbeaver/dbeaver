@@ -47,6 +47,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
 
     @NotNull
     final JDBCExecutionContext context;
+    private volatile Thread blockThread;
 
     public JDBCConnectionImpl(@NotNull JDBCExecutionContext context, @NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionPurpose purpose, @NotNull String taskTitle)
     {
@@ -710,17 +711,18 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         throws DBException
     {
         if (context.isConnected()) {
-            try {
-                // Sync execution context because async access during disconnect may cause troubles
-                synchronized (getExecutionContext()) {
-                    if (!getDataSource().closeConnection(getOriginal(), "Close database connection", false)) {
-                        throw new DBCException("Couldn't close JDBC connection: timeout");
-                    }
-                }
-            } catch (SQLException e) {
-                throw new DBCException(e, getExecutionContext());
-            }
+            // Let's try with driver implementation
+            getDataSource().cancelCurrentExecution(context.getConnectionOrNull(), blockThread);
         }
+    }
+
+    @Override
+    public Thread getBlockThread() {
+        return blockThread;
+    }
+
+    public void setBlockThread(Thread blockThread) {
+        this.blockThread = blockThread;
     }
 
     protected JDBCStatement createStatementImpl(Statement original)
