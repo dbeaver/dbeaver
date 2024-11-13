@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.controls.decorations;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
-import org.eclipse.swt.internal.DPIUtil;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.services.IDisposable;
 import org.jkiss.code.NotNull;
@@ -27,6 +26,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -46,20 +46,15 @@ record SnowflakeAtlas(
         int step,
         int mips
     ) {
-        var data = generateAtlasData(display, images, size, step, mips);
-
-        var handle = MethodHandles.byteArrayViewVarHandle(int[].class, ByteOrder.LITTLE_ENDIAN);
-        var pixels = data.data;
-        var filler = color.red << 16 | color.green << 8 | color.blue;
-        for (int i = 0; i < data.width * data.height; i++) {
-            handle.set(pixels, i * 4, filler);
-        }
+        var data = generateAtlasData(display, images, color, size, step, mips);
+        var image = new Image(display, data);
+        var scale = image.getImageData().width / (float) (size * images.size());
 
         return new SnowflakeAtlas(
-            new Image(display, data),
+            image,
             images.size(),
-            DPIUtil.autoScaleUp(size),
-            DPIUtil.autoScaleUp(step),
+            Math.round(size * scale),
+            Math.round(step * scale),
             mips
         );
     }
@@ -68,14 +63,21 @@ record SnowflakeAtlas(
     private static ImageData generateAtlasData(
         @NotNull Display display,
         @NotNull List<? extends DBPImage> images,
+        @NotNull RGB color,
         int size,
         int step,
         int mips
     ) {
-        int width = size * images.size();
-        int height = size * mips - sum(mips - 1) * step;
-        var data = new ImageData(width, height, 24, new PaletteData(0xFF0000, 0xFF00, 0xFF));
-        data.alphaData = new byte[width * height];
+        var data = new ImageData(
+            size * images.size(),
+            size * mips - sum(mips - 1) * step,
+            24,
+            new PaletteData(0xFF0000, 0xFF00, 0xFF)
+        );
+
+        data.alphaData = new byte[data.width * data.height]; // enforce image to be 32 bit per pixel
+        Arrays.fill(data.alphaData, (byte) 255); // make the image opaque
+        Arrays.fill(data.data, (byte) 255); // fill with white color
 
         var image = new Image(display, data);
         var transform = new Transform(display);
@@ -109,8 +111,18 @@ record SnowflakeAtlas(
                 }
             }
 
-            // Can't use the old data because it gets copied when an image is constructed
-            return image.getImageData();
+            data = image.getImageData();
+            data.alphaData = new byte[data.width * data.height];
+
+            var handle = MethodHandles.byteArrayViewVarHandle(int[].class, ByteOrder.BIG_ENDIAN);
+            var filler = data.palette.getPixel(color);
+
+            for (int i = 0; i < data.alphaData.length; i++) {
+                data.alphaData[i] = (byte) (255 - data.data[i * 4]); // sample pixel
+                handle.set(data.data, i * 4, filler); // fill pixel with color
+            }
+
+            return data;
         } finally {
             transform.dispose();
             gc.dispose();
