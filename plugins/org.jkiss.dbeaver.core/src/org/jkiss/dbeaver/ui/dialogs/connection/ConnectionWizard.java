@@ -28,6 +28,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.INewWizard;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -38,6 +39,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourcePersistentRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.ConnectionTestJob;
@@ -178,6 +180,35 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
             SeparateConnectionBehavior.NEVER.name()
         );
 
+        if (DBWorkbench.getPlatform().getApplication().isDistributed()) {
+            if (!UIUtils.confirmAction(
+                getShell(),
+                "Connection Test",
+                "To perform a connection test, a temporary connection will be created " +
+                "on the remote server. After test is finished, the connection will be " +
+                "removed. Do you wish to continue?"
+            )) {
+                return;
+            }
+
+            // Unfortunately, we can't mark it as temporary because otherwise it won't be persisted on the server
+            testDataSource.setTemporary(false);
+
+            try {
+                DataSourcePersistentRegistry registry = (DataSourcePersistentRegistry) dataSource.getRegistry();
+                registry.addDataSource(testDataSource);
+                registry.checkForErrors();
+            } catch (DBException e) {
+                UIUtils.showMessageBox(
+                    getShell(),
+                    "Connection Test",
+                    "Unable to create temporary data source for performing a connection test",
+                    SWT.ICON_ERROR
+                );
+                return;
+            }
+        }
+
         ConnectionFeatures.CONNECTION_TEST.use(Map.of("driver", dataSource.getDriver().getPreconfiguredId()));
 
         try {
@@ -237,7 +268,23 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
                     GeneralUtils.makeExceptionStatus(ex));
             }
         } finally {
-            testDataSource.dispose();
+            if (DBWorkbench.getPlatform().getApplication().isDistributed()) {
+                try {
+                    DataSourcePersistentRegistry registry = (DataSourcePersistentRegistry) dataSource.getRegistry();
+                    registry.removeDataSource(testDataSource);
+                    registry.checkForErrors();
+                } catch (DBException e) {
+                    UIUtils.showMessageBox(
+                        getShell(),
+                        "Test connection",
+                        "Unable delete temporary data source '%s' in project '%s' used for performing a connection test".formatted(
+                            testDataSource.getId(),
+                            testDataSource.getProject().getId()
+                        ),
+                        SWT.ICON_ERROR
+                    );
+                }
+            }
         }
     }
 
