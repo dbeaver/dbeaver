@@ -87,26 +87,31 @@ final class SnowflakePainter implements Painter {
 
     @Override
     public void update(int width, int height, double dt) {
-        for (Particle particle : particles) {
+        int limit = computeMaxSnowflakes(width, height);
+
+        for (var it = particles.iterator(); it.hasNext(); ) {
+            Particle particle = it.next();
             particle.update(dt);
 
-            var size = atlas.getSize(particle.mip);
+            int size = atlas.getSize(particle.mip);
             if (particle.position.y - size > height) {
-                var origin = random.nextDouble(width);
-                particle.origin.setLocation(origin, particle.origin.y);
-                particle.position.setLocation(origin, -size);
-                particle.swing = random.nextDouble(100);
+                if (particles.size() <= limit) {
+                    var origin = random.nextDouble(width);
+                    particle.origin.setLocation(origin, particle.origin.y);
+                    particle.position.setLocation(origin, -size);
+                    particle.swing = random.nextDouble(100);
+                } else {
+                    // Sorry little fella, you have to die
+                    it.remove();
+                }
             }
         }
     }
 
     @Override
     public void reset(int width, int height) {
-        if (!particles.isEmpty()) {
-            return;
-        }
-        int count = (int) Math.max(1, width * height * DENSITY);
-        for (int i = 0; i < count; i++) {
+        int limit = computeMaxSnowflakes(width, height);
+        for (int i = particles.size(); i < limit; i++) {
             particles.add(new Particle(
                 new Point2D.Double(random.nextDouble(width), -random.nextDouble(height)),
                 new Point2D.Double(random.nextDouble(SWING.x, SWING.y), random.nextDouble(SPEED.x, SPEED.y)),
@@ -122,6 +127,10 @@ final class SnowflakePainter implements Painter {
     public void dispose() {
         particles.clear();
         atlas.dispose();
+    }
+
+    private static int computeMaxSnowflakes(int width, int height) {
+        return (int) Math.max(1, width * height * DENSITY);
     }
 
     private static class Particle {
