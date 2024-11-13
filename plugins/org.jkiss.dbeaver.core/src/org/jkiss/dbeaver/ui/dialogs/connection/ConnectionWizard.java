@@ -284,6 +284,8 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
                         SWT.ICON_ERROR
                     );
                 }
+            } else {
+                testDataSource.dispose();
             }
         }
     }
