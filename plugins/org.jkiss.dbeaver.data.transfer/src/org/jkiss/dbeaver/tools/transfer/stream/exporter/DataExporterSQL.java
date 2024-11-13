@@ -367,7 +367,8 @@ public class DataExporterSQL extends StreamExporterAbstract implements IAppendab
                     column,
                     column.getValueHandler(),
                     row[i],
-                    displayFormat);
+                    displayFormat,
+                    false);
                 if (needQuotes) out.write('\'');
                 out.write(sqlValue);
                 if (needQuotes) out.write('\'');

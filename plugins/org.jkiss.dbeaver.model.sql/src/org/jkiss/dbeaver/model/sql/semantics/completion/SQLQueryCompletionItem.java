@@ -84,7 +84,7 @@ public abstract class SQLQueryCompletionItem {
     public static SQLQueryCompletionItem forSubsetColumn(
         @NotNull SQLQueryWordEntry filterKey,
         @NotNull SQLQueryResultColumn columnInfo,
-        @NotNull SourceResolutionResult sourceInfo,
+        @Nullable SourceResolutionResult sourceInfo,
         boolean absolute
     ) {
         return new SQLColumnNameCompletionItem(filterKey, columnInfo, sourceInfo, absolute);
@@ -126,7 +126,8 @@ public abstract class SQLQueryCompletionItem {
     public static class SQLColumnNameCompletionItem extends SQLQueryCompletionItem {
         @NotNull
         public final SQLQueryResultColumn columnInfo;
-        @NotNull
+        // should be null only for columns provided by the root projection (SELECT clause), because it doesn't serve as a source
+        @Nullable
         public final SourceResolutionResult sourceInfo;
         // TODO consider removing this flag in favor of refactoring for explicit formatting mechanism
         public final boolean absolute;
@@ -134,14 +135,11 @@ public abstract class SQLQueryCompletionItem {
         SQLColumnNameCompletionItem(
             @NotNull SQLQueryWordEntry filterKey,
             @NotNull SQLQueryResultColumn columnInfo,
-            @NotNull SourceResolutionResult sourceInfo,
+            @Nullable SourceResolutionResult sourceInfo,
             boolean absolute
         ) {
             super(filterKey);
 
-            if (sourceInfo == null) {
-                throw new IllegalArgumentException("sourceInfo should not be null");
-            }
             if (columnInfo == null) {
                 throw new IllegalArgumentException("columnInfo should not be null");
             }

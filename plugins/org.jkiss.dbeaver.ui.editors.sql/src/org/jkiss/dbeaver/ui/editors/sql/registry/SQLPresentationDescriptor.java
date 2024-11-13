@@ -39,6 +39,15 @@ public class SQLPresentationDescriptor extends AbstractContextDescriptor {
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.sqlPresentation"; //$NON-NLS-1$
 
+    public enum QueryMode {
+        /** The presentation can work with a single statement */
+        SINGLE,
+        /** The presentation can work with multiple statements (script) */
+        MULTIPLE,
+        /** The presentation doesn't support queries */
+        NONE
+    }
+
     private final String id;
     private final String label;
     private final String description;
@@ -47,6 +56,7 @@ public class SQLPresentationDescriptor extends AbstractContextDescriptor {
     private final int order;
     private final List<SQLPresentationPanelDescriptor> panels = new ArrayList<>();
     private final Expression enabledWhen;
+    private final QueryMode queryMode;
 
     public SQLPresentationDescriptor(IConfigurationElement config)
     {
@@ -61,6 +71,7 @@ public class SQLPresentationDescriptor extends AbstractContextDescriptor {
             this.panels.add(new SQLPresentationPanelDescriptor(panelConfig));
         }
         this.enabledWhen = getEnablementExpression(config);
+        this.queryMode = CommonUtils.valueOf(QueryMode.class, config.getAttribute("queryMode"), QueryMode.MULTIPLE);
     }
 
     public String getId() {
@@ -94,6 +105,11 @@ public class SQLPresentationDescriptor extends AbstractContextDescriptor {
 
     public boolean isEnabled(@NotNull IWorkbenchSite site) {
         return isExpressionTrue(enabledWhen, site);
+    }
+
+    @NotNull
+    public QueryMode getQueryMode() {
+        return queryMode;
     }
 
     public SQLEditorPresentation createPresentation()

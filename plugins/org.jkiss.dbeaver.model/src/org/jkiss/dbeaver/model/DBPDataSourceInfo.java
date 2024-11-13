@@ -183,9 +183,12 @@ public interface DBPDataSourceInfo
      */
     boolean isMultipleResultsFetchBroken();
 
+    boolean isMultipleResultsFailsOnMaxRows();
+
     DBSObjectType[] getSupportedObjectTypes();
 
     boolean needsTableMetaForColumnResolution();
 
     boolean supportsStatementBinding();
+
 }
