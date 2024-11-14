@@ -2461,10 +2461,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
                 return formattedValue;
             } else if (value instanceof DBDComposite composite && !DBUtils.isNullValue(value)) {
-                return Arrays.stream(composite.getAttributes())
-                    .map(DBPNamedObject::getName)
-                    .collect(Collectors.joining(",", "[", "]"));
-                //return "[" + composite.getDataType().getName() + "]";
+//                return Arrays.stream(composite.getAttributes())
+//                    .map(DBPNamedObject::getName)
+//                    .collect(Collectors.joining(",", "[", "]"));
+                return composite.toString();
             }
             try {
                 return attr.getValueRenderer().getValueDisplayString(
