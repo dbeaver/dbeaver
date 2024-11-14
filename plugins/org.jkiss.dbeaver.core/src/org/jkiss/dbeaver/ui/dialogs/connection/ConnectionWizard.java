@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -28,7 +29,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.INewWizard;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -37,9 +38,9 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourcePersistentRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.ConnectionTestJob;
@@ -48,6 +49,7 @@ import org.jkiss.dbeaver.ui.IDataSourceConnectionTester;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizard;
+import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.IConnectionWizard;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -153,13 +155,35 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
     }
 
     public void testConnection() {
-        DataSourceDescriptor dataSource = getPageSettings().getActiveDataSource();
-        DataSourceDescriptor testDataSource = new DataSourceDescriptor(dataSource, dataSource.getRegistry());
+        DataSourceDescriptor activeDataSource = getPageSettings().getActiveDataSource();
+        DataSourceDescriptor targetDataSource;
 
-        saveSettings(testDataSource);
+        if (canUseTemporaryDataSource(activeDataSource)) {
+            targetDataSource = new DataSourceDescriptor(activeDataSource, activeDataSource.getRegistry());
+            // Generate new ID to avoid session conflicts in QM
+            targetDataSource.setId(DataSourceDescriptor.generateNewId(activeDataSource.getDriver()));
+            targetDataSource.setTemporary(true);
+            targetDataSource.getPreferenceStore().setValue(
+                ModelPreferences.META_SEPARATE_CONNECTION,
+                SeparateConnectionBehavior.NEVER.name()
+            );
+        } else {
+            int decision = ConfirmationDialog.confirmAction(
+                getShell(),
+                ConfirmationDialog.WARNING,
+                DBeaverPreferences.CONFIRM_TEST_CONNECTION_PERSIST,
+                ConfirmationDialog.CONFIRM
+            );
+            if (decision != IDialogConstants.OK_ID) {
+                return;
+            }
+            targetDataSource = activeDataSource;
+        }
 
-        if (testDataSource.isSharedCredentials()) {
-            if (!testDataSource.getProject().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_PROJECT_ADMIN)) {
+        saveSettings(targetDataSource);
+
+        if (targetDataSource.isSharedCredentials()) {
+            if (!targetDataSource.getProject().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_PROJECT_ADMIN)) {
                 UIUtils.showMessageBox(getShell(), "Credentials edit restricted",
                     "Shared credentials edit is available for administrators only.",
                     SWT.ICON_ERROR);
@@ -171,49 +195,14 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
             return;
         }
 
-        testDataSource.setTemporary(true);
-
-        // Generate new ID to avoid session conflicts in QM
-        testDataSource.setId(DataSourceDescriptor.generateNewId(dataSource.getDriver()));
-        testDataSource.getPreferenceStore().setValue(
-            ModelPreferences.META_SEPARATE_CONNECTION,
-            SeparateConnectionBehavior.NEVER.name()
-        );
-
-        if (DBWorkbench.getPlatform().getApplication().isDistributed()) {
-            if (!UIUtils.confirmAction(
-                getShell(),
-                "Connection Test",
-                "To perform a connection test, a temporary connection will be created " +
-                "on the remote server. After test is finished, the connection will be " +
-                "removed. Do you wish to continue?"
-            )) {
-                return;
-            }
-
-            // Unfortunately, we can't mark it as temporary because otherwise it won't be persisted on the server
-            testDataSource.setTemporary(false);
-
-            try {
-                DataSourcePersistentRegistry registry = (DataSourcePersistentRegistry) dataSource.getRegistry();
-                registry.addDataSource(testDataSource);
-                registry.checkForErrors();
-            } catch (DBException e) {
-                UIUtils.showMessageBox(
-                    getShell(),
-                    "Connection Test",
-                    "Unable to create temporary data source for performing a connection test",
-                    SWT.ICON_ERROR
-                );
-                return;
-            }
+        if (activeDataSource == targetDataSource) {
+            targetDataSource.persistConfiguration();
         }
 
-        ConnectionFeatures.CONNECTION_TEST.use(Map.of("driver", dataSource.getDriver().getPreconfiguredId()));
+        ConnectionFeatures.CONNECTION_TEST.use(Map.of("driver", activeDataSource.getDriver().getPreconfiguredId()));
 
         try {
-
-            final ConnectionTestJob op = new ConnectionTestJob(testDataSource, session -> {
+            final ConnectionTestJob op = new ConnectionTestJob(targetDataSource, session -> {
                 for (IWizardPage page : getPages()) {
                     testInPage(session, page);
                 }
@@ -245,7 +234,7 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
 
                 new ConnectionTestDialog(
                     getShell(),
-                    dataSource,
+                    targetDataSource,
                     op.getServerVersion(),
                     op.getClientVersion(),
                     op.getConnectTime()).open();
@@ -268,24 +257,8 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
                     GeneralUtils.makeExceptionStatus(ex));
             }
         } finally {
-            if (DBWorkbench.getPlatform().getApplication().isDistributed()) {
-                try {
-                    DataSourcePersistentRegistry registry = (DataSourcePersistentRegistry) dataSource.getRegistry();
-                    registry.removeDataSource(testDataSource);
-                    registry.checkForErrors();
-                } catch (DBException e) {
-                    UIUtils.showMessageBox(
-                        getShell(),
-                        "Test connection",
-                        "Unable delete temporary data source '%s' in project '%s' used for performing a connection test".formatted(
-                            testDataSource.getId(),
-                            testDataSource.getProject().getId()
-                        ),
-                        SWT.ICON_ERROR
-                    );
-                }
-            } else {
-                testDataSource.dispose();
+            if (activeDataSource != targetDataSource) {
+                targetDataSource.dispose();
             }
         }
     }
@@ -342,5 +315,14 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
         config.setCloseIdleConnection(type.isAutoCloseConnections());
 
         return config;
+    }
+
+    private static boolean canUseTemporaryDataSource(@NotNull DataSourceDescriptor descriptor) {
+        for (DBWHandlerConfiguration handler : descriptor.getConnectionConfiguration().getHandlers()) {
+            if (handler.isEnabled() && handler.getHandlerDescriptor().isDistributed()) {
+                return false;
+            }
+        }
+        return true;
     }
 }
