@@ -66,6 +66,7 @@
                         databaseDocumentationSuffixURL="Database-driver-LibSQL"
                         singleConnection="true"
                         supportedConfigurationTypes="MANUAL,URL"
+                        supportedPageFields="server"
                         categories="sql">
                     <parameter name="supports-references" value="true"/>
                     <parameter name="supports-struct-cache" value="true"/>
@@ -73,6 +74,11 @@
                     <parameter name="supports-stored-code" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
                 </driver>
+                <main-properties drivers="*">
+                    <propertyGroup label="Settings">
+                        <property id="server" label="Server" type="string"/>
+                    </propertyGroup>
+                </main-properties>
 
             </drivers>
         </datasource>
