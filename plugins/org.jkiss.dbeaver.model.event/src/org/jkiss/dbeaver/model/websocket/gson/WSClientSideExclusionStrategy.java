@@ -27,6 +27,6 @@ public class WSClientSideExclusionStrategy implements ExclusionStrategy {
 
     @Override
     public boolean shouldSkipField(FieldAttributes f) {
-        return f.getAnnotation(ServerField.class) != null;
+        return f.getAnnotation(HiddenField.class) != null;
     }
 }

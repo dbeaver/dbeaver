@@ -21,7 +21,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Retention(RetentionPolicy.RUNTIME)
+/**
+ * marks fields as hidden - in this case the field can be used by the server for its own needs,
+ * but it will not be sent to the end user
+ */
 @Target(ElementType.FIELD)
-public @interface ServerField {
+@Retention(RetentionPolicy.RUNTIME)
+public @interface HiddenField {
 }
