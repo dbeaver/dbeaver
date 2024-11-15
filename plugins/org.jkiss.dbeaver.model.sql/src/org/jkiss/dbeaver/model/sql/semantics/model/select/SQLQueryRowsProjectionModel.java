@@ -157,7 +157,7 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
             .filter(s -> s.propagationPolicy.projected).toList();
         SQLQueryDataContext resolvedResult = unresolvedResult.overrideResultTuple(this, resultColumns, resultPseudoColumns);
 
-        SQLQueryDataContext filtersContext = resolvedResult.combine(unresolvedResult);
+        SQLQueryDataContext filtersContext = unresolvedResult.combine(resolvedResult);
         if (this.filterExprs.whereClause != null) {
             SQLQueryDataContext clauseCtx = aliasScope.contains(ProjectionAliasVisibilityScope.WHERE) ? filtersContext : unresolvedResult;
             this.filterExprs.whereClause.propagateContext(clauseCtx, statistics);

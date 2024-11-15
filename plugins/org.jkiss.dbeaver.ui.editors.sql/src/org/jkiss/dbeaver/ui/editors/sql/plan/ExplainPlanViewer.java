@@ -203,7 +203,7 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
                     return true;
 
                 } catch (IOException | InvocationTargetException e) {
-                    DBWorkbench.getPlatformUI().showError("Load plan", "Error loading plan ",GeneralUtils.getRootCause(e));
+                    DBWorkbench.getPlatformUI().showError("Load plan", "Error loading plan ", CommonUtils.getRootCause(e));
                 }
             }
         }

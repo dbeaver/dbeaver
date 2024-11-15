@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver MySQL Tests
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.mysql.test
-Bundle-Version: 1.0.4.qualifier
-Bundle-Release-Date: 20241118
+Bundle-Version: 1.0.5.qualifier
+Bundle-Release-Date: 20241202
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp
 Bundle-ClassPath: .
