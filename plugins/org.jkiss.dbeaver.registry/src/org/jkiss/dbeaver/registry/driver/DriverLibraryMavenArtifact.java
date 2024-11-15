@@ -311,7 +311,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     public void downloadLibraryFile(@NotNull DBRProgressMonitor monitor, boolean forceUpdate, String taskName) throws IOException, InterruptedException {
         if (isInvalidLibrary()) {
-            throw new IOException("Maven artifact '" + getDisplayName() + "' cannot be resolved in external repositores");
+            throw new IOException("Maven artifact '" + getDisplayName() + "' cannot be resolved in external repositories");
         }
         //monitor.beginTask(taskName + " - update localVersion information", 1);
         try {
