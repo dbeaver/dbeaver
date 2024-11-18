@@ -163,7 +163,7 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
                         event.detail = DND.DROP_MOVE;
                     }
                 }
-                event.feedback = DND.FEEDBACK_SELECT;
+                event.feedback = DND.FEEDBACK_SELECT | DND.FEEDBACK_SCROLL;
             }
 
             private boolean isDropSupported(DropTargetEvent event) {
@@ -547,7 +547,7 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
                 } else {
                     event.detail = DND.DROP_MOVE;
                 }
-                event.feedback = DND.FEEDBACK_SELECT;
+                event.feedback = DND.FEEDBACK_SELECT | DND.FEEDBACK_SCROLL;
             }
 
             private boolean isDropSupported(DropTargetEvent event) {
