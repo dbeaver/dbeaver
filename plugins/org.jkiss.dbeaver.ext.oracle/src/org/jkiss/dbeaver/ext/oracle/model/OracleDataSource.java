@@ -393,7 +393,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 
     @Override
     public ErrorType discoverErrorType(@NotNull Throwable error) {
-        Throwable rootCause = GeneralUtils.getRootCause(error);
+        Throwable rootCause = CommonUtils.getRootCause(error);
         if (rootCause instanceof SQLException) {
             switch (((SQLException) rootCause).getErrorCode()) {
                 case OracleConstants.EC_NO_RESULTSET_AVAILABLE:
@@ -648,6 +648,16 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
             } catch (Throwable e) {
                 throw new DBDatabaseException("Can't cancel session queries", e, this);
             }
+        }
+    }
+
+    @Override
+    public boolean cancelCurrentExecution(@NotNull Connection connection, @Nullable Thread connectionThread) throws DBException {
+        try {
+            BeanUtils.invokeObjectMethod(connection, "cancel");
+            return true;
+        } catch (Throwable e) {
+            throw new DBDatabaseException("Can't cancel session queries", e, this);
         }
     }
 

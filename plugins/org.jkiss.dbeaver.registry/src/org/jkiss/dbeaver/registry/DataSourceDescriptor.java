@@ -1403,8 +1403,12 @@ public class DataSourceDescriptor
             try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Read server information")) {
                 DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
                 if (txnManager != null && !txnManager.isAutoCommit()) {
-                    txnManager.setAutoCommit(monitor, true);
-                    revertMetaToManualCommit = true;
+                    try {
+                        txnManager.setAutoCommit(monitor, true);
+                        revertMetaToManualCommit = true;
+                    } catch (Throwable e) {
+                        log.debug("Cannot set auto-commit flag: " + e.getMessage());
+                    }
                 }
 
                 try {

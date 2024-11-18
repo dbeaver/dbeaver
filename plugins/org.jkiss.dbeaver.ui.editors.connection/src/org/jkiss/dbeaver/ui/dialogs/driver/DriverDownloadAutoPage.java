@@ -199,7 +199,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
                         @Override
                         protected Integer runTask() {
                             String message;
-                            if (RuntimeUtils.isWindows() && GeneralUtils.hasCause(e, SSLHandshakeException.class)) {
+                            if (RuntimeUtils.isWindows() && CommonUtils.hasCause(e, SSLHandshakeException.class)) {
                                 if (DBWorkbench.getPlatform().getApplication()
                                     .hasProductFeature(DBConnectionConstants.PRODUCT_FEATURE_SIMPLE_TRUSTSTORE)) {
                                     message = UIConnectionMessages.dialog_driver_download_auto_page_download_failed_cert_msg;
