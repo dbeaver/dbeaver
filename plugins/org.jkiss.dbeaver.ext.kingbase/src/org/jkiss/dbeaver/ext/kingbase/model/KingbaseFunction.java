@@ -14,36 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.model;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPNamedObject;
+package org.jkiss.dbeaver.ext.kingbase.model;
 
-/**
- * PostgreTypeType
- */
-public enum PostgreTypeType implements DBPNamedObject
-{
-    a("Abstract"), // This is non-standard extension (PG Enterprise?)
-    b("Base"),
-    c("Composite"),
-    d("Domain"),
-    e("Enum type"),
-    m("Multirange"), // Starting with the 14 PG version
-    p("Pseudo-type"),
-    n("nested-table-type"),//Kingbase type
-    r("Range");
-	
+import java.sql.ResultSet;
 
-    private final String desc;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-    PostgreTypeType(String desc) {
-        this.desc = desc;
+public class KingbaseFunction extends KingbaseProcedure {
+
+    public KingbaseFunction(DBRProgressMonitor monitor, PostgreSchema schema, ResultSet dbResult) {
+        super(monitor, schema, dbResult);
     }
 
-    @NotNull
-    @Override
-    public String getName() {
-        return desc;
+    public KingbaseFunction(PostgreSchema schema) {
+        super(schema);
     }
 }

@@ -57,6 +57,7 @@
         <module>org.jkiss.dbeaver.ext.hive</module>
         <module>org.jkiss.dbeaver.ext.hsqldb</module>
         <module>org.jkiss.dbeaver.ext.informix</module>
+        <module>org.jkiss.dbeaver.ext.kingbase</module>
         <module>org.jkiss.dbeaver.ext.mssql</module>
         <module>org.jkiss.dbeaver.ext.mysql</module>
         <module>org.jkiss.dbeaver.ext.netezza</module>
@@ -120,6 +121,7 @@
 
                 <module>org.jkiss.dbeaver.ext.generic.ui</module>
                 <module>org.jkiss.dbeaver.ext.hana.ui</module>
+                <module>org.jkiss.dbeaver.ext.kingbase.ui</module>
                 <module>org.jkiss.dbeaver.ext.mssql.ui</module>
                 <module>org.jkiss.dbeaver.ext.mysql.ui</module>
                 <module>org.jkiss.dbeaver.ext.oceanbase.ui</module>
@@ -181,7 +183,7 @@
                 <module>org.jkiss.dbeaver.data.transfer.ui</module>
                 <module>org.jkiss.dbeaver.data.gis.view</module>
                 <module>org.jkiss.dbeaver.net.ssh.ui</module>
-                
+
                 <module>org.jkiss.dbeaver.ext.gaussdb.ui</module>
 
                 <module>org.jkiss.dbeaver.team.git.ui</module>

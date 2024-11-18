@@ -56,8 +56,8 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 {
     private static final Log log = Log.getLog(PostgreProcedure.class);
 
-    private static final String CAT_FLAGS = "Flags";
-    private static final String CAT_PROPS = "Properties";
+    protected static final String CAT_FLAGS = "Flags";
+    protected static final String CAT_PROPS = "Properties";
 
     public static final float DEFAULT_EST_ROWS = 1000.0f;
     public static final float DEFAULT_COST = 100.0f;
@@ -117,30 +117,29 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         }
     }
 
-    private long oid;
-    private PostgreProcedureKind kind;
-    private String procSrc;
-    private String body;
-    private long ownerId;
-    private long languageId;
-    private float execCost;
-    private float estRows;
-    private PostgreDataType varArrayType;
-    private String procTransform;
-    private boolean isAggregate;
-    private boolean isWindow;
-    private boolean isSecurityDefiner;
-    private boolean leakproof;
-    private boolean isStrict;
-    private boolean returnsSet;
-    private ProcedureVolatile procVolatile;
-    private PostgreDataType returnType;
-    private int[] transformTypes;
-    private String[] config;
-    private Object acl;
-
-    private String overloadedName;
-    private List<PostgreProcedureParameter> params = new ArrayList<>();
+    protected long oid;
+    protected PostgreProcedureKind kind;
+    protected String procSrc;
+    protected String body;
+    protected long ownerId;
+    protected long languageId;
+    protected float execCost;
+    protected float estRows;
+    protected PostgreDataType varArrayType;
+    protected String procTransform;
+    protected boolean isAggregate;
+    protected boolean isWindow;
+    protected boolean isSecurityDefiner;
+    protected boolean leakproof;
+    protected boolean isStrict;
+    protected boolean returnsSet;
+    protected ProcedureVolatile procVolatile;
+    protected PostgreDataType returnType;
+    protected int[] transformTypes;
+    protected String[] config;
+    protected Object acl;
+    protected String overloadedName;
+    protected List<PostgreProcedureParameter> params = new ArrayList<>();
 
     public PostgreProcedure(PostgreSchema schema) {
         super(schema, false);

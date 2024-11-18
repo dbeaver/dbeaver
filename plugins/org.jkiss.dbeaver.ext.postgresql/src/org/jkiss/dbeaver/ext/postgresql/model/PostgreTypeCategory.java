@@ -41,6 +41,7 @@ public enum PostgreTypeCategory implements DBPNamedObject {
     U("User-defined"),
     V("Bit-string"),
     X("Unknown"),
+    Y("Y"),//Kingbase Type
     Z("Internal-use types"); //$NON-NLS-1$
 
     private final String desc;
