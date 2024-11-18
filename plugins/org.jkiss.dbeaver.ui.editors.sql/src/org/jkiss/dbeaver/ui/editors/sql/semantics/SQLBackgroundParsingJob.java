@@ -405,8 +405,8 @@ public class SQLBackgroundParsingJob {
         Interval visibleRange = new Interval(startOffset, endOffset);
         Interval knownRange = new Interval(this.knownRegionStart, this.knownRegionEnd);
         if (DEBUG) {
-            System.out.println("ensureVisibleRangeIsParsed: knownRange is " + knownRange);
-            System.out.println("ensureVisibleRangeIsParsed: visibleRange is " + visibleRange);
+            log.debug("ensureVisibleRangeIsParsed: knownRange is " + knownRange);
+            log.debug("ensureVisibleRangeIsParsed: visibleRange is " + visibleRange);
         }
         if (!knownRange.properlyContains(visibleRange)) {
             Interval unknownRange = visibleRange.differenceNotProperlyContained(knownRange);
@@ -414,7 +414,7 @@ public class SQLBackgroundParsingJob {
                 unknownRange = visibleRange;
             }
             if (DEBUG) {
-                System.out.println("ensureVisibleRangeIsParsed: unknownRange is " + unknownRange);
+                log.debug("ensureVisibleRangeIsParsed: unknownRange is " + unknownRange);
             }
             this.enqueueToReparse(unknownRange.a, unknownRange.length());
             this.schedule(null);
