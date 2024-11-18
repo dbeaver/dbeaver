@@ -12,7 +12,8 @@ Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.bundle.antlr4,
  com.dbeaver.jdbc.driver.libsql;visibility:=reexport
 Export-Package: org.jkiss.dbeaver.ext.sqlite,
- org.jkiss.dbeaver.ext.sqlite.model
+ org.jkiss.dbeaver.ext.sqlite.model,
+ org.jkiss.dbeaver.ext.sqlite.model.data
 Import-Package: org.jkiss.code
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17
