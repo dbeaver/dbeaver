@@ -212,11 +212,11 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                     }
                 }
 
-                if (target != null) {
-                    source.setTypeName(target.getTypeName());
-                    source.setMaxLength(target.getMaxLength());
-                    source.setDataKind(target.getDataKind());
-                }
+//                if (target != null) {
+//                    source.setTypeName(target.getTypeName());
+//                    source.setMaxLength(target.getMaxLength());
+//                    source.setDataKind(target.getDataKind());
+//                }
             }
             if (this.target != null) {
                 if (parent.getMappingType() == DatabaseMappingType.recreate) {
