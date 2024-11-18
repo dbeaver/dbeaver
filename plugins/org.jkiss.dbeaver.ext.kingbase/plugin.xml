@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<!--
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2024 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+  -->
+
+<plugin>
+
+	<extension-point id="org.jkiss.dbeaver.kingbase.serverType" name="Kingbase Server Type" schema="schema/org.jkiss.dbeaver.kingbase.serverType.exsd"/>
+    
+
+    <extension point="org.jkiss.dbeaver.kingbase.serverType">
+        <serverType id="kingbase" name="Kingbase" class="org.jkiss.dbeaver.ext.kingbase.model.impls.KingbaseServerKingbaseSQL" logo="icons/kingbase_icon.png" customURL="true" turnOffPreparedStatements="true"/>
+    </extension>
+
+    <!--
+        Kingbase extension
+     -->
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="kingbase" class="org.jkiss.dbeaver.ext.kingbase.model.generic.KingbaseMetaModel" driverClass="com.kingbase8.Driver"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+                class="org.jkiss.dbeaver.ext.kingbase.KingbaseDataSourceProvider"
+                description="%datasource.kingbase.description"
+                id="kingbase"
+                label="Kingbase"
+                icon="icons/kingbase_icon.png"
+                dialect="kingbase">
+            <tree path="Kingbase" label="Kingbase data source">
+                <folder type="org.jkiss.dbeaver.ext.kingbase.model.KingbaseDatabase" label="%tree.databases.node.name" icon="#folder_database" description="%tree.databases.node.tip">
+                    <items label="%tree.database.node.name" path="database" property="databases" icon="#database">
+                        <folder type="org.jkiss.dbeaver.ext.kingbase.model.KingbaseSchema" label="%tree.schemas.node.name" icon="#folder_schema" description="%tree.schemas.node.tip">
+                            <items label="%tree.schema.node.name" path="schema" property="schemas" icon="#schema">
+                                <icon if="object.utility || object.external" icon="#schema_util"/>
+                                <icon if="object.system" icon="#schema_system"/>
+                                <folder type="org.jkiss.dbeaver.ext.kingbase.model.KingbaseTable" label="%tree.tables.node.name" icon="#folder_table" description="%tree.tables.node.tip">
+                                    <items label="%tree.table.node.name" path="table" property="tables" icon="#table">
+                                        <folder type="org.jkiss.dbeaver.ext.kingbase.model.KingbaseTableColumn" label="%tree.columns.node.name" icon="#columns" description="%tree.columns.node.tip" visibleIf="!object.partition">
+                                            <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                            </items>
+                                        </folder>
+                                        <folder type="org.jkiss.dbeaver.ext.kingbase.model.KingbaseTableConstraint" label="%tree.constraints.node.name" icon="#constraints" description="%tree.constraints.node.tip" visibleIf="!object.view">
+                                            <items label="%tree.constraint.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
+                                                <items label="%tree.constraint.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                                </items>
+                                            </items>
+                                        </folder>
+                                        <folder type="org.jkiss.dbeaver.ext.kingbase.model.KingbaseTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="%tree.foreign_key.node.tip" visibleIf="connected &amp;&amp; dataSource.serverType.supportsForeignKeys()">
+                                            <items label="%tree.foreign_key.node.name" path="association" property="foreignKeys" icon="#foreign-key">
+                                                <items label="%tree.foreign_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                                </items>
+                                            </items>
+                                        </folder>
+                                        <folder type="org.jkiss.dbeaver.ext.kingbase.model.KingbaseIndex" label="%tree.indexes.node.name" icon="#indexes" description="%tree.indexes.node.tip" visibleIf="connected &amp;&amp; dataSource.serverType.supportsIndexes()">
+                                            <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
+                                                <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" icon="#column" navigable="false" inline="true">
+                                                </items>
+                                            </items>
+                                        </folder>
+                                        <folder type="org.jkiss.dbeaver.ext.kingbase.model.KingbaseTableReal" label="%tree.tablechildren.node.name" icon="#folder_table" description="Table children" virtual="true" visibleIf="object.hasSubClasses() &amp;&amp; !object.partition">
+                                            <items label="%tree.tablechildren.node.name" path="subTables" property="subTables" icon="#table" virtual="true" recursive="../.." >
+                                            </items>
+                                        </folder>
+                                        <folder type="org.jkiss.dbeaver.ext.kingbase.model.KingbaseTrigger" label="%tree.triggers.node.name" icon="#triggers" description="%tree.triggers.node.tip" visibleIf="connected &amp;&amp; dataSource.serverType.supportsTriggers()">
+                                            <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
+                                        </folder>
+                                    </items>
+                                </folder>
+                                
+                                <folder type="org.jkiss.dbeaver.ext.kingbase.model.KingbaseView" label="%tree.tviews.node.name" id="folderView" icon="#folder_view" description="%tree.tviews.node.tip">
+                                    <items label="%tree.tview.node.name" path="view" property="views" icon="#view">
+                                        <folder type="org.jkiss.dbeaver.ext.kingbase.model.KingbaseAttribute" label="%tree.columns.node.name" icon="#columns" description="View columns">
+                                            <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                            </items>
+                                        </folder>
+                    
+                                        <folder type="org.jkiss.dbeaver.ext.kingbase.model.KingbaseTrigger" label="%tree.triggers.node.name" icon="#triggers" description="View triggers" visibleIf="connected &amp;&amp; dataSource.serverType.supportsTriggers()">
+                                            <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
+                                        </folder>
+                                        
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.kingbase.model.KingbaseMaterializedView" label="%tree.mviews.node.name" icon="#folder_view" description="%tree.mviews.node.tip" visibleIf="connected &amp;&amp; dataSource.serverType.supportsMaterializedViews()">
+                                    <items label="%tree.mview.node.name" path="view" property="materializedViews" icon="#view">
+                                        <folder type="org.jkiss.dbeaver.ext.kingbase.model.KingbaseAttribute" label="%tree.columns.node.name" icon="#columns" description="View columns">
+                                            <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                            </items>
+                                        </folder>
+                                        <folder type="org.jkiss.dbeaver.ext.kingbase.model.KingbaseIndex" label="%tree.indexes.node.name" icon="#indexes" description="%tree.indexes.node.tip">
+                                            <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
+                                                <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" icon="#column" navigable="false" inline="true">
+                                                </items>
+                                            </items>
+                                        </folder>
+                                        <folder label="%tree.dependencies.node.name" icon="#references" description="%tree.dependencies.node.tip" virtual="true" visibleIf="connected &amp;&amp; dataSource.serverType.supportsDependencies()">
+                                            <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="#reference" virtual="true"/>
+                                        </folder>
+                                    </items>
+                                </folder>
+                                
+                                <folder type="org.jkiss.dbeaver.ext.kingbase.model.KingbaseProcedure" label="%tree.procedures.node.name" icon="#procedures" description="%tree.procedures.node.tip">
+                                    <items label="%tree.procedure.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
+                                        <folder label="%tree.procedure_columns.node.name" icon="#columns" description="%tree.procedure_columns.node.name">
+                                            <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
+                                        </folder>
+                                        <folder label="%tree.dependencies.node.name" icon="#references" description="%tree.dependencies.node.tip" visibleIf="connected &amp;&amp; dataSource.serverType.supportsDependencies()">
+                                            <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="#reference" virtual="true"/>
+                                        </folder>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.kingbase.model.KingbaseSequence" label="%tree.sequences.node.name" icon="#sequences" description="%tree.sequences.node.tip" visibleIf="connected &amp;&amp; dataSource.serverType.supportsSequences()">
+                                    <items label="%tree.sequence.node.name" path="sequence" property="sequences" icon="#sequence"/>
+                                </folder>
+                               
+                            </items>
+                        </folder>
+
+                       
+                        <folder label="%tree.storage.node.name" icon="#folder_info" id="storage" description="%tree.storage.node.tip">
+                            <folder type="org.jkiss.dbeaver.ext.kingbase.model.KingbaseTablespace" label="%tree.tablespaces.node.name" icon="#tablespaces" description="Tablespaces" visibleIf="connected &amp;&amp; dataSource.serverType.supportsTablespaces()">
+                                <items label="%tree.tablespace.node.name" path="tablespace" property="tablespaces" icon="#tablespace"/>
+                            </folder>
+                        </folder>
+
+                        <folder type="org.jkiss.dbeaver.ext.kingbase.model.KingbaseInformation" label="%tree.information.node.name"
+                                icon="#folder_info" id="information" description="%tree.information.node.tip" adminFolder="true">
+                          
+                            <folder type="org.jkiss.dbeaver.ext.kingbase.model.KingbaseSetting" label="%tree.settings.node.name" icon="#settings" description="Settings">
+                                <items label="%tree.setting.node.name" path="setting" property="settings" icon="#setting"/>
+                            </folder>
+                        </folder>
+
+                        <folder type="org.jkiss.dbeaver.ext.kingbase.model.KingbaseRole" label="%tree.roles.node.name" icon="#folder_user" description="%tree.roles.node.tip" visibleIf="connected &amp;&amp; dataSource.serverType.supportsRoles()" adminFolder="true">
+                            <items label="%tree.role.node.name" path="users" property="authIds" icon="#user">
+                                <icon if="!object.canLogin" icon="#user_group"/>
+                                <folder id="members" type="org.jkiss.dbeaver.ext.kingbase.model.KingbaseRoleMember" label="%tree.role.members.node.name" icon="#folder_user" description="%tree.role.members.node.tip" visibleIf="!object.canLogin"  navigable="false">
+                                    <items label="%tree.role.members.node.name" itemLabel="%tree.role.member.node.name" path="members" property="members" visibleIf="!object.canLogin"/>
+                                </folder>
+                                <folder id="belongs" type="org.jkiss.dbeaver.ext.kingbase.model.KingbaseRoleMember" label="%tree.role.belongs.node.name" icon="#folder_user" description="%tree.role.belongs.node.tip" navigable="false">
+                                    <items label="%tree.role.belongs.node.name" itemLabel="%tree.role.belongs.node.name" path="members" property="belongs" icon="#folder_user"/>
+                                </folder>
+                            </items>
+                        </folder>
+
+                    </items>
+                </folder>
+
+                <folder label="%tree.administer.node.name" icon="#folder_admin" id="folderAdmin" description="%tree.administer.node.tip" adminFolder="true">
+                    
+                    <treeContribution category="connectionEditor"/>
+                </folder>
+
+                
+            </tree>
+
+            <drivers managable="true">
+                <driver
+                        id="kingbase-jdbc"
+                        label="Kingbase"
+                        icon="icons/kingbase_icon.png"
+                        iconBig="icons/kingbase_icon_big.png"
+                        class="com.kingbase8.Driver"
+                        sampleURL="jdbc:kingbase8://{host}[:{port}]/[{database}]"
+                        defaultPort="54321"
+                        defaultDatabase="test"
+                        defaultUser="system"
+                        description="%driver.kingbase.description"
+                        supportedConfigurationTypes="MANUAL,URL"
+                    	promoted="1"
+                    	categories="sql"
+                    	dialect="kingbase">
+                    	<file type="jar" path="https://repo1.maven.org/maven2/cn/com/kingbase/kingbase8/8.6.1/kingbase8-8.6.1.jar" bundle="!drivers.kingbase"/>
+                    	<parameter name="serverType" value="kingbase"/>
+                    	<property name="loginTimeout" value="20"/>
+                    	<property name="connectTimeout" value="20"/>
+                    	<property name="escapeSyntaxCallMode" value="callIfNoReturn"/>
+                </driver>
+            </drivers>
+
+            
+
+        </datasource>
+    </extension>
+
+    <!-- Unsecure (http) repository. We can't use it by default, sorry -->
+    <extension point="org.jkiss.dbeaver.mavenRepository">
+        <repository id="aws-redshift-maven-repo" name="AWS Redshift Repository" url="https://s3.amazonaws.com/redshift-maven-repository/release" order="20">
+            <scope group="com.amazon.redshift"/>
+        </repository>
+    </extension>
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.kingbase.edit.KingbaseDatabaseManager" objectType="org.jkiss.dbeaver.ext.kingbase.model.KingbaseDatabase"/>
+        <manager class="org.jkiss.dbeaver.ext.kingbase.edit.KingbaseSchemaManager" objectType="org.jkiss.dbeaver.ext.kingbase.model.KingbaseSchema"/>
+        <manager class="org.jkiss.dbeaver.ext.kingbase.edit.KingbaseTableManager" objectType="org.jkiss.dbeaver.ext.kingbase.model.KingbaseTable"/>
+        <manager class="org.jkiss.dbeaver.ext.kingbase.edit.KingbaseTableColumnManager" objectType="org.jkiss.dbeaver.ext.kingbase.model.KingbaseTableColumn"/>
+        <manager class="org.jkiss.dbeaver.ext.kingbase.edit.KingbaseSequenceManager" objectType="org.jkiss.dbeaver.ext.kingbase.model.KingbaseSequence"/>
+        <manager class="org.jkiss.dbeaver.ext.kingbase.edit.KingbaseConstraintManager" objectType="org.jkiss.dbeaver.ext.kingbase.model.KingbaseTableConstraint"/>
+        <manager class="org.jkiss.dbeaver.ext.kingbase.edit.KingbaseForeignKeyManager" objectType="org.jkiss.dbeaver.ext.kingbase.model.KingbaseTableForeignKey"/>
+        <manager class="org.jkiss.dbeaver.ext.kingbase.edit.KingbaseIndexManager" objectType="org.jkiss.dbeaver.ext.kingbase.model.KingbaseIndex"/>
+        <manager class="org.jkiss.dbeaver.ext.kingbase.edit.KingbaseViewManager" objectType="org.jkiss.dbeaver.ext.kingbase.model.KingbaseView"/>
+        <manager class="org.jkiss.dbeaver.ext.kingbase.edit.KingbaseMViewManager" objectType="org.jkiss.dbeaver.ext.kingbase.model.KingbaseMaterializedView"/>
+        <manager class="org.jkiss.dbeaver.ext.kingbase.edit.KingbaseTriggerManager" objectType="org.jkiss.dbeaver.ext.kingbase.model.KingbaseTrigger"/>
+        <manager class="org.jkiss.dbeaver.ext.kingbase.edit.KingbaseProcedureManager" objectType="org.jkiss.dbeaver.ext.kingbase.model.KingbaseProcedure"/>
+        <manager class="org.jkiss.dbeaver.ext.kingbase.edit.KingbaseRoleManager" objectType="org.jkiss.dbeaver.ext.kingbase.model.KingbaseRole"/>
+        <manager class="org.jkiss.dbeaver.ext.kingbase.edit.KingbaseTablespaceManager" objectType="org.jkiss.dbeaver.ext.kingbase.model.KingbaseTablespace"/>
+        <manager class="org.jkiss.dbeaver.ext.kingbase.edit.KingbaseDataTypeManager" objectType="org.jkiss.dbeaver.ext.kingbase.model.KingbaseDataType"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <provider
+                class="org.jkiss.dbeaver.ext.kingbase.model.data.KingbaseValueHandlerProvider"
+                description="%provider.data.type.kingbase.description"
+                id="org.jkiss.dbeaver.ext.kingbase.model.data.KingbaseValueHandlerProvider"
+                label="%provider.data.type.kingbase.name">
+
+            <datasource id="kingbase"/>
+            <datasource id="greenplum"/>
+
+            <type name="*"/>
+        </provider>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="kingbase" parent="basic" class="org.jkiss.dbeaver.ext.kingbase.model.KingbaseDialect" label="Kingbase" description="Kingbase dialect." icon="icons/kingbase_icon.png">
+            <property name="insertMethods" value="kingbaseInsertIgnore,kingbaseReplaceIgnore"/>
+            <keywords value=""/>
+            <execKeywords value=""/>
+            <ddlKeywords value=""/>
+            <dmlKeywords value=""/>
+            <functions value=""/>
+            <types value=""/>
+
+            <property name="" value=""/>
+        </dialect>
+    </extension>
+    
+    <extension point="org.jkiss.dbeaver.dashboard">
+
+        <dashboard id="kingbase.sessionCount" label="Server sessions" defaultView="timeseries" group="Standard" updatePeriod="2000"
+            calc="value" value="integer" fetch="columns" showByDefault="true" description="Shows active/idle server sessions">
+            <datasource id="kingbase"/>
+            <query>
+SELECT
+    (SELECT count(*) AS "Active" FROM sys_catalog.sys_stat_activity sa WHERE state='active'),
+    (SELECT count(*) AS "Idle" FROM sys_catalog.sys_stat_activity sa WHERE state='idle'),
+    (SELECT count(*) AS "Total" FROM sys_catalog.sys_stat_activity sa WHERE state IS NOT NULL)
+            </query>
+        </dashboard>
+        <dashboard id="kingbase.transactionCount" label="Transactions per second" group="Standard" defaultView="timeseries" updatePeriod="2000"
+            calc="delta" value="integer" fetch="columns" showByDefault="true" description="Shows commit/rollback transactions per second">
+            <datasource id="kingbase"/>
+            <query>
+SELECT
+    (SELECT sum(xact_commit) + sum(xact_rollback) AS "Total" FROM sys_stat_database),
+    (SELECT sum(xact_commit) AS "Commit" FROM sys_stat_database),
+    (SELECT sum(xact_rollback) AS "Rollback" FROM sys_stat_database)
+            </query>
+        </dashboard>
+        <dashboard id="kingbase.blockIO" label="Block IO" group="Standard" defaultView="timeseries" updatePeriod="2000"
+            calc="delta" value="bytes" fetch="columns" showByDefault="true" description="Shows blocking IO operations per second">
+            <datasource id="kingbase"/>
+            <query>
+SELECT
+    (SELECT sum(blks_read) as "Read" FROM sys_stat_database),
+    (SELECT sum(blks_hit) as "Hits" FROM sys_stat_database)
+            </query>
+        </dashboard>
+
+    </extension>
+    
+    <!-- SQL Generators -->
+    <extension point="org.jkiss.dbeaver.sqlGenerator">
+        <generator id="tableInsertOnConflict" class="org.jkiss.dbeaver.ext.kingbase.model.sql.generator.SQLGeneratorInsertOnConflict" label="INSERT ON CONFLICT" description="INSERT into table ON CONFLICT" order="7">
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseTableBase"/>
+        </generator>
+        <generator id="tableUpdateFrom" class="org.jkiss.dbeaver.ext.kingbase.model.sql.generator.SQLGeneratorUpdateFrom" label="UPDATE FROM" description="UPDATE FROM (UPDATE with JOIN)" order="8">
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseTableBase"/>
+        </generator>
+        <generator id="tableDeleteUsing" class="org.jkiss.dbeaver.ext.kingbase.model.sql.generator.SQLGeneratorDeleteUsing" label="DELETE USING" description="DELETE USING (DELETE with JOIN)" order="9">
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseTableBase"/>
+        </generator>
+        <generator id="alterTypeAddValue" class="org.jkiss.dbeaver.ext.kingbase.model.sql.generator.SQLGeneratorTypeAddValue" label="ADD VALUE" description="ALTER TYPE ADD VALUE" order="1002">
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseDataType"/>
+        </generator>
+    </extension>
+
+</plugin>

@@ -1,0 +1,103 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2024 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.ext.kingbase.model;
+
+import java.util.List;
+
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
+import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
+
+/**
+ * KingbaseRolePrivilege
+ */
+public class KingbaseRolePrivilege extends KingbasePrivilege {
+
+    private static final Log log = Log.getLog(KingbaseRolePrivilege.class);
+
+    private KingbasePrivilegeGrant.Kind kind;
+    private String schemaName;
+    private String objectName;
+
+    public KingbaseRolePrivilege(KingbasePrivilegeOwner owner, KingbasePrivilegeGrant.Kind kind, String schemaName, String objectName, List<KingbasePrivilegeGrant> privileges) {
+        super(owner, privileges);
+        this.kind = kind;
+        this.schemaName = schemaName;
+        this.objectName = objectName;
+    }
+
+    @Property(viewable = true, order = 1)
+    @NotNull
+    public String getName() {
+        return getFullObjectName();
+    }
+
+    @Override
+    public KingbaseObject getTargetObject(DBRProgressMonitor monitor) throws DBException
+    {
+        final KingbaseSchema schema = owner.getDatabase().getSchema(monitor, schemaName);
+        if (schema != null) {
+            JDBCTable childTable = schema.getChild(monitor, objectName);
+            return childTable instanceof KingbaseObject ? (KingbaseObject) childTable : null;
+        }
+        return null;
+    }
+
+    public KingbasePrivilegeGrant.Kind getKind() {
+        return kind;
+    }
+
+    public void setKind(KingbasePrivilegeGrant.Kind kind) {
+        this.kind = kind;
+    }
+
+    public String getSchemaName() {
+        return schemaName;
+    }
+
+    public String getObjectName() {
+        return objectName;
+    }
+
+    public String getFullObjectName() {
+        return DBUtils.getQuotedIdentifier(getDataSource(), schemaName) +
+            (kind == KingbasePrivilegeGrant.Kind.SCHEMA ? "" :
+                ("." + (kind == KingbasePrivilegeGrant.Kind.FUNCTION || kind == KingbasePrivilegeGrant.Kind.PROCEDURE ? objectName :
+                        DBUtils.getQuotedIdentifier(getDataSource(), objectName))));
+    }
+
+    @Override
+    public String toString() {
+        return getFullObjectName();
+    }
+
+    @Override
+    public int compareTo(@NotNull KingbasePrivilege o) {
+        if (o instanceof KingbaseRolePrivilege) {
+            final int res = schemaName.compareTo(((KingbaseRolePrivilege)o).schemaName);
+            return res != 0 ? res : CommonUtils.compare(objectName, ((KingbaseRolePrivilege)o).objectName);
+        }
+        return 0;
+    }
+
+}
+

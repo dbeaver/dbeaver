@@ -1,0 +1,146 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2024 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.ext.kingbase.edit;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.kingbase.model.KingbaseDataSource;
+import org.jkiss.dbeaver.ext.kingbase.model.KingbaseTableBase;
+import org.jkiss.dbeaver.ext.kingbase.model.KingbaseTableConstraint;
+import org.jkiss.dbeaver.ext.kingbase.model.KingbaseTableConstraintBase;
+import org.jkiss.dbeaver.ext.kingbase.model.KingbaseTableContainer;
+import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
+import org.jkiss.utils.CommonUtils;
+
+/**
+ * Kingbase constraint manager
+ */
+public class KingbaseConstraintManager extends SQLConstraintManager<KingbaseTableConstraintBase<?>, KingbaseTableBase> implements DBEObjectRenamer<KingbaseTableConstraintBase<?>> {
+
+    @Override
+    public boolean canRenameObject(KingbaseTableConstraintBase<?> object) {
+        return true;
+    }
+
+    @Nullable
+    @Override
+    public DBSObjectCache<KingbaseTableContainer, KingbaseTableConstraintBase<?>> getObjectsCache(KingbaseTableConstraintBase<?> object) {
+        return object.getTable().getContainer().getSchema().getConstraintCache();
+    }
+
+    @Override
+    protected KingbaseTableConstraintBase<?> createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        final Object container,
+        Object from,
+        @NotNull Map<String, Object> options)
+    {
+        return new KingbaseTableConstraint((KingbaseTableBase) container, "NewConstraint", DBSEntityConstraintType.UNIQUE_KEY);
+    }
+
+    @Override
+    public StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, KingbaseTableBase owner, DBECommandAbstract<KingbaseTableConstraintBase<?>> command, Map<String, Object> options) {
+        KingbaseTableConstraintBase<?> constr = command.getObject();
+        if (constr.isPersisted()) {
+            try {
+                String constrDDL = constr.getObjectDefinitionText(
+                    monitor,
+                    Collections.singletonMap(DBPScriptObject.OPTION_EMBEDDED_SOURCE, true));
+                if (!CommonUtils.isEmpty(constrDDL)) {
+                    return new StringBuilder(constrDDL);
+                }
+            } catch (DBException e) {
+                log.warn("Can't extract constraint DDL", e);
+            }
+        }
+        return super.getNestedDeclaration(monitor, owner, command, options);
+    }
+
+    @Override
+    protected void appendConstraintDefinition(StringBuilder decl, DBECommandAbstract<KingbaseTableConstraintBase<?>> command) {
+        if (command.getObject().getConstraintType() == DBSEntityConstraintType.CHECK) {
+            decl.append(" (").append(((KingbaseTableConstraint) command.getObject()).getSource()).append(")");
+        } else {
+            super.appendConstraintDefinition(decl, command);
+        }
+    }
+
+    @Override
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options)
+    {
+        if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
+            addConstraintCommentAction(actionList, command.getObject());
+        }
+    }
+
+    static void addConstraintCommentAction(List<DBEPersistAction> actionList, KingbaseTableConstraintBase<?> constr) {
+        actionList.add(new SQLDatabasePersistAction(
+            "Comment sequence",
+            "COMMENT ON CONSTRAINT " + DBUtils.getQuotedIdentifier(constr) + " ON " + constr.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                " IS " + SQLUtils.quoteString(constr, constr.getDescription())));
+    }
+
+    @Override
+    protected String getDropConstraintPattern(KingbaseTableConstraintBase<?> constraint)
+    {
+        return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP CONSTRAINT " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+    }
+
+    @Override
+    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull KingbaseTableConstraintBase<?> object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException {
+        processObjectRename(commandContext, object, options, newName);
+    }
+
+    @Override
+    protected void addObjectRenameActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectRenameCommand command,
+        @NotNull Map<String, Object> options
+    ) {
+        KingbaseTableConstraintBase<?> constraint = command.getObject();
+        KingbaseDataSource dataSource = constraint.getDataSource();
+        actions.add(
+                new SQLDatabasePersistAction(
+                        "Rename constraint",
+                        "ALTER TABLE " + constraint.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + //$NON-NLS-1$
+                                " RENAME CONSTRAINT " + DBUtils.getQuotedIdentifier(dataSource, command.getOldName()) + //$NON-NLS-1$
+                                " TO " + DBUtils.getQuotedIdentifier(dataSource, command.getNewName())) //$NON-NLS-1$
+        );
+    }
+}

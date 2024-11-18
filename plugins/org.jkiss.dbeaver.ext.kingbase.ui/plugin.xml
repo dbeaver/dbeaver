@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.dataSourceView">
+        <view
+                id="org.jkiss.dbeaver.ext.kingbase.dataSourceWizardView"
+                dataSource="kingbase"
+                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                label="%dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.kingbase.ui.KingbaseConnectionPage"
+                icon="#database">
+        </view>
+        <view
+                class="org.jkiss.dbeaver.ext.kingbase.ui.KingbaseConnectionPage"
+                icon="#database"
+                id="org.jkiss.dbeaver.ext.kingbase.dataSourceEditorView"
+                dataSource="kingbase"
+                label="%dialog.connection.header"
+                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
+        </view>
+    </extension>
+    
+    <extension point="org.eclipse.ui.editors">
+        <editor
+            name="%editor.session_manager.name"
+            icon="#sessions"
+            class="org.jkiss.dbeaver.ext.kingbase.ui.editors.KingbaseSessionEditor"
+            id="org.jkiss.dbeaver.ext.kingbase.ui.editors.KingbaseSessionEditor"
+            contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor">
+        </editor>
+        <editor
+            name="%editor.lock_manager.name"
+            icon="#locked"
+            class="org.jkiss.dbeaver.ext.kingbase.ui.editors.KingbaseLockEditor"
+            id="org.jkiss.dbeaver.ext.kingbase.ui.editors.KingbaseLockEditor">
+        </editor>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <editorContribution editorId="org.jkiss.dbeaver.ext.kingbase.ui.editors.KingbaseSessionEditor" category="connectionEditor" label="%editor.session_manager.name" icon="#sessions">
+            <supports dataSource="kingbase"/>
+        </editorContribution>
+        <editorContribution editorId="org.jkiss.dbeaver.ext.kingbase.ui.editors.KingbaseLockEditor" category="connectionEditor" label="%editor.lock_manager.name" icon="#locked" visibleIf="connected &amp;&amp; dataSource.serverType.supportsLocks()">
+            <supports dataSource="kingbase"/>
+        </editorContribution>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.databaseEditor">
+
+        <editor id="kingbase.role.permissions" class="org.jkiss.dbeaver.ext.kingbase.ui.editors.KingbaseRolePrivilegesEditor"
+                label="%db.editor.role.permission.name" description="%db.editor.role.permission.description" icon="#permissions" position="additions_middle" type="folder">
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseRole"/>
+        </editor>
+        <editor id="kingbase.table.permissions" class="org.jkiss.dbeaver.ext.kingbase.ui.editors.KingbaseRolePrivilegesEditor"
+                label="%db.editor.table.permission.name" description="%db.editor.table.permission.description" icon="#permissions" position="additions_middle" type="folder">
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseTableBase" if="object.dataSource.supportsRoles()"/>
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseTableColumn" if="object.dataSource.supportsRoles()"/>
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseProcedure" if="object.dataSource.supportsRoles()"/>
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseSchema" if="object.dataSource.supportsRoles()"/>
+        </editor>
+        <editor id="kingbase.source.view" class="org.jkiss.dbeaver.ext.kingbase.ui.editors.KingbaseSourceViewEditor"
+                label="%db.editor.source.name" description="%db.editor.source.description" icon="#sql_text" position="additions_middle"
+                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="false">
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseView"/>
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseMaterializedView"/>
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseTrigger"/>
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseProcedure"/>
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseTableColumn"/>
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseIndex"/>
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseTableConstraintBase"/>
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseSchema"/>
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseDataType"/>
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseTablespace"/>
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseRole"/>
+        </editor>
+        <editor id="kingbase.source.ddl" class="org.jkiss.dbeaver.ext.kingbase.ui.editors.KingbaseSourceViewEditor"
+                label="%db.editor.ddl.name" description="%db.editor.ddl.description" icon="#sql_text" position="additions_middle"
+                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder">
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseTable"/>
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseSequence"/>
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseScriptObjectExt"/>
+        </editor>
+
+        <configurator class="org.jkiss.dbeaver.ext.kingbase.ui.config.KingbaseConstraintConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseTableConstraint"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.kingbase.ui.config.KingbaseDatabaseConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseDatabase"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.kingbase.ui.config.KingbaseForeignKeyConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseTableForeignKey"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.kingbase.ui.config.KingbaseIndexConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseIndex"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.kingbase.ui.config.KingbaseProcedureConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseProcedure"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.kingbase.ui.config.KingbaseRoleConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseRole"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.kingbase.ui.config.KingbaseTriggerConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseTrigger"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.kingbase.ui.config.KingbaseSchemaConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseSchema"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.kingbase.ui.config.KingbaseSequenceConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseSequence"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.kingbase.ui.config.KingbaseTablespaceConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseTablespace"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ui.editors.object.config.PropertyObjectConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseTablePolicy"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.kingbase.ui.config.KingbaseExplainPlanConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.plan.KingbaseQueryPlaner"/>
+        </configurator>
+    </extension>
+    
+    <extension point="org.jkiss.dbeaver.dataManager">
+        
+        <manager class="org.jkiss.dbeaver.ext.kingbase.ui.config.KingbaseEnumValueManager" id="org.jkiss.dbeaver.ext.kingbase.ui.config.KingbaseEnumValueManager">
+            <supports dataSource="kingbase" extension="E"/>
+        </manager>
+        <manager class="org.jkiss.dbeaver.ui.data.managers.BitStringValueManager" id="org.jkiss.dbeaver.ui.data.managers.BitStringValueManager">
+            <supports dataSource="kingbase" typeName="BIT"/>
+        </manager>
+        <manager class="org.jkiss.dbeaver.ui.data.managers.ContentValueManager" id="org.jkiss.dbeaver.ui.data.managers.ContentValueManager">
+            <supports dataSource="kingbase" typeName="JSON"/>
+            <supports dataSource="kingbase" typeName="JSONB"/>
+        </manager>
+    </extension>
+
+    <extension point="org.eclipse.ui.preferencePages">
+        <page category="org.jkiss.dbeaver.preferences.drivers" id="org.jkiss.dbeaver.preferences.kingbase.general" class="org.jkiss.dbeaver.ext.kingbase.ui.PrefPageKingbase" name="Kingbase">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+        </page>
+    </extension>
+    
+    <!-- SQL Generators -->
+    <extension point="org.jkiss.dbeaver.sqlGenerator">
+        <generator id="procedureCheck" class="org.jkiss.dbeaver.ext.kingbase.model.sql.generator.SQLGeneratorProcedureCheck" label="CHECK (via plpgsql_check)" description="Kingbase procedure check " order="2000">
+            <objectType name="org.jkiss.dbeaver.ext.kingbase.model.KingbaseProcedure"/>
+        </generator>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.preferences">
+        <initializer class="org.jkiss.dbeaver.ext.kingbase.ui.KingbasePreferencesInitializer"/>
+    </extension>
+
+</plugin>

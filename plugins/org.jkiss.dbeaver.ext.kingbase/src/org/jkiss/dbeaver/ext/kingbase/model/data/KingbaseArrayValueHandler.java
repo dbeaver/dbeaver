@@ -1,0 +1,208 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2024 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.ext.kingbase.model.data;
+
+import java.sql.SQLException;
+import java.sql.Types;
+import java.util.StringJoiner;
+
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.kingbase.KingbaseConstants;
+import org.jkiss.dbeaver.ext.kingbase.KingbaseUtils;
+import org.jkiss.dbeaver.ext.kingbase.KingbaseValueParser;
+import org.jkiss.dbeaver.ext.kingbase.model.KingbaseDataSource;
+import org.jkiss.dbeaver.ext.kingbase.model.KingbaseDataType;
+import org.jkiss.dbeaver.ext.kingbase.model.KingbaseTypeType;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDCollection;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDValue;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
+import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCArrayValueHandler;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+
+/**
+ * KingbaseArrayValueHandler
+ */
+public class KingbaseArrayValueHandler extends JDBCArrayValueHandler {
+    public static final KingbaseArrayValueHandler INSTANCE = new KingbaseArrayValueHandler();
+    private static final Log log = Log.getLog(KingbaseArrayValueHandler.class);
+
+    @Override
+    protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException {
+        return super.fetchColumnValue(session, resultSet, type, index);
+    }
+
+    @Override
+    public DBDCollection getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
+    {
+        if (object != null) {
+            final KingbaseDataType arrayType = KingbaseUtils.findDataType(session, (KingbaseDataSource) session.getDataSource(), type);
+            if (arrayType == null) {
+                throw new DBCException("Can't resolve data type " + type.getFullTypeName());
+            }
+
+            KingbaseDataType itemType = arrayType.getElementType(session.getProgressMonitor());
+            if (itemType == null && arrayType.getTypeType() == KingbaseTypeType.d) {
+                // Domains store component type information in another field
+                itemType = arrayType.getBaseType(session.getProgressMonitor());
+            }
+            if (itemType == null) {
+                throw new DBCException("Array type " + arrayType.getFullTypeName() + " doesn't have a component type");
+            }
+
+            String className = object.getClass().getName();
+            if (object instanceof String ||
+                KingbaseUtils.isKBObject(object) ||
+                className.equals(KingbaseConstants.KB_ARRAY_CLASS))
+            {
+                if (className.equals(KingbaseConstants.KB_ARRAY_CLASS)) {
+                    String strValue = object.toString();
+                    return convertStringArrayToCollection(session, arrayType, itemType, strValue);
+                } else if (KingbaseUtils.isKBObject(object)) {
+                    final Object value = KingbaseUtils.extractKBObjectValue(object);
+                    if (value instanceof String) {
+                        return convertStringArrayToCollection(session, arrayType, itemType, (String) value);
+                    } else {
+                        log.error("Can't parse array");
+                        return new JDBCCollection(
+                                session.getProgressMonitor(), itemType,
+                            DBUtils.findValueHandler(session, itemType),
+                            value == null ? null : new Object[]{value}
+                        );
+                    }
+                } else {
+                    return convertStringArrayToCollection(session, arrayType, itemType, (String) object);
+                }
+            } else if (object instanceof Object[]) {
+                return new JDBCCollection(
+                    session.getProgressMonitor(),
+                    itemType,
+                    DBUtils.findValueHandler(session, itemType),
+                    (Object[]) object
+                );
+            }
+        }
+        return super.getValueFromObject(session, type, object, copy, validateValue);
+    }
+
+    @Override
+    protected void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value) throws DBCException, SQLException {
+        if (value instanceof DBDCollection && !((DBDValue) value).isNull()) {
+            statement.setObject(paramIndex, getValueDisplayString(paramType, value, DBDDisplayFormat.NATIVE), Types.OTHER);
+        } else {
+            super.bindParameter(session, statement, paramType, paramIndex, value);
+        }
+    }
+
+    private JDBCCollection convertStringArrayToCollection(@NotNull DBCSession session, @NotNull KingbaseDataType arrayType, @NotNull KingbaseDataType itemType, @NotNull String strValue) throws DBCException {
+        Object parsedArray = KingbaseValueParser.convertStringToValue(session, arrayType, strValue);
+        if (parsedArray instanceof Object[]){
+            return new JDBCCollection(session.getProgressMonitor(), itemType, DBUtils.findValueHandler(session, itemType), (Object[]) parsedArray);
+        } else {
+            log.error("Can't parse array");
+            return new JDBCCollection(session.getProgressMonitor(), itemType, DBUtils.findValueHandler(session, itemType), new Object[]{parsedArray});
+        }
+    }
+
+    @NotNull
+    @Override
+    public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
+        if (!DBUtils.isNullValue(value) && value instanceof DBDCollection) {
+            final DBDCollection collection = (DBDCollection) value;
+            final StringJoiner output = new StringJoiner(KingbaseUtils.getArrayDelimiter(collection.getComponentType()), "{", "}");
+
+            for (int i = 0; i < collection.getItemCount(); i++) {
+                final Object item = collection.getItem(i);
+                final String member;
+
+                if (item instanceof DBDCollection) {
+                    member = getArrayMemberDisplayString(column, this, item, format);
+                } else {
+                    final KingbaseDataType componentType = (KingbaseDataType) collection.getComponentType();
+                    final DBDValueHandler componentHandler = collection.getComponentValueHandler();
+                    member = getArrayMemberDisplayString(componentType, componentHandler, item, format);
+                }
+
+                output.add(member);
+            }
+
+            return output.toString();
+        }
+
+        return super.getValueDisplayString(column, value, format);
+    }
+
+    @NotNull
+    private static String getArrayMemberDisplayString(
+        @NotNull DBSTypedObject type,
+        @NotNull DBDValueHandler handler,
+        @Nullable Object value,
+        @NotNull DBDDisplayFormat format
+    ) {
+        if (DBUtils.isNullValue(value)) {
+            return SQLConstants.NULL_VALUE;
+        }
+
+        final String string = handler.getValueDisplayString(type, value, format);
+
+        if (isQuotingRequired(type, string)) {
+            return '"' + string.replaceAll("[\\\\\"]", "\\\\$0") + '"';
+        }
+
+        return string;
+    }
+
+   
+    private static boolean isQuotingRequired(@NotNull DBSTypedObject type, @NotNull String value) {
+        switch (type.getDataKind()) {
+            case ARRAY:
+            case NUMERIC:
+                return false;
+            default:
+                break;
+        }
+
+        if (value.isEmpty() || value.equalsIgnoreCase(SQLConstants.NULL_VALUE)) {
+            return true;
+        }
+
+        for (int index = 0; index < value.length(); index++) {
+            switch (value.charAt(index)) {
+                case '{':
+                case '}':
+                case '"':
+                case ' ':
+                case '\\':
+                    return true;
+                default:
+                    break;
+            }
+        }
+
+        return value.equals(KingbaseUtils.getArrayDelimiter(type));
+    }
+}
