@@ -147,7 +147,7 @@ public class GroupingResultsDecorator extends ResultSetDecoratorBase {
                         event.detail = DND.DROP_MOVE;
                     }
                 }
-                event.feedback = DND.FEEDBACK_SELECT;
+                event.feedback = DND.FEEDBACK_SELECT | DND.FEEDBACK_SCROLL;
             }
 
             private boolean isDropSupported(DropTargetEvent event) {
