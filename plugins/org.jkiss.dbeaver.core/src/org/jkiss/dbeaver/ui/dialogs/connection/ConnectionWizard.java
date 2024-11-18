@@ -139,9 +139,8 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
         return info;
     }
 
-    public DataSourceDescriptor getOriginalDataSource() {
-        return null;
-    }
+    @Nullable
+    public abstract DataSourceDescriptor getOriginalDataSource();
 
     @Nullable
     @Override
@@ -149,13 +148,16 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
         return driverSubstitution;
     }
 
+    @NotNull
+    protected abstract PersistResult persistDataSource();
+
     public void setDriverSubstitution(@Nullable DBPDriverSubstitutionDescriptor driverSubstitution) {
         this.driverSubstitution = driverSubstitution;
         getActiveDataSource().setDriverSubstitution(driverSubstitution);
     }
 
     public void testConnection() {
-        DataSourceDescriptor activeDataSource = getPageSettings().getActiveDataSource();
+        DataSourceDescriptor activeDataSource = getActiveDataSource();
         DataSourceDescriptor targetDataSource;
 
         if (canUseTemporaryDataSource(activeDataSource)) {
@@ -182,6 +184,10 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
 
         saveSettings(targetDataSource);
 
+        if (activeDataSource == targetDataSource) {
+            persistDataSource();
+        }
+
         if (targetDataSource.isSharedCredentials()) {
             if (!targetDataSource.getProject().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_PROJECT_ADMIN)) {
                 UIUtils.showMessageBox(getShell(), "Credentials edit restricted",
@@ -195,11 +201,7 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
             return;
         }
 
-        if (activeDataSource == targetDataSource) {
-            targetDataSource.persistConfiguration();
-        }
-
-        ConnectionFeatures.CONNECTION_TEST.use(Map.of("driver", activeDataSource.getDriver().getPreconfiguredId()));
+        ConnectionFeatures.CONNECTION_TEST.use(Map.of("driver", targetDataSource.getDriver().getPreconfiguredId()));
 
         try {
             final ConnectionTestJob op = new ConnectionTestJob(targetDataSource, session -> {
@@ -324,5 +326,11 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
             }
         }
         return true;
+    }
+
+    protected enum PersistResult {
+        UNCHANGED,
+        CHANGED,
+        ERROR
     }
 }
