@@ -471,7 +471,7 @@ Space: [ \t]+;
 
 Identifier: IdentifierBody;
 fragment IdentifierBody: IdentifierStart ((Underscore|IdentifierPart)+)?;
-fragment IdentifierStart: SimpleLatinLetter;
+fragment IdentifierStart: SimpleLatinLetter|Underscore;
 fragment IdentifierPart: (IdentifierStart|Digit);
 
 
