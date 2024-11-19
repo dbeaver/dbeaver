@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.AbstractResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCTrace;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 
 import java.io.InputStream;
@@ -100,6 +101,13 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
     protected void afterFetch()
     {
         this.session.getExecutionContext().unlockQueryExecution();
+        if (JDBCUtils.LOG_JDBC_WARNINGS) {
+            try {
+                JDBCUtils.reportWarnings(getSession(), this.getWarnings());
+            } catch (Throwable e) {
+                log.debug("Error reading JDBC warnings: " + e.getMessage());
+            }
+        }
         //this.session.getProgressMonitor().endBlock();
     }
 

@@ -51,7 +51,6 @@ import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -485,7 +484,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
 
     @Override
     public ErrorPosition[] getErrorPosition(DBRProgressMonitor monitor, DBCExecutionContext context, String query, Throwable error) {
-        Throwable rootCause = GeneralUtils.getRootCause(error);
+        Throwable rootCause = CommonUtils.getRootCause(error);
         if (rootCause != null && SQLServerConstants.SQL_SERVER_EXCEPTION_CLASS_NAME.equals(rootCause.getClass().getName())) {
             // Read line number from SQLServerError class
             try {

@@ -129,7 +129,13 @@ public class StandardSQLDialectQueryGenerator implements SQLQueryGenerator {
                     // Constraint may consist of several conditions and we don't want to break operator precedence
                     query.append('(');
                 }
-                query.append(getConstraintAttributeName(dataSource, conditionTable, constraint, subQuery))
+
+                String attrName = getConstraintAttributeName(dataSource, conditionTable, constraint, subQuery);
+                if (constraint.getAttribute() != null) {
+                    attrName = dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(), attrName, true);
+                }
+                query
+                    .append(attrName)
                     .append(' ')
                     .append(getConstraintCondition(dataSource, constraint, conditionTable, inlineCriteria));
                 if (constraints.size() > 1) {
@@ -411,7 +417,8 @@ public class StandardSQLDialectQueryGenerator implements SQLQueryGenerator {
                 strValue = CommonUtils.toString(value);
             }
         } else if (inlineCriteria) {
-            strValue = SQLUtils.convertValueToSQL(dataSource, constraint.getAttribute(), value);
+            DBDValueHandler valueHandler = DBUtils.findValueHandler(dataSource, constraint.getAttribute());
+            strValue = SQLUtils.convertValueToSQL(dataSource, constraint.getAttribute(), valueHandler, value, DBDDisplayFormat.NATIVE, true);
         } else {
             strValue = dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(), "?", true);
         }

@@ -562,7 +562,7 @@ public class TaskManagerImpl implements DBTTaskManager {
             }
             JSONUtils.field(jsonWriter, TaskConstants.TAG_CREATE_TIME, systemDateFormat.format(task.getCreateTime()));
             JSONUtils.field(jsonWriter, TaskConstants.TAG_UPDATE_TIME, systemDateFormat.format(task.getUpdateTime()));
-            JSONUtils.serializeProperties(jsonWriter, TaskConstants.TAG_STATE, task.getProperties());
+            JSONUtils.serializeProperties(jsonWriter, TaskConstants.TAG_STATE, task.getProperties(), true);
             if (task.getMaxExecutionTime() > 0) {
                 JSONUtils.field(jsonWriter, TaskConstants.TAG_MAX_EXEC_TIME, task.getMaxExecutionTime());
             }

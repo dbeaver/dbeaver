@@ -726,18 +726,24 @@ public class SQLQueryJob extends DataSourceJob
                     }
                 }
 
-                if (session.getDataSource().getInfo().supportsMultipleResults()) {
-                    try {
-                        hasResultSet = dbcStatement.nextResults();
-                    } catch (DBCException e) {
-                        if (session.getDataSource().getInfo().isMultipleResultsFetchBroken()) {
-                            statistics.addWarning(e);
-                            statistics.setError(e);
-                            // #2792: Check this twice. Some drivers (e.g. Sybase jConnect)
-                            // throw error on n'th result fetch - but it still can keep fetching next results
+                DBPDataSourceInfo dataSourceInfo = session.getDataSource().getInfo();
+                if (dataSourceInfo.supportsMultipleResults()) {
+                    if (hasLimits() && rowsFetched >= rsMaxRows && dataSourceInfo.isMultipleResultsFailsOnMaxRows()) {
+                        log.trace("Max rows exceeded. Additional resultsets extraction is disabled");
+                        hasResultSet = false;
+                    } else {
+                        try {
                             hasResultSet = dbcStatement.nextResults();
-                        } else {
-                            throw e;
+                        } catch (DBCException e) {
+                            if (dataSourceInfo.isMultipleResultsFetchBroken()) {
+                                statistics.addWarning(e);
+                                statistics.setError(e);
+                                // #2792: Check this twice. Some drivers (e.g. Sybase jConnect)
+                                // throw error on n'th result fetch - but it still can keep fetching next results
+                                hasResultSet = dbcStatement.nextResults();
+                            } else {
+                                throw e;
+                            }
                         }
                     }
                     updateCount = hasResultSet ? -1 : 0;
@@ -831,12 +837,17 @@ public class SQLQueryJob extends DataSourceJob
         } else {
             // Single statement
             long updateCount = statistics.getRowsUpdated();
-            fakeResultSet.addColumn("Updated Rows", DBPDataKind.NUMERIC);
             fakeResultSet.addColumn("Query", DBPDataKind.STRING);
+            fakeResultSet.addColumn("Updated Rows", DBPDataKind.NUMERIC);
+            fakeResultSet.addColumn("Execute time", DBPDataKind.NUMERIC);
             fakeResultSet.addColumn("Start time", DBPDataKind.DATETIME);
             fakeResultSet.addColumn("Finish time", DBPDataKind.DATETIME);
-            fakeResultSet.addRow(updateCount, query.getText(), new Date(statistics.getStartTime()), new Date());
-
+            fakeResultSet.addRow(
+                query.getText(),
+                updateCount,
+                RuntimeUtils.formatExecutionTime(statistics.getExecuteTime()),
+                new Date(statistics.getStartTime()),
+                new Date());
             executeResult.setResultSetName(SQLEditorMessages.editors_sql_data_grid);
         }
         fetchQueryData(session, fakeResultSet, resultInfo, executeResult, dataReceiver, false);
@@ -987,9 +998,13 @@ public class SQLQueryJob extends DataSourceJob
     }
 */
 
-    public void extractData(@NotNull DBCSession session, @NotNull SQLScriptElement query, int resultNumber, boolean fireEvents)
-        throws DBCException
-    {
+    public void extractData(
+        @NotNull DBCSession session,
+        @NotNull SQLScriptElement query,
+        int resultNumber,
+        boolean fireEvents,
+        boolean allowStatistics
+    ) throws DBCException {
         // Reset query to original. Otherwise multiple filters will corrupt it
         query.reset();
 
@@ -1010,7 +1025,7 @@ public class SQLQueryJob extends DataSourceJob
             } else {
                 throw new DBCException(lastError, getExecutionContext());
             }
-        } else if (result && statistics.getStatementsCount() > 0) {
+        } else if (allowStatistics && result && statistics.getStatementsCount() > 0) {
             showExecutionResult(session);
         }
     }
