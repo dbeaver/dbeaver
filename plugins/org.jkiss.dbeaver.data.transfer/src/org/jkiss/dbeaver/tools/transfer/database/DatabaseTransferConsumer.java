@@ -84,6 +84,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     private List<DBSAttributeBase> targetAttributes;
     private boolean useIsolatedConnection;
     private Boolean oldAutoCommit;
+    private DBCSavepoint transactionalBeginingSavepoint = null;
 
     // Used only for non-explicit import
     // In this case consumer will be replaced with explicit consumers during configuration
@@ -563,6 +564,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 if (settings.isUseTransactions()) {
                     if (oldAutoCommit) {
                         txnManager.setAutoCommit(monitor, false);
+                        if (txnManager.supportsSavepoints()) {
+                            transactionalBeginingSavepoint = txnManager.setSavepoint(monitor, "Data transfer start");
+                        }
                     }
                 } else {
                     if (!oldAutoCommit) {
@@ -594,6 +598,12 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             try {
                 DBCTransactionManager txnManager = DBUtils.getTransactionManager(targetSession.getExecutionContext());
                 if (txnManager != null) {
+                    if (!txnManager.isAutoCommit()) {
+                        txnManager.rollback(targetSession, transactionalBeginingSavepoint);
+                    }
+                    if (transactionalBeginingSavepoint != null) {
+                        txnManager.releaseSavepoint(targetSession.getProgressMonitor(), transactionalBeginingSavepoint);
+                    }
                     txnManager.setAutoCommit(targetSession.getProgressMonitor(), oldAutoCommit);
                 }
             } catch (Exception e) {
