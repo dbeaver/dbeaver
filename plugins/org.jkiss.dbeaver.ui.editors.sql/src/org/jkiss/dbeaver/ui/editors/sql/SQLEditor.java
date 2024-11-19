@@ -4728,16 +4728,18 @@ public class SQLEditor extends SQLEditorBase implements
             super.handleExecuteResult(result);
             
             if (this.viewer.getActivePresentation().getControl() instanceof Spreadsheet s) {
-                Point spreadsheetPreferredSize = s.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
-                Point spreadsheetSize = s.getSize();
-                int desiredViewerHeight = rsvConstrainedLayout.heightHint - spreadsheetSize.y + spreadsheetPreferredSize.y;
-                if (desiredViewerHeight < rsvConstrainedLayout.heightHint) {
-                    if (desiredViewerHeight < MIN_VIEWER_HEIGHT) {
-                        desiredViewerHeight = MIN_VIEWER_HEIGHT;
+                UIUtils.syncExec(() -> {
+                    Point spreadsheetPreferredSize = s.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
+                    Point spreadsheetSize = s.getSize();
+                    int desiredViewerHeight = rsvConstrainedLayout.heightHint - spreadsheetSize.y + spreadsheetPreferredSize.y;
+                    if (desiredViewerHeight < rsvConstrainedLayout.heightHint) {
+                        if (desiredViewerHeight < MIN_VIEWER_HEIGHT) {
+                            desiredViewerHeight = MIN_VIEWER_HEIGHT;
+                        }
+                        rsvConstrainedLayout.heightHint = desiredViewerHeight;
+                        queryProcessor.relayoutContents();
                     }
-                    rsvConstrainedLayout.heightHint = desiredViewerHeight;  
-                    queryProcessor.relayoutContents();
-                }
+                });
             }
         }
 
