@@ -118,4 +118,14 @@ public class DatabendMetaModel extends GenericMetaModel implements DBCQueryTrans
     public boolean isSchemasOptional() {
         return false;
     }
+
+    @Override
+    public boolean hasProcedureSupport() {
+        return false;  // driver does not return correct information
+    }
+
+    @Override
+    public boolean hasFunctionSupport() {
+        return false;  // driver does not return correct information
+    }
 }

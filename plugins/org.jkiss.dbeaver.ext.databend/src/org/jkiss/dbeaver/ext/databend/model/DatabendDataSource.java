@@ -54,7 +54,7 @@ public class DatabendDataSource extends GenericDataSource {
 
         if (sslConfig != null && sslConfig.isEnabled()) {
             try {
-                initSSL(monitor, properties, sslConfig);
+                initSSL(monitor, properties);
             } catch (Exception e) {
                 throw new DBCException("Error configuring SSL certificates", e);
             }
@@ -62,7 +62,7 @@ public class DatabendDataSource extends GenericDataSource {
         return properties;
     }
 
-    private void initSSL(DBRProgressMonitor monitor, Properties properties, DBWHandlerConfiguration sslConfig) throws DBException {
+    private void initSSL(DBRProgressMonitor monitor, Properties properties) throws DBException {
         monitor.subTask("Initialising SSL configuration");
         properties.put(DatabendConstants.SSL_PARAM, "enable");
     }

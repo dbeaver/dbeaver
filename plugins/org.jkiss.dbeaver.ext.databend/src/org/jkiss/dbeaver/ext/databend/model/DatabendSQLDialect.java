@@ -23,10 +23,12 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
  */
 public class DatabendSQLDialect extends JDBCSQLDialect {
 
-    private boolean isCatalogAtStart;
-
     public DatabendSQLDialect() {
         super("Databend SQL", "databend");
-        this.isCatalogAtStart = true;
+    }
+
+    @Override
+    public boolean isCatalogAtStart() {
+        return true;
     }
 }
