@@ -404,10 +404,17 @@ public class SQLBackgroundParsingJob {
         int endOffset = viewer.getBottomIndexEndOffset();
         Interval visibleRange = new Interval(startOffset, endOffset);
         Interval knownRange = new Interval(this.knownRegionStart, this.knownRegionEnd);
+        if (DEBUG) {
+            log.debug("ensureVisibleRangeIsParsed: knownRange is " + knownRange);
+            log.debug("ensureVisibleRangeIsParsed: visibleRange is " + visibleRange);
+        }
         if (!knownRange.properlyContains(visibleRange)) {
             Interval unknownRange = visibleRange.differenceNotProperlyContained(knownRange);
             if (unknownRange == null) {
                 unknownRange = visibleRange;
+            }
+            if (DEBUG) {
+                log.debug("ensureVisibleRangeIsParsed: unknownRange is " + unknownRange);
             }
             this.enqueueToReparse(unknownRange.a, unknownRange.length());
             this.schedule(null);
@@ -462,22 +469,35 @@ public class SQLBackgroundParsingJob {
     }
 
     private void doWork(DBRProgressMonitor monitor) throws BadLocationException {
-        TextViewer viewer = editor.getTextViewer();
+        TextViewer viewer = this.editor.getTextViewer();
         if (viewer == null || this.editor.getRuleManager() == null) {
             return;
         }
-        Interval visibleFragment = UIUtils.syncExec(new RunnableWithResult<>() {
+        Interval actualFragment = UIUtils.syncExec(new RunnableWithResult<>() {
             public Interval runWithResult() {
                 if (viewer.getDocument() == null) {
                     return null;
                 }
+                IDocument doc = viewer.getDocument();
+
+                int stepsToKeep = 2;
                 int startOffset = viewer.getTopIndexStartOffset();
-                int endOffset = viewer.getBottomIndexEndOffset();
-                return new Interval(startOffset, endOffset);
+
+                int firstVisibleLine = 0;
+                try {
+                    firstVisibleLine = doc.getLineOfOffset(startOffset);
+                    int visibleLinesCount = viewer.getTextWidget().getSize().y / viewer.getTextWidget().getLineHeight();
+                    int rangeStart = doc.getLineOffset(Math.max(0, firstVisibleLine - visibleLinesCount * stepsToKeep));
+                    int rangeEnd = doc.getLineOffset(Math.min(doc.getNumberOfLines(), firstVisibleLine + visibleLinesCount * (stepsToKeep + 1)));
+                    return new Interval(rangeStart, rangeEnd);
+                } catch (BadLocationException e) {
+                    int endOffset = viewer.getBottomIndexEndOffset();
+                    return new Interval(startOffset, endOffset);
+                }
             }
         });
 
-        if (visibleFragment == null) {
+        if (actualFragment == null) {
             return;
         }
         int workOffset;
@@ -486,10 +506,6 @@ public class SQLBackgroundParsingJob {
             synchronized (this.syncRoot) {
                 this.isRunning = true;
                 
-                int stepsToKeep = 2;
-                int rangeStart = Math.max(0, visibleFragment.a - visibleFragment.length() * stepsToKeep); 
-                int rangeEnd = Math.max(0, visibleFragment.b + visibleFragment.length() * stepsToKeep);
-                Interval actualFragment = new Interval(rangeStart, rangeEnd);
                 // drop unnecessary items
                 if (DEBUG) {
                     log.debug("actual region is " + actualFragment.a + "-" + actualFragment.b);
@@ -551,7 +567,8 @@ public class SQLBackgroundParsingJob {
                 return;
             }
 
-            SQLParserContext parserContext = new SQLParserContext(editor.getDataSource(), editor.getSyntaxManager(), editor.getRuleManager(), document
+            SQLParserContext parserContext = new SQLParserContext(
+                editor.getDataSource(), editor.getSyntaxManager(), editor.getRuleManager(), document
             );
             if (DEBUG) {
                 log.debug("discovering " + workOffset + "+" + workLength);
@@ -559,10 +576,14 @@ public class SQLBackgroundParsingJob {
             {
                 SQLScriptElement firstElement = SQLScriptParser.extractQueryAtPos(parserContext, workOffset);
                 if (firstElement != null) {
-                    workOffset = Math.min(firstElement.getOffset(), workOffset);
+                    workLength = Math.max(workOffset + workLength, firstElement.getOffset() + firstElement.getLength());
+                    workOffset = Math.min(workOffset, firstElement.getOffset());
+                    workLength -= workOffset;
                 }
             }
-            List<SQLScriptElement> elements = SQLScriptParser.extractScriptQueries(parserContext, workOffset, workLength, false, false, false);
+            List<SQLScriptElement> elements = SQLScriptParser.extractScriptQueries(
+                parserContext, workOffset, workLength, false, false, false
+            );
             if (elements.isEmpty()) {
                 if (DEBUG) {
                     log.debug("No script elements to parse in range " + workOffset + "+" + workLength);
