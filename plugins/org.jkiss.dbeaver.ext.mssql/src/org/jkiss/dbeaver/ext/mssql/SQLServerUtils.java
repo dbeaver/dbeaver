@@ -48,6 +48,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -410,9 +411,12 @@ public class SQLServerUtils {
     @NotNull
     public static DBException mapException(@NotNull DBException e) {
         if (e instanceof DBSQLException dbsqlException) {
-            if (CROSS_DATABASE_QUERY_ERROR_PATTERN.matcher(dbsqlException.getMessage()).find()) {
+            Matcher croosDatabaseMatcher = CROSS_DATABASE_QUERY_ERROR_PATTERN.matcher(dbsqlException.getMessage());
+            if (croosDatabaseMatcher.find()) {
                 return new DBException(
-                    "Cross-database queries are not supported in this version of SQL Server. Create a new connection to the selected database.");
+                    "Cross-database queries are not supported in this version of SQL Server. Create a new connection to the '"
+                    + croosDatabaseMatcher.group(1).split("\\.")[0]
+                    + "' database.");
             }
         }
 
