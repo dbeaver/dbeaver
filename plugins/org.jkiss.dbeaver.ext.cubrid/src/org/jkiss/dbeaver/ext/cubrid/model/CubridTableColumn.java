@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -75,7 +76,10 @@ public class CubridTableColumn extends GenericTableColumn
     @Override
     @Property(viewable = true, editable = true, updatable = true, order = 40)
     public long getMaxLength() {
-        return super.getMaxLength();
+        if (getDataKind().equals(DBPDataKind.STRING)) {
+            return super.getMaxLength();
+        }
+        return 0;
     }
 
     @NotNull
