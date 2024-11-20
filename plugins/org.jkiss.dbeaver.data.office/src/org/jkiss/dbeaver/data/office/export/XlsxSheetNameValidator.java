@@ -21,6 +21,10 @@ import org.jkiss.code.Nullable;
 
 import java.util.Set;
 
+/**
+ * Xlsx sheet name validator.
+ * Follow the rules https://support.microsoft.com/en-us/office/rename-a-worksheet-3f1f7148-ee83-404d-8ef0-9ff99fbad1f9
+ */
 public class XlsxSheetNameValidator {
 
     public static final String DEFAULT_SPREAD_SHEET = "Sheet1";
