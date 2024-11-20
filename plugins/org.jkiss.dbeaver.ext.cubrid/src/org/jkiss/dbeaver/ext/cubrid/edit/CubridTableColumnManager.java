@@ -69,6 +69,18 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
         return column;
     }
 
+    public ColumnModifier<GenericTableColumn> CubridDataTypeModifier = (monitor, column, sql, command) -> {
+        final String typeName = column.getTypeName();
+        DBPDataKind dataKind = column.getDataKind();
+        sql.append(' ').append(typeName);
+        String modifiers = SQLUtils.getColumnTypeModifiers(column.getDataSource(), column, typeName, dataKind);
+        if (modifiers != null && !typeName.equals("STRING")) {
+            sql.append(modifiers);
+        } else if (modifiers == null && typeName.equals("VARCHAR")) {
+            sql.append("(" + column.getPrecision() + ")");
+        }
+    };
+
 	@NotNull
     @Override
     public StringBuilder getNestedDeclaration(
@@ -84,7 +96,7 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
             columnName = DBUtils.getQuotedIdentifier(column.getDataSource(), ((ObjectRenameCommand) command).getNewName());
         }
         decl.append(columnName);
-        for (ColumnModifier<GenericTableColumn> modifier : new ColumnModifier[]{DataTypeModifier, NullNotNullModifierConditional}) {
+        for (ColumnModifier<GenericTableColumn> modifier : new ColumnModifier[]{CubridDataTypeModifier, NullNotNullModifierConditional}) {
             modifier.appendModifier(monitor, column, decl, command);
         }
         if (!CommonUtils.isEmpty(column.getDefaultValue())) {
