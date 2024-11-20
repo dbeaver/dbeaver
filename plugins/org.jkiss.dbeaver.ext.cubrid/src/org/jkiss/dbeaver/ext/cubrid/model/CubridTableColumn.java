@@ -125,14 +125,15 @@ public class CubridTableColumn extends GenericTableColumn
                 dbStat.setString(1, getTable().getName());
                 dbStat.setString(2, getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    boolean isForeignKey = false;
                     while (dbResult.next()) {
-                        return true;
+                        isForeignKey = true;
                     }
+                    return isForeignKey;
                 }
             }
         } catch (SQLException e) {
             throw new DBDatabaseException(e, getDataSource());
         }
-        return false;
     }
 }
