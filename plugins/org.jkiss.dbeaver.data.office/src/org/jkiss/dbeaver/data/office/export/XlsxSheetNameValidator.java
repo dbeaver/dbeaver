@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.data.office.export;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+
 import java.util.Set;
 
 public class XlsxSheetNameValidator {
@@ -23,7 +26,11 @@ public class XlsxSheetNameValidator {
     public static final String DEFAULT_SPREAD_SHEET = "Sheet1";
     private static final Set<String> RESERVED_WORDS = Set.of("History");
 
-    public static String toValidExcelSheetName(String originSheetName) {
+    @NotNull
+    public static String toValidExcelSheetName(@Nullable String originSheetName) {
+        if (originSheetName == null) {
+            return DEFAULT_SPREAD_SHEET;
+        }
         String result = originSheetName.length() > 31 ? originSheetName.substring(0, 31) : originSheetName;
         result = result.replaceAll("[\\\\/*\\[\\]:?]", "_");
         result = result.strip();
