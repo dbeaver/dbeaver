@@ -248,6 +248,7 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
         return null;
     }
 
+    @NotNull
     @Override
     protected String getDefaultTypeName() {
         return "ANY"; //$NON-NLS-1$

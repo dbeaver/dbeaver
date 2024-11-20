@@ -1061,7 +1061,8 @@ public class GenericMetaModel {
             ((JDBCDataSourceInfo) dataSourceInfo).supportsViews();
     }
 
-	protected String getDefaultTypeName() {
-		return "N/A";  //$NON-NLS-1$
-	}
+    @NotNull
+    protected String getDefaultTypeName() {
+        return "N/A";  //$NON-NLS-1$
+    }
 }
