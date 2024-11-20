@@ -407,7 +407,8 @@ public class SQLServerUtils {
         return dbStat;
     }
 
-    public static DBException mapException(DBException e) {
+    @NotNull
+    public static DBException mapException(@NotNull DBException e) {
         if (e instanceof DBSQLException dbsqlException) {
             if (CROSS_DATABASE_QUERY_ERROR_PATTERN.matcher(dbsqlException.getMessage()).find()) {
                 return new DBException(
