@@ -562,13 +562,13 @@ public class MySQLCatalog implements
             if (!session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_USE_SERVER_SIDE_FILTERS)) {
                 // Client side filter
                 if (object != null || objectName != null) {
-                    appendTableNameCondition(session, object, objectName, sql);
+                    appendTableNameCondition(session, object, objectName, sql, true);
                 }
             } else {
                 String tableNameCol = DBUtils.getQuotedIdentifier(dataSource, "Tables_in_" + owner.getName());
                 if (object != null || objectName != null) {
                     sql.append(" WHERE ").append(tableNameCol);
-                    appendTableNameCondition(session, object, objectName, sql);
+                    appendTableNameCondition(session, object, objectName, sql, false);
                     if (dataSource.supportsSequences()) {
                         sql.append(" AND Table_type <> 'SEQUENCE'");
                     }
@@ -608,8 +608,8 @@ public class MySQLCatalog implements
             return session.prepareStatement(sql.toString());
         }
 
-        private static void appendTableNameCondition(@NotNull JDBCSession session, @Nullable MySQLTableBase object, @Nullable String objectName, StringBuilder sql) {
-            if (objectName != null && SQLUtils.isLikePattern(objectName)) {
+        private static void appendTableNameCondition(@NotNull JDBCSession session, @Nullable MySQLTableBase object, @Nullable String objectName, StringBuilder sql, boolean forceUseLike) {
+            if (forceUseLike || objectName != null && SQLUtils.isLikePattern(objectName)) {
                 sql.append(" LIKE ");
             } else {
                 sql.append(" = ");
