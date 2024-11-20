@@ -16,17 +16,23 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.model;
 
+import java.sql.SQLException;
 import java.util.Arrays;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class CubridTableColumn extends GenericTableColumn
 {
@@ -108,5 +114,25 @@ public class CubridTableColumn extends GenericTableColumn
     @Override
     public int getRadix() {
         return 0;
+    }
+
+    @NotNull
+    public boolean isForeignKey(@NotNull DBRProgressMonitor monitor) throws DBException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load foreign key")) {
+            String query = "select * from db_index a join db_index_key b on a.owner_name = b.owner_name and a.class_name = b.class_name "
+                         + "and a.index_name = b.index_name where is_foreign_key = 'YES' and a.class_name = ? and b.key_attr_name = ?";
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(query)) {
+                dbStat.setString(1, getTable().getName());
+                dbStat.setString(2, getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        return true;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBDatabaseException(e, getDataSource());
+        }
+        return false;
     }
 }

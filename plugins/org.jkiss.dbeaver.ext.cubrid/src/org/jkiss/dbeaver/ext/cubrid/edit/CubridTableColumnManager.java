@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -108,11 +109,19 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
             @NotNull Map<String, Object> options)
             throws DBException {
         final CubridTableColumn column = (CubridTableColumn) command.getObject();
+        boolean isForeignKey = column.isForeignKey(monitor);
         String table = column.getTable().getSchema().getName() + "." + column.getTable().getName();
-        actionList.add(
-                new SQLDatabasePersistAction(
-                        "Modify column",
-                        "ALTER TABLE " + table + " MODIFY " + getNestedDeclaration(monitor, column.getTable(), command, options)));
+        String query;
+        if (isForeignKey) {
+            if (!CommonUtils.isEmpty(column.getDescription())) {
+                DBWorkbench.getPlatformUI().showMessageBox("This column is a foreign key", "Modifications other than comments are not allowed for foreign key columns.", false);
+                query = "ALTER TABLE " + table + " COMMENT ON COLUMN " + column.getName() + " = " + SQLUtils.quoteString(column, column.getDescription());
+                actionList.add(new SQLDatabasePersistAction("Modify column", query));
+            }
+        } else {
+            query = "ALTER TABLE " + table + " MODIFY " + getNestedDeclaration(monitor, column.getTable(), command, options);
+            actionList.add(new SQLDatabasePersistAction("Modify column", query));
+        }
     }
 
     @Override
