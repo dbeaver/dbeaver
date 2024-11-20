@@ -130,7 +130,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
     }
 
     @NotNull
-    public String makeArrayString() {
+    public String makeArrayString(char ... brackets) {
         if (isNull()) {
             return SQLConstants.NULL_VALUE;
         }
@@ -144,7 +144,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
         //     return valueHandler.getValueDisplayString(type, contents[0], format);
         // } else {
         StringBuilder str = new StringBuilder(contents.length * 32);
-        str.append("{");
+        str.append(brackets[0]);
         for (int i = 0; i < contents.length; i++) {
             Object item = contents[i];
             if (i > 0) str.append(','); //$NON-NLS-1$
@@ -152,7 +152,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
             SQLUtils.appendValue(str, type, itemString);
         }
         // }
-        str.append("}");
+        str.append(brackets[1]);
         return str.toString();
     }
 

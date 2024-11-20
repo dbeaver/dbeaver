@@ -17,7 +17,7 @@
 
 package org.jkiss.dbeaver;
 
-import org.jkiss.dbeaver.ui.controls.HolidayDecorations;
+import org.jkiss.dbeaver.ui.controls.decorations.HolidayDecorations;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences;
 
 /**
