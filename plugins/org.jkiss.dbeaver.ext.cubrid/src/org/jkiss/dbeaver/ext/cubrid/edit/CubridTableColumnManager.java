@@ -44,6 +44,18 @@ import java.util.Map;
 
 public class CubridTableColumnManager extends GenericTableColumnManager implements DBEObjectRenamer<GenericTableColumn>
 {
+   public ColumnModifier<GenericTableColumn> CubridDataTypeModifier = (monitor, column, sql, command) -> {
+        final String typeName = column.getTypeName();
+        DBPDataKind dataKind = column.getDataKind();
+        sql.append(' ').append(typeName);
+        String modifiers = SQLUtils.getColumnTypeModifiers(column.getDataSource(), column, typeName, dataKind);
+        if (modifiers != null && !typeName.equals("STRING")) {
+            sql.append(modifiers);
+        } else if (modifiers == null && typeName.equals("VARCHAR")) {
+            sql.append("(" + column.getPrecision() + ")");
+        }
+    };
+
     @NotNull
     @Override
     protected CubridTableColumn createDatabaseObject(
@@ -68,18 +80,6 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
         column.setPersisted(false);
         return column;
     }
-
-    public ColumnModifier<GenericTableColumn> CubridDataTypeModifier = (monitor, column, sql, command) -> {
-        final String typeName = column.getTypeName();
-        DBPDataKind dataKind = column.getDataKind();
-        sql.append(' ').append(typeName);
-        String modifiers = SQLUtils.getColumnTypeModifiers(column.getDataSource(), column, typeName, dataKind);
-        if (modifiers != null && !typeName.equals("STRING")) {
-            sql.append(modifiers);
-        } else if (modifiers == null && typeName.equals("VARCHAR")) {
-            sql.append("(" + column.getPrecision() + ")");
-        }
-    };
 
 	@NotNull
     @Override
