@@ -758,20 +758,26 @@ public class GeneralUtils {
     }
 
     public static Path getMetadataFolder() {
-        if (!DBWorkbench.isPlatformStarted()) {
-            log.warn("Platform not initialized: metadata folder may be not set");
-        }
-        DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
         Path workspacePath;
-        if (workspace == null) {
-            log.warn("Metadata is read before workspace initialization");
+        if (!DBWorkbench.isPlatformStarted()) {
+            log.debug("Platform not initialized: metadata folder may be not set");
             try {
                 workspacePath = RuntimeUtils.getLocalPathFromURL(Platform.getInstanceLocation().getURL());
             } catch (IOException e) {
                 throw new IllegalStateException("Can't parse workspace location URL", e);
             }
         } else {
-            workspacePath = workspace.getAbsolutePath();
+            DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
+            if (workspace == null) {
+                log.warn("Metadata is read before workspace initialization");
+                try {
+                    workspacePath = RuntimeUtils.getLocalPathFromURL(Platform.getInstanceLocation().getURL());
+                } catch (IOException e) {
+                    throw new IllegalStateException("Can't parse workspace location URL", e);
+                }
+            } else {
+                workspacePath = workspace.getAbsolutePath();
+            }
         }
         Path metaDir = getMetadataFolder(workspacePath);
         if (!Files.exists(metaDir)) {
