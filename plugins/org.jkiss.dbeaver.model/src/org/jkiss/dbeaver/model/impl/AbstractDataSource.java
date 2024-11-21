@@ -35,6 +35,7 @@ public abstract class AbstractDataSource implements DBPDataSource, DBSObject {
     @NotNull
     protected final DBPDataSourceContainer container;
     private final Map<String, Object> contextAttributes = new LinkedHashMap<>();
+    private volatile boolean isReconnecting = false;
 
     public AbstractDataSource(@NotNull DBPDataSourceContainer container) {
         this.container = container;
@@ -105,4 +106,11 @@ public abstract class AbstractDataSource implements DBPDataSource, DBSObject {
         contextAttributes.remove(attributeName);
     }
 
+    public boolean isReconnecting() {
+        return isReconnecting;
+    }
+
+    public void setReconnecting(boolean reconnecting) {
+        isReconnecting = reconnecting;
+    }
 }

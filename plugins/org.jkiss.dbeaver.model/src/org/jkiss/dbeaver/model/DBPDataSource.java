@@ -94,4 +94,8 @@ public interface DBPDataSource extends DBSInstanceContainer, DBPContextWithAttri
      */
     void initialize(@NotNull DBRProgressMonitor monitor) throws DBException;
 
+    boolean isReconnecting();
+
+    void setReconnecting(boolean reconnecting);
+
 }

@@ -169,7 +169,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         }
         databaseCache.setCache(dbList);
         // Initiate default context
-        getDefaultInstance().checkInstanceConnection(monitor, false);
+        if (!this.isReconnecting()) {
+            getDefaultInstance().checkInstanceConnection(monitor, false);
+        }
         try {
             // Preload some settings, if available
             settingCache.getObject(monitor, this, PostgreConstants.OPTION_STANDARD_CONFORMING_STRINGS);
@@ -467,15 +469,18 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         super.refreshObject(monitor);
         shutdown(monitor);
 
-        this.databaseCache.clearCache();
-        this.activeDatabaseName = null;
-
-        this.initializeRemoteInstance(monitor);
+        try {
+            this.setReconnecting(true);
+            this.databaseCache.clearCache();
+            this.activeDatabaseName = null;
+            this.initializeRemoteInstance(monitor);
+        } finally {
+            this.setReconnecting(false);
+        }
         this.initialize(monitor);
 
         return this;
