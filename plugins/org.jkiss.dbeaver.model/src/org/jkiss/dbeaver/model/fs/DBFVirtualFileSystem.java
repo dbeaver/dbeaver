@@ -26,6 +26,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
+import java.util.List;
 
 /**
  * Virtual file system
@@ -49,7 +50,7 @@ public interface DBFVirtualFileSystem extends Closeable {
     String getProviderId();
 
     @NotNull
-    DBFVirtualFileSystemRoot[] getRootFolders(DBRProgressMonitor monitor) throws DBException;
+    List<? extends DBFVirtualFileSystemRoot> getRootFolders(DBRProgressMonitor monitor) throws DBException;
 
     @NotNull
     Path getPathByURI(@NotNull DBRProgressMonitor monitor, @NotNull URI uri) throws DBException;

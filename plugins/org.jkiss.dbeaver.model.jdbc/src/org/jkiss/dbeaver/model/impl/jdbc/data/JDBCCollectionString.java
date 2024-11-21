@@ -40,9 +40,9 @@ public class JDBCCollectionString extends JDBCCollection {
     }
 
     @NotNull
-    public String makeArrayString() {
+    public String makeArrayString(char ... brackets) {
         if (isModified()) {
-            return super.makeArrayString();
+            return super.makeArrayString(brackets);
         }
         return value;
     }

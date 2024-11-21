@@ -998,9 +998,13 @@ public class SQLQueryJob extends DataSourceJob
     }
 */
 
-    public void extractData(@NotNull DBCSession session, @NotNull SQLScriptElement query, int resultNumber, boolean fireEvents)
-        throws DBCException
-    {
+    public void extractData(
+        @NotNull DBCSession session,
+        @NotNull SQLScriptElement query,
+        int resultNumber,
+        boolean fireEvents,
+        boolean allowStatistics
+    ) throws DBCException {
         // Reset query to original. Otherwise multiple filters will corrupt it
         query.reset();
 
@@ -1021,7 +1025,7 @@ public class SQLQueryJob extends DataSourceJob
             } else {
                 throw new DBCException(lastError, getExecutionContext());
             }
-        } else if (result && statistics.getStatementsCount() > 0) {
+        } else if (allowStatistics && result && statistics.getStatementsCount() > 0) {
             showExecutionResult(session);
         }
     }
