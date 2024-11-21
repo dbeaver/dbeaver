@@ -52,7 +52,8 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
         if (modifiers != null && !typeName.equals("STRING")) {
             sql.append(modifiers);
         } else if (modifiers == null && typeName.equals("VARCHAR")) {
-            sql.append("(" + column.getPrecision() + ")");
+            sql.append('(').append(column.getPrecision()).append(')');
+
         }
     };
 
