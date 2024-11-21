@@ -49,11 +49,10 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
         DBPDataKind dataKind = column.getDataKind();
         sql.append(' ').append(typeName);
         String modifiers = SQLUtils.getColumnTypeModifiers(column.getDataSource(), column, typeName, dataKind);
-        if (modifiers != null && !typeName.equals("STRING")) {
+        if (modifiers != null && !typeName.equalsIgnoreCase("STRING")) {
             sql.append(modifiers);
-        } else if (modifiers == null && typeName.equals("VARCHAR")) {
+        } else if (modifiers == null && typeName.equalsIgnoreCase("VARCHAR")) {
             sql.append('(').append(column.getPrecision()).append(')');
-
         }
     };
 
