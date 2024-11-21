@@ -17,7 +17,9 @@
 package org.jkiss.dbeaver.ext.clickhouse.model.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCArrayValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -27,6 +29,16 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
     @Override
     protected boolean convertSingleValueToArray() {
         return false;
+    }
+
+    @NotNull
+    @Override
+    public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
+    {
+        if (value instanceof JDBCCollection col) {
+            return col.makeArrayString('[', ']');
+        }
+        return super.getValueDisplayString(column, value, format);
     }
 
     @Override

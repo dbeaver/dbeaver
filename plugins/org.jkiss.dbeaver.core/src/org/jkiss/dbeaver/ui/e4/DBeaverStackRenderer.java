@@ -36,6 +36,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
@@ -51,7 +52,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.HolidayDecorations;
+import org.jkiss.dbeaver.ui.controls.decorations.HolidayDecorations;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
@@ -69,6 +70,7 @@ public class DBeaverStackRenderer extends StackRenderer {
     private static final Log log = Log.getLog(DBeaverStackRenderer.class);
 
     private static final String ONBOARDING_CONTAINER = "EditorStack.OnboardingContainer"; //$NON-NLS-1$
+    private static final String ONBOARDING_COMPOSITE = "EditorStack.OnboardingComposite"; //$NON-NLS-1$
     private static final String EDITOR_STACK_ID = "EditorStack"; //$NON-NLS-1$
     private static final String ID = "id"; //$NON-NLS-1$
 
@@ -229,7 +231,7 @@ public class DBeaverStackRenderer extends StackRenderer {
 
         new MenuItem(menu, SWT.SEPARATOR);
 
-        if (inputFile!= null && !inputFile.isReadOnly()) {
+        if (inputFile != null && !inputFile.isReadOnly()) {
             if (workbenchPart instanceof SQLEditor) {
                 addActionItem(workbenchPart, menu, SQLEditorCommands.CMD_SQL_DELETE_THIS_SCRIPT);
             }
@@ -329,16 +331,28 @@ public class DBeaverStackRenderer extends StackRenderer {
             // See StackRenderer#initializeOnboardingInformationInEditorStack (2024-06)
             if (element instanceof MPerspective perspective) {
                 for (MPartStack stack : modelService.findElements(perspective, null, MPartStack.class, List.of(EDITOR_STACK_ID))) {
-                    if (stack.getWidget() instanceof CTabFolder parent) {
-                        for (Control child : parent.getChildren()) {
-                            if (child instanceof Composite composite && ONBOARDING_CONTAINER.equals(child.getData(ID))) {
-                                HolidayDecorations.install(composite);
-                                break;
-                            }
-                        }
+                    Control container = getChild(stack.getWidget(), ONBOARDING_CONTAINER);
+                    if (container == null || !HolidayDecorations.install(container)) {
+                        continue;
+                    }
+                    Control composite = getChild(container, ONBOARDING_COMPOSITE);
+                    if (composite != null && composite.getLayoutData() instanceof GridData data) {
+                        data.exclude = true;
                     }
                 }
             }
         });
+    }
+
+    @Nullable
+    private static Control getChild(@Nullable Object widget, @NotNull String id) {
+        if (widget instanceof Composite composite) {
+            for (Control child : composite.getChildren()) {
+                if (id.equals(child.getData(ID))) {
+                    return child;
+                }
+            }
+        }
+        return null;
     }
 }

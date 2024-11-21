@@ -72,7 +72,7 @@ public class RolePermissionsEditor extends PostgresPermissionsEditor<DBSObject> 
 
     @Override
     protected boolean doesSupportObject(DBSObject object) {
-        return !PostgreSchema.class.isAssignableFrom(defineObjectType(object));
+        return object instanceof PostgrePrivilegeOwner;
     }
 
     @Override
