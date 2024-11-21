@@ -59,6 +59,7 @@ public class UIConnectionMessages extends NLS {
 
     public static String dialog_setting_ssl_configurator_label_optional;
     public static String dialog_setting_ssl_configurator_label_description;
+    public static String dialog_setting_ssl_configurator_label_note;
     public static String dialog_setting_ssl_configurator_legend_parameters;
     public static String dialog_setting_ssl_configurator_method;
     public static String dialog_setting_ssl_configurator_method_certs;
