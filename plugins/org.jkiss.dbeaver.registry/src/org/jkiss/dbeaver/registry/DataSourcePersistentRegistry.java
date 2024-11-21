@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Collection;
@@ -29,7 +30,7 @@ import java.util.function.Predicate;
 /**
  * Data source persistent registry.
  */
-public interface DataSourcePersistentRegistry {
+public interface DataSourcePersistentRegistry extends DBPDataSourceRegistry {
 
     /**
      * Loads data sources from storages.
