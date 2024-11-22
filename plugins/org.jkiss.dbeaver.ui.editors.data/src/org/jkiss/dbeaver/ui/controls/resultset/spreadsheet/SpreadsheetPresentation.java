@@ -2431,14 +2431,14 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 return ((DBDValueError) value).getErrorTitle();
             }
 
-            if ((value instanceof Boolean || value instanceof Number) && isShowAsCheckbox(attr)) {
+            if ((value instanceof Boolean || value instanceof Number || value == null) && isShowAsCheckbox(attr)) {
                 if (booleanStyles.getMode() != BooleanMode.TEXT) {
                     return "";
                 }
                 if (value instanceof Number) {
                     value = ((Number) value).byteValue() != 0;
                 }
-                if (booleanStyles.getMode() == BooleanMode.TEXT && (DBUtils.isNullValue(value) || value instanceof Boolean)) {
+                if (booleanStyles.getMode() == BooleanMode.TEXT) {
                     return booleanStyles.getStyle((Boolean) value).getText();
                 }
                 return value;

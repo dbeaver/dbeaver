@@ -566,8 +566,11 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         {
             List<OracleDataType> dtList = new ArrayList<>();
             for (Map.Entry<String, OracleDataType.TypeDesc> predefinedType : OracleDataType.PREDEFINED_TYPES.entrySet()) {
-                OracleDataType dataType = new OracleDataType(this, predefinedType.getKey(), true);
-                dtList.add(dataType);
+                OracleDataType.TypeDesc typeDesc = predefinedType.getValue();
+                if (this.isServerVersionAtLeast(typeDesc.serverAtLeastMajor, typeDesc.serverAtLeastMinor)) {
+                    OracleDataType dataType = new OracleDataType(this, predefinedType.getKey(), true);
+                    dtList.add(dataType);
+                }
             }
             this.dataTypeCache.setCache(dtList);
         }

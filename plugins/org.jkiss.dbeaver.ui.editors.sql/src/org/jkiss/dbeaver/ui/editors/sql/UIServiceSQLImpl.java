@@ -273,7 +273,7 @@ public class UIServiceSQLImpl implements UIServiceSQL {
                 return false;
             case DEFAULT:
             default: 
-                return !container.isForceUseSingleConnection();
+                return !container.isForceUseSingleConnection() && !container.getDriver().isEmbedded();
         }
     }
 }

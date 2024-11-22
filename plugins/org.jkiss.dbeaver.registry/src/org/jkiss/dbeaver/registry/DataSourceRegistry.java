@@ -600,17 +600,16 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     }
 
     public void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws DBException {
-        if (!(dataSource instanceof DataSourceDescriptor)) {
+        if (!(dataSource instanceof DataSourceDescriptor descriptor)) {
             return;
         }
         if (!dataSources.containsKey(dataSource.getId())) {
             addDataSource(dataSource);
         } else {
-            if (!((DataSourceDescriptor) dataSource).isDetached()) {
+            if (!descriptor.isDetached()) {
                 persistDataSourceUpdate(dataSource);
             }
-            DataSourceDescriptor descriptor = (DataSourceDescriptor) dataSource;
-            descriptor.persistSecretIfNeeded(false, false);
+            descriptor.persistSecretIfNeeded(true, false);
             this.fireDataSourceEvent(DBPEvent.Action.OBJECT_UPDATE, dataSource);
         }
     }
