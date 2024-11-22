@@ -37,8 +37,8 @@ public class CubridTableColumn extends GenericTableColumn
             @NotNull GenericTableBase table,
             @Nullable String columnName,
             @Nullable String dataType,
-            @Nullable boolean autoIncrement,
-            @Nullable boolean isForeignKey,
+            boolean autoIncrement,
+            boolean isForeignKey,
             @Nullable JDBCResultSet dbResult)
             throws DBException {
         super(table);
