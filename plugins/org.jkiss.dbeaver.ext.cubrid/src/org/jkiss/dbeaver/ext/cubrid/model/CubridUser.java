@@ -199,7 +199,19 @@ public class CubridUser extends GenericSchema
                     }
                 }
             }
-            return new CubridTableColumn(table, columnName, showDataType == null ? dataType : showDataType, autoIncrement, dbResult);
+            boolean isForeignKey = false;
+            String sql1 = "select * from db_index a join db_index_key b on a.owner_name = b.owner_name and a.class_name = b.class_name "
+                        + "and a.index_name = b.index_name where is_foreign_key = 'YES' and a.class_name = ? and b.key_attr_name = ?";
+            try (JDBCPreparedStatement dbStat1 = session.prepareStatement(sql1)) {
+                dbStat1.setString(1, table.getName());
+                dbStat1.setString(2, columnName);
+                try (JDBCResultSet result1 = dbStat1.executeQuery()) {
+                    while (result1.next()) {
+                        isForeignKey = true;
+                    }
+                }
+            }
+            return new CubridTableColumn(table, columnName, showDataType == null ? dataType : showDataType, autoIncrement, isForeignKey, dbResult);
         }
     }
 

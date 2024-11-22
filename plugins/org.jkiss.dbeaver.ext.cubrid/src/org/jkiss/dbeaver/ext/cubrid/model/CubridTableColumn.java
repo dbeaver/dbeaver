@@ -16,37 +16,34 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.model;
 
-import java.sql.SQLException;
 import java.util.Arrays;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class CubridTableColumn extends GenericTableColumn
 {
     final static String [] customTypes = {"ENUM", "JSON"};
+    public boolean isForeignKey;
 
     public CubridTableColumn(
             @NotNull GenericTableBase table,
             @Nullable String columnName,
             @Nullable String dataType,
-            @Nullable Boolean autoIncrement,
+            @Nullable boolean autoIncrement,
+            @Nullable boolean isForeignKey,
             @Nullable JDBCResultSet dbResult)
             throws DBException {
         super(table);
         if (dbResult != null) {
+            this.isForeignKey = isForeignKey;
             setName(columnName);
             setDataType(dataType);
             setPrecision(JDBCUtils.safeGetInteger(dbResult, "prec"));
@@ -61,6 +58,11 @@ public class CubridTableColumn extends GenericTableColumn
         }
     }
 
+    @NotNull
+    public boolean isForeignKey() {
+        return isForeignKey;
+    }
+
     public void setDataType(@NotNull String fullTypeName) throws DBException {
         String type =  Arrays.stream(customTypes).filter(item->fullTypeName.contains(item)).findFirst().orElse(null);
         if (type == null) {
@@ -72,28 +74,28 @@ public class CubridTableColumn extends GenericTableColumn
 
     @NotNull
     @Override
-    @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = ColumnTypeNameListProvider.class)
+    @Property(viewable = true, editable = true, updatableExpr = "!object.foreignKey", order = 20, listProvider = ColumnTypeNameListProvider.class)
     public String getTypeName() {
         return super.getTypeName();
     }
 
     @Nullable
     @Override
-    @Property(viewable = true, editable = true, updatable = true, order = 40)
+    @Property(viewable = true, editable = true, updatableExpr = "!object.foreignKey", order = 40)
     public long getMaxLength() {
         return super.getMaxLength();
     }
 
     @NotNull
     @Override
-    @Property(viewable = true, editable = true, updatable = true, order = 50)
+    @Property(viewable = true, editable = true, updatableExpr = "!object.foreignKey", order = 50)
     public boolean isRequired() {
         return super.isRequired();
     }
 
     @Nullable
     @Override
-    @Property(viewable = true, editable = true, updatable = true, order = 70)
+    @Property(viewable = true, editable = true, updatableExpr = "!object.foreignKey", order = 70)
     public String getDefaultValue() {
         return super.getDefaultValue();
     }
@@ -114,26 +116,5 @@ public class CubridTableColumn extends GenericTableColumn
     @Override
     public int getRadix() {
         return 0;
-    }
-
-    @NotNull
-    public boolean isForeignKey(@NotNull DBRProgressMonitor monitor) throws DBException {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load foreign key")) {
-            String query = "select * from db_index a join db_index_key b on a.owner_name = b.owner_name and a.class_name = b.class_name "
-                         + "and a.index_name = b.index_name where is_foreign_key = 'YES' and a.class_name = ? and b.key_attr_name = ?";
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(query)) {
-                dbStat.setString(1, getTable().getName());
-                dbStat.setString(2, getName());
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    boolean isForeignKey = false;
-                    while (dbResult.next()) {
-                        isForeignKey = true;
-                    }
-                    return isForeignKey;
-                }
-            }
-        } catch (SQLException e) {
-            throw new DBDatabaseException(e, getDataSource());
-        }
     }
 }

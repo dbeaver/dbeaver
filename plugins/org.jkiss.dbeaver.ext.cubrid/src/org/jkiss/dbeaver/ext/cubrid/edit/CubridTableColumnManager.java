@@ -58,7 +58,7 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
         DBSDataType columnType = findBestDataType(table, DBConstants.DEFAULT_DATATYPE_NAMES);
         int columnSize = columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0;
 
-        CubridTableColumn column = new CubridTableColumn(table, null, null, false, null);
+        CubridTableColumn column = new CubridTableColumn(table, null, null, false, false, null);
         column.setName(getNewColumnName(monitor, context, table));
         column.setTypeName(columnType == null ? "INTEGER" : columnType.getName());
         column.setMaxLength(columnSize);
@@ -109,12 +109,10 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
             @NotNull Map<String, Object> options)
             throws DBException {
         final CubridTableColumn column = (CubridTableColumn) command.getObject();
-        boolean isForeignKey = column.isForeignKey(monitor);
         String table = column.getTable().getSchema().getName() + "." + column.getTable().getName();
         String query;
-        if (isForeignKey) {
+        if (column.isForeignKey()) {
             if (!CommonUtils.isEmpty(column.getDescription())) {
-                DBWorkbench.getPlatformUI().showMessageBox("This column is a foreign key", "Modifications other than comments are not allowed for foreign key columns.", false);
                 query = "ALTER TABLE " + table + " COMMENT ON COLUMN " + column.getName() + " = " + SQLUtils.quoteString(column, column.getDescription());
                 actionList.add(new SQLDatabasePersistAction("Modify column", query));
             }
