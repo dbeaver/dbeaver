@@ -59,6 +59,12 @@ public class NewConnectionWizard extends ConnectionWizard
     private ConnectionPageGeneral pageGeneral;
     private DataSourceDescriptor dataSourceNew;
 
+    /** A default constructor used by Eclipse's "New" command */
+    @SuppressWarnings("unused")
+    public NewConnectionWizard() {
+        this(null, null);
+    }
+
     public NewConnectionWizard(@Nullable DBPDriver initialDriver, @Nullable DBPConnectionConfiguration initialConfiguration) {
         setWindowTitle(CoreMessages.dialog_new_connection_wizard_title);
         this.initialDriver = initialDriver;
