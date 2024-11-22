@@ -17,11 +17,16 @@
 package org.jkiss.dbeaver.registry.driver;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
+import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.ProductBundleRegistry;
 import org.jkiss.dbeaver.registry.RegistryConstants;
@@ -202,6 +207,37 @@ public class DriverUtils {
         allDrivers.sort(Comparator.comparing(DBPNamedObject::getName));
 
         return allDrivers;
+    }
+
+    public static boolean downloadDriverFiles(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDriver driverDescriptor,
+        @NotNull DBPDriverDependencies dependencies
+    ) {
+        try {
+            dependencies.resolveDependencies(monitor);
+        } catch (DBException e) {
+            log.error("Error resolving dependencies", e);
+            return false;
+        }
+        List<DBPDriverDependencies.DependencyNode> nodes = dependencies.getLibraryList();
+        for (DBPDriverDependencies.DependencyNode node : nodes) {
+            if (monitor.isCanceled()) {
+                break;
+            }
+            final DBPDriverLibrary lib = node.library;
+            try {
+                lib.downloadLibraryFile(
+                    monitor,
+                    false,
+                    "Download driver '" + driverDescriptor.getFullName() + "' library '" + lib.getDisplayName() + "'");
+            } catch (final IOException e) {
+                log.error(e);
+            } catch (InterruptedException e) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public static class DriverNameComparator implements Comparator<DBPDriver> {

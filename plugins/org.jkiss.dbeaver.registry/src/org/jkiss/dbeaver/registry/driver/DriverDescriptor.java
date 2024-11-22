@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.NativeClientDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.ui.UIServiceDrivers;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.VersionUtils;
@@ -1495,7 +1496,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         boolean downloaded = false;
         if (!downloadCandidates.isEmpty() || (!localLibsExists && !fileSources.isEmpty())) {
             final DriverDependencies dependencies = new DriverDependencies(downloadCandidates);
-            boolean downloadOk = DBWorkbench.getPlatformUI().downloadDriverFiles(this, dependencies);
+            UIServiceDrivers serviceDrivers = DBWorkbench.getService(UIServiceDrivers.class);
+            boolean downloadOk;
+            if (serviceDrivers != null) {
+                downloadOk = serviceDrivers.downloadDriverFiles(monitor, this, dependencies);
+            } else {
+                downloadOk = DriverUtils.downloadDriverFiles(monitor, this, dependencies);
+            }
             if (!downloadOk) {
                 return Collections.emptyList();
             }
