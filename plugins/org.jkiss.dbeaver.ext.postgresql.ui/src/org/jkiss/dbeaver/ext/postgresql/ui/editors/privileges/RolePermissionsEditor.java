@@ -43,7 +43,7 @@ public class RolePermissionsEditor extends PostgresPermissionsEditor<DBSObject> 
         DBSObject object
     ) {
         if (object instanceof DBNDatabaseFolder folder) {
-            return defaultPrivilege(folder);
+            return defaultPrivilege(privilegeType, folder);
         } else {
             return grantRolePrivilege(privilegeType, (PostgrePrivilegeOwner) object);
         }
@@ -55,7 +55,7 @@ public class RolePermissionsEditor extends PostgresPermissionsEditor<DBSObject> 
         DBSObject object
     ) {
         if (object instanceof DBNDatabaseFolder folder) {
-            return revokeDefaultPrivilege(folder);
+            return revokeDefaultPrivilege(privilegeType, folder);
         } else {
             return revokeRolePrivilege(privilegeType, (PostgrePrivilegeOwner) object);
         }
@@ -72,7 +72,7 @@ public class RolePermissionsEditor extends PostgresPermissionsEditor<DBSObject> 
 
     @Override
     protected boolean doesSupportObject(DBSObject object) {
-        return object instanceof PostgrePrivilegeOwner;
+        return object instanceof PostgrePrivilegeOwner || !PostgreSchema.class.isAssignableFrom(defineObjectType(object));
     }
 
     @Override
@@ -89,7 +89,10 @@ public class RolePermissionsEditor extends PostgresPermissionsEditor<DBSObject> 
         return new DatabaseObjectFilter();
     }
 
-    private PostgrePrivilege defaultPrivilege(DBNDatabaseFolder folder) {
+    private PostgrePrivilege defaultPrivilege(
+        PostgrePrivilegeType privilegeType,
+        DBNDatabaseFolder folder
+    ) {
         DBSObject parentObject = ((DBNDatabaseItem) folder.getParentNode()).getObject();
         if (!(parentObject instanceof PostgreSchema)) {
             throw new IllegalArgumentException("Unsupported parent object: " + parentObject);
@@ -97,18 +100,25 @@ public class RolePermissionsEditor extends PostgresPermissionsEditor<DBSObject> 
 
         return objectToPrivileges.computeIfAbsent(getObjectName(folder), key -> {
             PostgreRole role = (PostgreRole) getDatabaseObject();
+            PostgreSchema owner = (PostgreSchema) parentObject;
             PostgreDefaultPrivilege defaultPrivilege = new PostgreDefaultPrivilege(
-                (PostgreSchema) parentObject,
+                owner,
                 role.getRoleReference(),
-                Collections.emptyList()
+                List.of(createGrant(owner, role, privilegeType))
             );
             defaultPrivilege.setUnderKind(defineKind(folder.getChildrenClass()));
             return defaultPrivilege;
         });
     }
 
-    private PostgrePrivilege revokeDefaultPrivilege(DBNDatabaseFolder folder) {
-        return objectToPrivileges.remove(getObjectName(folder));
+    private PostgrePrivilege revokeDefaultPrivilege(
+        PostgrePrivilegeType privilegeType,
+        DBNDatabaseFolder folder
+    ) {
+        return objectToPrivileges.computeIfPresent(getObjectName(folder), (key, value) -> {
+            value.removePermission(privilegeType);
+            return value;
+        });
     }
 
     private PostgrePrivilege grantRolePrivilege(
