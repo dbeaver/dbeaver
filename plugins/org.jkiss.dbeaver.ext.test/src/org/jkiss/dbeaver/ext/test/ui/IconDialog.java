@@ -16,12 +16,14 @@
  */
 package org.jkiss.dbeaver.ext.test.ui;
 
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -35,11 +37,14 @@ import org.jkiss.dbeaver.ext.test.handlers.ShowIconsHandler;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -91,6 +96,14 @@ public class IconDialog extends TrayDialog {
                 Label label = new Label(group, SWT.NONE);
                 label.setImage(DBeaverIcons.getImage(image));
                 label.setToolTipText(image.getLocation());
+                label.addMouseListener(MouseListener.mouseUpAdapter(e -> {
+                    try {
+                        var url = FileLocator.toFileURL(new URL(image.getLocation()));
+                        ShellUtils.showInSystemExplorer(new File(url.toURI()));
+                    } catch (Exception ex) {
+                        log.error("Error accessing icon " + image.getLocation(), ex);
+                    }
+                }));
             }
         });
 

@@ -195,7 +195,6 @@
                     <file type="jar" path="maven:/cubrid:cubrid-jdbc:RELEASE" bundle="!drivers.cubrid"/>
                     <file type="jar" path="drivers/cubrid" bundle="drivers.cubrid"/>
                     <replace provider="generic" driver="cubrid_jdbc"/>
-                    <parameter name="ping-sql" value="SELECT 1"/>
                     <parameter name="stored-unquoted-case" value="UPPER"/>
                     <property name="altHosts" value=""/>
                     <property name="rcTime" value="600"/>

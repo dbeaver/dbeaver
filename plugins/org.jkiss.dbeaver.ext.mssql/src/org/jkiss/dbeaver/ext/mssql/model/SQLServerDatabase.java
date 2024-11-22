@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.DBSQLException;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
@@ -337,7 +338,11 @@ public class SQLServerDatabase
 
     @Override
     public Collection<SQLServerSchema> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return schemaCache.getAllObjects(monitor, this);
+        try {
+            return schemaCache.getAllObjects(monitor, this);
+        } catch (DBSQLException exception) {
+            throw SQLServerUtils.mapException(exception);
+        }
     }
 
     @Override
@@ -416,7 +421,11 @@ public class SQLServerDatabase
 
     @Association
     public Collection<SQLServerDatabaseTrigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
-        return triggerCache.getAllObjects(monitor, this);
+        try {
+            return triggerCache.getAllObjects(monitor, this);
+        } catch (DBSQLException exception) {
+            throw SQLServerUtils.mapException(exception);
+        }
     }
 
     TriggerCache getTriggerCache() {

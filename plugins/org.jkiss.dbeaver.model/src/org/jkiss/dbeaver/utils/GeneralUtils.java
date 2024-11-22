@@ -248,23 +248,6 @@ public class GeneralUtils {
         return divPos == -1 ? value : value.substring(0, divPos);
     }
 
-    public static Throwable getRootCause(Throwable ex) {
-        for (Throwable e = ex; ; e = e.getCause()) {
-            if (e.getCause() == null) {
-                return e;
-            }
-        }
-    }
-
-    public static boolean hasCause(Throwable ex, Class<? extends Throwable> causeClass) {
-        for (Throwable e = ex; e != null; e = e.getCause()) {
-            if (causeClass.isAssignableFrom(e.getClass())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     @NotNull
     public static IStatus makeInfoStatus(String message) {
         return new Status(
@@ -775,20 +758,26 @@ public class GeneralUtils {
     }
 
     public static Path getMetadataFolder() {
-        if (!DBWorkbench.isPlatformStarted()) {
-            log.warn("Platform not initialized: metadata folder may be not set");
-        }
-        DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
         Path workspacePath;
-        if (workspace == null) {
-            log.warn("Metadata is read before workspace initialization");
+        if (!DBWorkbench.isPlatformStarted()) {
+            log.debug("Platform not initialized: metadata folder may be not set");
             try {
                 workspacePath = RuntimeUtils.getLocalPathFromURL(Platform.getInstanceLocation().getURL());
             } catch (IOException e) {
                 throw new IllegalStateException("Can't parse workspace location URL", e);
             }
         } else {
-            workspacePath = workspace.getAbsolutePath();
+            DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
+            if (workspace == null) {
+                log.warn("Metadata is read before workspace initialization");
+                try {
+                    workspacePath = RuntimeUtils.getLocalPathFromURL(Platform.getInstanceLocation().getURL());
+                } catch (IOException e) {
+                    throw new IllegalStateException("Can't parse workspace location URL", e);
+                }
+            } else {
+                workspacePath = workspace.getAbsolutePath();
+            }
         }
         Path metaDir = getMetadataFolder(workspacePath);
         if (!Files.exists(metaDir)) {
