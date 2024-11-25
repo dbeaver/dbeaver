@@ -31,6 +31,7 @@
    <plugin id="org.jkiss.dbeaver.ext.es" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.exasol" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.firebird" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.gbase8s" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.greenplum" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.h2" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.h2gis" version="0.0.0" />
