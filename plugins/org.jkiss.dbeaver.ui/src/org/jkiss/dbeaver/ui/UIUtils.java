@@ -2423,6 +2423,7 @@ public class UIUtils {
 
     @Nullable
     public static ToolItem findToolItemByCommandId(@NotNull ToolBarManager toolbarManager, @NotNull String commandId) {
+        System.out.println("findToolItemByCommandId");
         for (ToolItem item : toolbarManager.getControl().getItems()) {
             Object data = item.getData();
             if (data instanceof CommandContributionItem) {

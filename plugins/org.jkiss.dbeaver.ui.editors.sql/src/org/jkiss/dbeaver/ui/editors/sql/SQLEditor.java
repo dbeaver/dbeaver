@@ -255,6 +255,7 @@ public class SQLEditor extends SQLEditorBase implements
     private boolean isResultSetAutoFocusEnabled = true;
     private Boolean isDisableFetchResultSet = null;
     private boolean datasourceChanged;
+    private volatile boolean isPartControlInitialized = false;
 
     private final ArrayList<SQLEditorAddIn> addIns = new ArrayList<>();
 
@@ -983,6 +984,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     public void createPartControl(Composite parent) {
+        System.out.println("SQLEditor::createPartControl() { ");
         setRangeIndicator(new DefaultRangeIndicator());
 
         // divides editor area and results/panels area
@@ -1092,6 +1094,9 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             }
         }
+
+        this.isPartControlInitialized = true;
+        System.out.println("} SQLEditor::createPartControl()");
     }
 
     protected boolean isHideQueryText() {
@@ -2259,22 +2264,29 @@ public class SQLEditor extends SQLEditorBase implements
         syntaxLoaded = false;
 
         IEditorInput finalEditorInput = editorInput;
-        Runnable inputinitializer = () -> {
-            DBPDataSourceContainer oldDataSource = SQLEditor.this.getDataSourceContainer();
-            DBPDataSourceContainer newDataSource = EditorUtils.getInputDataSource(SQLEditor.this.getEditorInput());
+        Runnable inputinitializer = new Runnable() {
+            @Override
+            public void run() {
+                if (!SQLEditor.this.isPartControlInitialized) {
+                    UIExecutionQueue.queueExec(this);
+                    return;
+                }
+                DBPDataSourceContainer oldDataSource = SQLEditor.this.getDataSourceContainer();
+                DBPDataSourceContainer newDataSource = EditorUtils.getInputDataSource(SQLEditor.this.getEditorInput());
 
-            if (oldDataSource != newDataSource) {
-                SQLEditor.this.dataSourceContainer = null;
-                SQLEditor.this.updateDataSourceContainer();
-            } else {
-                SQLEditor.this.reloadSyntaxRules();
-            }
+                if (oldDataSource != newDataSource) {
+                    SQLEditor.this.dataSourceContainer = null;
+                    SQLEditor.this.updateDataSourceContainer();
+                } else {
+                    SQLEditor.this.reloadSyntaxRules();
+                }
 
-            {
-                DBPDataSourceContainer dataSource = EditorUtils.getInputDataSource(finalEditorInput);
-                SQLEditorFeatures.SQL_EDITOR_OPEN.use(Map.of(
-                    "driver", dataSource == null ? "" : dataSource.getDriver().getPreconfiguredId()
-                ));
+                {
+                    DBPDataSourceContainer dataSource = EditorUtils.getInputDataSource(finalEditorInput);
+                    SQLEditorFeatures.SQL_EDITOR_OPEN.use(Map.of(
+                            "driver", dataSource == null ? "" : dataSource.getDriver().getPreconfiguredId()
+                    ));
+                }
             }
         };
         if (isNonPersistentEditor()) {
@@ -2957,6 +2969,7 @@ public class SQLEditor extends SQLEditorBase implements
     private boolean checkSession(DBRProgressListener onFinish)
         throws DBException
     {
+        new RuntimeException("SQLEditor::checkSession()").printStackTrace();;
         DBPDataSourceContainer ds = getDataSourceContainer();
         if (ds == null) {
             throw new DBException("No active connection");
@@ -3237,6 +3250,14 @@ public class SQLEditor extends SQLEditorBase implements
         final boolean dsEvent = event.getObject() == getDataSourceContainer();
         final boolean objectEvent = event.getObject() != null && event.getObject().getDataSource() == getDataSource();
         final boolean registryEvent = getDataSourceContainer() != null && event.getData() == getDataSourceContainer().getRegistry();
+        System.err.println(
+                "SQLEditor::handleDataSourceEvent ~ " +
+                        (event.getObject() == null ? "<NULL>" : event.getObject().toString()) +
+                        " ~ " +
+                        (event.getEnabled() == null ? "<NULL>" : event.getEnabled().toString()) +
+                        " ~ " +
+                        (event.getData() == null ? "<NULL>" : event.getData().toString())
+        );
         if (dsEvent || objectEvent || registryEvent) {
             UIUtils.asyncExec(
                 () -> {
@@ -3257,9 +3278,22 @@ public class SQLEditor extends SQLEditorBase implements
                         default:
                             break;
                     }
+                    System.out.println(
+                            "DISPATCHED SQLEditor::handleDataSourceEvent ~ " +
+                            (event.getObject() == null ? "<NULL>" : event.getObject().toString()) +
+                            " ~ " +
+                            (event.getEnabled() == null ? "<NULL>" : event.getEnabled().toString()) +
+                            " ~ " +
+                            (event.getData() == null ? "<NULL>" : event.getData().toString())
+                    );
                     updateExecutionContext(null);
 
+                    if (Boolean.TRUE.equals(event.getEnabled()) && event.getObject().toString().equals("demo")) {
+                        System.out.println();
+                    }
+
                     boolean contextChanged = isContextChanged(event);
+                    System.out.println("contextChanged = " + contextChanged);
                     onDataSourceChange(contextChanged);
                 }
             );

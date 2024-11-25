@@ -46,6 +46,7 @@ public class ConnectJob extends AbstractJob
         DBPDataSourceContainer container)
     {
         super("Connect to '" + container.getName() + "'");
+        new RuntimeException("ConnectJob::ctor()").printStackTrace();
         setUser(true);
         this.container = container;
     }
