@@ -693,9 +693,9 @@ public class ResultSetModel {
         }
 
         // Add new data
+        updateDataFilter();
         updateColorMapping(false);
         appendData(rows, true);
-        updateDataFilter();
 
         this.visibleAttributes.sort(POSITION_SORTER);
 
