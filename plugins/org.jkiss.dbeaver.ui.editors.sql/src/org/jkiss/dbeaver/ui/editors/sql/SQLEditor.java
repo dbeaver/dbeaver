@@ -2589,7 +2589,7 @@ public class SQLEditor extends SQLEditorBase implements
                 elements.add(0, extractActiveQuery());
             } else {
                 // Execute all SQL statements consequently
-                if (selection.getLength() > 1) {
+                if (selection != null && selection.getLength() > 1) {
                     elements = extractScriptQueries(selection.getOffset(), selection.getLength(), true, false, true);
                 } else {
                     elements = extractScriptQueries(0, document.getLength(), true, false, true);

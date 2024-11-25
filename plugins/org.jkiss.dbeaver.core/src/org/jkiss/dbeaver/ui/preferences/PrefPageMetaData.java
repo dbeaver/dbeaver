@@ -93,14 +93,19 @@ public class PrefPageMetaData extends TargetPrefPage
             separateMetaConnectionCombo = UIUtils.createLabelCombo(
                 UIUtils.createComposite(metadataGroup, 3),
                 CoreMessages.pref_page_database_general_separate_meta_connection,
+                NLS.bind(CoreMessages.pref_page_database_general_separate_meta_connection_tip, PrefUtils.collectSingleConnectionDrivers()),
                 SWT.READ_ONLY | SWT.DROP_DOWN
             );
+            if (this.getDataSourceContainer() != null && this.getDataSourceContainer().getDriver().isEmbedded()) {
+                separateMetaConnectionCombo.setEnabled(false);
+            } else {
+                separateMetaConnectionCombo.setItems(metaUseSeparateConnectionValues.stream()
+                    .map(SeparateConnectionBehavior::getTitle).toArray(String[]::new));
+            }
             separateMetaConnectionCombo.setToolTipText(
                 NLS.bind(CoreMessages.pref_page_database_general_separate_meta_connection_tip, PrefUtils.collectSingleConnectionDrivers())
             );
             ((GridData) separateMetaConnectionCombo.getLayoutData()).grabExcessHorizontalSpace = false;
-            separateMetaConnectionCombo.setItems(metaUseSeparateConnectionValues.stream()
-                .map(SeparateConnectionBehavior::getTitle).toArray(String[]::new));
             caseSensitiveNamesCheck = UIUtils.createCheckbox(
                 metadataGroup,
                 CoreMessages.pref_page_database_general_checkbox_case_sensitive_names,
