@@ -209,7 +209,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
         if (object != null) {
             String description = object.getDescription();
             if (!CommonUtils.isEmptyTrimmed(description)) {
-                drawText(gc, description, bounds);
+                drawText(gc, CommonUtils.getSingleLineString(description), bounds);
             }
         }
     }
