@@ -211,12 +211,12 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                         }
                     }
                 }
-
-                if (target != null) {
-                    source.setTypeName(target.getTypeName());
-                    source.setMaxLength(target.getMaxLength());
-                    source.setDataKind(target.getDataKind());
-                }
+               // Looks like now it useless code and autodetection types happens early. Origin ticket dbeaver#10034
+               // if (target != null) {
+               //     source.setTypeName(target.getTypeName());
+               //     source.setMaxLength(target.getMaxLength());
+               //     source.setDataKind(target.getDataKind());
+               // }
             }
             if (this.target != null) {
                 if (parent.getMappingType() == DatabaseMappingType.recreate) {
