@@ -492,37 +492,37 @@ public class PostgreRole implements
                 otherObjectsSQL = "SELECT n.oid, n.nspacl FROM pg_catalog.pg_namespace n WHERE n.nspacl IS NOT NULL";
             } else {
                 otherObjectsSQL = "SELECT * FROM (\n" +
-                    "\tSELECT " + (supportsDistinct ? "DISTINCT" : "") + " relnamespace,\n" +
-                    "\trelacl,\n" +
-                    "\trelname,\n" +
-                    "\trelkind,\n" +
-                    "(aclexplode(relacl)).grantee as granteeI\n" +
-                    "FROM\n" +
-                    "\tpg_class\n" +
-                    "WHERE\n" +
-                    "\trelacl IS NOT NULL\n" +
-                    "\tAND relnamespace IN (\n" +
-                    "SELECT oid\n" +
-                    "FROM pg_namespace\n" +
-                    "WHERE nspname NOT LIKE 'pg_%' AND nspname != 'information_schema')\n" +
-                    "UNION ALL\n" +
-                    "SELECT " + (supportsDistinct ? "DISTINCT" : "") +
-                    "\n\tn.oid AS relnamespace,\n" +
-                    "\tnspacl AS relacl,\n" +
-                    "\tn.nspname AS relname,\n" +
-                    "\tcast('C' as \"char\") AS relkind,\n" +
-                    "(aclexplode(nspacl)).grantee as granteeI\n" +
-                    "FROM\n" +
-                    "\tpg_catalog.pg_namespace n\n" +
-                    "WHERE\n" +
-                    "\tn.nspacl IS NOT NULL \n" +
-                    "\t) AS tr\n" +
-                    "WHERE tr.granteeI=?" +
-                    " AND tr.relkind IN('S', 'm', 'C')";
+                      "\tSELECT " + (supportsDistinct ? "DISTINCT" : "") + " relnamespace,\n" +
+                      "\trelacl,\n" +
+                      "\trelname,\n" +
+                      "\trelkind,\n" +
+                      "(aclexplode(relacl)).grantee as granteeI\n" +
+                      "FROM\n" +
+                      "\tpg_class\n" +
+                      "WHERE\n" +
+                      "\trelacl IS NOT NULL\n" +
+                      "\tAND relnamespace IN (\n" +
+                      "SELECT oid\n" +
+                      "FROM pg_namespace\n" +
+                      "WHERE nspname NOT LIKE 'pg_%' AND nspname != 'information_schema')\n" +
+                      "UNION ALL\n" +
+                      "SELECT " + (supportsDistinct ? "DISTINCT" : "") +
+                      "\n\tn.oid AS relnamespace,\n" +
+                      "\tnspacl AS relacl,\n" +
+                      "\tn.nspname AS relname,\n" +
+                      "\tcast('C' as \"char\") AS relkind,\n" +
+                      "(aclexplode(nspacl)).grantee as granteeI\n" +
+                      "FROM\n" +
+                      "\tpg_catalog.pg_namespace n\n" +
+                      "WHERE\n" +
+                      "\tn.nspacl IS NOT NULL \n" +
+                      "\t) AS tr\n" +
+                      "WHERE pg_get_userbyid(tr.granteeI)= ? \n" +
+                      " AND tr.relkind IN('S', 'm', 'C')";
             }
             try (JDBCPreparedStatement dbStat = session.prepareStatement(otherObjectsSQL)) {
                 if (!supportsOnlySchemasPermissions) {
-                    dbStat.setLong(1, getObjectId());
+                    dbStat.setString(1, getName());
                 }
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.nextRow()) {
@@ -592,8 +592,8 @@ public class PostgreRole implements
                         SELECT *,
                         (aclexplode(defaclacl)).grantee as grantee
                         FROM pg_default_acl a WHERE a.defaclnamespace <> 0) as g
-                        where g.grantee = ?""")) {
-                    dbStat.setLong(1, getObjectId());
+                        where pg_get_userbyid(g.grantee) = ?""")) {
+                    dbStat.setString(1, getName());
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         while (dbResult.nextRow()) {
                             long schemaId = JDBCUtils.safeGetLong(dbResult, "defaclnamespace");
