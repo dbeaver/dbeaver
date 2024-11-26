@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Cubrid Support
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.cubrid;singleton:=true
-Bundle-Version: 1.0.20.qualifier
-Bundle-Release-Date: 20241202
+Bundle-Version: 1.0.21.qualifier
+Bundle-Release-Date: 20241223
 Export-Package: org.jkiss.dbeaver.ext.cubrid.model
 Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model.sql,

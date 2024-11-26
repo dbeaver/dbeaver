@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Vertica UI
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.vertica.ui;singleton:=true
-Bundle-Version: 1.0.135.qualifier
-Bundle-Release-Date: 20241202
+Bundle-Version: 1.0.136.qualifier
+Bundle-Release-Date: 20241223
 Require-Bundle: org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.editors.base,
  org.jkiss.dbeaver.ui.editors.connection,

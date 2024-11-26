@@ -9,6 +9,6 @@
      <relativePath>../</relativePath>
   </parent>
   <artifactId>org.jkiss.dbeaver.ext.snowflake.ui</artifactId>
-  <version>1.0.164-SNAPSHOT</version>
+  <version>1.0.165-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 </project>

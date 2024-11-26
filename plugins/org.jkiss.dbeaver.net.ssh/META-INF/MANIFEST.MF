@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver SSH Tunnels
 Bundle-SymbolicName: org.jkiss.dbeaver.net.ssh;singleton:=true
-Bundle-Version: 1.0.165.qualifier
-Bundle-Release-Date: 20241202
+Bundle-Version: 1.0.166.qualifier
+Bundle-Release-Date: 20241223
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Export-Package: org.jkiss.dbeaver.model.net.ssh,
