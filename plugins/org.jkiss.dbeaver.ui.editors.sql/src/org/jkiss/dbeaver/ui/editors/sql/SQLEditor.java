@@ -691,6 +691,9 @@ public class SQLEditor extends SQLEditorBase implements
             return BasicSQLDialect.INSTANCE;
         }
         SQLDialectMetadata scriptDialect = dataSourceContainer.getScriptDialect();
+        if (scriptDialect.getId().equals(BasicSQLDialect.ID)) {
+            return BasicSQLDialect.INSTANCE;
+        }
         if (scriptDialect != null) {
             try {
                 return scriptDialect.createInstance();
