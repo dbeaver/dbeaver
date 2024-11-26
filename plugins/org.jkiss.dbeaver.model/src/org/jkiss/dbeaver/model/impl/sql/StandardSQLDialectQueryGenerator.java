@@ -102,7 +102,8 @@ public class StandardSQLDialectQueryGenerator implements SQLQueryGenerator {
                 .map(Object[].class::cast)
                 .toList();
 
-            for (int i = 0, count = values.get(0).length; i < count; i++) {
+            var count = values.get(0).length;
+            for (int i = 0; i < count; i++) {
                 if (i > 0) {
                     query.append(" OR ");
                 }
@@ -115,6 +116,15 @@ public class StandardSQLDialectQueryGenerator implements SQLQueryGenerator {
                     query.append(getStringValue(dataSource, constraints.get(j), inlineCriteria, values.get(j)[i]));
                 }
                 query.append(')');
+            }
+            if (count == 0) {
+                // Special care for cases when we have no values. Reflects behavior in the else branch
+                for (int i = 0; i < constraints.size(); i++) {
+                    if (i > 0) {
+                        query.append(" AND ");
+                    }
+                    query.append(names.get(i)).append(" IS NULL");
+                }
             }
         } else {
             final String operator = filter.isAnyConstraint() ? " OR " : " AND ";  //$NON-NLS-1$ $NON-NLS-2$

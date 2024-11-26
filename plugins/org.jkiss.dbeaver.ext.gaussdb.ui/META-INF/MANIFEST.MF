@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver GaussDB UI
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.gaussdb.ui;singleton:=true
-Bundle-Version: 1.0.5.qualifier
-Bundle-Release-Date: 20241202
+Bundle-Version: 1.0.6.qualifier
+Bundle-Release-Date: 20241223
 Require-Bundle: org.jkiss.dbeaver.ext.postgresql,
  org.jkiss.dbeaver.ext.postgresql.ui,
  org.jkiss.dbeaver.ext.gaussdb
