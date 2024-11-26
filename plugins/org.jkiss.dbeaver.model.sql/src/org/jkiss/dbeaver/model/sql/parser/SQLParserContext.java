@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.text.parser.TPRuleBasedScanner;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -114,12 +113,7 @@ public class SQLParserContext {
                     return dataSource.getSQLDialect();
                 }
                 if (cachedSqlDialect == null) {
-                    SQLDialectMetadata scriptDialect = dataSourceContainer.getScriptDialect();
-                    if (scriptDialect.getId().equals(BasicSQLDialect.ID)) {
-                        cachedSqlDialect = BasicSQLDialect.INSTANCE;
-                        return BasicSQLDialect.INSTANCE;
-                    }
-                    cachedSqlDialect = scriptDialect.createInstance();
+                    cachedSqlDialect = dataSourceContainer.getScriptDialect().createInstance();
                 }
                 return cachedSqlDialect;
             } catch (Exception e) {

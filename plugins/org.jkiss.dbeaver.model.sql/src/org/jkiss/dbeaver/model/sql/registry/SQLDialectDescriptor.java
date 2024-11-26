@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.data.DBDInsertReplaceMethod;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDialectInsertReplaceMethod;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
@@ -144,6 +145,9 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
     @Override
     @NotNull
     public SQLDialect createInstance() throws DBException {
+        if (BasicSQLDialect.ID.equals(getId())) {
+            return BasicSQLDialect.INSTANCE;
+        }
         return implClass.createInstance(SQLDialect.class);
     }
 
