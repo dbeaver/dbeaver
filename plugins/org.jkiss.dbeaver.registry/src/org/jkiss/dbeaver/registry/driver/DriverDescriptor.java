@@ -1418,12 +1418,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     @Override
-    public boolean needsExternalDependencies() {
+    public boolean needsExternalDependencies(@NotNull DBRProgressMonitor monitor) {
         for (DBPDriverLibrary library : libraries) {
             if (library.isDisabled() || library.isOptional() || !library.matchesCurrentPlatform()) {
                 continue;
             }
-            if (library.getLocalFile() == null || !Files.exists(library.getLocalFile())) {
+            Path localFile = library.getLocalFile(monitor);
+            if (localFile == null || !Files.exists(localFile)) {
                 return true;
             }
         }
