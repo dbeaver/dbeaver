@@ -3250,8 +3250,9 @@ public class SQLEditor extends SQLEditorBase implements
         final boolean dsEvent = event.getObject() == getDataSourceContainer();
         final boolean objectEvent = event.getObject() != null && event.getObject().getDataSource() == getDataSource();
         final boolean registryEvent = getDataSourceContainer() != null && event.getData() == getDataSourceContainer().getRegistry();
-        System.err.println(
-                "SQLEditor::handleDataSourceEvent ~ " +
+        var eventid = Objects.hashCode(event);
+        System.out.println(
+                "SQLEditor::handleDataSourceEvent(" + eventid + ") ~ " +
                         (event.getObject() == null ? "<NULL>" : event.getObject().toString()) +
                         " ~ " +
                         (event.getEnabled() == null ? "<NULL>" : event.getEnabled().toString()) +
@@ -3279,7 +3280,7 @@ public class SQLEditor extends SQLEditorBase implements
                             break;
                     }
                     System.out.println(
-                            "DISPATCHED SQLEditor::handleDataSourceEvent ~ " +
+                            "DISPATCHED SQLEditor::handleDataSourceEvent(" + eventid + ") ~ " +
                             (event.getObject() == null ? "<NULL>" : event.getObject().toString()) +
                             " ~ " +
                             (event.getEnabled() == null ? "<NULL>" : event.getEnabled().toString()) +
@@ -3309,9 +3310,11 @@ public class SQLEditor extends SQLEditorBase implements
             DBCExecutionContextDefaults<?, ?> ctxDefault = execContext == null
                 ? null
                 : execContext.getContextDefaults();
-            if (ctxDefault != null
-                && (event.getObject() == ctxDefault.getDefaultCatalog() || event.getObject() == ctxDefault.getDefaultSchema())
-            ) {
+            if (ctxDefault != null && event.getObject() != null && (
+                lastExecutionContext != executionContext || (
+                lastExecutionContext == executionContext && (event.getObject() == ctxDefault.getDefaultCatalog() || event.getObject() == ctxDefault.getDefaultSchema())
+                )
+            )) {
                 contextChanged = true;
             }
         }
