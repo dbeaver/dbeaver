@@ -204,7 +204,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private final List<DBPDriverLibrary> libraries = new ArrayList<>();
     private final List<DBPDriverLibrary> origFiles = new ArrayList<>();
     private final List<ProviderPropertyDescriptor> mainPropertyDescriptors = new ArrayList<>();
-    private final List<ProviderPropertyDescriptor> providerPropertyDescriptors = new ArrayList<>();
+    private final Set<ProviderPropertyDescriptor> providerPropertyDescriptors = new LinkedHashSet<>();
     private final List<OSDescriptor> supportedSystems = new ArrayList<>();
 
     private final List<ReplaceInfo> driverReplacements = new ArrayList<>();

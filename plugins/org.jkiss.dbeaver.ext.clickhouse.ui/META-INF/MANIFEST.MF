@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Clickhouse UI
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.clickhouse.ui;singleton:=true
-Bundle-Version: 1.0.148.qualifier
-Bundle-Release-Date: 20241202
+Bundle-Version: 1.0.149.qualifier
+Bundle-Release-Date: 20241223
 Require-Bundle: org.jkiss.dbeaver.ext.clickhouse,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.editors.connection,

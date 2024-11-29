@@ -10,7 +10,7 @@
         <relativePath>../</relativePath>
     </parent>
     <artifactId>org.jkiss.dbeaver.ext.oracle.test</artifactId>
-    <version>1.0.71-SNAPSHOT</version>
+    <version>1.0.72-SNAPSHOT</version>
     <packaging>eclipse-test-plugin</packaging>
 
 </project>

@@ -3,7 +3,7 @@
 <feature
         id="org.jkiss.dbeaver.app.local.feature"
         label="%featureName"
-        version="24.3.0.qualifier"
+        version="24.3.1.qualifier"
         provider-name="%providerName">
 
     <!-- Quick search. Includes minimized ant bundle. No included in non-local as it uses local FS. -->

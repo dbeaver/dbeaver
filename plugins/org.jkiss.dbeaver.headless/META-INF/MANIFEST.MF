@@ -4,8 +4,8 @@ Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver Headless Application
 Bundle-SymbolicName: org.jkiss.dbeaver.headless;singleton:=true
 Bundle-ActivationPolicy: lazy
-Bundle-Version: 1.0.77.qualifier
-Bundle-Release-Date: 20241202
+Bundle-Version: 1.0.78.qualifier
+Bundle-Release-Date: 20241223
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ClassPath: .
 Bundle-Activator: org.jkiss.dbeaver.headless.DBeaverTestActivator

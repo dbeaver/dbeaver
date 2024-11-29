@@ -614,7 +614,7 @@ public class PostgreRole implements
                             List<PostgrePrivilege> resultPrivileges = new ArrayList<>();
                             for (PostgrePrivilege privilege : privileges) {
                                 if (privilege instanceof PostgreDefaultPrivilege defaultPrivilege) {
-                                    if (!defaultPrivilege.getGrantee().equals(getName())) {
+                                    if (!defaultPrivilege.getGrantee().getRoleName().equals(getName())) {
                                         continue;
                                     }
                                     defaultPrivilege.setUnderKind(objectType);
