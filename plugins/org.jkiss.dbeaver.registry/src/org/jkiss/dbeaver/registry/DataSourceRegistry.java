@@ -695,7 +695,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     }
 
     public void notifyDataSourceListeners(@NotNull final DBPEvent event) {
-        new RuntimeException("notifyDataSourceListeners(" + Objects.hashCode(event) + ")").printStackTrace(System.out);
         final List<DBPEventListener> listeners;
         synchronized (dataSourceListeners) {
             if (dataSourceListeners.isEmpty()) {

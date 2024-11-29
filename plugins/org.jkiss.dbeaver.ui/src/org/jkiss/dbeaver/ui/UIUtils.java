@@ -2423,7 +2423,6 @@ public class UIUtils {
 
     @Nullable
     public static ToolItem findToolItemByCommandId(@NotNull ToolBarManager toolbarManager, @NotNull String commandId) {
-        System.out.println("findToolItemByCommandId");
         for (ToolItem item : toolbarManager.getControl().getItems()) {
             Object data = item.getData();
             if (data instanceof CommandContributionItem) {
@@ -2433,7 +2432,7 @@ public class UIUtils {
                 }
             } else if (data instanceof HandledContributionItem) {
                 MHandledItem model = ((HandledContributionItem) data).getModel();
-                if (model != null ) {
+                if (model != null) {
                     ParameterizedCommand cmd = model.getWbCommand();
                     if (cmd != null && commandId.equals(cmd.getId())) {
                         return item;
