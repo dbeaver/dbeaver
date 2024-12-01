@@ -65,9 +65,6 @@ public class ResultSetModel {
     // Flag saying that edited values update is in progress
     private volatile DataSourceJob updateInProgress = null;
 
-    // Coloring
-    private final Map<DBDAttributeBinding, List<AttributeColorSettings>> colorMapping = new LinkedHashMap<>();
-
     private DBCStatistics statistics;
     private DBCTrace trace;
     private transient boolean metadataChanged;
@@ -120,6 +117,9 @@ public class ResultSetModel {
             return c1.getVisualPosition() - c2.getVisualPosition();
         }
     };
+
+    // Coloring
+    private final Map<DBDAttributeBinding, List<AttributeColorSettings>> colorMapping = new TreeMap<>(POSITION_SORTER);
 
     public ResultSetModel() {
         dataFilter = createDataFilter();
@@ -693,9 +693,9 @@ public class ResultSetModel {
         }
 
         // Add new data
+        updateDataFilter();
         updateColorMapping(false);
         appendData(rows, true);
-        updateDataFilter();
 
         this.visibleAttributes.sort(POSITION_SORTER);
 
@@ -982,6 +982,7 @@ public class ResultSetModel {
         }
         if (!newBindings.isEmpty() && !newBindings.equals(visibleAttributes)) {
             visibleAttributes = newBindings;
+            updateColorMapping(true);
             return true;
         }
         return false;
@@ -1066,6 +1067,8 @@ public class ResultSetModel {
         this.dataFilter.setWhere(filter.getWhere());
         this.dataFilter.setOrder(filter.getOrder());
         this.dataFilter.setAnyConstraint(filter.isAnyConstraint());
+
+        updateColorMapping(true);
     }
 
     public void resetOrdering(@NotNull DBDAttributeBinding columnElement) {

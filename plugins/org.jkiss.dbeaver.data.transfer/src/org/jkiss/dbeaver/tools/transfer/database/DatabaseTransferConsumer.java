@@ -593,7 +593,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         if (!isPreview && targetSession != null && oldAutoCommit != null) {
             try {
                 DBCTransactionManager txnManager = DBUtils.getTransactionManager(targetSession.getExecutionContext());
-                if (txnManager != null) {
+                if (txnManager != null && txnManager.isSupportsTransactions()) {
+                    // Every uncommited data here is considered as fail, and we need to rollback them
+                    if (!txnManager.isAutoCommit()) {
+                        txnManager.rollback(targetSession, null);
+                    }
                     txnManager.setAutoCommit(targetSession.getProgressMonitor(), oldAutoCommit);
                 }
             } catch (Exception e) {

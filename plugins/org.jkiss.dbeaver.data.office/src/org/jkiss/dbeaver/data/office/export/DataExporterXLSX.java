@@ -107,7 +107,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
     private boolean exportSql = false;
     private boolean splitSqlText = false;
     private AppendStrategy appendStrategy = AppendStrategy.CREATE_NEW_SHEETS;
-    private String exportTableName = "Sheet0";
+    private String exportTableName = XlsxSheetNameValidator.DEFAULT_SPREAD_SHEET;
 
     private int splitByRowCount = EXCEL2007MAXROWS;
     private int splitByCol = 0;
@@ -398,6 +398,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
             sheet = wb.getSheetAt(sheetIndex++);
             worksheet = new Worksheet(sheet, colValue, getPhysicalNumberOfRows(sheet));
         } else {
+            exportTableName = XlsxSheetNameValidator.toValidExcelSheetName(exportTableName);
             sheet = wb.createSheet(exportTableName);
             worksheet = new Worksheet(sheet, colValue, 0);
         }

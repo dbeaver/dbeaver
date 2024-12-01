@@ -14,7 +14,7 @@
                 description="Hive datasource"
                 id="hive"
                 parent="generic"
-                label="Hive"
+                label="Apache Hive"
                 icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/hive_icon.png"
                 dialect="hive">
             <treeInjection path="generic/catalog/schema/table"

@@ -84,25 +84,31 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
     public String visitColumnName(@NotNull SQLColumnNameCompletionItem columnName) {
         String preparedColumnName = this.convertCaseIfNeeded(columnName.columnInfo.symbol.getName());
         String suffix;
-
         if (this.queryCompletionContext.getInspectionResult().expectingColumnIntroduction &&
             this.aliasMode != SQLTableAliasInsertMode.NONE && this.localKnownColumnNames.contains(preparedColumnName) &&
-            columnName.sourceInfo.aliasOrNull != null) {
+            columnName.sourceInfo != null && columnName.sourceInfo.aliasOrNull != null) {
             DBPDataSource ds = this.request.getContext().getDataSource();
             String alias = DBUtils.getUnQuotedIdentifier(ds, columnName.sourceInfo.aliasOrNull.getName())
-                + DBUtils.getUnQuotedIdentifier(ds, preparedColumnName);;
+                + DBUtils.getUnQuotedIdentifier(ds, preparedColumnName);
             suffix = this.prepareAliasPrefix() + this.convertCaseIfNeeded(DBUtils.getQuotedIdentifier(ds, alias));
         } else {
             suffix = "";
         }
 
-        if (columnName.absolute) {
-            String prefix = columnName.sourceInfo.aliasOrNull != null
-                ? columnName.sourceInfo.aliasOrNull.getName() + this.structSeparator : "";
-            return prefix + preparedColumnName + suffix;
+        String prefix;
+        if (columnName.sourceInfo != null) {
+            if (columnName.sourceInfo.aliasOrNull != null) {
+                prefix = columnName.sourceInfo.aliasOrNull.getName() + this.structSeparator;
+            } else if (columnName.sourceInfo.tableOrNull != null && columnName.absolute) {
+                prefix = this.prepareObjectName(columnName.sourceInfo.tableOrNull) + this.structSeparator;
+            } else {
+                prefix = "";
+            }
         } else {
-            return preparedColumnName + suffix;
+            prefix = "";
         }
+
+        return prefix + preparedColumnName + suffix;
     }
 
     @NotNull

@@ -149,29 +149,37 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
     }
 
     private List<SQLQueryCompletionProposal> prepareContextfulCompletion(DBRProgressMonitor monitor, SQLQueryCompletionContext completionContext) {
-        SQLQueryCompletionSet completionSet = completionContext.prepareProposal(monitor, this.request);
+        Collection<SQLQueryCompletionSet> completionSets = completionContext.prepareProposal(monitor, this.request);
         SQLQueryCompletionTextProvider textProvider = new SQLQueryCompletionTextProvider(this.request, completionContext, monitor);
 
-        List<SQLQueryCompletionProposal> proposals = new ArrayList<>(completionSet.getItems().size());
-        for (SQLQueryCompletionItem item : completionSet.getItems()) {
-            DBSObject object = SQLQueryDummyDataSourceContext.isDummyObject(item.getObject()) ? null : item.getObject();
-            String text = item.apply(textProvider);
-            String decoration = item.apply(SQLQueryCompletionExtraTextProvider.INSTANCE);
-            String description = item.apply(SQLQueryCompletionDescriptionProvider.INSTANCE);
-            String replacementString = this.prepareReplacementString(item, text, completionContext);
-            proposals.add(new SQLQueryCompletionProposal(
-                this.proposalContext,
-                item.getKind(),
-                object,
-                this.prepareProposalImage(item),
-                text,
-                decoration,
-                description,
-                replacementString,
-                completionSet.getReplacementPosition(),
-                completionSet.getReplacementLength(),
-                item.getFilterInfo()
-            ));
+        List<SQLQueryCompletionProposal> proposals = new LinkedList<>();
+
+        // FIXME forcibly exclude duplicated completions for now;
+        //  correct fix requires better completion scenarios distinguishing to not prepare unnecessary items at all
+        Set<String> texts = new HashSet<>();
+        for (SQLQueryCompletionSet completionSet : completionSets) {
+            for (SQLQueryCompletionItem item : completionSet.getItems()) {
+                DBSObject object = SQLQueryDummyDataSourceContext.isDummyObject(item.getObject()) ? null : item.getObject();
+                String text = item.apply(textProvider);
+                if (texts.add(text)) {
+                    String decoration = item.apply(SQLQueryCompletionExtraTextProvider.INSTANCE);
+                    String description = item.apply(SQLQueryCompletionDescriptionProvider.INSTANCE);
+                    String replacementString = this.prepareReplacementString(item, text, completionContext);
+                    proposals.add(new SQLQueryCompletionProposal(
+                        this.proposalContext,
+                        item.getKind(),
+                        object,
+                        this.prepareProposalImage(item),
+                        text,
+                        decoration,
+                        description,
+                        replacementString,
+                        completionSet.getReplacementPosition(),
+                        completionSet.getReplacementLength(),
+                        item.getFilterInfo()
+                    ));
+                }
+            }
         }
 
         return proposals;

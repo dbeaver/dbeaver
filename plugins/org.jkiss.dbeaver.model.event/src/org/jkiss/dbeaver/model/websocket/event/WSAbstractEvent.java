@@ -18,14 +18,17 @@ package org.jkiss.dbeaver.model.websocket.event;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.websocket.gson.HiddenField;
 
 /**
  * Base websocket event
  */
 public abstract class WSAbstractEvent implements WSEvent {
     @Nullable
+    @HiddenField
     private final String sessionId;
     @Nullable
+    @HiddenField
     private final String userId;
     @NotNull
     private final String id;

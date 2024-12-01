@@ -2431,14 +2431,14 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 return ((DBDValueError) value).getErrorTitle();
             }
 
-            if ((value instanceof Boolean || value instanceof Number) && isShowAsCheckbox(attr)) {
+            if ((value instanceof Boolean || value instanceof Number || value == null) && isShowAsCheckbox(attr)) {
                 if (booleanStyles.getMode() != BooleanMode.TEXT) {
                     return "";
                 }
                 if (value instanceof Number) {
                     value = ((Number) value).byteValue() != 0;
                 }
-                if (booleanStyles.getMode() == BooleanMode.TEXT && (DBUtils.isNullValue(value) || value instanceof Boolean)) {
+                if (booleanStyles.getMode() == BooleanMode.TEXT) {
                     return booleanStyles.getStyle((Boolean) value).getText();
                 }
                 return value;
@@ -2461,10 +2461,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
                 return formattedValue;
             } else if (value instanceof DBDComposite composite && !DBUtils.isNullValue(value)) {
-                return Arrays.stream(composite.getAttributes())
-                    .map(DBPNamedObject::getName)
-                    .collect(Collectors.joining(",", "[", "]"));
-                //return "[" + composite.getDataType().getName() + "]";
+//                return Arrays.stream(composite.getAttributes())
+//                    .map(DBPNamedObject::getName)
+//                    .collect(Collectors.joining(",", "[", "]"));
+                return composite.toString();
             }
             try {
                 return attr.getValueRenderer().getValueDisplayString(

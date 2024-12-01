@@ -1207,6 +1207,13 @@
                 message="%confirm.disable_network_handler.message"
                 toggleMessage="default"
                 group="%confirmation.group.general.actions"/>
+        <confirmation
+                id="test_connection_persist"
+                title="%confirm.test_connection_persist.title"
+                description="%confirm.test_connection_persist.tip"
+                message="%confirm.test_connection_persist.message"
+                toggleMessage="default"
+                group="Connections"/>
     </extension>
 
     <extension point="org.eclipse.ui.preferencePages">

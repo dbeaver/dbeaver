@@ -227,7 +227,7 @@ class DriverDependenciesTree {
             WebUtils.openConnection(NETWORK_TEST_URL, GeneralUtils.getProductTitle());
         } catch (IOException e) {
             String message;
-            if (RuntimeUtils.isWindows() && GeneralUtils.hasCause(e, SSLHandshakeException.class)) {
+            if (RuntimeUtils.isWindows() && CommonUtils.hasCause(e, SSLHandshakeException.class)) {
                 if (DBWorkbench.getPlatform()
                     .getApplication().hasProductFeature(DBConnectionConstants.PRODUCT_FEATURE_SIMPLE_TRUSTSTORE)) {
                     message = UIConnectionMessages.dialog_driver_download_network_unavailable_cert_msg;

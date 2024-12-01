@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.db.feature"
       label="%featureName"
-      version="1.0.134.qualifier"
+      version="1.0.136.qualifier"
       provider-name="%providerName">
 
    <description>
@@ -31,6 +31,7 @@
    <plugin id="org.jkiss.dbeaver.ext.es" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.exasol" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.firebird" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.gbase8s" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.greenplum" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.h2" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.h2gis" version="0.0.0" />
@@ -56,6 +57,8 @@
    <plugin id="org.jkiss.dbeaver.ext.altibase" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.gaussdb" version="0.0.0" />
 
+   <plugin id="com.dbeaver.rpc" version="0.0.0"/>
+   <plugin id="com.dbeaver.jdbc.api" version="0.0.0"/>
    <plugin id="com.dbeaver.jdbc.driver.libsql" version="0.0.0"/>
 
 </feature>
