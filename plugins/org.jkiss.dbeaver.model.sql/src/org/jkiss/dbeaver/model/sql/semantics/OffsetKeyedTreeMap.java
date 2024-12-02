@@ -523,7 +523,10 @@ public class OffsetKeyedTreeMap<T> {
                 public boolean next() {
                     if (this.initial && initialLocation.node.isSentinel()) {
                         // the exact initial position not found, so proceed with its parent
-                        NodeAndOffset<T> parentLocation = new NodeAndOffset<>(initialLocation.parent, position - initialLocation.offset);
+                        NodeAndOffset<T> parentLocation = new NodeAndOffset<>(
+                            initialLocation.parent,
+                            position - initialLocation.offset - (initialLocation.isLeft ? 0 : initialLocation.parent.offset)
+                        );
                         this.currentLocation = initialLocation.isLeft ? parentLocation : findNext(parentLocation);
                     } else if (this.afterLast) {
                         return false;
