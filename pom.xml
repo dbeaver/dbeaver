@@ -17,7 +17,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <dbeaver-version>24.3.0</dbeaver-version>
+        <dbeaver-version>24.3.1</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
 
         <local-p2-repo.version>${dbeaver-version}</local-p2-repo.version>

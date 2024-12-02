@@ -10,7 +10,7 @@
          <relativePath>../</relativePath>
     </parent>
     <artifactId>org.jkiss.dbeaver.dpi.model</artifactId>
-    <version>1.0.34-SNAPSHOT</version>
+    <version>1.0.35-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>
 
 </project>

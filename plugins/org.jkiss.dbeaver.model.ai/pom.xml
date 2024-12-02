@@ -11,7 +11,7 @@
          <relativePath>../</relativePath>
     </parent>
     <artifactId>org.jkiss.dbeaver.model.ai</artifactId>
-    <version>1.0.46-SNAPSHOT</version>
+    <version>1.0.47-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>
 
 </project>

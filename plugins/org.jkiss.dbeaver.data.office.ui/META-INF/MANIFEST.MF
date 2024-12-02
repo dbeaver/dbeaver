@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Office UI
 Bundle-SymbolicName: org.jkiss.dbeaver.data.office.ui;singleton:=true
-Bundle-Version: 1.0.69.qualifier
-Bundle-Release-Date: 20241202
+Bundle-Version: 1.0.70.qualifier
+Bundle-Release-Date: 20241223
 Bundle-Activator: org.jkiss.dbeaver.data.office.ui.OfficeUIActivator
 Require-Bundle: org.jkiss.dbeaver.data.office,
  org.jkiss.dbeaver.ui.editors.data,

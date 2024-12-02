@@ -10,7 +10,7 @@
         <relativePath>../</relativePath>
     </parent>
     <artifactId>org.jkiss.dbeaver.data.gis.view</artifactId>
-    <version>1.0.139-SNAPSHOT</version>
+    <version>1.0.140-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>
 
 <!--

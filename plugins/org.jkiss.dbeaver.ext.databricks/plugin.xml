@@ -15,7 +15,7 @@
                 parent="generic"
                 label="Azure Databricks"
                 icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/databricks_icon.png"
-                dialect="basic">
+                dialect="generic">
             <drivers managable="true">
 
                 <driver

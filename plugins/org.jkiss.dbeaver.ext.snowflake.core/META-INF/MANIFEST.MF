@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Snowflake Model
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.snowflake.core;singleton:=true
-Bundle-Version: 1.0.164.qualifier
-Bundle-Release-Date: 20241202
+Bundle-Version: 1.0.165.qualifier
+Bundle-Release-Date: 20241223
 Bundle-Vendor: DBeaver Corp
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
