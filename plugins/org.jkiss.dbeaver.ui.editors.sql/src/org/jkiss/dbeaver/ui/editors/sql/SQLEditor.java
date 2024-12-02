@@ -2260,8 +2260,14 @@ public class SQLEditor extends SQLEditorBase implements
             log.error("Error loading input SQL file", e);
         }
         syntaxLoaded = false;
+        IEditorInput finalEditorInput = editorInput;
+        Runnable inputinitializer = new Runnable() {
+            @Override
+            public void run() {
+                getEditorInputInitializer(this,  finalEditorInput);
+            }
+        };
 
-        Runnable inputinitializer = getEditorInputInitializer(editorInput);
         if (isNonPersistentEditor()) {
             inputinitializer.run();
         } else {
@@ -2277,33 +2283,27 @@ public class SQLEditor extends SQLEditorBase implements
         editorImage = new Image(Display.getCurrent(), baseEditorImage, SWT.IMAGE_COPY);
     }
 
-    @NotNull
-    private Runnable getEditorInputInitializer(@NotNull IEditorInput editorInput) {
-        return new Runnable() {
-            @Override
-            public void run() {
-                if (!SQLEditor.this.isPartControlInitialized) {
-                    UIExecutionQueue.queueExec(this);
-                    return;
-                }
-                DBPDataSourceContainer oldDataSource = SQLEditor.this.getDataSourceContainer();
-                DBPDataSourceContainer newDataSource = EditorUtils.getInputDataSource(SQLEditor.this.getEditorInput());
+    private void getEditorInputInitializer(@NotNull Runnable runnable, @NotNull IEditorInput editorInput) {
+        if (!SQLEditor.this.isPartControlInitialized) {
+            UIExecutionQueue.queueExec(runnable);
+            return;
+        }
+        DBPDataSourceContainer oldDataSource = SQLEditor.this.getDataSourceContainer();
+        DBPDataSourceContainer newDataSource = EditorUtils.getInputDataSource(SQLEditor.this.getEditorInput());
 
-                if (oldDataSource != newDataSource) {
-                    SQLEditor.this.dataSourceContainer = null;
-                    SQLEditor.this.updateDataSourceContainer();
-                } else {
-                    SQLEditor.this.reloadSyntaxRules();
-                }
+        if (oldDataSource != newDataSource) {
+            SQLEditor.this.dataSourceContainer = null;
+            SQLEditor.this.updateDataSourceContainer();
+        } else {
+            SQLEditor.this.reloadSyntaxRules();
+        }
 
-                {
-                    DBPDataSourceContainer dataSource = EditorUtils.getInputDataSource(editorInput);
-                    SQLEditorFeatures.SQL_EDITOR_OPEN.use(
-                        Map.of("driver", dataSource == null ? "" : dataSource.getDriver().getPreconfiguredId())
-                    );
-                }
-            }
-        };
+        {
+            DBPDataSourceContainer dataSource = EditorUtils.getInputDataSource(editorInput);
+            SQLEditorFeatures.SQL_EDITOR_OPEN.use(
+                Map.of("driver", dataSource == null ? "" : dataSource.getDriver().getPreconfiguredId())
+            );
+        }
     }
 
     private void checkInputFileExistence(IEditorInput editorInput) {
