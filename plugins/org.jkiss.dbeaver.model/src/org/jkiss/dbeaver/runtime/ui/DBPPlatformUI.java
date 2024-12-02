@@ -24,8 +24,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
@@ -172,8 +170,6 @@ public interface DBPPlatformUI {
      * Ask user to accept license agreement
      */
     boolean acceptLicense(String message, String licenseText);
-
-    boolean downloadDriverFiles(DBPDriver driverDescriptor, DBPDriverDependencies dependencies);
 
     /**
      * UI utilities
