@@ -2264,7 +2264,26 @@ public class SQLEditor extends SQLEditorBase implements
         Runnable inputinitializer = new Runnable() {
             @Override
             public void run() {
-                getEditorInputInitializer(this,  finalEditorInput);
+                if (!SQLEditor.this.isPartControlInitialized) {
+                    UIExecutionQueue.queueExec(this);
+                    return;
+                }
+                DBPDataSourceContainer oldDataSource = SQLEditor.this.getDataSourceContainer();
+                DBPDataSourceContainer newDataSource = EditorUtils.getInputDataSource(SQLEditor.this.getEditorInput());
+
+                if (oldDataSource != newDataSource) {
+                    SQLEditor.this.dataSourceContainer = null;
+                    SQLEditor.this.updateDataSourceContainer();
+                } else {
+                    SQLEditor.this.reloadSyntaxRules();
+                }
+
+                {
+                    DBPDataSourceContainer dataSource = EditorUtils.getInputDataSource(finalEditorInput);
+                    SQLEditorFeatures.SQL_EDITOR_OPEN.use(
+                        Map.of("driver", dataSource == null ? "" : dataSource.getDriver().getPreconfiguredId())
+                    );
+                }
             }
         };
 
@@ -2281,29 +2300,6 @@ public class SQLEditor extends SQLEditorBase implements
         }
         baseEditorImage = getTitleImage();
         editorImage = new Image(Display.getCurrent(), baseEditorImage, SWT.IMAGE_COPY);
-    }
-
-    private void getEditorInputInitializer(@NotNull Runnable runnable, @NotNull IEditorInput editorInput) {
-        if (!SQLEditor.this.isPartControlInitialized) {
-            UIExecutionQueue.queueExec(runnable);
-            return;
-        }
-        DBPDataSourceContainer oldDataSource = SQLEditor.this.getDataSourceContainer();
-        DBPDataSourceContainer newDataSource = EditorUtils.getInputDataSource(SQLEditor.this.getEditorInput());
-
-        if (oldDataSource != newDataSource) {
-            SQLEditor.this.dataSourceContainer = null;
-            SQLEditor.this.updateDataSourceContainer();
-        } else {
-            SQLEditor.this.reloadSyntaxRules();
-        }
-
-        {
-            DBPDataSourceContainer dataSource = EditorUtils.getInputDataSource(editorInput);
-            SQLEditorFeatures.SQL_EDITOR_OPEN.use(
-                Map.of("driver", dataSource == null ? "" : dataSource.getDriver().getPreconfiguredId())
-            );
-        }
     }
 
     private void checkInputFileExistence(IEditorInput editorInput) {
