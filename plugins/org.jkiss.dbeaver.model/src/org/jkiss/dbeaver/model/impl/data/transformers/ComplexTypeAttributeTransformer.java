@@ -65,17 +65,19 @@ public class ComplexTypeAttributeTransformer implements DBDAttributeTransformer 
         @NotNull DBSDataType dataType
     ) throws DBException {
         List<? extends DBSEntityAttribute> nestedAttrs = null;
-        if (dataType instanceof DBSBindableDataType) {
+        if (dataType instanceof DBSBindableDataType bdt) {
             DBSEntityAttribute entityAttribute = attribute.getTopParent().getEntityAttribute();
             if (entityAttribute != null) {
                 DBSEntity container = entityAttribute.getParentObject();
-                DBSBindableDataType bindable = (DBSBindableDataType) dataType;
-                nestedAttrs = bindable.bindAttributesToContext(session.getProgressMonitor(), container, entityAttribute);
+                nestedAttrs = bdt.bindAttributesToContext(session.getProgressMonitor(), container, entityAttribute);
+            } else {
+                // FIXME: it is a bindable data type but we do not have table attribute
+                // FIXME: most likely a dynamic SQL expression
             }
         }
         if (nestedAttrs == null) {
-            if (dataType instanceof DBSEntity) {
-                nestedAttrs = ((DBSEntity) dataType).getAttributes(session.getProgressMonitor());
+            if (dataType instanceof DBSEntity entity) {
+                nestedAttrs = entity.getAttributes(session.getProgressMonitor());
             }
         }
         
