@@ -19,8 +19,11 @@ package org.jkiss.dbeaver.ui.data.hints;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.data.IValueHint;
 import org.jkiss.dbeaver.ui.data.IValueHintContext;
@@ -42,8 +45,16 @@ public class ArrayHintProvider implements IValueHintProvider {
         @NotNull ResultSetRow row,
         @Nullable Object value,
         @NotNull EnumSet<IValueHint.HintType> types,
+        int state,
         int options
     ) {
+        if (!DBUtils.isNullValue(value) && (state & IGridContentProvider.STATE_EXPANDED) == 0 && value instanceof DBDCollection collection) {
+            if (collection.size() > 1) {
+                return new IValueHint[] {
+                    new ValueHintText("[+" + (collection.size() - 1) + "]", "Collection of items", null)
+                };
+            }
+        }
         return null;
     }
 

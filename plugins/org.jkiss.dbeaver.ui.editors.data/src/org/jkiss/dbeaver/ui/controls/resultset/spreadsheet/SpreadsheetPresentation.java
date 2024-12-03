@@ -2342,9 +2342,12 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
                 // Collections
                 if (info.image == null && cellValue instanceof DBDComplexValue cv && !cv.isNull() &&
-                    (!(cellValue instanceof Collection<?> col && col.isEmpty()))) {
+                    (!(cellValue instanceof Collection<?> col && col.isEmpty()))
+                ) {
                     final GridCell cell = new GridCell(colElement, rowElement);
-                    info.image = spreadsheet.isCellExpanded(cell) ? UIIcon.TREE_COLLAPSE : UIIcon.TREE_EXPAND;
+                    boolean cellExpanded = spreadsheet.isCellExpanded(cell);
+                    info.state |= cellExpanded ? IGridContentProvider.STATE_EXPANDED : IGridContentProvider.STATE_COLLAPSED;
+                    info.image = cellExpanded ? UIIcon.TREE_COLLAPSE : UIIcon.TREE_EXPAND;
                 }
             }
 
@@ -2458,11 +2461,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 if (child == value) {
                     return value;
                 }
-                Object formattedValue = formatValue(gridColumn, gridRow, child);
-                if (collection.size() > 1) {
-                    formattedValue += "  [+" + (collection.size() - 1) + "]";
-                }
-                return formattedValue;
+                return formatValue(gridColumn, gridRow, child);
             } else if (value instanceof DBDComposite composite && !DBUtils.isNullValue(value)) {
 //                return Arrays.stream(composite.getAttributes())
 //                    .map(DBPNamedObject::getName)
@@ -2744,6 +2743,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     row,
                     cellInfo.value,
                     EnumSet.of(IValueHint.HintType.STRING),
+                    cellInfo.state,
                     IValueHintProvider.HINT_INLINE);
                 if (!ArrayUtils.isEmpty(valueHints)) {
                     for (IValueHint hint : valueHints) {
@@ -2775,6 +2775,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     row,
                     cellInfo.value,
                     INLINE_HINT_TYPES,
+                    cellInfo.state,
                     IValueHintProvider.HINT_INLINE);
                 if (valueHints != null) {
                     for (IValueHint hint : valueHints) {

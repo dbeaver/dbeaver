@@ -40,6 +40,8 @@ public interface IGridContentProvider extends IContentProvider {
     int STATE_TRANSFORMED = 1 << 2;
     int STATE_TOGGLE = 1 << 3;
     int STATE_DECORATED = 1 << 4;
+    int STATE_EXPANDED = 1 << 5;
+    int STATE_COLLAPSED = 1 << 6;
     int STATE_HINT = 1 << 8;
 
     int ALIGN_LEFT = 0;

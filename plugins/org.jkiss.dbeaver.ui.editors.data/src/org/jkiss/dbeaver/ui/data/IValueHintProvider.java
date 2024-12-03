@@ -37,6 +37,9 @@ public interface IValueHintProvider {
 
     /**
      * Get all hints available for specified value.
+     * @param types requested hint types
+     * @param state flags combined from STATE_ constants in {@link org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider}
+     * @param options flags combined from HINT_ constants
      */
     @Nullable
     IValueHint[] getValueHint(
@@ -45,6 +48,7 @@ public interface IValueHintProvider {
         @NotNull ResultSetRow row,
         @Nullable Object value,
         @NotNull EnumSet<IValueHint.HintType> types,
+        int state,
         int options);
 
     /**

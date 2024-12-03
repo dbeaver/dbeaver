@@ -44,6 +44,7 @@ public class VoidHintProvider implements IValueHintProvider {
         @NotNull ResultSetRow row,
         @Nullable Object value,
         @NotNull EnumSet<IValueHint.HintType> types,
+        int state,
         int options
     ) {
         return null;

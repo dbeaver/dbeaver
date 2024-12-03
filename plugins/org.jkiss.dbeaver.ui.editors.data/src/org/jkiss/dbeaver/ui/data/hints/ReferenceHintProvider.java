@@ -63,6 +63,7 @@ public class ReferenceHintProvider implements IValueHintProvider {
         @NotNull ResultSetRow row,
         @Nullable Object value,
         @NotNull EnumSet<IValueHint.HintType> types,
+        int state,
         int options
     ) {
         if (DBUtils.isNullValue(value)) {
