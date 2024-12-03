@@ -51,7 +51,6 @@ import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
 import org.jkiss.dbeaver.model.rm.RMConstants;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSStructContainer;
@@ -70,6 +69,7 @@ import org.jkiss.dbeaver.ui.editors.DatabaseEditorContext;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorContextBase;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerRefresh;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
@@ -306,8 +306,8 @@ public class NavigatorUtils {
             DBSObject selectedObject = ((DBNDatabaseNode) selectedNode).getObject();
             DBPDataSource dataSource = ((DBNDatabaseNode) selectedNode).getDataSource();
             if (dataSource != null) {
-                DBCExecutionContext defaultContext = dataSource.getDefaultInstance().getDefaultContext(new VoidProgressMonitor(), false);
-                DBCExecutionContextDefaults contextDefaults = defaultContext.getContextDefaults();
+                DBCExecutionContext defaultContext = DBUtils.getDefaultContext(dataSource, false);
+                DBCExecutionContextDefaults<?,?> contextDefaults = defaultContext.getContextDefaults();
                 if (contextDefaults != null) {
                     if ((selectedObject instanceof DBSCatalog && contextDefaults.supportsCatalogChange() && contextDefaults.getDefaultCatalog() != selectedObject) ||
                         (selectedObject instanceof DBSSchema && contextDefaults.supportsSchemaChange() && contextDefaults.getDefaultSchema() != selectedObject))
@@ -673,4 +673,33 @@ public class NavigatorUtils {
         }
     }
 
+    public static String getCatalogSchemaTerms(@Nullable DBPDataSourceContainer dataSourceContainer, boolean checkChangePossibility) {
+        DBPDataSource dataSource = dataSourceContainer == null ? null : dataSourceContainer.getDataSource();
+        if (dataSource != null) {
+            DBPDataSourceInfo dataSourceInfo = dataSource.getInfo();
+            boolean showCatalog = true;
+            boolean showSchema = true;
+            if (checkChangePossibility) {
+                DBCExecutionContext defaultContext = DBUtils.getDefaultContext(dataSource, false);
+                DBCExecutionContextDefaults<?, ?> contextDefaults = defaultContext.getContextDefaults();
+                if (contextDefaults != null) {
+                    showCatalog = contextDefaults.getDefaultCatalog() != null;
+                    showSchema = contextDefaults.getDefaultSchema() != null;
+                }
+            }
+
+            String catalogTerm = showCatalog ? dataSourceInfo.getCatalogTerm() : null;
+            String schemaTerm = showSchema ? dataSourceInfo.getSchemaTerm() : null;
+            if (CommonUtils.isEmpty(catalogTerm)) {
+                if (!CommonUtils.isEmpty(schemaTerm)) {
+                    return schemaTerm;
+                }
+            } else if (CommonUtils.isEmpty(schemaTerm)) {
+                return catalogTerm;
+            } else {
+                return catalogTerm + "/" + schemaTerm;
+            }
+        }
+        return UINavigatorMessages.label_catalog_schema;
+    }
 }
