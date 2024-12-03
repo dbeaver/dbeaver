@@ -194,6 +194,9 @@ public class DBIcon implements DBPImage {
             if ((field.getModifiers() & Modifier.STATIC) == 0 || field.getType() != DBIcon.class) {
                 continue;
             }
+            if (!field.canAccess(null)) {
+                field.setAccessible(true);
+            }
             try {
                 DBIcon icon = (DBIcon) field.get(null);
                 if (!icon.path.startsWith("platform:")) {

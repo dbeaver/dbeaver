@@ -10,7 +10,7 @@
          <relativePath>../</relativePath>
     </parent>
     <artifactId>org.jkiss.dbeaver.tasks.sql.ui</artifactId>
-    <version>1.0.110-SNAPSHOT</version>
+    <version>1.0.111-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>
 
 </project>

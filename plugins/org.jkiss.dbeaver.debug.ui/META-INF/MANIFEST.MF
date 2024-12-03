@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Debug UI
 Bundle-SymbolicName: org.jkiss.dbeaver.debug.ui;singleton:=true
-Bundle-Version: 1.0.173.qualifier
-Bundle-Release-Date: 20241202
+Bundle-Version: 1.0.174.qualifier
+Bundle-Release-Date: 20241223
 Bundle-Vendor: DBeaver Corp
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Activator: org.jkiss.dbeaver.debug.ui.internal.DebugUIActivator

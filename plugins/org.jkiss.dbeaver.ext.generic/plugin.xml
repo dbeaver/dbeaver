@@ -487,7 +487,7 @@
 
                 <driver
                     id="csvjdbc"
-                    label="CSV"
+                    label="CSV Basic"
                     icon="icons/csv_icon.png"
                     iconBig="icons/csv_icon_big.png"
                     category="Flat files"
@@ -495,7 +495,7 @@
                     sampleURL="jdbc:relique:csv:{folder}"
                     embedded="true"
                     anonymous="true"
-                    description="CsvJdbc driver for CSV files"
+                    description="CsvJdbc driver for handling CSV files. Included in DBeaver Community Edition."
                     supportedConfigurationTypes="MANUAL,URL"
                     supportsDistributedMode="false"
                     webURL="http://csvjdbc.sourceforge.net/"

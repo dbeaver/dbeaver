@@ -17,7 +17,7 @@
 
 package org.jkiss.dbeaver;
 
-import org.jkiss.dbeaver.ui.controls.HolidayDecorations;
+import org.jkiss.dbeaver.ui.controls.decorations.HolidayDecorations;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences;
 
 /**
@@ -36,6 +36,7 @@ public final class DBeaverPreferences
     public static final String CONFIRM_EXIT = "exit"; //$NON-NLS-1$
     public static final String CONFIRM_DRIVER_DOWNLOAD = "driver_download"; //$NON-NLS-1$
     public static final String CONFIRM_DISABLE_NETWORK_HANDLER = "disable_network_handler"; //$NON-NLS-1$
+    public static final String CONFIRM_TEST_CONNECTION_PERSIST = "test_connection_persist"; //$NON-NLS-1$
 
     public static final String NAVIGATOR_EDITOR_FULL_NAME = DatabaseEditorPreferences.PROP_TITLE_SHOW_FULL_NAME; //$NON-NLS-1$
 

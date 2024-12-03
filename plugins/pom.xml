@@ -48,6 +48,7 @@
         <module>org.jkiss.dbeaver.ext.es</module>
         <module>org.jkiss.dbeaver.ext.exasol</module>
         <module>org.jkiss.dbeaver.ext.firebird</module>
+        <module>org.jkiss.dbeaver.ext.gbase8s</module>
         <module>org.jkiss.dbeaver.ext.greenplum</module>
         <module>org.jkiss.dbeaver.ext.h2</module>
         <module>org.jkiss.dbeaver.ext.h2gis</module>
