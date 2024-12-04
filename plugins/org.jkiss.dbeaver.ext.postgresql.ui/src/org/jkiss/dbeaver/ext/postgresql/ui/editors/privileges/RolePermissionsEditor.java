@@ -104,6 +104,7 @@ public class RolePermissionsEditor extends PostgresPermissionsEditor<DBSObject> 
             PostgreDefaultPrivilege defaultPrivilege = new PostgreDefaultPrivilege(
                 owner,
                 role.getRoleReference(),
+                null,
                 List.of(createGrant(owner, role, privilegeType))
             );
             defaultPrivilege.setUnderKind(defineKind(folder.getChildrenClass()));
