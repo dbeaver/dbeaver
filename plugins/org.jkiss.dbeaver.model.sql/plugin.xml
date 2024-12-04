@@ -100,7 +100,7 @@
                 <property id="sql.proposals.insert.table.alias" label="Insert table aliases (in FROM clause)"
                           validValues="NONE,PLAIN,EXTENDED" defaultValue="PLAIN" type="string" scopes="global,user"
                           description="Automatically inserts table aliases"/>
-                <property id="SQLEditor.ContentAssistant.proposals.long.name" label="Use long object names (always use schema/catalog)"
+                <property id="SQLEditor.ContentAssistant.proposals.long.name" label="%SQLEditor.ContentAssistant.proposals.long.name"
                           defaultValue="false" type="boolean" scopes="global,user"/>
             </propertyGroup>
         </propertyGroup>
