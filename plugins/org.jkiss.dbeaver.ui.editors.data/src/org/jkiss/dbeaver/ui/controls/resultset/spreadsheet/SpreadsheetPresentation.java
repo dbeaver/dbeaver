@@ -2725,38 +2725,6 @@ public class SpreadsheetPresentation extends AbstractPresentation
             return "";
         }
 
-        @Nullable
-        @Override
-        public String getCellHintText(IGridColumn colElement, IGridRow rowElement, CellInformation cellInfo) {
-            DBDAttributeBinding attr = getAttributeFromGrid(colElement, rowElement);
-            if (attr == null) {
-                return null;
-            }
-            ResultSetRow row = getResultRowFromGrid(colElement, rowElement);
-            if (row == null) {
-                return null;
-            }
-            for (IValueHintProvider hintProvider : controller.getModel().getHintProviders(attr)) {
-                IValueHint[] valueHints = hintProvider.getValueHint(
-                    controller.getModel().getHintContext(),
-                    attr,
-                    row,
-                    cellInfo.value,
-                    EnumSet.of(IValueHint.HintType.STRING),
-                    cellInfo.state,
-                    IValueHintProvider.HINT_INLINE);
-                if (!ArrayUtils.isEmpty(valueHints)) {
-                    for (IValueHint hint : valueHints) {
-                        String hintText = hint.getHintText();
-                        if (!CommonUtils.isEmpty(hintText)) {
-                            return hintText;
-                        }
-                    }
-                }
-            }
-            return null;
-        }
-
         @Override
         public List<IGridHint> getCellHints(IGridColumn colElement, IGridRow rowElement, CellInformation cellInfo) {
             DBDAttributeBinding attr = getAttributeFromGrid(colElement, rowElement);

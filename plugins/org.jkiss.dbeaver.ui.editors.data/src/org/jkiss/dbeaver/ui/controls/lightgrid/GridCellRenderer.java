@@ -27,12 +27,15 @@ import org.jkiss.dbeaver.ui.UITextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Grid cell renderer
  */
 class GridCellRenderer extends AbstractRenderer {
+    private record IconInfo(Image hintImage, Rectangle iconSize) {
+    }
     private static final int LEFT_MARGIN = 6;
     private static final int RIGHT_MARGIN = 6;
     private static final int TOP_MARGIN = 0;
@@ -44,19 +47,15 @@ class GridCellRenderer extends AbstractRenderer {
     static final Image LINK2_IMAGE = DBeaverIcons.getImage(UIIcon.LINK2);
     static final Rectangle LINK_IMAGE_BOUNDS = new Rectangle(0, 0, 13, 13);
 
-    // Clipping limits cell paint with cell bounds. But is an expensive GC call.
-    // Generally we don't need it because we repaint whole grid left-to-right and all text tails will be overpainted by trailing cells
-    private static final boolean USE_CLIPPING = false;
-
     // Mapping table for special characters. The replacement string is painted with a tinted color.
     private static final String[][] SPECIAL_CHARACTERS_MAP = {
-        {" ",      "\u00b7"},
-        {"\r\n",   "\u00b6"},
-        {"\r",     "\u00b6"},
-        {"\n",     "\u00b6"},
-        {"\t",     "\u00bb"},
-        {"\u3000", "\u00b0"}, // ideographic whitespace
-        {"\u200b", "\u2588"}, // zero-width whitespace
+        {" ", "·"},
+        {"\r\n", "¶"},
+        {"\r", "¶"},
+        {"\n", "¶"},
+        {"\t", "»"},
+        {"\u3000", "°"}, // ideographic whitespace
+        {"\u200b", "█"}, // zero-width whitespace
         {"\u0000", "NUL"},
         {"\u0001", "SOH"},
         {"\u0002", "STX"},
@@ -92,14 +91,12 @@ class GridCellRenderer extends AbstractRenderer {
 
     protected Color colorLineFocused;
 
-    public GridCellRenderer(LightGrid grid)
-    {
+    public GridCellRenderer(LightGrid grid) {
         super(grid);
         colorLineFocused = grid.getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
     }
 
-    public void paint(GC gc, Rectangle bounds, boolean selected, boolean focus, IGridColumn col, IGridRow row)
-    {
+    public void paint(GC gc, Rectangle bounds, boolean selected, boolean focus, boolean hover, IGridColumn col, IGridRow row) {
         boolean drawBackground = true;
 
         IGridContentProvider.CellInformation cellInfo = grid.getContentProvider().getCellInfo(col, row, selected);
@@ -125,39 +122,11 @@ class GridCellRenderer extends AbstractRenderer {
         String text = grid.getCellText(cellInfo.text);
         final int state = cellInfo.state;
 
-        Image image;
-        Rectangle imageBounds = null;
-
-        {
-            DBPImage cellImage = cellInfo.image;
-            if (cellImage != null) {
-                image = DBeaverIcons.getImage(cellImage);
-                imageBounds = image.getBounds();
-            } else {
-                image = null;
-            }
-
-            if (image == null && isLinkState(state)) {
-                image = ((state & IGridContentProvider.STATE_LINK) != 0) ? LINK_IMAGE : LINK2_IMAGE;
-                imageBounds = LINK_IMAGE_BOUNDS;
-            }
-        }
-
         int columnAlign = cellInfo.align;
-        int x = image == null ? LEFT_MARGIN : LEFT_MARGIN / 2;
+        int x = LEFT_MARGIN;
 
         if (columnAlign == IGridContentProvider.ALIGN_LEFT) {
             x += row.getLevel() * LEVEL_INDENT;
-        }
-
-        if (image != null && columnAlign != IGridContentProvider.ALIGN_RIGHT) {
-            int y = bounds.y + (bounds.height - imageBounds.height) / 2;
-            if (columnAlign == IGridContentProvider.ALIGN_CENTER) {
-                x += (bounds.width - imageBounds.width - RIGHT_MARGIN - LEFT_MARGIN) / 2;
-            }
-            gc.drawImage(image, bounds.x + x, y);
-
-            x += imageBounds.width + INSIDE_MARGIN;
         }
 
         int width = bounds.width - x - RIGHT_MARGIN;
@@ -191,27 +160,15 @@ class GridCellRenderer extends AbstractRenderer {
                     // Right (numbers, datetimes)
                     Point textSize = gc.textExtent(text);
                     int valueWidth = textSize.x + INSIDE_MARGIN;
-                    if (imageBounds != null) {
-                        valueWidth += imageBounds.width + INSIDE_MARGIN;
-                    }
                     valueWidth += RIGHT_MARGIN;
                     boolean useClipping = valueWidth > bounds.width;
 
-                    int imageMargin = 0;
-                    if (image != null) {
-                        // Reduce bounds by link image size
-                        imageMargin = imageBounds.width + INSIDE_MARGIN;
-                        if (useClipping) {
-                            gc.setClipping(bounds.x, bounds.y, bounds.width - imageMargin, bounds.height);
-                        }
-                    } else {
-                        if (useClipping) {
-                            gc.setClipping(bounds);
-                        }
+                    if (useClipping) {
+                        gc.setClipping(bounds);
                     }
                     gc.drawString(
                         text,
-                        bounds.x + bounds.width - (textSize.x + RIGHT_MARGIN + imageMargin),
+                        bounds.x + bounds.width - (textSize.x + RIGHT_MARGIN),
                         textTopPos,
                         isTransparent
                     );
@@ -237,66 +194,126 @@ class GridCellRenderer extends AbstractRenderer {
                         );
                     }
 
-                    // Render hints
-                    List<IGridHint> cellHints = grid.getContentProvider().getCellHints(col, row, cellInfo);
-                    if (!CommonUtils.isEmpty(cellHints)) {
-                        boolean textHintRendered = false;
-                        Point textSize = gc.textExtent(text);
-                        int hintLeftPos = bounds.x + x + textSize.x + LEFT_MARGIN;
-                        for (IGridHint hint : cellHints) {
-                            if (x > bounds.x + bounds.width) {
-                                // No more space
-                                break;
-                            }
-                            DBPImage hintIcon = hint.getIcon();
-                            if (hintIcon != null) {
-                                Image hintImage = DBeaverIcons.getImage(hintIcon);
-                                Rectangle iconSize = hintImage.getBounds();
-                                int iconY = bounds.y + (bounds.height - iconSize.height) / 2;
-                                gc.drawImage(
-                                    hintImage,
-                                    hintLeftPos,
-                                    iconY
-                                );
-                                hintLeftPos += iconSize.width + LEFT_MARGIN;
-                            }
-                            if (!textHintRendered) {
-                                String hintText = hint.getText();
-                                if (!CommonUtils.isEmpty(hintText)) {
-                                    textHintRendered = true;
-                                    if (textSize.x < bounds.width - LEFT_MARGIN) {
-                                        final Color disabledForeground = getDisabledForeground(cellInfo);
-
-                                        gc.setForeground(disabledForeground);
-                                        gc.drawString(
-                                            hintText,
-                                            hintLeftPos,
-                                            textTopPos,
-                                            isTransparent
-                                        );
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    renderHints(gc, bounds, col, row, cellInfo, text, cellInfo.background, x, textTopPos, focus, hover);
 
                     break;
                 }
             }
         }
 
-        if (image != null && columnAlign == IGridContentProvider.ALIGN_RIGHT) {
-            int y = bounds.y + (bounds.height - imageBounds.height) / 2;
-            gc.drawImage(image, bounds.x + bounds.width - imageBounds.width - RIGHT_MARGIN, y);
-        }
-
-        if (focus) {
+        if (focus || hover) {
 
             gc.setForeground(colorLineFocused);
             gc.drawRectangle(bounds.x + 1, bounds.y, bounds.width - 2, bounds.height - 1);
 
             if (grid.isFocusControl()) {
                 gc.drawRectangle(bounds.x + 2, bounds.y + 1, bounds.width - 4, bounds.height - 3);
+            }
+        }
+    }
+
+    // Render hints
+    private void renderHints(
+        GC gc,
+        Rectangle bounds,
+        IGridColumn col,
+        IGridRow row,
+        IGridContentProvider.CellInformation cellInfo,
+        String text,
+        Color background,
+        int x,
+        int textTopPos,
+        boolean focus,
+        boolean hover
+    ) {
+        List<IGridHint> cellHints = grid.getContentProvider().getCellHints(col, row, cellInfo);
+        if (CommonUtils.isEmpty(cellHints)) {
+            return;
+        }
+
+        boolean textHintRendered = false;
+        Point textSize = gc.textExtent(text);
+        int hintLeftPos = bounds.x + x + textSize.x + LEFT_MARGIN;
+        // Render text
+        for (IGridHint hint : cellHints) {
+            if (x > bounds.x + bounds.width) {
+                // No more space
+                break;
+            }
+            if (!textHintRendered) {
+                String hintText = hint.getText();
+                if (!CommonUtils.isEmpty(hintText)) {
+                    textHintRendered = true;
+                    if (textSize.x < bounds.width - LEFT_MARGIN) {
+                        final Color disabledForeground = getDisabledForeground(cellInfo);
+
+                        gc.setForeground(disabledForeground);
+                        gc.drawString(
+                            hintText,
+                            hintLeftPos,
+                            textTopPos,
+                            isTransparent
+                        );
+                    }
+                }
+            }
+        }
+        if (hover || focus) {
+            List<IconInfo> iconList = null;
+            int iconsWidth = 0;
+            for (IGridHint hint : cellHints) {
+                DBPImage hintIcon = hint.getIcon();
+                if (hintIcon != null) {
+                    Image hintImage = DBeaverIcons.getImage(hintIcon);
+                    Rectangle iconSize = hintImage.getBounds();
+                    iconsWidth += iconSize.width + 1;
+                    if (iconList == null) {
+                        iconList = new ArrayList<>();
+                    }
+                    iconList.add(new IconInfo(hintImage, iconSize));
+                }
+            }
+
+            if (iconList != null) {
+                int iconsPaddingWidth = iconsWidth + 7;
+                Color oldBg = gc.getBackground(), oldFg = gc.getForeground();
+                gc.setBackground(focus ? grid.getBackground() : background);
+                int leftDivPos = bounds.x + bounds.width - iconsPaddingWidth;
+                gc.fillRectangle(
+                    leftDivPos,
+                    bounds.y,
+                    iconsPaddingWidth,
+                    bounds.height
+                );
+                gc.setForeground(colorLineFocused);
+                gc.setLineWidth(2);
+                if (!focus) {
+                    gc.setLineStyle(SWT.LINE_DOT);
+                }
+                gc.drawLine(
+                    leftDivPos,
+                    bounds.y,
+                    leftDivPos,
+                    bounds.y + bounds.height
+                );
+                gc.setLineWidth(1);
+                gc.setLineStyle(SWT.LINE_SOLID);
+                gc.setBackground(oldBg);
+                gc.setForeground(oldFg);
+
+                int iconRightPos = bounds.x + bounds.width - 4;
+                // Render icons
+                for (IconInfo iconInfo : iconList) {
+                    Rectangle iconSize = iconInfo.iconSize;
+                    int iconY = bounds.y + (bounds.height - iconSize.height) / 2;
+                    int iconX = iconRightPos - iconSize.width;
+                    gc.drawImage(
+                        iconInfo.hintImage,
+                        iconX,
+                        iconY
+                    );
+                    iconRightPos -= iconSize.width + 1;
+                }
             }
         }
     }
