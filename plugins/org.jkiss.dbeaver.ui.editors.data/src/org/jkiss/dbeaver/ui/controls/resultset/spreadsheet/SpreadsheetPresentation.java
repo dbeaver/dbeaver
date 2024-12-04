@@ -445,23 +445,23 @@ public class SpreadsheetPresentation extends AbstractPresentation
         if (!controller.isRecordMode()) {
             changed = (newRow != null && curRow != newRow.getElement()) ||
                 (newCol != null && curAttribute != newCol.getElement());
-            if (newRow != null && newRow.getElement() instanceof ResultSetRow) {
-                curRow = (ResultSetRow) newRow.getElement();
+            if (newRow != null && newRow.getElement() instanceof ResultSetRow resultSetRow) {
+                curRow = resultSetRow;
                 controller.setCurrentRow(curRow);
             }
-            if (newCol != null && newCol.getElement() instanceof DBDAttributeBinding) {
-                curAttribute = (DBDAttributeBinding) newCol.getElement();
+            if (newCol != null && newCol.getElement() instanceof DBDAttributeBinding attributeBinding) {
+                curAttribute = attributeBinding;
             }
         } else {
             changed = newRow != null && curAttribute != newRow.getElement();
-            if (newRow != null && newRow.getElement() instanceof DBDAttributeBinding) {
-                curAttribute = (DBDAttributeBinding) newRow.getElement();
+            if (newRow != null && newRow.getElement() instanceof DBDAttributeBinding attributeBinding) {
+                curAttribute = attributeBinding;
             }
             if (newCol != null &&
-                newCol.getElement() instanceof ResultSetRow &&
+                newCol.getElement() instanceof ResultSetRow resultSetRow &&
                 curRow != newCol.getElement())
             {
-                curRow = (ResultSetRow) newCol.getElement();
+                curRow = resultSetRow;
                 controller.setCurrentRow(curRow);
             }
         }
@@ -562,11 +562,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
             Object value = spreadsheet.getContentProvider().getCellValue(cell.col, cell.row, false);
             //Object value = controller.getModel().getCellValue(column, row);
             if (binaryData == null && (column.getDataKind() == DBPDataKind.BINARY || column.getDataKind() == DBPDataKind.CONTENT)) {
-                if (value instanceof byte[]) {
-                    binaryData = (byte[]) value;
-                } else if (value instanceof DBDContent && !ContentUtils.isTextContent((DBDContent) value) && value instanceof DBDContentCached) {
+                if (value instanceof byte[] bValue) {
+                    binaryData = bValue;
+                } else if (value instanceof DBDContent content && !ContentUtils.isTextContent(content) && value instanceof DBDContentCached) {
                     try {
-                        binaryData = ContentUtils.getContentBinaryValue(new VoidProgressMonitor(), (DBDContent) value);
+                        binaryData = ContentUtils.getContentBinaryValue(new VoidProgressMonitor(), content);
                     } catch (DBCException e) {
                         log.debug("Error reading content binary value");
                     }
@@ -1091,8 +1091,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
             // Record mode
             List<Integer> selectedRowIndexes = new ArrayList<>();
             for (IGridColumn sRow : spreadsheet.getColumnSelection()) {
-                if (sRow.getElement() instanceof ResultSetRow) {
-                    selectedRowIndexes.add(((ResultSetRow) sRow.getElement()).getVisualNumber());
+                if (sRow.getElement() instanceof ResultSetRow resultSetRow) {
+                    selectedRowIndexes.add(resultSetRow.getVisualNumber());
                 }
             }
 
@@ -1249,8 +1249,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 activeInlineEditor.getControl().setData(DATA_VALUE_CONTROLLER, valueController);
             }
         }
-        if (activeInlineEditor instanceof IValueEditorStandalone) {
-            valueController.registerEditor((IValueEditorStandalone) activeInlineEditor);
+        if (activeInlineEditor instanceof IValueEditorStandalone editorStandalone) {
+            valueController.registerEditor(editorStandalone);
             Control editorControl = activeInlineEditor.getControl();
             if (editorControl != null) {
                 editorControl.addDisposeListener(e -> valueController.unregisterEditor((IValueEditorStandalone) activeInlineEditor));
@@ -2294,9 +2294,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     //ResultSetRow row = (ResultSetRow) (recordMode ? colElement.getElement() : rowElement.getElement());
                     if (isShowAsCheckbox(attr)) {
                         info.state |= booleanStyles.getMode() == BooleanMode.TEXT ? STATE_TOGGLE : STATE_LINK;
-                    } else if (!CommonUtils.isEmpty(attr.getReferrers()) ||
-                           (cellValue instanceof DBDCollection col && !col.isEmpty()) ||
-                           (cellValue instanceof DBDComposite && controller.isRecordMode())) {
+                    } else if (
+                        (cellValue instanceof DBDCollection col && !col.isEmpty()) ||
+                        (cellValue instanceof DBDComposite && controller.isRecordMode())
+                    ) {
                         if (!DBUtils.isNullValue(cellValue)) {
                             info.state |= STATE_LINK;
                         }
@@ -2488,8 +2489,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         if (row.getState() == ResultSetRow.STATE_ADDED) {
                             return ALIGN_CENTER;
                         }
-                        if (cellValue instanceof Number) {
-                            cellValue = ((Number) cellValue).byteValue() != 0;
+                        if (cellValue instanceof Number number) {
+                            cellValue = number.byteValue() != 0;
                         }
                         if (DBUtils.isNullValue(cellValue) || cellValue instanceof Boolean) {
                             return switch (booleanStyles.getStyle((Boolean) cellValue).getAlignment()) {
@@ -2502,7 +2503,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     DBPDataKind dataKind = attr.getDataKind();
                     if ((dataKind == DBPDataKind.NUMERIC && rightJustifyNumbers) ||
                         (dataKind == DBPDataKind.DATETIME && rightJustifyDateTime)) {
-                        return ALIGN_RIGHT;
+                        if (CommonUtils.isEmpty(attr.getReferrers())) {
+                            return ALIGN_RIGHT;
+                        }
                     }
                 }
             }
@@ -2515,8 +2518,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 return foregroundSelected;
             }
             if (isShowAsCheckbox(attribute) && booleanStyles.getMode() == BooleanMode.TEXT) {
-                if (cellValue instanceof Number) {
-                    cellValue = ((Number) cellValue).byteValue() != 0;
+                if (cellValue instanceof Number number) {
+                    cellValue = number.byteValue() != 0;
                 }
                 if (DBUtils.isNullValue(cellValue) || cellValue instanceof Boolean) {
                     return UIUtils.getSharedColor(booleanStyles.getStyle((Boolean) cellValue).getColor());

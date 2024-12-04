@@ -122,11 +122,39 @@ class GridCellRenderer extends AbstractRenderer {
         String text = grid.getCellText(cellInfo.text);
         final int state = cellInfo.state;
 
+        Image image;
+        Rectangle imageBounds = null;
+
+        {
+            DBPImage cellImage = cellInfo.image;
+            if (cellImage != null) {
+                image = DBeaverIcons.getImage(cellImage);
+                imageBounds = image.getBounds();
+            } else {
+                image = null;
+            }
+
+            if (image == null && isLinkState(state)) {
+                image = ((state & IGridContentProvider.STATE_LINK) != 0) ? LINK_IMAGE : LINK2_IMAGE;
+                imageBounds = LINK_IMAGE_BOUNDS;
+            }
+        }
+
         int columnAlign = cellInfo.align;
-        int x = LEFT_MARGIN;
+        int x = image == null ? LEFT_MARGIN : LEFT_MARGIN / 2;
 
         if (columnAlign == IGridContentProvider.ALIGN_LEFT) {
             x += row.getLevel() * LEVEL_INDENT;
+        }
+
+        if (image != null && columnAlign != IGridContentProvider.ALIGN_RIGHT) {
+            int y = bounds.y + (bounds.height - imageBounds.height) / 2;
+            if (columnAlign == IGridContentProvider.ALIGN_CENTER) {
+                x += (bounds.width - imageBounds.width - RIGHT_MARGIN - LEFT_MARGIN) / 2;
+            }
+            gc.drawImage(image, bounds.x + x, y);
+
+            x += imageBounds.width + INSIDE_MARGIN;
         }
 
         int width = bounds.width - x - RIGHT_MARGIN;
@@ -160,16 +188,28 @@ class GridCellRenderer extends AbstractRenderer {
                     // Right (numbers, datetimes)
                     Point textSize = gc.textExtent(text);
                     int valueWidth = textSize.x + INSIDE_MARGIN;
+                    if (imageBounds != null) {
+                        valueWidth += imageBounds.width + INSIDE_MARGIN;
+                    }
                     valueWidth += RIGHT_MARGIN;
                     boolean useClipping = valueWidth > bounds.width;
 
-                    if (useClipping) {
-                        gc.setClipping(bounds);
+                    int imageMargin = 0;
+                    if (imageBounds != null) {
+                        // Reduce bounds by link image size
+                        imageMargin = imageBounds.width + INSIDE_MARGIN;
+                        if (useClipping) {
+                            gc.setClipping(bounds.x, bounds.y, bounds.width - imageMargin, bounds.height);
+                        }
+                    } else {
+                        if (useClipping) {
+                            gc.setClipping(bounds);
+                        }
                     }
                     gc.drawString(
                         text,
-                        bounds.x + bounds.width - (textSize.x + RIGHT_MARGIN),
-                        textTopPos,
+                        bounds.x + bounds.width - (textSize.x + RIGHT_MARGIN + imageMargin),
+                        bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN,
                         isTransparent
                     );
                     if (useClipping) {
@@ -199,6 +239,11 @@ class GridCellRenderer extends AbstractRenderer {
                     break;
                 }
             }
+        }
+
+        if (image != null && imageBounds != null && columnAlign == IGridContentProvider.ALIGN_RIGHT) {
+            int y = bounds.y + (bounds.height - imageBounds.height) / 2;
+            gc.drawImage(image, bounds.x + bounds.width - imageBounds.width - RIGHT_MARGIN, y);
         }
 
         if (focus || hover) {
