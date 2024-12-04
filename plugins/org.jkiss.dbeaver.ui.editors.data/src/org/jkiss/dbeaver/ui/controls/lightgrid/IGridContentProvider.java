@@ -100,6 +100,7 @@ public interface IGridContentProvider extends IContentProvider {
      * Returns cell information.
      * TODO: add returnColors parameter for optimization
      */
+    @NotNull
     CellInformation getCellInfo(IGridColumn colElement, IGridRow rowElement, boolean selected);
 
     boolean isVoidCell(IGridColumn gridColumn, IGridRow gridRow);

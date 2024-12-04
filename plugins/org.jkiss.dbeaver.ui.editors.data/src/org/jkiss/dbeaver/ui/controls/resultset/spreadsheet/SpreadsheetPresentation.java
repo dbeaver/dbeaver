@@ -17,8 +17,6 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
@@ -60,8 +58,6 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.data.DBDValueError;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.struct.*;
@@ -87,7 +83,6 @@ import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.ui.properties.PropertySourceDelegate;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
@@ -1307,7 +1302,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
     ///////////////////////////////////////////////
     // Links
 
-    public void navigateLink(@NotNull GridCell cell, final int state) {
+    public void navigateLink(@NotNull GridCell cell, int x, int y, int state) {
         final DBDAttributeBinding attr = getAttributeFromGrid(cell.col, cell.row);
         final ResultSetRow row = getResultRowFromGrid(cell.col, cell.row);
 
@@ -1327,54 +1322,24 @@ public class SpreadsheetPresentation extends AbstractPresentation
             spreadsheet.toggleCellValue(cell.col, cell.row);
         } else if (DBUtils.isNullValue(value)) {
             UIUtils.showMessageBox(getSpreadsheet().getShell(), "Wrong link", "Can't navigate to NULL value", SWT.ICON_ERROR);
-        } else if (!CommonUtils.isEmpty(attr.getReferrers())) {
-            // Navigate association
-            new AbstractJob("Navigate association") {
-                @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
-                    try {
-                        boolean newWindow;
-                        if (RuntimeUtils.isMacOS()) {
-                            newWindow = (state & SWT.COMMAND) == SWT.COMMAND;
-                        } else {
-                            newWindow = (state & SWT.CTRL) == SWT.CTRL;
-                        }
-                        controller.navigateAssociation(
-                            monitor,
-                            controller.getModel(),
-                            DBExecUtils.getAssociationByAttribute(attr),
-                            Collections.singletonList(row),
-                            newWindow
-                        );
-                    } catch (DBException e) {
-                        return GeneralUtils.makeExceptionStatus(e);
-                    }
-                    return Status.OK_STATUS;
+        } else {
+            IGridContentProvider.CellInformation cellInfo = spreadsheet.getContentProvider().getCellInfo(cell.col, cell.row, false);
+            if ((cellInfo.state & IGridContentProvider.STATE_HYPER_LINK) != 0) {
+                // Navigate hyperlink
+                String strValue = attr.getValueHandler().getValueDisplayString(attr, value, DBDDisplayFormat.UI);
+                if (isHyperlinkText(strValue)) {
+                    ShellUtils.launchProgram(strValue);
+                } else {
+                    EditTextDialog dialog = new EditTextDialog(
+                        getSpreadsheet().getShell(),
+                        attr.getName(),
+                        strValue,
+                        true);
+                    dialog.open();
                 }
-            }.schedule();
-        } else {
-            // Navigate hyperlink
-            String strValue = attr.getValueHandler().getValueDisplayString(attr, value, DBDDisplayFormat.UI);
-            if (isHyperlinkText(strValue)) {
-                ShellUtils.launchProgram(strValue);
             } else {
-                EditTextDialog dialog = new EditTextDialog(
-                    getSpreadsheet().getShell(),
-                    attr.getName(),
-                    strValue,
-                    true);
-                dialog.open();
+                spreadsheet.getCellRenderer().executeHintAction(cell.row, cell.col, cellInfo, x, y, state);
             }
-        }
-    }
-
-    private boolean isLinkSafeToOpen(String strValue) {
-        if (RuntimeUtils.isWindows()) {
-            return !strValue.startsWith("file:") &&
-                !strValue.startsWith("search:") &&
-                !strValue.startsWith("search-ms:");
-        } else {
-            return true;
         }
     }
 

@@ -16,11 +16,15 @@
  */
 package org.jkiss.dbeaver.ui.data.hints;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.swt.SWT;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -28,6 +32,8 @@ import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.data.IValueHint;
 import org.jkiss.dbeaver.ui.data.IValueHintAction;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.Collections;
 
@@ -76,11 +82,28 @@ public class ValueHintReference implements IValueHint, IValueHintAction {
 
     @Override
     public void performAction(@NotNull IResultSetController controller, long state) throws DBException {
-        controller.navigateReference(
-            new VoidProgressMonitor(),
-            controller.getModel(),
-            association,
-            Collections.singletonList(row),
-            false);
+        boolean newWindow;
+        if (RuntimeUtils.isMacOS()) {
+            newWindow = (state & SWT.COMMAND) == SWT.COMMAND;
+        } else {
+            newWindow = (state & SWT.CTRL) == SWT.CTRL;
+        }
+
+        new AbstractJob("Navigate association") {
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                try {
+                    controller.navigateAssociation(
+                        monitor,
+                        controller.getModel(),
+                        association,
+                        Collections.singletonList(row),
+                        newWindow);
+                } catch (DBException e) {
+                    return GeneralUtils.makeExceptionStatus(e);
+                }
+                return Status.OK_STATUS;
+            }
+        }.schedule();
     }
 }

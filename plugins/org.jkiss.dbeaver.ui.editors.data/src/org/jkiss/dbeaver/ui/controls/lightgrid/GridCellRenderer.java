@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.controls.lightgrid;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -33,7 +34,9 @@ import java.util.List;
 /**
  * Grid cell renderer
  */
-class GridCellRenderer extends AbstractRenderer {
+public class GridCellRenderer extends AbstractRenderer {
+    private static final Log log = Log.getLog(GridCellRenderer.class);
+
     private record IconInfo(Image hintImage, Rectangle iconSize) {
     }
     private static final int LEFT_MARGIN = 6;
@@ -363,6 +366,66 @@ class GridCellRenderer extends AbstractRenderer {
         }
     }
 
+    private boolean isOverHintAction(
+        IGridRow row,
+        GridColumn column,
+        IGridContentProvider.CellInformation cellInfo,
+        Point cellOrigin,
+        int x,
+        int y
+    ) {
+        List<IGridHint> cellHints = grid.getContentProvider().getCellHints(column, row, cellInfo);
+        if (CommonUtils.isEmpty(cellHints)) {
+            return false;
+        }
+        int iconsWidth = 0;
+        for (IGridHint hint : cellHints) {
+            DBPImage hintIcon = hint.getIcon();
+            if (hintIcon != null) {
+                Image hintImage = DBeaverIcons.getImage(hintIcon);
+                Rectangle iconSize = hintImage.getBounds();
+                if (x >= cellOrigin.x + column.getWidth() - 4 - iconsWidth - iconSize.width) {
+                    return true;
+                }
+                iconsWidth += iconSize.width + 1;
+            }
+        }
+        return false;
+    }
+
+    public void executeHintAction(
+        IGridRow row,
+        IGridColumn column,
+        IGridContentProvider.CellInformation cellInfo,
+        int x,
+        int y,
+        int state) {
+        List<IGridHint> cellHints = grid.getContentProvider().getCellHints(column, row, cellInfo);
+        if (CommonUtils.isEmpty(cellHints)) {
+            return;
+        }
+        IGridController gridController = grid.getGridController();
+        if (gridController == null) {
+            log.error("No grid controller");
+            return;
+        }
+        Point cellOrigin = grid.getOrigin(column, row.getVisualPosition());
+        int iconsWidth = 0;
+        for (IGridHint hint : cellHints) {
+            DBPImage hintIcon = hint.getIcon();
+            if (hintIcon != null) {
+                Image hintImage = DBeaverIcons.getImage(hintIcon);
+                Rectangle iconSize = hintImage.getBounds();
+                if (x >= cellOrigin.x + column.getWidth() - 4 - iconsWidth - iconSize.width) {
+                    hint.performAction(gridController, state);
+                    return;
+                }
+            }
+        }
+        log.error("Cannot detect action hint");
+    }
+
+
     private static @NotNull Color getDisabledForeground(IGridContentProvider.CellInformation cellInfo) {
         return UIUtils.getSharedColor(
             UIUtils.blend(cellInfo.foreground.getRGB(), cellInfo.background.getRGB(), 50));
@@ -385,9 +448,9 @@ class GridCellRenderer extends AbstractRenderer {
                 return false;
             }
         }
+        Point origin = grid.getOrigin(column, row);
         if (isLinkState(state) || isToggle) {
             int columnAlign = cellInfo.align;
-            Point origin = grid.getOrigin(column, row);
             Rectangle imageBounds;
             if (isToggle) {
                 String cellText = grid.getCellText(cellInfo.text);
@@ -433,9 +496,10 @@ class GridCellRenderer extends AbstractRenderer {
                     }
                     break;
             }
-
         }
-        return false;
+
+        // Check hints
+        return isOverHintAction(rowElement, column, cellInfo, origin, x, y);
     }
 
     public static boolean isLinkState(int state) {

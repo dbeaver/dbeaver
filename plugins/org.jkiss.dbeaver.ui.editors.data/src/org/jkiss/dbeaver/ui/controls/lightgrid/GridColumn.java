@@ -101,6 +101,7 @@ public class GridColumn implements IGridColumn {
      *
      * @return width of column
      */
+    @Override
     public int getWidth() {
         return width;
     }
@@ -126,6 +127,7 @@ public class GridColumn implements IGridColumn {
         }
     }
 
+    @Override
     public boolean isPinned() {
         return pinIndex >= 0 || parent != null && parent.isPinned();
     }

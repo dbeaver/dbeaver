@@ -494,6 +494,10 @@ public abstract class LightGrid extends Canvas {
     @Nullable
     public abstract IGridController getGridController();
 
+    public GridCellRenderer getCellRenderer() {
+        return cellRenderer;
+    }
+
     public void setMaxColumnDefWidth(int maxColumnDefWidth) {
         this.maxColumnDefWidth = maxColumnDefWidth;
     }
@@ -4126,7 +4130,7 @@ public abstract class LightGrid extends Canvas {
      * @param item   item
      * @return x,y of top left corner of the cell
      */
-    Point getOrigin(GridColumn column, int item)
+    Point getOrigin(IGridColumn column, int item)
     {
         int x = 0;
 
