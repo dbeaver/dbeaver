@@ -29,4 +29,9 @@ public class GBase8sConstraintManager extends GenericPrimaryKeyManager {
     protected boolean isLegacyConstraintsSyntax(GenericTableBase owner) {
         return false;
     }
+
+    @Override
+    protected boolean isShortNotation(GenericTableBase owner) {
+        return false;
+    }
 }

@@ -17,15 +17,20 @@
 
 package org.jkiss.dbeaver.ext.gbase8s.edit;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sConstraint;
+import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sTableColumn;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
@@ -34,11 +39,34 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * @author Chao Tian
  */
 public class GBase8sTableManager extends GenericTableManager implements DBEObjectRenamer<GenericTableBase> {
+
+    private static final Class<? extends DBSObject>[] CHILD_TYPES = CommonUtils.array(
+            GBase8sTableColumn.class,
+            GBase8sConstraint.class,
+            GenericTableForeignKey.class,
+            GenericTableIndex.class);
+
+    @NotNull
+    @Override
+    public Class<? extends DBSObject>[] getChildTypes() {
+        return CHILD_TYPES;
+    }
+
+    @Override
+    public Collection<? extends DBSObject> getChildObjects(DBRProgressMonitor monitor, GenericTableBase object,
+            Class<? extends DBSObject> childType) throws DBException {
+        if (childType == GBase8sConstraint.class) {
+            return object.getConstraints(monitor);
+        }
+        return super.getChildObjects(monitor, object, childType);
+    }
 
     @Override
     public boolean canEditObject(GenericTableBase object) {
