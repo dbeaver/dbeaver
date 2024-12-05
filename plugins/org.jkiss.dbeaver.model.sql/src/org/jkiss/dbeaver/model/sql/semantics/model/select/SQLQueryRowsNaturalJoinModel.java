@@ -110,7 +110,7 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
             }
         }
 
-        SQLQueryDataContext combinedContext = left.combine(right);
+        SQLQueryDataContext combinedContext = left.combineForJoin(right);
         if (this.condition != null) {
             this.condition.propagateContext(combinedContext, statistics);
             this.conditionScope.setContext(combinedContext);
