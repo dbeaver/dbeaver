@@ -566,11 +566,17 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         @NotNull List<Object[]> keyValues,
         @Nullable List<DBDAttributeValue[]> preceedingKeys,
         boolean sortByValue,
-        boolean sortAsc) throws DBException
+        boolean sortAsc,
+        boolean omitNonDescriptive) throws DBException
     {
         if (keyColumns.isEmpty()) {
             throw new DBException("Empty key columns");
         }
+        String descColumns = DBVUtils.getDictionaryDescriptionColumns(monitor, keyColumns.get(0));
+        if (omitNonDescriptive && (descColumns == null || descColumns.equals(DBUtils.getQuotedIdentifier(keyColumns.get(0))))) {
+            return Collections.emptyList();
+        }
+
         List<DBDValueHandler> keyValueHandler = keyColumns.stream()
             .map(c -> DBUtils.findValueHandler(c.getDataSource(), c)).toList();
 
@@ -582,7 +588,6 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             query.append(DBUtils.getQuotedIdentifier(keyColumn));
         }
 
-        String descColumns = DBVUtils.getDictionaryDescriptionColumns(monitor, keyColumns.get(0));
         if (descColumns != null) {
             query.append(", ").append(descColumns);
         }

@@ -73,8 +73,8 @@ public interface DBSDictionary {
         @NotNull List<Object[]> keyValues,
         @Nullable List<DBDAttributeValue[]> preceedingKeys,
         boolean sortByValue,
-        boolean sortAsc
-    ) throws DBException;
+        boolean sortAsc,
+        boolean omitNonDescriptive) throws DBException;
 
     @NotNull
     DBSDictionaryAccessor getDictionaryAccessor(
