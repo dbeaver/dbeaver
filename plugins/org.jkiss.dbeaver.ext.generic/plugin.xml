@@ -1018,6 +1018,7 @@
                         webURL="https://documentation.progress.com/output/ua/OpenEdge_latest/dmsdv/connecting-from-a-java-application-using-a-url.html#"
                         categories="sql">
                     <parameter name="omit-single-catalog" value="true"/>
+                    <parameter name="supports-schema-selection" value="false"/>
                     <parameter name="stored-quoted-case" value="mixed"/>
                     <parameter name="stored-unquoted-case" value="mixed"/>
                 </driver>
