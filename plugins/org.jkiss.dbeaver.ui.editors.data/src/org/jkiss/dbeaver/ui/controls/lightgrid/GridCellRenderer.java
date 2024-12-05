@@ -385,7 +385,10 @@ public class GridCellRenderer extends AbstractRenderer {
             if (hintIcon != null) {
                 Image hintImage = DBeaverIcons.getImage(hintIcon);
                 Rectangle iconSize = hintImage.getBounds();
-                if (x >= cellOrigin.x + column.getWidth() - 4 - iconsWidth - iconSize.width) {
+                if (y >= cellOrigin.y &&
+                    y <= cellOrigin.y + grid.getItemHeight() &&
+                    x >= cellOrigin.x + column.getWidth() - 4 - iconsWidth - iconSize.width &&
+                    x <= cellOrigin.x + column.getWidth() - 4) {
                     return true;
                 }
                 iconsWidth += iconSize.width + 1;
