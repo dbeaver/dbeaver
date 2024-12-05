@@ -2837,8 +2837,16 @@ public class SpreadsheetPresentation extends AbstractPresentation
             if (item.getElement() instanceof DBDAttributeBinding attr) {
                 DBPImage image = DBValueFormatting.getObjectImage(attr.getAttribute());
 
-                if (isAttributeReadOnly(attr)) {
-                    image = new DBIconComposite(image, false, null, null, null, DBIcon.OVER_LOCK);
+                boolean attributeReadOnly = isAttributeReadOnly(attr);
+                boolean hasReferences = !CommonUtils.isEmpty(attr.getReferrers());
+                DBDRowIdentifier rowIdentifier = attr.getRowIdentifier();
+                boolean isKey = rowIdentifier != null && rowIdentifier.getAttributes().contains(attr);
+                if (attributeReadOnly || hasReferences || isKey) {
+                    image = new DBIconComposite(image, false,
+                        null,
+                        attributeReadOnly ? DBIcon.OVER_LOCK : null,
+                        isKey ? DBIcon.OVER_KEY : null,
+                        hasReferences ? DBIcon.OVER_REFERENCE : null);
                 }
 
                 return DBeaverIcons.getImage(image);

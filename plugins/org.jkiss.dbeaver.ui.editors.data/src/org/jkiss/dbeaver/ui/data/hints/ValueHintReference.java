@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
@@ -66,8 +65,7 @@ public class ValueHintReference implements IValueHint, IValueHintAction {
 
     @Override
     public String getHintText() {
-        DBSEntity entity = association.getAssociatedEntity();
-        return entity == null ? "???" : entity.getName();
+        return null;
     }
 
     @Override
