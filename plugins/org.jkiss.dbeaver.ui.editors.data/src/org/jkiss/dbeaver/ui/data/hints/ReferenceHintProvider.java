@@ -79,8 +79,8 @@ public class ReferenceHintProvider implements IValueHintProvider {
         @NotNull DBRProgressMonitor monitor,
         @NotNull IValueHintContext context,
         @NotNull Collection<DBDAttributeBinding> attributes,
-        @NotNull Collection<ResultSetRow> rows
-    ) {
+        @NotNull Collection<ResultSetRow> rows,
+        boolean cleanupCache) {
         // noop
     }
 

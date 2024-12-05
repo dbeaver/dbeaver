@@ -70,7 +70,11 @@ class ResultSetHintContext implements IValueHintContext {
 
     @Override
     public void setHintContextAttribute(@NotNull String name, @Nullable Object value) {
-        this.contextAttributes.put(name, value);
+        if (value == null) {
+            this.contextAttributes.remove(name);
+        } else {
+            this.contextAttributes.put(name, value);
+        }
     }
 
     List<IValueHintProvider> getHintProviders(DBDAttributeBinding attr) {
@@ -105,14 +109,15 @@ class ResultSetHintContext implements IValueHintContext {
         }
     }
 
-    public void cacheRequiredData(@NotNull DBRProgressMonitor monitor, @NotNull List<ResultSetRow> rows) throws DBException {
+    public void cacheRequiredData(@NotNull DBRProgressMonitor monitor, @NotNull List<ResultSetRow> rows, boolean cleanupCache) throws DBException {
         for (HintProviderInfo pi : hintProviders.values()) {
             if (pi.enabled) {
                 pi.provider.cacheRequiredData(
                     monitor,
                     this,
                     pi.attributes,
-                    rows);
+                    rows,
+                    cleanupCache);
             }
         }
     }

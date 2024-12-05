@@ -647,7 +647,6 @@ public class ResultSetModel {
 
         if (metadataChanged) {
             hintContext.resetCache();
-            hintContext.initProviders(attributes);
         }
     }
 
@@ -863,7 +862,9 @@ public class ResultSetModel {
         updateRowColors(resetOldRows, newRows);
 
         try {
-            hintContext.cacheRequiredData(monitor, newRows);
+            hintContext.resetCache();
+            hintContext.initProviders(attributes);
+            hintContext.cacheRequiredData(monitor, newRows, metadataChanged);
         } catch (Exception e) {
             log.debug("Error caching data for column hints", e);
         }

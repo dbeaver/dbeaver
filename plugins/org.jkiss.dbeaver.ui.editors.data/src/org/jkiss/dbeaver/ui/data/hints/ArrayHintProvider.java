@@ -63,7 +63,8 @@ public class ArrayHintProvider implements IValueHintProvider {
         @NotNull DBRProgressMonitor monitor,
         @NotNull IValueHintContext context,
         @NotNull Collection<DBDAttributeBinding> attributes,
-        @NotNull Collection<ResultSetRow> rows) throws DBException {
+        @NotNull Collection<ResultSetRow> rows,
+        boolean cleanupCache) throws DBException {
         // noop
     }
 

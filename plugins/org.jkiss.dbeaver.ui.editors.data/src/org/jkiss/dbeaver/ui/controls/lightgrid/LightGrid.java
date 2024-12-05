@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIElementFontStyle;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomToolTipHandler;
+import org.jkiss.dbeaver.ui.data.IValueHintProvider;
 import org.jkiss.dbeaver.ui.dnd.LocalObjectTransfer;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -3541,7 +3542,9 @@ public abstract class LightGrid extends Canvas {
     private void onMouseUp(MouseEvent e)
     {
         if (focusColumn != null && focusItem >= 0) {
-            if (e.button == 1 && cellRenderer.isOverLink(focusColumn, focusItem, e.x, e.y)) {
+            if (!hoveringOnHeader && !hoveringOnRowHeader &&
+                e.button == 1 && cellRenderer.isOverLink(focusColumn, focusItem, e.x, e.y)
+            ) {
                 // Navigate link
                 Event event = new Event();
                 event.x = e.x;
@@ -4765,12 +4768,6 @@ public abstract class LightGrid extends Canvas {
         };
     }
 
-    public String getCellText(IGridColumn colElement, IGridRow rowElement) {
-        Object text = getContentProvider().getCellValue(
-            colElement, rowElement, true);
-        return getCellText(text);
-    }
-
     @NotNull
     String getCellText(Object cellValue) {
         String text = String.valueOf(cellValue);
@@ -4783,14 +4780,29 @@ public abstract class LightGrid extends Canvas {
     }
 
     @Nullable
-    private String getCellToolTip(GridColumn col, int row)
-    {
+    private String getCellToolTip(GridColumn col, int row) {
         if (col == null || row < 0 || row >= gridRows.length) {
             return null;
         }
-        String toolTip = getCellText(col, gridRows[row]);
-        if (toolTip == null) {
-            return null;
+        IGridRow gridRow = gridRows[row];
+        Object cellValue = getContentProvider().getCellValue(
+            col, gridRow, true);
+
+        String toolTip = getCellText(cellValue);
+        if (toolTip.length() < MAX_TOOLTIP_LENGTH) {
+            // Add tips
+            List<IGridHint> cellHints = getContentProvider().getCellHints(col, gridRow, cellValue, IValueHintProvider.HINT_INLINE);
+            if (cellHints != null) {
+                for (IGridHint hint : cellHints) {
+                    String hintText = hint.getText();
+                    if (hintText != null) {
+                        toolTip += "\n" + hintText;
+                    }
+                    if (toolTip.length() > MAX_TOOLTIP_LENGTH) {
+                        break;
+                    }
+                }
+            }
         }
         if (toolTip.length() > MAX_TOOLTIP_LENGTH) {
             toolTip = toolTip.substring(0, MAX_TOOLTIP_LENGTH) + "...";

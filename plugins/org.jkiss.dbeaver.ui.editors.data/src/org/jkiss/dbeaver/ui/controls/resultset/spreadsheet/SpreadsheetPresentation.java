@@ -2694,7 +2694,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         }
 
         @Override
-        public List<IGridHint> getCellHints(IGridColumn colElement, IGridRow rowElement, CellInformation cellInfo) {
+        public List<IGridHint> getCellHints(IGridColumn colElement, IGridRow rowElement, Object cellValue, int options) {
             DBDAttributeBinding attr = getAttributeFromGrid(colElement, rowElement);
             if (attr == null) {
                 return null;
@@ -2709,10 +2709,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     controller.getModel().getHintContext(),
                     attr,
                     row,
-                    cellInfo.value,
+                    cellValue,
                     INLINE_HINT_TYPES,
-                    cellInfo.state,
-                    IValueHintProvider.HINT_INLINE);
+                    IGridContentProvider.STATE_NONE,
+                    options);
                 if (valueHints != null) {
                     for (IValueHint hint : valueHints) {
                         if (gridHints == null) {
