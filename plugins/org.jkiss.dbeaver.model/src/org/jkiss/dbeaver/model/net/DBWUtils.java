@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.model.net;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.utils.CommonUtils;
 
@@ -50,13 +52,23 @@ public class DBWUtils {
     }
 
     @NotNull
-    public static String getTargetTunnelHostName(DBPConnectionConfiguration cfg) {
+    public static String getTargetTunnelHostName(@Nullable DBPDataSourceContainer dataSourceContainer, @NotNull DBPConnectionConfiguration cfg) {
         String hostText = cfg.getHostName();
         // For localhost ry to get real host name from tunnel configuration
         if (isLocalAddress(hostText)) {
+            DBWNetworkProfile networkProfile = dataSourceContainer == null ? null : getNetworkProfile(dataSourceContainer);
             for (DBWHandlerConfiguration hc : cfg.getHandlers()) {
                 if (hc.isEnabled() && hc.getType() == DBWHandlerType.TUNNEL) {
-                    String tunnelHost = hc.getStringProperty(DBWHandlerConfiguration.PROP_HOST);
+                    String tunnelHost = null;
+                    if (networkProfile != null) {
+                        DBWHandlerConfiguration hCfg = networkProfile.getConfiguration(hc.getHandlerDescriptor());
+                        if (hCfg != null) {
+                            tunnelHost = getTunnelHostFromConfig(hCfg);
+                        }
+                    }
+                    if (tunnelHost == null) {
+                        tunnelHost = getTunnelHostFromConfig(hc);
+                    }
                     if (!CommonUtils.isEmpty(tunnelHost)) {
                         hostText = tunnelHost;
                         break;
@@ -67,6 +79,14 @@ public class DBWUtils {
         return CommonUtils.notEmpty(hostText);
     }
 
+    public static @Nullable String getTunnelHostFromConfig(DBWHandlerConfiguration hc) {
+        String host = hc.getStringProperty(DBWHandlerConfiguration.PROP_HOST);
+        if (CommonUtils.isEmpty(host)) {
+            return null;
+        }
+        return host;
+    }
+
     public static boolean isLocalAddress(String hostText) {
         return CommonUtils.isEmpty(hostText) ||
             hostText.equals(LOCALHOST_NAME) ||
@@ -75,4 +95,12 @@ public class DBWUtils {
             hostText.equals(LOOPBACK_IPV6_HOST_NAME) ||
             hostText.equals(LOOPBACK_IPV6_FULL_HOST_NAME);
     }
+
+    public static @Nullable DBWNetworkProfile getNetworkProfile(@NotNull DBPDataSourceContainer dataSourceContainer) {
+        DBPConnectionConfiguration cfg = dataSourceContainer.getConnectionConfiguration();
+        return CommonUtils.isEmpty(cfg.getConfigProfileName())
+            ? null
+            : dataSourceContainer.getRegistry().getNetworkProfile(cfg.getConfigProfileSource(), cfg.getConfigProfileName());
+    }
 }
+
