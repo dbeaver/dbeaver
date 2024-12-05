@@ -162,6 +162,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         appendSelectSource(monitor, query, tableAlias, rowIdAttribute);
         query.append(" FROM ").append(getTableName());
         if (tableAlias != null) {
+            if (dataSource.getSQLDialect().supportsAsKeywordBeforeAliasInFromClause()) {
+                query.append(" AS");
+            }
             query.append(" ").append(tableAlias); //$NON-NLS-1$
         }
         appendExtraSelectParameters(query);
