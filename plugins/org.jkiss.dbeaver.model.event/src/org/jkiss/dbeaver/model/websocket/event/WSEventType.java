@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.websocket.event;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.websocket.event.datasource.WSDataSourceConnectEvent;
 import org.jkiss.dbeaver.model.websocket.event.datasource.WSDataSourceDisconnectEvent;
 import org.jkiss.dbeaver.model.websocket.event.datasource.WSDataSourceEvent;
 import org.jkiss.dbeaver.model.websocket.event.datasource.WSDatasourceFolderEvent;
@@ -71,8 +72,14 @@ public enum WSEventType {
 
     DATASOURCE_DISCONNECTED(
         "cb_datasource_disconnected",
-        WSEventTopic.DATASOURCE_DISCONNECT,
+        WSEventTopic.DATASOURCE_CONNECTION,
         WSDataSourceDisconnectEvent.class
+    ),
+
+    DATASOURCE_CONNECTED(
+        "cb_datasource_connected",
+        WSEventTopic.DATASOURCE_CONNECTION,
+        WSDataSourceConnectEvent.class
     ),
 
     OBJECT_PERMISSIONS_UPDATED(
