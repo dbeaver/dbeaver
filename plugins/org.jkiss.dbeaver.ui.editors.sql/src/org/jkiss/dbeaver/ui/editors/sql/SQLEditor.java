@@ -3288,7 +3288,7 @@ public class SQLEditor extends SQLEditorBase implements
                 DBCExecutionContextDefaults<?, ?> ctxDefault = execContext.getContextDefaults();
                 if (ctxDefault != null && eventObject != null) {
                     boolean defaultChanged = eventObject == ctxDefault.getDefaultCatalog() || eventObject == ctxDefault.getDefaultSchema();
-                    if (lastExecutionContext != executionContext || (lastExecutionContext == executionContext && defaultChanged)) {
+                    if (lastExecutionContext != executionContext || defaultChanged) {
                         contextChanged = true;
                     }
                 }
