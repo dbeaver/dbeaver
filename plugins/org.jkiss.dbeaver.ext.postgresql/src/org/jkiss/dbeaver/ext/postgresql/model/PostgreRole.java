@@ -376,7 +376,7 @@ public class PostgreRole implements
         }
         valueStartingIndex = valueStartingIndex + 1;
         String value = parameter.substring(valueStartingIndex);
-        if (SQLUtils.isStringQuoted(this, value) || CommonUtils.isNumber(value)) {
+        if (CommonUtils.isNumber(value) || (value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"')) {
             return parameter;
         }
         return parameter.substring(0, valueStartingIndex) + SQLUtils.quoteString(this, value);

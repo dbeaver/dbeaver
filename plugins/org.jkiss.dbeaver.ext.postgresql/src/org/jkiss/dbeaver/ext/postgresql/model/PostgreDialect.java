@@ -1258,12 +1258,4 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
             ProjectionAliasVisibilityScope.ORDER_BY
         );
     }
-
-    @Override
-    public boolean isQuotedString(String string) {
-        if (string.length() >= 2 && string.charAt(0) == '"' && string.charAt(string.length() - 1) == '"') {
-            return true;
-        }
-        return super.isQuotedString(string);
-    }
 }
