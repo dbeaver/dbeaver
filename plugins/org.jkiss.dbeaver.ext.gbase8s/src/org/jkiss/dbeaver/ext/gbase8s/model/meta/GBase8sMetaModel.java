@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.gbase8s.GBase8sUtils;
 import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sCatalog;
+import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sConstraint;
 import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sDataTypeCache;
 import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sProcedure;
 import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sSchema;
@@ -65,6 +66,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
@@ -82,6 +84,12 @@ public class GBase8sMetaModel extends GenericMetaModel {
         super();
     }
 
+    @Override
+    public JDBCBasicDataTypeCache<GenericStructContainer, ? extends JDBCDataType> createDataTypeCache(
+            @NotNull GenericStructContainer container) {
+        return new GBase8sDataTypeCache(container);
+    }
+
     /**
      * Catalog
      */
@@ -90,10 +98,12 @@ public class GBase8sMetaModel extends GenericMetaModel {
         return new GBase8sCatalog(dataSource, catalogName);
     }
 
-    @Override
-    public JDBCBasicDataTypeCache<GenericStructContainer, ? extends JDBCDataType> createDataTypeCache(
-            @NotNull GenericStructContainer container) {
-        return new GBase8sDataTypeCache(container);
+    /**
+     * Constraint
+     */
+    public GBase8sConstraint createConstraintImpl(GenericTableBase table, String constraintName,
+            DBSEntityConstraintType constraintType, JDBCResultSet dbResult, boolean persisted) {
+        return new GBase8sConstraint(table, constraintName, null, constraintType, persisted);
     }
 
     /**
@@ -147,6 +157,9 @@ public class GBase8sMetaModel extends GenericMetaModel {
         return new GBase8sTable(container, tableName, tableType, dbResult);
     }
 
+    /**
+     * Table Trigger
+     */
     @Override
     public GenericTableTrigger createTableTriggerImpl(@NotNull JDBCSession session,
             @NotNull GenericStructContainer container, @NotNull GenericTableBase genericTableBase, String triggerName,

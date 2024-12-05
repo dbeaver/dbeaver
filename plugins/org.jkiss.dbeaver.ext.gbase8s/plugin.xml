@@ -19,6 +19,8 @@
                 changeFolderType="org.jkiss.dbeaver.ext.gbase8s.model.GBase8sTable"/>
             <treeInjection path="generic/catalog/schema/table/attribute"
                 changeFolderType="org.jkiss.dbeaver.ext.gbase8s.model.GBase8sTableColumn"/>
+            <treeInjection path="generic/catalog/schema/table/uniqueKey"
+                changeFolderType="org.jkiss.dbeaver.ext.gbase8s.model.GBase8sConstraint"/>
             <treeInjection path="generic/catalog/schema/index" remove="true"/>
             <treeInjection path="generic/catalog/schema/tableTrigger"
                 changeFolderType="org.jkiss.dbeaver.ext.gbase8s.model.GBase8sTableTrigger"/>
@@ -64,6 +66,9 @@
         <manager
             class="org.jkiss.dbeaver.ext.gbase8s.edit.GBase8sTableColumnManager"
             objectType="org.jkiss.dbeaver.ext.gbase8s.model.GBase8sTableColumn" />
+        <manager
+            class="org.jkiss.dbeaver.ext.gbase8s.edit.GBase8sConstraintManager"
+            objectType="org.jkiss.dbeaver.ext.gbase8s.model.GBase8sConstraint" />
     </extension>
 
 </plugin>
