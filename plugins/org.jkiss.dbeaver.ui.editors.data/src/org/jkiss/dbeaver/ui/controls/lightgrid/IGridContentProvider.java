@@ -114,6 +114,8 @@ public interface IGridContentProvider extends IContentProvider {
     @NotNull
     String getCellLinkText(IGridColumn colElement, IGridRow rowElement);
 
+    String getCellToolTip(IGridColumn colElement, IGridRow rowElement);
+
     List<IGridHint> getCellHints(IGridColumn colElement, IGridRow rowElement, Object cellValue, int options);
 
     // Resets all cached colors

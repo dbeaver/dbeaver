@@ -14,49 +14,56 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.data.registry;
+
+package org.jkiss.dbeaver.model.data.hints;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDValueRow;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
-import org.jkiss.dbeaver.ui.data.IValueHint;
-import org.jkiss.dbeaver.ui.data.IValueHintContext;
-import org.jkiss.dbeaver.ui.data.IValueHintProvider;
 
 import java.util.Collection;
 import java.util.EnumSet;
 
 /**
- * Void hint provider. Stub for no hints
+ * Value hint provider
  */
-public class VoidHintProvider implements IValueHintProvider {
+public interface DBDValueHintProvider {
 
-    public static final VoidHintProvider INSTANCE = new VoidHintProvider();
+    int HINT_INLINE = 1;
+    int HINT_ADVANCED = 1 << 1;
 
+    int STATE_ROW_EXPANDED = 1;
+
+    /**
+     * Get all hints available for specified value.
+     * @param types requested hint types
+     * @param state flags combined from STATE_ constants
+     * @param options flags combined from HINT_ constants
+     */
     @Nullable
-    @Override
-    public IValueHint[] getValueHint(
-        @NotNull IValueHintContext context,
+    DBDValueHint[] getValueHint(
+        @NotNull DBDValueHintContext context,
         @NotNull DBDAttributeBinding attribute,
-        @NotNull ResultSetRow row,
+        @NotNull DBDValueRow row,
         @Nullable Object value,
-        @NotNull EnumSet<IValueHint.HintType> types,
+        @NotNull EnumSet<DBDValueHint.HintType> types,
         int state,
-        int options
-    ) {
-        return null;
-    }
+        int options);
 
-    @Override
-    public void cacheRequiredData(
+    /**
+     * Read all necessary data which is needed to render hints.
+     */
+    default void cacheRequiredData(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull IValueHintContext context,
+        @NotNull DBDValueHintContext context,
         @NotNull Collection<DBDAttributeBinding> attributes,
-        @NotNull Collection<ResultSetRow> rows, boolean cleanupCache) throws DBException {
-        // noop
+        @NotNull Collection<? extends DBDValueRow> rows,
+        boolean cleanupCache
+    ) throws DBException {
+
     }
 
 }

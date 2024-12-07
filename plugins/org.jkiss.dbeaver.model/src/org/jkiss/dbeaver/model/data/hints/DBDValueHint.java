@@ -15,17 +15,30 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.data;
+package org.jkiss.dbeaver.model.data.hints;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
+import org.jkiss.dbeaver.model.DBPImage;
 
 /**
- * Value hint action handler
+ * Value hint
  */
-public interface IValueHintAction {
+public interface DBDValueHint {
 
-    void performAction(@NotNull IResultSetController controller, long state) throws DBException;
+    enum HintType {
+        NONE,
+        STRING,
+        IMAGE,
+        SOUND,
+        WEB,
+        ACTION
+    }
+
+    HintType getHintType();
+
+    String getHintText();
+
+    String getHintDescription();
+
+    DBPImage getHintIcon();
 
 }

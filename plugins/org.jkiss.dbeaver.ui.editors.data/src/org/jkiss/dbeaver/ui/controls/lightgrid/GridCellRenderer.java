@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UITextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.data.IValueHintProvider;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -275,7 +274,7 @@ public class GridCellRenderer extends AbstractRenderer {
         boolean focus,
         boolean hover
     ) {
-        List<IGridHint> cellHints = grid.getContentProvider().getCellHints(col, row, cellInfo.value, IValueHintProvider.HINT_INLINE);
+        List<IGridHint> cellHints = grid.getContentProvider().getCellHints(col, row, cellInfo.value, 0);
         if (CommonUtils.isEmpty(cellHints)) {
             return;
         }
@@ -375,7 +374,7 @@ public class GridCellRenderer extends AbstractRenderer {
         int x,
         int y
     ) {
-        List<IGridHint> cellHints = grid.getContentProvider().getCellHints(column, row, cellInfo.value, IValueHintProvider.HINT_INLINE);
+        List<IGridHint> cellHints = grid.getContentProvider().getCellHints(column, row, cellInfo.value, 0);
         if (CommonUtils.isEmpty(cellHints)) {
             return false;
         }
@@ -404,7 +403,7 @@ public class GridCellRenderer extends AbstractRenderer {
         int x,
         int y,
         int state) {
-        List<IGridHint> cellHints = grid.getContentProvider().getCellHints(column, row, cellInfo.value, IValueHintProvider.HINT_INLINE);
+        List<IGridHint> cellHints = grid.getContentProvider().getCellHints(column, row, cellInfo.value, 0);
         if (CommonUtils.isEmpty(cellHints)) {
             return;
         }

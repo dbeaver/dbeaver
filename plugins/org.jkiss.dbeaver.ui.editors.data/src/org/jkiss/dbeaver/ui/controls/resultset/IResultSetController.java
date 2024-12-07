@@ -30,12 +30,13 @@ import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.data.DBDValueRow;
+import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.ui.data.IDataController;
-import org.jkiss.dbeaver.ui.data.IValueHintContext;
 
 import java.util.List;
 
@@ -177,10 +178,20 @@ public interface IResultSetController extends IDataController, DBPContextProvide
     /**
      * Navigates to association. One of @association OR @attr must be specified.
      */
-    void navigateAssociation(@NotNull DBRProgressMonitor monitor, @NotNull ResultSetModel model, @NotNull DBSEntityAssociation association, @NotNull List<ResultSetRow> rows, boolean newWindow)
+    void navigateAssociation(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull ResultSetModel model,
+        @NotNull DBSEntityAssociation association,
+        @NotNull List<? extends DBDValueRow> rows,
+        boolean newWindow)
         throws DBException;
 
-    void navigateReference(@NotNull DBRProgressMonitor monitor, @NotNull ResultSetModel bindingsModel, @NotNull DBSEntityAssociation association, @NotNull List<ResultSetRow> rows, boolean newWindow)
+    void navigateReference(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull ResultSetModel bindingsModel,
+        @NotNull DBSEntityAssociation association,
+        @NotNull List<? extends DBDValueRow> rows,
+        boolean newWindow)
         throws DBException;
 
     int getHistoryPosition();
@@ -201,7 +212,7 @@ public interface IResultSetController extends IDataController, DBPContextProvide
     // Presentation & panels
 
     @NotNull
-    IValueHintContext getHintContext();
+    DBDValueHintContext getHintContext();
 
     /**
      * Active presentation

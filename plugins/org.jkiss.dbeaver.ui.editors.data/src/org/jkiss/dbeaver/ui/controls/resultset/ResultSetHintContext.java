@@ -22,11 +22,11 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
+import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.ui.data.IValueHintContext;
-import org.jkiss.dbeaver.ui.data.IValueHintProvider;
-import org.jkiss.dbeaver.ui.data.registry.ValueHintRegistry;
+import org.jkiss.dbeaver.registry.data.hints.ValueHintRegistry;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -34,20 +34,20 @@ import java.util.function.Supplier;
 /**
  * Result set hint context
  */
-class ResultSetHintContext implements IValueHintContext {
+class ResultSetHintContext implements DBDValueHintContext {
     private static final Log log = Log.getLog(ResultSetHintContext.class);
 
     private final Supplier<DBSDataContainer> dataContainerSupplier;
     private final Map<String, Object> contextAttributes = new HashMap<>();
 
-    private final Map<IValueHintProvider, HintProviderInfo> hintProviders = new IdentityHashMap<>();
+    private final Map<DBDValueHintProvider, HintProviderInfo> hintProviders = new IdentityHashMap<>();
 
     private static class HintProviderInfo {
-        final IValueHintProvider provider;
+        final DBDValueHintProvider provider;
         boolean enabled;
         final Set<DBDAttributeBinding> attributes = new LinkedHashSet<>();
 
-        private HintProviderInfo(IValueHintProvider provider) {
+        private HintProviderInfo(DBDValueHintProvider provider) {
             this.provider = provider;
         }
     }
@@ -77,8 +77,8 @@ class ResultSetHintContext implements IValueHintContext {
         }
     }
 
-    List<IValueHintProvider> getHintProviders(DBDAttributeBinding attr) {
-        List<IValueHintProvider> result = new ArrayList<>();
+    List<DBDValueHintProvider> getHintProviders(DBDAttributeBinding attr) {
+        List<DBDValueHintProvider> result = new ArrayList<>();
         for (HintProviderInfo pi : hintProviders.values()) {
             if (pi.enabled && pi.attributes.contains(attr)) {
                 result.add(pi.provider);
@@ -97,8 +97,8 @@ class ResultSetHintContext implements IValueHintContext {
             DBSDataContainer dataContainer = getDataContainer();
             DBPDataSource ds = dataContainer == null ? null : dataContainer.getDataSource();
             for (DBDAttributeBinding attr : attributes) {
-                List<IValueHintProvider> attrHintProviders = ValueHintRegistry.getInstance().getAllValueBindings(ds, attr, null);
-                for (IValueHintProvider provider : attrHintProviders) {
+                List<DBDValueHintProvider> attrHintProviders = ValueHintRegistry.getInstance().getAllValueBindings(ds, attr, null);
+                for (DBDValueHintProvider provider : attrHintProviders) {
                     HintProviderInfo providerInfo = hintProviders.computeIfAbsent(provider, HintProviderInfo::new);
                     providerInfo.enabled = true;
                     providerInfo.attributes.add(attr);

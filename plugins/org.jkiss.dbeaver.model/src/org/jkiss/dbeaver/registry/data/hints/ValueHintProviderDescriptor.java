@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.data.registry;
+package org.jkiss.dbeaver.registry.data.hints;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ui.data.IValueHintProvider;
+import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
 
 /**
  * ValueHintProviderDescriptor
  */
-public class ValueHintProviderDescriptor extends AbstractValueBindingDescriptor<IValueHintProvider> {
+public class ValueHintProviderDescriptor extends AbstractValueBindingDescriptor<DBDValueHintProvider> {
     private static final Log log = Log.getLog(ValueHintProviderDescriptor.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataHintProvider"; //$NON-NLS-1$
@@ -34,8 +34,8 @@ public class ValueHintProviderDescriptor extends AbstractValueBindingDescriptor<
     }
 
     @Override
-    protected Class<IValueHintProvider> getImplClass() {
-        return IValueHintProvider.class;
+    protected Class<DBDValueHintProvider> getImplClass() {
+        return DBDValueHintProvider.class;
     }
 
 }

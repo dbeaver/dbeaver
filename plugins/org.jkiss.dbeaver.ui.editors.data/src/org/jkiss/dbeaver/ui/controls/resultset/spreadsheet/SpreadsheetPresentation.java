@@ -53,6 +53,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
+import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
@@ -75,7 +77,10 @@ import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetPropertyTester;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer.ValueViewerPanel;
-import org.jkiss.dbeaver.ui.data.*;
+import org.jkiss.dbeaver.ui.data.IMultiController;
+import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.data.IValueEditor;
+import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
 import org.jkiss.dbeaver.ui.data.editors.BaseValueEditor;
 import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
@@ -100,8 +105,8 @@ import java.util.stream.Collectors;
 public class SpreadsheetPresentation extends AbstractPresentation
     implements IResultSetEditor, IResultSetDisplayFormatProvider, ISelectionProvider, IStatefulControl, DBPAdaptable, IGridController {
     public static final String PRESENTATION_ID = "spreadsheet";
-    public static final EnumSet<IValueHint.HintType> INLINE_HINT_TYPES = EnumSet.of(
-        IValueHint.HintType.STRING, IValueHint.HintType.ACTION, IValueHint.HintType.IMAGE);
+    public static final EnumSet<DBDValueHint.HintType> INLINE_HINT_TYPES = EnumSet.of(
+        DBDValueHint.HintType.STRING, DBDValueHint.HintType.ACTION, DBDValueHint.HintType.IMAGE);
 
     private static final Log log = Log.getLog(SpreadsheetPresentation.class);
 
@@ -2242,10 +2247,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
         @NotNull
         @Override
         public CellInformation getCellInfo(@NotNull IGridColumn colElement, @NotNull IGridRow rowElement, boolean selected) {
-            CellInformation info = new CellInformation();
-
             DBDAttributeBinding attr = getAttributeFromGrid(colElement, rowElement);
             ResultSetRow row = getResultRowFromGrid(colElement, rowElement);
+
+            CellInformation info = new CellInformation();
             Object cellValue = row == null || attr == null ? null : getCellValue(colElement, rowElement, false);
 
             info.value = cellValue;
@@ -2694,6 +2699,24 @@ public class SpreadsheetPresentation extends AbstractPresentation
         }
 
         @Override
+        public String getCellToolTip(IGridColumn colElement, IGridRow rowElement) {
+            Object cellValue = getCellValue(colElement, rowElement, true);
+            String toolTip = String.valueOf(cellValue);
+
+            // Add tips
+            List<IGridHint> cellHints = getCellHints(colElement, rowElement, cellValue, DBDValueHintProvider.HINT_INLINE);
+            if (cellHints != null) {
+                for (IGridHint hint : cellHints) {
+                    String hintText = hint.getText();
+                    if (hintText != null) {
+                        toolTip += "\n" + hintText;
+                    }
+                }
+            }
+            return toolTip;
+        }
+
+        @Override
         public List<IGridHint> getCellHints(IGridColumn colElement, IGridRow rowElement, Object cellValue, int options) {
             DBDAttributeBinding attr = getAttributeFromGrid(colElement, rowElement);
             if (attr == null) {
@@ -2703,18 +2726,23 @@ public class SpreadsheetPresentation extends AbstractPresentation
             if (row == null) {
                 return null;
             }
+            CellInformation cellInfo = getCellInfo(colElement, rowElement, false);
+            int hintState = 0;
+            if ((IGridContentProvider.STATE_EXPANDED & cellInfo.state) != 0) {
+                hintState |= DBDValueHintProvider.STATE_ROW_EXPANDED;
+            }
             List<IGridHint> gridHints = null;
-            for (IValueHintProvider hintProvider : controller.getModel().getHintProviders(attr)) {
-                IValueHint[] valueHints = hintProvider.getValueHint(
+            for (DBDValueHintProvider hintProvider : controller.getModel().getHintProviders(attr)) {
+                DBDValueHint[] valueHints = hintProvider.getValueHint(
                     controller.getModel().getHintContext(),
                     attr,
                     row,
                     cellValue,
                     INLINE_HINT_TYPES,
-                    IGridContentProvider.STATE_NONE,
+                    hintState,
                     options);
                 if (valueHints != null) {
-                    for (IValueHint hint : valueHints) {
+                    for (DBDValueHint hint : valueHints) {
                         if (gridHints == null) {
                             gridHints = new ArrayList<>();
                         }

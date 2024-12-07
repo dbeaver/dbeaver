@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
@@ -95,7 +96,6 @@ import org.jkiss.dbeaver.ui.controls.resultset.virtual.*;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.data.IValueHintContext;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageDataFormat;
@@ -1643,7 +1643,7 @@ public class ResultSetViewer extends Viewer
 
     @NotNull
     @Override
-    public IValueHintContext getHintContext() {
+    public DBDValueHintContext getHintContext() {
         return model.getHintContext();
     }
 
@@ -3512,7 +3512,7 @@ public class ResultSetViewer extends Viewer
         @NotNull DBRProgressMonitor monitor,
         @NotNull ResultSetModel bindingsModel,
         @NotNull DBSEntityAssociation association,
-        @NotNull List<ResultSetRow> rows,
+        @NotNull List<? extends DBDValueRow> rows,
         boolean newWindow)
         throws DBException
     {
@@ -3582,7 +3582,7 @@ public class ResultSetViewer extends Viewer
      * @param bindingsModel       data bindings providing model. Can be a model from another results viewer.
      */
     @Override
-    public void navigateReference(@NotNull DBRProgressMonitor monitor, @NotNull ResultSetModel bindingsModel, @NotNull DBSEntityAssociation association, @NotNull List<ResultSetRow> rows, boolean newWindow)
+    public void navigateReference(@NotNull DBRProgressMonitor monitor, @NotNull ResultSetModel bindingsModel, @NotNull DBSEntityAssociation association, @NotNull List<? extends DBDValueRow> rows, boolean newWindow)
         throws DBException
     {
         if (!confirmProceed()) {
@@ -3640,15 +3640,15 @@ public class ResultSetViewer extends Viewer
         navigateEntity(monitor, newWindow, targetEntity, constraints);
     }
 
-    private void createFilterConstraint(@NotNull List<ResultSetRow> rows, DBDAttributeBinding attrBinding, DBDAttributeConstraint constraint) {
+    private void createFilterConstraint(@NotNull List<? extends DBDValueRow> rows, DBDAttributeBinding attrBinding, DBDAttributeConstraint constraint) {
         if (rows.size() == 1) {
-            Object keyValue = model.getCellValue(new ResultSetCellLocation(attrBinding, rows.get(0)));
+            Object keyValue = model.getCellValue(new ResultSetCellLocation(attrBinding, (ResultSetRow) rows.get(0)));
             constraint.setOperator(DBCLogicalOperator.EQUALS);
             constraint.setValue(keyValue);
         } else {
             Object[] keyValues = new Object[rows.size()];
             for (int k = 0; k < rows.size(); k++) {
-                keyValues[k] = model.getCellValue(new ResultSetCellLocation(attrBinding, rows.get(k)));
+                keyValues[k] = model.getCellValue(new ResultSetCellLocation(attrBinding, (ResultSetRow) rows.get(k)));
             }
             DBCLogicalOperator[] supportedOperators =
                 attrBinding.getValueHandler().getSupportedOperators(attrBinding);

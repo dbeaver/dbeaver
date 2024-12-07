@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.data.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.dbeaver.registry.data.hints.AbstractValueBindingDescriptor;
 import org.jkiss.dbeaver.ui.data.IValueManager;
 
 /**

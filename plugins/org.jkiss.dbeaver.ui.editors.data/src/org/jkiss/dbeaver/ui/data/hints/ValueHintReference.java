@@ -23,14 +23,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDValueRow;
+import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
-import org.jkiss.dbeaver.ui.data.IValueHint;
-import org.jkiss.dbeaver.ui.data.IValueHintAction;
+import org.jkiss.dbeaver.ui.data.DBDValueHintActionHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
@@ -39,18 +39,18 @@ import java.util.Collections;
 /**
  * ValueHintText
  */
-public class ValueHintReference implements IValueHint, IValueHintAction {
+public class ValueHintReference implements DBDValueHint, DBDValueHintActionHandler {
 
     @NotNull
     private final DBDAttributeBinding attribute;
     @NotNull
-    private final ResultSetRow row;
+    private final DBDValueRow row;
     @NotNull
     private final DBSEntityAssociation association;
 
     public ValueHintReference(
         @NotNull DBDAttributeBinding attribute,
-        @NotNull ResultSetRow row,
+        @NotNull DBDValueRow row,
         @NotNull DBSEntityAssociation association
     ) {
         this.attribute = attribute;

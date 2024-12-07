@@ -27,6 +27,8 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
+import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.trace.DBCTrace;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -37,8 +39,6 @@ import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.data.IValueHintContext;
-import org.jkiss.dbeaver.ui.data.IValueHintProvider;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -133,11 +133,11 @@ public class ResultSetModel {
         this.dataFilter = createDataFilter();
     }
 
-    public IValueHintContext getHintContext() {
+    public DBDValueHintContext getHintContext() {
         return hintContext;
     }
 
-    public List<IValueHintProvider> getHintProviders(DBDAttributeBinding attr) {
+    public List<DBDValueHintProvider> getHintProviders(DBDAttributeBinding attr) {
         return hintContext.getHintProviders(attr);
     }
 

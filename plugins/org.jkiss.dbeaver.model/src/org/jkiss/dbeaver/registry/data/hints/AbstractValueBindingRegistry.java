@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.data.registry;
+package org.jkiss.dbeaver.registry.data.hints;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;

@@ -14,58 +14,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.data.hints;
+package org.jkiss.dbeaver.model.data.hints.standard;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDCollection;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
-import org.jkiss.dbeaver.ui.data.IValueHint;
-import org.jkiss.dbeaver.ui.data.IValueHintContext;
-import org.jkiss.dbeaver.ui.data.IValueHintProvider;
+import org.jkiss.dbeaver.model.data.DBDValueRow;
+import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
+import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
+import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
+import org.jkiss.dbeaver.model.data.hints.ValueHintText;
 
-import java.util.Collection;
 import java.util.EnumSet;
 
 /**
  * Arrays hint provider
  */
-public class ArrayHintProvider implements IValueHintProvider {
+public class ArrayHintProvider implements DBDValueHintProvider {
 
     @Nullable
     @Override
-    public IValueHint[] getValueHint(
-        @NotNull IValueHintContext context,
+    public DBDValueHint[] getValueHint(
+        @NotNull DBDValueHintContext context,
         @NotNull DBDAttributeBinding attribute,
-        @NotNull ResultSetRow row,
+        @NotNull DBDValueRow row,
         @Nullable Object value,
-        @NotNull EnumSet<IValueHint.HintType> types,
+        @NotNull EnumSet<DBDValueHint.HintType> types,
         int state,
         int options
     ) {
-        if (!DBUtils.isNullValue(value) && (state & IGridContentProvider.STATE_EXPANDED) == 0 && value instanceof DBDCollection collection) {
+        if (!DBUtils.isNullValue(value) && (state & STATE_ROW_EXPANDED) == 0 && value instanceof DBDCollection collection) {
             if (collection.size() > 1) {
-                return new IValueHint[] {
+                return new DBDValueHint[] {
                     new ValueHintText("[+" + (collection.size() - 1) + "]", "Collection of items", null)
                 };
             }
         }
         return null;
-    }
-
-    @Override
-    public void cacheRequiredData(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull IValueHintContext context,
-        @NotNull Collection<DBDAttributeBinding> attributes,
-        @NotNull Collection<ResultSetRow> rows,
-        boolean cleanupCache) throws DBException {
-        // noop
     }
 
 }

@@ -15,13 +15,14 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.data.registry;
+package org.jkiss.dbeaver.registry.data.hints;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ui.data.IValueHintProvider;
+import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
+import org.jkiss.dbeaver.model.data.hints.standard.VoidHintProvider;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +30,7 @@ import java.util.List;
 /**
  * ValueHintRegistry
  */
-public class ValueHintRegistry extends AbstractValueBindingRegistry<IValueHintProvider, ValueHintProviderDescriptor> {
+public class ValueHintRegistry extends AbstractValueBindingRegistry<DBDValueHintProvider, ValueHintProviderDescriptor> {
 
     private static ValueHintRegistry instance = null;
 
@@ -60,7 +61,7 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<IValueHintPr
 
     @NotNull
     @Override
-    protected IValueHintProvider getDefaultValueBinding() {
+    protected DBDValueHintProvider getDefaultValueBinding() {
         return VoidHintProvider.INSTANCE;
     }
 }

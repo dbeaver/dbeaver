@@ -14,15 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.data.hints;
+package org.jkiss.dbeaver.model.data.hints;
 
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.ui.data.IValueHint;
 
 /**
  * ValueHintText
  */
-public class ValueHintText implements IValueHint {
+public class ValueHintText implements DBDValueHint {
 
     private final String text;
     private final String description;

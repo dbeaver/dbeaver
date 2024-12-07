@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.data;
+package org.jkiss.dbeaver.model.data.hints;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
  * Context can be used by hint providers to keep cache related to data container.
  * Every hint provider may get/set any number of custom attributes here
  */
-public interface IValueHintContext {
+public interface DBDValueHintContext {
 
     @Nullable
     DBSDataContainer getDataContainer();

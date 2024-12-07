@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIElementFontStyle;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomToolTipHandler;
-import org.jkiss.dbeaver.ui.data.IValueHintProvider;
 import org.jkiss.dbeaver.ui.dnd.LocalObjectTransfer;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -4785,25 +4784,7 @@ public abstract class LightGrid extends Canvas {
             return null;
         }
         IGridRow gridRow = gridRows[row];
-        Object cellValue = getContentProvider().getCellValue(
-            col, gridRow, true);
-
-        String toolTip = getCellText(cellValue);
-        if (toolTip.length() < MAX_TOOLTIP_LENGTH) {
-            // Add tips
-            List<IGridHint> cellHints = getContentProvider().getCellHints(col, gridRow, cellValue, IValueHintProvider.HINT_INLINE);
-            if (cellHints != null) {
-                for (IGridHint hint : cellHints) {
-                    String hintText = hint.getText();
-                    if (hintText != null) {
-                        toolTip += "\n" + hintText;
-                    }
-                    if (toolTip.length() > MAX_TOOLTIP_LENGTH) {
-                        break;
-                    }
-                }
-            }
-        }
+        String toolTip = getContentProvider().getCellToolTip(col, gridRow);
         if (toolTip.length() > MAX_TOOLTIP_LENGTH) {
             toolTip = toolTip.substring(0, MAX_TOOLTIP_LENGTH) + "...";
         }

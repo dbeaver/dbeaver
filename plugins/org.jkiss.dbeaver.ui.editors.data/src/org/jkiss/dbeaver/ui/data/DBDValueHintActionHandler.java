@@ -17,28 +17,15 @@
 
 package org.jkiss.dbeaver.ui.data;
 
-import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 
 /**
- * Value hint
+ * Value hint action handler
  */
-public interface IValueHint {
+public interface DBDValueHintActionHandler {
 
-    enum HintType {
-        NONE,
-        STRING,
-        IMAGE,
-        SOUND,
-        WEB,
-        ACTION
-    }
-
-    HintType getHintType();
-
-    String getHintText();
-
-    String getHintDescription();
-
-    DBPImage getHintIcon();
+    void performAction(@NotNull IResultSetController controller, long state) throws DBException;
 
 }

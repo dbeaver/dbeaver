@@ -20,13 +20,13 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridController;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridHint;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
-import org.jkiss.dbeaver.ui.data.IValueHint;
-import org.jkiss.dbeaver.ui.data.IValueHintAction;
+import org.jkiss.dbeaver.ui.data.DBDValueHintActionHandler;
 
 /**
  * Spreadsheet cell hint implementation
@@ -34,9 +34,9 @@ import org.jkiss.dbeaver.ui.data.IValueHintAction;
 public class SpreadsheetHint implements IGridHint {
 
     private final IResultSetController controller;
-    private final IValueHint valueHint;
+    private final DBDValueHint valueHint;
 
-    public SpreadsheetHint(IResultSetController controller, IValueHint valueHint) {
+    public SpreadsheetHint(IResultSetController controller, DBDValueHint valueHint) {
         this.controller = controller;
         this.valueHint = valueHint;
     }
@@ -55,14 +55,14 @@ public class SpreadsheetHint implements IGridHint {
 
     @Override
     public boolean hasAction() {
-        return valueHint instanceof IValueHintAction;
+        return valueHint instanceof DBDValueHintActionHandler;
     }
 
     @Override
     public void performAction(@NotNull IGridController grid, long state) {
         try {
-            if (valueHint instanceof IValueHintAction action) {
-                action.performAction(controller, state);
+            if (valueHint instanceof DBDValueHintActionHandler actionHandler) {
+                actionHandler.performAction(controller, state);
             } else {
                 throw new DBCException("Hint doesn't support action");
             }
