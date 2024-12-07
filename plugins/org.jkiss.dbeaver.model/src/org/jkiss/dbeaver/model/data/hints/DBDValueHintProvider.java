@@ -35,7 +35,7 @@ public interface DBDValueHintProvider {
     int HINT_INLINE = 1;
     int HINT_ADVANCED = 1 << 1;
 
-    int STATE_ROW_EXPANDED = 1;
+    int OPTION_ROW_EXPANDED = 1;
 
     /**
      * Get all hints available for specified value.

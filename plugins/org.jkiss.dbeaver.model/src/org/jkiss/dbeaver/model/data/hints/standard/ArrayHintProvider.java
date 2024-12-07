@@ -45,7 +45,7 @@ public class ArrayHintProvider implements DBDValueHintProvider {
         int state,
         int options
     ) {
-        if (!DBUtils.isNullValue(value) && (state & STATE_ROW_EXPANDED) == 0 && value instanceof DBDCollection collection) {
+        if (!DBUtils.isNullValue(value) && (state & OPTION_ROW_EXPANDED) == 0 && value instanceof DBDCollection collection) {
             if (collection.size() > 1) {
                 return new DBDValueHint[] {
                     new ValueHintText("[+" + (collection.size() - 1) + "]", "Collection of items", null)

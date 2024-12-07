@@ -2729,7 +2729,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             CellInformation cellInfo = getCellInfo(colElement, rowElement, false);
             int hintState = 0;
             if ((IGridContentProvider.STATE_EXPANDED & cellInfo.state) != 0) {
-                hintState |= DBDValueHintProvider.STATE_ROW_EXPANDED;
+                hintState |= DBDValueHintProvider.OPTION_ROW_EXPANDED;
             }
             List<IGridHint> gridHints = null;
             for (DBDValueHintProvider hintProvider : controller.getModel().getHintProviders(attr)) {
@@ -2740,7 +2740,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     cellValue,
                     INLINE_HINT_TYPES,
                     hintState,
-                    options);
+                    DBDValueHintProvider.HINT_INLINE);
                 if (valueHints != null) {
                     for (DBDValueHint hint : valueHints) {
                         if (gridHints == null) {
