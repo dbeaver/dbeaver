@@ -2896,19 +2896,19 @@ public class ResultSetViewer extends Viewer
             manager.add(new GroupMarker(MENU_GROUP_EXPORT));
         }
 
-        manager.add(new Separator(MENU_GROUP_ADDITIONS));
-
-        if (dataContainer != null) {
-            manager.add(new Separator());
-            manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_REFRESH));
-        }
-
         //manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 
         decorator.fillContributions(manager);
 
         if (activePresentation != null) {
             activePresentation.fillMenu(manager);
+        }
+
+        manager.add(new Separator(MENU_GROUP_ADDITIONS));
+
+        if (dataContainer != null) {
+            manager.add(new Separator());
+            manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_REFRESH));
         }
     }
 
@@ -2919,20 +2919,19 @@ public class ResultSetViewer extends Viewer
         }
         // Display format
         {
-            if (activePresentation instanceof IResultSetDisplayFormatProvider) {
+            if (activePresentation instanceof IResultSetDisplayFormatProvider displayFormatProvider) {
                 DBDDisplayFormat defaultDisplayFormat = ((IResultSetDisplayFormatProvider) activePresentation).getDefaultDisplayFormat();
                 MenuManager formatsMenu = new MenuManager(DTUIMessages.value_format_selector_value);
                 for (DBDDisplayFormat displayFormat : DBDDisplayFormat.values()) {
-                    String formatName;
-                    switch (displayFormat) {
-                        case UI: formatName = DTUIMessages.value_format_selector_display; break;
-                        case EDIT: formatName = DTUIMessages.value_format_selector_editable; break;
-                        default: formatName = DTUIMessages.value_format_selector_database_native; break;
-                    }
+                    String formatName = switch (displayFormat) {
+                        case UI -> DTUIMessages.value_format_selector_display;
+                        case EDIT -> DTUIMessages.value_format_selector_editable;
+                        default -> DTUIMessages.value_format_selector_database_native;
+                    };
                     Action action = new Action(formatName, Action.AS_RADIO_BUTTON) {
                         @Override
                         public void run() {
-                            ((IResultSetDisplayFormatProvider) activePresentation).setDefaultDisplayFormat(displayFormat);
+                            displayFormatProvider.setDefaultDisplayFormat(displayFormat);
                         }
                     };
                     action.setChecked(displayFormat == defaultDisplayFormat);
@@ -2964,6 +2963,16 @@ public class ResultSetViewer extends Viewer
             binaryFormatMenu.addMenuListener(manager12 -> fillBinaryFormatMenu(manager12, attr));
             viewMenu.add(binaryFormatMenu);
         }
+        {
+            // Hints
+            viewMenu.add(new Separator());
+            MenuManager hintsMenu = new MenuManager(ResultSetMessages.controls_resultset_viewer_action_view_hints);
+            hintsMenu.setRemoveAllWhenShown(true);
+            hintsMenu.addMenuListener(manager12 -> fillAttributeHintsMenu(manager12, attr));
+            viewMenu.add(hintsMenu);
+        }
+
+        // Row colors
         viewMenu.add(new Separator());
         if (model.getDocumentAttribute() == null) {
             if (valueController != null) {
@@ -2986,17 +2995,10 @@ public class ResultSetViewer extends Viewer
         viewMenu.add(new ColorizeDataTypesToggleAction());
         viewMenu.add(new Separator());
         viewMenu.add(new DataFormatsPreferencesAction());
-        viewMenu.add(new Separator());
-        viewMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_ROWS,
-            ResultSetMessages.controls_resultset_viewer_action_show_selected_row_count));
-        viewMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_COLUMNS,
-            ResultSetMessages.controls_resultset_viewer_action_show_selected_column_count));
-        viewMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_CELLS,
-            ResultSetMessages.controls_resultset_viewer_action_show_selected_cell_count));
+    }
 
-        viewMenu.add(new Separator());
-        viewMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ZOOM_IN));
-        viewMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ZOOM_OUT));
+    private void fillAttributeHintsMenu(IMenuManager menuManager, DBDAttributeBinding attr) {
+
     }
 
     private void fillVirtualModelMenu(@NotNull IMenuManager vmMenu, @Nullable DBDAttributeBinding attr, @Nullable ResultSetRow row, ResultSetValueController valueController) {
@@ -3105,6 +3107,18 @@ public class ResultSetViewer extends Viewer
                 layoutMenu.add(psAction);
             }
         }
+
+        layoutMenu.add(new Separator());
+        layoutMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_ROWS,
+            ResultSetMessages.controls_resultset_viewer_action_show_selected_row_count));
+        layoutMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_COLUMNS,
+            ResultSetMessages.controls_resultset_viewer_action_show_selected_column_count));
+        layoutMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_CELLS,
+            ResultSetMessages.controls_resultset_viewer_action_show_selected_cell_count));
+        layoutMenu.add(new Separator());
+        layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ZOOM_IN));
+        layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ZOOM_OUT));
+
     }
 
     private void fillNavigateMenu(IMenuManager navigateMenu) {

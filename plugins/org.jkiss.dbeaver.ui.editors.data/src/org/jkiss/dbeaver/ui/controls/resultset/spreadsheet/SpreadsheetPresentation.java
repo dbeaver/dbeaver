@@ -2700,20 +2700,31 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         @Override
         public String getCellToolTip(IGridColumn colElement, IGridRow rowElement) {
-            Object cellValue = getCellValue(colElement, rowElement, true);
-            String toolTip = String.valueOf(cellValue);
+            Object cellValue = getCellValue(colElement, rowElement, false);
+            StringBuilder toolTip = new StringBuilder();
+            toolTip.append(formatValue(colElement, rowElement, cellValue));
 
             // Add tips
-            List<IGridHint> cellHints = getCellHints(colElement, rowElement, cellValue, DBDValueHintProvider.HINT_INLINE);
+            boolean hasHints = false;
+            List<IGridHint> cellHints = getCellHints(colElement, rowElement, cellValue, DBDValueHintProvider.OPTION_TOOLTIP);
             if (cellHints != null) {
                 for (IGridHint hint : cellHints) {
                     String hintText = hint.getText();
                     if (hintText != null) {
-                        toolTip += "\n" + hintText;
+                        String hintLabel = hint.getHintLabel();
+                        toolTip.append("\n");
+                        if (hintLabel != null) {
+                            toolTip.append(hintLabel).append(": ");
+                        }
+                        toolTip.append(hintText);
+                        hasHints = true;
                     }
                 }
             }
-            return toolTip;
+            if (hasHints) {
+                toolTip.insert(0, "Value: ");
+            }
+            return toolTip.toString();
         }
 
         @Override
@@ -2727,10 +2738,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 return null;
             }
             CellInformation cellInfo = getCellInfo(colElement, rowElement, false);
-            int hintState = 0;
+            int hintOptions = options;
             if ((IGridContentProvider.STATE_EXPANDED & cellInfo.state) != 0) {
-                hintState |= DBDValueHintProvider.OPTION_ROW_EXPANDED;
+                hintOptions |= DBDValueHintProvider.OPTION_ROW_EXPANDED;
             }
+
             List<IGridHint> gridHints = null;
             for (DBDValueHintProvider hintProvider : controller.getModel().getHintProviders(attr)) {
                 DBDValueHint[] valueHints = hintProvider.getValueHint(
@@ -2739,8 +2751,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     row,
                     cellValue,
                     INLINE_HINT_TYPES,
-                    hintState,
-                    DBDValueHintProvider.HINT_INLINE);
+                    hintOptions
+                );
                 if (valueHints != null) {
                     for (DBDValueHint hint : valueHints) {
                         if (gridHints == null) {

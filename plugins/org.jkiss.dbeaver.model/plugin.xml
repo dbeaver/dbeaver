@@ -207,6 +207,9 @@
         <hintProvider class="org.jkiss.dbeaver.model.data.hints.standard.ArrayHintProvider" id="references">
             <supports kind="ARRAY"/>
         </hintProvider>
+        <hintProvider class="org.jkiss.dbeaver.model.data.hints.standard.BinaryHintProvider" id="binary">
+            <supports kind="BINARY"/>
+        </hintProvider>
     </extension>
 
     <extension point="org.jkiss.dbeaver.settings">

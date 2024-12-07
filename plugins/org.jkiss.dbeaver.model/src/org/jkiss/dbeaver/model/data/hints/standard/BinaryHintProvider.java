@@ -18,22 +18,30 @@ package org.jkiss.dbeaver.model.data.hints.standard;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDCollection;
+import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDValueRow;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
 import org.jkiss.dbeaver.model.data.hints.ValueHintText;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.EnumSet;
 
 /**
- * Arrays hint provider
+ * Binary hint provider
  */
-public class ArrayHintProvider implements DBDValueHintProvider {
+public class BinaryHintProvider implements DBDValueHintProvider {
+
+    private static final Log log = Log.getLog(BinaryHintProvider.class);
+
+    private final ByteNumberFormat LENGTH_FORMAT = new ByteNumberFormat();
 
     @Nullable
     @Override
@@ -45,17 +53,30 @@ public class ArrayHintProvider implements DBDValueHintProvider {
         @NotNull EnumSet<DBDValueHint.HintType> types,
         int options
     ) {
-        if (!DBUtils.isNullValue(value) &&
-            !CommonUtils.isBitSet(options, OPTION_ROW_EXPANDED) &&
-            value instanceof DBDCollection collection
+        if (types.contains(DBDValueHint.HintType.STRING) &&
+            !DBUtils.isNullValue(value)
         ) {
-            if (collection.size() > 1) {
-                return new DBDValueHint[] {
-                    new ValueHintText(
-                        !CommonUtils.isBitSet(options, OPTION_TOOLTIP) ? "[+" + (collection.size() - 1) + "]" : String.valueOf(collection.size()),
-                        "Size", null)
-                };
+            long contentLength = 0;
+            if (value instanceof DBDContent content && !ContentUtils.isTextContent(content)) {
+                try {
+                    contentLength = content.getContentLength();
+                } catch (DBCException e) {
+                    log.debug("Cannot read content length", e);
+                }
+            } else if (value instanceof CharSequence chars) {
+                contentLength = chars.length();
+            } else if (value instanceof byte[] bytes) {
+                contentLength = bytes.length;
             }
+            if (contentLength == 0) {
+                return null;
+            }
+            String formattedLength = LENGTH_FORMAT.format(contentLength);
+            return new DBDValueHint[] {
+                new ValueHintText(
+                    !CommonUtils.isBitSet(options, OPTION_TOOLTIP) ? "[" + formattedLength + "]" : formattedLength,
+                    "Data length", null)
+            };
         }
         return null;
     }

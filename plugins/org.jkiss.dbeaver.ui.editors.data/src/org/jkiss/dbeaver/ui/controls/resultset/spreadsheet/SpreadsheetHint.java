@@ -43,6 +43,12 @@ public class SpreadsheetHint implements IGridHint {
 
     @Nullable
     @Override
+    public String getHintLabel() {
+        return valueHint.getHintDescription();
+    }
+
+    @Nullable
+    @Override
     public String getText() {
         return valueHint.getHintText();
     }

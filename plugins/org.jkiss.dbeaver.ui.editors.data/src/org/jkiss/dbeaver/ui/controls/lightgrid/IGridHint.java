@@ -27,7 +27,13 @@ import org.jkiss.dbeaver.model.DBPImage;
 public interface IGridHint {
 
     /**
-     * Text
+     * Hint description label
+     */
+    @Nullable
+    String getHintLabel();
+
+    /**
+     * Hint text
      */
     @Nullable
     String getText();

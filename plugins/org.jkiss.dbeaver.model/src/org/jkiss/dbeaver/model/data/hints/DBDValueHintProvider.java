@@ -32,15 +32,15 @@ import java.util.EnumSet;
  */
 public interface DBDValueHintProvider {
 
-    int HINT_INLINE = 1;
-    int HINT_ADVANCED = 1 << 1;
-
+    int OPTION_INLINE = 1;
+    int OPTION_ADVANCED = 1 << 1;
+    int OPTION_TOOLTIP = 1 << 2;
     int OPTION_ROW_EXPANDED = 1;
 
     /**
      * Get all hints available for specified value.
-     * @param types requested hint types
-     * @param state flags combined from STATE_ constants
+     *
+     * @param types   requested hint types
      * @param options flags combined from HINT_ constants
      */
     @Nullable
@@ -50,7 +50,6 @@ public interface DBDValueHintProvider {
         @NotNull DBDValueRow row,
         @Nullable Object value,
         @NotNull EnumSet<DBDValueHint.HintType> types,
-        int state,
         int options);
 
     /**

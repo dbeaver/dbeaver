@@ -41,7 +41,6 @@ public class VoidHintProvider implements DBDValueHintProvider {
         @NotNull DBDValueRow row,
         @Nullable Object value,
         @NotNull EnumSet<DBDValueHint.HintType> types,
-        int state,
         int options
     ) {
         return null;
