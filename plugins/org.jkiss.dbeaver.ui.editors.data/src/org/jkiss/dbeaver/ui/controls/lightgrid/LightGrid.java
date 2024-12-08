@@ -2023,8 +2023,7 @@ public abstract class LightGrid extends Canvas {
 
         // Row header width
         int newRowHeaderWidth = DEFAULT_ROW_HEADER_WIDTH;
-        for (int i = 0; i < gridRows.length; i++) {
-            IGridRow row = gridRows[i];
+        for (IGridRow row : gridRows) {
             int width = rowHeaderRenderer.computeHeaderWidth(gc, row, row.getLevel());
             newRowHeaderWidth = Math.max(newRowHeaderWidth, width);
         }

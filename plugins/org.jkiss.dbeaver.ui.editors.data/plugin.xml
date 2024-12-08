@@ -1099,7 +1099,7 @@
             label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.odd.background.label"
             categoryId="org.jkiss.dbeaver.ui.presentation.results"
             id="org.jkiss.dbeaver.sql.resultset.color.cell.odd.background"
-            value="239, 249, 255">
+            value="235, 245, 255">
             <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.odd.background.description</description>
         </colorDefinition>
         <colorDefinition

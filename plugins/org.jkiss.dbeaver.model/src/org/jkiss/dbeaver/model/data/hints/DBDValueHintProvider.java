@@ -53,8 +53,18 @@ public interface DBDValueHintProvider {
         int options);
 
     /**
-     * Read all necessary data which is needed to render hints.
+     * Calculates approximate length (in characters) of hint text
      */
+    default int getAttributeHintSize(
+        @NotNull DBDValueHintContext context,
+        @NotNull DBDAttributeBinding attribute
+    ) {
+        return 0;
+    }
+
+        /**
+         * Read all necessary data which is needed to render hints.
+         */
     default void cacheRequiredData(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBDValueHintContext context,

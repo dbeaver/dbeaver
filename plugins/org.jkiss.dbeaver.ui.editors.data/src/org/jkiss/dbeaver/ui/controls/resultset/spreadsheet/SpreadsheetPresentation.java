@@ -2766,6 +2766,21 @@ public class SpreadsheetPresentation extends AbstractPresentation
         }
 
         @Override
+        public int getColumnHintsWidth(IGridColumn colElement) {
+            DBDAttributeBinding attr = colElement.getElement() instanceof DBDAttributeBinding ab ? ab : null;
+            if (attr == null) {
+                return 0;
+            }
+            int hintSize = 0;
+            for (DBDValueHintProvider hintProvider : controller.getModel().getHintProviders(attr)) {
+                hintSize += hintProvider.getAttributeHintSize(
+                    controller.getModel().getHintContext(),
+                    attr);
+            }
+            return hintSize;
+        }
+
+        @Override
         public void resetColors() {
             backgroundNormal = null;
             foregroundDefault = null;

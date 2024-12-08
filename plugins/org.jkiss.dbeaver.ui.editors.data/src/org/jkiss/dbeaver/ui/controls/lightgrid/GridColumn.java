@@ -233,6 +233,11 @@ public class GridColumn implements IGridColumn {
                         textWidth = descWidth;
                     }
                 }
+                int columnHintsWidth = grid.getContentProvider().getColumnHintsWidth(this);
+                if (columnHintsWidth > 0) {
+                    if (columnHintsWidth > 12) columnHintsWidth= 12;
+                    textWidth += columnHintsWidth * gc.stringExtent("x").x;
+                }
             }
             x += textWidth + rightMargin;
         }
