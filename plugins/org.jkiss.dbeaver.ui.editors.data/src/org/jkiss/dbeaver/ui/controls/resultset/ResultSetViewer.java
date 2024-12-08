@@ -2874,7 +2874,7 @@ public class ResultSetViewer extends Viewer
                 ResultSetMessages.controls_resultset_viewer_action_layout,
                 null,
                 MENU_ID_LAYOUT); //$NON-NLS-1$
-            fillLayoutMenu(layoutMenu);
+            fillLayoutMenu(layoutMenu, attr);
             manager.add(layoutMenu);
         }
 
@@ -2963,7 +2963,7 @@ public class ResultSetViewer extends Viewer
             binaryFormatMenu.addMenuListener(manager12 -> fillBinaryFormatMenu(manager12, attr));
             viewMenu.add(binaryFormatMenu);
         }
-        {
+        if (activePresentationDescriptor.supportsHints()) {
             // Hints
             viewMenu.add(new Separator());
             MenuManager hintsMenu = new MenuManager(ResultSetMessages.controls_resultset_viewer_action_view_hints);
@@ -3062,7 +3062,7 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private void fillLayoutMenu(IMenuManager layoutMenu) {
+    private void fillLayoutMenu(IMenuManager layoutMenu, DBDAttributeBinding attr) {
         if (activePresentationDescriptor != null && activePresentationDescriptor.supportsRecordMode()) {
             layoutMenu.add(new ToggleModeAction());
         }
@@ -3108,17 +3108,19 @@ public class ResultSetViewer extends Viewer
             }
         }
 
-        layoutMenu.add(new Separator());
-        layoutMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_ROWS,
-            ResultSetMessages.controls_resultset_viewer_action_show_selected_row_count));
-        layoutMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_COLUMNS,
-            ResultSetMessages.controls_resultset_viewer_action_show_selected_column_count));
-        layoutMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_CELLS,
-            ResultSetMessages.controls_resultset_viewer_action_show_selected_cell_count));
+        if (attr != null) {
+            layoutMenu.add(new Separator());
+            layoutMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_ROWS,
+                ResultSetMessages.controls_resultset_viewer_action_show_selected_row_count));
+            layoutMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_COLUMNS,
+                ResultSetMessages.controls_resultset_viewer_action_show_selected_column_count));
+            layoutMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_CELLS,
+                ResultSetMessages.controls_resultset_viewer_action_show_selected_cell_count));
+        }
+
         layoutMenu.add(new Separator());
         layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ZOOM_IN));
         layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ZOOM_OUT));
-
     }
 
     private void fillNavigateMenu(IMenuManager navigateMenu) {

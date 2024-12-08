@@ -21,12 +21,15 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDValueRow;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
@@ -76,6 +79,15 @@ public class ValueHintReference implements DBDValueHint, DBDValueHintActionHandl
     @Override
     public DBPImage getHintIcon() {
         return UIIcon.LINK;
+    }
+
+    @Override
+    public String getActionText() {
+        DBSEntity associatedEntity = association.getAssociatedEntity();
+        if (associatedEntity == null) {
+            return null;
+        }
+        return "Navigate to '" + DBUtils.getObjectFullName(associatedEntity, DBPEvaluationContext.UI) + "'";
     }
 
     @Override

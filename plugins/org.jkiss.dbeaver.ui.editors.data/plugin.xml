@@ -96,6 +96,7 @@
                 class="org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentation"
                 type="columns"
                 supportsRecordMode="true"
+                supportsHints="true"
                 order="100">
             <objectType name="org.jkiss.dbeaver.model.exec.DBCResultSet" if="context.supportsAttributes()"/>
         </presentation>

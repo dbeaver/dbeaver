@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
  */
 public interface DBDValueHintActionHandler {
 
+    String getActionText();
+
     void performAction(@NotNull IResultSetController controller, long state) throws DBException;
 
 }

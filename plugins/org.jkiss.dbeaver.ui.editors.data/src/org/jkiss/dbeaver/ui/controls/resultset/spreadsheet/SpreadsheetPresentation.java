@@ -2681,19 +2681,17 @@ public class SpreadsheetPresentation extends AbstractPresentation
             ResultSetRow row = getResultRowFromGrid(colElement, rowElement);
             Object value = controller.getModel().getCellValue(
                 new ResultSetCellLocation(attr, row, getRowNestedIndexes(rowElement)));
-            List<DBSEntityReferrer> referrers = attr.getReferrers();
-            if (!CommonUtils.isEmpty(referrers) && !DBUtils.isNullValue(value)) {
-                StringBuilder text = new StringBuilder();
-                for (DBSEntityReferrer ref : referrers) {
-                    if (ref instanceof DBSEntityAssociation) {
-                        DBSEntity associatedEntity = ResultSetUtils.getAssociatedEntity(ref);
-                        if (associatedEntity != null) {
-                            if (!text.isEmpty()) text.append("\n");
-                            text.append(DBUtils.getObjectFullName(associatedEntity, DBPEvaluationContext.UI));
+
+            List<IGridHint> cellHints = getCellHints(colElement, rowElement, value, DBDValueHintProvider.OPTION_ACTION_TOOLTIP);
+            if (cellHints != null) {
+                for (IGridHint hint : cellHints) {
+                    if (hint.hasAction()) {
+                        String hintText = hint.getActionToolTip();
+                        if (hintText != null) {
+                            return hintText;
                         }
                     }
                 }
-                return text.toString();
             }
             return "";
         }

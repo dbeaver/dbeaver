@@ -76,4 +76,12 @@ public class SpreadsheetHint implements IGridHint {
             DBWorkbench.getPlatformUI().showError("Hint error", "Error execution hint action", e);
         }
     }
+
+    @Override
+    public String getActionToolTip() {
+        if (valueHint instanceof DBDValueHintActionHandler ah) {
+            return ah.getActionText();
+        }
+        return null;
+    }
 }

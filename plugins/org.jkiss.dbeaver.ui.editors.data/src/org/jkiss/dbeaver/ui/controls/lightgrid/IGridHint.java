@@ -50,6 +50,11 @@ public interface IGridHint {
     boolean hasAction();
 
     /**
+     * Text for action hint tooltip
+     */
+    String getActionToolTip();
+
+    /**
      * Perform action
      */
     void performAction(@NotNull IGridController grid, long state);
