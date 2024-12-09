@@ -23,10 +23,17 @@ import org.jkiss.dbeaver.model.websocket.event.WSEventType;
 
 public class WSDataSourceConnectEvent extends WSAbstractEvent {
 
+    @Nullable
     private final String projectId;
+    @NotNull
     private final String connectionId;
 
-    public WSDataSourceConnectEvent(@Nullable String projectId, @NotNull String connectionId, String sessionId, String userId) {
+    public WSDataSourceConnectEvent(
+        @Nullable String projectId,
+        @NotNull String connectionId,
+        @NotNull String sessionId,
+        @NotNull String userId
+    ) {
         super(WSEventType.DATASOURCE_CONNECTED, sessionId, userId);
         this.projectId = projectId;
         this.connectionId = connectionId;

@@ -22,10 +22,17 @@ import org.jkiss.dbeaver.model.websocket.event.WSEventType;
 
 public class WSDataSourceDisconnectEvent extends WSAbstractEvent {
 
+    @NotNull
     private final String projectId;
+    @NotNull
     private final String connectionId;
 
-    public WSDataSourceDisconnectEvent(@NotNull String projectId, @NotNull String connectionId, String sessionId, String userId) {
+    public WSDataSourceDisconnectEvent(
+        @NotNull String projectId,
+        @NotNull String connectionId,
+        @NotNull String sessionId,
+        @NotNull String userId
+    ) {
         super(WSEventType.DATASOURCE_DISCONNECTED, sessionId, userId);
         this.projectId = projectId;
         this.connectionId = connectionId;
