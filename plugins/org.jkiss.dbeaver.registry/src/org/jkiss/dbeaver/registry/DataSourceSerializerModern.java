@@ -1178,15 +1178,21 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 if (!CommonUtils.isEmpty(connectionInfo.getHandlers())) {
                     json.name(RegistryConstants.TAG_HANDLERS);
                     json.beginObject();
+
+                    String configProfileName = connectionInfo.getConfigProfileName();
+                    DBWNetworkProfile networkProfile = CommonUtils.isEmpty(configProfileName) ? null :
+                        registry.getNetworkProfile(connectionInfo.getConfigProfileSource(), configProfileName);
                     for (DBWHandlerConfiguration configuration : connectionInfo.getHandlers()) {
                         if (configuration.isEnabled()) {
+                            DBWHandlerConfiguration profileConfig = networkProfile == null ? null :
+                                networkProfile.getConfiguration(configuration.getHandlerDescriptor());
                             saveNetworkHandlerConfiguration(
                                 configurationManager,
                                 json,
                                 dataSource,
                                 null,
                                 configuration,
-                                !CommonUtils.isEmpty(connectionInfo.getConfigProfileName()));
+                                profileConfig != null);
                         }
                     }
                     json.endObject();
