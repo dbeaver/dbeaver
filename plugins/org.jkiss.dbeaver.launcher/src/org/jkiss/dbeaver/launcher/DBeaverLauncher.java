@@ -2639,6 +2639,12 @@ public class DBeaverLauncher {
     private void openLogFile() throws IOException {
         computeLogFileLocation();
         try {
+            File logFolder = logFile.getParentFile();
+            if (!logFolder.exists()) {
+                if (!logFolder.mkdirs()) {
+                    throw new IOException("Cannot create directory '" + logFolder.getAbsolutePath() + "' for logs storage");
+                }
+            }
             log = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(logFile.getAbsolutePath(), true), StandardCharsets.UTF_8));
         } catch (IOException e) {
             logFile = null;
