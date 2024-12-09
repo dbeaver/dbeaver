@@ -17,53 +17,41 @@
 package org.jkiss.dbeaver.model.websocket.event.session;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.websocket.event.WSEventType;
 
 /**
  * Async task info event.
  */
 public class WSSessionTaskInfoEvent extends WSAbstractSessionEvent {
+    @NotNull
+    private final String taskId;
+    @Nullable
     private final String statusName;
-    private final int taskId;
-    private final int progress;
-    private final int totalWork;
 
-    public WSSessionTaskInfoEvent(@NotNull WSEventType eventType, int taskId, String statusName, int progress, int totalWork) {
+    public WSSessionTaskInfoEvent(@NotNull WSEventType eventType, @NotNull String taskId, @Nullable String statusName) {
         super(eventType);
         this.taskId = taskId;
         this.statusName = statusName;
-        this.progress = progress;
-        this.totalWork = totalWork;
     }
 
-    public int getTaskId() {
+    @NotNull
+    public String getTaskId() {
         return taskId;
     }
 
+    @Nullable
     public String getStatusName() {
         return statusName;
     }
-    
-    public int getProgress() {
-        return progress;
-    }
 
-    public int getTotalWork() {
-        return totalWork;
+    @NotNull
+    public static WSSessionTaskInfoEvent update(@NotNull String taskId, @Nullable String statusName) {
+        return new WSSessionTaskInfoEvent(WSEventType.SESSION_TASK_INFO_UPDATED, taskId, statusName);
     }
 
     @NotNull
-    public static WSSessionTaskInfoEvent start(int taskId, String statusName, int totalWork) {
-        return new WSSessionTaskInfoEvent(WSEventType.SESSION_TASK_INFO_STARTED, taskId, statusName, 0, totalWork);
-    }
-
-    @NotNull
-    public static WSSessionTaskInfoEvent update(int taskId, String statusName, int progress, int totalWork) {
-        return new WSSessionTaskInfoEvent(WSEventType.SESSION_TASK_INFO_UPDATED, taskId, statusName, progress, totalWork);
-    }
-
-    @NotNull
-    public static WSSessionTaskInfoEvent finish(int taskId, int progress) {
-        return new WSSessionTaskInfoEvent(WSEventType.SESSION_TASK_INFO_FINISHED, taskId, null, progress, progress);
+    public static WSSessionTaskInfoEvent finish(@NotNull String taskId) {
+        return new WSSessionTaskInfoEvent(WSEventType.SESSION_TASK_INFO_FINISHED, taskId, null);
     }
 }
