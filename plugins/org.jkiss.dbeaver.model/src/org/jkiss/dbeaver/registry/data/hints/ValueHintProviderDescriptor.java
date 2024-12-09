@@ -31,15 +31,26 @@ public class ValueHintProviderDescriptor extends AbstractValueBindingDescriptor<
     public static final String TAG_HINT_PROVIDER = "hintProvider"; //$NON-NLS-1$
 
     private final boolean visibleByDefault;
+    private final String label;
 
     public ValueHintProviderDescriptor(IConfigurationElement config) {
         super(config);
         this.visibleByDefault = CommonUtils.getBoolean(config.getAttribute("visibleByDefault"), true);
+        this.label = config.getAttribute("label");
     }
 
     @Override
     protected Class<DBDValueHintProvider> getImplClass() {
         return DBDValueHintProvider.class;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return ValueHintRegistry.getInstance().isHintEnabled(this);
     }
 
     public boolean isVisibleByDefault() {

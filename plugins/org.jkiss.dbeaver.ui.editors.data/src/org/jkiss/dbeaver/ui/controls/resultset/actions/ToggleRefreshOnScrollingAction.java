@@ -14,30 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.ui.controls.resultset.actions;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 
-/**
- * Config files controller.
- */
-public interface DBConfigurationController extends DBPObjectController {
-
-    /**
-     * Loads config file contents.
-     * @param filePath relative or absolute file path
-     */
-    @Nullable
-    String loadConfigurationFile(@NotNull String filePath) throws DBException;
-
-    /**
-     * Saves config file contents
-     * @param filePath relative or absolute
-     */
-    void saveConfigurationFile(
-        @NotNull String filePath,
-        @NotNull String data) throws DBException;
-
+public class ToggleRefreshOnScrollingAction extends ToggleConnectionPreferenceAction {
+    public ToggleRefreshOnScrollingAction(ResultSetViewer resultSetViewer) {
+        super(resultSetViewer, ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING, ResultSetMessages.pref_page_database_resultsets_label_reread_on_scrolling);
+    }
 }
