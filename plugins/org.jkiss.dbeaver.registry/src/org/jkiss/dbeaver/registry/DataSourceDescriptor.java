@@ -1164,7 +1164,7 @@ public class DataSourceDescriptor
         }
 
         resolvedConnectionInfo = new DBPConnectionConfiguration(connectionInfo);
-        patchConnectionProperties(resolvedConnectionInfo);
+        patchConnectionProperties(monitor, resolvedConnectionInfo);
         // Update auth properties if possible
         lastConnectionError = null;
         try {
@@ -1331,7 +1331,10 @@ public class DataSourceDescriptor
     }
 
 
-    protected void patchConnectionProperties(@NotNull DBPConnectionConfiguration resolvedConnectionInfo) {
+    protected void patchConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPConnectionConfiguration resolvedConnectionInfo
+    ) throws DBException {
 
     }
 
