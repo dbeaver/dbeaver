@@ -2473,7 +2473,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     DBPDataKind dataKind = attr.getDataKind();
                     if ((dataKind == DBPDataKind.NUMERIC && rightJustifyNumbers) ||
                         (dataKind == DBPDataKind.DATETIME && rightJustifyDateTime)) {
-                        if (CommonUtils.isEmpty(attr.getReferrers())) {
+                        if (CommonUtils.isEmpty(attr.getReferrers()) && !attr.isInRowIdentifier()) {
                             return ALIGN_RIGHT;
                         }
                     }
