@@ -19,11 +19,10 @@ package org.jkiss.dbeaver.model.websocket.event.datasource;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.websocket.event.WSAbstractEvent;
 import org.jkiss.dbeaver.model.websocket.event.WSEventType;
+import org.jkiss.dbeaver.model.websocket.event.WSProjectResourceEvent;
 
-public class WSDataSourceDisconnectEvent extends WSAbstractEvent {
+public class WSDataSourceDisconnectEvent extends WSProjectResourceEvent {
 
-    @NotNull
-    private final String projectId;
     @NotNull
     private final String connectionId;
 
@@ -33,14 +32,8 @@ public class WSDataSourceDisconnectEvent extends WSAbstractEvent {
         @NotNull String sessionId,
         @NotNull String userId
     ) {
-        super(WSEventType.DATASOURCE_DISCONNECTED, sessionId, userId);
-        this.projectId = projectId;
+        super(WSEventType.DATASOURCE_DISCONNECTED, sessionId, userId, projectId);
         this.connectionId = connectionId;
-    }
-
-    @NotNull
-    public String getProjectId() {
-        return projectId;
     }
 
     @NotNull

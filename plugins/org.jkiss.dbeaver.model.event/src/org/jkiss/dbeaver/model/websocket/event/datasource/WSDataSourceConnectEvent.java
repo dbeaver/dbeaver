@@ -20,29 +20,23 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.websocket.event.WSAbstractEvent;
 import org.jkiss.dbeaver.model.websocket.event.WSEventType;
+import org.jkiss.dbeaver.model.websocket.event.WSProjectResourceEvent;
 
-public class WSDataSourceConnectEvent extends WSAbstractEvent {
+public class WSDataSourceConnectEvent extends WSProjectResourceEvent {
 
-    @Nullable
-    private final String projectId;
     @NotNull
     private final String connectionId;
 
     public WSDataSourceConnectEvent(
-        @Nullable String projectId,
+        @NotNull String projectId,
         @NotNull String connectionId,
         @NotNull String sessionId,
         @NotNull String userId
     ) {
-        super(WSEventType.DATASOURCE_CONNECTED, sessionId, userId);
-        this.projectId = projectId;
+        super(WSEventType.DATASOURCE_CONNECTED, sessionId, userId, projectId);
         this.connectionId = connectionId;
     }
 
-    @Nullable
-    public String getProjectId() {
-        return projectId;
-    }
 
     @NotNull
     public String getConnectionId() {
