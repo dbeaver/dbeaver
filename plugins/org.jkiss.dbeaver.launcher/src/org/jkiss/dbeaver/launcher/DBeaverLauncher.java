@@ -2622,7 +2622,6 @@ public class DBeaverLauncher {
         if (logFileProp != null) {
             if (logFile == null || !logFileProp.equals(logFile.getAbsolutePath())) {
                 logFile = new File(logFileProp);
-                new File(logFile.getParent()).mkdirs();
             }
             return;
         }
@@ -2632,19 +2631,18 @@ public class DBeaverLauncher {
         if (base == null)
             return;
         logFile = new File(base.getPath(), System.currentTimeMillis() + ".log"); //$NON-NLS-1$
-        new File(logFile.getParent()).mkdirs();
         System.setProperty(PROP_LOGFILE, logFile.getAbsolutePath());
     }
 
     private void openLogFile() throws IOException {
         computeLogFileLocation();
-        try {
-            File logFolder = logFile.getParentFile();
-            if (!logFolder.exists()) {
-                if (!logFolder.mkdirs()) {
-                    throw new IOException("Cannot create directory '" + logFolder.getAbsolutePath() + "' for logs storage");
-                }
+        File logFolder = logFile.getParentFile();
+        if (!logFolder.exists()) {
+            if (!logFolder.mkdirs()) {
+                throw new IOException("Cannot create directory '" + logFolder.getAbsolutePath() + "' for logs storage");
             }
+        }
+        try {
             log = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(logFile.getAbsolutePath(), true), StandardCharsets.UTF_8));
         } catch (IOException e) {
             logFile = null;
