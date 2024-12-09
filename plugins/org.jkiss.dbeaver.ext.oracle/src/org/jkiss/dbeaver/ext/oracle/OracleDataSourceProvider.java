@@ -218,8 +218,8 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements
     @Nullable
     @Override
     public String getObjectInformation(@NotNull DBPObject object, @NotNull String infoType) {
-        if (object instanceof DBPDataSourceContainer && infoType.equals(INFO_TARGET_ADDRESS)) {
-            DBPConnectionConfiguration connectionInfo = ((DBPDataSourceContainer) object).getConnectionConfiguration();
+        if (object instanceof DBPDataSourceContainer ds && infoType.equals(INFO_TARGET_ADDRESS)) {
+            DBPConnectionConfiguration connectionInfo = ds.getConnectionConfiguration();
             OracleConstants.ConnectionType connectionType = getConnectionType(connectionInfo);
             if (connectionType == OracleConstants.ConnectionType.CUSTOM) {
                 return DatabaseURL.generateUrlByTemplate(connectionInfo.getUrl(), connectionInfo);
@@ -228,7 +228,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements
             if (connectionType == OracleConstants.ConnectionType.TNS) {
                 return databaseName;
             } else {
-                String hostName = DBWUtils.getTargetTunnelHostName(connectionInfo);
+                String hostName = DBWUtils.getTargetTunnelHostName(ds, connectionInfo);
                 String hostPort = connectionInfo.getHostPort();
                 if (CommonUtils.isEmpty(hostName)) {
                     return null;
