@@ -76,6 +76,7 @@ class ColumnsMappingDialog extends DialogPage {
         DBPDataSource targetDataSource = settings.getTargetDataSource(mapping);
 
         boldFont = UIUtils.makeBoldFont(parent.getFont());
+        parent.addDisposeListener(e -> boldFont.dispose());
 
         Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayout(new GridLayout(2, false));
