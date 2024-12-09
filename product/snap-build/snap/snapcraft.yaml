@@ -47,7 +47,7 @@ apps:
 
 parts:
   dbeaver-ce:
-    source: https://dbeaver.io/files/dbeaver-ce_latest_amd64.deb
+    source: ../dbeaver-ce_latest_amd64.deb
     plugin: dump
     build-packages:
       - ca-certificates
