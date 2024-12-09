@@ -146,6 +146,7 @@ public class ResultSetViewer extends Viewer
     private static final String CONFIRM_SERVER_SIDE_ORDERING_UNAVAILABLE = "org.jkiss.dbeaver.sql.resultset.serverSideOrderingUnavailable";
 
     private static final int THEME_UPDATE_DELAY_MS = 250;
+    private static final int MAXIMAL_LENGTH_HISTORY_STATE_ITEM = 50;
 
     public static final String EMPTY_TRANSFORMER_NAME = "Default";
     public static final String CONTROL_ID = ResultSetViewer.class.getSimpleName();
@@ -5112,8 +5113,8 @@ public class ResultSetViewer extends Viewer
                 SQLUtils.appendConditionString(filter, context.getDataSource(), null, condBuffer, true);
                 desc += " [" + condBuffer + "]";
             }
-            if (desc != null && desc.length() > 50) {
-                desc = desc.substring(0, 50) + "...";
+            if (desc != null && desc.length() > MAXIMAL_LENGTH_HISTORY_STATE_ITEM) {
+                desc = desc.substring(0, MAXIMAL_LENGTH_HISTORY_STATE_ITEM) + "...";
             }
             return desc;
         }
