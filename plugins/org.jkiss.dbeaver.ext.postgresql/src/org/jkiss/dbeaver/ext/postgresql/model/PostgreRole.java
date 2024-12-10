@@ -517,12 +517,12 @@ public class PostgreRole implements
                     "WHERE\n" +
                     "\tn.nspacl IS NOT NULL \n" +
                     "\t) AS tr\n" +
-                    "WHERE tr.granteeI=?" +
+                    "WHERE pg_get_userbyid(tr.granteeI)= ?" +
                     " AND tr.relkind IN('S', 'm', 'C')";
             }
             try (JDBCPreparedStatement dbStat = session.prepareStatement(otherObjectsSQL)) {
                 if (!supportsOnlySchemasPermissions) {
-                    dbStat.setLong(1, getObjectId());
+                    dbStat.setString(1, getName());
                 }
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.nextRow()) {
@@ -592,8 +592,8 @@ public class PostgreRole implements
                         SELECT *,
                         (aclexplode(defaclacl)).grantee as grantee
                         FROM pg_default_acl a WHERE a.defaclnamespace <> 0) as g
-                        where g.grantee = ?""")) {
-                    dbStat.setLong(1, getObjectId());
+                        where pg_get_userbyid(g.grantee) = ?""")) {
+                    dbStat.setString(1, getName());
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         while (dbResult.nextRow()) {
                             long schemaId = JDBCUtils.safeGetLong(dbResult, "defaclnamespace");
