@@ -2471,9 +2471,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         }
                     }
                     DBPDataKind dataKind = attr.getDataKind();
-                    if ((dataKind == DBPDataKind.NUMERIC && rightJustifyNumbers) ||
-                        (dataKind == DBPDataKind.DATETIME && rightJustifyDateTime)) {
-                        if (CommonUtils.isEmpty(attr.getReferrers()) && !attr.isInRowIdentifier()) {
+                    if ((rightJustifyNumbers && dataKind == DBPDataKind.NUMERIC) ||
+                        (rightJustifyDateTime && dataKind == DBPDataKind.DATETIME)) {
+                        if (isSimpleAttribute(attr)) {
                             return ALIGN_RIGHT;
                         }
                     }
@@ -2521,7 +2521,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 if (DBUtils.isNullValue(cellValue)) {
                     return foregroundNull;
                 } else {
-                    if (colorizeDataTypes) {
+                    if (colorizeDataTypes && isSimpleAttribute(attribute)) {
                         Color color = dataTypesForegrounds.get(attribute.getDataKind());
                         if (color != null) {
                             return color;
@@ -2783,6 +2783,14 @@ public class SpreadsheetPresentation extends AbstractPresentation
             backgroundNormal = null;
             foregroundDefault = null;
         }
+    }
+
+    // Simple attribute is attribute which is not a part of FK or PK
+    private boolean isSimpleAttribute(DBDAttributeBinding attr) {
+        DBDRowIdentifier rowIdentifier = attr.getRowIdentifier();
+        return CommonUtils.isEmpty(attr.getReferrers()) &&
+               (rowIdentifier == null || !rowIdentifier.hasAttribute(attr) ||
+                rowIdentifier.getUniqueKey().getConstraintType() != DBSEntityConstraintType.PRIMARY_KEY);
     }
 
     private static boolean isHyperlinkText(String strValue) {
