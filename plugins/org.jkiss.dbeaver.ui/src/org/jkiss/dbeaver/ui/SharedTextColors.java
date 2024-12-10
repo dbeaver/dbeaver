@@ -68,12 +68,7 @@ public class SharedTextColors implements ISharedTextColors {
             if (colorTable == null) {
                 colorTable = new HashMap<>(10);
                 fDisplayTable.put(curDisplay, colorTable);
-                display.disposeExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        dispose(curDisplay);
-                    }
-                });
+                display.disposeExec(() -> dispose(curDisplay));
             }
         }
 
@@ -95,9 +90,7 @@ public class SharedTextColors implements ISharedTextColors {
     }
 
     private void dispose(Display display) {
-        if (fDisplayTable != null) {
-            dispose(fDisplayTable.remove(display));
-        }
+        dispose(fDisplayTable.remove(display));
     }
 
     private void dispose(Map<RGB, Color> colorTable) {

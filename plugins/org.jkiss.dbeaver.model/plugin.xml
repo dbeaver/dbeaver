@@ -22,6 +22,7 @@
     <extension-point id="org.jkiss.dbeaver.service" name="%extension-point.org.jkiss.dbeaver.service.name" schema="schema/org.jkiss.dbeaver.service.exsd"/>
     <extension-point id="org.jkiss.dbeaver.application" name="%extension-point.org.jkiss.dbeaver.application.name" schema="schema/org.jkiss.dbeaver.application.exsd"/>
     <extension-point id="org.jkiss.dbeaver.expressions" name="%extension-point.org.jkiss.dbeaver.expressions.name" schema="schema/org.jkiss.dbeaver.expressions.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataHintProvider" name="Data editor hint provider" schema="schema/org.jkiss.dbeaver.dataHintProvider.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataFormatter" name="%extension-point.org.jkiss.dbeaver.dataFormatter.name" schema="schema/org.jkiss.dbeaver.dataFormatter.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataTypeProvider" name="%extension-point.org.jkiss.dbeaver.dataTypeProvider.name" schema="schema/org.jkiss.dbeaver.dataTypeProvider.exsd"/>
     <extension-point id="org.jkiss.dbeaver.serialize" name="%extension-point.org.jkiss.dbeaver.serialize.name" schema="schema/org.jkiss.dbeaver.serialize.exsd"/>
@@ -202,6 +203,14 @@
 
     </extension>
 
+    <extension point="org.jkiss.dbeaver.dataHintProvider">
+        <hintProvider class="org.jkiss.dbeaver.model.data.hints.standard.ArrayHintProvider" id="array-size" label="%hints.array-size.label" description="%hints.array-size.description">
+            <supports kind="ARRAY"/>
+        </hintProvider>
+        <hintProvider class="org.jkiss.dbeaver.model.data.hints.standard.BinaryHintProvider" id="binary-size" label="Binary data" description="Shows size of binary value">
+            <supports kind="BINARY"/>
+        </hintProvider>
+    </extension>
 
     <extension point="org.jkiss.dbeaver.settings">
         <propertyGroup id="editors" label="Editors">

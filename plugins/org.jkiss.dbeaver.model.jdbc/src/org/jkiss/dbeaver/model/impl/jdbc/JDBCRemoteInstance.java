@@ -98,7 +98,11 @@ public class JDBCRemoteInstance implements DBSInstance {
             return;
         }
         if (executionContext == null) {
-            this.executionContext = dataSource.createExecutionContext(this, getMainContextName());
+            String mainContextName = dataSource.getContainer().getClientApplicationName();
+            if (mainContextName == null) {
+                mainContextName = getMainContextName();
+            }
+            this.executionContext = dataSource.createExecutionContext(this, mainContextName);
             this.executionContext.connect(monitor, null, null, null, true);
         }
     }
