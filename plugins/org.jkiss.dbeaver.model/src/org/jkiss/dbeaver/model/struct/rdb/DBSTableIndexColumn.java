@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 /**
  * DBSTableIndex
  */
-public interface DBSTableIndexColumn extends DBSObject,DBSEntityAttributeRef,DBSTableIndexOrdering
+public interface DBSTableIndexColumn extends DBSObject, DBSEntityAttributeRef, DBSTableIndexOrdering
 {
     @NotNull
     DBSTableIndex getIndex();
