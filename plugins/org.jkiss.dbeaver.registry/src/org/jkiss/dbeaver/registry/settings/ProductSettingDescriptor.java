@@ -18,14 +18,14 @@ package org.jkiss.dbeaver.registry.settings;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.impl.BasePropertyDescriptor;
+import org.jkiss.dbeaver.model.impl.LocalizedPropertyDescriptor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class ProductSettingDescriptor extends BasePropertyDescriptor {
+public class ProductSettingDescriptor extends LocalizedPropertyDescriptor {
     private final List<String> scopes = new ArrayList<>();
 
     public ProductSettingDescriptor(String category, IConfigurationElement cfg) {

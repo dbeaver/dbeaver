@@ -25,11 +25,11 @@ import org.jkiss.dbeaver.model.DBPObjectWithDescriptionLocalized;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.osgi.framework.Bundle;
 
-public class BasePropertyDescriptor extends PropertyDescriptor implements DBPNamedObjectLocalized, DBPObjectWithDescriptionLocalized {
+public class LocalizedPropertyDescriptor extends PropertyDescriptor implements DBPNamedObjectLocalized, DBPObjectWithDescriptionLocalized {
 
     private final Bundle bundle;
 
-    public BasePropertyDescriptor(String category, IConfigurationElement config) {
+    public LocalizedPropertyDescriptor(String category, IConfigurationElement config) {
         super(category, config);
         bundle = getBundle(config);
     }
