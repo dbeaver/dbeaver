@@ -14,21 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.model.impl;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
+import org.jkiss.dbeaver.model.DBPNamedObjectLocalized;
+import org.jkiss.dbeaver.model.DBPObjectWithDescriptionLocalized;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.osgi.framework.Bundle;
 
-public class DBPNamedObjectLocalizedBase extends PropertyDescriptor implements DBPNamedObjectLocalized, DBPObjectWithDescriptionLocalized{
+public class BasePropertyDescriptor extends PropertyDescriptor implements DBPNamedObjectLocalized, DBPObjectWithDescriptionLocalized {
 
     private final Bundle bundle;
 
-    public DBPNamedObjectLocalizedBase(String category, IConfigurationElement config) {
+    public BasePropertyDescriptor(String category, IConfigurationElement config) {
         super(category, config);
         bundle = getBundle(config);
     }

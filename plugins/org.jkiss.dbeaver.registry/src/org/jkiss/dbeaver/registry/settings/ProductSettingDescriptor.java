@@ -17,24 +17,15 @@
 package org.jkiss.dbeaver.registry.settings;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.spi.RegistryContributor;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPNamedObjectLocalized;
-import org.jkiss.dbeaver.model.DBPNamedObjectLocalizedBase;
-import org.jkiss.dbeaver.model.DBPObjectWithDescriptionLocalized;
-import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.dbeaver.model.impl.BasePropertyDescriptor;
 import org.jkiss.utils.CommonUtils;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.FrameworkUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class ProductSettingDescriptor extends DBPNamedObjectLocalizedBase {
+public class ProductSettingDescriptor extends BasePropertyDescriptor {
     private final List<String> scopes = new ArrayList<>();
 
     public ProductSettingDescriptor(String category, IConfigurationElement cfg) {
