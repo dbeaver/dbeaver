@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.spi.RegistryContributor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPNamedObjectLocalized;
+import org.jkiss.dbeaver.model.DBPNamedObjectLocalizedBase;
 import org.jkiss.dbeaver.model.DBPObjectWithDescriptionLocalized;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -33,53 +34,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class ProductSettingDescriptor extends PropertyDescriptor implements DBPNamedObjectLocalized, DBPObjectWithDescriptionLocalized {
+public class ProductSettingDescriptor extends DBPNamedObjectLocalizedBase {
     private final List<String> scopes = new ArrayList<>();
-    private final Bundle bundle;
 
     public ProductSettingDescriptor(String category, IConfigurationElement cfg) {
         super(category, cfg);
         String excludeAttr = cfg.getAttribute("scopes");
-        bundle = getBundle(cfg);
         if (CommonUtils.isNotEmpty(excludeAttr)) {
             scopes.addAll(Arrays.stream(excludeAttr.split(",")).toList());
         }
     }
-
-    @NotNull
-    private Bundle getBundle(@NotNull IConfigurationElement config) {
-        final Bundle bundle;
-        String bundleName = config.getContributor().getName();
-        bundle = Platform.getBundle(bundleName);
-        if (bundle == null) {
-            throw new IllegalStateException("Bundle '" + bundleName + "' not found");
-        }
-        return bundle;
-    }
-
     @NotNull
     public List<String> getScopes() {
         return scopes;
     }
-
-    @Override
-    public String getLocalizedName(String locale) {
-        try {
-            return RuntimeUtils.getBundleLocalization(bundle, locale).getString(this.getId());
-        } catch (Exception e) {
-            return this.getName();
-        }
-    }
-
-    @Nullable
-    @Override
-    public String getLocalizedDescription(String locale) {
-        try {
-            return RuntimeUtils.getBundleLocalization(bundle, locale).getString(this.getId() + ".description");
-        } catch (Exception e) {
-            return this.getDescription();
-        }
-    }
-
 
 }
