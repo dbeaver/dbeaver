@@ -13,7 +13,7 @@
 			description="GBase 8s connector"
 			icon="icons/gbase8s_icon.png"
 			parent="generic"
-			dialect="gbase8s"
+			dialect="generic"
 			label="GBase 8s">
 			<treeInjection path="generic/catalog/schema/table"
 				changeFolderType="org.jkiss.dbeaver.ext.gbase8s.model.GBase8sTable"/>
