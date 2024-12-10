@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.registry.settings;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.spi.RegistryContributor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -39,11 +40,21 @@ public class ProductSettingDescriptor extends PropertyDescriptor implements DBPN
     public ProductSettingDescriptor(String category, IConfigurationElement cfg) {
         super(category, cfg);
         String excludeAttr = cfg.getAttribute("scopes");
-        bundle = FrameworkUtil.getBundle(getClass()).getBundleContext()
-            .getBundle(Long.parseLong(((RegistryContributor)cfg.getContributor()).getActualId()));
+        bundle = getBundle(cfg);
         if (CommonUtils.isNotEmpty(excludeAttr)) {
             scopes.addAll(Arrays.stream(excludeAttr.split(",")).toList());
         }
+    }
+
+    @NotNull
+    private Bundle getBundle(@NotNull IConfigurationElement config) {
+        final Bundle bundle;
+        String bundleName = config.getContributor().getName();
+        bundle = Platform.getBundle(bundleName);
+        if (bundle == null) {
+            throw new IllegalStateException("Bundle '" + bundleName + "' not found");
+        }
+        return bundle;
     }
 
     @NotNull
