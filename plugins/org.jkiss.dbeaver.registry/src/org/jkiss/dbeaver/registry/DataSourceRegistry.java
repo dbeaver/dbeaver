@@ -263,6 +263,26 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         return new DataSourceDescriptor(this, DataSourceDescriptor.generateNewId(driver), driver, connConfig);
     }
 
+    @Override
+    public DBPDataSourceContainer createDataSource(
+        @NotNull String id,
+        @NotNull DBPDriver driver,
+        @NotNull DBPConnectionConfiguration connConfig
+    ) {
+        return new DataSourceDescriptor(this, id, driver, connConfig);
+    }
+
+    @Override
+    public DBPDataSourceContainer createDataSource(
+        @NotNull DBPDataSourceConfigurationStorage dataSourceStorage,
+        @NotNull DBPDataSourceOrigin origin,
+        @NotNull String id,
+        @NotNull DBPDriver driver,
+        @NotNull DBPConnectionConfiguration configuration
+    ) {
+        return new DataSourceDescriptor(this, dataSourceStorage, origin, id, driver, configuration);
+    }
+
     @NotNull
     @Override
     public DBPDataSourceContainer createDataSource(@NotNull DBPDataSourceContainer source) {

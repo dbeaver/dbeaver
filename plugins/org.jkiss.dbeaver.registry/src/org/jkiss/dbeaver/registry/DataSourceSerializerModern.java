@@ -1059,8 +1059,6 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         json.name(dataSource.getId());
         json.beginObject();
         serializeDataSource(configurationManager, json, dataSource, externalConfigurations);
-
-
         json.endObject();
     }
 
