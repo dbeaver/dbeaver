@@ -90,7 +90,7 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
         try {
             return getRealReferenceConstraint(new VoidProgressMonitor());
         } catch (DBException e) {
-            log.error(e);
+            //log.error(e);
             return null;
         }
     }
