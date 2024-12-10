@@ -568,7 +568,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         String paramCreate = CommonUtils.toString(site.getDriver().getDriverParameter(GenericConstants.PARAM_CREATE_URL_PARAM));
 
         DataSourceDescriptor dataSource = (DataSourceDescriptor) site.getActiveDataSource();
-        DataSourceDescriptor testDataSource = (DataSourceDescriptor) site.getDataSourceRegistry().createDataSource(
+        DataSourceDescriptor testDataSource = site.getDataSourceRegistry().createDataSource(
             dataSource.getId(),
             dataSource.getDriver(),
             new DBPConnectionConfiguration(dataSource.getConnectionConfiguration())

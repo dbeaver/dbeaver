@@ -124,7 +124,7 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
         }
         if (info == null && driver != null) {
             DBPConnectionConfiguration connectionInfo = getDefaultConnectionConfiguration();
-            info = (DataSourceDescriptor) registry.createDataSource(
+            info = registry.createDataSource(
                 DataSourceDescriptor.generateNewId(driver),
                 driver,
                 connectionInfo
@@ -161,7 +161,7 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
         DataSourceDescriptor targetDataSource;
 
         if (canUseTemporaryDataSource(activeDataSource)) {
-            targetDataSource = (DataSourceDescriptor) activeDataSource.getRegistry().createDataSource(activeDataSource);
+            targetDataSource = activeDataSource.getRegistry().createDataSource(activeDataSource);
             // Generate new ID to avoid session conflicts in QM
             targetDataSource.setId(DataSourceDescriptor.generateNewId(activeDataSource.getDriver()));
             targetDataSource.setTemporary(true);

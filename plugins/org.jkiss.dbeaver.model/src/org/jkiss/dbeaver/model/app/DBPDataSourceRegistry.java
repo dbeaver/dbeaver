@@ -74,15 +74,18 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
     List<? extends DBPDataSourceContainer> getDataSources();
 
     @NotNull
-    DBPDataSourceContainer createDataSource(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connConfig);
+    <T extends DBPDataSourceContainer> T createDataSource(
+        @NotNull DBPDriver driver,
+        @NotNull DBPConnectionConfiguration connConfig
+    );
 
-    DBPDataSourceContainer createDataSource(
+    <T extends DBPDataSourceContainer> T createDataSource(
         @NotNull String id,
         @NotNull DBPDriver driver,
         @NotNull DBPConnectionConfiguration connConfig
     );
 
-    DBPDataSourceContainer createDataSource(
+    <T extends DBPDataSourceContainer> T createDataSource(
         @NotNull DBPDataSourceConfigurationStorage dataSourceStorage,
         @NotNull DBPDataSourceOrigin origin,
         @NotNull String id,
@@ -91,7 +94,7 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
     );
 
     @NotNull
-    DBPDataSourceContainer createDataSource(@NotNull DBPDataSourceContainer source);
+    <T extends DBPDataSourceContainer> T createDataSource(@NotNull DBPDataSourceContainer source);
 
     void addDataSourceListener(@NotNull DBPEventListener listener);
 
