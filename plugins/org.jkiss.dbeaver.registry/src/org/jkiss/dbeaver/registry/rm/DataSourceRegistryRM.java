@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-public class DataSourceRegistryRM extends DataSourceRegistry<DataSourceDescriptor> {
+public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSourceRegistry<T> {
     private static final Log log = Log.getLog(DataSourceRegistryRM.class);
 
     @NotNull
