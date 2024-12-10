@@ -118,10 +118,8 @@ public abstract class SQLConstraintManager<OBJECT_TYPE extends AbstractTableCons
                     if (!firstColumn) decl.append(","); //$NON-NLS-1$
                     firstColumn = false;
                     decl.append(DBUtils.getQuotedIdentifier(attribute));
-                    if (constraintColumn instanceof DBSTableIndexOrdering ordering && isPrimaryKeyOrdered()) {
-                        if (!ordering.isAscending()) {
-                            decl.append(" DESC");
-                        }
+                    if (isPrimaryKeyOrdered() && constraintColumn instanceof DBSTableIndexOrdering ordering && !ordering.isAscending()) {
+                        decl.append(" DESC");
                     }
                 }
             }
