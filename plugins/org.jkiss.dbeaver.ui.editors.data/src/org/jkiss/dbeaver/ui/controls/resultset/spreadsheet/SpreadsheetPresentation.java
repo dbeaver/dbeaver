@@ -3061,8 +3061,29 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     tip.append("\n").append(ResultSetMessages.controls_resultset_results_edit_key).append(": ")
                         .append(rowIdentifier.getEntity().getName())
                         .append("(")
-                        .append(rowIdentifier.getAttributes().stream().map(DBDAttributeBinding::getName).collect(Collectors.joining(",")))
+                        .append(rowIdentifier.getAttributes().stream().map(DBDAttributeBinding::getName)
+                            .collect(Collectors.joining(",")))
                         .append(")");
+                } else if (rowIdentifier != null && rowIdentifier.hasAttribute(attributeBinding)) {
+                    tip.append("\nPart of key: ")
+                        .append(DBUtils.getObjectFullName(rowIdentifier.getUniqueKey(), DBPEvaluationContext.UI));
+                }
+                if (!CommonUtils.isEmpty(attributeBinding.getReferrers())) {
+                    tip.append("\nRefers to: ").append(attributeBinding.getReferrers().stream()
+                        .map(r -> {
+                            if (r instanceof DBSEntityAssociation assoc) {
+                                DBSEntity entity = assoc.getAssociatedEntity();
+                                if (entity != null) {
+                                    return DBUtils.getObjectFullName(entity, DBPEvaluationContext.UI)
+                                        /* + "(" +
+                                           r.getAttributeReferences(null).stream()
+                                           .map(ar -> ar.getAttribute().getName())+ ")"*/;
+                                }
+                            }
+                            return null;
+                        })
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.joining(",")));
                 }
                 String readOnlyStatus = controller.getAttributeReadOnlyStatus(attributeBinding, true, true);
                 if (readOnlyStatus != null) {
