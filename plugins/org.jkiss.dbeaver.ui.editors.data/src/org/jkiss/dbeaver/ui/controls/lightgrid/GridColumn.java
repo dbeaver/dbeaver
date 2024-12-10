@@ -101,6 +101,7 @@ public class GridColumn implements IGridColumn {
      *
      * @return width of column
      */
+    @Override
     public int getWidth() {
         return width;
     }
@@ -126,6 +127,7 @@ public class GridColumn implements IGridColumn {
         }
     }
 
+    @Override
     public boolean isPinned() {
         return pinIndex >= 0 || parent != null && parent.isPinned();
     }
@@ -268,12 +270,24 @@ public class GridColumn implements IGridColumn {
             // Calculate width of visible cells
             int topIndex = grid.getTopIndex();
             int bottomIndex = grid.getBottomIndex();
+            int maxValueWidth = 0;
             if (topIndex >= 0 && bottomIndex >= topIndex) {
                 int itemCount = grid.getItemCount();
                 for (int i = topIndex; i <= bottomIndex && i < itemCount; i++) {
-                    newWidth = Math.max(newWidth, computeCellWidth(gc, grid.getRow(i)));
+                    maxValueWidth = Math.max(maxValueWidth, computeCellWidth(gc, grid.getRow(i)));
+                    newWidth = Math.max(newWidth, maxValueWidth);
                 }
             }
+            // Respect hints
+            int columnHintsWidth = grid.getContentProvider().getColumnHintsWidth(this);
+            if (columnHintsWidth > 0) {
+                if (columnHintsWidth > 16) columnHintsWidth= 16;
+                int newValueWidth = maxValueWidth + columnHintsWidth * gc.stringExtent("x").x;
+                if (newValueWidth > newWidth) {
+                    newWidth = newValueWidth;
+                }
+            }
+
         } else {
             int childrenWidth = 0;
             for (GridColumn child : children) {
