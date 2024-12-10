@@ -238,11 +238,6 @@ public class SQLBackgroundParsingJob {
                 ) {
                     return SQLQueryCompletionContext.prepareOffquery(scriptItem.offset, offset);
                 }
-                LSMInspections.SyntaxInspectionResult syntaxInspectionResult = LSMInspections.prepareAbstractSyntaxInspection(syntaxNode, position);
-                SQLQueryModel.LexicalContextResolutionResult context = model.findLexicalContext(Math.min(position, model.getSyntaxNode().getRealInterval().b));
-                if (context.deepestContext() == null) {
-                    return SQLQueryCompletionContext.prepareEmpty(0, offset);
-                }
 
                 ArrayDeque<STMTreeTermNode> nameNodes = new ArrayDeque<>();
                 List<STMTreeTermNode> allTerms = LSMInspections.prepareTerms(syntaxNode);
@@ -250,6 +245,16 @@ public class SQLBackgroundParsingJob {
                 if (index < 0) {
                     index = ~index - 1;
                 }
+                if (index > 0 && LSMInspections.KNOWN_SEPARATOR_TOKENS.contains(allTerms.get(index).getSymbol().getType())) {
+                    position--;
+                }
+
+                LSMInspections.SyntaxInspectionResult syntaxInspectionResult = LSMInspections.prepareAbstractSyntaxInspection(syntaxNode, position);
+                SQLQueryModel.LexicalContextResolutionResult context = model.findLexicalContext(Math.min(position, model.getSyntaxNode().getRealInterval().b));
+                if (context.deepestContext() == null) {
+                    return SQLQueryCompletionContext.prepareEmpty(0, offset);
+                }
+
                 boolean hasPeriod = false;
                 STMTreeTermNode currentTerm = null;
                 if (index >= 0) {

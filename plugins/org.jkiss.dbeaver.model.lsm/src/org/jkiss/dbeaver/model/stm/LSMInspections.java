@@ -33,6 +33,41 @@ import java.util.stream.StreamSupport;
 
 public class LSMInspections {
 
+    public static final Set<Integer> KNOWN_SEPARATOR_TOKENS = Set.of(
+        SQLStandardLexer.EqualsOperator,
+        SQLStandardLexer.NotEqualsOperator,
+        SQLStandardLexer.RightParen,
+        SQLStandardLexer.LeftParen,
+        SQLStandardLexer.SingleQuote,
+        SQLStandardLexer.BackQuote,
+        SQLStandardLexer.Comma,
+        SQLStandardLexer.TypeCast,
+        SQLStandardLexer.Colon,
+        SQLStandardLexer.Semicolon,
+        SQLStandardLexer.Ampersand,
+        SQLStandardLexer.Asterisk,
+        SQLStandardLexer.Solidus,
+        SQLStandardLexer.ConcatenationOperator,
+        SQLStandardLexer.Percent,
+        SQLStandardLexer.Period,
+        SQLStandardLexer.DoublePeriod,
+        SQLStandardLexer.DoubleQuote,
+        SQLStandardLexer.GreaterThanOperator,
+        SQLStandardLexer.GreaterThanOrEqualsOperator,
+        SQLStandardLexer.LessThanOperator,
+        SQLStandardLexer.LessThanOrEqualsOperator,
+        SQLStandardLexer.LeftBracket,
+        SQLStandardLexer.RightBracket,
+        SQLStandardLexer.LeftBrace,
+        SQLStandardLexer.RightBrace,
+        SQLStandardLexer.MinusSign,
+        SQLStandardLexer.PlusSign,
+        SQLStandardLexer.QuestionMark,
+        SQLStandardLexer.Underscore,
+        SQLStandardLexer.VerticalBar,
+        SQLStandardLexer.Tilda
+    );
+
     @NotNull
     private static final Set<String> knownReservedWords = new HashSet<>(BasicSQLDialect.INSTANCE.getReservedWords());
 
