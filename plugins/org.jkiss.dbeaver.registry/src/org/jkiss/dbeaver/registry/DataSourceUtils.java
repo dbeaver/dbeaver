@@ -380,7 +380,7 @@ public class DataSourceUtils {
         }
         DBPConnectionConfiguration cfg = dataSourceContainer.getConnectionConfiguration();
         if (cfg.getConfigurationType() == DBPDriverConfigurationType.MANUAL) {
-            String hostText = DBWUtils.getTargetTunnelHostName(cfg);
+            String hostText = DBWUtils.getTargetTunnelHostName(dataSourceContainer, cfg);
             String hostPort = cfg.getHostPort();
             if (!CommonUtils.isEmpty(hostPort)) {
                 return hostText + ":" + hostPort;
