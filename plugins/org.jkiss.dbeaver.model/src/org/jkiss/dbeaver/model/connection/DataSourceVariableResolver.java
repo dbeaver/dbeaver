@@ -62,7 +62,7 @@ public class DataSourceVariableResolver extends SystemVariablesResolver {
                 case DBPConnectionConfiguration.VARIABLE_HOST:
                     return configuration.getHostName();
                 case DBPConnectionConfiguration.VARIABLE_HOST_TUNNEL:
-                    return DBWUtils.getTargetTunnelHostName(configuration);
+                    return DBWUtils.getTargetTunnelHostName(dataSourceContainer, configuration);
                 case DBPConnectionConfiguration.VARIABLE_PORT:
                     return configuration.getHostPort();
                 case DBPConnectionConfiguration.VARIABLE_SERVER:
