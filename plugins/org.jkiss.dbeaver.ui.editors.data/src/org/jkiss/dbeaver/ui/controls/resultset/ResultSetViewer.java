@@ -3010,7 +3010,12 @@ public class ResultSetViewer extends Viewer
             menuManager.add(new HintEnablementAction(this, hd));
 
             DBDValueHint[] valueHint = hd.getInstance().getValueHint(
-                getModel().getHintContext(), attr, row, cellValue, EnumSet.of(DBDValueHint.HintType.STRING), DBDValueHintProvider.OPTION_INLINE);
+                getModel().getHintContext(),
+                attr,
+                row,
+                cellValue,
+                EnumSet.of(DBDValueHint.HintType.STRING),
+                DBDValueHintProvider.OPTION_APPROXIMATE);
             if (valueHint == null) {
                 continue;
             }
