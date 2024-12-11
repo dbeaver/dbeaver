@@ -38,8 +38,6 @@ public class LSMInspections {
         SQLStandardLexer.NotEqualsOperator,
         SQLStandardLexer.RightParen,
         SQLStandardLexer.LeftParen,
-        SQLStandardLexer.SingleQuote,
-        SQLStandardLexer.BackQuote,
         SQLStandardLexer.Comma,
         SQLStandardLexer.TypeCast,
         SQLStandardLexer.Colon,
@@ -49,9 +47,7 @@ public class LSMInspections {
         SQLStandardLexer.Solidus,
         SQLStandardLexer.ConcatenationOperator,
         SQLStandardLexer.Percent,
-        SQLStandardLexer.Period,
         SQLStandardLexer.DoublePeriod,
-        SQLStandardLexer.DoubleQuote,
         SQLStandardLexer.GreaterThanOperator,
         SQLStandardLexer.GreaterThanOrEqualsOperator,
         SQLStandardLexer.LessThanOperator,
@@ -63,7 +59,6 @@ public class LSMInspections {
         SQLStandardLexer.MinusSign,
         SQLStandardLexer.PlusSign,
         SQLStandardLexer.QuestionMark,
-        SQLStandardLexer.Underscore,
         SQLStandardLexer.VerticalBar,
         SQLStandardLexer.Tilda
     );
