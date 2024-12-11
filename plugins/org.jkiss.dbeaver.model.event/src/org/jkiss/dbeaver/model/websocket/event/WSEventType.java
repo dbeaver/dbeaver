@@ -92,9 +92,7 @@ public enum WSEventType {
 
     DB_LOG_UPDATED("cb_database_output_log_updated", WSEventTopic.DB_OUTPUT_LOG, WSOutputDBLogEvent.class),
 
-    SESSION_TASK_INFO_STARTED("cb_session_task_info_started", WSEventTopic.SESSION_TASK, WSSessionTaskInfoEvent.class),
     SESSION_TASK_INFO_UPDATED("cb_session_task_info_updated", WSEventTopic.SESSION_TASK, WSSessionTaskInfoEvent.class),
-    SESSION_TASK_INFO_FINISHED("cb_session_task_info_finished", WSEventTopic.SESSION_TASK, WSSessionTaskInfoEvent.class),
 
     USER_DELETED("cb_user_deleted", WSEventTopic.USER, WSUserDeletedEvent.class);
 
