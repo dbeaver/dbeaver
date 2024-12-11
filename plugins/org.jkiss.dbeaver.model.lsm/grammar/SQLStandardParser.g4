@@ -215,7 +215,7 @@ tableSubquery: subquery;
 
 //joins
 crossJoinTerm: CROSS JOIN tableReference;
-naturalJoinTerm: (NATURAL)? (joinType)? JOIN tableReference (joinSpecification)? anyUnexpected??; // (.*?) - for error recovery
+naturalJoinTerm: (NATURAL)? (joinType)? JOIN tableReference (joinSpecification|anyUnexpected)?; // (.*?) - for error recovery
 joinType: (INNER|outerJoinType (OUTER)?|UNION);
 outerJoinType: (LEFT|RIGHT|FULL);
 joinSpecification: (joinCondition|namedColumnsJoin);
