@@ -2045,7 +2045,7 @@ public final class DBUtils {
             }
         }
         DBPDataSource dataSource = object.getDataSource();
-        if (dataSource == null || dataSource.isReconnecting()) {
+        if (dataSource == null || dataSource.isConnectionRefreshing()) {
             return null;
         }
         return dataSource.getDefaultInstance();
@@ -2058,7 +2058,7 @@ public final class DBUtils {
         DBSInstance instance = getObjectOwnerInstance(object);
         if (instance == null
             || (instance instanceof DBSInstanceLazy instanceLazy && !instanceLazy.isInstanceConnected())
-            || (instance.getDataSource() != null && instance.getDataSource().isReconnecting())) {
+            || (instance.getDataSource() != null && instance.getDataSource().isConnectionRefreshing())) {
             return null;
         }
 

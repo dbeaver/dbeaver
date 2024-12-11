@@ -321,16 +321,6 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         }
 
         @Override
-        public boolean isReconnecting() {
-            return false;
-        }
-
-        @Override
-        public void setReconnecting(boolean reconnecting) {
-
-        }
-
-        @Override
         public boolean isView() {
             return false;
         }

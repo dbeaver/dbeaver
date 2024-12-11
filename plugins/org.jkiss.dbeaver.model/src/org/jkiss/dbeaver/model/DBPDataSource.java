@@ -94,8 +94,25 @@ public interface DBPDataSource extends DBSInstanceContainer, DBPContextWithAttri
      */
     void initialize(@NotNull DBRProgressMonitor monitor) throws DBException;
 
-    boolean isReconnecting();
+    /**
+     * Indicates whether the connection is currently refreshing.
+     * This method returns a default value of {@code false}, meaning that the connection is not refreshing
+     * unless explicitly overridden by an implementing class.
+     *
+     * @return {@code true} if the connection is being refreshed; otherwise {@code false}.
+     */
+    default boolean isConnectionRefreshing(){
+        return false;
+    }
 
-    void setReconnecting(boolean reconnecting);
+    /**
+     * Sets the state of the connection to indicate whether it is currently refreshing.
+     * This default implementation does nothing and can be overridden by implementing classes
+     * to define specific behavior.
+     *
+     * @param connectionRefreshing {@code true} if the connection is being refreshed; {@code false} otherwise.
+     */
+    default void setConnectionRefreshing(boolean connectionRefreshing){
+    }
 
 }
