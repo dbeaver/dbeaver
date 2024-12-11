@@ -111,10 +111,6 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
                     disconnect();
                     setOwnerInstance(catalog);
                     connect(monitor, null, null, null, false);
-                    // Catalog has been changed. Get the new one and propagate isolated flag
-                    PostgreDatabase newInstance = getDataSource().getDefaultInstance();
-                    PostgreExecutionContext newContext = (PostgreExecutionContext) newInstance.getDefaultContext(false);
-                    newContext.setIsolatedContext(this.isolatedContext);
                 } else {
                     getDataSource().setActiveDatabase(catalog, this);
                 }

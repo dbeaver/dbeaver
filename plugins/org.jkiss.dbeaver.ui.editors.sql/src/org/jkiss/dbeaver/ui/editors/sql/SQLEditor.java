@@ -960,7 +960,7 @@ public class SQLEditor extends SQLEditorBase implements
         return super.getAdapter(required);
     }
 
-    private boolean checkConnected(boolean forceConnect, DBRProgressListener onFinish)
+    protected boolean checkConnected(boolean forceConnect, DBRProgressListener onFinish)
     {
         // Connect to datasource
         final DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
