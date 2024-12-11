@@ -29,23 +29,15 @@ public class WSSessionTaskInfoEvent extends WSAbstractSessionEvent {
     @Nullable
     private final String statusName;
     private final boolean running;
-    @Nullable
-    private final Object result;
-    @Nullable
-    private final Object extendedResult;
 
     public WSSessionTaskInfoEvent(
         @NotNull String taskId,
         @Nullable String statusName,
-        @Nullable Object result,
-        @Nullable Object extendedResult,
         boolean running
     ) {
         super(WSEventType.SESSION_TASK_INFO_UPDATED);
         this.taskId = taskId;
         this.statusName = statusName;
-        this.result = result;
-        this.extendedResult = extendedResult;
         this.running = running;
     }
 
@@ -57,16 +49,6 @@ public class WSSessionTaskInfoEvent extends WSAbstractSessionEvent {
     @Nullable
     public String getStatusName() {
         return statusName;
-    }
-
-    @Nullable
-    public Object getResult() {
-        return result;
-    }
-
-    @Nullable
-    public Object getExtendedResult() {
-        return extendedResult;
     }
 
     public boolean isRunning() {
