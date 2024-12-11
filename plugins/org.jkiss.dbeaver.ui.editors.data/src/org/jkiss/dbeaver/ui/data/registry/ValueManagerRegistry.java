@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.registry.data.hints.AbstractValueBindingRegistry;
 import org.jkiss.dbeaver.ui.data.IStreamValueManager;
 import org.jkiss.dbeaver.ui.data.IValueManager;
 import org.jkiss.dbeaver.ui.data.managers.DefaultValueManager;
@@ -36,9 +37,9 @@ import org.jkiss.utils.MimeType;
 import java.util.*;
 
 /**
- * EntityEditorsRegistry
+ * ValueManagerRegistry
  */
-public class ValueManagerRegistry {
+public class ValueManagerRegistry extends AbstractValueBindingRegistry<IValueManager, ValueManagerDescriptor> {
 
     private static ValueManagerRegistry instance = null;
 
@@ -66,36 +67,20 @@ public class ValueManagerRegistry {
     }
 
     @NotNull
-    public IValueManager getManager(@Nullable DBPDataSource dataSource, @NotNull DBSTypedObject type, @NotNull Class<?> valueType) {
-        // Check starting from most restrictive to less restrictive
-        IValueManager manager = findManager(dataSource, type, valueType, true, true);
-        if (manager == null) {
-            manager = findManager(dataSource, type, valueType, false, true);
-        }
-        if (manager == null) {
-            manager = findManager(dataSource, type, valueType, true, false);
-        }
-        if (manager == null) {
-            manager = findManager(dataSource, type, valueType, false, false);
-        }
-        if (manager == null) {
-            return DefaultValueManager.INSTANCE;
-        }
-        return manager;
+    @Override
+    protected List<ValueManagerDescriptor> getDescriptors() {
+        return managers;
     }
 
-    private IValueManager findManager(@Nullable DBPDataSource dataSource, DBSTypedObject typedObject, Class<?> valueType, boolean checkDataSource, boolean checkType) {
-        for (ValueManagerDescriptor manager : managers) {
-            if (manager.supportsType(dataSource, typedObject, valueType, checkDataSource, checkType)) {
-                return manager.getInstance();
-            }
-        }
-        return null;
+    @NotNull
+    @Override
+    protected IValueManager getDefaultValueBinding() {
+        return DefaultValueManager.INSTANCE;
     }
 
     @NotNull
     public static IValueManager findValueManager(@Nullable DBPDataSource dataSource, @NotNull DBSTypedObject typedObject, @NotNull Class<?> valueType) {
-        return getInstance().getManager(dataSource, typedObject, valueType);
+        return getInstance().getValueBinding(dataSource, typedObject, valueType);
     }
 
     @NotNull

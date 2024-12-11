@@ -1105,7 +1105,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             if (propertyValue == null) {
                 connectProps.remove(prohibitedDriverProperty);
             } else {
-                log.debug("Set " + prohibitedDriverProperty + ":" + propertyValue);
+                log.trace("Set " + prohibitedDriverProperty + ":" + propertyValue);
                 connectProps.put(prohibitedDriverProperty, propertyValue);
             }
         }

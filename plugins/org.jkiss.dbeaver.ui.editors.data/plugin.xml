@@ -15,9 +15,7 @@
     <extension point="org.jkiss.dbeaver.dataManager">
         <streamManager class="org.jkiss.dbeaver.ui.data.managers.stream.TextStreamValueManager" id="plaintext" label="Text" primaryMime="text/plain"
                        description="Plain text" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/text.png"/>
-    </extension>
 
-    <extension point="org.jkiss.dbeaver.dataManager">
         <!--
                 <manager class="org.jkiss.dbeaver.ui.data.managers.BooleanValueManager" id="org.jkiss.dbeaver.ui.data.managers.BooleanValueManager">
                     <supports kind="BOOLEAN"/>
@@ -73,6 +71,10 @@
 
     </extension>
 
+    <extension point="org.jkiss.dbeaver.dataHintProvider">
+        <hintProvider class="org.jkiss.dbeaver.ui.data.hints.ReferenceHintProvider" id="references" label="%hints.references.label" description="%hints.references.description"/>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.aggregateFunction">
         <function id="count" class="org.jkiss.dbeaver.model.data.aggregate.FunctionCount" type="simple" label="Count" description="Value count" default="true"/>
         <function id="countDistinct" class="org.jkiss.dbeaver.model.data.aggregate.FunctionCountDistinct" type="simple" label="Count Distinct" description="Value count" default="true"/>
@@ -94,6 +96,7 @@
                 class="org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentation"
                 type="columns"
                 supportsRecordMode="true"
+                supportsHints="true"
                 order="100">
             <objectType name="org.jkiss.dbeaver.model.exec.DBCResultSet" if="context.supportsAttributes()"/>
         </presentation>
@@ -1097,7 +1100,7 @@
             label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.odd.background.label"
             categoryId="org.jkiss.dbeaver.ui.presentation.results"
             id="org.jkiss.dbeaver.sql.resultset.color.cell.odd.background"
-            value="219, 229, 241">
+            value="235, 245, 255">
             <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.odd.background.description</description>
         </colorDefinition>
         <colorDefinition
