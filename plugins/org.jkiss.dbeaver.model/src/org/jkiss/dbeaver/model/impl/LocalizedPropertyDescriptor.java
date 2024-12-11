@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.DBPObjectWithDescriptionLocalized;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.osgi.framework.Bundle;
 
-public class LocalizedPropertyDescriptor extends PropertyDescriptor implements DBPNamedObjectLocalized, DBPObjectWithDescriptionLocalized {
+public abstract class LocalizedPropertyDescriptor extends PropertyDescriptor implements DBPNamedObjectLocalized, DBPObjectWithDescriptionLocalized {
 
     private final Bundle bundle;
 
@@ -37,7 +37,7 @@ public class LocalizedPropertyDescriptor extends PropertyDescriptor implements D
     @Override
     public String getLocalizedName(String locale) {
         try {
-            return RuntimeUtils.getBundleLocalization(bundle, locale).getString(this.getId());
+            return RuntimeUtils.getBundleLocalization(bundle, locale).getString(getPropertyId());
         } catch (Exception e) {
             return this.getName();
         }
@@ -47,10 +47,14 @@ public class LocalizedPropertyDescriptor extends PropertyDescriptor implements D
     @Override
     public String getLocalizedDescription(String locale) {
         try {
-            return RuntimeUtils.getBundleLocalization(bundle, locale).getString(this.getId() + ".description");
+            return RuntimeUtils.getBundleLocalization(bundle, locale).getString(getPropertyId() + ".description");
         } catch (Exception e) {
             return this.getDescription();
         }
+    }
+
+    public String getPropertyId() {
+        return this.getId();
     }
 
     @NotNull
