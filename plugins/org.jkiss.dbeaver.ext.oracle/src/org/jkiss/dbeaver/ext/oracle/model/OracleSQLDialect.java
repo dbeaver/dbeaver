@@ -439,6 +439,11 @@ public class OracleSQLDialect extends JDBCSQLDialect
     }
 
     @Override
+    public boolean supportsAsKeywordBeforeAliasInFromClause() {
+        return false;
+    }
+
+    @Override
     public boolean supportsTableDropCascade() {
         return true;
     }
