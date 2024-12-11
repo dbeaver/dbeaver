@@ -659,6 +659,10 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 }
                 for (Object[] keyValue : keyValues) {
                     for (int i = 0; i < keyValue.length; i++) {
+                        if (i >= keyColumns.size()) {
+                            log.debug("Internal error: too many dictionary key values: " + keyValue.length);
+                            continue;
+                        }
                         Object cellValue = keyValue[i];
                         keyValueHandler.get(i).bindValueObject(session, dbStat, keyColumns.get(i), paramPos++, cellValue);
                     }
