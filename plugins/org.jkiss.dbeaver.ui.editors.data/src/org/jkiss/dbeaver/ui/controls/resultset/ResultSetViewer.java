@@ -71,6 +71,8 @@ import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.*;
 import org.jkiss.dbeaver.registry.BasePolicyDataProvider;
+import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
+import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.registry.data.hints.ValueHintProviderDescriptor;
 import org.jkiss.dbeaver.registry.data.hints.ValueHintRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -3000,8 +3002,21 @@ public class ResultSetViewer extends Viewer
     }
 
     private void fillAttributeHintsMenu(IMenuManager menuManager, DBDAttributeBinding attr) {
+        Map<ValueHintProviderDescriptor, UIPropertyConfiguratorDescriptor> configurators = new LinkedHashMap<>();
         for (ValueHintProviderDescriptor hd : ValueHintRegistry.getInstance().getHintDescriptors()) {
             menuManager.add(new HintEnablementAction(this, hd));
+
+            UIPropertyConfiguratorDescriptor configurator = UIPropertyConfiguratorRegistry.getInstance().getDescriptor(hd.getInstance());
+            if (configurator != null) {
+                configurators.put(hd, configurator);
+            }
+        }
+
+        if (!configurators.isEmpty()) {
+            menuManager.add(new Separator());
+            for (Map.Entry<ValueHintProviderDescriptor, UIPropertyConfiguratorDescriptor> entry : configurators.entrySet()) {
+                menuManager.add(new HintConfigurationAction(this, entry.getKey(), entry.getValue()));
+            }
         }
     }
 
