@@ -96,8 +96,8 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
                     SQLQueryResultColumn leftColumnDef = left.resolveColumn(statistics.getMonitor(), column.getName());
                     SQLQueryResultColumn rightColumnDef = right.resolveColumn(statistics.getMonitor(), column.getName());
                     if (leftColumnDef != null && rightColumnDef != null) {
-                        symbol.setSymbolClass(SQLQuerySymbolClass.COLUMN);
                         symbol.setDefinition(column); // TODO multiple definitions per symbol
+                        symbol.setSymbolClass(SQLQuerySymbolClass.COLUMN);
                     } else {
                         if (leftColumnDef != null) {
                             statistics.appendError(column, "Column " + column.getName() + " not found to the left of join");
