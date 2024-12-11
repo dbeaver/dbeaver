@@ -284,13 +284,13 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
         } else if (!quote) {
             if (hasQuotes ||
                 value.contains(delimiter) ||
-                value.indexOf('\r') != -1 ||
-                value.indexOf('\n') != -1 ||
                 value.contains(rowDelimiter))
             {
                 quote = true;
             }
         }
+
+        value = value.replaceAll("\\r\\n|\\r|\\n", "¶");
 
         if (quote && hasQuotes) {
             // escape quotes with double quotes
