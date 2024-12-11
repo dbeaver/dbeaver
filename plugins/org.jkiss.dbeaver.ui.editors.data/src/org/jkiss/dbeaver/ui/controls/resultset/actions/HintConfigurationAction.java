@@ -16,33 +16,72 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.actions;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Shell;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
-import org.jkiss.dbeaver.registry.data.hints.ValueHintProviderDescriptor;
+import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
 public class HintConfigurationAction extends AbstractResultSetViewerAction {
-    private final ValueHintProviderDescriptor descriptor;
-    private final UIPropertyConfiguratorDescriptor configurator;
+    private static final Log log = Log.getLog(HintConfigurationAction.class);
+
+    private final DBDAttributeBinding attr;
+    private final DBDValueHint hint;
+    private final UIPropertyConfiguratorDescriptor configDescriptor;
 
     public HintConfigurationAction(
-        ResultSetViewer resultSetViewer,
-        ValueHintProviderDescriptor hd,
-        UIPropertyConfiguratorDescriptor configurator
+        @NotNull ResultSetViewer resultSetViewer,
+        @NotNull DBDAttributeBinding attr,
+        @NotNull DBDValueHint hint,
+        @NotNull UIPropertyConfiguratorDescriptor configDescriptor
     ) {
-        super(resultSetViewer, hd.getLabel());
-        this.descriptor = hd;
-        this.configurator = configurator;
-        setToolTipText("Configure " + hd.getDescription());
-    }
-
-    @Override
-    public boolean isChecked() {
-        return descriptor.isEnabled();
+        super(resultSetViewer, hint.getHintDescription() + " ...");
+        this.attr = attr;
+        this.hint = hint;
+        this.configDescriptor = configDescriptor;
+        setToolTipText(hint.getHintDescription());
     }
 
     @Override
     public void run() {
-        //getResultSetViewer().refreshData(null);
+        ConfigDialog dialog = new ConfigDialog(getResultSetViewer().getSite().getShell());
+        if (dialog.open() == IDialogConstants.OK_ID) {
+            getResultSetViewer().refreshData(null);
+        }
+    }
+
+    private class ConfigDialog extends BaseDialog {
+
+        private IObjectPropertyConfigurator<DBDValueHint, DBDAttributeBinding> configurator;
+
+        public ConfigDialog(Shell parentShell) {
+            super(parentShell, hint.getHintDescription(), null);
+        }
+
+        @Override
+        protected Composite createDialogArea(Composite parent) {
+            Composite composite = super.createDialogArea(parent);
+            try {
+                configurator = HintConfigurationAction.this.configDescriptor.createConfigurator();
+                configurator.createControl(composite, hint, () -> {});
+                configurator.loadSettings(attr);
+            } catch (Exception e) {
+                log.error(e);
+            }
+            return composite;
+        }
+
+        @Override
+        protected void okPressed() {
+            configurator.saveSettings(attr);
+            super.okPressed();
+        }
     }
 
 }

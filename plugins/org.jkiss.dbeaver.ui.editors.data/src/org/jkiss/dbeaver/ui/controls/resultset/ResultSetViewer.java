@@ -53,7 +53,9 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
+import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
@@ -2972,7 +2974,7 @@ public class ResultSetViewer extends Viewer
             viewMenu.add(new Separator());
             MenuManager hintsMenu = new MenuManager(ResultSetMessages.controls_resultset_viewer_action_view_hints);
             hintsMenu.setRemoveAllWhenShown(true);
-            hintsMenu.addMenuListener(manager12 -> fillAttributeHintsMenu(manager12, attr));
+            hintsMenu.addMenuListener(manager12 -> fillAttributeHintsMenu(manager12, attr, row));
             viewMenu.add(hintsMenu);
         }
 
@@ -3001,21 +3003,29 @@ public class ResultSetViewer extends Viewer
         viewMenu.add(new DataFormatsPreferencesAction(this));
     }
 
-    private void fillAttributeHintsMenu(IMenuManager menuManager, DBDAttributeBinding attr) {
-        Map<ValueHintProviderDescriptor, UIPropertyConfiguratorDescriptor> configurators = new LinkedHashMap<>();
+    private void fillAttributeHintsMenu(IMenuManager menuManager, DBDAttributeBinding attr, ResultSetRow row) {
+        Object cellValue = getModel().getCellValue(attr, row);
+        Map<DBDValueHint, UIPropertyConfiguratorDescriptor> configurators = new LinkedHashMap<>();
         for (ValueHintProviderDescriptor hd : ValueHintRegistry.getInstance().getHintDescriptors()) {
             menuManager.add(new HintEnablementAction(this, hd));
 
-            UIPropertyConfiguratorDescriptor configurator = UIPropertyConfiguratorRegistry.getInstance().getDescriptor(hd.getInstance());
-            if (configurator != null) {
-                configurators.put(hd, configurator);
+            DBDValueHint[] valueHint = hd.getInstance().getValueHint(
+                getModel().getHintContext(), attr, row, cellValue, EnumSet.of(DBDValueHint.HintType.STRING), DBDValueHintProvider.OPTION_INLINE);
+            if (valueHint == null) {
+                continue;
+            }
+            for (DBDValueHint hint : valueHint) {
+                UIPropertyConfiguratorDescriptor configurator = UIPropertyConfiguratorRegistry.getInstance().getDescriptor(hint);
+                if (configurator != null) {
+                    configurators.put(hint, configurator);
+                }
             }
         }
 
         if (!configurators.isEmpty()) {
             menuManager.add(new Separator());
-            for (Map.Entry<ValueHintProviderDescriptor, UIPropertyConfiguratorDescriptor> entry : configurators.entrySet()) {
-                menuManager.add(new HintConfigurationAction(this, entry.getKey(), entry.getValue()));
+            for (Map.Entry<DBDValueHint, UIPropertyConfiguratorDescriptor> entry : configurators.entrySet()) {
+                menuManager.add(new HintConfigurationAction(this, attr, entry.getKey(), entry.getValue()));
             }
         }
     }
