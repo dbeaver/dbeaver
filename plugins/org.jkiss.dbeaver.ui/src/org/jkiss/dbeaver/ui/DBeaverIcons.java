@@ -107,7 +107,8 @@ public class DBeaverIcons
     public static ImageDescriptor getImageDescriptor(@NotNull DBPImage image) {
         return getIconDescriptor(image, true).imageDescriptor; 
     }
-    
+
+    @NotNull
     private static IconDescriptor getIconDescriptor(DBPImage image, boolean useCache) {
         if (image == null) {
             return getIconDescriptor(DBIcon.TYPE_UNKNOWN, useCache);

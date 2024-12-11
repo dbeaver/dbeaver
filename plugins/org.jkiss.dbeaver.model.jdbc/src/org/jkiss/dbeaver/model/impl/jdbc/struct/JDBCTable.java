@@ -162,6 +162,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         appendSelectSource(monitor, query, tableAlias, rowIdAttribute);
         query.append(" FROM ").append(getTableName());
         if (tableAlias != null) {
+            if (dataSource.getSQLDialect().supportsAsKeywordBeforeAliasInFromClause()) {
+                query.append(" AS");
+            }
             query.append(" ").append(tableAlias); //$NON-NLS-1$
         }
         appendExtraSelectParameters(query);
@@ -562,42 +565,79 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     @Override
     public List<DBDLabelValuePair> getDictionaryValues(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBSEntityAttribute keyColumn,
-        @NotNull List<Object> keyValues,
-        @Nullable List<DBDAttributeValue> preceedingKeys,
+        @NotNull List<DBSEntityAttribute> keyColumns,
+        @NotNull List<Object[]> keyValues,
+        @Nullable List<DBDAttributeValue[]> preceedingKeys,
         boolean sortByValue,
-        boolean sortAsc) throws DBException
+        boolean sortAsc,
+        boolean omitNonDescriptive) throws DBException
     {
-        DBDValueHandler keyValueHandler = DBUtils.findValueHandler(keyColumn.getDataSource(), keyColumn);
+        if (keyColumns.isEmpty()) {
+            throw new DBException("Empty key columns");
+        }
+        String descColumns = DBVUtils.getDictionaryDescriptionColumns(monitor, keyColumns.get(0));
+        if (omitNonDescriptive && (descColumns == null || descColumns.equals(DBUtils.getQuotedIdentifier(keyColumns.get(0))))) {
+            return Collections.emptyList();
+        }
+
+        List<DBDValueHandler> keyValueHandler = keyColumns.stream()
+            .map(c -> DBUtils.findValueHandler(c.getDataSource(), c)).toList();
 
         StringBuilder query = new StringBuilder();
-        query.append("SELECT ").append(DBUtils.getQuotedIdentifier(keyColumn));
+        query.append("SELECT ");
+        for (int i = 0; i < keyColumns.size(); i++) {
+            DBSEntityAttribute keyColumn = keyColumns.get(i);
+            if (i > 0) query.append(",");
+            query.append(DBUtils.getQuotedIdentifier(keyColumn));
+        }
 
-        String descColumns = DBVUtils.getDictionaryDescriptionColumns(monitor, keyColumn);
         if (descColumns != null) {
             query.append(", ").append(descColumns);
         }
         query.append(" FROM ").append(DBUtils.getObjectFullName(this, DBPEvaluationContext.DML)).append(" WHERE ");
         boolean hasCond = false;
-        // Preceeding keys
+        // Leading keys
         if (preceedingKeys != null && !preceedingKeys.isEmpty()) {
-            for (DBDAttributeValue pk : preceedingKeys) {
-                if (hasCond) query.append(" AND ");
-                query.append(DBUtils.getQuotedIdentifier(getDataSource(), pk.getAttribute().getName())).append(" = ?");
-                hasCond = true;
+            for (DBDAttributeValue[] pk : preceedingKeys) {
+                for (DBDAttributeValue pkColumn : pk) {
+                    if (hasCond) query.append(" AND ");
+                    hasCond = true;
+                    query.append(DBUtils.getQuotedIdentifier(getDataSource(), pkColumn.getAttribute().getName())).append(" = ?");
+                }
             }
         }
         if (hasCond) query.append(" AND ");
-        query.append(DBUtils.getQuotedIdentifier(keyColumn)).append(" IN (");
-        for (int i = 0; i < keyValues.size(); i++) {
-            if (i > 0) query.append(",");
-            query.append("?");
+        if (keyColumns.size() == 1) {
+            // For single column key use IN
+            query.append(DBUtils.getQuotedIdentifier(keyColumns.get(0))).append(" IN (");
+            for (int i = 0; i < keyValues.size(); i++) {
+                if (i > 0) query.append(",");
+                query.append("?");
+            }
+            query.append(")");
+        } else {
+            // For multi-column keys use series of OR
+            query.append("(");
+            for (int i = 0; i < keyValues.size(); i++) {
+                if (i > 0) query.append(" OR ");
+                query.append("(");
+                for (int j = 0; j < keyColumns.size(); j++) {
+                    if (j > 0) query.append(" AND ");
+                    DBSEntityAttribute keyAttr = keyColumns.get(j);
+                    query.append(DBUtils.getQuotedIdentifier(keyAttr)).append("=?");
+                }
+                query.append(")");
+            }
+            query.append(")");
         }
-        query.append(")");
 
         query.append(" ORDER BY ");
         if (sortByValue) {
-            query.append(DBUtils.getQuotedIdentifier(keyColumn));
+            for (int j = 0; j < keyColumns.size(); j++) {
+                if (j > 0) query.append(",");
+                DBSEntityAttribute keyAttr = keyColumns.get(j);
+                query.append(DBUtils.getQuotedIdentifier(keyAttr));
+            }
         } else {
             // Sort by description
             query.append(descColumns);
@@ -610,18 +650,23 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, false)) {
                 int paramPos = 0;
                 if (preceedingKeys != null && !preceedingKeys.isEmpty()) {
-                    for (DBDAttributeValue precAttribute : preceedingKeys) {
-                        DBDValueHandler precValueHandler = DBUtils.findValueHandler(session, precAttribute.getAttribute());
-                        precValueHandler.bindValueObject(session, dbStat, precAttribute.getAttribute(), paramPos++, precAttribute.getValue());
+                    for (DBDAttributeValue[] precAttribute : preceedingKeys) {
+                        for (DBDAttributeValue precAttrValue : precAttribute) {
+                            DBDValueHandler precValueHandler = DBUtils.findValueHandler(session, precAttrValue.getAttribute());
+                            precValueHandler.bindValueObject(session, dbStat, precAttrValue.getAttribute(), paramPos++, precAttrValue.getValue());
+                        }
                     }
                 }
-                for (Object value : keyValues) {
-                    keyValueHandler.bindValueObject(session, dbStat, keyColumn, paramPos++, value);
+                for (Object[] keyValue : keyValues) {
+                    for (int i = 0; i < keyValue.length; i++) {
+                        Object cellValue = keyValue[i];
+                        keyValueHandler.get(i).bindValueObject(session, dbStat, keyColumns.get(i), paramPos++, cellValue);
+                    }
                 }
                 dbStat.setLimit(0, keyValues.size());
                 if (dbStat.executeStatement()) {
                     try (DBCResultSet dbResult = dbStat.openResultSet()) {
-                        return DBVUtils.readDictionaryRows(session, keyColumn, keyValueHandler, dbResult, true, false);
+                        return DBVUtils.readDictionaryRows(session, keyColumns, keyValueHandler, dbResult, true, false);
                     }
                 } else {
                     return Collections.emptyList();
@@ -837,7 +882,13 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 dbStat.setLimit(0, maxResults);
                 if (dbStat.executeStatement()) {
                     try (DBCResultSet dbResult = dbStat.openResultSet()) {
-                        return DBVUtils.readDictionaryRows(session, keyColumn, keyValueHandler, dbResult, true, false);
+                        return DBVUtils.readDictionaryRows(
+                            session,
+                            Collections.singletonList(keyColumn),
+                            Collections.singletonList(keyValueHandler),
+                            dbResult,
+                            true,
+                            false);
                     }
                 } else {
                     return Collections.emptyList();
@@ -1170,7 +1221,13 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         private List<DBDLabelValuePair> readValues(@NotNull DBCStatement dbStat) throws DBException {
             if (dbStat.executeStatement()) {
                 try (DBCResultSet dbResult = dbStat.openResultSet()) {
-                    return DBVUtils.readDictionaryRows(session, keyColumn, keyValueHandler, dbResult, true, false);
+                    return DBVUtils.readDictionaryRows(
+                        session,
+                        Collections.singletonList(keyColumn),
+                        Collections.singletonList(keyValueHandler),
+                        dbResult,
+                        true,
+                        false);
                 }
             } else {
                 return Collections.emptyList();
@@ -1264,7 +1321,12 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             }
             // handle custom expression for description assuming it returns string
             if (CommonUtils.isNotEmpty(descColumns) && (descAttributes == null || descAttributes.isEmpty())) {
-                JDBCStringValueHandler.INSTANCE.bindValueObject(session, dbStat, null, paramPos++, "%" + pattern + "%");
+                JDBCStringValueHandler.INSTANCE.bindValueObject(
+                    session,
+                    dbStat,
+                    null, // It is ok to pass null here because JDBCStringValueHandler doesn't use attr type
+                    paramPos++,
+                    "%" + pattern + "%");
             }
         }
         

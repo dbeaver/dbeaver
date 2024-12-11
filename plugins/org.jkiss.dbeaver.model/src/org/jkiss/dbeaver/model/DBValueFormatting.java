@@ -322,7 +322,7 @@ public final class DBValueFormatting {
             // Do not append ... for native formatter - it may contain expressions
             return string;
         }
-        return string + "..." + " [" + data.length + "]";
+        return string + "...";
     }
 
     @NotNull
