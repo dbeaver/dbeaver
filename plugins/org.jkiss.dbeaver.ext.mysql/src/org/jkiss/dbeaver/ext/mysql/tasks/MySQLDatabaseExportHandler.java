@@ -109,7 +109,7 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
         if (settings.isNoCreateStatements()) {
             cmd.add("--no-create-info"); //$NON-NLS-1$
         } else {
-            if (CommonUtils.isEmpty(arg.getTables())) {
+            if (CommonUtils.isEmpty(arg.getTables()) && !settings.isNoRoutines()) {
                 cmd.add("--routines"); //$NON-NLS-1$
             }
         }

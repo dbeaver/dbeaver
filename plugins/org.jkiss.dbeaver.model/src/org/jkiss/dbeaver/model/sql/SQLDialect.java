@@ -275,6 +275,7 @@ public interface SQLDialect {
 
     boolean supportsAliasInUpdate();
 
+    boolean supportsAsKeywordBeforeAliasInFromClause();
     /**
      * Column name to list all table columns. Usually asterisk (*).
      */
