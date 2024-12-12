@@ -149,7 +149,7 @@ public class ResultSetViewer extends Viewer
     private static final String TOOLBAR_EXPORT_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.controls.resultset.status.exportCmd";
     private static final String TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.controls.resultset.status";
     private static final String TOOLBAR_CONFIGURATION_VISIBLE_PROPERTY = "org.jkiss.dbeaver.ui.toolbar.configuration.visible";
-    
+
     private static final String CONFIRM_SERVER_SIDE_ORDERING_UNAVAILABLE = "org.jkiss.dbeaver.sql.resultset.serverSideOrderingUnavailable";
 
     private static final int THEME_UPDATE_DELAY_MS = 250;
@@ -1701,12 +1701,12 @@ public class ResultSetViewer extends Viewer
             }
         }
     };
-    
+
     private void createStatusBar() {
         ActionUtils.addPropertyEvaluationRequestListener(propertyEvaluationRequestListener);
-        
+
         final IMenuService menuService = getSite().getService(IMenuService.class);
-        
+
         Composite statusComposite = UIUtils.createPlaceholder(viewerPanel, 3);
         statusComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
@@ -1975,7 +1975,7 @@ public class ResultSetViewer extends Viewer
     private void dispose()
     {
         ActionUtils.removePropertyEvaluationRequestListener(propertyEvaluationRequestListener);
-        
+
         if (!themeUpdateJob.isCanceled()) {
             themeUpdateJob.cancel();
         }
@@ -2326,7 +2326,7 @@ public class ResultSetViewer extends Viewer
                     ConfirmationDialog.WARNING,
                     ResultSetPreferences.CONFIRM_ORDER_RESULTSET,
                     ConfirmationDialog.QUESTION,
-                    columnElement.getName()) != IDialogConstants.YES_ID) 
+                    columnElement.getName()) != IDialogConstants.YES_ID)
                 {
                     return;
                 }
@@ -4773,7 +4773,7 @@ public class ResultSetViewer extends Viewer
             listener.onModelPrepared();
         }
     }
-    
+
     private void fireQueryExecuted(String query, StatResultSet statistics, String errorMessage) {
         for (IResultSetListener listener : getListenersCopy()) {
             listener.onQueryExecuted(query, statistics, errorMessage);
@@ -4871,6 +4871,8 @@ public class ResultSetViewer extends Viewer
     }
 
     class HistoryStateItem {
+        private static final int HISTORY_STATE_ITEM_MAXIMAL_LENGTH = 50;
+
         DBSDataContainer dataContainer;
         DBDDataFilter filter;
         int rowNumber;
@@ -4888,6 +4890,9 @@ public class ResultSetViewer extends Viewer
                 StringBuilder condBuffer = new StringBuilder();
                 SQLUtils.appendConditionString(filter, context.getDataSource(), null, condBuffer, true);
                 desc += " [" + condBuffer + "]";
+            }
+            if (desc != null && desc.length() > HISTORY_STATE_ITEM_MAXIMAL_LENGTH) {
+                desc = desc.substring(0, HISTORY_STATE_ITEM_MAXIMAL_LENGTH) + "...";
             }
             return desc;
         }
