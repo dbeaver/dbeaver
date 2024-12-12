@@ -43,6 +43,7 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
     private Button removeDefiner;
     private Button binaryInHex;
     private Button noData;
+    private Button noRoutines;
 
     MySQLExportWizardPageSettings(MySQLExportWizard wizard)
     {
@@ -92,6 +93,9 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
         noData = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_no_data, wizard.getSettings().isNoData());
         noData.addSelectionListener(changeListener);
 
+        noRoutines = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_no_routines, wizard.getSettings().isNoRoutines());
+        noRoutines.addSelectionListener(changeListener);
+
         Group outputGroup = UIUtils.createControlGroup(composite, MySQLUIMessages.tools_db_export_wizard_page_settings_group_output, 2, GridData.FILL_HORIZONTAL, 0);
         createOutputFolderInput(outputGroup, wizard.getSettings());
         createExtraArgsInput(outputGroup);
@@ -129,6 +133,7 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
         settings.setRemoveDefiner(removeDefiner.getSelection());
         settings.setBinariesInHex(binaryInHex.getSelection());
         settings.setNoData(noData.getSelection());
+        settings.setNoRoutines(noRoutines.getSelection());
     }
 
     @Override

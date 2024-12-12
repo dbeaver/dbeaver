@@ -10,5 +10,5 @@
   </parent>
   <artifactId>org.jkiss.dbeaver.model.lsm.test</artifactId>
   <version>1.0.6-SNAPSHOT</version>
-  <packaging>eclipse-plugin</packaging>
+  <packaging>eclipse-test-plugin</packaging>
 </project>
