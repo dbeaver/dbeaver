@@ -174,6 +174,8 @@ public abstract class ObjectContainerSelectorPanel extends Composite
         });
 
         loadHistory();
+
+        updateToolTips();
     }
 
     public void checkValidContainerNode(DBNNode node) throws DBException
