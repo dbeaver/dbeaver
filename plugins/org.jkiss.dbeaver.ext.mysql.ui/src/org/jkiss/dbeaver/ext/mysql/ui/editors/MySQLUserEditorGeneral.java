@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.ui.editors.ControlPropertyCommandListener;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * MySQLUserEditorGeneral
@@ -192,10 +193,10 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
                             isLoaded = false;
                             return null;
                         }
-                        List<MySQLPrivilege> privList = dbObj.getDataSource().getPrivilegesByKind(monitor, MySQLPrivilege.Kind.ADMIN);
-                        // Remove proxy (it is not singleton)
-                        privList.removeIf(priv -> priv.getName().equalsIgnoreCase("proxy"));
-                        return privList;
+                        return dbObj.getDataSource().getPrivilegesByKind(monitor, MySQLPrivilege.Kind.ADMIN)
+                            .stream()
+                            .filter(p -> !p.getName().equalsIgnoreCase("proxy"))
+                            .toList();
                     } catch (DBException e) {
                         isLoaded = false;
                         throw new InvocationTargetException(e);
