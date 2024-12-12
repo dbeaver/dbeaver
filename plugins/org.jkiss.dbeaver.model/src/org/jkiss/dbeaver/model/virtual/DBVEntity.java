@@ -697,11 +697,12 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         return true;
     }
 
+    @NotNull
     @Override
     public DBSDictionaryAccessor getDictionaryAccessor(
-        DBRProgressMonitor monitor,
+        @NotNull DBRProgressMonitor monitor,
         List<DBDAttributeValue> precedingKeys,
-        DBSEntityAttribute keyColumn,
+        @NotNull DBSEntityAttribute keyColumn,
         boolean sortAsc,
         boolean sortByDesc
     ) throws DBException {
@@ -765,6 +766,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             return Collections.emptyList();
         }
         
+        @NotNull
         @Override
         public List<DBDLabelValuePair> getSimilarValuesNear(
             @NotNull Object pattern, boolean caseInsensitive, boolean byDesc, 
@@ -820,10 +822,10 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
 
     @NotNull
     @Override
-    public List<DBDLabelValuePair> getDictionaryValues(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAttribute keyColumn, @NotNull List<Object> keyValues, @Nullable List<DBDAttributeValue> preceedingKeys, boolean sortByValue, boolean sortAsc) throws DBException {
+    public List<DBDLabelValuePair> getDictionaryValues(@NotNull DBRProgressMonitor monitor, @NotNull List<DBSEntityAttribute> keyColumns, @NotNull List<Object[]> keyValues, @Nullable List<DBDAttributeValue[]> preceedingKeys, boolean sortByValue, boolean sortAsc, boolean omitNonDescriptive) throws DBException {
         DBSEntity realEntity = getRealEntity(monitor);
-        return realEntity instanceof DBSDictionary ?
-            ((DBSDictionary) realEntity).getDictionaryValues(monitor, keyColumn, keyValues, preceedingKeys, sortByValue, sortAsc) :
+        return realEntity instanceof DBSDictionary dictionary ?
+            dictionary.getDictionaryValues(monitor, keyColumns, keyValues, preceedingKeys, sortByValue, sortAsc, false) :
             Collections.emptyList();
     }
 

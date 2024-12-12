@@ -595,6 +595,11 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     }
 
     @Override
+    public boolean supportsAsKeywordBeforeAliasInFromClause() {
+        return true;
+    }
+
+    @Override
     public boolean supportsAliasInUpdate() {
         return false;
     }

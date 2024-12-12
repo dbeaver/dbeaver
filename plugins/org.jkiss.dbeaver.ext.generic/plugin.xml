@@ -873,7 +873,7 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/orientechnologies/orientdb-jdbc"
                     categories="graph">
-                    <file type="jar" path="maven:/com.orientechnologies:orientdb-jdbc:RELEASE[1.7]"/>
+                    <file type="jar" path="maven:/com.orientechnologies:orientdb-jdbc:RELEASE"/>
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
 
                     <parameter name="supports-truncate" value="false"/>

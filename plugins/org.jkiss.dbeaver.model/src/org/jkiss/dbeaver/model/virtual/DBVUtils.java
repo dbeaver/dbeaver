@@ -210,8 +210,8 @@ public abstract class DBVUtils {
     @NotNull
     public static List<DBDLabelValuePair> readDictionaryRows(
         @NotNull DBCSession session,
-        @NotNull DBSEntityAttribute valueAttribute,
-        @NotNull DBDValueHandler valueHandler,
+        @NotNull List<DBSEntityAttribute> valueAttributes,
+        @NotNull List<DBDValueHandler> valueHandlers,
         @NotNull DBCResultSet dbResult,
         boolean formatValues,
         boolean containsCount) throws DBCException
@@ -233,41 +233,45 @@ public abstract class DBVUtils {
                 break;
             }
             // Get value and description
-            Object keyValue = valueHandler.fetchValueObject(session, dbResult, valueAttribute, 0);
-            if (DBUtils.isNullValue(keyValue)) {
-                if (hasNulls) {
-                    continue;
+            Object[] keyValues = new Object[valueAttributes.size()];
+            for (int i = 0; i < valueAttributes.size(); i++) {
+                Object keyValue = valueHandlers.get(i).fetchValueObject(session, dbResult, valueAttributes.get(i), i);
+                if (DBUtils.isNullValue(keyValue)) {
+                    if (hasNulls) {
+                        continue;
+                    }
+                    hasNulls = true;
                 }
-                hasNulls = true;
-            }
-            if (formatValues && keyValue instanceof Date) {
-                // Convert dates into string to avoid collisions
-                keyValue = valueHandler.getValueDisplayString(valueAttribute, keyValue, DBDDisplayFormat.UI);
+                if (formatValues && keyValue instanceof Date) {
+                    // Convert dates into string to avoid collisions
+                    keyValue = valueHandlers.get(i).getValueDisplayString(valueAttributes.get(i), keyValue, DBDDisplayFormat.UI);
+                }
+                keyValues[i] = keyValue;
             }
             String keyLabel;
             long keyCount = 0;
-            if (metaColumns.size() > 1) {
+            {
                 StringBuilder keyLabel2 = new StringBuilder();
-                for (int i = 1; i < colHandlers.size(); i++) {
+                for (int i = valueAttributes.size(); i < colHandlers.size(); i++) {
                     Object descValue = colHandlers.get(i).fetchValueObject(session, dbResult, metaColumns.get(i), i);
                     if (containsCount && i == colHandlers.size() - 1) {
                         // The last one column is the `count(*)`
                         keyCount = CommonUtils.toLong(descValue);
                         break;
                     }
-                    if (keyLabel2.length() > 0) {
+                    if (!keyLabel2.isEmpty()) {
                         keyLabel2.append(columnDivider);
                     }
                     keyLabel2.append(colHandlers.get(i).getValueDisplayString(metaColumns.get(i), descValue, DBDDisplayFormat.NATIVE));
                 }
                 keyLabel = keyLabel2.toString();
-            } else {
-                keyLabel = valueHandler.getValueDisplayString(valueAttribute, keyValue, DBDDisplayFormat.NATIVE);
             }
+            // Little trick - return first key value inline
+            Object finalKeyValue = keyValues.length == 1 ? keyValues[0] : keyValues;
             if (containsCount && keyCount > 0) {
-                values.add(new DBDLabelValuePairExt(keyLabel, keyValue, keyCount));
+                values.add(new DBDLabelValuePairExt(keyLabel, finalKeyValue, keyCount));
             } else {
-                values.add(new DBDLabelValuePair(keyLabel, keyValue));
+                values.add(new DBDLabelValuePair(keyLabel, finalKeyValue));
             }
         }
         return values;

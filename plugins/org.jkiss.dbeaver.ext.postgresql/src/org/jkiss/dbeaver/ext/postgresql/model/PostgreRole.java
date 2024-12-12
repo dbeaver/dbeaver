@@ -354,6 +354,7 @@ public class PostgreRole implements
                             database = getDataSource().getDatabase(databaseName);
                         }
                         for (String parameter : setconfig) {
+                            parameter = quoteParamIfNeed(parameter);
                             extraSettings.add(new PostgreRoleSetting(database, parameter));
                         }
                     }
@@ -362,6 +363,23 @@ public class PostgreRole implements
                 log.error("Can't read extra role configuration parameters.");
             }
         }
+    }
+
+    private String quoteParamIfNeed(String parameter) {
+
+        if (parameter == null || parameter.isEmpty()) {
+            return parameter;
+        }
+        int valueStartingIndex = parameter.indexOf("=");
+        if (valueStartingIndex < 0 || valueStartingIndex + 1 >= parameter.length()) {
+            return parameter;
+        }
+        valueStartingIndex = valueStartingIndex + 1;
+        String value = parameter.substring(valueStartingIndex);
+        if (CommonUtils.isNumber(value) || (value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"')) {
+            return parameter;
+        }
+        return parameter.substring(0, valueStartingIndex) + SQLUtils.quoteString(this, value);
     }
 
     @Override
