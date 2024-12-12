@@ -683,8 +683,8 @@ public class NavigatorUtils {
                 DBCExecutionContext defaultContext = DBUtils.getDefaultContext(dataSource, false);
                 DBCExecutionContextDefaults<?, ?> contextDefaults = defaultContext.getContextDefaults();
                 if (contextDefaults != null) {
-                    showCatalog = contextDefaults.getDefaultCatalog() != null;
-                    showSchema = contextDefaults.getDefaultSchema() != null;
+                    showCatalog = contextDefaults.getDefaultCatalog() != null || contextDefaults.supportsCatalogChange();
+                    showSchema = contextDefaults.getDefaultSchema() != null || contextDefaults.supportsSchemaChange();
                 }
             }
 
