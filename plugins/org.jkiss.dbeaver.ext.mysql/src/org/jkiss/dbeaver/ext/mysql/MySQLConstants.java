@@ -239,4 +239,7 @@ public class MySQLConstants {
     public static final String EXTRA_INFO_DEFAULT_GENERATED = "DEFAULT_GENERATED";
 
     public static final String PRIVILEGE_GRANT_OPTION_NAME = "Grant option";
+
+    // https://dev.mysql.com/doc/mysql-errors/8.4/en/server-error-reference.html
+    public static final int ER_MUST_CHANGE_PASSWORD_LOGIN = 1862;
 }
