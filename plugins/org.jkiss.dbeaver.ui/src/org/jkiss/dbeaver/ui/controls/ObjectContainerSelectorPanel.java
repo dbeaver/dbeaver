@@ -66,6 +66,7 @@ public abstract class ObjectContainerSelectorPanel extends Composite
     private final Combo containerNameCombo;
 
     private final List<HistoryItem> historyItems = new ArrayList<>();
+    private final ToolItem browseButton;
 
     private static class HistoryItem {
         private String containerName;
@@ -128,7 +129,7 @@ public abstract class ObjectContainerSelectorPanel extends Composite
         });
 
         ToolBar buttonToolbar = new ToolBar(this, SWT.FLAT | SWT.RIGHT);
-        final ToolItem browseButton = new ToolItem(buttonToolbar, SWT.NONE);
+        browseButton = new ToolItem(buttonToolbar, SWT.NONE);
         browseButton.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
         browseButton.setText(UIMessages.browse_button_choose);
         browseButton.setToolTipText(UIMessages.browse_button_choose_tooltip);
@@ -156,6 +157,7 @@ public abstract class ObjectContainerSelectorPanel extends Composite
                             NLS.bind(UIMessages.bad_container_node_message, node.getName()), e);
                     }
                 }
+                updateToolTips();
             }
         };
         browseButton.addSelectionListener(new SelectionAdapter() {
@@ -172,6 +174,8 @@ public abstract class ObjectContainerSelectorPanel extends Composite
         });
 
         loadHistory();
+
+        updateToolTips();
     }
 
     public void checkValidContainerNode(DBNNode node) throws DBException
@@ -257,7 +261,20 @@ public abstract class ObjectContainerSelectorPanel extends Composite
                 containerNameCombo.remove(historyIndex);
             }
         }
+        updateToolTips();
         //setSelectedNode(node);
+    }
+
+    private void updateToolTips() {
+        DBNNode selectedNode = getSelectedNode();
+        if (selectedNode instanceof DBNDatabaseNode node) {
+            browseButton.setToolTipText(
+                NLS.bind(
+                    UIMessages.label_choose,
+                    UIUtils.getCatalogSchemaTerms(node.getDataSourceContainer(), true)));
+        } else {
+            browseButton.setToolTipText(UIMessages.browse_button_choose_tooltip);
+        }
     }
 
     private void loadHistory() {

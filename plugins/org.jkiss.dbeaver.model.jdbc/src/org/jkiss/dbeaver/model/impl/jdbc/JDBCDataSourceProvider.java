@@ -61,8 +61,8 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider {
             props = null;
         } else {
             Object driverInstance = driver.getDriverInstance(monitor);
-            if (driverInstance instanceof Driver) {
-                props = readDriverProperties(connectionInfo, (Driver) driverInstance, driver.isPropagateDriverProperties());
+            if (driverInstance instanceof Driver jdbcDriver) {
+                props = readDriverProperties(connectionInfo, jdbcDriver, driver.isPropagateDriverProperties());
             }
         }
         if (props == null) {

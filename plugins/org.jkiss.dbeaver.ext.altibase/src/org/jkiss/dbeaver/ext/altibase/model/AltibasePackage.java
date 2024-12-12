@@ -88,7 +88,7 @@ public class AltibasePackage extends GenericPackage implements DBPStatefulObject
     }
     
     @Override
-    @Property(viewable = false, hidden = true, order = 3)
+    @Property(viewable = false, hidden = true, order = 3, labelProvider = GenericCatalog.CatalogNameTermProvider.class)
     public GenericCatalog getCatalog() {
         return super.getCatalog();
     }
