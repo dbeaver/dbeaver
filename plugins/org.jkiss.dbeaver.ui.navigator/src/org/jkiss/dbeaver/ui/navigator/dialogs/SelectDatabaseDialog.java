@@ -43,9 +43,8 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.itemlist.DatabaseObjectListControl;
 import org.jkiss.utils.CommonUtils;
 
@@ -78,8 +77,8 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
     {
         super(parentShell,
             NLS.bind(
-                UINavigatorMessages.label_choose,
-                NavigatorUtils.getCatalogSchemaTerms(dataSourceContainer, true)),
+                UIMessages.label_choose,
+                UIUtils.getCatalogSchemaTerms(dataSourceContainer, true)),
             true,
             "SchemaSelector", //$NON-NLS-1$
             objects,

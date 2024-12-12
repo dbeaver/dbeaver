@@ -231,10 +231,8 @@ public class UINavigatorMessages extends NLS {
     public static String pref_page_target_link_show_global_settings;
 
     public static String label_active_service_instance;
-    public static String label_choose;
     public static String label_error_list;
     public static String label_instance;
-    public static String label_catalog_schema;
 
     public static String error_deleting_multiple_objects_from_different_datasources_title;
     public static String error_deleting_multiple_objects_from_different_datasources_message;

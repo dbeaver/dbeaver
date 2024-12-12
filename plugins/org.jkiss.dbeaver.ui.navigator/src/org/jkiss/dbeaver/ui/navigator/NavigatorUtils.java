@@ -69,7 +69,6 @@ import org.jkiss.dbeaver.ui.editors.DatabaseEditorContext;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorContextBase;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
-import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerRefresh;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
@@ -673,33 +672,4 @@ public class NavigatorUtils {
         }
     }
 
-    public static String getCatalogSchemaTerms(@Nullable DBPDataSourceContainer dataSourceContainer, boolean checkChangePossibility) {
-        DBPDataSource dataSource = dataSourceContainer == null ? null : dataSourceContainer.getDataSource();
-        if (dataSource != null) {
-            DBPDataSourceInfo dataSourceInfo = dataSource.getInfo();
-            boolean showCatalog = true;
-            boolean showSchema = true;
-            if (checkChangePossibility) {
-                DBCExecutionContext defaultContext = DBUtils.getDefaultContext(dataSource, false);
-                DBCExecutionContextDefaults<?, ?> contextDefaults = defaultContext.getContextDefaults();
-                if (contextDefaults != null) {
-                    showCatalog = contextDefaults.getDefaultCatalog() != null || contextDefaults.supportsCatalogChange();
-                    showSchema = contextDefaults.getDefaultSchema() != null || contextDefaults.supportsSchemaChange();
-                }
-            }
-
-            String catalogTerm = showCatalog ? dataSourceInfo.getCatalogTerm() : null;
-            String schemaTerm = showSchema ? dataSourceInfo.getSchemaTerm() : null;
-            if (CommonUtils.isEmpty(catalogTerm)) {
-                if (!CommonUtils.isEmpty(schemaTerm)) {
-                    return schemaTerm;
-                }
-            } else if (CommonUtils.isEmpty(schemaTerm)) {
-                return catalogTerm;
-            } else {
-                return catalogTerm + "/" + schemaTerm;
-            }
-        }
-        return UINavigatorMessages.label_catalog_schema;
-    }
 }
