@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -32,10 +33,8 @@ import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionContex
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItem;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItem.*;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItemVisitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.model.struct.DBSStructContainer;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -84,7 +83,7 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
     public String visitColumnName(@NotNull SQLColumnNameCompletionItem columnName) {
         String preparedColumnName = this.convertCaseIfNeeded(columnName.columnInfo.symbol.getName());
         String suffix;
-        if (this.queryCompletionContext.getInspectionResult().expectingColumnIntroduction &&
+        if (this.queryCompletionContext.getInspectionResult().expectingColumnIntroduction() &&
             this.aliasMode != SQLTableAliasInsertMode.NONE && this.localKnownColumnNames.contains(preparedColumnName) &&
             columnName.sourceInfo != null && columnName.sourceInfo.aliasOrNull != null) {
             DBPDataSource ds = this.request.getContext().getDataSource();
@@ -114,14 +113,13 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
     @NotNull
     @Override
     public String visitTableName(@NotNull SQLTableNameCompletionItem tableName) {
-        DBSEntity object = tableName.table;
         String suffix;
 
-        if (this.queryCompletionContext.getInspectionResult().expectingTableSourceIntroduction &&
+        if (this.queryCompletionContext.getInspectionResult().expectingTableSourceIntroduction() &&
             this.aliasMode != SQLTableAliasInsertMode.NONE) {
             // It is table name completion after FROM. Auto-generate table alias
-            SQLDialect sqlDialect = SQLUtils.getDialectFromObject(object);
-            String alias = SQLUtils.generateEntityAlias(object,
+            SQLDialect sqlDialect = SQLUtils.getDialectFromObject(tableName.object);
+            String alias = SQLUtils.generateEntityAlias(tableName.object,
                 s -> sqlDialect.getKeywordType(s) != null ||
                     this.queryCompletionContext.getAliasesInUse().contains(s) ||
                     (this.queryCompletionContext.getDataContext() != null
@@ -132,7 +130,7 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
             suffix = "";
         }
 
-        return this.prepareObjectName(object) + suffix;
+        return this.prepareObjectName(tableName) + suffix;
     }
 
     @NotNull
@@ -150,11 +148,28 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
     @NotNull
     @Override
     public String visitNamedObject(@NotNull SQLDbNamedObjectCompletionItem namedObject) {
-        return this.prepareObjectName(namedObject.object);
+        return this.prepareObjectName(namedObject);
+    }
+
+    @Nullable
+    @Override
+    public String visitJoinCondition(@NotNull SQLJoinConditionCompletionItem joinCondition) {
+        return joinCondition.left.apply(this) + " = " + joinCondition.right.apply(this);
+    }
+
+    private <T extends DBSObject> String prepareObjectName(@NotNull SQLDbObjectCompletionItem<?> objectCompletionItem) {
+        String name;
+        if (objectCompletionItem.resolvedContext != null) {
+            String accomplishedPart = this.prepareQualifiedName(objectCompletionItem.object, objectCompletionItem.resolvedContext.object());
+            name = objectCompletionItem.resolvedContext.string() + this.convertCaseIfNeeded(accomplishedPart);
+        } else {
+            name = this.prepareObjectName(objectCompletionItem.object);
+        }
+        return name;
     }
 
     @NotNull
-    private <T extends DBSObject> String prepareObjectName(@NotNull T namedObject) {
+    private <T extends DBSObject> String prepareObjectName(@NotNull DBSObject namedObject) {
         boolean forceFullName = !this.objectBelongsToTheActiveContext(namedObject) || this.activeContextHasConflictingName(namedObject);
 
         String shortName = DBUtils.getQuotedIdentifier(namedObject);
@@ -164,7 +179,7 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
         } else if (this.request.getContext().isUseFQNames() || forceFullName) {
             name = DBUtils.getObjectFullName(namedObject, DBPEvaluationContext.DML);
             if (name.equals(shortName)) { // catalog name is not being included in full name for some reason sometimes
-                name = this.prepareQualifiedName(namedObject);
+                name = this.prepareQualifiedName(namedObject, null);
             }
         } else {
             name = shortName;
@@ -189,8 +204,8 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
         return false;
     }
 
-    private String prepareQualifiedName(@NotNull DBSObject object) {
-        List<String> parts = SQLQueryCompletionItem.prepareQualifiedNameParts(object);
+    private String prepareQualifiedName(@NotNull DBSObject object, DBSObject knownSubroot) {
+        List<String> parts = SQLQueryCompletionItem.prepareQualifiedNameParts(object, knownSubroot);
         return String.join(Character.toString(object.getDataSource().getSQLDialect().getStructSeparator()), parts);
     }
 
