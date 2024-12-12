@@ -76,12 +76,16 @@ public abstract class SQLQueryCompletionItem {
     }
 
     @NotNull
-    public static SQLQueryCompletionItem forRealTable(@NotNull SQLQueryWordEntry filterKey, @NotNull DBSEntity table, boolean isUsed) {
-        return new SQLTableNameCompletionItem(filterKey, table, isUsed);
+    public static SQLQueryCompletionItem forRealTable(
+        @NotNull SQLQueryWordEntry filterKey,
+        @Nullable ContextObjectInfo resolvedContext,
+        @NotNull DBSEntity table, boolean isUsed
+    ) {
+        return new SQLTableNameCompletionItem(filterKey, resolvedContext, table, isUsed);
     }
 
     @NotNull
-    public static SQLQueryCompletionItem forSubsetColumn(
+    public static SQLColumnNameCompletionItem forSubsetColumn(
         @NotNull SQLQueryWordEntry filterKey,
         @NotNull SQLQueryResultColumn columnInfo,
         @Nullable SourceResolutionResult sourceInfo,
@@ -91,10 +95,21 @@ public abstract class SQLQueryCompletionItem {
     }
 
     @NotNull
-    public static SQLQueryCompletionItem forDbObject(@NotNull SQLQueryWordEntry filterKey, @NotNull DBSObject object) {
-        return new SQLDbNamedObjectCompletionItem(filterKey, object);
+    public static SQLQueryCompletionItem forDbObject(
+        @NotNull SQLQueryWordEntry filterKey,
+        @Nullable ContextObjectInfo resolvedContext,
+        @NotNull DBSObject object
+    ) {
+        return new SQLDbNamedObjectCompletionItem(filterKey, resolvedContext, object);
     }
-    
+
+    public static SQLQueryCompletionItem forJoinCondition(
+        @NotNull SQLQueryWordEntry filterKey,
+        @NotNull SQLColumnNameCompletionItem first,
+        @NotNull SQLColumnNameCompletionItem second) {
+        return new SQLJoinConditionCompletionItem(filterKey, first, second);
+    }
+
     public static class SQLRowsSourceAliasCompletionItem extends SQLQueryCompletionItem {
         @NotNull
         public final SQLQuerySymbol symbol;
@@ -168,27 +183,43 @@ public abstract class SQLQueryCompletionItem {
             return visitor.visitColumnName(this);
         }
     }
-    
-    public static class SQLTableNameCompletionItem extends SQLQueryCompletionItem {
-        public final boolean isUsed;
-        @NotNull
-        public final DBSEntity table;
 
-        SQLTableNameCompletionItem(@NotNull SQLQueryWordEntry filterKey, @NotNull DBSEntity table, boolean isUsed) {
+    public abstract static class SQLDbObjectCompletionItem<T extends DBSObject> extends SQLQueryCompletionItem {
+        @Nullable
+        public final ContextObjectInfo resolvedContext;
+        @NotNull
+        public final T object;
+
+        SQLDbObjectCompletionItem(@NotNull SQLQueryWordEntry filterKey, @Nullable ContextObjectInfo resolvedContext, @NotNull T object) {
             super(filterKey);
+            this.resolvedContext = resolvedContext;
+            this.object = object;
+        }
+
+        @NotNull
+        @Override
+        public DBSObject getObject() {
+            return this.object;
+        }
+    }
+
+    public static class SQLTableNameCompletionItem extends SQLDbObjectCompletionItem<DBSEntity> {
+        public final boolean isUsed;
+
+        SQLTableNameCompletionItem(
+            @NotNull SQLQueryWordEntry filterKey,
+            @Nullable ContextObjectInfo resolvedContext,
+            @NotNull DBSEntity table,
+            boolean isUsed
+        ) {
+            super(filterKey, resolvedContext, table);
             this.isUsed = isUsed;
-            this.table = table;
         }
 
         @NotNull
         @Override
         public SQLQueryCompletionItemKind getKind() {
             return this.isUsed ? SQLQueryCompletionItemKind.USED_TABLE_NAME : SQLQueryCompletionItemKind.NEW_TABLE_NAME;
-        }
-        
-        @Override
-        public DBSObject getObject() {
-            return this.table;
         }
 
         @Override
@@ -211,21 +242,20 @@ public abstract class SQLQueryCompletionItem {
             return SQLQueryCompletionItemKind.RESERVED;
         }
 
-        @NotNull
         @Override
         protected <R> R applyImpl(@NotNull SQLQueryCompletionItemVisitor<R> visitor) {
             return visitor.visitReservedWord(this);
         }
     }
 
-    public static class SQLDbNamedObjectCompletionItem extends SQLQueryCompletionItem {
+    public static class SQLDbNamedObjectCompletionItem extends SQLDbObjectCompletionItem<DBSObject>  {
 
-        @NotNull
-        public final DBSObject object;
-
-        SQLDbNamedObjectCompletionItem(@NotNull SQLQueryWordEntry filterKey, @NotNull DBSObject object) {
-            super(filterKey);
-            this.object = object;
+        SQLDbNamedObjectCompletionItem(
+            @NotNull SQLQueryWordEntry filterKey,
+            @Nullable ContextObjectInfo resolvedContext,
+            @NotNull DBSObject object
+        ) {
+            super(filterKey, resolvedContext, object);
         }
 
         @NotNull
@@ -234,25 +264,51 @@ public abstract class SQLQueryCompletionItem {
             return SQLQueryCompletionItemKind.UNKNOWN;
         }
 
-        @NotNull
-        @Override
-        public DBSObject getObject() {
-            return this.object;
-        }
-
         @Override
         protected <R> R applyImpl(SQLQueryCompletionItemVisitor<R> visitor) {
             return visitor.visitNamedObject(this);
         }
     }
 
-    public static List<String> prepareQualifiedNameParts(@NotNull DBSObject object) {
+    public static class SQLJoinConditionCompletionItem extends SQLQueryCompletionItem {
+        @NotNull
+        public final SQLColumnNameCompletionItem left;
+        @NotNull
+        public final SQLColumnNameCompletionItem right;
+
+        SQLJoinConditionCompletionItem(
+            @NotNull SQLQueryWordEntry filterKey,
+            @NotNull SQLColumnNameCompletionItem left,
+            @NotNull SQLColumnNameCompletionItem right
+        ) {
+            super(filterKey);
+            this.left = left;
+            this.right = right;
+        }
+
+        @NotNull
+        @Override
+        public SQLQueryCompletionItemKind getKind() {
+            return SQLQueryCompletionItemKind.JOIN_CONDITION;
+        }
+
+        @Override
+        protected <R> R applyImpl(@NotNull SQLQueryCompletionItemVisitor<R> visitor) {
+            return visitor.visitJoinCondition(this);
+        }
+    }
+
+    public static List<String> prepareQualifiedNameParts(@NotNull DBSObject object, @Nullable DBSObject knownSubroot) {
         LinkedList<String> parts = new LinkedList<>();
-        for (DBSObject o = object; o != null; o = o.getParentObject()) {
+        parts.addFirst(DBUtils.getQuotedIdentifier(object));
+        for (DBSObject o = object.getParentObject(); o != knownSubroot; o = o.getParentObject()) {
             if (o instanceof DBSStructContainer) {
                 parts.addFirst(DBUtils.getQuotedIdentifier(o));
             }
         }
         return parts;
+    }
+
+    public record ContextObjectInfo(@NotNull String string, @NotNull DBSObject object) {
     }
 }

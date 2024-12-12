@@ -32,8 +32,9 @@ import java.util.List;
  */
 public class SQLQueryCombinedContext extends SQLQueryResultTupleContext {
     private final SQLQueryDataContext otherParent;
+    private final boolean isJoin;
 
-    public SQLQueryCombinedContext(@NotNull SQLQueryDataContext left, @NotNull SQLQueryDataContext right) {
+    public SQLQueryCombinedContext(@NotNull SQLQueryDataContext left, @NotNull SQLQueryDataContext right, boolean isJoin) {
         super(
             left,
             STMUtils.combineLists(left.getColumnsList(), right.getColumnsList()),
@@ -41,6 +42,15 @@ public class SQLQueryCombinedContext extends SQLQueryResultTupleContext {
             STMUtils.combineLists(left.getPseudoColumnsList(), right.getPseudoColumnsList())
         );
         this.otherParent = right;
+        this.isJoin = isJoin;
+    }
+
+    public SQLQueryDataContext getRightParent() {
+        return this.otherParent;
+    }
+
+    public boolean isJoin() {
+        return this.isJoin;
     }
 
     @Nullable

@@ -41,6 +41,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNNodeReference;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -49,7 +51,10 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.*;
 import org.jkiss.dbeaver.ui.*;
-import org.jkiss.dbeaver.ui.controls.*;
+import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
+import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
+import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
+import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -1046,7 +1051,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     //////////////////////////////////////////////////////
     // Property source implementation
 
-    private class DefaultListPropertySource extends PropertySourceAbstract {
+    private class DefaultListPropertySource extends PropertySourceAbstract implements DBNNodeReference {
 
         DefaultListPropertySource() {
             super(ObjectListControl.this, ObjectListControl.this, true);
@@ -1067,6 +1072,13 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             return getAllProperties().toArray(new DBPPropertyDescriptor[0]);
         }
 
+        @Override
+        public DBNNode getReferencedNode() {
+            if (ObjectListControl.this instanceof DBNNodeReference nnc) {
+                return nnc.getReferencedNode();
+            }
+            return null;
+        }
     }
 
     //////////////////////////////////////////////////////

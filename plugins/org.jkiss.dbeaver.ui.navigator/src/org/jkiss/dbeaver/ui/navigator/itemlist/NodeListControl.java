@@ -375,7 +375,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
 
     }
 
-    private class NodeListPropertySource extends PropertySourceEditable {
+    private class NodeListPropertySource extends PropertySourceEditable implements DBNNodeReference {
 
         private NodeListPropertySource(DBECommandContext commandContext)
         {
@@ -423,6 +423,11 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         public void setPropertyValue(@Nullable DBRProgressMonitor monitor, Object editableValue, ObjectPropertyDescriptor prop, Object newValue) throws IllegalArgumentException {
             super.setPropertyValue(monitor, editableValue, prop, newValue);
             resetLazyPropertyCache(getCurrentListObject(), prop.getId());
+        }
+
+        @Override
+        public DBNNode getReferencedNode() {
+            return NodeListControl.this.getRootNode();
         }
     }
 
