@@ -794,7 +794,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return isConnectionRefershing;
     }
 
-    @Override
     public void setConnectionRefreshing(boolean connectionRefreshing) {
         this.isConnectionRefershing = connectionRefreshing;
     }

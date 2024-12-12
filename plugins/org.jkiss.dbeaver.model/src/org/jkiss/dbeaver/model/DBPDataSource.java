@@ -101,18 +101,7 @@ public interface DBPDataSource extends DBSInstanceContainer, DBPContextWithAttri
      *
      * @return {@code true} if the connection is being refreshed; otherwise {@code false}.
      */
-    default boolean isConnectionRefreshing(){
+    default boolean isConnectionRefreshing() {
         return false;
     }
-
-    /**
-     * Sets the state of the connection to indicate whether it is currently refreshing.
-     * This default implementation does nothing and can be overridden by implementing classes
-     * to define specific behavior.
-     *
-     * @param connectionRefreshing {@code true} if the connection is being refreshed; {@code false} otherwise.
-     */
-    default void setConnectionRefreshing(boolean connectionRefreshing){
-    }
-
 }
