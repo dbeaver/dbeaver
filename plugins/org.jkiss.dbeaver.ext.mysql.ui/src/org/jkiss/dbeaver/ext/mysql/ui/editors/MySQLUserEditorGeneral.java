@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAdapter;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
@@ -169,33 +170,40 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
     }
 
     @Override
-    public void activatePart()
-    {
+    public void activatePart() {
         if (isLoaded) {
+            return;
+        }
+        DBCExecutionContext executionContext = getExecutionContext();
+        if (executionContext != null) {
             return;
         }
         isLoaded = true;
         LoadingJob.createService(
-            new DatabaseLoadService<List<MySQLPrivilege>>(MySQLUIMessages.editors_user_editor_general_service_load_catalog_privileges, getExecutionContext()) {
+            new DatabaseLoadService<>(
+                MySQLUIMessages.editors_user_editor_general_service_load_catalog_privileges,
+                getExecutionContext()
+            ) {
                 @Override
-                public List<MySQLPrivilege> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                public List<MySQLPrivilege> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException {
                     try {
-                        final List<MySQLPrivilege> privList = getDatabaseObject().getDataSource().getPrivilegesByKind(monitor, MySQLPrivilege.Kind.ADMIN);
-                        for (Iterator<MySQLPrivilege> iterator = privList.iterator(); iterator.hasNext(); ) {
-                            MySQLPrivilege priv = iterator.next();
-                            // Remove proxy (it is not singleton)
-                            if (priv.getName().equalsIgnoreCase("proxy")) {
-                                iterator.remove();
-                            }
+                        var dbObj = getDatabaseObject();
+                        if (dbObj == null) {
+                            isLoaded = false;
+                            return null;
                         }
+                        List<MySQLPrivilege> privList = dbObj.getDataSource().getPrivilegesByKind(monitor, MySQLPrivilege.Kind.ADMIN);
+                        // Remove proxy (it is not singleton)
+                        privList.removeIf(priv -> priv.getName().equalsIgnoreCase("proxy"));
                         return privList;
                     } catch (DBException e) {
+                        isLoaded = false;
                         throw new InvocationTargetException(e);
                     }
                 }
             },
-            pageControl.createLoadVisualizer())
-            .schedule();
+            pageControl.createLoadVisualizer()
+        ).schedule();
     }
 
     @Override
