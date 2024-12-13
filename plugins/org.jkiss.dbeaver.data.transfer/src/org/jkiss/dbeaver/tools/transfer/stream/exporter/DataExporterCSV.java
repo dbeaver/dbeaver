@@ -283,18 +283,21 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
         // check for needed quote
         final boolean hasQuotes = useQuotes && value.indexOf(quoteChar) != -1;
 
+        if (CommonUtils.isNotEmpty(lineFeedEscapeString)) {
+            value = value.replaceAll("\\r\\n|\\r|\\n", lineFeedEscapeString);
+        }
+
         if (quoteStrategy == QuoteStrategy.ALL || (useQuotes && value.isEmpty())) {
             quote = true;
         } else if (!quote) {
             if (hasQuotes ||
                 value.contains(delimiter) ||
+                value.indexOf('\r') != -1 ||
+                value.indexOf('\n') != -1 ||
                 value.contains(rowDelimiter))
             {
                 quote = true;
             }
-        }
-        if (CommonUtils.isNotEmpty(lineFeedEscapeString)) {
-            value = value.replaceAll("\\r\\n|\\r|\\n", lineFeedEscapeString);
         }
 
         if (quote && hasQuotes) {
