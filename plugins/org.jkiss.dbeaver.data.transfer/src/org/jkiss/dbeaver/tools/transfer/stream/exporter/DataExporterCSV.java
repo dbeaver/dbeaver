@@ -59,6 +59,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
     private static final String PROP_QUOTE_NEVER = "quoteNever";
     private static final String PROP_NULL_STRING = "nullString";
     private static final String PROP_FORMAT_NUMBERS = "formatNumbers";
+    private static final String PROP_LINE_FEED_ESCAPE_STRING = "lineFeedEscapeString";
 
     private static final String DEF_QUOTE_CHAR = "\"";
     private boolean formatNumbers;
@@ -87,6 +88,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
     private HeaderPosition headerPosition;
     private HeaderFormat headerFormat;
     private DBPIdentifierCase headerCase;
+    private String lineFeedEscapeString;
     private DBDAttributeBinding[] columns;
 
     private final StringBuilder buffer = new StringBuilder();
@@ -98,6 +100,8 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
         Map<String, Object> properties = site.getProperties();
         this.delimiter = StreamTransferUtils.getDelimiterString(properties, PROP_DELIMITER);
         this.rowDelimiter = StreamTransferUtils.getDelimiterString(properties, PROP_ROW_DELIMITER);
+//        this.lineFeedEscapeString = CommonUtils.toString(properties.get(PROP_LINE_FEED_ESCAPE_STRING), null);
+        this.lineFeedEscapeString = StreamTransferUtils.getDelimiterString(properties, PROP_LINE_FEED_ESCAPE_STRING);
         if (ROW_DELIMITER_DEFAULT.equalsIgnoreCase(this.rowDelimiter.trim())) {
             this.rowDelimiter = GeneralUtils.getDefaultLineSeparator();
         }
@@ -289,8 +293,9 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
                 quote = true;
             }
         }
-
-        value = value.replaceAll("\\r\\n|\\r|\\n", "¶");
+        if (CommonUtils.isNotEmpty(lineFeedEscapeString)) {
+            value = value.replaceAll("\\r\\n|\\r|\\n", lineFeedEscapeString);
+        }
 
         if (quote && hasQuotes) {
             // escape quotes with double quotes
