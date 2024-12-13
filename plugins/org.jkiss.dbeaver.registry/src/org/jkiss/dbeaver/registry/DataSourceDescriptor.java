@@ -1164,7 +1164,7 @@ public class DataSourceDescriptor
         }
 
         resolvedConnectionInfo = new DBPConnectionConfiguration(connectionInfo);
-
+        patchConnectionProperties(monitor, resolvedConnectionInfo);
         // Update auth properties if possible
         lastConnectionError = null;
         try {
@@ -1328,6 +1328,14 @@ public class DataSourceDescriptor
         } finally {
             monitor.done();
         }
+    }
+
+
+    protected void patchConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPConnectionConfiguration resolvedConnectionInfo
+    ) throws DBException {
+
     }
 
     private void terminateChildProcesses() {
