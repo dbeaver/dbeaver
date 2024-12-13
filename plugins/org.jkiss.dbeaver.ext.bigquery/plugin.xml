@@ -33,7 +33,7 @@
                         databaseDocumentationSuffixURL="Database-driver-BigQuery"
                         categories="bigdata,gcp"
                         singleConnection="true">
-                    <file type="jar" path="https://storage.googleapis.com/simba-bq-release/jdbc/SimbaJDBCDriverforGoogleBigQuery42_1.5.0.1001.zip" bundle="!drivers.bigquery"/>
+                    <file type="jar" path="https://storage.googleapis.com/simba-bq-release/jdbc/SimbaJDBCDriverforGoogleBigQuery42_1.5.4.1008.zip" bundle="!drivers.bigquery"/>
                     <file type="license" path="https://www.gnu.org/licenses/lgpl-3.0.txt" bundle="!drivers.bigquery"/>
 
                     <file type="jar" path="drivers/bigquery" bundle="drivers.bigquery"/>

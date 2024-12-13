@@ -118,7 +118,7 @@ public class CubridTable extends GenericTable
 
     @Nullable
     @Override
-    @Property(viewable = true, editable = true, updatable = true, listProvider = OwnerListProvider.class, order = 2)
+    @Property(viewable = true, editable = true, updatable = true, listProvider = OwnerListProvider.class, labelProvider = GenericSchema.SchemaNameTermProvider.class, order = 2)
     public GenericSchema getSchema() {
         return owner;
     }
