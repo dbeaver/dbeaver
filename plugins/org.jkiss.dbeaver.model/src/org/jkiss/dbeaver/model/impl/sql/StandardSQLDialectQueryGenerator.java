@@ -436,7 +436,7 @@ public class StandardSQLDialectQueryGenerator implements SQLQueryGenerator {
     }
 
     @NotNull
-    private static String getConstraintAttributeName(
+    public static String getConstraintAttributeName(
         @NotNull DBPDataSource dataSource,
         @Nullable String conditionTable,
         @NotNull DBDAttributeConstraint constraint,
