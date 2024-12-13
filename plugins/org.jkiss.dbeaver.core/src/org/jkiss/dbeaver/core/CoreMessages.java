@@ -267,7 +267,6 @@ public class CoreMessages extends NLS {
     public static String model_html_read_database_meta_data;
 
     public static String model_navigator_Description;
-    public static String model_navigator_Name;
     public static String model_navigator_load_;
     public static String model_navigator_load_items_;
     public static String model_navigator_Model_root;

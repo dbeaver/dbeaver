@@ -9,6 +9,7 @@ Bundle-Release-Date: 20241223
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ClassPath: .
 Bundle-Activator: org.jkiss.dbeaver.headless.DBeaverTestActivator
+Export-Package: org.jkiss.dbeaver.headless
 Require-Bundle: org.eclipse.osgi,
  org.eclipse.equinox.app,
  org.eclipse.core.runtime,

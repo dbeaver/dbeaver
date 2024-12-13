@@ -113,7 +113,7 @@ public class SQLQueryCompletionProposal implements ICompletionProposal, IComplet
 
     @Override
     public String getDisplayString() {
-        return CommonUtils.isNotEmpty(this.displayString) ? this.displayString : this.replacementString;
+        return CommonUtils.isNotEmpty(this.displayString) ? this.displayString : this.replacementString.replaceAll("[\r\n]", "");
     }
 
     @Override

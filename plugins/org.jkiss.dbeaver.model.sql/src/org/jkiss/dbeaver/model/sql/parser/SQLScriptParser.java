@@ -1096,7 +1096,7 @@ public class SQLScriptParser {
     }
     
     private static class ScriptElementContinuationDetector {
-        private static final Set<Integer> statementStartTokenIds = LSMInspections.prepareOffquerySyntaxInspection().predictedTokensIds;
+        private static final Set<Integer> statementStartTokenIds = LSMInspections.prepareOffquerySyntaxInspection().predictedTokenIds();
 
         private static final Map<SQLDialect, Set<String>> statementStartKeywordsByDialect = Collections.synchronizedMap(new WeakHashMap<>());
         

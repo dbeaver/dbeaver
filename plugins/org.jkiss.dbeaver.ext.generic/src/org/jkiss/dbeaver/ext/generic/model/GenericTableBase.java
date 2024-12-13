@@ -165,7 +165,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
         return tableType;
     }
 
-    @Property(viewable = true, optional = true, order = 3)
+    @Property(viewable = true, optional = true, order = 3, labelProvider = GenericCatalog.CatalogNameTermProvider.class)
     public GenericCatalog getCatalog() {
         if (!CommonUtils.isEmpty(tableCatalogName)) {
             getDataSource().getCatalog(tableCatalogName);
@@ -178,7 +178,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
         return tableCatalogName;
     }
 
-    @Property(viewable = true, optional = true, order = 4)
+    @Property(viewable = true, optional = true, labelProvider = GenericSchema.SchemaNameTermProvider.class, order = 4)
     public GenericSchema getSchema() {
         GenericStructContainer container = getContainer();
         if (!CommonUtils.isEmpty(tableSchemaName)) {

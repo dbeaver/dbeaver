@@ -188,11 +188,10 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
     @NotNull
     private String prepareReplacementString(@NotNull SQLQueryCompletionItem item, @NotNull String text, @NotNull SQLQueryCompletionContext completionContext) {
         LSMInspections.SyntaxInspectionResult inspectionResult = completionContext.getInspectionResult();
-        boolean whitespaceNeeded = item.getKind() == SQLQueryCompletionItemKind.RESERVED
-            || (!text.endsWith(" ") && this.proposalContext.isInsertSpaceAfterProposal() && (
-                (inspectionResult.expectingTableReference && item.getKind().isTableName)
-                ||
-                (inspectionResult.expectingColumnReference && item.getKind().isColumnName)
+        boolean whitespaceNeeded = item.getKind() == SQLQueryCompletionItemKind.RESERVED ||
+            (!text.endsWith(" ") && this.proposalContext.isInsertSpaceAfterProposal() && (
+                (inspectionResult.expectingTableReference() && item.getKind().isTableName) ||
+                (inspectionResult.expectingColumnReference() && item.getKind().isColumnName)
             ));
         return whitespaceNeeded ? text + " " : text;
     }
@@ -216,6 +215,7 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
             case NEW_TABLE_NAME -> DBIcon.TREE_TABLE;
             case USED_TABLE_NAME -> UIIcon.EDIT_TABLE;
             case TABLE_COLUMN_NAME -> DBIcon.TREE_COLUMN;
+            case JOIN_CONDITION -> DBIcon.TREE_CONSTRAINT;
             default -> throw new IllegalStateException("Unexpected completion item kind " + item.getKind());
         };
         return image;

@@ -55,8 +55,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-class DataSourceSerializerModern implements DataSourceSerializer
-{
+public class DataSourceSerializerModern<T extends DataSourceDescriptor> implements DataSourceSerializer<T> {
     // Navigator settings
     static final String ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS = "show-system-objects"; //$NON-NLS-1$
     static final String ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS = "show-util-objects"; //$NON-NLS-1$
@@ -81,13 +80,13 @@ class DataSourceSerializerModern implements DataSourceSerializer
     private static final String CONFIGURATION_FOLDERS = "folders"; //$NON-NLS-1$
     private static final String ENCRYPTED_CONFIGURATION = "secureProject"; //$NON-NLS-1$
 
-    private static final Gson CONFIG_GSON = new GsonBuilder()
+    protected static final Gson CONFIG_GSON = new GsonBuilder()
         .setStrictness(Strictness.LENIENT)
         .serializeNulls()
         .create();
 
     @NotNull
-    private final DataSourceRegistry registry;
+    private final DataSourceRegistry<T> registry;
     // Secure props.
     //  0 level: datasource ID
     //  1 level: object type (connection or handler id)
@@ -95,7 +94,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
     private final Map<String, Map<String, Map<String, String>>> secureProperties = new LinkedHashMap<>();
     private final boolean isDetachedProcess = DBWorkbench.getPlatform().getApplication().isDetachedProcess();
 
-    DataSourceSerializerModern(@NotNull DataSourceRegistry registry) {
+   protected DataSourceSerializerModern(@NotNull DataSourceRegistry<T> registry) {
         this.registry = registry;
     }
 
@@ -104,7 +103,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         DBRProgressMonitor monitor,
         DataSourceConfigurationManager configurationManager,
         DBPDataSourceConfigurationStorage configurationStorage,
-        List<DataSourceDescriptor> localDataSources
+        List<T> localDataSources
     ) throws DBException, IOException {
         ByteArrayOutputStream dsConfigBuffer = new ByteArrayOutputStream(10000);
         try (OutputStreamWriter osw = new OutputStreamWriter(dsConfigBuffer, StandardCharsets.UTF_8)) {
@@ -134,7 +133,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     // Save connections
                     jsonWriter.name("connections");
                     jsonWriter.beginObject();
-                    for (DataSourceDescriptor dataSource : localDataSources) {
+                    for (T dataSource : localDataSources) {
                         // Skip temporary
                         if (!dataSource.isDetached()) {
                             saveDataSource(configurationManager, jsonWriter, dataSource, externalConfigurations);
@@ -582,9 +581,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
                 substitutedDriver = getReplacementDriver(substitutedDriver);
 
-                DataSourceDescriptor dataSource = registry.getDataSource(id);
+                T dataSource = registry.getDataSource(id);
                 boolean newDataSource = (dataSource == null);
-                DataSourceDescriptor oldDataSource = null;
+                T oldDataSource = null;
                 if (newDataSource) {
                     DBPDataSourceOrigin origin;
                     Map<String, Object> originProperties = JSONUtils.deserializeProperties(conObject, TAG_ORIGIN);
@@ -599,17 +598,16 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         }
                         origin = new DataSourceOriginLazy(originID, originProperties, extConfig);
                     }
-                    dataSource = new DataSourceDescriptor(
-                        registry,
+                    dataSource = (T) registry.createDataSource(
                         configurationStorage.isVirtual() ? registry.getDefaultStorage() : configurationStorage,
                         origin,
                         id,
                         originalDriver,
                         substitutedDriver,
-                        new DBPConnectionConfiguration()
-                    );
+                        new DBPConnectionConfiguration());
                 } else {
-                    oldDataSource = new DataSourceDescriptor(dataSource, registry);
+                    oldDataSource = (T) registry.createDataSource(dataSource);
+                    oldDataSource.setId(id);
                     // Clean settings - they have to be loaded later by parser
                     dataSource.getConnectionConfiguration().setProperties(Collections.emptyMap());
                     dataSource.getConnectionConfiguration().setHandlers(Collections.emptyList());
@@ -821,6 +819,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     dataSource.setVirtualModel(dbvModel);
                 }
 
+                deserializeAdditionalProperties(dataSource, conObject);
                 // Add to the list
                 if (newDataSource) {
                     parseResults.addedDataSources.add(dataSource);
@@ -840,6 +839,15 @@ class DataSourceSerializerModern implements DataSourceSerializer
             }
         }
         return connectionConfigurationChanged;
+
+    }
+
+    /**
+     * Deserialize additional datasource properties
+     * @param dataSource - deserializable datasource
+     * @param conObject - full datasource config
+     */
+    protected void deserializeAdditionalProperties(@NotNull T dataSource, @NotNull Map<String, Object> conObject) {
 
     }
 
@@ -1042,14 +1050,24 @@ class DataSourceSerializerModern implements DataSourceSerializer
         json.endObject();
     }
 
-    private void saveDataSource(
+    protected void saveDataSource(
         DataSourceConfigurationManager configurationManager, @NotNull JsonWriter json,
-        @NotNull DataSourceDescriptor dataSource,
+        @NotNull T dataSource,
         @NotNull Map<String, DBPExternalConfiguration> externalConfigurations)
         throws IOException
     {
         json.name(dataSource.getId());
         json.beginObject();
+        serializeDataSource(configurationManager, json, dataSource, externalConfigurations);
+        json.endObject();
+    }
+
+    protected void serializeDataSource(
+        DataSourceConfigurationManager configurationManager,
+        @NotNull JsonWriter json,
+        @NotNull T dataSource,
+        @NotNull Map<String, DBPExternalConfiguration> externalConfigurations
+    ) throws IOException {
         JSONUtils.field(json, RegistryConstants.ATTR_PROVIDER, dataSource.getDriver().getProviderDescriptor().getId());
         JSONUtils.field(json, RegistryConstants.ATTR_DRIVER, dataSource.getDriver().getId());
         if (dataSource.getDriver() != dataSource.getOriginalDriver()) {
@@ -1268,9 +1286,6 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 JSONUtils.serializeProperties(json, RegistryConstants.TAG_CUSTOM_PROPERTIES, props, true);
             }
         }
-
-
-        json.endObject();
     }
 
     private void serializeModifyPermissions(@NotNull JsonWriter json, DBPDataSourcePermissionOwner permissionOwner) throws IOException {
