@@ -150,7 +150,7 @@ public class SQLIndenter {
 
             int indentLength = nonWS - lineOffset;
             StringBuilder indent = createIndent();
-            if (indentLength >= indent.length() && scanner.endsWithDelimiter(lineOffset, lineOffset + line.getLength())) {
+            if (indentLength >= indent.length() && scanner.endsWithDelimiter(lineOffset, lineOffset + line.getLength() - 1)) {
                 SQLParserContext context = new SQLParserContext((DBPDataSource) null, syntaxManager, new SQLRuleManager(syntaxManager), document);
                 SQLScriptElement currentQuery = SQLScriptParser.extractQueryAtPos(context, offset);
 
