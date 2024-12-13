@@ -23,9 +23,9 @@ import org.jkiss.dbeaver.model.sql.semantics.SQLQueryLexicalScopeItem;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryPureResultTupleContext;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.utils.ListNode;
-import org.jkiss.utils.Pair;
 
 import java.util.Collection;
 import java.util.Set;
@@ -94,16 +94,28 @@ public class SQLQueryModel extends SQLQueryNodeModel {
         return node;
     }
 
+    public record LexicalContextResolutionResult(
+        int textOffset,
+        SQLQueryDataContext nearestResultContext,
+        SQLQueryDataContext deepestContext,
+        SQLQueryLexicalScopeItem lexicalItem
+    ) {
+    }
+
     /**
      * Returns nested node of the query model for the specified offset in the source text
      */
-    public Pair<SQLQueryDataContext, SQLQueryLexicalScopeItem> findLexicalContext(int textOffset) {
+    public LexicalContextResolutionResult findLexicalContext(int textOffset) {
         ListNode<SQLQueryNodeModel> stack = ListNode.of(this);
+        SQLQueryDataContext nearestResultContext = this.getResultDataContext();
         SQLQueryDataContext deepestContext;
         { // walk down through the model till the deepest node describing given position
             SQLQueryNodeModel node = this;
             SQLQueryNodeModel nested = node.findChildNodeContaining(textOffset);
             while (nested != null) {
+                if (nested.getResultDataContext() instanceof SQLQueryPureResultTupleContext resultTupleContext) {
+                    nearestResultContext = resultTupleContext;
+                }
                 stack = ListNode.push(stack, nested);
                 node = nested;
                 nested = nested.findChildNodeContaining(textOffset);
@@ -132,7 +144,7 @@ public class SQLQueryModel extends SQLQueryNodeModel {
             context = deepestContext;
         }
 
-        return Pair.of(context, lexicalItem);
+        return new LexicalContextResolutionResult(textOffset, nearestResultContext, context, lexicalItem);
     }
 
     @Override

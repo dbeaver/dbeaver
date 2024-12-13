@@ -74,10 +74,27 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
     List<? extends DBPDataSourceContainer> getDataSources();
 
     @NotNull
-    DBPDataSourceContainer createDataSource(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connConfig);
+    <T extends DBPDataSourceContainer> T createDataSource(
+        @NotNull DBPDriver driver,
+        @NotNull DBPConnectionConfiguration connConfig
+    );
+
+    <T extends DBPDataSourceContainer> T createDataSource(
+        @NotNull String id,
+        @NotNull DBPDriver driver,
+        @NotNull DBPConnectionConfiguration connConfig
+    );
+
+    <T extends DBPDataSourceContainer> T createDataSource(
+        @NotNull DBPDataSourceConfigurationStorage dataSourceStorage,
+        @NotNull DBPDataSourceOrigin origin,
+        @NotNull String id,
+        @NotNull DBPDriver driver,
+        @NotNull DBPConnectionConfiguration configuration
+    );
 
     @NotNull
-    DBPDataSourceContainer createDataSource(@NotNull DBPDataSourceContainer source);
+    <T extends DBPDataSourceContainer> T createDataSource(@NotNull DBPDataSourceContainer source);
 
     void addDataSourceListener(@NotNull DBPEventListener listener);
 
@@ -185,5 +202,4 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
     DBPPreferenceStore getPreferenceStore();
 
     void dispose();
-
 }

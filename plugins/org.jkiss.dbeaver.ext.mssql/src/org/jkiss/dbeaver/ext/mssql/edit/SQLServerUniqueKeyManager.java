@@ -71,4 +71,9 @@ public class SQLServerUniqueKeyManager extends SQLConstraintManager<SQLServerTab
         return container instanceof SQLServerTable;
     }
 
+    @Override
+    protected boolean isPrimaryKeyOrdered() {
+        return true;
+    }
+
 }

@@ -81,6 +81,7 @@ public class SnowflakeDataSource extends GenericDataSource {
         return false;
     }
 
+    @NotNull
     @Override
     protected Properties getAllConnectionProperties(
         @NotNull DBRProgressMonitor monitor,

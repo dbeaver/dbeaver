@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.rcp.DBeaverNature;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.utils.ArrayUtils;
 
-public class DesktopDataSourceRegistry extends DataSourceRegistry {
+public class DesktopDataSourceRegistry<T extends DataSourceDescriptor> extends DataSourceRegistry<T> {
 
     private static final Log log = Log.getLog(DesktopDataSourceRegistry.class);
 
