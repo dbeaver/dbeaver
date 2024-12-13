@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.impl.app.BaseProjectImpl;
 import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DesktopDataSourceRegistry;
 import org.jkiss.dbeaver.registry.task.TaskConstants;
 import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
@@ -189,7 +190,7 @@ public class DesktopProjectImpl extends BaseProjectImpl implements RCPProject, D
 
     @NotNull
     protected DBPDataSourceRegistry createDataSourceRegistry() {
-        return new DesktopDataSourceRegistry(this);
+        return new DesktopDataSourceRegistry<>(this);
     }
 
     @Nullable
