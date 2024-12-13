@@ -133,7 +133,11 @@ public class SQLGroupingQueryGenerator {
 
                     SQLDialect sqlDialect = dataSource.getSQLDialect();
                     if (select.getFromItem() instanceof Table table) {
-                        select.setFromItem(new FormattedTable(table, sqlDialect));
+                        FormattedTable formattedTable = new FormattedTable(table, sqlDialect);
+                        // implicitly parsed where-conditions might have use table alias if presented,
+                        // so don't forget it while replacing the table reference
+                        formattedTable.setAlias(table.getAlias());
+                        select.setFromItem(formattedTable);
                     }
 
                     List<SelectItem> selectItems = new ArrayList<>();

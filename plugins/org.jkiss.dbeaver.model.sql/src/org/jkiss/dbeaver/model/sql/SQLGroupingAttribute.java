@@ -199,6 +199,7 @@ public abstract class SQLGroupingAttribute {
                 this.getDataSource(),
                 subqueryAlias,
                 new DBDAttributeConstraint(this.binding),
+                subqueryAlias != null,
                 subqueryAlias != null
             );
         }
