@@ -200,7 +200,9 @@ public class CubridUser extends GenericSchema
                 }
             }
             boolean isForeignKey = false;
-            String sql1 = "select * from db_index a join db_index_key b on a.owner_name = b.owner_name and a.class_name = b.class_name "
+            boolean isMultiSchema = ((CubridDataSource) table.getDataSource()).getSupportMultiSchema();
+            String sql1 = "select * from db_index a join db_index_key b on a.class_name = b.class_name "
+                        + (isMultiSchema ? "and a.owner_name = b.owner_name " : "")
                         + "and a.index_name = b.index_name where is_foreign_key = 'YES' and a.class_name = ? and b.key_attr_name = ?";
             try (JDBCPreparedStatement dbStat1 = session.prepareStatement(sql1)) {
                 dbStat1.setString(1, table.getName());
