@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Kognitio support
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.kognitio;singleton:=true
-Bundle-Version: 1.0.128.qualifier
-Bundle-Release-Date: 20241202
+Bundle-Version: 1.0.129.qualifier
+Bundle-Release-Date: 20241223
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic
 Bundle-ActivationPolicy: lazy

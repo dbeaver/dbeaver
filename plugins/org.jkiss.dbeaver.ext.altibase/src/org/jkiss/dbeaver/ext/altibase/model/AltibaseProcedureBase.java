@@ -90,7 +90,7 @@ implements DBSObjectWithScript, DBPStatefulObject, DBPRefreshableObject {
         return description;
     }
     
-    @Property(viewable = false, hidden = true, order = 3)
+    @Property(viewable = false, hidden = true, order = 3, labelProvider = GenericCatalog.CatalogNameTermProvider.class)
     public GenericCatalog getCatalog() {
         return getContainer().getCatalog();
     }

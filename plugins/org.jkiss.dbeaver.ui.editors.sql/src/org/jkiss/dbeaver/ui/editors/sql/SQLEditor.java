@@ -5698,6 +5698,8 @@ public class SQLEditor extends SQLEditorBase implements
         private Cursor oldCursor;
         protected ConnectVisualizer(DBPDataSourceContainer dataSourceContainer) {
             super("Connect visualizer");
+            setSystem(true);
+            setUser(false);
             StyledText editorControl = getEditorControl();
             if (editorControl != null) {
                 oldCursor = editorControl.getCursor();

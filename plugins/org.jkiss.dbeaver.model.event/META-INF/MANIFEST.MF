@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver Events Model
 Bundle-SymbolicName: org.jkiss.dbeaver.model.event;singleton:=true
-Bundle-Version: 1.0.48.qualifier
-Bundle-Release-Date: 20241202
+Bundle-Version: 1.0.49.qualifier
+Bundle-Release-Date: 20241223
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Export-Package: org.jkiss.dbeaver.model.websocket,

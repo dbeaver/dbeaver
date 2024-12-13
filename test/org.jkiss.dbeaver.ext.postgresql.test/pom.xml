@@ -10,7 +10,7 @@
         <relativePath>../</relativePath>
     </parent>
     <artifactId>org.jkiss.dbeaver.ext.postgresql.test</artifactId>
-    <version>1.0.101-SNAPSHOT</version>
+    <version>1.0.102-SNAPSHOT</version>
     <packaging>eclipse-test-plugin</packaging>
 
 </project>

@@ -83,6 +83,7 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_viewer_action_column_view;
     public static String controls_resultset_viewer_action_logical_structure;
     public static String controls_resultset_viewer_action_view_format;
+    public static String controls_resultset_viewer_action_view_hints;
     public static String controls_resultset_viewer_action_view_as;
     public static String controls_resultset_viewer_action_view_column_type;
     public static String controls_resultset_viewer_action_view_column_types;

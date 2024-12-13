@@ -30,6 +30,10 @@ public interface IGridColumn extends IGridItem {
      */
     int getIndex();
 
+    int getWidth();
+
+    boolean isPinned();
+
     GridColumn getParent();
 
     List<GridColumn> getChildren();

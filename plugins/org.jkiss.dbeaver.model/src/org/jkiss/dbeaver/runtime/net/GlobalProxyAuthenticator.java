@@ -98,7 +98,7 @@ public class GlobalProxyAuthenticator extends Authenticator {
             if (SocksConstants.PROTOCOL_SOCKS5.equals(requestingProtocol) || SocksConstants.PROTOCOL_SOCKS4.equals(requestingProtocol)) {
                 DBPDataSourceContainer activeContext = DBExecUtils.findConnectionContext(getRequestingHost(), getRequestingPort(), getRequestingScheme());
                 if (activeContext != null) {
-                    for (DBWHandlerConfiguration networkHandler : activeContext.getConnectionConfiguration().getHandlers()) {
+                    for (DBWHandlerConfiguration networkHandler : activeContext.getActualConnectionConfiguration().getHandlers()) {
                         if (networkHandler.isEnabled() && networkHandler.getType() == DBWHandlerType.PROXY) {
                             String userName = networkHandler.getUserName();
                             String userPassword = networkHandler.getPassword();
