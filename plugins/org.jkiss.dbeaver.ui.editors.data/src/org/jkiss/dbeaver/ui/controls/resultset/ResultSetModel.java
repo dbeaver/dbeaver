@@ -847,7 +847,7 @@ public class ResultSetModel {
         try {
             hintContext.resetCache();
             hintContext.initProviders(attributes);
-            hintContext.cacheRequiredData(monitor, newRows, metadataChanged);
+            hintContext.cacheRequiredData(monitor, null, newRows, true);
         } catch (Exception e) {
             log.debug("Error caching data for column hints", e);
         }

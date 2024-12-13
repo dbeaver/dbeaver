@@ -1678,7 +1678,7 @@ public class ResultSetViewer extends Viewer
     public boolean updateCellValue(@NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, @Nullable int[] rowIndexes, @Nullable Object value, boolean updateChanges) throws DBException {
         boolean updated = model.updateCellValue(attr, row, rowIndexes, value, updateChanges);
         if (updated) {
-            refreshHintCache(attr, row);
+            refreshHintCache(attr, row, rowIndexes);
         }
         return updated;
     }
@@ -1690,23 +1690,24 @@ public class ResultSetViewer extends Viewer
        @Nullable int[] rowIndexes
     ) {
         model.resetCellValue(attr, row, rowIndexes);
-        refreshHintCache(attr, row);
+        refreshHintCache(attr, row, rowIndexes);
     }
 
-    private void refreshHintCache(DBDAttributeBinding attr, ResultSetRow row) {
+    private void refreshHintCache(DBDAttributeBinding attr, ResultSetRow row, int[] rowIndexes) {
         // Refresh cached hints for changed row
 
         // Check that we could have hints
         boolean needRefresh = false;
+        Object cellValue = model.getCellValue(attr, row, rowIndexes, false);
         List<DBDValueHintProvider> hintProviders = model.getHintProviders(attr);
         for (DBDValueHintProvider provider : hintProviders) {
             DBDValueHint[] hints = provider.getValueHint(
                 model.getHintContext(),
                 attr,
                 row,
-                null,
+                cellValue,
                 EnumSet.of(DBDValueHint.HintType.STRING),
-                DBDValueHintProvider.OPTION_INLINE | DBDValueHintProvider.OPTION_APPROXIMATE);
+                DBDValueHintProvider.OPTION_INLINE);
             if (hints != null) {
                 for (DBDValueHint hint : hints) {
                     if (!CommonUtils.isEmpty(hint.getHintText())) {
@@ -1717,15 +1718,17 @@ public class ResultSetViewer extends Viewer
             }
             if (needRefresh) break;
         }
-        if (needRefresh) {
+        if (true) {
             new AbstractJob("Refresh hint cache") {
                 @Override
                 protected IStatus run(DBRProgressMonitor monitor) {
                     try {
                         model.getHintContext().cacheRequiredData(
                             monitor,
-                            Collections.singletonList(row), false);
-                        redrawData(true, true);
+                            Collections.singletonList(attr),
+                            Collections.singletonList(row),
+                            false);
+                        UIUtils.syncExec(() -> redrawData(true, true));
                     } catch (DBException e) {
                         log.debug("Error refreshing hint cache");
                     }
