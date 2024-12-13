@@ -127,7 +127,7 @@ public class SQLiteUtils {
         ));
         actions.add(new SQLDatabasePersistAction(
             "Create new table",
-            DBStructUtils.generateTableDDL(monitor, table, Map.of(DBPScriptObject.OPTION_DDL_ONLY_PERSISTED_ATTRIBUTES, true), false)
+            DBStructUtils.generateTableDDL(monitor, table, DBPScriptObject.EMPTY_OPTIONS, false)
         ));
         actions.add(new SQLDatabasePersistAction(
             "Insert values from temporary table to new table",
