@@ -10,7 +10,7 @@
          <relativePath>../</relativePath>
     </parent>
     <artifactId>org.jkiss.dbeaver.model.sql.jdbc</artifactId>
-    <version>1.0.8-SNAPSHOT</version>
+    <version>1.0.9-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>
 
 </project>

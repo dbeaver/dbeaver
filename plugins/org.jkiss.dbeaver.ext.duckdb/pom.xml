@@ -9,6 +9,6 @@
      <relativePath>../</relativePath>
   </parent>
   <artifactId>org.jkiss.dbeaver.ext.duckdb</artifactId>
-  <version>1.0.36-SNAPSHOT</version>
+  <version>1.0.37-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 </project>

@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver SQLite UI
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.sqlite.ui;singleton:=true
-Bundle-Version: 1.0.114.qualifier
-Bundle-Release-Date: 20241202
+Bundle-Version: 1.0.115.qualifier
+Bundle-Release-Date: 20241223
 Bundle-Activator: org.jkiss.dbeaver.ext.sqlite.ui.SQLiteUIActivator
 Require-Bundle: org.jkiss.dbeaver.ext.sqlite,
  org.jkiss.dbeaver.ui,

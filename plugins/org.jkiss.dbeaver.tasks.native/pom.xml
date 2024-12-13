@@ -10,7 +10,7 @@
          <relativePath>../</relativePath>
     </parent>
     <artifactId>org.jkiss.dbeaver.tasks.native</artifactId>
-    <version>1.0.122-SNAPSHOT</version>
+    <version>1.0.123-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>
 
 </project>

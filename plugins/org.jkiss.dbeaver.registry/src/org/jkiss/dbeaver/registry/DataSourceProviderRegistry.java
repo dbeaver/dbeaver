@@ -291,6 +291,9 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             }
         }
 
+        // Set provider properties to drivers
+        dataSourceProviders.forEach(DataSourceProviderDescriptor::setDriverProviderProperties);
+
         int driverCount = 0;
         int customDriverCount = 0;
         for (DataSourceProviderDescriptor pd : dataSourceProviders) {

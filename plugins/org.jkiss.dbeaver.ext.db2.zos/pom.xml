@@ -9,6 +9,6 @@
      <relativePath>../</relativePath>
   </parent>
   <artifactId>org.jkiss.dbeaver.ext.db2.zos</artifactId>
-  <version>1.0.147-SNAPSHOT</version>
+  <version>1.0.148-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 </project>

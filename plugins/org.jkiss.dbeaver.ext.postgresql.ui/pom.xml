@@ -9,6 +9,6 @@
      <relativePath>../</relativePath>
   </parent>
   <artifactId>org.jkiss.dbeaver.ext.postgresql.ui</artifactId>
-  <version>1.0.120-SNAPSHOT</version>
+  <version>1.0.121-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 </project>

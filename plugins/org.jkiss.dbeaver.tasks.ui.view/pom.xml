@@ -10,7 +10,7 @@
          <relativePath>../</relativePath>
     </parent>
     <artifactId>org.jkiss.dbeaver.tasks.ui.view</artifactId>
-    <version>1.0.93-SNAPSHOT</version>
+    <version>1.0.94-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>
 
 </project>

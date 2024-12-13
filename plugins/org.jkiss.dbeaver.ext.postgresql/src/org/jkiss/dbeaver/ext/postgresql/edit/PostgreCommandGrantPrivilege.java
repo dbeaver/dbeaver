@@ -135,21 +135,27 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
             grantedTypedObject = objectType + " " + objectName;
         }
 
-        String scriptBeginning = "";
-        if (privilege instanceof PostgreDefaultPrivilege) {
-            scriptBeginning = "ALTER DEFAULT PRIVILEGES IN SCHEMA " + DBUtils.getQuotedIdentifier(privilege.getOwner()) + " ";
+        StringBuilder ddl = new StringBuilder();
+        if (privilege instanceof PostgreDefaultPrivilege dp) {
+            ddl.append("ALTER DEFAULT PRIVILEGES");
+            if (dp.getGrantor() != null) {
+                ddl.append(" FOR ROLE ").append(DBUtils.getQuotedIdentifier(dp.getDataSource(), dp.getGrantor().getRoleName()));
+            }
+            ddl.append(" IN SCHEMA ").append(DBUtils.getQuotedIdentifier(privilege.getOwner())).append(" ");
         }
-
-        String grantScript = scriptBeginning + (grant ? "GRANT " : "REVOKE ") + privName + grantedCols +
-            " ON " + grantedTypedObject +
-            (grant ? " TO " : " FROM ") + (roleType != null ? roleType.toUpperCase() + " " : "") + roleName;
+        ddl.append(grant ? "GRANT " : "REVOKE ").append(privName).append(grantedCols).append(" ON ").append(grantedTypedObject);
+        ddl.append(grant ? " TO" : " FROM");
+        if (roleType != null) {
+            ddl.append(" ").append(roleType.toUpperCase());
+        }
+        ddl.append(" ").append(roleName);
         if (grant && withGrantOption) {
-            grantScript += " WITH GRANT OPTION";
+            ddl.append(" WITH GRANT OPTION");
         }
         return new DBEPersistAction[] {
             new SQLDatabasePersistAction(
                 grant ? "Grant" : "Revoke",
-                grantScript
+                ddl.toString()
             )
         };
     }
