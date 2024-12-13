@@ -100,7 +100,6 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
         Map<String, Object> properties = site.getProperties();
         this.delimiter = StreamTransferUtils.getDelimiterString(properties, PROP_DELIMITER);
         this.rowDelimiter = StreamTransferUtils.getDelimiterString(properties, PROP_ROW_DELIMITER);
-//        this.lineFeedEscapeString = CommonUtils.toString(properties.get(PROP_LINE_FEED_ESCAPE_STRING), null);
         this.lineFeedEscapeString = StreamTransferUtils.getDelimiterString(properties, PROP_LINE_FEED_ESCAPE_STRING);
         if (ROW_DELIMITER_DEFAULT.equalsIgnoreCase(this.rowDelimiter.trim())) {
             this.rowDelimiter = GeneralUtils.getDefaultLineSeparator();
