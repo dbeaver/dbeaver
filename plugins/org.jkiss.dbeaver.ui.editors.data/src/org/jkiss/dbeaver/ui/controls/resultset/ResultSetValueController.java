@@ -208,7 +208,8 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     public void updateValue(@Nullable Object value, boolean updatePresentation) {
         boolean updated;
         try {
-            updated = controller.getModel().updateCellValue(cellLocation, value);
+            updated = controller.updateCellValue(
+                cellLocation.getAttribute(), cellLocation.getRow(), cellLocation.getRowIndexes(), value, true);
         } catch (Exception e) {
             UIUtils.asyncExec(() -> {
                 DBWorkbench.getPlatformUI().showError("Value update", "Error updating value: " + e.getMessage(), e);

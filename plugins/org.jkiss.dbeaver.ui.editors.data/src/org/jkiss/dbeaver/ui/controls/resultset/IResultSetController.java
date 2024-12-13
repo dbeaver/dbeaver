@@ -254,4 +254,17 @@ public interface IResultSetController extends IDataController, DBPContextProvide
     void removeListener(IResultSetListener listener);
 
     void updateDirtyFlag();
+
+    boolean updateCellValue(
+        @NotNull DBDAttributeBinding attr,
+        @NotNull ResultSetRow row,
+        @Nullable int[] rowIndexes,
+        @Nullable Object value,
+        boolean updateChanges
+    ) throws DBException;
+
+    void resetCellValue(
+        @NotNull DBDAttributeBinding attr,
+        @NotNull ResultSetRow row,
+        @Nullable int[] rowIndexes);
 }
