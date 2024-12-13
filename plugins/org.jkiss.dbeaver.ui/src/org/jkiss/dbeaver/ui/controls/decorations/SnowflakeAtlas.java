@@ -96,6 +96,7 @@ record SnowflakeAtlas(
                     transform.rotate(angle);
 
                     gc.setTransform(transform);
+                    gc.setAlpha(255 / random.nextInt(3, 8));
                     gc.drawImage(sprite, bounds.x, bounds.y, bounds.width, bounds.height, -center, -center, scale, scale);
                 }
             }

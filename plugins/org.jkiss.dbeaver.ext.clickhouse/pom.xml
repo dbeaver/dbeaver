@@ -9,7 +9,7 @@
      <relativePath>../</relativePath>
   </parent>
   <artifactId>org.jkiss.dbeaver.ext.clickhouse</artifactId>
-  <version>1.0.149-SNAPSHOT</version>
+  <version>1.0.150-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
   
   

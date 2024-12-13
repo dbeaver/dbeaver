@@ -9,6 +9,6 @@
      <relativePath>../</relativePath>
   </parent>
   <artifactId>org.jkiss.dbeaver.ui.editors.json</artifactId>
-  <version>1.0.128-SNAPSHOT</version>
+  <version>1.0.129-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 </project>

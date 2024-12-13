@@ -165,6 +165,8 @@ public @interface Property
 
     Class<? extends Format> formatter() default Format.class; //NON-NLS-1
 
+    Class<? extends IPropertyValueTransformer> labelProvider() default IPropertyValueTransformer.class;
+
     Class<? extends IPropertyValueTransformer> valueTransformer() default IPropertyValueTransformer.class;
 
     Class<? extends IPropertyValueListProvider> listProvider() default IPropertyValueListProvider.class;

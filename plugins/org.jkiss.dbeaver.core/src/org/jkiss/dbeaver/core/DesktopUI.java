@@ -43,8 +43,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
@@ -59,7 +57,6 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler;
 import org.jkiss.dbeaver.ui.dialogs.*;
 import org.jkiss.dbeaver.ui.dialogs.connection.PasswordChangeDialog;
-import org.jkiss.dbeaver.ui.dialogs.driver.DriverDownloadDialog;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditHelpers;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
@@ -166,16 +163,6 @@ public class DesktopUI extends ConsoleUserInterface {
                     UIUtils.getActiveWorkbenchShell(),
                     message,
                     licenseText);
-            }
-        }.execute();
-    }
-
-    @Override
-    public boolean downloadDriverFiles(DBPDriver driver, DBPDriverDependencies dependencies) {
-        return new UITask<Boolean>() {
-            @Override
-            protected Boolean runTask() {
-                return DriverDownloadDialog.downloadDriverFiles(null, driver, dependencies);
             }
         }.execute();
     }
