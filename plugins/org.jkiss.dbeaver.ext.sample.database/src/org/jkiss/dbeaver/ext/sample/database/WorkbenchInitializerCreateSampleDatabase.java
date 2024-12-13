@@ -125,7 +125,7 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
         connectionInfo.setDatabaseName(dbFile.getAbsolutePath());
         connectionInfo.setConnectionType(DBPConnectionType.DEV);
         connectionInfo.setUrl(sqliteDriver.getConnectionURL(connectionInfo));
-        dataSource = new DataSourceDescriptor(dsRegistry, SAMPLE_DB1_ID, sqliteDriver, connectionInfo);
+        dataSource = dsRegistry.createDataSource(SAMPLE_DB1_ID, sqliteDriver, connectionInfo);
         dataSource.setSavePassword(true);
         dataSource.getNavigatorSettings().setShowSystemObjects(true);
         dataSource.setName("DBeaver Sample Database (SQLite)");
