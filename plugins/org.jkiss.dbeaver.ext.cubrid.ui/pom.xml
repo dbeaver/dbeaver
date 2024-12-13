@@ -9,7 +9,7 @@
      <relativePath>../</relativePath>
   </parent>
   <artifactId>org.jkiss.dbeaver.ext.cubrid.ui</artifactId>
-  <version>1.0.4-SNAPSHOT</version>
+  <version>1.0.5-SNAPSHOT</version>
 
   <packaging>eclipse-plugin</packaging>
 </project>

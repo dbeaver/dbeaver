@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.tools.transfer.stream.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
+import org.jkiss.utils.csv.CSVParser;
 import org.jkiss.utils.csv.CSVReader;
 import org.jkiss.utils.io.BOMInputStream;
 
@@ -161,11 +162,11 @@ public class DataImporterCSV extends StreamImporterAbstract {
         String delimiter = StreamTransferUtils.getDelimiterString(processorProperties, PROP_DELIMITER);
         String quoteChar = CommonUtils.toString(processorProperties.get(PROP_QUOTE_CHAR));
         if (CommonUtils.isEmpty(quoteChar)) {
-            quoteChar = "'";
+            quoteChar = String.valueOf(CSVParser.NULL_CHARACTER);
         }
         String escapeChar = CommonUtils.toString(processorProperties.get(PROP_ESCAPE_CHAR));
         if (CommonUtils.isEmpty(escapeChar)) {
-            escapeChar = "\\";
+            escapeChar = String.valueOf(CSVParser.NULL_CHARACTER);
         }
         return new CSVReader(reader, delimiter.charAt(0), quoteChar.charAt(0), escapeChar.charAt(0));
     }

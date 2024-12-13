@@ -11,6 +11,6 @@
 		<relativePath>../</relativePath>
 	</parent>
 	<artifactId>org.jkiss.dbeaver.ext.oceanbase.ui</artifactId>
-	<version>1.0.82-SNAPSHOT</version>
+	<version>1.0.83-SNAPSHOT</version>
 	<packaging>eclipse-plugin</packaging>
 </project>

@@ -438,4 +438,9 @@ public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProv
     public String[] getSingleLineComments() {
         return new String[]{SQLConstants.SL_COMMENT, "//"};
     }
+
+    @Override
+    public boolean supportsAliasInSelect() {
+        return true;
+    }
 }

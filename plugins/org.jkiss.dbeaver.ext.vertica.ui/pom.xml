@@ -9,6 +9,6 @@
      <relativePath>../</relativePath>
   </parent>
   <artifactId>org.jkiss.dbeaver.ext.vertica.ui</artifactId>
-  <version>1.0.135-SNAPSHOT</version>
+  <version>1.0.136-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 </project>

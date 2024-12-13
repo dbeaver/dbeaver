@@ -46,7 +46,12 @@ public enum SQLQueryCompletionItemKind {
      * Table column name when derived from the real table 
      * <p> (simple identifier, fullname, alias-prefixed)
      * */
-    TABLE_COLUMN_NAME(false, true);
+    TABLE_COLUMN_NAME(false, true),
+    /**
+     * Join condition based on the foreign key
+     * <p> (expression, consisting of two column references)
+     */
+    JOIN_CONDITION(false, false);
 
 
     public final boolean isTableName;

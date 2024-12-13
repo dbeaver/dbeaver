@@ -10,7 +10,7 @@
         <relativePath>../../</relativePath>
     </parent>
     <artifactId>org.jkiss.dbeaver.appstore.feature</artifactId>
-    <version>24.3.0-SNAPSHOT</version>
+    <version>24.3.1-SNAPSHOT</version>
     <packaging>eclipse-feature</packaging>
 
     <build>
@@ -19,7 +19,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>2.6</version>
                 <executions>
                     <execution>
                         <id>process-product-info</id>

@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAnalyser;
 import org.jkiss.dbeaver.ext.mysql.model.session.MySQLSessionManager;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.access.DBAuthUtils;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.app.DBACertificateStorage;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -52,6 +53,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLHelpProvider;
 import org.jkiss.dbeaver.model.sql.SQLState;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
@@ -63,10 +65,7 @@ import org.osgi.framework.Version;
 
 import java.net.MalformedURLException;
 import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.SQLException;
-import java.sql.Types;
+import java.sql.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -525,6 +524,11 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                     inServerTimezoneHandle = false;
                     throw e2;
                 }
+            } else if (
+                SQLState.getCodeFromException(e) == MySQLConstants.ER_MUST_CHANGE_PASSWORD_LOGIN &&
+                DBAuthUtils.promptAndChangePasswordForCurrentUser(monitor, container, this::changeUserPassword)
+            ) {
+                return openConnection(monitor, context, purpose);
             } else {
                 throw e;
             }
@@ -1105,9 +1109,28 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             if (propertyValue == null) {
                 connectProps.remove(prohibitedDriverProperty);
             } else {
-                log.debug("Set " + prohibitedDriverProperty + ":" + propertyValue);
+                log.trace("Set " + prohibitedDriverProperty + ":" + propertyValue);
                 connectProps.put(prohibitedDriverProperty, propertyValue);
             }
+        }
+    }
+
+    private void changeUserPassword(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull String userName,
+        @NotNull String newPassword,
+        @NotNull String oldPassword
+    ) throws DBException {
+        container.getActualConnectionConfiguration().setProperty("disconnectOnExpiredPasswords", "false");
+        try (Connection connection = super.openConnection(monitor, null, "Change expired password")) {
+            try (Statement stmt = connection.createStatement()) {
+                stmt.execute("SET PASSWORD = %s REPLACE %s".formatted(
+                    SQLUtils.quoteString(this, newPassword),
+                    SQLUtils.quoteString(this, oldPassword)
+                ));
+            }
+        } catch (SQLException e) {
+            throw new DBDatabaseException("Unable to change expired password", e);
         }
     }
 }

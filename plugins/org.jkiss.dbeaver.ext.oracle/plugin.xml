@@ -385,7 +385,7 @@
 
                     <file type="jar" path="maven:/com.oracle.database.jdbc:ojdbc11:RELEASE[23.2.0.0]" bundle="!drivers.oracle"/>
                     <file type="jar" path="maven:/com.oracle.database.nls:orai18n:RELEASE[23.2.0.0]" bundle="!drivers.oracle"/>
-                    <file type="jar" path="maven:/com.oracle.database.xml:xdb6:RELEASE[18.3.0.0]" bundle="!drivers.oracle"/>
+                    <file type="jar" path="maven:/com.oracle.database.xml:xdb6:RELEASE[23.2.0.0]" bundle="!drivers.oracle"/>
                     <file type="jar" path="maven:/com.oracle.database.xml:xmlparserv2:RELEASE[23.2.0.0]" bundle="!drivers.oracle"/>
 
                     <file type="license" path="drivers/oracle/LICENSE.txt" bundle="drivers.oracle"/>

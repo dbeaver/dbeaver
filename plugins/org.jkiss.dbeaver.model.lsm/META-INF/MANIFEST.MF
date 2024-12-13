@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver SQL Language Semantic Model
 Bundle-Vendor: DBeaver Corp
-Bundle-Version: 1.0.39.qualifier
-Bundle-Release-Date: 20241202
+Bundle-Version: 1.0.40.qualifier
+Bundle-Release-Date: 20241223
 Bundle-SymbolicName: org.jkiss.dbeaver.model.lsm;singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jkiss.bundle.antlr4;visibility:=reexport,
