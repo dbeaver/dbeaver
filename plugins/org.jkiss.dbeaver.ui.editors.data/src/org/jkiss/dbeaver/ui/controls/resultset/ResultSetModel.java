@@ -844,6 +844,10 @@ public class ResultSetModel {
 
         updateRowColors(resetOldRows, newRows);
 
+        refreshHintsInfo(monitor, newRows);
+    }
+
+    void refreshHintsInfo(@NotNull DBRProgressMonitor monitor, List<ResultSetRow> newRows) {
         try {
             hintContext.resetCache();
             hintContext.initProviders(attributes);

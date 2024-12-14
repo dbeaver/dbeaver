@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.RowDataReceiver;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
@@ -549,6 +550,14 @@ class ResultSetPersister {
             row.setState(ResultSetRow.STATE_NORMAL);
         }
         model.refreshChangeCount();
+
+        try {
+            UIUtils.runInProgressService(monitor -> {
+                model.refreshHintsInfo(new VoidProgressMonitor(), model.getAllRows());
+            });
+        } catch (Exception e) {
+            log.debug("Error refreshing hints", e);
+        }
 
         viewer.redrawData(false, rowsChanged);
         viewer.updateEditControls();
