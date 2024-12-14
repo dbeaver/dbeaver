@@ -1270,9 +1270,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
         if (inline) {
             if (activeInlineEditor != null) {
                 spreadsheet.showCellEditor(placeholder);
-                if (activeInlineEditor instanceof BaseValueEditor && CommonUtils.getBoolean(
+                if (activeInlineEditor instanceof BaseValueEditor<?> bve && CommonUtils.getBoolean(
                         getPreferenceStore().getString(ResultSetPreferences.RESULT_SET_INLINE_ENTER))) {
-                    ((BaseValueEditor<?>) activeInlineEditor).addAdditionalTraverseActions((it) -> {
+                    bve.addAdditionalTraverseActions((it) -> {
                         //We don't want to create another listener due to baseValueTraverseListener
                         //removing any information about traverse event and setting it to TRAVERSE_NONE
                         if (it.detail == SWT.TRAVERSE_RETURN) {
@@ -1367,8 +1367,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
     private void toggleBooleanValue(ResultSetCellLocation cellLocation, Object value) {
         boolean nullable = !cellLocation.getAttribute().isRequired();
-        if (value instanceof Number) {
-            value = ((Number) value).byteValue() != 0;
+        if (value instanceof Number number) {
+            value = number.byteValue() != 0;
         }
         if (Boolean.TRUE.equals(value)) {
             value = false;
@@ -1563,16 +1563,16 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
     @Override
     public void setSelection(@NotNull ISelection selection, boolean reflect) {
-        if (selection instanceof IResultSetSelection && ((IResultSetSelection) selection).getController() == getController()) {
+        if (selection instanceof IResultSetSelection rss && rss.getController() == getController()) {
             // It may occur on simple focus change so we won't do anything
             return;
         }
         spreadsheet.deselectAll();
-        if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
+        if (!selection.isEmpty() && selection instanceof IStructuredSelection ss) {
             List<GridPos> cellSelection = new ArrayList<>();
-            for (Object cell : (IStructuredSelection) selection) {
-                if (cell instanceof GridPos) {
-                    cellSelection.add((GridPos) cell);
+            for (Object cell : ss) {
+                if (cell instanceof GridPos gp) {
+                    cellSelection.add(gp);
                 } else {
                     log.warn("Bad selection object: " + cell);
                 }
@@ -1648,10 +1648,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
     @Override
     public void moveColumn(Object dragColumn, Object dropColumn, DropLocation location) {
-        if (dragColumn instanceof DBDAttributeBinding && dropColumn instanceof DBDAttributeBinding) {
+        if (dragColumn instanceof DBDAttributeBinding dragBinding && dropColumn instanceof DBDAttributeBinding dropBinding) {
             final DBDDataFilter dataFilter = new DBDDataFilter(controller.getModel().getDataFilter());
-            final DBDAttributeConstraint dragC = dataFilter.getConstraint((DBDAttributeBinding) dragColumn);
-            final DBDAttributeConstraint dropC = dataFilter.getConstraint((DBDAttributeBinding) dropColumn);
+            final DBDAttributeConstraint dragC = dataFilter.getConstraint(dragBinding);
+            final DBDAttributeConstraint dropC = dataFilter.getConstraint(dropBinding);
             if (dragC == null || dropC == null) {
                 return;
             }
@@ -1999,7 +1999,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         false);
                     if (cellValue instanceof Collection<?> col) {
                         return col.toArray();
-                    } else if (cellValue instanceof DBDComposite composite) {
+                    } else if (cellValue instanceof DBDComposite) {
                         return null;
                     } else {
                         return null;
@@ -2404,8 +2404,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
             }
 
-            if (value instanceof DBDValueError) {
-                return ((DBDValueError) value).getErrorTitle();
+            if (value instanceof DBDValueError valueError) {
+                return valueError.getErrorTitle();
             }
 
             if ((value instanceof Boolean || value instanceof Number || value == null) && isShowAsCheckbox(attr)) {
@@ -3093,6 +3093,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 return tip.toString();
             }
             return null;
+        }
+
+        @Override
+        public Color getErrorForeground() {
+            return backgroundError;
         }
     }
 
