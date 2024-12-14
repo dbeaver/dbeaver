@@ -260,8 +260,7 @@ public interface IResultSetController extends IDataController, DBPContextProvide
         @NotNull ResultSetRow row,
         @Nullable int[] rowIndexes,
         @Nullable Object value,
-        boolean updateChanges
-    ) throws DBException;
+        boolean refreshHints) throws DBException;
 
     void resetCellValue(
         @NotNull DBDAttributeBinding attr,

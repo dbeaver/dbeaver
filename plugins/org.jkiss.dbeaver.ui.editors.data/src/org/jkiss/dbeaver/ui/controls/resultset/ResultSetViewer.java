@@ -1675,10 +1675,15 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public boolean updateCellValue(@NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, @Nullable int[] rowIndexes, @Nullable Object value, boolean updateChanges) throws DBException {
-        boolean updated = model.updateCellValue(attr, row, rowIndexes, value, updateChanges);
+    public boolean updateCellValue(
+        @NotNull DBDAttributeBinding attr,
+        @NotNull ResultSetRow row,
+        @Nullable int[] rowIndexes,
+        @Nullable Object value,
+        boolean refreshHints) throws DBException {
+        boolean updated = model.updateCellValue(attr, row, rowIndexes, value, true);
         if (updated) {
-            refreshHintCache(attr, row, rowIndexes);
+            refreshHintCache(attr, row, rowIndexes, refreshHints);
         }
         return updated;
     }
@@ -1686,14 +1691,14 @@ public class ResultSetViewer extends Viewer
     @Override
     public void resetCellValue(
         @NotNull DBDAttributeBinding attr,
-       @NotNull ResultSetRow row,
-       @Nullable int[] rowIndexes
+        @NotNull ResultSetRow row,
+        @Nullable int[] rowIndexes
     ) {
         model.resetCellValue(attr, row, rowIndexes);
-        refreshHintCache(attr, row, rowIndexes);
+        refreshHintCache(attr, row, rowIndexes, true);
     }
 
-    private void refreshHintCache(DBDAttributeBinding attr, ResultSetRow row, int[] rowIndexes) {
+    private void refreshHintCache(DBDAttributeBinding attr, ResultSetRow row, int[] rowIndexes, boolean refreshPresentation) {
         // Refresh cached hints for changed row
 
         // Check that we could have hints
@@ -1718,7 +1723,7 @@ public class ResultSetViewer extends Viewer
             }
             if (needRefresh) break;
         }
-        if (true) {
+        if (refreshPresentation) {
             new AbstractJob("Refresh hint cache") {
                 @Override
                 protected IStatus run(DBRProgressMonitor monitor) {
@@ -1738,7 +1743,7 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private final Job statusBarLayoutJob = new Job("Pending resultset view status bar relayout") {
+    private final Job statusBarLayoutJob = new Job("Pending result set view status bar re-layout") {
         @Override
         protected IStatus run(IProgressMonitor monitor) {
             UIUtils.asyncExec(() -> {

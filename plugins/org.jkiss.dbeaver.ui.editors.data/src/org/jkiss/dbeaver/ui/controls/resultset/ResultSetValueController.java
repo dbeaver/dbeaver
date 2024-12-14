@@ -209,7 +209,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
         boolean updated;
         try {
             updated = controller.updateCellValue(
-                cellLocation.getAttribute(), cellLocation.getRow(), cellLocation.getRowIndexes(), value, true);
+                cellLocation.getAttribute(), cellLocation.getRow(), cellLocation.getRowIndexes(), value, updatePresentation);
         } catch (Exception e) {
             UIUtils.asyncExec(() -> {
                 DBWorkbench.getPlatformUI().showError("Value update", "Error updating value: " + e.getMessage(), e);
@@ -219,8 +219,8 @@ public class ResultSetValueController implements IAttributeController, IRowContr
         if (updated && updatePresentation) {
             // Update controls
             UIUtils.syncExec(() -> controller.updatePanelsContent(false));
-            if (controller instanceof ResultSetViewer) {
-                ((ResultSetViewer) controller).fireResultSetChange();
+            if (controller instanceof ResultSetViewer rsv) {
+                rsv.fireResultSetChange();
             }
         }
     }
