@@ -50,8 +50,8 @@ public class SQLiteTableManager extends GenericTableManager implements DBEObject
     private static final Class<? extends DBSObject>[] CHILD_TYPES = CommonUtils.array(
         SQLiteTableColumn.class,
         GenericUniqueKey.class,
-        GenericTableIndex.class,
-        SQLiteTableForeignKey.class
+        SQLiteTableForeignKey.class,
+        GenericTableIndex.class
     );
 
     @NotNull
