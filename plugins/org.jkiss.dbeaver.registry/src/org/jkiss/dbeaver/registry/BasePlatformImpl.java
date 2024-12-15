@@ -232,8 +232,11 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
                 getLocalWorkspaceConfigFolder()
             );
             Plugin productPlugin = getProductPlugin();
-            if (productPlugin != null && productPlugin.getStateLocation() != null) {
-                controller.setLegacyConfigFolder(productPlugin.getStateLocation().toFile().toPath());
+            if (productPlugin != null) {
+                Path pluginStateLocation = RuntimeUtils.getPluginStateLocation(productPlugin);
+                if (Files.exists(pluginStateLocation)) {
+                    controller.setLegacyConfigFolder(pluginStateLocation);
+                }
             }
             return controller;
         } else {
