@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -83,6 +84,7 @@ public class ReferenceValueEditor {
     private Font boldFont;
     private LoadingJob<EnumValuesData> dictFilterJob;
     private final ViewController controller;
+    private Font defaultFont;
 
     private class ViewController {
         private final int pageSize;
@@ -325,7 +327,9 @@ public class ReferenceValueEditor {
             return false;
         }
 
-        this.boldFont = UIUtils.makeBoldFont(parent.getFont());
+        this.defaultFont = UIUtils.getActiveWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme()
+            .getFontRegistry().get(ThemeConstants.FONT_SQL_RESULT_SET);
+        this.boldFont = UIUtils.makeBoldFont(defaultFont);
         parent.addDisposeListener(e -> this.boldFont.dispose());
 
         if (refConstraint instanceof DBSEntityAssociation association) {
@@ -382,6 +386,7 @@ public class ReferenceValueEditor {
         editorSelector = new Table(parent, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);
         editorSelector.setLinesVisible(true);
         editorSelector.setHeaderVisible(true);
+        editorSelector.setFont(defaultFont);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 150;
         //gd.widthHint = 300;
@@ -484,7 +489,7 @@ public class ReferenceValueEditor {
                 editorSelector.showItem(item);
                 newValueFound = true;
             } else {
-                item.setFont(null);
+                item.setFont(defaultFont);
             }
         }
 
@@ -563,7 +568,7 @@ public class ReferenceValueEditor {
                         curItem = item;
                         curItemIndex = i;
                     } else {
-                        item.setFont(null);
+                        item.setFont(defaultFont);
                     }
                 }
                 editorSelector.deselectAll();
