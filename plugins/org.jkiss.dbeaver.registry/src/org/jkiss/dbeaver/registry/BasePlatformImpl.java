@@ -229,7 +229,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
             return ((DBPApplicationConfigurator) application).createConfigurationController(pluginBundleName);
         } else if (bundle == null) {
             LocalConfigurationController controller = new LocalConfigurationController(
-                getWorkspace().getMetadataFolder().resolve(CONFIG_FOLDER)
+                getLocalWorkspaceConfigFolder()
             );
             Plugin productPlugin = getProductPlugin();
             if (productPlugin != null && productPlugin.getStateLocation() != null) {
@@ -241,6 +241,10 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
                 Platform.getStateLocation(bundle).toFile().toPath()
             );
         }
+    }
+
+    private @NotNull Path getLocalWorkspaceConfigFolder() {
+        return getWorkspace().getMetadataFolder().resolve(CONFIG_FOLDER);
     }
 
     @NotNull
@@ -268,7 +272,11 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     @NotNull
     @Override
     public Path getLocalConfigurationFile(String fileName) {
-        return getProductPlugin().getStateLocation().toFile().toPath().resolve(fileName);
+        Path productPluginPath = RuntimeUtils.getPluginStateLocation(getProductPlugin()).resolve(fileName);
+        if (Files.exists(productPluginPath)) {
+            return productPluginPath;
+        }
+        return getLocalWorkspaceConfigFolder().resolve(fileName);
     }
 
     @NotNull
