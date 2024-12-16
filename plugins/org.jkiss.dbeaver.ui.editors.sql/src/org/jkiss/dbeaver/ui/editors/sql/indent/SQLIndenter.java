@@ -57,7 +57,7 @@ public class SQLIndenter {
      */
     private SQLHeuristicScanner scanner;
 
-    private SQLSyntaxManager syntaxManager;
+    private SQLParserContext context;
 
     /**
      * Creates a new instance.
@@ -69,8 +69,8 @@ public class SQLIndenter {
      */
     public SQLIndenter(IDocument document, SQLSyntaxManager syntaxManager, SQLHeuristicScanner scanner) {
         this.document = document;
-        this.syntaxManager = syntaxManager;
         this.scanner = scanner;
+        this.context = new SQLParserContext((DBPDataSource) null, syntaxManager, new SQLRuleManager(syntaxManager), document);
     }
 
     /**
@@ -151,7 +151,6 @@ public class SQLIndenter {
             int indentLength = nonWS - lineOffset;
             StringBuilder indent = createIndent();
             if (indentLength >= indent.length() && scanner.endsWithDelimiter(lineOffset, lineOffset + line.getLength() - 1)) {
-                SQLParserContext context = new SQLParserContext((DBPDataSource) null, syntaxManager, new SQLRuleManager(syntaxManager), document);
                 SQLScriptElement currentQuery = SQLScriptParser.extractQueryAtPos(context, offset);
 
                 nonWS = currentQuery.getOffset();
