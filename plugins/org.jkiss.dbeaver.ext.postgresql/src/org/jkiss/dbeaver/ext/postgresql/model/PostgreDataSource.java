@@ -529,6 +529,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             if (PostgreConstants.NEW_UA_TIMEZONE.equals(TimeZone.getDefault().getID())) {
                 TimezoneRegistry.setDefaultZone(ZoneId.of(PostgreConstants.LEGACY_UA_TIMEZONE), false);
                 timezoneOverridden = true;
+            } else if (PostgreConstants.NEW_IST_TIMEZONE.equals(TimeZone.getDefault().getID())) {
+                TimezoneRegistry.setDefaultZone(ZoneId.of(PostgreConstants.LEGACY_IST_TIMEZONE), false);
+                timezoneOverridden = true;
             }
 
             if (isReadDatabaseList(conConfig) || !CommonUtils.isEmpty(conConfig.getBootstrap().getDefaultCatalogName())) {
@@ -580,8 +583,12 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
             throw e;
         } finally {
-            if (timezoneOverridden && PostgreConstants.LEGACY_UA_TIMEZONE.equals(TimeZone.getDefault().getID())) {
-                TimezoneRegistry.setDefaultZone(ZoneId.of(PostgreConstants.NEW_UA_TIMEZONE), false);
+            if (timezoneOverridden) {
+                if (PostgreConstants.LEGACY_UA_TIMEZONE.equals(TimeZone.getDefault().getID())) {
+                    TimezoneRegistry.setDefaultZone(ZoneId.of(PostgreConstants.NEW_UA_TIMEZONE), false);
+                } else if (PostgreConstants.LEGACY_IST_TIMEZONE.equals(TimeZone.getDefault().getID())) {
+                    TimezoneRegistry.setDefaultZone(ZoneId.of(PostgreConstants.NEW_IST_TIMEZONE), false);
+                }
             }
         }
 
