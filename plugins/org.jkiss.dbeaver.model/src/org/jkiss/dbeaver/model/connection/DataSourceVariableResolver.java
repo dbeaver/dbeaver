@@ -104,6 +104,8 @@ public class DataSourceVariableResolver extends SystemVariablesResolver {
                     return dataSourceContainer.getProject().getName();
                 case DBPConnectionConfiguration.VARIABLE_DATE:
                     return RuntimeUtils.getCurrentDate();
+                case DBPConnectionConfiguration.VARIABLE_TIME:
+                    return RuntimeUtils.getCurrentTime();
             }
 
             if (name.startsWith(DBPConnectionConfiguration.VARIABLE_PREFIX_ORIGIN)) {
