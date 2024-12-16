@@ -73,6 +73,7 @@ public class GeneralUtils {
 
     public static final String DEFAULT_TIMESTAMP_PATTERN = "yyyyMMddHHmm";
     public static final String DEFAULT_DATE_PATTERN = "yyyyMMdd";
+    public static final String DEFAULT_TIME_PATTERN = "HHmmss";
     public static final String RESOURCE_NAME_FORBIDDEN_SYMBOLS_REGEX = "(?U)[^/:'\"\\\\<>|?*]+";
 
     public static final String[] byteToHex = new String[256];
