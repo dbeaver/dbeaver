@@ -853,7 +853,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     @NotNull
     @Override
     public DBSObjectState getObjectState() {
-        if (this == dataSource.getDefaultInstance() || this.isSharedDatabase()) {
+        if ((!dataSource.isConnectionRefreshing() && this == dataSource.getDefaultInstance()) || this.isSharedDatabase()) {
             return DBSObjectState.NORMAL;
         } else {
             return PostgreConstants.STATE_UNAVAILABLE;

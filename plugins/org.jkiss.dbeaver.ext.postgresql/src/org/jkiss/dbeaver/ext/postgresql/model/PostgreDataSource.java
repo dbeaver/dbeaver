@@ -98,6 +98,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     private volatile boolean hasStatistics;
     private boolean supportsEnumTable;
     private boolean supportsReltypeColumn = true;
+    private volatile boolean isConnectionRefreshing = false;
 
     public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -169,7 +170,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         }
         databaseCache.setCache(dbList);
         // Initiate default context
-        getDefaultInstance().checkInstanceConnection(monitor, false);
+        if (!this.isConnectionRefreshing()) {
+            getDefaultInstance().checkInstanceConnection(monitor, false);
+        }
         try {
             // Preload some settings, if available
             settingCache.getObject(monitor, this, PostgreConstants.OPTION_STANDARD_CONFORMING_STRINGS);
@@ -467,15 +470,18 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         super.refreshObject(monitor);
         shutdown(monitor);
 
-        this.databaseCache.clearCache();
-        this.activeDatabaseName = null;
-
-        this.initializeRemoteInstance(monitor);
+        try {
+            this.isConnectionRefreshing = true;
+            this.databaseCache.clearCache();
+            this.activeDatabaseName = null;
+            this.initializeRemoteInstance(monitor);
+        } finally {
+            this.isConnectionRefreshing = false;
+        }
         this.initialize(monitor);
 
         return this;
@@ -781,6 +787,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         } finally {
             hasStatistics = true;
         }
+    }
+
+    @Override
+    public boolean isConnectionRefreshing() {
+        return isConnectionRefreshing;
     }
 
     private static class DatabaseCache extends SimpleObjectCache<PostgreDataSource, PostgreDatabase> {
