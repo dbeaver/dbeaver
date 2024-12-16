@@ -130,6 +130,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
     private Color foregroundNull;
     private Color backgroundMatched;
     private Color backgroundError;
+    private Color foregroundError;
 
     private Color cellHeaderForeground;
     private Color cellHeaderBackground;
@@ -1416,6 +1417,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         this.backgroundSelected = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_BACK);
         this.backgroundMatched = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_MATCHED);
         this.backgroundError = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_ERROR_BACK);
+        this.foregroundError = colorRegistry.get(BaseEditorColors.COLOR_ERROR);
 
         this.cellHeaderForeground = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_HEADER_FOREGROUND);
         this.cellHeaderBackground = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_HEADER_BACKGROUND);
@@ -3097,7 +3099,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         @Override
         public Color getErrorForeground() {
-            return backgroundError;
+            return foregroundError;
         }
     }
 
