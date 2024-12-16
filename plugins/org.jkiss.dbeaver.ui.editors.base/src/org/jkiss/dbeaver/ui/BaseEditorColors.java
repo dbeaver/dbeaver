@@ -20,11 +20,13 @@ package org.jkiss.dbeaver.ui;
  * Colors for various connection-related objects
  */
 public interface BaseEditorColors {
+    String COLOR_SUCCESS = "org.jkiss.dbeaver.txn.color.committed.background";  //= new RGB(0xBD, 0xFE, 0xBF); //$NON-NLS-1$
+    String COLOR_ERROR = "org.jkiss.dbeaver.txn.color.reverted.background";  // = new RGB(0xFF, 0x63, 0x47); //$NON-NLS-1$
+    String COLOR_WARNING = "org.jkiss.dbeaver.txn.color.transaction.background";  // = new RGB(0xFF, 0xE4, 0xB5); //$NON-NLS-1$
 
 
-    String COLOR_UNCOMMITTED = "org.jkiss.dbeaver.txn.color.committed.background";  //= new RGB(0xBD, 0xFE, 0xBF); //$NON-NLS-1$
-    String COLOR_REVERTED = "org.jkiss.dbeaver.txn.color.reverted.background";  // = new RGB(0xFF, 0x63, 0x47); //$NON-NLS-1$
-    String COLOR_TRANSACTION = "org.jkiss.dbeaver.txn.color.transaction.background";  // = new RGB(0xFF, 0xE4, 0xB5); //$NON-NLS-1$
+    String COLOR_UNCOMMITTED = COLOR_SUCCESS;
+    String COLOR_REVERTED = COLOR_ERROR;
+    String COLOR_TRANSACTION = COLOR_WARNING;
 
-    String COLOR_ERROR = COLOR_REVERTED;
 }
