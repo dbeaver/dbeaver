@@ -163,7 +163,7 @@ public class HANAProcedure extends GenericProcedure {
         return HANADependency.readDependencies(monitor, this);
     }
 
-    @Property(hidden = true)
+    @Property(hidden = true, labelProvider = GenericCatalog.CatalogNameTermProvider.class)
     public GenericCatalog getCatalog() { return super.getCatalog(); }
 
     @Property(hidden = true)

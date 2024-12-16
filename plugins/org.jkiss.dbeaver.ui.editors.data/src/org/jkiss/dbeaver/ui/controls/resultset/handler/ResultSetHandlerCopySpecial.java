@@ -144,7 +144,7 @@ public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements
 
             createControlsBefore(group);
             colDelimCombo = UIWidgets.createDelimiterCombo(group, ResultSetMessages.copy_special_column_delimiter, new String[] {"\t", ";", ","}, copySettings.getColumnDelimiter(), false);
-            rowDelimCombo = UIWidgets.createDelimiterCombo(group, ResultSetMessages.copy_special_row_delimiter, new String[] {"\n", "|", "^"}, copySettings.getRowDelimiter(), false);
+            rowDelimCombo = UIWidgets.createDelimiterCombo(group, ResultSetMessages.copy_special_row_delimiter, new String[] {"\n", "|", "^", ","}, copySettings.getRowDelimiter(), false);
             quoteStringCombo = UIWidgets.createDelimiterCombo(group, ResultSetMessages.copy_special_quote_character, new String[] {"\"", "'"}, copySettings.getQuoteString(), false);
 
             Composite placeholder = UIUtils.createPlaceholder(group, 2);

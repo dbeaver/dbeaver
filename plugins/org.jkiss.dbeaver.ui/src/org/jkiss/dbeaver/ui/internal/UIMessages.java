@@ -119,6 +119,8 @@ public class UIMessages extends NLS {
 
     public static String link_external_label;
     public static String link_external_tip;
+    public static String label_catalog_schema;
+    public static String label_choose;
 
     static {
         // initialize resource bundle

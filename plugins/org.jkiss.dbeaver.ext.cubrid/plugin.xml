@@ -8,7 +8,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
-        <dialect id="cubrid" parent="generic" class="org.jkiss.dbeaver.ext.cubrid.model.CubridSQLDialect.java" label="Cubrid"
+        <dialect id="cubrid" parent="generic" class="org.jkiss.dbeaver.ext.cubrid.model.CubridSQLDialect" label="Cubrid"
                  description="Cubrid SQL dialect." icon="icons/cubrid_icon.png">
         </dialect>
     </extension>

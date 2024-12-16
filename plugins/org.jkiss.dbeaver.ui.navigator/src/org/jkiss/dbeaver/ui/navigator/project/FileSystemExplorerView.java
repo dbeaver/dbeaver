@@ -146,14 +146,12 @@ public class FileSystemExplorerView extends DatabaseBrowserView {
             new ColumnLabelProvider() {
                 @Override
                 public String getText(Object element) {
-                    if (element instanceof DBNPath) {
-                        Path path = ((DBNPathBase) element).getPath();
-                        if (path != null && Files.isRegularFile(path)) {
-                            try {
-                                return sizeFormat.format(Files.size(path));
-                            } catch (IOException e) {
-                                log.debug(e);
-                            }
+                    if (element instanceof DBNPath dbnPath && !dbnPath.allowsChildren()) {
+                        Path path = dbnPath.getPath();
+                        try {
+                            return sizeFormat.format(Files.size(path));
+                        } catch (IOException e) {
+                            log.debug(e);
                         }
                     }
                     return "";

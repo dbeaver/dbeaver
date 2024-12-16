@@ -137,6 +137,7 @@ public class StreamProducerSettings implements IDataTransferSettings {
                 dataTransferSettings.getProcessorProperties()
             );
         } catch (DBException e) {
+            log.warn("Exception during of updating producer settings", e);
             dataTransferSettings.getState().addError(e);
         }
     }

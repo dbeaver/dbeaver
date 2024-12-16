@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver SQLite Tests
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.sqlite.test
-Bundle-Version: 1.0.27.qualifier
-Bundle-Release-Date: 20241202
+Bundle-Version: 1.0.28.qualifier
+Bundle-Release-Date: 20241223
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp
 Bundle-ClassPath: .

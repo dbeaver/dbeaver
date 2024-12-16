@@ -77,7 +77,8 @@ public class EditConnectionWizard extends ConnectionWizard {
      */
     public EditConnectionWizard(@NotNull DataSourceDescriptor dataSource) {
         this.originalDataSource = dataSource;
-        this.dataSource = new DataSourceDescriptor(dataSource, dataSource.getRegistry());
+        this.dataSource = dataSource.getRegistry().createDataSource(dataSource);
+        this.dataSource.setId(dataSource.getId());
         if (!this.dataSource.isSavePassword()) {
             this.dataSource.resetPassword();
         }
@@ -151,7 +152,7 @@ public class EditConnectionWizard extends ConnectionWizard {
             dataSource.getDriver().getProviderDescriptor(),
             IActionConstants.EDIT_CONNECTION_POINT);
         if (view != null) {
-            pageSettings = new ConnectionPageSettings(this, view, dataSource, getDriverSubstitution());
+            pageSettings = new ConnectionPageSettings(this, view, getDriverSubstitution());
             addPage(pageSettings);
         }
 
@@ -243,33 +244,31 @@ public class EditConnectionWizard extends ConnectionWizard {
         return null;
     }
 
-    /**
-     * This method is called when 'Finish' button is pressed in
-     * the wizard. We will create an operation and run it
-     * using wizard as execution context.
-     */
+    @NotNull
     @Override
-    public boolean performFinish() {
+    protected PersistResult persistDataSource() {
         if (dataSource.getDriver().isNotAvailable()) {
-            return true;
+            return PersistResult.UNCHANGED;
         }
 
         DBPDataSourceRegistry registry = originalDataSource.getRegistry();
-        DataSourceDescriptor dsCopy = new DataSourceDescriptor(originalDataSource, registry);
-        DataSourceDescriptor dsChanged = new DataSourceDescriptor(dataSource, dataSource.getRegistry());
+        DataSourceDescriptor dsCopy = registry.createDataSource(originalDataSource);
+        dsCopy.setId(originalDataSource.getId());
+        DataSourceDescriptor dsChanged = dataSource.getRegistry().createDataSource(dataSource);
+        dsChanged.setId(dataSource.getId());
         try {
             saveSettings(dsChanged);
 
             if (dsCopy.equalSettings(dsChanged)) {
                 // No changes
-                return true;
+                return PersistResult.UNCHANGED;
             }
 
             // Check locked datasources
             if (!CommonUtils.isEmpty(dataSource.getLockPasswordHash())) {
                 if (!isOnlyUserCredentialChanged(dsCopy, dsChanged)) {
                     if (!checkLockPassword()) {
-                        return false;
+                        return PersistResult.ERROR;
                     }
                 }
             }
@@ -278,30 +277,40 @@ public class EditConnectionWizard extends ConnectionWizard {
             dsChanged.dispose();
         }
 
-
-        boolean performReconnect = false;
-        if (originalDataSource.isConnected()) {
-            if (UIUtils.confirmAction(getShell(), CoreMessages.dialog_connection_edit_wizard_conn_change_title,
-                NLS.bind(CoreMessages.dialog_connection_edit_wizard_conn_change_question,
-                originalDataSource.getName()) )
-            ) {
-                performReconnect = true;
-            }
-        }
-
         // Save
         saveSettings(originalDataSource);
+
         // Set selected shared creds (creds may be resolved during auth model interactions)
         DBSSecretValue selectedSharedCredentials = dataSource.getSelectedSharedCredentials();
         if (selectedSharedCredentials != null) {
             selectedSharedCredentials.setValue(originalDataSource.saveToSecret());
             originalDataSource.setSelectedSharedCredentials(selectedSharedCredentials);
         }
-        boolean changesSaved = originalDataSource.persistConfiguration();
-        if (changesSaved && performReconnect) {
-            DataSourceHandler.reconnectDataSource(null, originalDataSource);
+
+        if (originalDataSource.persistConfiguration()) {
+            return PersistResult.CHANGED;
+        } else {
+            return PersistResult.ERROR;
         }
-        return changesSaved;
+    }
+
+    /**
+     * This method is called when 'Finish' button is pressed in
+     * the wizard. We will create an operation and run it
+     * using wizard as execution context.
+     */
+    @Override
+    public boolean performFinish() {
+        PersistResult result = persistDataSource();
+        if (result == PersistResult.CHANGED && originalDataSource.isConnected()) {
+            if (UIUtils.confirmAction(getShell(), CoreMessages.dialog_connection_edit_wizard_conn_change_title,
+                NLS.bind(CoreMessages.dialog_connection_edit_wizard_conn_change_question,
+                originalDataSource.getName()) )
+            ) {
+                DataSourceHandler.reconnectDataSource(null, originalDataSource);
+            }
+        }
+        return result != PersistResult.ERROR;
     }
 
     private boolean isOnlyUserCredentialChanged(DataSourceDescriptor dsCopy, DataSourceDescriptor dsChanged) {

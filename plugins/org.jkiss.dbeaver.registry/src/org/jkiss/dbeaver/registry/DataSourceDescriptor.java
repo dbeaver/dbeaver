@@ -181,6 +181,7 @@ public class DataSourceDescriptor
     private transient DBWNetworkHandler proxyHandler;
     private transient DBWTunnel tunnelHandler;
     private final List<DBPDataSourceTask> users = new ArrayList<>();
+    private transient String clientApplicationName;
     // DPI controller
     private transient DPIProcessController dpiController;
 
@@ -650,6 +651,17 @@ public class DataSourceDescriptor
         }
 
         updateObjectFilter(type.getName(), parentObject == null ? null : FilterMapping.getFilterContainerUniqueID(parentObject), filter);
+    }
+
+    @Nullable
+    @Override
+    public String getClientApplicationName() {
+        return this.clientApplicationName;
+    }
+
+    @Override
+    public void setClientApplicationName(@NotNull String applicationName) {
+        this.clientApplicationName = applicationName;
     }
 
     void clearFilters() {
@@ -1152,7 +1164,7 @@ public class DataSourceDescriptor
         }
 
         resolvedConnectionInfo = new DBPConnectionConfiguration(connectionInfo);
-
+        patchConnectionProperties(monitor, resolvedConnectionInfo);
         // Update auth properties if possible
         lastConnectionError = null;
         try {
@@ -1316,6 +1328,14 @@ public class DataSourceDescriptor
         } finally {
             monitor.done();
         }
+    }
+
+
+    protected void patchConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPConnectionConfiguration resolvedConnectionInfo
+    ) throws DBException {
+
     }
 
     private void terminateChildProcesses() {

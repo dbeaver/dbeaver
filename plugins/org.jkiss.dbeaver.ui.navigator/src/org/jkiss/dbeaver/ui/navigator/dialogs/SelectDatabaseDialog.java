@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.navigator.dialogs;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -42,7 +43,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.itemlist.DatabaseObjectListControl;
 import org.jkiss.utils.CommonUtils;
@@ -75,7 +76,9 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
         Collection<DBNDatabaseNode> selected)
     {
         super(parentShell,
-            UINavigatorMessages.label_choose_catalog,
+            NLS.bind(
+                UIMessages.label_choose,
+                UIUtils.getCatalogSchemaTerms(dataSourceContainer, true)),
             true,
             "SchemaSelector", //$NON-NLS-1$
             objects,
@@ -90,7 +93,7 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
         if (currentInstanceName == null || dataSource == null) {
             return;
         }
-        DBCExecutionContextDefaults contextDefaults = getContextDefaults();
+        DBCExecutionContextDefaults<?,?> contextDefaults = getContextDefaults();
         if (contextDefaults != null && contextDefaults.supportsCatalogChange() && contextDefaults.supportsSchemaChange()) {
             DBSObjectContainer instanceContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
             if (instanceContainer == null) {
@@ -104,7 +107,7 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
     }
 
     @Nullable
-    private DBCExecutionContextDefaults getContextDefaults() {
+    private DBCExecutionContextDefaults<?,?> getContextDefaults() {
         DBPDataSource dataSource = dataSourceContainer.getDataSource();
         DBSObjectContainer instanceContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
         DBCExecutionContext defaultContext = DBUtils.getDefaultContext(instanceContainer, true);
@@ -168,7 +171,7 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
         }
         if (rootObject instanceof DBSObjectContainer) {
             try {
-                DBCExecutionContextDefaults contextDefaults = getContextDefaults();
+                DBCExecutionContextDefaults<?,?> contextDefaults = getContextDefaults();
                 Collection<? extends DBSObject> objectsCollection;
                 if (rootObject instanceof DBSCatalog && contextDefaults != null && !contextDefaults.supportsSchemaChange()) {
                     DBSSchema schema = contextDefaults.getDefaultSchema();

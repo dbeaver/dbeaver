@@ -11,6 +11,6 @@
 		<relativePath>../</relativePath>
 	</parent>
 	<artifactId>org.jkiss.dbeaver.ext.ocient</artifactId>
-	<version>1.0.115-SNAPSHOT</version>
+	<version>1.0.116-SNAPSHOT</version>
 	<packaging>eclipse-plugin</packaging>
 </project>

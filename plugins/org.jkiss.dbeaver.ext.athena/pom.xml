@@ -9,6 +9,6 @@
      <relativePath>../</relativePath>
   </parent>
   <artifactId>org.jkiss.dbeaver.ext.athena</artifactId>
-  <version>1.0.150-SNAPSHOT</version>
+  <version>1.0.151-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 </project>

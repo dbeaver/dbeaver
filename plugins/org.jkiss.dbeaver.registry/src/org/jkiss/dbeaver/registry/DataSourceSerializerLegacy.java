@@ -53,17 +53,16 @@ import java.util.List;
 /**
  * Legacy datasource serialization (xml)
  */
-class DataSourceSerializerLegacy implements DataSourceSerializer
-{
+class DataSourceSerializerLegacy<T extends DataSourceDescriptor> implements DataSourceSerializer<T> {
     private static final Log log = Log.getLog(DataSourceSerializerLegacy.class);
 
-    private final DataSourceRegistry registry;
+    private final DataSourceRegistry<T> registry;
 
     private static final String LEGACY_DEFAULT_AUTO_COMMIT = "default.autocommit"; //$NON-NLS-1$
     private static final String LEGACY_DEFAULT_ISOLATION = "default.isolation"; //$NON-NLS-1$
     private static final String LEGACY_DEFAULT_ACTIVE_OBJECT = "default.activeObject"; //$NON-NLS-1$
 
-    DataSourceSerializerLegacy(DataSourceRegistry registry) {
+    DataSourceSerializerLegacy(DataSourceRegistry<T> registry) {
         this.registry = registry;
     }
 
@@ -72,7 +71,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
         DBRProgressMonitor monitor,
         DataSourceConfigurationManager configurationManager,
         DBPDataSourceConfigurationStorage configurationStorage,
-        List<DataSourceDescriptor> localDataSources
+        List<T> localDataSources
     ) throws IOException {
         throw new IOException("Legacy serializer is deprecated, save not possible");
     }
