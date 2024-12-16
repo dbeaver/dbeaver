@@ -27,8 +27,11 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
+import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.trace.DBCTrace;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVColorOverride;
@@ -57,6 +60,8 @@ public class ResultSetModel {
     private DBSEntity singleSourceEntity;
     private DBCExecutionSource executionSource;
 
+    private final ResultSetHintContext hintContext;
+
     // Data
     private List<ResultSetRow> curRows = new ArrayList<>();
     private Long totalRowCount = null;
@@ -65,21 +70,20 @@ public class ResultSetModel {
     // Flag saying that edited values update is in progress
     private volatile DataSourceJob updateInProgress = null;
 
-    // Coloring
-    private final Map<DBDAttributeBinding, List<AttributeColorSettings>> colorMapping = new LinkedHashMap<>();
-
     private DBCStatistics statistics;
     private DBCTrace trace;
     private transient boolean metadataChanged;
     private transient boolean metadataDynamic;
 
     public static class AttributeColorSettings {
-        private DBCLogicalOperator operator;
-        private boolean rangeCheck;
-        private boolean singleColumn;
-        private Object[] attributeValues;
-        private Color colorForeground, colorForeground2;
-        private Color colorBackground, colorBackground2;
+        private final DBCLogicalOperator operator;
+        private final boolean rangeCheck;
+        private final boolean singleColumn;
+        private final Object[] attributeValues;
+        private final Color colorForeground;
+        private final Color colorForeground2;
+        private final Color colorBackground;
+        private final Color colorBackground2;
 
         AttributeColorSettings(DBVColorOverride co) {
             this.operator = co.getOperator();
@@ -104,7 +108,7 @@ public class ResultSetModel {
         }
     }
 
-    private final Comparator<DBDAttributeBinding> POSITION_SORTER = new Comparator<DBDAttributeBinding>() {
+    private final Comparator<DBDAttributeBinding> POSITION_SORTER = new Comparator<>() {
         @Override
         public int compare(DBDAttributeBinding o1, DBDAttributeBinding o2) {
             final DBDAttributeConstraint c1 = dataFilter.getConstraint(o1);
@@ -121,8 +125,20 @@ public class ResultSetModel {
         }
     };
 
+    // Coloring
+    private final Map<DBDAttributeBinding, List<AttributeColorSettings>> colorMapping = new TreeMap<>(POSITION_SORTER);
+
     public ResultSetModel() {
-        dataFilter = createDataFilter();
+        this.hintContext = new ResultSetHintContext(this::getDataContainer);
+        this.dataFilter = createDataFilter();
+    }
+
+    public DBDValueHintContext getHintContext() {
+        return hintContext;
+    }
+
+    public List<DBDValueHintProvider> getHintProviders(DBDAttributeBinding attr) {
+        return hintContext.getHintProviders(attr);
     }
 
     @NotNull
@@ -505,7 +521,7 @@ public class ResultSetModel {
             row.changes.put(attr, topAttribute);
         }
 
-        if (value instanceof DBDValue dbValue) {
+        if (value instanceof DBDValue) {
             // New value if also a complex value. Probably DBDContent
             // In this case it must be root attribute
             if (attr != topAttribute && valueToEdit instanceof DBDValue ownerValue) {
@@ -628,6 +644,10 @@ public class ResultSetModel {
                 }
             }
         }
+
+        if (metadataChanged) {
+            hintContext.resetCache();
+        }
     }
 
     private boolean isSameSource(DBDAttributeBinding attr1, DBDAttributeBinding attr2) {
@@ -663,7 +683,7 @@ public class ResultSetModel {
         }
     }
 
-    public void setData(@NotNull List<Object[]> rows) {
+    public void setData(@NotNull DBRProgressMonitor monitor, @NotNull List<Object[]> rows) {
         // Clear previous data
         this.releaseAllData();
         this.clearData();
@@ -693,8 +713,9 @@ public class ResultSetModel {
         }
 
         // Add new data
+        updateDataFilter();
         updateColorMapping(false);
-        appendData(rows, true);
+        appendData(monitor, rows, true);
         updateDataFilter();
 
         this.visibleAttributes.sort(POSITION_SORTER);
@@ -825,7 +846,7 @@ public class ResultSetModel {
         }
     }
 
-    void appendData(@NotNull List<Object[]> rows, boolean resetOldRows) {
+    void appendData(@NotNull DBRProgressMonitor monitor, @NotNull List<Object[]> rows, boolean resetOldRows) {
         if (resetOldRows) {
             curRows.clear();
         }
@@ -839,6 +860,14 @@ public class ResultSetModel {
         curRows.addAll(newRows);
 
         updateRowColors(resetOldRows, newRows);
+
+        try {
+            hintContext.resetCache();
+            hintContext.initProviders(attributes);
+            hintContext.cacheRequiredData(monitor, newRows, metadataChanged);
+        } catch (Exception e) {
+            log.debug("Error caching data for column hints", e);
+        }
     }
 
     void clearData() {
@@ -982,6 +1011,7 @@ public class ResultSetModel {
         }
         if (!newBindings.isEmpty() && !newBindings.equals(visibleAttributes)) {
             visibleAttributes = newBindings;
+            updateColorMapping(true);
             return true;
         }
         return false;
@@ -1066,6 +1096,8 @@ public class ResultSetModel {
         this.dataFilter.setWhere(filter.getWhere());
         this.dataFilter.setOrder(filter.getOrder());
         this.dataFilter.setAnyConstraint(filter.isAnyConstraint());
+
+        updateColorMapping(true);
     }
 
     public void resetOrdering(@NotNull DBDAttributeBinding columnElement) {

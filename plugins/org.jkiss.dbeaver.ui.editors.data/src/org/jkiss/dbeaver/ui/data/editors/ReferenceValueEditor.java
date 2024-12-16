@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -80,7 +81,8 @@ public class ReferenceValueEditor {
     private TableColumn prevSortColumn = null;
     private Font boldFont;
     private LoadingJob<EnumValuesData> dictFilterJob;
-    private ViewController controller;
+    private final ViewController controller;
+    private Font defaultFont;
 
     private class ViewController {
         private final int pageSize;
@@ -319,11 +321,12 @@ public class ReferenceValueEditor {
             return false;
         }
 
-        this.boldFont = UIUtils.makeBoldFont(parent.getFont());
+        this.defaultFont = UIUtils.getActiveWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme()
+            .getFontRegistry().get(ThemeConstants.FONT_SQL_RESULT_SET);
+        this.boldFont = UIUtils.makeBoldFont(defaultFont);
         parent.addDisposeListener(e -> this.boldFont.dispose());
 
-        if (refConstraint instanceof DBSEntityAssociation) {
-            final DBSEntityAssociation association = (DBSEntityAssociation)refConstraint;
+        if (refConstraint instanceof DBSEntityAssociation association) {
             if (association.getReferencedConstraint() != null) {
                 final DBSEntity refTable = association.getReferencedConstraint().getParentObject();
                 Composite labelGroup = UIUtils.createPlaceholder(parent, 2);
@@ -377,6 +380,7 @@ public class ReferenceValueEditor {
         editorSelector = new Table(parent, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);
         editorSelector.setLinesVisible(true);
         editorSelector.setHeaderVisible(true);
+        editorSelector.setFont(defaultFont);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 150;
         //gd.widthHint = 300;
@@ -479,7 +483,7 @@ public class ReferenceValueEditor {
                 editorSelector.showItem(item);
                 newValueFound = true;
             } else {
-                item.setFont(null);
+                item.setFont(defaultFont);
             }
         }
 
@@ -514,13 +518,13 @@ public class ReferenceValueEditor {
         }
     }
     
-    private Action actionGoBackward = new Action("Move Backward", DBeaverIcons.getImageDescriptor(UIIcon.ARROW_LEFT)) {
+    private final Action actionGoBackward = new Action("Move Backward", DBeaverIcons.getImageDescriptor(UIIcon.ARROW_LEFT)) {
         @Override
         public void run() {
             controller.goToPrevPage();
         }
     }; 
-    private Action actionGoForward = new Action("Move Forward", DBeaverIcons.getImageDescriptor(UIIcon.ARROW_RIGHT)) {
+    private final Action actionGoForward = new Action("Move Forward", DBeaverIcons.getImageDescriptor(UIIcon.ARROW_RIGHT)) {
         @Override
         public void run() {
             controller.goToNextPage();
@@ -558,7 +562,7 @@ public class ReferenceValueEditor {
                         curItem = item;
                         curItemIndex = i;
                     } else {
-                        item.setFont(null);
+                        item.setFont(defaultFont);
                     }
                 }
                 editorSelector.deselectAll();
@@ -585,7 +589,7 @@ public class ReferenceValueEditor {
         public void run() {
             StringBuilder result = new StringBuilder();
             for (TableItem item : editorSelector.getSelection()) {
-                if (result.length() > 0) result.append("\n");
+                if (!result.isEmpty()) result.append("\n");
                 result.append(item.getText(0));
             }
             UIUtils.setClipboardContents(editorSelector.getDisplay(), TextTransfer.getInstance(), result.toString());
@@ -627,7 +631,7 @@ public class ReferenceValueEditor {
     }
 
     class SelectorLoaderService extends AbstractLoadService<EnumValuesData> {
-        private ExceptableFunction<DBSDictionaryAccessor, List<DBDLabelValuePair>, DBException> action;
+        private final ExceptableFunction<DBSDictionaryAccessor, List<DBDLabelValuePair>, DBException> action;
 
         private SelectorLoaderService(ExceptableFunction<DBSDictionaryAccessor, List<DBDLabelValuePair>, DBException> action) {
             super(ResultSetMessages.dialog_value_view_job_selector_name + valueController.getValueName() + " possible values");

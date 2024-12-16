@@ -71,6 +71,7 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
     private boolean removeDefiner;
     private boolean binariesInHex;
     private boolean noData;
+    private boolean noRoutines;
     private boolean showViews;
     private boolean overrideCredentials;
 
@@ -165,6 +166,14 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
         this.noData = noData;
     }
 
+    public boolean isNoRoutines() {
+        return noRoutines;
+    }
+
+    public void setNoRoutines(boolean noRoutines) {
+        this.noRoutines = noRoutines;
+    }
+
     public boolean isShowViews() {
         return showViews;
     }
@@ -234,6 +243,7 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
         removeDefiner = CommonUtils.getBoolean(store.getString("MySQL.export.removeDefiner"), false);
         binariesInHex = CommonUtils.getBoolean(store.getString("MySQL.export.binariesInHex"), false);
         noData = CommonUtils.getBoolean(store.getString("MySQL.export.noData"), false);
+        noRoutines = CommonUtils.getBoolean(store.getString("MySQL.export.noRoutines"), false);
         showViews = CommonUtils.getBoolean(store.getString("MySQL.export.showViews"), false);
         overrideCredentials = CommonUtils.getBoolean(store.getString(MySQLNativeCredentialsSettings.PREFERENCE_NAME), false);
         if (CommonUtils.isEmpty(getExtraCommandArgs())) {
@@ -305,6 +315,7 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
         store.setValue("MySQL.export.removeDefiner", removeDefiner);
         store.setValue("MySQL.export.binariesInHex", binariesInHex);
         store.setValue("MySQL.export.noData", noData);
+        store.setValue("MySQL.export.noRoutines", noRoutines);
         store.setValue("MySQL.export.showViews", showViews);
         store.setValue(MySQLNativeCredentialsSettings.PREFERENCE_NAME, overrideCredentials);
 

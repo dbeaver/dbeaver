@@ -96,7 +96,11 @@ public class SystemVariablesResolver implements IVariableResolver {
     }
 
     public static String getWorkspacePath() {
-        return DBWorkbench.getPlatform().getWorkspace().getAbsolutePath().toString();
+        if (DBWorkbench.isPlatformStarted()) {
+            return DBWorkbench.getPlatform().getWorkspace().getAbsolutePath().toString();
+        } else {
+            return getPlainPath(Platform.getInstanceLocation().getURL());
+        }
     }
 
     public static String getUserHome() {

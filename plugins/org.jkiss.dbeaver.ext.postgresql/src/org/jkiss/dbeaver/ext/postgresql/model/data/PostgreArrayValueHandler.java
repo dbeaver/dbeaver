@@ -133,9 +133,9 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
     @NotNull
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
-        if (!DBUtils.isNullValue(value) && value instanceof DBDCollection) {
-            final DBDCollection collection = (DBDCollection) value;
-            final StringJoiner output = new StringJoiner(PostgreUtils.getArrayDelimiter(collection.getComponentType()), "{", "}");
+        if (!DBUtils.isNullValue(value) && value instanceof DBDCollection collection) {
+            final StringJoiner output = new StringJoiner(
+                PostgreUtils.getArrayDelimiter(collection.getComponentType()), "{", "}");
 
             for (int i = 0; i < collection.getItemCount(); i++) {
                 final Object item = collection.getItem(i);

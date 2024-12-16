@@ -76,8 +76,8 @@ public class StatisticsTransmitter {
     private void sendStatistics(DBRProgressMonitor monitor, boolean sendActiveSession) {
         try {
             String appSessionId = DBWorkbench.getPlatform().getApplication().getApplicationRunId();
-            Path logsFolder = FeatureStatisticsCollector.getLogsFolder();
-            try (Stream<Path> list = Files.list(logsFolder)) {
+            Path activityLogsFolder = FeatureStatisticsCollector.getActivityLogsFolder();
+            try (Stream<Path> list = Files.list(activityLogsFolder)) {
                 List<Path> logFiles = list
                     .filter(path -> path.getFileName().toString().endsWith(".log"))
                     .toList();

@@ -133,7 +133,12 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
 
     @Override
     protected boolean isHidePropertyValue(DBPPropertyDescriptor property) {
-        return CommonUtils.toString(property.getId()).toLowerCase(Locale.ENGLISH).contains("password");
+        Class<?> dataType = property.getDataType();
+        if (dataType != null && !(String.class.isAssignableFrom(dataType))) {
+            return false;
+        }
+        String propName = CommonUtils.toString(property.getId()).toLowerCase(Locale.ENGLISH);
+        return propName.contains("password") || propName.contains("token");
     }
 
     private void createNewProperty(Object node, String category) {

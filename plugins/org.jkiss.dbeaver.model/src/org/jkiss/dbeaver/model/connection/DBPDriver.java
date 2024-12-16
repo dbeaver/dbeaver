@@ -204,7 +204,7 @@ public interface DBPDriver extends DBPNamedObject
     @NotNull
     List<? extends DBPDriverFileSource> getDriverFileSources();
 
-    boolean needsExternalDependencies();
+    boolean needsExternalDependencies(@NotNull DBRProgressMonitor monitor);
 
     @NotNull
     <T> T getDriverInstance(@NotNull DBRProgressMonitor monitor) throws DBException;

@@ -26,7 +26,8 @@ public enum SQLiteAffinity {
     REAL(DBPDataKind.NUMERIC, Types.DOUBLE, 17, 17),
     NUMERIC(DBPDataKind.NUMERIC, Types.NUMERIC, 17, 17),
     TEXT(DBPDataKind.STRING, Types.VARCHAR, Integer.MAX_VALUE, 0),
-    BLOB(DBPDataKind.BINARY, Types.BINARY, Integer.MAX_VALUE, 0);
+    BLOB(DBPDataKind.BINARY, Types.BINARY, Integer.MAX_VALUE, 0),
+    ANY(DBPDataKind.ANY, Types.NULL, Integer.MAX_VALUE, 0);
 
     private final DBPDataKind dataKind;
     private final int valueType;

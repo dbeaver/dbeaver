@@ -21,11 +21,14 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBPVirtualObject;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * GenericSchema
@@ -45,8 +48,9 @@ public class GenericSchema extends GenericObjectContainer implements DBSSchema, 
         this.schemaName = schemaName;
     }
 
+    @Nullable
     @Override
-    @Property(optional = true, order = 2)
+    @Property(optional = true, order = 2, labelProvider = GenericCatalog.CatalogNameTermProvider.class)
     public GenericCatalog getCatalog()
     {
         return catalog;
@@ -66,7 +70,7 @@ public class GenericSchema extends GenericObjectContainer implements DBSSchema, 
 
     @NotNull
     @Override
-    @Property(viewable = true, order = 1)
+    @Property(viewable = true, order = 1, labelProvider = SchemaNameTermProvider.class)
     public String getName()
     {
         return schemaName;
@@ -106,6 +110,17 @@ public class GenericSchema extends GenericObjectContainer implements DBSSchema, 
 
     public void setVirtual(boolean nullSchema) {
         this.virtualSchema = nullSchema;
+    }
+
+    public static class SchemaNameTermProvider implements IPropertyValueTransformer<DBSObject, String> {
+        @Override
+        public String transform(DBSObject object, String value) throws IllegalArgumentException {
+            String schemaTerm = object.getDataSource().getInfo().getSchemaTerm();
+            if (!CommonUtils.isEmpty(schemaTerm)) {
+                return schemaTerm + " " + ModelMessages.model_navigator_Name;
+            }
+            return ModelMessages.model_navigator_Name;
+        }
     }
 
 }

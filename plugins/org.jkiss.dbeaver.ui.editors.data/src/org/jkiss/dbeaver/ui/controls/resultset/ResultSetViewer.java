@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
@@ -70,6 +71,8 @@ import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.*;
 import org.jkiss.dbeaver.registry.BasePolicyDataProvider;
+import org.jkiss.dbeaver.registry.data.hints.ValueHintProviderDescriptor;
+import org.jkiss.dbeaver.registry.data.hints.ValueHintRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
@@ -81,6 +84,7 @@ import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
 import org.jkiss.dbeaver.ui.controls.VerticalButton;
 import org.jkiss.dbeaver.ui.controls.VerticalFolder;
 import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
+import org.jkiss.dbeaver.ui.controls.resultset.actions.*;
 import org.jkiss.dbeaver.ui.controls.resultset.colors.CustomizeColorsAction;
 import org.jkiss.dbeaver.ui.controls.resultset.colors.ResetAllColorAction;
 import org.jkiss.dbeaver.ui.controls.resultset.colors.ResetRowColorAction;
@@ -97,7 +101,6 @@ import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
-import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageDataFormat;
 import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetMain;
 import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -142,7 +145,7 @@ public class ResultSetViewer extends Viewer
     private static final String TOOLBAR_EXPORT_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.controls.resultset.status.exportCmd";
     private static final String TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.controls.resultset.status";
     private static final String TOOLBAR_CONFIGURATION_VISIBLE_PROPERTY = "org.jkiss.dbeaver.ui.toolbar.configuration.visible";
-    
+
     private static final String CONFIRM_SERVER_SIDE_ORDERING_UNAVAILABLE = "org.jkiss.dbeaver.sql.resultset.serverSideOrderingUnavailable";
 
     private static final int THEME_UPDATE_DELAY_MS = 250;
@@ -485,7 +488,12 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private void handleDataPropertyChange(@Nullable DBPDataSourceContainer dataSource, @NotNull String property, @Nullable Object oldValue, @Nullable Object newValue) {
+    private void handleDataPropertyChange(
+        @Nullable DBPDataSourceContainer dataSource,
+        @NotNull String property,
+        @Nullable Object oldValue,
+        @Nullable Object newValue
+    ) {
         if (ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES.equals(property)) {
             scheduleThemeUpdate();
         }
@@ -883,7 +891,7 @@ public class ResultSetViewer extends Viewer
                 }
                 UIUtils.createEmptyLabel(presentationSwitchFolder, 1, 1).setLayoutData(new GridData(GridData.FILL_VERTICAL));
                 recordModeButton = new VerticalButton(presentationSwitchFolder, SWT.LEFT | SWT.CHECK);
-                recordModeButton.setAction(new ToggleModeAction(), true);
+                recordModeButton.setAction(new ToggleModeAction(this), true);
 
                 if (statusBar != null) {
                     ((GridLayout) presentationSwitchFolder.getLayout()).marginBottom = statusBar.getSize().y;
@@ -1635,6 +1643,12 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    @NotNull
+    @Override
+    public DBDValueHintContext getHintContext() {
+        return model.getHintContext();
+    }
+
     public void redrawData(boolean attributesChanged, boolean rowsChanged) {
         if (viewerPanel.isDisposed()) {
             return;
@@ -1683,12 +1697,12 @@ public class ResultSetViewer extends Viewer
             }
         }
     };
-    
+
     private void createStatusBar() {
         ActionUtils.addPropertyEvaluationRequestListener(propertyEvaluationRequestListener);
-        
+
         final IMenuService menuService = getSite().getService(IMenuService.class);
-        
+
         Composite statusComposite = UIUtils.createPlaceholder(viewerPanel, 3);
         statusComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
@@ -1957,7 +1971,7 @@ public class ResultSetViewer extends Viewer
     private void dispose()
     {
         ActionUtils.removePropertyEvaluationRequestListener(propertyEvaluationRequestListener);
-        
+
         if (!themeUpdateJob.isCanceled()) {
             themeUpdateJob.cancel();
         }
@@ -2308,7 +2322,7 @@ public class ResultSetViewer extends Viewer
                     ConfirmationDialog.WARNING,
                     ResultSetPreferences.CONFIRM_ORDER_RESULTSET,
                     ConfirmationDialog.QUESTION,
-                    columnElement.getName()) != IDialogConstants.YES_ID) 
+                    columnElement.getName()) != IDialogConstants.YES_ID)
                 {
                     return;
                 }
@@ -2340,19 +2354,11 @@ public class ResultSetViewer extends Viewer
             return;
         }
 
-        boolean serverSideOrdering;
-
-        switch (orderingMode) {
-            case CLIENT_SIDE:
-                serverSideOrdering = false;
-                break;
-            case SERVER_SIDE:
-                serverSideOrdering = true;
-                break;
-            default:
-                serverSideOrdering = isHasMoreData();
-                break;
-        }
+        boolean serverSideOrdering = switch (orderingMode) {
+            case CLIENT_SIDE -> false;
+            case SERVER_SIDE -> true;
+            default -> isHasMoreData();
+        };
 
         if (serverSideOrdering && getDataSource() != null && !getDataSource().getInfo().supportsResultSetOrdering()) {
             ConfirmationDialog.confirmAction(getControl().getShell(), CONFIRM_SERVER_SIDE_ORDERING_UNAVAILABLE, ConfirmationDialog.WARNING);
@@ -2389,13 +2395,13 @@ public class ResultSetViewer extends Viewer
         activePresentation.clearMetaData();
     }
 
-    void setData(List<Object[]> rows, int focusRow)
+    void setData(@NotNull DBRProgressMonitor monitor, List<Object[]> rows, int focusRow)
     {
         if (viewerPanel.isDisposed()) {
             return;
         }
         this.curRow = null;
-        this.model.setData(rows);
+        this.model.setData(monitor, rows);
         this.curRow = (this.model.getRowCount() > 0 ? this.model.getRow(0) : null);
         if (focusRow > 0 && focusRow < model.getRowCount()) {
             this.curRow = model.getRow(focusRow);
@@ -2432,8 +2438,8 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    void appendData(List<Object[]> rows, boolean resetOldRows) {
-        model.appendData(rows, resetOldRows);
+    void appendData(@NotNull DBRProgressMonitor monitor, List<Object[]> rows, boolean resetOldRows) {
+        model.appendData(monitor, rows, resetOldRows);
 
         UIUtils.asyncExec(() -> {
             String message = NLS.bind(ResultSetMessages.controls_resultset_viewer_status_rows_size, model.getRowCount(),
@@ -2640,7 +2646,7 @@ public class ResultSetViewer extends Viewer
         {
             DBSEntityReferrer descReferrer = ResultSetUtils.getEnumerableConstraint(curAttribute);
             if (descReferrer instanceof DBSEntityAssociation) {
-                // FK to disctionary - simple query
+                // FK to dictionary - simple query
                 isExpensiveFilter = false;
             } else {
                 // Column enumeration is expensive
@@ -2870,7 +2876,7 @@ public class ResultSetViewer extends Viewer
                 ResultSetMessages.controls_resultset_viewer_action_layout,
                 null,
                 MENU_ID_LAYOUT); //$NON-NLS-1$
-            fillLayoutMenu(layoutMenu);
+            fillLayoutMenu(layoutMenu, attr);
             manager.add(layoutMenu);
         }
 
@@ -2892,19 +2898,19 @@ public class ResultSetViewer extends Viewer
             manager.add(new GroupMarker(MENU_GROUP_EXPORT));
         }
 
-        manager.add(new Separator(MENU_GROUP_ADDITIONS));
-
-        if (dataContainer != null) {
-            manager.add(new Separator());
-            manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_REFRESH));
-        }
-
         //manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 
         decorator.fillContributions(manager);
 
         if (activePresentation != null) {
             activePresentation.fillMenu(manager);
+        }
+
+        manager.add(new Separator(MENU_GROUP_ADDITIONS));
+
+        if (dataContainer != null) {
+            manager.add(new Separator());
+            manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_REFRESH));
         }
     }
 
@@ -2915,20 +2921,19 @@ public class ResultSetViewer extends Viewer
         }
         // Display format
         {
-            if (activePresentation instanceof IResultSetDisplayFormatProvider) {
+            if (activePresentation instanceof IResultSetDisplayFormatProvider displayFormatProvider) {
                 DBDDisplayFormat defaultDisplayFormat = ((IResultSetDisplayFormatProvider) activePresentation).getDefaultDisplayFormat();
                 MenuManager formatsMenu = new MenuManager(DTUIMessages.value_format_selector_value);
                 for (DBDDisplayFormat displayFormat : DBDDisplayFormat.values()) {
-                    String formatName;
-                    switch (displayFormat) {
-                        case UI: formatName = DTUIMessages.value_format_selector_display; break;
-                        case EDIT: formatName = DTUIMessages.value_format_selector_editable; break;
-                        default: formatName = DTUIMessages.value_format_selector_database_native; break;
-                    }
+                    String formatName = switch (displayFormat) {
+                        case UI -> DTUIMessages.value_format_selector_display;
+                        case EDIT -> DTUIMessages.value_format_selector_editable;
+                        default -> DTUIMessages.value_format_selector_database_native;
+                    };
                     Action action = new Action(formatName, Action.AS_RADIO_BUTTON) {
                         @Override
                         public void run() {
-                            ((IResultSetDisplayFormatProvider) activePresentation).setDefaultDisplayFormat(displayFormat);
+                            displayFormatProvider.setDefaultDisplayFormat(displayFormat);
                         }
                     };
                     action.setChecked(displayFormat == defaultDisplayFormat);
@@ -2951,15 +2956,25 @@ public class ResultSetViewer extends Viewer
             }
         }
         if (model.isSingleSource()) {
-            viewMenu.add(new TransformerSettingsAction());
+            viewMenu.add(new TransformerSettingsAction(this));
         }
-        viewMenu.add(new TransformComplexTypesToggleAction());
+        viewMenu.add(new TransformComplexTypesToggleAction(this));
         if (attr.getDataKind() == DBPDataKind.BINARY || attr.getDataKind() == DBPDataKind.CONTENT) {
             MenuManager binaryFormatMenu = new MenuManager(ResultSetMessages.controls_resultset_viewer_action_binary_format);
             binaryFormatMenu.setRemoveAllWhenShown(true);
             binaryFormatMenu.addMenuListener(manager12 -> fillBinaryFormatMenu(manager12, attr));
             viewMenu.add(binaryFormatMenu);
         }
+        if (activePresentationDescriptor.supportsHints()) {
+            // Hints
+            viewMenu.add(new Separator());
+            MenuManager hintsMenu = new MenuManager(ResultSetMessages.controls_resultset_viewer_action_view_hints);
+            hintsMenu.setRemoveAllWhenShown(true);
+            hintsMenu.addMenuListener(manager12 -> fillAttributeHintsMenu(manager12, attr));
+            viewMenu.add(hintsMenu);
+        }
+
+        // Row colors
         viewMenu.add(new Separator());
         if (model.getDocumentAttribute() == null) {
             if (valueController != null) {
@@ -2979,20 +2994,15 @@ public class ResultSetViewer extends Viewer
                 viewMenu.add(new ResetAllColorAction(this));
             }
         }
-        viewMenu.add(new ColorizeDataTypesToggleAction());
+        viewMenu.add(new ColorizeDataTypesToggleAction(this));
         viewMenu.add(new Separator());
-        viewMenu.add(new DataFormatsPreferencesAction());
-        viewMenu.add(new Separator());
-        viewMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_ROWS,
-            ResultSetMessages.controls_resultset_viewer_action_show_selected_row_count));
-        viewMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_COLUMNS,
-            ResultSetMessages.controls_resultset_viewer_action_show_selected_column_count));
-        viewMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_CELLS,
-            ResultSetMessages.controls_resultset_viewer_action_show_selected_cell_count));
+        viewMenu.add(new DataFormatsPreferencesAction(this));
+    }
 
-        viewMenu.add(new Separator());
-        viewMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ZOOM_IN));
-        viewMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ZOOM_OUT));
+    private void fillAttributeHintsMenu(IMenuManager menuManager, DBDAttributeBinding attr) {
+        for (ValueHintProviderDescriptor hd : ValueHintRegistry.getInstance().getHintDescriptors()) {
+            menuManager.add(new HintEnablementAction(this, hd));
+        }
     }
 
     private void fillVirtualModelMenu(@NotNull IMenuManager vmMenu, @Nullable DBDAttributeBinding attr, @Nullable ResultSetRow row, ResultSetValueController valueController) {
@@ -3056,9 +3066,9 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private void fillLayoutMenu(IMenuManager layoutMenu) {
+    private void fillLayoutMenu(IMenuManager layoutMenu, DBDAttributeBinding attr) {
         if (activePresentationDescriptor != null && activePresentationDescriptor.supportsRecordMode()) {
-            layoutMenu.add(new ToggleModeAction());
+            layoutMenu.add(new ToggleModeAction(this));
         }
         if ((getDecorator().getDecoratorFeatures() & IResultSetDecorator.FEATURE_PANELS) != 0) {
             layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_PANELS));
@@ -3101,6 +3111,20 @@ public class ResultSetViewer extends Viewer
                 layoutMenu.add(psAction);
             }
         }
+
+        if (attr != null) {
+            layoutMenu.add(new Separator());
+            layoutMenu.add(new ToggleSelectionStatAction(this, ResultSetPreferences.RESULT_SET_SHOW_SEL_ROWS,
+                ResultSetMessages.controls_resultset_viewer_action_show_selected_row_count));
+            layoutMenu.add(new ToggleSelectionStatAction(this, ResultSetPreferences.RESULT_SET_SHOW_SEL_COLUMNS,
+                ResultSetMessages.controls_resultset_viewer_action_show_selected_column_count));
+            layoutMenu.add(new ToggleSelectionStatAction(this, ResultSetPreferences.RESULT_SET_SHOW_SEL_CELLS,
+                ResultSetMessages.controls_resultset_viewer_action_show_selected_cell_count));
+        }
+
+        layoutMenu.add(new Separator());
+        layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ZOOM_IN));
+        layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ZOOM_OUT));
     }
 
     private void fillNavigateMenu(IMenuManager navigateMenu) {
@@ -3137,7 +3161,7 @@ public class ResultSetViewer extends Viewer
             navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_COUNT));
         }
         navigateMenu.add(new Separator());
-        navigateMenu.add(new ToggleRefreshOnScrollingAction());
+        navigateMenu.add(new ToggleRefreshOnScrollingAction(this));
         navigateMenu.add(new Separator());
         navigateMenu.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.NAVIGATE_BACKWARD_HISTORY, CommandContributionItem.STYLE_PUSH, UIIcon.RS_BACK));
         navigateMenu.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.NAVIGATE_FORWARD_HISTORY, CommandContributionItem.STYLE_PUSH, UIIcon.RS_FORWARD));
@@ -3227,92 +3251,6 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private class TransformerAction extends Action {
-        private final DBDAttributeBinding attribute;
-        TransformerAction(DBDAttributeBinding attr, String text, int style, boolean checked) {
-            super(text, style);
-            this.attribute = attr;
-            setChecked(checked);
-        }
-        @NotNull
-        DBVTransformSettings getTransformSettings() {
-            final DBVTransformSettings settings = DBVUtils.getTransformSettings(attribute, true);
-            if (settings == null) {
-                throw new IllegalStateException("Can't get/create transformer settings for '" + attribute.getFullyQualifiedName(DBPEvaluationContext.UI) + "'");
-            }
-            return settings;
-        }
-        void saveTransformerSettings() {
-            attribute.getDataSource().getContainer().persistConfiguration();
-            refreshData(null);
-        }
-    }
-
-    private class TransformerSettingsAction extends Action {
-        TransformerSettingsAction() {
-            super(ResultSetMessages.controls_resultset_viewer_action_view_column_types);
-        }
-
-        @Override
-        public void run() {
-            DBPDataSource dataSource = getDataSource();
-            if (dataSource == null) {
-                return;
-            }
-            TransformerSettingsDialog settingsDialog = new TransformerSettingsDialog(ResultSetViewer.this, null, true);
-            if (settingsDialog.open() == IDialogConstants.OK_ID) {
-                dataSource.getContainer().persistConfiguration();
-                refreshData(null);
-            }
-        }
-    }
-
-    private class BinaryFormatAction extends Action {
-        private final String prefValue;
-        private final DBDAttributeBinding attribute;
-        BinaryFormatAction(DBDBinaryFormatter formatter, DBDAttributeBinding attr) {
-            super(formatter.getTitle(), IAction.AS_RADIO_BUTTON);
-            this.prefValue = formatter.getTitle();
-            this.attribute = attr;
-        }
-
-        @Override
-        public boolean isChecked()
-        {
-            return getPreferenceStore().getString(ModelPreferences.RESULT_SET_BINARY_PRESENTATION).equalsIgnoreCase(prefValue);
-        }
-
-        @Override
-        public void run()
-        {
-            DBPDataSource dataSource = getDataContainer().getDataSource();
-            if (dataSource == null) {
-                return;
-            }
-            DBPPreferenceStore preferenceStore = getActionPreferenceStore();
-            String prefId = ModelPreferences.RESULT_SET_BINARY_PRESENTATION;
-            preferenceStore.setValue(
-                    prefId,
-                    prefValue.toLowerCase());
-            getTransformSettings().setCustomTransformer(prefId);
-            dataSource.getContainer().persistConfiguration();
-            refreshData(null);
-        }
-
-        @NotNull
-        DBVTransformSettings getTransformSettings() {
-            final DBVTransformSettings settings = DBVUtils.getTransformSettings(attribute, true);
-            if (settings == null) {
-                throw new IllegalStateException("Can't get/create transformer settings for '" + attribute.getFullyQualifiedName(DBPEvaluationContext.UI) + "'");
-            }
-            return settings;
-        }
-
-        DBPPreferenceStore getActionPreferenceStore() {
-            return ResultSetViewer.this.getPreferenceStore();
-        }
-    }
-
     private void fillAttributeTransformersMenu(IMenuManager manager, final DBDAttributeBinding attr) {
         final DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer == null) {
@@ -3329,6 +3267,7 @@ public class ResultSetViewer extends Viewer
             registry.findTransformers(dataSource, attr, true);
         if (customTransformers != null && !customTransformers.isEmpty()) {
             manager.add(new TransformerAction(
+                this,
                 attr,
                 EMPTY_TRANSFORMER_NAME,
                 IAction.AS_RADIO_BUTTON,
@@ -3344,6 +3283,7 @@ public class ResultSetViewer extends Viewer
             });
             for (final DBDAttributeTransformerDescriptor descriptor : customTransformers) {
                 final TransformerAction action = new TransformerAction(
+                    this,
                     attr,
                     descriptor.getName(),
                     IAction.AS_RADIO_BUTTON,
@@ -3374,7 +3314,7 @@ public class ResultSetViewer extends Viewer
             }
         }
         if (customTransformer != null && !CommonUtils.isEmpty(customTransformer.getProperties())) {
-            manager.add(new TransformerAction(attr, "Settings ...", IAction.AS_UNSPECIFIED, false) {
+            manager.add(new TransformerAction(this, attr, "Settings ...", IAction.AS_UNSPECIFIED, false) {
                 @Override
                 public void run() {
                     TransformerSettingsDialog settingsDialog = new TransformerSettingsDialog(
@@ -3402,7 +3342,7 @@ public class ResultSetViewer extends Viewer
                 } else {
                     checked = descriptor.isApplicableByDefault();
                 }
-                manager.add(new TransformerAction(attr, descriptor.getName(), IAction.AS_CHECK_BOX, checked) {
+                manager.add(new TransformerAction(this, attr, descriptor.getName(), IAction.AS_CHECK_BOX, checked) {
                     @Override
                     public void run() {
                         getTransformSettings().enableTransformer(descriptor, !isChecked());
@@ -3417,7 +3357,7 @@ public class ResultSetViewer extends Viewer
         if (attribute != null) {
             manager.add(new Separator());
             for (DBDBinaryFormatter formatter : DBConstants.BINARY_FORMATS) {
-                manager.add(new BinaryFormatAction(formatter, attribute));
+                manager.add(new BinaryFormatAction(this, formatter, attribute));
             }
         }
     }
@@ -3494,11 +3434,11 @@ public class ResultSetViewer extends Viewer
     {
         if (attribute != null) {
             filtersMenu.add(new Separator());
-            filtersMenu.add(new OrderByAttributeAction(attribute, ColumnOrder.ASC));
-            filtersMenu.add(new OrderByAttributeAction(attribute, ColumnOrder.DESC));
+            filtersMenu.add(new OrderByAttributeAction(this, attribute, ColumnOrder.ASC));
+            filtersMenu.add(new OrderByAttributeAction(this, attribute, ColumnOrder.DESC));
             DBDAttributeConstraint constraint = getModel().getDataFilter().getConstraint(attribute);
             if (constraint != null && constraint.getOrderPosition() > 0) {
-                filtersMenu.add(new OrderByAttributeAction(attribute, ColumnOrder.NONE));
+                filtersMenu.add(new OrderByAttributeAction(this, attribute, ColumnOrder.NONE));
             }
         }
     }
@@ -3508,7 +3448,7 @@ public class ResultSetViewer extends Viewer
         @NotNull DBRProgressMonitor monitor,
         @NotNull ResultSetModel bindingsModel,
         @NotNull DBSEntityAssociation association,
-        @NotNull List<ResultSetRow> rows,
+        @NotNull List<? extends DBDValueRow> rows,
         boolean newWindow)
         throws DBException
     {
@@ -3578,7 +3518,7 @@ public class ResultSetViewer extends Viewer
      * @param bindingsModel       data bindings providing model. Can be a model from another results viewer.
      */
     @Override
-    public void navigateReference(@NotNull DBRProgressMonitor monitor, @NotNull ResultSetModel bindingsModel, @NotNull DBSEntityAssociation association, @NotNull List<ResultSetRow> rows, boolean newWindow)
+    public void navigateReference(@NotNull DBRProgressMonitor monitor, @NotNull ResultSetModel bindingsModel, @NotNull DBSEntityAssociation association, @NotNull List<? extends DBDValueRow> rows, boolean newWindow)
         throws DBException
     {
         if (!confirmProceed()) {
@@ -3636,15 +3576,15 @@ public class ResultSetViewer extends Viewer
         navigateEntity(monitor, newWindow, targetEntity, constraints);
     }
 
-    private void createFilterConstraint(@NotNull List<ResultSetRow> rows, DBDAttributeBinding attrBinding, DBDAttributeConstraint constraint) {
+    private void createFilterConstraint(@NotNull List<? extends DBDValueRow> rows, DBDAttributeBinding attrBinding, DBDAttributeConstraint constraint) {
         if (rows.size() == 1) {
-            Object keyValue = model.getCellValue(new ResultSetCellLocation(attrBinding, rows.get(0)));
+            Object keyValue = model.getCellValue(new ResultSetCellLocation(attrBinding, (ResultSetRow) rows.get(0)));
             constraint.setOperator(DBCLogicalOperator.EQUALS);
             constraint.setValue(keyValue);
         } else {
             Object[] keyValues = new Object[rows.size()];
             for (int k = 0; k < rows.size(); k++) {
-                keyValues[k] = model.getCellValue(new ResultSetCellLocation(attrBinding, rows.get(k)));
+                keyValues[k] = model.getCellValue(new ResultSetCellLocation(attrBinding, (ResultSetRow) rows.get(k)));
             }
             DBCLogicalOperator[] supportedOperators =
                 attrBinding.getValueHandler().getSupportedOperators(attrBinding);
@@ -4792,7 +4732,7 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private void fireResultSetSelectionChange(SelectionChangedEvent event) {
+    public void fireResultSetSelectionChange(SelectionChangedEvent event) {
         for (IResultSetListener listener : getListenersCopy()) {
             listener.handleResultSetSelectionChange(event);
         }
@@ -4803,7 +4743,7 @@ public class ResultSetViewer extends Viewer
             listener.onModelPrepared();
         }
     }
-    
+
     private void fireQueryExecuted(String query, StatResultSet statistics, String errorMessage) {
         for (IResultSetListener listener : getListenersCopy()) {
             listener.onQueryExecuted(query, statistics, errorMessage);
@@ -4900,200 +4840,9 @@ public class ResultSetViewer extends Viewer
 
     }
 
-    private class DataFormatsPreferencesAction extends Action {
-        DataFormatsPreferencesAction() {
-            super(ResultSetMessages.controls_resultset_viewer_action_data_formats);
-        }
-
-        @Override
-        public void run() {
-            UIUtils.showPreferencesFor(
-                getControl().getShell(),
-                ResultSetViewer.this,
-                PrefPageDataFormat.PAGE_ID);
-        }
-    }
-
-    private abstract class ToggleConnectionPreferenceAction extends Action {
-        private final String prefId;
-        ToggleConnectionPreferenceAction(String prefId, String title) {
-            super(title);
-            this.prefId = prefId;
-        }
-
-        @Override
-        public int getStyle()
-        {
-            return AS_CHECK_BOX;
-        }
-
-        @Override
-        public boolean isChecked()
-        {
-            return getActionPreferenceStore().getBoolean(prefId);
-        }
-
-        @Override
-        public void run()
-        {
-            DBPPreferenceStore preferenceStore = getActionPreferenceStore();
-            preferenceStore.setValue(
-                prefId,
-                !preferenceStore.getBoolean(prefId));
-        }
-
-        DBPPreferenceStore getActionPreferenceStore() {
-            return ResultSetViewer.this.getPreferenceStore();
-        }
-    }
-
-    private class ToggleSelectionStatAction extends ToggleConnectionPreferenceAction {
-        ToggleSelectionStatAction(String prefId, String title) {
-            super(prefId, title);
-        }
-
-        @Override
-        public void run() {
-            super.run();
-            fireResultSetSelectionChange(new SelectionChangedEvent(ResultSetViewer.this, getSelection()));
-        }
-
-        @Override
-        DBPPreferenceStore getActionPreferenceStore() {
-            return DBWorkbench.getPlatform().getPreferenceStore();
-        }
-    }
-
-    private class ToggleRefreshOnScrollingAction extends ToggleConnectionPreferenceAction {
-        ToggleRefreshOnScrollingAction() {
-            super(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING, ResultSetMessages.pref_page_database_resultsets_label_reread_on_scrolling);
-        }
-    }
-
-    private class OrderByAttributeAction extends Action {
-        private final DBDAttributeBinding attribute;
-        private final ColumnOrder order;
-
-        OrderByAttributeAction(DBDAttributeBinding attribute, ColumnOrder order) {
-            super(
-                order == ColumnOrder.NONE ?
-                    "Disable order by " + attribute.getName() :
-                    "Order by " + attribute.getName() + " " + order.name(), AS_CHECK_BOX);
-            this.attribute = attribute;
-            this.order = order;
-            if (order != ColumnOrder.NONE) {
-                setImageDescriptor(DBeaverIcons.getImageDescriptor(order != ColumnOrder.ASC ?
-                    UIIcon.SORT_INCREASE : UIIcon.SORT_DECREASE));
-            }
-        }
-
-        @Override
-        public boolean isChecked() {
-            if (order == ColumnOrder.NONE) {
-                return false;
-            }
-            DBDDataFilter dataFilter = getModel().getDataFilter();
-            DBDAttributeConstraint constraint = dataFilter.getConstraint(attribute);
-            if (constraint == null || constraint.getOrderPosition() <= 0) {
-                return false;
-            }
-            boolean forceAsc = order == ColumnOrder.ASC;
-            return constraint.isOrderDescending() != forceAsc;
-        }
-
-        @Override
-        public void run() {
-            toggleSortOrder(attribute, order);
-        }
-    }
-
-    private class TransformComplexTypesToggleAction extends Action {
-        TransformComplexTypesToggleAction()
-        {
-            super(ResultSetMessages.actions_name_structurize_complex_types, AS_CHECK_BOX);
-            setToolTipText("Visualize complex types (arrays, structures, maps) in results grid as separate columns");
-        }
-
-        @Override
-        public boolean isChecked() {
-            DBPDataSource dataSource = getDataContainer().getDataSource();
-            return dataSource != null &&
-                dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES);
-        }
-
-        @Override
-        public void run()
-        {
-            DBPDataSource dataSource = getDataContainer().getDataSource();
-            if (dataSource == null) {
-                return;
-            }
-            DBPPreferenceStore preferenceStore = dataSource.getContainer().getPreferenceStore();
-            boolean curValue = preferenceStore.getBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES);
-            preferenceStore.setValue(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES, !curValue);
-            dataSource.getContainer().persistConfiguration();
-            refreshData(null);
-        }
-
-    }
-
-    private class ColorizeDataTypesToggleAction extends Action {
-        ColorizeDataTypesToggleAction()
-        {
-            super(ResultSetMessages.actions_name_colorize_data_types, AS_CHECK_BOX);
-            setToolTipText("Set different foreground color for data types");
-        }
-
-        @Override
-        public boolean isChecked() {
-            DBPDataSource dataSource = getDataContainer().getDataSource();
-            return dataSource != null &&
-                dataSource.getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES);
-        }
-
-        @Override
-        public void run()
-        {
-            DBPDataSource dataSource = getDataContainer().getDataSource();
-            if (dataSource == null) {
-                return;
-            }
-            DBPPreferenceStore dsStore = dataSource.getContainer().getPreferenceStore();
-            boolean curValue = dsStore.getBoolean(ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES);
-            // Set local setting to default
-            dsStore.setValue(ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES, !curValue);
-            dataSource.getContainer().persistConfiguration();
-            refreshData(null);
-        }
-
-    }
-
-    private class ToggleModeAction extends Action {
-        {
-            setActionDefinitionId(ResultSetHandlerMain.CMD_TOGGLE_MODE);
-            setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.RS_DETAILS));
-        }
-
-        ToggleModeAction() {
-            super(ResultSetMessages.dialog_text_check_box_record, Action.AS_CHECK_BOX);
-            String toolTip = ActionUtils.findCommandDescription(ResultSetHandlerMain.CMD_TOGGLE_MODE, getSite(), false);
-            if (!CommonUtils.isEmpty(toolTip)) {
-                setToolTipText(toolTip);
-            }
-        }
-
-        @Override
-        public boolean isChecked() {
-            return isRecordMode();
-        }
-
-        @Override
-        public void run() {
-            toggleMode();
-        }
-    }
-
     class HistoryStateItem {
+        private static final int HISTORY_STATE_ITEM_MAXIMAL_LENGTH = 50;
+
         DBSDataContainer dataContainer;
         DBDDataFilter filter;
         int rowNumber;
@@ -5111,6 +4860,9 @@ public class ResultSetViewer extends Viewer
                 StringBuilder condBuffer = new StringBuilder();
                 SQLUtils.appendConditionString(filter, context.getDataSource(), null, condBuffer, true);
                 desc += " [" + condBuffer + "]";
+            }
+            if (desc != null && desc.length() > HISTORY_STATE_ITEM_MAXIMAL_LENGTH) {
+                desc = desc.substring(0, HISTORY_STATE_ITEM_MAXIMAL_LENGTH) + "...";
             }
             return desc;
         }

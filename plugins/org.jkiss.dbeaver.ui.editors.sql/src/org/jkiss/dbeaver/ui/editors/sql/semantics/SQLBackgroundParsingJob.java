@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -33,16 +34,12 @@ import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLQuery;
-import org.jkiss.dbeaver.model.sql.SQLScriptElement;
-import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserContext;
 import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionContext;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
 import org.jkiss.dbeaver.model.stm.LSMInspections;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
@@ -53,7 +50,6 @@ import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.utils.ListNode;
-import org.jkiss.utils.Pair;
 
 import java.util.ArrayDeque;
 import java.util.Comparator;
@@ -242,11 +238,6 @@ public class SQLBackgroundParsingJob {
                 ) {
                     return SQLQueryCompletionContext.prepareOffquery(scriptItem.offset, offset);
                 }
-                LSMInspections.SyntaxInspectionResult syntaxInspectionResult = LSMInspections.prepareAbstractSyntaxInspection(syntaxNode, position);
-                Pair<SQLQueryDataContext, SQLQueryLexicalScopeItem> contextAndLexicalItem = model.findLexicalContext(position);
-                if (contextAndLexicalItem.getFirst() == null) {
-                    return SQLQueryCompletionContext.prepareEmpty(0, offset);
-                }
 
                 ArrayDeque<STMTreeTermNode> nameNodes = new ArrayDeque<>();
                 List<STMTreeTermNode> allTerms = LSMInspections.prepareTerms(syntaxNode);
@@ -254,29 +245,49 @@ public class SQLBackgroundParsingJob {
                 if (index < 0) {
                     index = ~index - 1;
                 }
+                if (index > 0 && LSMInspections.KNOWN_SEPARATOR_TOKENS.contains(allTerms.get(index).getSymbol().getType())) {
+                    position--;
+                }
+
+                LSMInspections.SyntaxInspectionResult syntaxInspectionResult = LSMInspections.prepareAbstractSyntaxInspection(syntaxNode, position);
+                SQLQueryModel.LexicalContextResolutionResult context = model.findLexicalContext(Math.min(position, model.getSyntaxNode().getRealInterval().b));
+                if (context.deepestContext() == null) {
+                    return SQLQueryCompletionContext.prepareEmpty(0, offset);
+                }
+
                 boolean hasPeriod = false;
+                STMTreeTermNode currentTerm = null;
                 if (index >= 0) {
                     STMTreeTermNode immTerm = allTerms.get(index);
-                    if (immTerm.symbol.getType() == SQLStandardLexer.Period) {
-                        hasPeriod = true;
-                        index--; // skip identifier separator immediately before the cursor
-                    }
-                    for (int i = index; i >= 0; i--) {
-                        STMTreeTermNode term = allTerms.get(i);
-                        if (knownIdentifierPartTerms.contains(term.symbol.getType())
-                            || (term.getParentNode() != null && term.getParentNode().getNodeKindId() == SQLStandardParser.RULE_nonReserved)
-                        ) {
-                            nameNodes.addFirst(term);
-                            i--;
-                            if (i < 0 || allTerms.get(i).symbol.getType() != SQLStandardLexer.Period) {
-                                break; // not followed by an identifier separator part
+                    if (immTerm.getRealInterval().properlyContains(Interval.of(position - 1, position - 1))) {
+                        if (anyWordPattern.matcher(immTerm.getTextContent()).matches()) {
+                            currentTerm = immTerm;
+                        }
+                        SQLDialect dialect = this.obtainCurrentSqlDialect(this.editor.getExecutionContext());
+                        if (dialect.getReservedWords().contains(immTerm.getTextContent().toUpperCase())) {
+                            syntaxInspectionResult = LSMInspections.prepareAbstractSyntaxInspection(syntaxNode, immTerm.getRealInterval().a);
+                        }
+                        if (immTerm.symbol.getType() == SQLStandardLexer.Period) {
+                            hasPeriod = true;
+                            index--; // skip identifier separator immediately before the cursor
+                        }
+                        for (int i = index; i >= 0; i--) {
+                            STMTreeTermNode term = allTerms.get(i);
+                            if (knownIdentifierPartTerms.contains(term.symbol.getType())
+                                || (term.getParentNode() != null && term.getParentNode().getNodeKindId() == SQLStandardParser.RULE_nonReserved)
+                            ) {
+                                nameNodes.addFirst(term);
+                                i--;
+                                if (i < 0 || allTerms.get(i).symbol.getType() != SQLStandardLexer.Period) {
+                                    break; // not followed by an identifier separator part
+                                }
+                            } else {
+                                break; // not an identifier part
                             }
-                        } else {
-                            break; // not an identifier part
                         }
                     }
                 }
-                SQLQueryLexicalScopeItem lexicalItem = contextAndLexicalItem.getSecond();
+                SQLQueryLexicalScopeItem lexicalItem = context.lexicalItem();
                 if (nameNodes.isEmpty() || (lexicalItem != null && nameNodes.getLast().getRealInterval().b != lexicalItem.getSyntaxNode().getRealInterval().b)) {
                     lexicalItem = null;
                 }
@@ -285,10 +296,11 @@ public class SQLBackgroundParsingJob {
                         offset,
                         this.editor.getExecutionContext(),
                         syntaxInspectionResult,
-                        contextAndLexicalItem.getFirst(),
+                        context,
                         lexicalItem,
                         nameNodes.toArray(STMTreeTermNode[]::new),
-                        hasPeriod
+                        hasPeriod,
+                        currentTerm
                 );
             }
         } else {
@@ -404,10 +416,17 @@ public class SQLBackgroundParsingJob {
         int endOffset = viewer.getBottomIndexEndOffset();
         Interval visibleRange = new Interval(startOffset, endOffset);
         Interval knownRange = new Interval(this.knownRegionStart, this.knownRegionEnd);
+        if (DEBUG) {
+            log.debug("ensureVisibleRangeIsParsed: knownRange is " + knownRange);
+            log.debug("ensureVisibleRangeIsParsed: visibleRange is " + visibleRange);
+        }
         if (!knownRange.properlyContains(visibleRange)) {
             Interval unknownRange = visibleRange.differenceNotProperlyContained(knownRange);
             if (unknownRange == null) {
                 unknownRange = visibleRange;
+            }
+            if (DEBUG) {
+                log.debug("ensureVisibleRangeIsParsed: unknownRange is " + unknownRange);
             }
             this.enqueueToReparse(unknownRange.a, unknownRange.length());
             this.schedule(null);
@@ -462,22 +481,35 @@ public class SQLBackgroundParsingJob {
     }
 
     private void doWork(DBRProgressMonitor monitor) throws BadLocationException {
-        TextViewer viewer = editor.getTextViewer();
+        TextViewer viewer = this.editor.getTextViewer();
         if (viewer == null || this.editor.getRuleManager() == null) {
             return;
         }
-        Interval visibleFragment = UIUtils.syncExec(new RunnableWithResult<>() {
+        Interval actualFragment = UIUtils.syncExec(new RunnableWithResult<>() {
             public Interval runWithResult() {
                 if (viewer.getDocument() == null) {
                     return null;
                 }
+                IDocument doc = viewer.getDocument();
+
+                int stepsToKeep = 2;
                 int startOffset = viewer.getTopIndexStartOffset();
-                int endOffset = viewer.getBottomIndexEndOffset();
-                return new Interval(startOffset, endOffset);
+
+                int firstVisibleLine = 0;
+                try {
+                    firstVisibleLine = doc.getLineOfOffset(startOffset);
+                    int visibleLinesCount = viewer.getTextWidget().getSize().y / viewer.getTextWidget().getLineHeight();
+                    int rangeStart = doc.getLineOffset(Math.max(0, firstVisibleLine - visibleLinesCount * stepsToKeep));
+                    int rangeEnd = doc.getLineOffset(Math.min(doc.getNumberOfLines(), firstVisibleLine + visibleLinesCount * (stepsToKeep + 1)));
+                    return new Interval(rangeStart, rangeEnd);
+                } catch (BadLocationException e) {
+                    int endOffset = viewer.getBottomIndexEndOffset();
+                    return new Interval(startOffset, endOffset);
+                }
             }
         });
 
-        if (visibleFragment == null) {
+        if (actualFragment == null) {
             return;
         }
         int workOffset;
@@ -486,10 +518,6 @@ public class SQLBackgroundParsingJob {
             synchronized (this.syncRoot) {
                 this.isRunning = true;
                 
-                int stepsToKeep = 2;
-                int rangeStart = Math.max(0, visibleFragment.a - visibleFragment.length() * stepsToKeep); 
-                int rangeEnd = Math.max(0, visibleFragment.b + visibleFragment.length() * stepsToKeep);
-                Interval actualFragment = new Interval(rangeStart, rangeEnd);
                 // drop unnecessary items
                 if (DEBUG) {
                     log.debug("actual region is " + actualFragment.a + "-" + actualFragment.b);
@@ -551,7 +579,8 @@ public class SQLBackgroundParsingJob {
                 return;
             }
 
-            SQLParserContext parserContext = new SQLParserContext(editor.getDataSource(), editor.getSyntaxManager(), editor.getRuleManager(), document
+            SQLParserContext parserContext = new SQLParserContext(
+                editor.getDataSource(), editor.getSyntaxManager(), editor.getRuleManager(), document
             );
             if (DEBUG) {
                 log.debug("discovering " + workOffset + "+" + workLength);
@@ -559,10 +588,14 @@ public class SQLBackgroundParsingJob {
             {
                 SQLScriptElement firstElement = SQLScriptParser.extractQueryAtPos(parserContext, workOffset);
                 if (firstElement != null) {
-                    workOffset = Math.min(firstElement.getOffset(), workOffset);
+                    workLength = Math.max(workOffset + workLength, firstElement.getOffset() + firstElement.getLength());
+                    workOffset = Math.min(workOffset, firstElement.getOffset());
+                    workLength -= workOffset;
                 }
             }
-            List<SQLScriptElement> elements = SQLScriptParser.extractScriptQueries(parserContext, workOffset, workLength, false, false, false);
+            List<SQLScriptElement> elements = SQLScriptParser.extractScriptQueries(
+                parserContext, workOffset, workLength, false, false, false
+            );
             if (elements.isEmpty()) {
                 if (DEBUG) {
                     log.debug("No script elements to parse in range " + workOffset + "+" + workLength);
@@ -622,10 +655,7 @@ public class SQLBackgroundParsingJob {
             monitor.worked(1);
 
             SQLSyntaxManager syntaxManager = this.editor.getSyntaxManager();
-            DBPDataSourceContainer dsContainer = EditorUtils.getInputDataSource(this.editor.getEditorInput());
-            SQLDialect dialect = executionContext != null && executionContext.getDataSource() != null
-                ? executionContext.getDataSource().getSQLDialect()
-                : dsContainer != null ? dsContainer.getScriptDialect().createInstance() : BasicSQLDialect.INSTANCE;
+            SQLDialect dialect = this.obtainCurrentSqlDialect(executionContext);
 
             SQLQueryRecognitionContext recognitionContext = new SQLQueryRecognitionContext(monitor, executionContext, useRealMetadata, syntaxManager, dialect);
 
@@ -689,6 +719,18 @@ public class SQLBackgroundParsingJob {
         UIUtils.asyncExec(() -> {
             viewer.invalidateTextPresentation(parsedOffset, parsedLength);
         });
+    }
+
+    private SQLDialect obtainCurrentSqlDialect(@Nullable DBCExecutionContext executionContext) {
+        try {
+            DBPDataSourceContainer dsContainer = EditorUtils.getInputDataSource(this.editor.getEditorInput());
+            SQLDialect dialect = executionContext != null && executionContext.getDataSource() != null
+                ? executionContext.getDataSource().getSQLDialect()
+                : dsContainer != null ? dsContainer.getScriptDialect().createInstance() : BasicSQLDialect.INSTANCE;
+            return dialect;
+        } catch (DBException ex) {
+            return BasicSQLDialect.INSTANCE;
+        }
     }
 
     private void accomplishWork(int parsedOffset, int parsedLength) {
