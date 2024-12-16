@@ -110,6 +110,7 @@ public class SQLSearchUtils
         }
         {
             // Fix names (convert case or remove quotes)
+            List<String> transformedNameList = new ArrayList<>(nameList);
             for (int i = 0; i < nameList.size(); i++) {
                 String name = nameList.get(i);
                 String unquotedName = DBUtils.getUnQuotedIdentifier(dataSource, name);
@@ -118,9 +119,9 @@ public class SQLSearchUtils
                 } else {
                     name = DBObjectNameCaseTransformer.transformName(objectContainer.getDataSource(), name);
                 }
-                nameList.set(i, name);
+                transformedNameList.set(i, name);
             }
-            return findObjectByPath(mdMonitor, executionContext, objectContainer, nameList, identifierDetector, useAssistant, isGlobalSearch);
+            return findObjectByPath(mdMonitor, executionContext, objectContainer, transformedNameList, identifierDetector, useAssistant, isGlobalSearch);
         }
     }
 

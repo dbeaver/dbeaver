@@ -896,8 +896,14 @@ public class SQLEditor extends SQLEditorBase implements
         return super.isDirty();
     }
 
+    @Nullable
     public SQLEditorPresentation getActivePresentation() {
         return extraPresentationManager.activePresentation;
+    }
+
+    @Nullable
+    public SQLPresentationDescriptor getActivePresentationDescriptor() {
+        return extraPresentationManager.activePresentationDescriptor;
     }
 
     @Nullable
@@ -1493,12 +1499,14 @@ public class SQLEditor extends SQLEditorBase implements
                             }
                         });
 
-                        manager.add(new Action(SQLEditorMessages.action_result_tabs_detach_tab) {
-                            @Override
-                            public void run() {
-                                container.detach();
-                            }
-                        });
+                        if (!container.isStatistics()) {
+                            manager.add(new Action(SQLEditorMessages.action_result_tabs_detach_tab) {
+                                @Override
+                                public void run() {
+                                    container.detach();
+                                }
+                            });
+                        }
 
                         if (container.getQuery() != null) {
                             manager.add(new Separator());
@@ -2581,7 +2589,7 @@ public class SQLEditor extends SQLEditorBase implements
                 elements.add(0, extractActiveQuery());
             } else {
                 // Execute all SQL statements consequently
-                if (selection.getLength() > 1) {
+                if (selection != null && selection.getLength() > 1) {
                     elements = extractScriptQueries(selection.getOffset(), selection.getLength(), true, false, true);
                 } else {
                     elements = extractScriptQueries(0, document.getLength(), true, false, true);
@@ -4262,7 +4270,7 @@ public class SQLEditor extends SQLEditorBase implements
                 job.setFetchSize(fetchSize);
                 job.setFetchFlags(flags);
 
-                job.extractData(session, this.query, resultCounts > 1 ? 0 : resultSetNumber, !detached);
+                job.extractData(session, this.query, resultCounts > 1 ? 0 : resultSetNumber, !detached, !detached);
 
                 lastGoodQuery = job.getLastGoodQuery();
 
@@ -4478,6 +4486,10 @@ public class SQLEditor extends SQLEditorBase implements
                 tabItem.setShowClose(!pinned);
                 tabItem.setImage(pinned ? IMG_DATA_GRID_LOCKED : IMG_DATA_GRID);
             }
+        }
+
+        private boolean isStatistics() {
+            return query != null && query.getData() == SQLQueryJob.STATS_RESULTS;
         }
     }
 
@@ -4722,16 +4734,18 @@ public class SQLEditor extends SQLEditorBase implements
             super.handleExecuteResult(result);
             
             if (this.viewer.getActivePresentation().getControl() instanceof Spreadsheet s) {
-                Point spreadsheetPreferredSize = s.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
-                Point spreadsheetSize = s.getSize();
-                int desiredViewerHeight = rsvConstrainedLayout.heightHint - spreadsheetSize.y + spreadsheetPreferredSize.y;
-                if (desiredViewerHeight < rsvConstrainedLayout.heightHint) {
-                    if (desiredViewerHeight < MIN_VIEWER_HEIGHT) {
-                        desiredViewerHeight = MIN_VIEWER_HEIGHT;
+                UIUtils.syncExec(() -> {
+                    Point spreadsheetPreferredSize = s.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
+                    Point spreadsheetSize = s.getSize();
+                    int desiredViewerHeight = rsvConstrainedLayout.heightHint - spreadsheetSize.y + spreadsheetPreferredSize.y;
+                    if (desiredViewerHeight < rsvConstrainedLayout.heightHint) {
+                        if (desiredViewerHeight < MIN_VIEWER_HEIGHT) {
+                            desiredViewerHeight = MIN_VIEWER_HEIGHT;
+                        }
+                        rsvConstrainedLayout.heightHint = desiredViewerHeight;
+                        queryProcessor.relayoutContents();
                     }
-                    rsvConstrainedLayout.heightHint = desiredViewerHeight;  
-                    queryProcessor.relayoutContents();
-                }
+                });
             }
         }
 
@@ -5214,6 +5228,8 @@ public class SQLEditor extends SQLEditorBase implements
                 activePresentationDescriptor = null;
                 activePresentation = null;
                 activePresentationPanel = null;
+
+                SQLEditorPropertyTester.firePropertyChange(SQLEditorPropertyTester.PROP_CAN_EXECUTE);
                 return true;
             }
 
@@ -5239,6 +5255,7 @@ public class SQLEditor extends SQLEditorBase implements
                     activePresentation.showPresentation(SQLEditor.this, true);
                     presentations.put(descriptor, activePresentation);
 
+                    SQLEditorPropertyTester.firePropertyChange(SQLEditorPropertyTester.PROP_CAN_EXECUTE);
                     return true;
                 }
             } else {
@@ -5250,6 +5267,8 @@ public class SQLEditor extends SQLEditorBase implements
                     activePresentationDescriptor = descriptor;
                     activePresentation = presentation;
                     activePresentation.showPresentation(SQLEditor.this, false);
+
+                    SQLEditorPropertyTester.firePropertyChange(SQLEditorPropertyTester.PROP_CAN_EXECUTE);
                     return true;
                 }
             }
@@ -5679,6 +5698,8 @@ public class SQLEditor extends SQLEditorBase implements
         private Cursor oldCursor;
         protected ConnectVisualizer(DBPDataSourceContainer dataSourceContainer) {
             super("Connect visualizer");
+            setSystem(true);
+            setUser(false);
             StyledText editorControl = getEditorControl();
             if (editorControl != null) {
                 oldCursor = editorControl.getCursor();

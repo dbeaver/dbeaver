@@ -181,6 +181,7 @@ public class DataSourceDescriptor
     private transient DBWNetworkHandler proxyHandler;
     private transient DBWTunnel tunnelHandler;
     private final List<DBPDataSourceTask> users = new ArrayList<>();
+    private transient String clientApplicationName;
     // DPI controller
     private transient DPIProcessController dpiController;
 
@@ -650,6 +651,17 @@ public class DataSourceDescriptor
         }
 
         updateObjectFilter(type.getName(), parentObject == null ? null : FilterMapping.getFilterContainerUniqueID(parentObject), filter);
+    }
+
+    @Nullable
+    @Override
+    public String getClientApplicationName() {
+        return this.clientApplicationName;
+    }
+
+    @Override
+    public void setClientApplicationName(@NotNull String applicationName) {
+        this.clientApplicationName = applicationName;
     }
 
     void clearFilters() {
@@ -1152,7 +1164,7 @@ public class DataSourceDescriptor
         }
 
         resolvedConnectionInfo = new DBPConnectionConfiguration(connectionInfo);
-
+        patchConnectionProperties(monitor, resolvedConnectionInfo);
         // Update auth properties if possible
         lastConnectionError = null;
         try {
@@ -1318,6 +1330,14 @@ public class DataSourceDescriptor
         }
     }
 
+
+    protected void patchConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPConnectionConfiguration resolvedConnectionInfo
+    ) throws DBException {
+
+    }
+
     private void terminateChildProcesses() {
         synchronized (childProcesses) {
             for (Iterator<DBRProcessDescriptor> iter = childProcesses.iterator(); iter.hasNext(); ) {
@@ -1403,8 +1423,12 @@ public class DataSourceDescriptor
             try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Read server information")) {
                 DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
                 if (txnManager != null && !txnManager.isAutoCommit()) {
-                    txnManager.setAutoCommit(monitor, true);
-                    revertMetaToManualCommit = true;
+                    try {
+                        txnManager.setAutoCommit(monitor, true);
+                        revertMetaToManualCommit = true;
+                    } catch (Throwable e) {
+                        log.debug("Cannot set auto-commit flag: " + e.getMessage());
+                    }
                 }
 
                 try {

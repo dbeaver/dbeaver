@@ -781,7 +781,7 @@ public class GenericMetaModel {
                 typeName = typeName.substring(0, typeName.length() - 2);
             }
         } else {
-            typeName = "N/A";
+            typeName = getDefaultTypeName();
         }
 
         {
@@ -1061,4 +1061,8 @@ public class GenericMetaModel {
             ((JDBCDataSourceInfo) dataSourceInfo).supportsViews();
     }
 
+    @NotNull
+    protected String getDefaultTypeName() {
+        return "N/A";  //$NON-NLS-1$
+    }
 }

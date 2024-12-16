@@ -36,7 +36,7 @@ public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionIt
 
     @NotNull
     @Override
-    public String visitSubqueryAlias(@Nullable SQLRowsSourceAliasCompletionItem rowsSourceAlias) {
+    public String visitSubqueryAlias(@NotNull SQLRowsSourceAliasCompletionItem rowsSourceAlias) {
         return rowsSourceAlias.sourceInfo.tableOrNull != null ? " - Table alias" : " - Subquery alias";
     }
 
@@ -51,7 +51,7 @@ public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionIt
     @NotNull
     @Override
     public String visitTableName(@NotNull SQLTableNameCompletionItem tableName) {
-        return (DBUtils.isView(tableName.table) ? " - View " : " - Table ");
+        return (DBUtils.isView(tableName.object) ? " - View " : " - Table ");
     }
 
     @Nullable
@@ -75,5 +75,11 @@ public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionIt
             }
         }
         return CommonUtils.isEmpty(typeName) ? null : (" - " + typeName);
+    }
+
+    @Nullable
+    @Override
+    public String visitJoinCondition(@NotNull SQLJoinConditionCompletionItem joinCondition) {
+        return " - Known foreign key relation";
     }
 }

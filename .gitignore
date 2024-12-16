@@ -28,8 +28,10 @@ buildNumber.properties
 /workspace/
 
 ## IDEA configs
-
+.idea/
 *.iml
+*.ipr
+*.iws
 /idea/
 
 ## Eclipse configs

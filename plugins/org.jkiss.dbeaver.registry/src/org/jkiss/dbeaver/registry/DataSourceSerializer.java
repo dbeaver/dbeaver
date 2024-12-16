@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import javax.sql.DataSource;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -29,14 +30,13 @@ import java.util.List;
 /**
  * Legacy datasource serialization (xml)
  */
-interface DataSourceSerializer
-{
+public interface DataSourceSerializer<T extends DataSourceDescriptor> {
 
     void saveDataSources(
         DBRProgressMonitor monitor,
         DataSourceConfigurationManager configurationManager,
         DBPDataSourceConfigurationStorage configurationStorage,
-        List<DataSourceDescriptor> localDataSources)
+        List<T> localDataSources)
         throws DBException, IOException;
 
     boolean parseDataSources(

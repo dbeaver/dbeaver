@@ -32,6 +32,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -84,6 +85,7 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
 
     protected abstract String getPropertyPageID();
 
+    @Nullable
     public DBPDataSourceContainer getDataSourceContainer() {
         return dataSourceContainer;
     }
@@ -103,7 +105,7 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
         if (this.element == null) {
             return;
         }
-        dataSourceContainer = element instanceof DBPDataSourceContainer ? (DBPDataSourceContainer)element : null;
+        dataSourceContainer = element instanceof DBPDataSourceContainer ? (DBPDataSourceContainer) element : null;
 
         containerNode = element.getAdapter(DBNDataSource.class);
         if (containerNode == null) {

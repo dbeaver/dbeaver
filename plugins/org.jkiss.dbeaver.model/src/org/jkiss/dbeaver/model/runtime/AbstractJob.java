@@ -257,14 +257,14 @@ public abstract class AbstractJob extends Job
         {
             if (!finished) {
                 try {
-                    BlockCanceler.cancelBlock(progressMonitor, block, getActiveThread());
+                    BlockCanceler.cancelBlock(progressMonitor, block);
                 } catch (DBException e) {
                     log.debug("Block cancel error", e); //$NON-N LS-1$
                     if (!isSkipErrorOnCanceling()) {
                         return GeneralUtils.makeExceptionStatus(e);
                     }
                 } catch (Throwable e) {
-                    log.debug("Block cancel internal error", e); //$NON-N LS-1$
+                    log.debug("Block cancel internal error: " + e.getMessage()); //$NON-N LS-1$
                     return Status.CANCEL_STATUS;
                 }
                 blockCanceled = true;

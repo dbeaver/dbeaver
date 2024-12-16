@@ -2045,7 +2045,10 @@ public final class DBUtils {
             }
         }
         DBPDataSource dataSource = object.getDataSource();
-        return dataSource == null ? null : dataSource.getDefaultInstance();
+        if (dataSource == null || dataSource.isConnectionRefreshing()) {
+            return null;
+        }
+        return dataSource.getDefaultInstance();
     }
 
     public static DBCExecutionContext getDefaultContext(DBSObject object, boolean meta) {
@@ -2053,11 +2056,13 @@ public final class DBUtils {
             return null;
         }
         DBSInstance instance = getObjectOwnerInstance(object);
-        return instance == null ||
-            (instance instanceof DBSInstanceLazy instanceLazy && !instanceLazy.isInstanceConnected())/* ||
-            !instance.getDataSource().getContainer().isConnected()*/ ?
-            null :
-            instance.getDefaultContext(new VoidProgressMonitor(), meta);
+        if (instance == null
+            || (instance instanceof DBSInstanceLazy instanceLazy && !instanceLazy.isInstanceConnected())
+            || (instance.getDataSource() != null && instance.getDataSource().isConnectionRefreshing())) {
+            return null;
+        }
+
+        return instance.getDefaultContext(new VoidProgressMonitor(), meta);
     }
 
     public static DBCExecutionContext getOrOpenDefaultContext(DBSObject object, boolean meta) throws DBCException {

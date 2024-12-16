@@ -149,29 +149,37 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
     }
 
     private List<SQLQueryCompletionProposal> prepareContextfulCompletion(DBRProgressMonitor monitor, SQLQueryCompletionContext completionContext) {
-        SQLQueryCompletionSet completionSet = completionContext.prepareProposal(monitor, this.request);
+        Collection<SQLQueryCompletionSet> completionSets = completionContext.prepareProposal(monitor, this.request);
         SQLQueryCompletionTextProvider textProvider = new SQLQueryCompletionTextProvider(this.request, completionContext, monitor);
 
-        List<SQLQueryCompletionProposal> proposals = new ArrayList<>(completionSet.getItems().size());
-        for (SQLQueryCompletionItem item : completionSet.getItems()) {
-            DBSObject object = SQLQueryDummyDataSourceContext.isDummyObject(item.getObject()) ? null : item.getObject();
-            String text = item.apply(textProvider);
-            String decoration = item.apply(SQLQueryCompletionExtraTextProvider.INSTANCE);
-            String description = item.apply(SQLQueryCompletionDescriptionProvider.INSTANCE);
-            String replacementString = this.prepareReplacementString(item, text, completionContext);
-            proposals.add(new SQLQueryCompletionProposal(
-                this.proposalContext,
-                item.getKind(),
-                object,
-                this.prepareProposalImage(item),
-                text,
-                decoration,
-                description,
-                replacementString,
-                completionSet.getReplacementPosition(),
-                completionSet.getReplacementLength(),
-                item.getFilterInfo()
-            ));
+        List<SQLQueryCompletionProposal> proposals = new LinkedList<>();
+
+        // FIXME forcibly exclude duplicated completions for now;
+        //  correct fix requires better completion scenarios distinguishing to not prepare unnecessary items at all
+        Set<String> texts = new HashSet<>();
+        for (SQLQueryCompletionSet completionSet : completionSets) {
+            for (SQLQueryCompletionItem item : completionSet.getItems()) {
+                DBSObject object = SQLQueryDummyDataSourceContext.isDummyObject(item.getObject()) ? null : item.getObject();
+                String text = item.apply(textProvider);
+                if (texts.add(text)) {
+                    String decoration = item.apply(SQLQueryCompletionExtraTextProvider.INSTANCE);
+                    String description = item.apply(SQLQueryCompletionDescriptionProvider.INSTANCE);
+                    String replacementString = this.prepareReplacementString(item, text, completionContext);
+                    proposals.add(new SQLQueryCompletionProposal(
+                        this.proposalContext,
+                        item.getKind(),
+                        object,
+                        this.prepareProposalImage(item),
+                        text,
+                        decoration,
+                        description,
+                        replacementString,
+                        completionSet.getReplacementPosition(),
+                        completionSet.getReplacementLength(),
+                        item.getFilterInfo()
+                    ));
+                }
+            }
         }
 
         return proposals;
@@ -180,11 +188,10 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
     @NotNull
     private String prepareReplacementString(@NotNull SQLQueryCompletionItem item, @NotNull String text, @NotNull SQLQueryCompletionContext completionContext) {
         LSMInspections.SyntaxInspectionResult inspectionResult = completionContext.getInspectionResult();
-        boolean whitespaceNeeded = item.getKind() == SQLQueryCompletionItemKind.RESERVED
-            || (!text.endsWith(" ") && this.proposalContext.isInsertSpaceAfterProposal() && (
-                (inspectionResult.expectingTableReference && item.getKind().isTableName)
-                ||
-                (inspectionResult.expectingColumnReference && item.getKind().isColumnName)
+        boolean whitespaceNeeded = item.getKind() == SQLQueryCompletionItemKind.RESERVED ||
+            (!text.endsWith(" ") && this.proposalContext.isInsertSpaceAfterProposal() && (
+                (inspectionResult.expectingTableReference() && item.getKind().isTableName) ||
+                (inspectionResult.expectingColumnReference() && item.getKind().isColumnName)
             ));
         return whitespaceNeeded ? text + " " : text;
     }
@@ -208,6 +215,7 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
             case NEW_TABLE_NAME -> DBIcon.TREE_TABLE;
             case USED_TABLE_NAME -> UIIcon.EDIT_TABLE;
             case TABLE_COLUMN_NAME -> DBIcon.TREE_COLUMN;
+            case JOIN_CONDITION -> DBIcon.TREE_CONSTRAINT;
             default -> throw new IllegalStateException("Unexpected completion item kind " + item.getKind());
         };
         return image;
