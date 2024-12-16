@@ -165,6 +165,8 @@ public class PostgreConstants {
     public static final String PG_PASS_HOSTNAME = "overriddenUsername";
     public static final String LEGACY_UA_TIMEZONE = "Europe/Kiev";
     public static final String NEW_UA_TIMEZONE = "Europe/Kyiv";
+    public static final String LEGACY_IST_TIMEZONE = "Asia/Calcutta";
+    public static final String NEW_IST_TIMEZONE = "Asia/Kolkata";
 
     static {
         DATA_TYPE_ALIASES.put("boolean", TYPE_BOOL);
