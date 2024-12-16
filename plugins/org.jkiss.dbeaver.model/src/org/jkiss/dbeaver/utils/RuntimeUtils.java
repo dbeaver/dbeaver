@@ -116,6 +116,10 @@ public final class RuntimeUtils {
         return new SimpleDateFormat(GeneralUtils.DEFAULT_DATE_PATTERN, Locale.ENGLISH).format(new Date()); //$NON-NLS-1$
     }
 
+    public static String getCurrentTime() {
+        return new SimpleDateFormat(GeneralUtils.DEFAULT_TIME_PATTERN, Locale.ENGLISH).format(new Date()); //$NON-NLS-1$
+    }
+
     public static String getCurrentTimeStamp() {
         return new SimpleDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, Locale.ENGLISH).format(new Date()); //$NON-NLS-1$
     }

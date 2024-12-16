@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: DBeaver Databend Model
+Bundle-SymbolicName: org.jkiss.dbeaver.ext.databend;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Release-Date: 20240917
+Require-Bundle: org.eclipse.core.runtime,
+ org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.ext.generic;visibility:=reexport
+Export-Package: org.jkiss.dbeaver.ext.databend,
+ org.jkiss.dbeaver.ext.databend.model
+Import-Package: org.slf4j
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-Vendor: DBeaver Corp
+Bundle-ClassPath: .
+Automatic-Module-Name: org.jkiss.dbeaver.ext.databend
