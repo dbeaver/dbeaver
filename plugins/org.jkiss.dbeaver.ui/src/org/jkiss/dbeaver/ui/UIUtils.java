@@ -72,10 +72,11 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DummyRunnableContext;
@@ -2478,5 +2479,35 @@ public class UIUtils {
         } catch (Exception e) {
             log.error("Unable to enable double buffering", e.getCause());
         }
+    }
+
+    public static String getCatalogSchemaTerms(@Nullable DBPDataSourceContainer dataSourceContainer, boolean checkChangePossibility) {
+        DBPDataSource dataSource = dataSourceContainer == null ? null : dataSourceContainer.getDataSource();
+        if (dataSource != null) {
+            DBPDataSourceInfo dataSourceInfo = dataSource.getInfo();
+            boolean showCatalog = true;
+            boolean showSchema = true;
+            if (checkChangePossibility) {
+                DBCExecutionContext defaultContext = DBUtils.getDefaultContext(dataSource, false);
+                DBCExecutionContextDefaults<?, ?> contextDefaults = defaultContext.getContextDefaults();
+                if (contextDefaults != null) {
+                    showCatalog = contextDefaults.getDefaultCatalog() != null || contextDefaults.supportsCatalogChange();
+                    showSchema = contextDefaults.getDefaultSchema() != null || contextDefaults.supportsSchemaChange();
+                }
+            }
+
+            String catalogTerm = showCatalog ? dataSourceInfo.getCatalogTerm() : null;
+            String schemaTerm = showSchema ? dataSourceInfo.getSchemaTerm() : null;
+            if (CommonUtils.isEmpty(catalogTerm)) {
+                if (!CommonUtils.isEmpty(schemaTerm)) {
+                    return schemaTerm;
+                }
+            } else if (CommonUtils.isEmpty(schemaTerm)) {
+                return catalogTerm;
+            } else {
+                return catalogTerm + "/" + schemaTerm;
+            }
+        }
+        return UIMessages.label_catalog_schema;
     }
 }

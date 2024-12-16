@@ -144,7 +144,15 @@ public abstract class SQLQueryDataContext {
      */
     @NotNull
     public final SQLQueryDataContext combine(@NotNull SQLQueryDataContext other) {
-        return new SQLQueryCombinedContext(this, other);
+        return new SQLQueryCombinedContext(this, other, false);
+    }
+
+    /**
+     * Prepare new semantic context by combining this context with the other given context
+     */
+    @NotNull
+    public final SQLQueryDataContext combineForJoin(@NotNull SQLQueryDataContext other) {
+        return new SQLQueryCombinedContext(this, other, true);
     }
 
     /**
@@ -189,9 +197,9 @@ public abstract class SQLQueryDataContext {
      */
     public static class KnownSourcesInfo {
         @NotNull
-        private final Map<SQLQueryRowsSourceModel, SourceResolutionResult> sources = new HashMap<>();
+        private final Map<SQLQueryRowsSourceModel, SourceResolutionResult> sources = new LinkedHashMap<>();
         @NotNull
-        private final Set<DBSObject> referencedTables = new HashSet<>();
+        private final Set<DBSObject> referencedTables = new LinkedHashSet<>();
         @NotNull
         private final Set<String> aliasesInUse = new HashSet<>();
 

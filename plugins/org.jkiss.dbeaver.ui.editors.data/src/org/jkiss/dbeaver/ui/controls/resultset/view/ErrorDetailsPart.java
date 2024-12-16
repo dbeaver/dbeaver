@@ -153,6 +153,8 @@ class ErrorDetailsPart {
 			"Error details",
 			getDetails(reason),
 			true);
+		dialog.setMonospaceFont(true);
+		dialog.setAutoSize(true);
 		dialog.open();
 	}
 

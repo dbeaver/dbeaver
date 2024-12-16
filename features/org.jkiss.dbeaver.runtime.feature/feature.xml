@@ -21,10 +21,10 @@
     <!-- 3rd party -->
     <plugin id="slf4j.api" version="0.0.0" />
     <!-- Bouncycastle -->
-    <plugin id="bcpg" version="1.78.1" />
-    <plugin id="bcprov" version="1.78.1" />
-    <plugin id="bcpkix" version="1.78.1" />
-    <plugin id="bcutil" version="1.78.1" />
+    <plugin id="bcpg" version="0.0.0" />
+    <plugin id="bcprov" version="0.0.0" />
+    <plugin id="bcpkix" version="0.0.0" />
+    <plugin id="bcutil" version="0.0.0" />
 
     <plugin id="com.github.jsqlparser" version="0.0.0" />
     <plugin id="org.apache.commons.jexl" version="0.0.0" />
