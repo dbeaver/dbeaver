@@ -104,5 +104,4 @@ public abstract class AbstractDataSource implements DBPDataSource, DBSObject {
     public void removeContextAttribute(String attributeName) {
         contextAttributes.remove(attributeName);
     }
-
 }

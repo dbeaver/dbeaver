@@ -124,11 +124,11 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
         }
         if (info == null && driver != null) {
             DBPConnectionConfiguration connectionInfo = getDefaultConnectionConfiguration();
-            info = new DataSourceDescriptor(
-                registry,
+            info = registry.createDataSource(
                 DataSourceDescriptor.generateNewId(driver),
                 driver,
-                connectionInfo);
+                connectionInfo
+            );
             DBPNativeClientLocation defaultClientLocation = driver.getDefaultClientLocation();
             if (defaultClientLocation != null) {
                 info.getConnectionConfiguration().setClientHomeId(defaultClientLocation.getName());
@@ -161,7 +161,7 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
         DataSourceDescriptor targetDataSource;
 
         if (canUseTemporaryDataSource(activeDataSource)) {
-            targetDataSource = new DataSourceDescriptor(activeDataSource, activeDataSource.getRegistry());
+            targetDataSource = activeDataSource.getRegistry().createDataSource(activeDataSource);
             // Generate new ID to avoid session conflicts in QM
             targetDataSource.setId(DataSourceDescriptor.generateNewId(activeDataSource.getDriver()));
             targetDataSource.setTemporary(true);

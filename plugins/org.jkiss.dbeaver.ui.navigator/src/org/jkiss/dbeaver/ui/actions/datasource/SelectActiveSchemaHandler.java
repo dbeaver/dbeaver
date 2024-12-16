@@ -55,7 +55,6 @@ import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.editors.DatabaseLazyEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
-import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDatabaseDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -141,11 +140,12 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
             return;
         }
 
+        DBPDataSourceContainer dataSource = DataSourceToolbarUtils.getCurrentDataSource(workbenchWindow);
+
         String schemaName = "< N/A >";
         DBIcon schemaIcon = DBIcon.TREE_SCHEMA;
-        String schemaTooltip = UINavigatorMessages.toolbar_datasource_selector_combo_database_tooltip;
+        String schemaTooltip = UIUtils.getCatalogSchemaTerms(dataSource, true);
 
-        DBPDataSourceContainer dataSource = DataSourceToolbarUtils.getCurrentDataSource(workbenchWindow);
         if (dataSource != null && dataSource.isConnected()) {
             //schemaName = "<no schema>";
 

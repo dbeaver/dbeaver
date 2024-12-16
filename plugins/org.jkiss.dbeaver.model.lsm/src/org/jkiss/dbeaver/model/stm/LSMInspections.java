@@ -33,6 +33,36 @@ import java.util.stream.StreamSupport;
 
 public class LSMInspections {
 
+    public static final Set<Integer> KNOWN_SEPARATOR_TOKENS = Set.of(
+        SQLStandardLexer.EqualsOperator,
+        SQLStandardLexer.NotEqualsOperator,
+        SQLStandardLexer.RightParen,
+        SQLStandardLexer.LeftParen,
+        SQLStandardLexer.Comma,
+        SQLStandardLexer.TypeCast,
+        SQLStandardLexer.Colon,
+        SQLStandardLexer.Semicolon,
+        SQLStandardLexer.Ampersand,
+        SQLStandardLexer.Asterisk,
+        SQLStandardLexer.Solidus,
+        SQLStandardLexer.ConcatenationOperator,
+        SQLStandardLexer.Percent,
+        SQLStandardLexer.DoublePeriod,
+        SQLStandardLexer.GreaterThanOperator,
+        SQLStandardLexer.GreaterThanOrEqualsOperator,
+        SQLStandardLexer.LessThanOperator,
+        SQLStandardLexer.LessThanOrEqualsOperator,
+        SQLStandardLexer.LeftBracket,
+        SQLStandardLexer.RightBracket,
+        SQLStandardLexer.LeftBrace,
+        SQLStandardLexer.RightBrace,
+        SQLStandardLexer.MinusSign,
+        SQLStandardLexer.PlusSign,
+        SQLStandardLexer.QuestionMark,
+        SQLStandardLexer.VerticalBar,
+        SQLStandardLexer.Tilda
+    );
+
     @NotNull
     private static final Set<String> knownReservedWords = new HashSet<>(BasicSQLDialect.INSTANCE.getReservedWords());
 
@@ -41,7 +71,8 @@ public class LSMInspections {
         SQLStandardParser.RULE_tableName,
         SQLStandardParser.RULE_columnReference,
         SQLStandardParser.RULE_identifier,
-        SQLStandardParser.RULE_nonjoinedTableReference
+        SQLStandardParser.RULE_nonjoinedTableReference,
+        SQLStandardParser.RULE_joinCondition
     );
 
     @NotNull
@@ -110,7 +141,7 @@ public class LSMInspections {
         ATN atn = SQLStandardParser._ATN;
         ListNode<Integer> emptyStack = ListNode.of(null);
         ATNState initialState = atn.states.get(atn.ruleToStartState[SQLStandardParser.RULE_sqlQueries].stateNumber);
-        return inspectAbstractSyntaxAtState(emptyStack, initialState);
+        return inspectAbstractSyntaxAtState(null, emptyStack, initialState);
     }
 
     @NotNull
@@ -220,11 +251,22 @@ public class LSMInspections {
         if (atnStateIndex < 0) { 
             return null;  // TODO error node met, consider using previous valid node 
         } else {
-            return inspectAbstractSyntaxAtState(stack, initialState);
+            return inspectAbstractSyntaxAtState(node, stack, initialState);
         }
     }
 
-    public static class SyntaxInspectionResult {
+    public record SyntaxInspectionResult(
+        @NotNull Set<Integer> predictedTokenIds,
+        @NotNull Set<String> predictedWords,
+        @NotNull Map<Integer, Boolean> reachabilityTests,
+        boolean expectingTableReference,
+        boolean expectingColumnReference,
+        boolean expectingIdentifier,
+        boolean expectingTableSourceIntroduction,
+        boolean expectingColumnIntroduction,
+        boolean expectingValue,
+        boolean expectingJoinCondition
+    ) {
 
         public static final SyntaxInspectionResult EMPTY = new SyntaxInspectionResult(
             Collections.emptySet(),
@@ -235,45 +277,9 @@ public class LSMInspections {
             false,
             false,
             false,
+            false,
             false
         );
-
-        @NotNull
-        public final Set<Integer> predictedTokensIds;
-        @NotNull
-        public final Set<String> predictedWords;
-        @NotNull
-        private final Map<Integer, Boolean> reachabilityTests;
-
-        public final boolean expectingTableReference;
-        public final boolean expectingColumnReference;
-        public final boolean expectingIdentifier;
-
-        public final boolean expectingTableSourceIntroduction;
-        public final boolean expectingColumnIntroduction;
-        public final boolean expectingValue;
-
-        public SyntaxInspectionResult(
-            @NotNull Set<Integer> predictedTokenIds,
-            @NotNull Set<String> predictedWords,
-            @NotNull Map<Integer, Boolean> reachabilityTests,
-            boolean expectingTableReference,
-            boolean expectingColumnReference,
-            boolean expectingIdentifier,
-            boolean expectingTableSourceIntroduction,
-            boolean expectingColumnIntroduction,
-            boolean expectingValue
-        ) {
-            this.predictedTokensIds = predictedTokenIds;
-            this.predictedWords = predictedWords;
-            this.reachabilityTests = reachabilityTests;
-            this.expectingTableReference = expectingTableReference;
-            this.expectingColumnReference = expectingColumnReference;
-            this.expectingIdentifier = expectingIdentifier;
-            this.expectingTableSourceIntroduction = expectingTableSourceIntroduction;
-            this.expectingColumnIntroduction = expectingColumnIntroduction;
-            this.expectingValue = expectingValue;
-        }
 
         @NotNull
         public Map<String, Boolean> getReachabilityByName() {
@@ -297,7 +303,11 @@ public class LSMInspections {
 
 
     @NotNull
-    private static SyntaxInspectionResult inspectAbstractSyntaxAtState(@NotNull ListNode<Integer> stack, @NotNull ATNState initialState) {
+    private static SyntaxInspectionResult inspectAbstractSyntaxAtState(
+        @Nullable STMTreeNode node,
+        @NotNull ListNode<Integer> stack,
+        @NotNull ATNState initialState
+    ) {
         Set<String> predictedWords = new HashSet<>();
         Set<Integer> predictedTokenIds = new HashSet<>();
 
@@ -330,10 +340,13 @@ public class LSMInspections {
             expectingTableName,
             expectingColumnReference,
             reachabilityTests.get(SQLStandardParser.RULE_identifier) || presenceTests.get(SQLStandardParser.RULE_identifier),
-            expectingTableName && (reachabilityTests.get(SQLStandardParser.RULE_nonjoinedTableReference)
-                || presenceTests.get(SQLStandardParser.RULE_nonjoinedTableReference)),
+            expectingTableName && (reachabilityTests.get(SQLStandardParser.RULE_nonjoinedTableReference) ||
+                presenceTests.get(SQLStandardParser.RULE_nonjoinedTableReference)),
             expectingColumnReference && reachabilityTests.get(SQLStandardParser.RULE_derivedColumn),
-            reachabilityTests.get(SQLStandardParser.RULE_pattern)
+            reachabilityTests.get(SQLStandardParser.RULE_pattern),
+            presenceTests.get(SQLStandardParser.RULE_joinCondition) && (
+                node instanceof STMTreeTermNode term && term.getSymbol().getType() == SQLStandardLexer.ON
+            )
         );
     }
 
@@ -384,7 +397,7 @@ public class LSMInspections {
         @NotNull ATNState initialState, Set<Integer> exceptRules,
         @NotNull Map<Integer, Boolean> reachabilityTests
     ) {
-        HashSet<ATNState> visited = new HashSet<>();
+        HashSet<Pair<ATNState, ListNode<Integer>>> visited = new HashSet<>();
         HashSet<Transition> results = new HashSet<>();
         LinkedList<Pair<ATNState, ListNode<Integer>>> q = new LinkedList<>();
         q.addLast(Pair.of(initialState, stateStack));
@@ -428,8 +441,9 @@ public class LSMInspections {
                             default -> transitionStack = stack;
                         }
 
-                        if (visited.add(transition.target)) {
-                            q.addLast(Pair.of(transition.target, transitionStack));
+                        Pair<ATNState, ListNode<Integer>> nextState = Pair.of(transition.target, transitionStack);
+                        if (visited.add(nextState)) {
+                            q.addLast(nextState);
                         }
                     }
                     default -> throw new UnsupportedOperationException("Unrecognized ATN transition type.");
