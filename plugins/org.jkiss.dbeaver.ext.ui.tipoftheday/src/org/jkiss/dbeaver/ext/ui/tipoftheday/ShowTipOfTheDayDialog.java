@@ -123,7 +123,7 @@ public class ShowTipOfTheDayDialog extends BaseDialog {
         form.getBody().setLayoutData(new GridData(GridData.FILL_BOTH));
         form.getBody().setLayout(new GridLayout(1, true));
 
-        scrolledFormText = new ScrolledFormText(form.getBody(), SWT.V_SCROLL,false);
+        scrolledFormText = new ScrolledFormText(form.getBody(), SWT.V_SCROLL, false);
         FormText formText = new FormText(scrolledFormText, SWT.WRAP | SWT.NO_FOCUS);
         scrolledFormText.setFormText(formText);
         scrolledFormText.setExpandVertical(true);
