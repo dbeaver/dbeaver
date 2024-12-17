@@ -61,6 +61,11 @@ public class ValueHintReference implements DBDValueHint, DBDValueHintActionHandl
         this.association = association;
     }
 
+    @NotNull
+    public DBSEntityAssociation getAssociation() {
+        return association;
+    }
+
     @Override
     public HintType getHintType() {
         return HintType.ACTION;
