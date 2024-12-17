@@ -94,7 +94,7 @@ public class StandardSQLDialectQueryGenerator implements SQLQueryGenerator {
             // TODO: Would be nice to have some asserts here
 
             var names = constraints.stream()
-                .map(constraint -> getConstraintAttributeName(dataSource, conditionTable, constraint, subQuery))
+                .map(constraint -> getConstraintAttributeName(dataSource, conditionTable, constraint, subQuery, true))
                 .toList();
 
             var values = constraints.stream()
@@ -140,7 +140,7 @@ public class StandardSQLDialectQueryGenerator implements SQLQueryGenerator {
                     query.append('(');
                 }
 
-                String attrName = getConstraintAttributeName(dataSource, conditionTable, constraint, subQuery);
+                String attrName = getConstraintAttributeName(dataSource, conditionTable, constraint, subQuery, true);
                 if (constraint.getAttribute() != null) {
                     attrName = dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(), attrName, true);
                 }
@@ -436,11 +436,12 @@ public class StandardSQLDialectQueryGenerator implements SQLQueryGenerator {
     }
 
     @NotNull
-    private static String getConstraintAttributeName(
+    public static String getConstraintAttributeName(
         @NotNull DBPDataSource dataSource,
         @Nullable String conditionTable,
         @NotNull DBDAttributeConstraint constraint,
-        boolean subQuery
+        boolean subQuery,
+        boolean includeContainerName
     ) {
         // Attribute name could be an expression. So check if this is a real attribute
         // and generate full/quoted name for it.
@@ -451,7 +452,7 @@ public class StandardSQLDialectQueryGenerator implements SQLQueryGenerator {
                 binding.getEntityAttribute().getName().equals(binding.getMetaAttribute().getName()) ||
                 binding instanceof DBDAttributeBindingType) {
                 if (binding.getEntityAttribute() instanceof DBSContextBoundAttribute entityAttribute) {
-                    return entityAttribute.formatMemberReference(true, conditionTable, DBPAttributeReferencePurpose.DATA_SELECTION);
+                    return entityAttribute.formatMemberReference(includeContainerName, conditionTable, DBPAttributeReferencePurpose.DATA_SELECTION);
                 } else {
                     return DBUtils.getObjectFullName(
                         dataSource,

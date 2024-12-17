@@ -26,11 +26,15 @@ import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLGroupingAttribute;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.utils.ArrayUtils;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class GroupingDataContainer implements DBSDataContainer {
 
@@ -38,7 +42,7 @@ public class GroupingDataContainer implements DBSDataContainer {
 
     private IResultSetController parentController;
     private String query;
-    private String[] attributes;
+    private SQLGroupingAttribute[] attributes;
 
     public GroupingDataContainer(IResultSetController parentController) {
         this.parentController = parentController;
@@ -52,10 +56,10 @@ public class GroupingDataContainer implements DBSDataContainer {
     @NotNull
     @Override
     public String getName() {
-        if (ArrayUtils.isEmpty(attributes)) {
+        if (ArrayUtils.isEmpty(this.attributes)) {
             return "Grouping";
         } else {
-            return String.join(",", attributes);
+            return Arrays.stream(this.attributes).map(SQLGroupingAttribute::getDisplayName).collect(Collectors.joining(","));
         }
     }
 
@@ -175,8 +179,13 @@ public class GroupingDataContainer implements DBSDataContainer {
         this.query = sql;
     }
 
-    public void setGroupingAttributes(@Nullable String[] attributes) {
+    public void setGroupingAttributes(@Nullable SQLGroupingAttribute[] attributes) {
         this.attributes = attributes;
+    }
+
+    @Nullable
+    public SQLGroupingAttribute[] getGroupingAttributes() {
+        return this.attributes;
     }
 
     @Override
