@@ -23,6 +23,12 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.sql.SQLScriptElement;
+import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.model.sql.parser.SQLParserContext;
+import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
+import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 
 
 public class SQLIndenter {
@@ -51,16 +57,20 @@ public class SQLIndenter {
      */
     private SQLHeuristicScanner scanner;
 
+    private SQLParserContext context;
+
     /**
      * Creates a new instance.
      *
      * @param document the document to scan
+     * @param syntaxManager syntax manager
      * @param scanner  the {@link SQLHeuristicScanner}to be used for scanning the document. It must be installed on the
      *                 same <code>IDocument</code>.
      */
-    public SQLIndenter(IDocument document, SQLHeuristicScanner scanner) {
+    public SQLIndenter(IDocument document, SQLSyntaxManager syntaxManager, SQLHeuristicScanner scanner) {
         this.document = document;
         this.scanner = scanner;
+        this.context = new SQLParserContext((DBPDataSource) null, syntaxManager, new SQLRuleManager(syntaxManager), document);
     }
 
     /**
@@ -140,8 +150,11 @@ public class SQLIndenter {
 
             int indentLength = nonWS - lineOffset;
             StringBuilder indent = createIndent();
-            if (indentLength >= indent.length() && scanner.endsWithDelimiter(lineOffset, lineOffset + line.getLength())) {
-                nonWS -= indent.length();
+            if (indentLength >= indent.length() && scanner.endsWithDelimiter(lineOffset, lineOffset + line.getLength() - 1)) {
+                SQLScriptElement currentQuery = SQLScriptParser.extractQueryAtPos(context, offset);
+
+                nonWS = currentQuery.getOffset();
+                lineOffset = document.getLineInformationOfOffset(currentQuery.getOffset()).getOffset();
             }
 
             return document.get(lineOffset, nonWS - lineOffset);

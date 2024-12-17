@@ -16,7 +16,8 @@ Require-Bundle: org.eclipse.core.resources;visibility:=reexport,
  org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.ui;visibility:=reexport
 Bundle-ClassPath: .
-Export-Package: org.jkiss.dbeaver.ui.actions,
+Export-Package: org.jkiss.dbeaver.ui,
+ org.jkiss.dbeaver.ui.actions,
  org.jkiss.dbeaver.ui.controls,
  org.jkiss.dbeaver.ui.editors,
  org.jkiss.dbeaver.ui.editors.text,
