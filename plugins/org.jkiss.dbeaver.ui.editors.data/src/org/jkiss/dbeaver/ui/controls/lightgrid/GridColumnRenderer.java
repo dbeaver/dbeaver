@@ -23,10 +23,13 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UITextUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.List;
 
 /**
  * Grid column renderer
@@ -86,7 +89,7 @@ class GridColumnRenderer extends AbstractRenderer {
         return font != null ? font : grid.normalFont;
     }
 
-    public void paint(GC gc, Rectangle bounds, boolean selected, boolean hovering, IGridColumn element) {
+    public void paint(GC gc, Rectangle bounds, boolean selected, boolean hovering, GridColumn element) {
         gc.setBackground(grid.getLabelProvider().getHeaderBackground(element, selected || hovering));
         gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
 
@@ -126,6 +129,29 @@ class GridColumnRenderer extends AbstractRenderer {
             final int width = imageBounds.width + IMAGE_SPACING;
             bounds.x += width;
             bounds.width -= width;
+        }
+        List<DBPImage> hintIcons = element.getHintIcons();
+        if (!CommonUtils.isEmpty(hintIcons)) {
+            int hy = bounds.y;
+            if (hintIcons.size() > 1) {
+                hy -= TOP_MARGIN;
+            }
+            int maxWidth = 0;
+            for (DBPImage hi : hintIcons) {
+                Image hintImage = DBeaverIcons.getImage(hi);
+                Rectangle imageBounds = hintImage.getBounds();
+
+                if (hintIcons.size() == 1) {
+                    hy = (bounds.height - imageBounds.height) / 2;
+                }
+                gc.drawImage(hintImage, bounds.x, hy);
+
+                maxWidth = Math.max(maxWidth, imageBounds.width);
+                hy += imageBounds.height + 1;
+            }
+            if (maxWidth > 0) maxWidth += IMAGE_SPACING;
+            bounds.x += maxWidth;
+            bounds.width -= maxWidth;
         }
 
         final IGridContentProvider contentProvider = grid.getContentProvider();

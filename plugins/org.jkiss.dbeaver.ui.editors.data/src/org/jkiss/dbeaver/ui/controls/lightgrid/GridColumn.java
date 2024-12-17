@@ -219,6 +219,14 @@ public class GridColumn implements IGridColumn {
         if (image != null) {
             x += image.getBounds().width + imageSpacing;
         }
+        List<DBPImage> hintIcons = getHintIcons();
+        if (!hintIcons.isEmpty()) {
+            int maxIconWidth = GridColumnRenderer.IMAGE_SPACING;
+            for (DBPImage hi : hintIcons) {
+                maxIconWidth = Math.max(maxIconWidth, DBeaverIcons.getImage(hi).getBounds().width);
+            }
+            x += maxIconWidth;
+        }
         {
             int textWidth;
             if (Boolean.TRUE.equals(labelProvider.getGridOption(IGridLabelProvider.OPTION_EXCLUDE_COLUMN_NAME_FOR_WIDTH_CALC))) {
@@ -373,6 +381,26 @@ public class GridColumn implements IGridColumn {
         }
         return tip;
     }
+
+    @Nullable
+    protected List<IGridHint> getColumnHints() {
+        return grid.getContentProvider().getColumnHints(this, 0);
+    }
+
+    List<DBPImage> getHintIcons() {
+        List<IGridHint> columnHints = getColumnHints();
+        List<DBPImage> hintIcons = new ArrayList<>();
+        if (columnHints != null) {
+            for (IGridHint hint : columnHints) {
+                DBPImage icon = hint.getIcon();
+                if (icon != null) {
+                    hintIcons.add(icon);
+                }
+            }
+        }
+        return hintIcons;
+    }
+
 
     @Override
     public GridColumn getParent() {

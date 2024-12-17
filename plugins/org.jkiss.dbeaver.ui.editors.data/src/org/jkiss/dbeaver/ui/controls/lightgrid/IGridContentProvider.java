@@ -118,6 +118,8 @@ public interface IGridContentProvider extends IContentProvider {
 
     List<IGridHint> getCellHints(IGridColumn colElement, IGridRow rowElement, Object cellValue, int options);
 
+    List<IGridHint> getColumnHints(IGridItem element, int options);
+
     int getColumnHintsWidth(IGridColumn colElement);
 
     // Resets all cached colors

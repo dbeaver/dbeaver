@@ -2768,6 +2768,34 @@ public class SpreadsheetPresentation extends AbstractPresentation
         }
 
         @Override
+        public List<IGridHint> getColumnHints(IGridItem element, int options) {
+            DBDAttributeBinding attr = element instanceof IGridColumn gc ? getAttributeFromGrid(gc, null) : null;
+            if (attr == null) {
+                return null;
+            }
+            int hintOptions = DBDValueHintProvider.OPTION_INLINE;
+
+            List<IGridHint> gridHints = null;
+            for (DBDAttributeHintProvider hintProvider : controller.getModel().getHintContext().getColumnHintProviders(attr)) {
+                DBDValueHint[] valueHints = hintProvider.getAttributeHints(
+                    controller.getModel().getHintContext(),
+                    attr,
+                    INLINE_HINT_TYPES,
+                    hintOptions
+                );
+                if (valueHints != null) {
+                    for (DBDValueHint hint : valueHints) {
+                        if (gridHints == null) {
+                            gridHints = new ArrayList<>();
+                        }
+                        gridHints.add(new SpreadsheetHint(getController(), hint));
+                    }
+                }
+            }
+            return gridHints;
+        }
+
+        @Override
         public int getColumnHintsWidth(IGridColumn colElement) {
             DBDAttributeBinding attr = colElement.getElement() instanceof DBDAttributeBinding ab ? ab : null;
             if (attr == null) {
@@ -2903,15 +2931,12 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 DBPImage image = DBValueFormatting.getObjectImage(attr.getAttribute());
 
                 boolean attributeReadOnly = isAttributeReadOnly(attr);
-                boolean hasReferences = !CommonUtils.isEmpty(attr.getReferrers());
-                DBDRowIdentifier rowIdentifier = attr.getRowIdentifier();
-                boolean isKey = rowIdentifier != null && rowIdentifier.getAttributes().contains(attr);
-                if (attributeReadOnly || hasReferences || isKey) {
+                if (attributeReadOnly) {
                     image = new DBIconComposite(image, false,
                         null,
-                        attributeReadOnly ? DBIcon.OVER_LOCK : null,
-                        isKey ? DBIcon.OVER_KEY : null,
-                        hasReferences ? DBIcon.OVER_REFERENCE : null);
+                        null,
+                        null,
+                        DBIcon.OVER_LOCK);
                 }
 
                 return DBeaverIcons.getImage(image);
