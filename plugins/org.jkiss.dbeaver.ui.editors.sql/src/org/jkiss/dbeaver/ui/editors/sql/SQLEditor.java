@@ -2264,7 +2264,7 @@ public class SQLEditor extends SQLEditorBase implements
         Runnable inputinitializer = new Runnable() {
             @Override
             public void run() {
-                if (SQLEditor.this.isPartControlInitialized) {
+                if (isNonPersistentEditor() || SQLEditor.this.isPartControlInitialized) {
                     accomplishEditorInputInitialization(finalEditorInput);
                 } else {
                     UIExecutionQueue.queueExec(this);
