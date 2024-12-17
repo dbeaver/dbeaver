@@ -45,6 +45,11 @@ public interface IGridHint {
     DBPImage getIcon();
 
     /**
+     * @return true if hint is an error notification
+     */
+    boolean isError();
+
+    /**
      * @return true if hint has actiction which can be executed by clicking on the icon
      */
     boolean hasAction();

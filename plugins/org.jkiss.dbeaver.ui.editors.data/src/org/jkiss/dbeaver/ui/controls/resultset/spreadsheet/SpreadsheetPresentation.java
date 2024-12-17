@@ -130,6 +130,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
     private Color foregroundNull;
     private Color backgroundMatched;
     private Color backgroundError;
+    private Color foregroundError;
 
     private Color cellHeaderForeground;
     private Color cellHeaderBackground;
@@ -1270,9 +1271,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
         if (inline) {
             if (activeInlineEditor != null) {
                 spreadsheet.showCellEditor(placeholder);
-                if (activeInlineEditor instanceof BaseValueEditor && CommonUtils.getBoolean(
+                if (activeInlineEditor instanceof BaseValueEditor<?> bve && CommonUtils.getBoolean(
                         getPreferenceStore().getString(ResultSetPreferences.RESULT_SET_INLINE_ENTER))) {
-                    ((BaseValueEditor<?>) activeInlineEditor).addAdditionalTraverseActions((it) -> {
+                    bve.addAdditionalTraverseActions((it) -> {
                         //We don't want to create another listener due to baseValueTraverseListener
                         //removing any information about traverse event and setting it to TRAVERSE_NONE
                         if (it.detail == SWT.TRAVERSE_RETURN) {
@@ -1367,8 +1368,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
     private void toggleBooleanValue(ResultSetCellLocation cellLocation, Object value) {
         boolean nullable = !cellLocation.getAttribute().isRequired();
-        if (value instanceof Number) {
-            value = ((Number) value).byteValue() != 0;
+        if (value instanceof Number number) {
+            value = number.byteValue() != 0;
         }
         if (Boolean.TRUE.equals(value)) {
             value = false;
@@ -1416,6 +1417,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         this.backgroundSelected = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_BACK);
         this.backgroundMatched = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_MATCHED);
         this.backgroundError = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_ERROR_BACK);
+        this.foregroundError = colorRegistry.get(BaseEditorColors.COLOR_ERROR);
 
         this.cellHeaderForeground = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_HEADER_FOREGROUND);
         this.cellHeaderBackground = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_HEADER_BACKGROUND);
@@ -1563,16 +1565,16 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
     @Override
     public void setSelection(@NotNull ISelection selection, boolean reflect) {
-        if (selection instanceof IResultSetSelection && ((IResultSetSelection) selection).getController() == getController()) {
+        if (selection instanceof IResultSetSelection rss && rss.getController() == getController()) {
             // It may occur on simple focus change so we won't do anything
             return;
         }
         spreadsheet.deselectAll();
-        if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
+        if (!selection.isEmpty() && selection instanceof IStructuredSelection ss) {
             List<GridPos> cellSelection = new ArrayList<>();
-            for (Object cell : (IStructuredSelection) selection) {
-                if (cell instanceof GridPos) {
-                    cellSelection.add((GridPos) cell);
+            for (Object cell : ss) {
+                if (cell instanceof GridPos gp) {
+                    cellSelection.add(gp);
                 } else {
                     log.warn("Bad selection object: " + cell);
                 }
@@ -1648,10 +1650,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
     @Override
     public void moveColumn(Object dragColumn, Object dropColumn, DropLocation location) {
-        if (dragColumn instanceof DBDAttributeBinding && dropColumn instanceof DBDAttributeBinding) {
+        if (dragColumn instanceof DBDAttributeBinding dragBinding && dropColumn instanceof DBDAttributeBinding dropBinding) {
             final DBDDataFilter dataFilter = new DBDDataFilter(controller.getModel().getDataFilter());
-            final DBDAttributeConstraint dragC = dataFilter.getConstraint((DBDAttributeBinding) dragColumn);
-            final DBDAttributeConstraint dropC = dataFilter.getConstraint((DBDAttributeBinding) dropColumn);
+            final DBDAttributeConstraint dragC = dataFilter.getConstraint(dragBinding);
+            final DBDAttributeConstraint dropC = dataFilter.getConstraint(dropBinding);
             if (dragC == null || dropC == null) {
                 return;
             }
@@ -1999,7 +2001,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         false);
                     if (cellValue instanceof Collection<?> col) {
                         return col.toArray();
-                    } else if (cellValue instanceof DBDComposite composite) {
+                    } else if (cellValue instanceof DBDComposite) {
                         return null;
                     } else {
                         return null;
@@ -2404,8 +2406,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
             }
 
-            if (value instanceof DBDValueError) {
-                return ((DBDValueError) value).getErrorTitle();
+            if (value instanceof DBDValueError valueError) {
+                return valueError.getErrorTitle();
             }
 
             if ((value instanceof Boolean || value instanceof Number || value == null) && isShowAsCheckbox(attr)) {
@@ -2471,9 +2473,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         }
                     }
                     DBPDataKind dataKind = attr.getDataKind();
-                    if ((dataKind == DBPDataKind.NUMERIC && rightJustifyNumbers) ||
-                        (dataKind == DBPDataKind.DATETIME && rightJustifyDateTime)) {
-                        if (CommonUtils.isEmpty(attr.getReferrers()) && !attr.isInRowIdentifier()) {
+                    if ((rightJustifyNumbers && dataKind == DBPDataKind.NUMERIC) ||
+                        (rightJustifyDateTime && dataKind == DBPDataKind.DATETIME)) {
+                        if (isSimpleAttribute(attr)) {
                             return ALIGN_RIGHT;
                         }
                     }
@@ -2521,7 +2523,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 if (DBUtils.isNullValue(cellValue)) {
                     return foregroundNull;
                 } else {
-                    if (colorizeDataTypes) {
+                    if (colorizeDataTypes && isSimpleAttribute(attribute)) {
                         Color color = dataTypesForegrounds.get(attribute.getDataKind());
                         if (color != null) {
                             return color;
@@ -2783,6 +2785,14 @@ public class SpreadsheetPresentation extends AbstractPresentation
             backgroundNormal = null;
             foregroundDefault = null;
         }
+    }
+
+    // Simple attribute is attribute which is not a part of FK or PK
+    private boolean isSimpleAttribute(DBDAttributeBinding attr) {
+        DBDRowIdentifier rowIdentifier = attr.getRowIdentifier();
+        return CommonUtils.isEmpty(attr.getReferrers()) &&
+               (rowIdentifier == null || !rowIdentifier.hasAttribute(attr) ||
+                rowIdentifier.getUniqueKey().getConstraintType() != DBSEntityConstraintType.PRIMARY_KEY);
     }
 
     private static boolean isHyperlinkText(String strValue) {
@@ -3053,8 +3063,29 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     tip.append("\n").append(ResultSetMessages.controls_resultset_results_edit_key).append(": ")
                         .append(rowIdentifier.getEntity().getName())
                         .append("(")
-                        .append(rowIdentifier.getAttributes().stream().map(DBDAttributeBinding::getName).collect(Collectors.joining(",")))
+                        .append(rowIdentifier.getAttributes().stream().map(DBDAttributeBinding::getName)
+                            .collect(Collectors.joining(",")))
                         .append(")");
+                } else if (rowIdentifier != null && rowIdentifier.hasAttribute(attributeBinding)) {
+                    tip.append("\nPart of key: ")
+                        .append(DBUtils.getObjectFullName(rowIdentifier.getUniqueKey(), DBPEvaluationContext.UI));
+                }
+                if (!CommonUtils.isEmpty(attributeBinding.getReferrers())) {
+                    tip.append("\nRefers to: ").append(attributeBinding.getReferrers().stream()
+                        .map(r -> {
+                            if (r instanceof DBSEntityAssociation assoc) {
+                                DBSEntity entity = assoc.getAssociatedEntity();
+                                if (entity != null) {
+                                    return DBUtils.getObjectFullName(entity, DBPEvaluationContext.UI)
+                                        /* + "(" +
+                                           r.getAttributeReferences(null).stream()
+                                           .map(ar -> ar.getAttribute().getName())+ ")"*/;
+                                }
+                            }
+                            return null;
+                        })
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.joining(",")));
                 }
                 String readOnlyStatus = controller.getAttributeReadOnlyStatus(attributeBinding, true, true);
                 if (readOnlyStatus != null) {
@@ -3064,6 +3095,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 return tip.toString();
             }
             return null;
+        }
+
+        @Override
+        public Color getErrorForeground() {
+            return foregroundError;
         }
     }
 

@@ -550,6 +550,14 @@ class ResultSetPersister {
         }
         model.refreshChangeCount();
 
+        try {
+            UIUtils.runInProgressService(monitor -> {
+                model.refreshHintsInfo(monitor, model.getAllRows());
+            });
+        } catch (Exception e) {
+            log.debug("Error refreshing hints", e);
+        }
+
         viewer.redrawData(false, rowsChanged);
         viewer.updateEditControls();
         viewer.updatePanelsContent(false);

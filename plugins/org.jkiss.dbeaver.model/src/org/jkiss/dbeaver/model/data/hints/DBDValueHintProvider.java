@@ -32,11 +32,12 @@ import java.util.EnumSet;
  */
 public interface DBDValueHintProvider {
 
-    int OPTION_INLINE = 1;
-    int OPTION_ADVANCED = 1 << 1;
-    int OPTION_TOOLTIP = 1 << 2;
-    int OPTION_ACTION_TOOLTIP = 1 << 3;
-    int OPTION_ROW_EXPANDED = 1 << 4;
+    int OPTION_INLINE = 1;          // Default tip for data viewer grid
+    int OPTION_ADVANCED = 1 << 1;   // ?
+    int OPTION_TOOLTIP = 1 << 2;    // Hint for tooltip. Maybe return different hint (extended)
+    int OPTION_ACTION_TOOLTIP = 1 << 3; // Tooltip for hint action button
+    int OPTION_ROW_EXPANDED = 1 << 4; // Passed row is expanded (has sub-rows)
+    int OPTION_APPROXIMATE = 1 << 5; // Return hints ignoring actual row values
 
     /**
      * Get all hints available for specified value.
