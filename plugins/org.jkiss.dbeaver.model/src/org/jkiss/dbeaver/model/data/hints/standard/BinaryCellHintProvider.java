@@ -23,9 +23,9 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDValueRow;
+import org.jkiss.dbeaver.model.data.hints.DBDCellHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
-import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
 import org.jkiss.dbeaver.model.data.hints.ValueHintText;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -37,9 +37,9 @@ import java.util.EnumSet;
 /**
  * Binary hint provider
  */
-public class BinaryHintProvider implements DBDValueHintProvider {
+public class BinaryCellHintProvider implements DBDCellHintProvider {
 
-    private static final Log log = Log.getLog(BinaryHintProvider.class);
+    private static final Log log = Log.getLog(BinaryCellHintProvider.class);
 
     private final ByteNumberFormat LENGTH_FORMAT = new ByteNumberFormat();
 

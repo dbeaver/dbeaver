@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.hints.DBDCellHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -2744,7 +2745,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             }
 
             List<IGridHint> gridHints = null;
-            for (DBDValueHintProvider hintProvider : controller.getModel().getHintProviders(attr)) {
+            for (DBDCellHintProvider hintProvider : controller.getModel().getHintContext().getCellHintProviders(attr)) {
                 DBDValueHint[] valueHints = hintProvider.getValueHint(
                     controller.getModel().getHintContext(),
                     attr,
@@ -2772,7 +2773,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 return 0;
             }
             int hintSize = 0;
-            for (DBDValueHintProvider hintProvider : controller.getModel().getHintProviders(attr)) {
+            for (DBDCellHintProvider hintProvider : controller.getModel().getHintContext().getCellHintProviders(attr)) {
                 hintSize += hintProvider.getAttributeHintSize(
                     controller.getModel().getHintContext(),
                     attr);

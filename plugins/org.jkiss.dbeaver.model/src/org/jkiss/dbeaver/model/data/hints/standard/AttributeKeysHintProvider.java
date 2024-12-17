@@ -19,31 +19,20 @@ package org.jkiss.dbeaver.model.data.hints.standard;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDValueRow;
-import org.jkiss.dbeaver.model.data.hints.DBDCellHintProvider;
+import org.jkiss.dbeaver.model.data.hints.DBDAttributeHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
 
 import java.util.EnumSet;
 
 /**
- * Void hint provider. Stub for no hints
+ * Attribute keys hint provider
  */
-public class VoidHintProvider implements DBDCellHintProvider {
-
-    public static final VoidHintProvider INSTANCE = new VoidHintProvider();
+public class AttributeKeysHintProvider implements DBDAttributeHintProvider {
 
     @Nullable
     @Override
-    public DBDValueHint[] getValueHint(
-        @NotNull DBDValueHintContext context,
-        @NotNull DBDAttributeBinding attribute,
-        @NotNull DBDValueRow row,
-        @Nullable Object value,
-        @NotNull EnumSet<DBDValueHint.HintType> types,
-        int options
-    ) {
-        return null;
+    public DBDValueHint[] getAttributeHints(@NotNull DBDValueHintContext context, @NotNull DBDAttributeBinding attribute, @NotNull EnumSet<DBDValueHint.HintType> types, int options) {
+        return new DBDValueHint[0];
     }
-
 }

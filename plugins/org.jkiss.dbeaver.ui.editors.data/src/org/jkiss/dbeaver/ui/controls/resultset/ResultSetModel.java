@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
-import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.trace.DBCTrace;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -134,10 +133,6 @@ public class ResultSetModel {
 
     public ResultSetHintContext getHintContext() {
         return hintContext;
-    }
-
-    public List<DBDValueHintProvider> getHintProviders(DBDAttributeBinding attr) {
-        return hintContext.getHintProviders(attr);
     }
 
     @NotNull

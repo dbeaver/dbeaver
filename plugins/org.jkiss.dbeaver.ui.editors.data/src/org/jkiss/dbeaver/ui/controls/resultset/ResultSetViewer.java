@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.hints.DBDCellHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
@@ -1704,8 +1705,8 @@ public class ResultSetViewer extends Viewer
         // Check that we could have hints
         boolean needRefresh = false;
         Object cellValue = model.getCellValue(attr, row, rowIndexes, false);
-        List<DBDValueHintProvider> hintProviders = model.getHintProviders(attr);
-        for (DBDValueHintProvider provider : hintProviders) {
+        List<DBDCellHintProvider> hintProviders = model.getHintContext().getCellHintProviders(attr);
+        for (DBDCellHintProvider provider : hintProviders) {
             DBDValueHint[] hints = provider.getValueHint(
                 model.getHintContext(),
                 attr,
@@ -3078,20 +3079,22 @@ public class ResultSetViewer extends Viewer
         for (ValueHintProviderDescriptor hd : ValueHintRegistry.getInstance().getHintDescriptors()) {
             menuManager.add(new HintEnablementAction(this, hd));
 
-            DBDValueHint[] valueHint = hd.getInstance().getValueHint(
-                getModel().getHintContext(),
-                attr,
-                row,
-                cellValue,
-                EnumSet.of(DBDValueHint.HintType.STRING),
-                DBDValueHintProvider.OPTION_APPROXIMATE);
-            if (valueHint == null) {
-                continue;
-            }
-            for (DBDValueHint hint : valueHint) {
-                UIPropertyConfiguratorDescriptor configurator = UIPropertyConfiguratorRegistry.getInstance().getDescriptor(hint);
-                if (configurator != null) {
-                    configurators.put(hint, configurator);
+            if (hd.getInstance() instanceof DBDCellHintProvider chp) {
+                DBDValueHint[] valueHint = chp.getValueHint(
+                    getModel().getHintContext(),
+                    attr,
+                    row,
+                    cellValue,
+                    EnumSet.of(DBDValueHint.HintType.STRING),
+                    DBDValueHintProvider.OPTION_APPROXIMATE);
+                if (valueHint == null) {
+                    continue;
+                }
+                for (DBDValueHint hint : valueHint) {
+                    UIPropertyConfiguratorDescriptor configurator = UIPropertyConfiguratorRegistry.getInstance().getDescriptor(hint);
+                    if (configurator != null) {
+                        configurators.put(hint, configurator);
+                    }
                 }
             }
         }

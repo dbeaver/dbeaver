@@ -22,9 +22,9 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.data.DBDValueRow;
+import org.jkiss.dbeaver.model.data.hints.DBDCellHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
-import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
 import org.jkiss.dbeaver.model.data.hints.ValueHintText;
 import org.jkiss.utils.CommonUtils;
 
@@ -33,7 +33,7 @@ import java.util.EnumSet;
 /**
  * Arrays hint provider
  */
-public class ArrayHintProvider implements DBDValueHintProvider {
+public class ArrayCellHintProvider implements DBDCellHintProvider {
 
     @Nullable
     @Override

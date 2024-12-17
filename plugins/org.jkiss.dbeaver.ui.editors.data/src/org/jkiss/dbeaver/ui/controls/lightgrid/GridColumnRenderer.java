@@ -49,7 +49,7 @@ class GridColumnRenderer extends AbstractRenderer {
     public static final int FILTER_WIDTH = IMAGE_FILTER.getBounds().width;
 
     // The border was disabled because it looked goofy
-    private static final boolean PAINT_COLUMN_FOCUS_BORDER = false;
+    private static final boolean PAINT_COLUMN_FOCUS_BORDER = true;
 
     // Shifts everything to the right by 1 pixel if the column is selected or hovered. Doesn't work well the hover detection
     private static final boolean SHIFT_PAINT_ON_SELECTION = false;
@@ -91,35 +91,14 @@ class GridColumnRenderer extends AbstractRenderer {
         gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
 
         // Draw border
-        if (PAINT_COLUMN_FOCUS_BORDER && element == grid.getFocusColumnElement()) {
-            if (selected) {
-                gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
-            } else {
-                gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_HIGHLIGHT_SHADOW));
-            }
+        if (PAINT_COLUMN_FOCUS_BORDER && element == grid.getFocusColumn()) {
+            gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
 
             gc.drawLine(bounds.x, bounds.y, bounds.x + bounds.width - 1, bounds.y);
             gc.drawLine(bounds.x, bounds.y, bounds.x, bounds.y + bounds.height - 1);
 
-            if (!selected) {
-                gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW));
-                gc.drawLine(bounds.x + 1, bounds.y + 1, bounds.x + bounds.width - 2, bounds.y + 1);
-                gc.drawLine(bounds.x + 1, bounds.y + 1, bounds.x + 1, bounds.y + bounds.height - 2);
-            }
-
-            if (selected) {
-                gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
-            } else {
-                gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
-            }
             gc.drawLine(bounds.x + bounds.width - 1, bounds.y, bounds.x + bounds.width - 1, bounds.y + bounds.height - 1);
             gc.drawLine(bounds.x, bounds.y + bounds.height - 1, bounds.x + bounds.width - 1, bounds.y + bounds.height - 1);
-
-            if (!selected) {
-                gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
-                gc.drawLine(bounds.x + bounds.width - 2, bounds.y + 1, bounds.x + bounds.width - 2, bounds.y + bounds.height - 2);
-                gc.drawLine(bounds.x + 1, bounds.y + bounds.height - 2, bounds.x + bounds.width - 2, bounds.y + bounds.height - 2);
-            }
         } else {
             gc.setForeground(grid.getLabelProvider().getHeaderBorder(element));
             gc.drawLine(bounds.x + bounds.width - 1, bounds.y, bounds.x + bounds.width - 1, bounds.y + bounds.height - 1);
@@ -142,7 +121,7 @@ class GridColumnRenderer extends AbstractRenderer {
         if (columnImage != null) {
             Rectangle imageBounds = columnImage.getBounds();
 
-            gc.drawImage(columnImage, bounds.x, bounds.y + (fontHeight - imageBounds.height) / 2 + 1);
+            gc.drawImage(columnImage, bounds.x, bounds.y);
 
             final int width = imageBounds.width + IMAGE_SPACING;
             bounds.x += width;
