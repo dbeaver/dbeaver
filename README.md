@@ -16,10 +16,10 @@ You can find the list of all databases supported in commercial versions
 * Has a lot of <a href="https://github.com/dbeaver/dbeaver/wiki">features</a> including metadata editor, SQL editor, rich data editor, ERD, data export/import/migration, SQL execution plans, etc.
 * Uses plugins architecture and provides additional functionality for the following databases: MySQL/MariaDB, PostgreSQL, Greenplum, Oracle, IBM Db2, Exasol, SQL Server, Sybase/SAP ASE, SQLite, Firebird, H2, HSQLDB, Derby, Teradata, Vertica, Netezza, Informix, etc.
 
-<a href="https://dbeaver.io/product/dbeaver-ss-mock.png"><img src="https://dbeaver.io/product/dbeaver-ss-mock.png" width="400"/></a>
-<a href="https://dbeaver.io/product/dbeaver-ss-erd.png"><img src="https://dbeaver.io/product/dbeaver-ss-erd.png" width="400"/></a>
-<a href="https://dbeaver.io/product/dbeaver-ss-classic-new.png"><img src="https://dbeaver.io/product/dbeaver-ss-classic-new.png" width="400"/></a>
-<a href="https://dbeaver.io/product/dbeaver-ss-dark-new.png"><img src="https://dbeaver.io/product/dbeaver-ss-dark-new.png" width="400"/></a>
+<a href="https://dbeaver.io/product/dbeaver-sql-editor.png"><img src="https://dbeaver.io/product/dbeaver-sql-editor.png" width="400"/></a>
+<a href="https://dbeaver.io/product/dbeaver-gis-viewer.png"><img src="https://dbeaver.io/product/dbeaver-gis-viewer.png" width="400"/></a>
+<a href="https://dbeaver.io/product/dbeaver-data-editor.png"><img src="https://dbeaver.io/product/dbeaver-data-editor.png" width="400"/></a>
+<a href="https://dbeaver.io/product/dbeaver-erd.png"><img src="https://dbeaver.io/product/dbeaver-erd.png" width="400"/></a>
 
 ## Download
 
