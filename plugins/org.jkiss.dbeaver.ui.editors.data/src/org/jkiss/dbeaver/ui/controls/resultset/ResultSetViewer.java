@@ -1707,7 +1707,7 @@ public class ResultSetViewer extends Viewer
         Object cellValue = model.getCellValue(attr, row, rowIndexes, false);
         List<DBDCellHintProvider> hintProviders = model.getHintContext().getCellHintProviders(attr);
         for (DBDCellHintProvider provider : hintProviders) {
-            DBDValueHint[] hints = provider.getValueHint(
+            DBDValueHint[] hints = provider.getCellHints(
                 model.getHintContext(),
                 attr,
                 row,
@@ -3080,7 +3080,7 @@ public class ResultSetViewer extends Viewer
             menuManager.add(new HintEnablementAction(this, hd));
 
             if (hd.getInstance() instanceof DBDCellHintProvider chp) {
-                DBDValueHint[] valueHint = chp.getValueHint(
+                DBDValueHint[] valueHint = chp.getCellHints(
                     getModel().getHintContext(),
                     attr,
                     row,

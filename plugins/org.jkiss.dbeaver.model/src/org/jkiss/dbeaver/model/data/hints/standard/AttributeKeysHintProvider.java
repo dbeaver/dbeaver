@@ -18,12 +18,25 @@ package org.jkiss.dbeaver.model.data.hints.standard;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
 import org.jkiss.dbeaver.model.data.hints.DBDAttributeHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
+import org.jkiss.dbeaver.model.data.hints.ValueHintText;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
+import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
+import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Attribute keys hint provider
@@ -32,7 +45,48 @@ public class AttributeKeysHintProvider implements DBDAttributeHintProvider {
 
     @Nullable
     @Override
-    public DBDValueHint[] getAttributeHints(@NotNull DBDValueHintContext context, @NotNull DBDAttributeBinding attribute, @NotNull EnumSet<DBDValueHint.HintType> types, int options) {
-        return new DBDValueHint[0];
+    public DBDValueHint[] getAttributeHints(
+        @NotNull DBDValueHintContext context,
+        @NotNull DBDAttributeBinding attribute,
+        @NotNull EnumSet<DBDValueHint.HintType> types,
+        int options
+    ) {
+        List<DBDValueHint> hints = new ArrayList<>();
+
+        DBDRowIdentifier rowIdentifier = attribute.getRowIdentifier();
+        if (rowIdentifier != null && rowIdentifier.hasAttribute(attribute)) {
+            hints.add(
+                new ValueHintText(
+                    "Part of key: " +
+                        DBUtils.getObjectFullName(rowIdentifier.getUniqueKey(), DBPEvaluationContext.UI),
+                    null,
+                    DBIcon.OVER_KEY));
+        }
+        if (!CommonUtils.isEmpty(attribute.getReferrers())) {
+            hints.add(
+                new ValueHintText(
+                    "Refers to: " + getRefTableNames(attribute.getReferrers()),
+                    null,
+                    DBIcon.OVER_REFERENCE));
+        }
+        return hints.toArray(new DBDValueHint[0]);
+    }
+
+    private String getRefTableNames(List<DBSEntityReferrer> referrers) {
+        return referrers.stream()
+            .map(r -> {
+                if (r instanceof DBSEntityAssociation assoc) {
+                    DBSEntity entity = assoc.getAssociatedEntity();
+                    if (entity != null) {
+                        return DBUtils.getObjectFullName(entity, DBPEvaluationContext.UI)
+                        /* + "(" +
+                           r.getAttributeReferences(null).stream()
+                           .map(ar -> ar.getAttribute().getName())+ ")"*/;
+                    }
+                }
+                return null;
+            })
+            .filter(Objects::nonNull)
+            .collect(Collectors.joining(","));
     }
 }

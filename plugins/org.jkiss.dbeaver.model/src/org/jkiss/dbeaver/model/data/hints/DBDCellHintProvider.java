@@ -39,7 +39,7 @@ public interface DBDCellHintProvider extends DBDValueHintProvider {
      * @param options flags combined from HINT_ constants
      */
     @Nullable
-    DBDValueHint[] getValueHint(
+    DBDValueHint[] getCellHints(
         @NotNull DBDValueHintContext context,
         @NotNull DBDAttributeBinding attribute,
         @NotNull DBDValueRow row,

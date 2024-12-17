@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.hints.DBDAttributeHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDCellHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
@@ -2746,7 +2747,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
             List<IGridHint> gridHints = null;
             for (DBDCellHintProvider hintProvider : controller.getModel().getHintContext().getCellHintProviders(attr)) {
-                DBDValueHint[] valueHints = hintProvider.getValueHint(
+                DBDValueHint[] valueHints = hintProvider.getCellHints(
                     controller.getModel().getHintContext(),
                     attr,
                     row,
@@ -3049,7 +3050,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 final String description = attributeBinding.getDescription();
                 StringBuilder tip = new StringBuilder();
                 tip.append("Column: ");
-                tip.append(name).append(": ").append(typeName);
+                tip.append(name).append(" ").append(typeName);
                 if (!CommonUtils.isEmpty(description)) {
                     tip.append("\nDescription: ").append(description);
                 }
@@ -3067,27 +3068,19 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         .append(rowIdentifier.getAttributes().stream().map(DBDAttributeBinding::getName)
                             .collect(Collectors.joining(",")))
                         .append(")");
-                } else if (rowIdentifier != null && rowIdentifier.hasAttribute(attributeBinding)) {
-                    tip.append("\nPart of key: ")
-                        .append(DBUtils.getObjectFullName(rowIdentifier.getUniqueKey(), DBPEvaluationContext.UI));
                 }
-                if (!CommonUtils.isEmpty(attributeBinding.getReferrers())) {
-                    tip.append("\nRefers to: ").append(attributeBinding.getReferrers().stream()
-                        .map(r -> {
-                            if (r instanceof DBSEntityAssociation assoc) {
-                                DBSEntity entity = assoc.getAssociatedEntity();
-                                if (entity != null) {
-                                    return DBUtils.getObjectFullName(entity, DBPEvaluationContext.UI)
-                                        /* + "(" +
-                                           r.getAttributeReferences(null).stream()
-                                           .map(ar -> ar.getAttribute().getName())+ ")"*/;
-                                }
-                            }
-                            return null;
-                        })
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.joining(",")));
+                // Add hints
+                ResultSetHintContext hintContext = controller.getModel().getHintContext();
+                for (DBDAttributeHintProvider ahp : hintContext.getColumnHintProviders(attributeBinding)) {
+                    DBDValueHint[] hints = ahp.getAttributeHints(hintContext, attributeBinding, INLINE_HINT_TYPES, DBDValueHintProvider.OPTION_TOOLTIP);
+                    if (hints != null) {
+                        for (DBDValueHint hint : hints) {
+                            tip.append("\n").append(hint.getHintText());
+                        }
+                    }
                 }
+
+                // Read-only
                 String readOnlyStatus = controller.getAttributeReadOnlyStatus(attributeBinding, true, true);
                 if (readOnlyStatus != null) {
                     tip.append("\n").append(ResultSetMessages.controls_resultset_results_read_only_status)

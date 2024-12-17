@@ -37,7 +37,7 @@ public class ArrayCellHintProvider implements DBDCellHintProvider {
 
     @Nullable
     @Override
-    public DBDValueHint[] getValueHint(
+    public DBDValueHint[] getCellHints(
         @NotNull DBDValueHintContext context,
         @NotNull DBDAttributeBinding attribute,
         @NotNull DBDValueRow row,

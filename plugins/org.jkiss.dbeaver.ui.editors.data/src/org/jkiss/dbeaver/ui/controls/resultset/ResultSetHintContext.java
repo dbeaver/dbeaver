@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.hints.DBDAttributeHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDCellHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
@@ -84,6 +85,16 @@ public class ResultSetHintContext implements DBDValueHintContext {
         for (HintProviderInfo pi : hintProviders.values()) {
             if (pi.enabled && pi.provider instanceof DBDCellHintProvider chp && pi.attributes.contains(attr)) {
                 result.add(chp);
+            }
+        }
+        return result;
+    }
+
+    public List<DBDAttributeHintProvider> getColumnHintProviders(DBDAttributeBinding attr) {
+        List<DBDAttributeHintProvider> result = new ArrayList<>();
+        for (HintProviderInfo pi : hintProviders.values()) {
+            if (pi.enabled && pi.provider instanceof DBDAttributeHintProvider ahp && pi.attributes.contains(attr)) {
+                result.add(ahp);
             }
         }
         return result;
