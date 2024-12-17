@@ -17,10 +17,22 @@
 
 package org.jkiss.dbeaver.ui.actions;
 
-import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+import org.eclipse.jface.action.Action;
 
-public class EmptyListAction extends DisabledLabelAction {
-    public EmptyListAction() {
-        super(UINavigatorMessages.datasource_list_action_empty);
+public class DisabledLabelAction extends Action {
+    private final String label;
+
+    public DisabledLabelAction(String label) {
+        this.label = label;
+    }
+
+    @Override
+    public String getText() {
+        return label;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return false;
     }
 }

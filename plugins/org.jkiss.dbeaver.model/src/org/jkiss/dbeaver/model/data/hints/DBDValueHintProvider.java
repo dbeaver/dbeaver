@@ -26,9 +26,9 @@ public interface DBDValueHintProvider {
      * Hint object: cell, column or row
      */
     enum HintObject {
+        CELL,
         COLUMN,
         ROW,
-        CELL
     }
 
     int OPTION_INLINE = 1;          // Default tip for data viewer grid

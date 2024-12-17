@@ -84,6 +84,7 @@ import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.actions.DisabledLabelAction;
 import org.jkiss.dbeaver.ui.controls.TabFolderReorder;
 import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
 import org.jkiss.dbeaver.ui.controls.VerticalButton;
@@ -3076,7 +3077,40 @@ public class ResultSetViewer extends Viewer
     private void fillAttributeHintsMenu(IMenuManager menuManager, DBDAttributeBinding attr, ResultSetRow row) {
         Object cellValue = getModel().getCellValue(attr, row);
         Map<DBDValueHint, UIPropertyConfiguratorDescriptor> configurators = new LinkedHashMap<>();
-        for (ValueHintProviderDescriptor hd : ValueHintRegistry.getInstance().getHintDescriptors()) {
+        for (DBDValueHintProvider.HintObject ho : DBDValueHintProvider.HintObject.values()) {
+            menuManager.add(new Separator());
+            fillHintItems(
+                ho,
+                menuManager,
+                attr,
+                row,
+                ValueHintRegistry.getInstance().getHintDescriptors(ho),
+                cellValue,
+                configurators);
+        }
+
+        if (!configurators.isEmpty()) {
+            menuManager.add(new Separator());
+            for (Map.Entry<DBDValueHint, UIPropertyConfiguratorDescriptor> entry : configurators.entrySet()) {
+                menuManager.add(new HintConfigurationAction(this, attr, entry.getKey(), entry.getValue()));
+            }
+        }
+    }
+
+    private void fillHintItems(
+        DBDValueHintProvider.HintObject ho,
+        IMenuManager menuManager,
+        DBDAttributeBinding attr,
+        ResultSetRow row,
+        List<ValueHintProviderDescriptor> hdList,
+        Object cellValue,
+        Map<DBDValueHint, UIPropertyConfiguratorDescriptor> configurators
+    ) {
+        if (hdList.isEmpty()) {
+            return;
+        }
+        menuManager.add(new DisabledLabelAction(getHintObjectLabel(ho) + " hints"));
+        for (ValueHintProviderDescriptor hd : hdList) {
             menuManager.add(new HintEnablementAction(this, hd));
 
             if (hd.getInstance() instanceof DBDCellHintProvider chp) {
@@ -3098,13 +3132,14 @@ public class ResultSetViewer extends Viewer
                 }
             }
         }
+    }
 
-        if (!configurators.isEmpty()) {
-            menuManager.add(new Separator());
-            for (Map.Entry<DBDValueHint, UIPropertyConfiguratorDescriptor> entry : configurators.entrySet()) {
-                menuManager.add(new HintConfigurationAction(this, attr, entry.getKey(), entry.getValue()));
-            }
-        }
+    private static @NotNull String getHintObjectLabel(DBDValueHintProvider.HintObject ho) {
+        return switch (ho) {
+            case CELL -> "Cell";
+            case COLUMN -> "Column";
+            case ROW -> "Row";
+        };
     }
 
     private void fillVirtualModelMenu(@NotNull IMenuManager vmMenu, @Nullable DBDAttributeBinding attr, @Nullable ResultSetRow row, ResultSetValueController valueController) {
