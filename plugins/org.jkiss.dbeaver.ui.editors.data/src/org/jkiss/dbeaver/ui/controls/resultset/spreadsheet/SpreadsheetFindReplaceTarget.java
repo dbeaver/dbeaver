@@ -378,7 +378,12 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
                 new ResultSetValueController(owner.getController(), cellLocation, IValueController.EditType.NONE, null)
                     .updateValue(originalValue, true);
             } else {
-                owner.getController().getModel().updateCellValue(cellLocation, newValue);
+                owner.getController().updateCellValue(
+                    cellLocation.getAttribute(),
+                    cellLocation.getRow(),
+                    cellLocation.getRowIndexes(),
+                    newValue,
+                    true);
             }
         } catch (DBException e) {
             log.error("Error updating contents", e);
