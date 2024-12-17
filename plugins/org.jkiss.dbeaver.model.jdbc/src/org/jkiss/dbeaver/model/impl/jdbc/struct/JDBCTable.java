@@ -150,8 +150,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         String tableAlias = null;
         String tableFullName = getTableName();
         if (needAliasInSelect(dataFilter, rowIdAttribute, dataSource)) {
-            String[] parts = tableFullName.split("\\.");
-            tableAlias = parts[parts.length - 1].substring(0, 1).toLowerCase();
+            List<String> parts = CommonUtils.splitString(tableFullName, (dataSource.getSQLDialect().getStructSeparator()));
+            tableAlias = parts.get(parts.size() - 1).substring(0, 1).toLowerCase();
         }
 
         if (rowIdAttribute != null && tableAlias == null) {
