@@ -962,12 +962,12 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     public String getCastedAttributeName(@NotNull DBSAttributeBase attribute, String attributeName) {
         // This method actually works for special data types like JSON and XML.
         // Because column names in the condition in a table without key must be also cast, as data in getTypeCast method.
-        if (attribute instanceof DBSObject && !DBUtils.isPseudoAttribute(attribute)) {
+        if (attribute instanceof DBSObject sAttr && !DBUtils.isPseudoAttribute(attribute)) {
             if (!CommonUtils.equalObjects(attributeName, attribute.getName())) {
                 // Must use explicit attribute name
-                attributeName = DBUtils.getQuotedIdentifier(((DBSObject) attribute).getDataSource(), attributeName);
+                attributeName = DBUtils.getQuotedIdentifier(sAttr.getDataSource(), attributeName);
             } else {
-                attributeName = DBUtils.getObjectFullName(((DBSObject) attribute).getDataSource(), attribute, DBPEvaluationContext.DML);
+                attributeName = DBUtils.getObjectFullName(sAttr.getDataSource(), attribute, DBPEvaluationContext.DML);
             }
         }
         return getCastedString(attribute, attributeName, true, true);
@@ -982,10 +982,10 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     }
 
     private String getCastedString(@NotNull DBSTypedObject attribute, String string, boolean isInCondition, boolean castColumnName) {
-        if (attribute instanceof DBSTypedObjectEx) {
-            DBSDataType dataType = ((DBSTypedObjectEx) attribute).getDataType();
-            if (dataType instanceof PostgreDataType) {
-                String typeCasting = ((PostgreDataType) dataType).getConditionTypeCasting(isInCondition, castColumnName);
+        if (attribute instanceof DBSTypedObjectEx toEx) {
+            DBSDataType dataType = toEx.getDataType();
+            if (dataType instanceof PostgreDataType pdt) {
+                String typeCasting = pdt.getConditionTypeCasting(isInCondition, castColumnName);
                 if (CommonUtils.isNotEmpty(typeCasting)) {
                     return string + typeCasting;
                 }

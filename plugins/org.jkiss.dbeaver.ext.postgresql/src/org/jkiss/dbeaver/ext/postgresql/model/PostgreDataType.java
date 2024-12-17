@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
@@ -581,17 +582,19 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
     @Override
     public List<? extends DBSContextBoundAttribute> bindAttributesToContext(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBSEntity dataContainer,
-        @NotNull DBSEntityAttribute memberContext
+        @NotNull DBDAttributeBinding memberContext
     ) throws DBException {
         List<PostgreDataTypeAttribute> attrs = this.getAttributes(monitor);
         if (attrs == null) {
             return null;
         }
-    
-        List<PostgreDataBoundTypeAttribute> boundAttrs = new ArrayList<>(attrs.size());
+
+        DBSEntityAttribute entityAttribute = memberContext.getTopParent().getEntityAttribute();
+        DBSEntity container = entityAttribute == null ? this : entityAttribute.getParentObject();
+
+        List<PostgreDataBoundTypeAttribute<?>> boundAttrs = new ArrayList<>(attrs.size());
         for (PostgreDataTypeAttribute attr : attrs) {
-            boundAttrs.add(new PostgreDataBoundTypeAttribute(monitor, (PostgreTableBase) dataContainer, memberContext, attr));
+            boundAttrs.add(new PostgreDataBoundTypeAttribute(monitor, container, memberContext, attr));
         }
         return boundAttrs;
     }
