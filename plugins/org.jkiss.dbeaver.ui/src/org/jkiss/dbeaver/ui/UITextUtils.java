@@ -175,6 +175,7 @@ public class UITextUtils {
         return new Point(maxLength, lineCount);
     }
 
+    // Originally taken from https://stackoverflow.com/questions/5662094/can-i-wrap-text-to-a-given-width-with-guava
     public static String wrap(String str, int wrapLength) {
         int offset = 0;
         StringBuilder resultBuilder = new StringBuilder();
