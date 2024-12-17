@@ -29,6 +29,11 @@ public class SQLiteDataSourceInfo extends GenericDataSourceInfo {
         this.isRemote = !driver.isEmbedded();
     }
 
+    @Override
+    public boolean supportsNullableUniqueConstraints() {
+        return true;
+    }
+
     // In LibSQL we don't have proper resulset metadata
     @Override
     public boolean needsTableMetaForColumnResolution() {

@@ -102,6 +102,8 @@ public interface IGridLabelProvider {
      */
     String getToolTipText(IGridItem element);
 
+    Color getErrorForeground();
+
     Object getGridOption(String option);
 
 }

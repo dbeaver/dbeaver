@@ -215,7 +215,7 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
         if (forceRefresh) {
             cleanupPanel();
 
-            referenceValueEditor = new ReferenceValueEditor(previewController, valueEditor);
+            referenceValueEditor = new ReferenceValueEditor(presentation.getController(), previewController, valueEditor);
             final boolean referenceValue = referenceValueEditor.isReferenceValue();
             if (referenceValue) {
                 previewController.setEditType(IValueController.EditType.INLINE);
