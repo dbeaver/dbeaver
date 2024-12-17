@@ -36,8 +36,8 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.BaseEditorColors;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.querylog.QueryLogViewer;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
 import java.util.Collection;
@@ -178,7 +178,7 @@ public abstract class SQLScriptStatusDialog<T extends DBSObject> extends BaseDia
             treeItem.setText(1, error == null ? "Done" : error.getMessage());
             if (error != null) {
                 ColorRegistry colorRegistry = UIUtils.getActiveWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
-                Color colorError = colorRegistry.get(QueryLogViewer.COLOR_REVERTED);
+                Color colorError = colorRegistry.get(BaseEditorColors.COLOR_ERROR);
                 treeItem.setForeground(1, colorError);
             }
         }

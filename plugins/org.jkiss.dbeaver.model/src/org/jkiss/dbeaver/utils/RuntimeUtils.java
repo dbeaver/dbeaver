@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.utils;
 
 import org.eclipse.core.internal.runtime.Activator;
 import org.eclipse.core.internal.runtime.CommonMessages;
+import org.eclipse.core.internal.runtime.InternalPlatform;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobGroup;
@@ -43,6 +44,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.*;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.*;
@@ -717,6 +719,11 @@ public final class RuntimeUtils {
                 }
             }
         }
+    }
+
+    // Returns plugin state folder and do not create it (as default Eclipse function does)
+    public static Path getPluginStateLocation(Plugin plugin) {
+        return InternalPlatform.getDefault().getStateLocation(plugin.getBundle(), false).toPath();
     }
 
     private enum CommandLineState {

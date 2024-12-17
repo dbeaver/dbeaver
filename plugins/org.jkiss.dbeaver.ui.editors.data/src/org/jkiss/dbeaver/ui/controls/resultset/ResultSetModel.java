@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
-import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.trace.DBCTrace;
@@ -133,7 +132,7 @@ public class ResultSetModel {
         this.dataFilter = createDataFilter();
     }
 
-    public DBDValueHintContext getHintContext() {
+    public ResultSetHintContext getHintContext() {
         return hintContext;
     }
 
@@ -180,37 +179,6 @@ public class ResultSetModel {
     @Nullable
     public DBSEntity getSingleSource() {
         return singleSourceEntity;
-    }
-
-    public void resetCellValue(ResultSetCellLocation cellLocation) {
-        ResultSetRow row = cellLocation.getRow();
-        DBDAttributeBinding attr = cellLocation.getAttribute();
-        if (row.getState() == ResultSetRow.STATE_REMOVED) {
-            row.setState(ResultSetRow.STATE_NORMAL);
-        } else if (row.changes != null && row.changes.containsKey(attr)) {
-            DBUtils.resetValue(getCellValue(cellLocation));
-            try {
-                Object origValue = row.changes.get(attr);
-                if (origValue instanceof DBDAttributeBinding refAttr) {
-                    // We reset entire row changes. Cleanup all references on the same top attribute + reset top attribute value
-                    for (var changedValues = row.changes.entrySet().iterator(); changedValues.hasNext(); ) {
-                        if (changedValues.next().getValue() == origValue) {
-                            changedValues.remove();
-                        }
-                    }
-                    attr = refAttr;
-                    origValue = row.changes.get(attr);
-                    cellLocation = new ResultSetCellLocation(attr, cellLocation.getRow(), null);
-                }
-                updateCellValue(cellLocation, origValue, false);
-            } catch (DBException e) {
-                log.error(e);
-            }
-            row.resetChange(attr);
-            if (row.getState() == ResultSetRow.STATE_NORMAL) {
-                changesCount--;
-            }
-        }
     }
 
     public void refreshChangeCount() {
@@ -440,30 +408,10 @@ public class ResultSetModel {
     /**
      * Updates cell value. Saves previous value.
      *
-     * @param cellLocation cell location
      * @param value new value
      * @return true on success
      */
-    public boolean updateCellValue(
-        @NotNull ResultSetCellLocation cellLocation,
-        @Nullable Object value) throws DBException {
-        return updateCellValue(cellLocation, value, true);
-    }
-
-    public boolean updateCellValue(
-        @NotNull ResultSetCellLocation cellLocation,
-        @Nullable Object value,
-        boolean updateChanges
-    ) throws DBException {
-        return updateCellValue(
-            cellLocation.getAttribute(),
-            cellLocation.getRow(),
-            cellLocation.getRowIndexes(),
-            value,
-            updateChanges);
-    }
-
-    public boolean updateCellValue(
+    boolean updateCellValue(
         @NotNull DBDAttributeBinding attr,
         @NotNull ResultSetRow row,
         @Nullable int[] rowIndexes,
@@ -539,7 +487,42 @@ public class ResultSetModel {
         if (updateChanges && row.getState() == ResultSetRow.STATE_NORMAL) {
             changesCount++;
         }
+
         return true;
+    }
+
+    void resetCellValue(@NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, @Nullable int[] rowIndexes) {
+        if (row.getState() == ResultSetRow.STATE_REMOVED) {
+            row.setState(ResultSetRow.STATE_NORMAL);
+        } else if (row.changes != null && row.changes.containsKey(attr)) {
+            DBUtils.resetValue(getCellValue(attr, row, rowIndexes, false));
+            try {
+                Object origValue = row.changes.get(attr);
+                if (origValue instanceof DBDAttributeBinding refAttr) {
+                    // We reset entire row changes. Cleanup all references on the same top attribute + reset top attribute value
+                    for (var changedValues = row.changes.entrySet().iterator(); changedValues.hasNext(); ) {
+                        if (changedValues.next().getValue() == origValue) {
+                            changedValues.remove();
+                        }
+                    }
+                    attr = refAttr;
+                    origValue = row.changes.get(attr);
+                    rowIndexes = null;
+                }
+                updateCellValue(
+                    attr,
+                    row,
+                    rowIndexes,
+                    origValue,
+                    false);
+            } catch (DBException e) {
+                log.error(e);
+            }
+            row.resetChange(attr);
+            if (row.getState() == ResultSetRow.STATE_NORMAL) {
+                changesCount--;
+            }
+        }
     }
 
     boolean isDynamicMetadata() {
@@ -861,10 +844,14 @@ public class ResultSetModel {
 
         updateRowColors(resetOldRows, newRows);
 
+        refreshHintsInfo(monitor, newRows);
+    }
+
+    void refreshHintsInfo(@NotNull DBRProgressMonitor monitor, List<ResultSetRow> newRows) {
         try {
             hintContext.resetCache();
             hintContext.initProviders(attributes);
-            hintContext.cacheRequiredData(monitor, newRows, metadataChanged);
+            hintContext.cacheRequiredData(monitor, null, newRows, true);
         } catch (Exception e) {
             log.debug("Error caching data for column hints", e);
         }

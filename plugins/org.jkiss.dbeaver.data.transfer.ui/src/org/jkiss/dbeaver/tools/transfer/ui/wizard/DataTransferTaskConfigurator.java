@@ -55,6 +55,7 @@ import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
+import org.jkiss.dbeaver.ui.BaseEditorColors;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.UIWidgets;
@@ -381,7 +382,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
             }
             if (node.getDatabaseObject() == null) {
                 item.setBackground(
-                    PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry().get("org.jkiss.dbeaver.txn.color.reverted.background")
+                    PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry().get(BaseEditorColors.COLOR_ERROR)
                 );
             }
         }

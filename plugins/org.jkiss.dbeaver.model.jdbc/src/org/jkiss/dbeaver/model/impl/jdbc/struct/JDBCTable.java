@@ -631,19 +631,21 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             query.append(")");
         }
 
-        query.append(" ORDER BY ");
-        if (sortByValue) {
-            for (int j = 0; j < keyColumns.size(); j++) {
-                if (j > 0) query.append(",");
-                DBSEntityAttribute keyAttr = keyColumns.get(j);
-                query.append(DBUtils.getQuotedIdentifier(keyAttr));
+        if (keyValues.size() > 1) {
+            query.append(" ORDER BY ");
+            if (sortByValue) {
+                for (int j = 0; j < keyColumns.size(); j++) {
+                    if (j > 0) query.append(",");
+                    DBSEntityAttribute keyAttr = keyColumns.get(j);
+                    query.append(DBUtils.getQuotedIdentifier(keyAttr));
+                }
+            } else {
+                // Sort by description
+                query.append(descColumns);
             }
-        } else {
-            // Sort by description
-            query.append(descColumns);
-        }
-        if (!sortAsc) {
-            query.append(" DESC");
+            if (!sortAsc) {
+                query.append(" DESC");
+            }
         }
 
         try (JDBCSession session = DBUtils.openUtilSession(monitor, this, "Load dictionary values")) {
@@ -659,6 +661,10 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 }
                 for (Object[] keyValue : keyValues) {
                     for (int i = 0; i < keyValue.length; i++) {
+                        if (i >= keyColumns.size()) {
+                            log.debug("Internal error: too many dictionary key values: " + keyValue.length);
+                            continue;
+                        }
                         Object cellValue = keyValue[i];
                         keyValueHandler.get(i).bindValueObject(session, dbStat, keyColumns.get(i), paramPos++, cellValue);
                     }

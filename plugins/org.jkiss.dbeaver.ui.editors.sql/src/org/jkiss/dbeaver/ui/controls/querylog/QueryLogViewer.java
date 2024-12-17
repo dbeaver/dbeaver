@@ -100,10 +100,6 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     private static final String VIEWER_ID = "DBeaver.QM.LogViewer"; //$NON-NLS-1$
     private static final int MIN_ENTRIES_PER_PAGE = 1;
 
-    public static final String COLOR_UNCOMMITTED = "org.jkiss.dbeaver.txn.color.committed.background";  //= new RGB(0xBD, 0xFE, 0xBF); //$NON-NLS-1$
-    public static final String COLOR_REVERTED = "org.jkiss.dbeaver.txn.color.reverted.background";  // = new RGB(0xFF, 0x63, 0x47); //$NON-NLS-1$
-    public static final String COLOR_TRANSACTION = "org.jkiss.dbeaver.txn.color.transaction.background";  // = new RGB(0xFF, 0xE4, 0xB5); //$NON-NLS-1$
-
     private final IPropertyChangeListener themePropertiesListener;
 
     private static abstract class LogColumn {
@@ -350,9 +346,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
         ColorRegistry colorRegistry = site.getWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
 
-        colorLightGreen = colorRegistry.get(COLOR_UNCOMMITTED);
-        colorLightRed = colorRegistry.get(COLOR_REVERTED);
-        colorLightYellow = colorRegistry.get(COLOR_TRANSACTION);
+        colorLightGreen = colorRegistry.get(BaseEditorColors.COLOR_UNCOMMITTED);
+        colorLightRed = colorRegistry.get(BaseEditorColors.COLOR_REVERTED);
+        colorLightYellow = colorRegistry.get(BaseEditorColors.COLOR_TRANSACTION);
         boldFont = UIUtils.makeBoldFont(parent.getFont());
 
         boolean inDialog = UIUtils.isInDialog(parent);
@@ -423,14 +419,14 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
         this.themePropertiesListener = event -> {
             switch (event.getProperty()) {
-                case COLOR_UNCOMMITTED:
-                    colorLightGreen = colorRegistry.get(COLOR_UNCOMMITTED);
+                case BaseEditorColors.COLOR_UNCOMMITTED:
+                    colorLightGreen = colorRegistry.get(BaseEditorColors.COLOR_UNCOMMITTED);
                     break;
-                case COLOR_REVERTED:
-                    colorLightRed = colorRegistry.get(COLOR_REVERTED);
+                case BaseEditorColors.COLOR_REVERTED:
+                    colorLightRed = colorRegistry.get(BaseEditorColors.COLOR_REVERTED);
                     break;
-                case COLOR_TRANSACTION:
-                    colorLightYellow = colorRegistry.get(COLOR_TRANSACTION);
+                case BaseEditorColors.COLOR_TRANSACTION:
+                    colorLightYellow = colorRegistry.get(BaseEditorColors.COLOR_TRANSACTION);
                     break;
             }
         };

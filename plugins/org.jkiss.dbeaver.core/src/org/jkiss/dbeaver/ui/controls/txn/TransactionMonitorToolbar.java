@@ -49,11 +49,7 @@ import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
-import org.jkiss.dbeaver.ui.AbstractPartListener;
-import org.jkiss.dbeaver.ui.IActionConstants;
-import org.jkiss.dbeaver.ui.UIStyles;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.querylog.QueryLogViewer;
+import org.jkiss.dbeaver.ui.*;
 
 /**
  * DataSource Toolbar
@@ -176,13 +172,13 @@ public class TransactionMonitorToolbar {
             if (txnState == null || !txnState.isTransactionMode()) {
                 bg = UIStyles.getDefaultTextBackground();
             } else if (updateCount == 0) {
-                bg = colorRegistry.get(QueryLogViewer.COLOR_TRANSACTION);
+                bg = colorRegistry.get(BaseEditorColors.COLOR_TRANSACTION);
             } else {
                 // Use gradient depending on update count
                 ISharedTextColors sharedColors = UIUtils.getSharedTextColors();
 
-                Color colorReverted = colorRegistry.get(QueryLogViewer.COLOR_REVERTED);
-                Color colorCommitted = colorRegistry.get(QueryLogViewer.COLOR_UNCOMMITTED);
+                Color colorReverted = colorRegistry.get(BaseEditorColors.COLOR_REVERTED);
+                Color colorCommitted = colorRegistry.get(BaseEditorColors.COLOR_UNCOMMITTED);
                 final RGB COLOR_FULL = colorReverted == null ? RGB_DARK_YELLOW : colorReverted.getRGB();
                 final RGB COLOR_EMPTY = colorCommitted == null ? RGB_DARK_GREEN : colorCommitted.getRGB();
 

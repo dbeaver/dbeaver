@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
@@ -71,6 +72,7 @@ import java.util.*;
 public class ReferenceValueEditor {
     private static final Log log = Log.getLog(ReferenceValueEditor.class);
 
+    private final IResultSetController rsController;
     private final IValueController valueController;
     private IValueEditor valueEditor;
     private DBSEntityReferrer refConstraint;
@@ -159,11 +161,14 @@ public class ReferenceValueEditor {
             this.lastPageFound = false;
         }
 
-        public void reload() {
+        public void reload(boolean refreshMainData) {
             if (searchText == null) {
                 this.reset(this.keyValue);
             } else {
                 this.applyFilter(this.keyValue, this.searchText);
+            }
+            if (refreshMainData && rsController != null) {
+                rsController.refreshData(null);
             }
         }
 
@@ -172,7 +177,7 @@ public class ReferenceValueEditor {
                 if (accessor.isKeyComparable() && keyValue != null) {
                     return loadComparableKeyValues(accessor);
                 } else {
-                    return loadNoncomparableKeyValues(accessor);
+                    return loadNonComparableKeyValues(accessor);
                 }
             });
             if (dictFilterJob != null) {
@@ -182,7 +187,7 @@ public class ReferenceValueEditor {
             dictFilterJob.schedule(250);
         }
         
-        private List<DBDLabelValuePair> loadNoncomparableKeyValues(DBSDictionaryAccessor accessor) throws DBException {
+        private List<DBDLabelValuePair> loadNonComparableKeyValues(DBSDictionaryAccessor accessor) throws DBException {
             List<DBDLabelValuePair> data;
             if (searchText == null && keyValue != null) { 
                 data = accessor.getValueEntry(keyValue);
@@ -277,7 +282,8 @@ public class ReferenceValueEditor {
         }
     }
 
-    public ReferenceValueEditor(IValueController valueController, IValueEditor valueEditor) {
+    public ReferenceValueEditor(@Nullable IResultSetController rsController, IValueController valueController, IValueEditor valueEditor) {
+        this.rsController = rsController;
         this.valueController = valueController;
         this.valueEditor = valueEditor;
         DBCExecutionContext executionContext = valueController.getExecutionContext();
@@ -360,7 +366,7 @@ public class ReferenceValueEditor {
                         public void widgetSelected(SelectionEvent e) {
                             EditDictionaryPage editDictionaryPage = new EditDictionaryPage(refTable);
                             if (editDictionaryPage.edit(parent.getShell())) {
-                                controller.reload();
+                                controller.reload(true);
                             }
                         }
                     }
@@ -614,7 +620,7 @@ public class ReferenceValueEditor {
             sortAsc = sortDirection == SWT.DOWN;
             editorSelector.setSortColumn(column);
             editorSelector.setSortDirection(sortDirection);
-            controller.reload();
+            controller.reload(false);
         }
     }
 

@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.registry.data.hints.ValueHintRegistry;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -109,13 +110,18 @@ class ResultSetHintContext implements DBDValueHintContext {
         }
     }
 
-    public void cacheRequiredData(@NotNull DBRProgressMonitor monitor, @NotNull List<ResultSetRow> rows, boolean cleanupCache) throws DBException {
+    public void cacheRequiredData(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable List<DBDAttributeBinding> attributes,
+        @NotNull List<ResultSetRow> rows,
+        boolean cleanupCache
+    ) throws DBException {
         for (HintProviderInfo pi : hintProviders.values()) {
             if (pi.enabled) {
                 pi.provider.cacheRequiredData(
                     monitor,
                     this,
-                    pi.attributes,
+                    !CommonUtils.isEmpty(attributes) ? attributes : pi.attributes,
                     rows,
                     cleanupCache);
             }
