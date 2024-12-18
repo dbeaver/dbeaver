@@ -27,7 +27,7 @@ import org.osgi.framework.Bundle;
 
 public abstract class LocalizedPropertyDescriptor extends PropertyDescriptor implements DBPNamedObjectLocalized, DBPObjectWithDescriptionLocalized {
 
-    private final Bundle bundle;
+    private transient final Bundle bundle;
 
     public LocalizedPropertyDescriptor(String category, IConfigurationElement config) {
         super(category, config);
