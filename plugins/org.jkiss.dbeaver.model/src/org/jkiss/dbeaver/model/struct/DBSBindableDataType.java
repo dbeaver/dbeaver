@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
@@ -33,15 +34,14 @@ public interface DBSBindableDataType extends DBSDataType {
      * and returns a context-bound attributes containing corresponding information
 
      * @param monitor a progress monitor
-     * @param dataContainer actual data container, where the instances of a data type are situated (it usually is a table)
-     * @param memberContext concrete attribute of the container record's hierarchy containing the instance of a data type 
-     *     (it usually is a field of a table, or of an other nested data type in the table, whose field is of this type)
+     * @param memberContext concrete attribute of the container record's hierarchy containing the instance of a data type
+     *     (it is usually a field of a table, or of another nested data type in the table, whose field is of this type)
      * @return a context-bound attributes containing information about the given data container context
      * @throws DBException on any DB error
      */
     @NotNull
     List<? extends DBSContextBoundAttribute> bindAttributesToContext(
-        @NotNull DBRProgressMonitor monitor, @NotNull DBSEntity dataContainer, @NotNull DBSEntityAttribute memberContext
+        @NotNull DBRProgressMonitor monitor, @NotNull DBDAttributeBinding memberContext
     ) throws DBException;
 }
 

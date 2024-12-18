@@ -26,16 +26,14 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormText;
 import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.eclipse.ui.forms.widgets.ScrolledFormText;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -57,7 +55,7 @@ public class ShowTipOfTheDayDialog extends BaseDialog {
     private Composite tipArea;
     private boolean displayShowOnStartup;
     private boolean showOnStartup;
-    private FormText formText;
+    private ScrolledFormText scrolledFormText;
     private int tipIndex;
 
     public ShowTipOfTheDayDialog(Shell parentShell) {
@@ -125,7 +123,12 @@ public class ShowTipOfTheDayDialog extends BaseDialog {
         form.getBody().setLayoutData(new GridData(GridData.FILL_BOTH));
         form.getBody().setLayout(new GridLayout(1, true));
 
-        formText = new FormText(form.getBody(), SWT.WRAP | SWT.NO_FOCUS);
+        scrolledFormText = new ScrolledFormText(form.getBody(), SWT.V_SCROLL, false);
+        FormText formText = new FormText(scrolledFormText, SWT.WRAP | SWT.NO_FOCUS);
+        scrolledFormText.setFormText(formText);
+        scrolledFormText.setExpandVertical(true);
+        scrolledFormText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        toolkit.adapt(scrolledFormText);
         formText.marginWidth = 1;
         formText.marginHeight = 0;
         formText.setHyperlinkSettings(toolkit.getHyperlinkGroup());
@@ -211,7 +214,8 @@ public class ShowTipOfTheDayDialog extends BaseDialog {
     private void showTip() {
         String tipText = "<form><p>" + tips.get(tipIndex) + "</p></form>";
         try {
-            formText.setText(tipText, true, false);
+            scrolledFormText.getFormText().setText(tipText, true, false);
+            scrolledFormText.reflow(true);
         } catch (Exception e) {
             log.error(e);
         }

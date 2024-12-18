@@ -68,18 +68,20 @@ public class EmptyPresentation extends AbstractPresentation {
             if (controller.isRefreshInProgress()) {
                 return;
             }
-            e.gc.setFont(largeFont);
-            e.gc.setForeground(UIStyles.getDefaultTextForeground());
-            //int fontSize = largeFont.getFontData()[0].getHeight();
-            String emptyDataMessage = controller.getDecorator().getEmptyDataMessage();
-            if (!CommonUtils.isEmpty(emptyDataMessage)) {
-                Point emSize = e.gc.textExtent(emptyDataMessage);
-                UIUtils.drawMessageOverControl(placeholder, e, emptyDataMessage, -emSize.y);
-            }
-            e.gc.setFont(normalFont);
+            Point descriptionSize = null;
             String emptyDataDescription = controller.getDecorator().getEmptyDataDescription();
             if (!CommonUtils.isEmpty(emptyDataDescription)) {
-                UIUtils.drawMessageOverControl(placeholder, e, emptyDataDescription, 10);
+                e.gc.setFont(normalFont);
+                descriptionSize = UIUtils.drawMessageOverControl(placeholder, e, emptyDataDescription, 10);
+            }
+
+            String emptyDataMessage = controller.getDecorator().getEmptyDataMessage();
+            if (!CommonUtils.isEmpty(emptyDataMessage)) {
+                e.gc.setFont(largeFont);
+                e.gc.setForeground(UIStyles.getDefaultTextForeground());
+                Point emSize = descriptionSize == null ? new Point(0, 0) : descriptionSize;
+                UIUtils.drawMessageOverControl(placeholder, e, emptyDataMessage, -emSize.y);
+                e.gc.setFont(normalFont);
             }
         });
 
