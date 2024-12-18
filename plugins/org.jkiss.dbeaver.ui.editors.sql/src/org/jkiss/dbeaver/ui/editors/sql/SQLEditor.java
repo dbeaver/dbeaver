@@ -108,6 +108,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolbarUtils;
 import org.jkiss.dbeaver.ui.controls.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
@@ -2264,7 +2265,7 @@ public class SQLEditor extends SQLEditorBase implements
         Runnable inputinitializer = new Runnable() {
             @Override
             public void run() {
-                if (isNonPersistentEditor() || SQLEditor.this.isPartControlInitialized) {
+                if (SQLEditor.this.isPartControlInitialized) {
                     accomplishEditorInputInitialization(finalEditorInput);
                 } else {
                     UIExecutionQueue.queueExec(this);
@@ -2272,12 +2273,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
         };
 
-        if (isNonPersistentEditor()) {
-            inputinitializer.run();
-        } else {
-            // Run in queue - for app startup
-            UIExecutionQueue.queueExec(inputinitializer);
-        }
+        UIExecutionQueue.queueExec(inputinitializer);
 
         setPartName(getEditorName());
         if (isNonPersistentEditor() && isDetectTitleImageFromInput()) {
@@ -2302,6 +2298,14 @@ public class SQLEditor extends SQLEditorBase implements
         SQLEditorFeatures.SQL_EDITOR_OPEN.use(
             Map.of("driver", dataSource == null ? "" : dataSource.getDriver().getPreconfiguredId())
         );
+
+        // toolbar refresh triggered on active part change or current datasource change, but:
+        // - initialization accomplishment should occur after part's UI initialization which may include part activation,
+        //      meaning that active part change sometimes happens before this code;
+        // - when editorInput's datasource is already specified and updateDataSourceContainer() just actualizes editor's internal state,
+        //      datasource change event also won't come.
+        // So we need to update toolbar state explicitly after the whole editor is finally initialized for sure.
+        DataSourceToolbarUtils.refreshSelectorToolbar(getSite().getWorkbenchWindow());
     }
 
     private void checkInputFileExistence(IEditorInput editorInput) {
