@@ -204,8 +204,8 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataHintProvider">
-        <hintProvider id="attr-keys" for="column" class="org.jkiss.dbeaver.model.data.hints.standard.AttributeKeysHintProvider" label="%hints.attr-keys.label" description="%hints.attr-keys.description">
-        </hintProvider>
+        <hintProvider id="attr-keys" for="column" class="org.jkiss.dbeaver.model.data.hints.standard.AttributeKeysHintProvider" label="%hints.attr-keys.label" description="%hints.attr-keys.description"/>
+        <hintProvider id="attr-status" for="column" class="org.jkiss.dbeaver.model.data.hints.standard.AttributeStatusHintProvider" label="%hints.attr-status.label" description="%hints.attr-status.description"/>
         <hintProvider id="array-size" for="cell" class="org.jkiss.dbeaver.model.data.hints.standard.ArrayCellHintProvider" label="%hints.array-size.label" description="%hints.array-size.description">
             <supports kind="ARRAY"/>
         </hintProvider>
