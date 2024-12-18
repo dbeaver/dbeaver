@@ -163,8 +163,8 @@ public class PostgreConstants {
     public static final String COLLATION_DEFAULT = "default";
     public static final String DEFAULT_ARRAY_DELIMITER = " ";
     public static final String PG_PASS_HOSTNAME = "overriddenUsername";
-    public static final Map<String, String> REPLACING_TIMEZONE = new HashMap<>();
-
+    public static final Map<String, String> REPLACING_TIMEZONE = Map.of("Europe/Kyiv", "Europe/Kiev",
+            "Asia/Calcutta", "Asia/Kolkata");
     static {
         DATA_TYPE_ALIASES.put("boolean", TYPE_BOOL);
         DATA_TYPE_ALIASES.put("integer", TYPE_INT4);
@@ -214,9 +214,6 @@ public class PostgreConstants {
         DATA_TYPE_CANONICAL_NAMES.put(TYPE_INT2, "smallint");
         DATA_TYPE_CANONICAL_NAMES.put(TYPE_FLOAT4, "real");
         DATA_TYPE_CANONICAL_NAMES.put("character varying", "varchar");
-
-        REPLACING_TIMEZONE.put("Europe/Kyiv", "Europe/Kiev");
-        REPLACING_TIMEZONE.put("Asia/Calcutta", "Asia/Kolkata");
     }
 
     public static final String[] POSTGIS_FUNCTIONS = {

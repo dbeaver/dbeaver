@@ -580,7 +580,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
             throw e;
         } finally {
-            if (CommonUtils.isNotEmpty(legacyTimezoneOverridden)) {
+            if (legacyTimezoneOverridden != null) {
                 TimezoneRegistry.setDefaultZone(ZoneId.of(currentTimezoneId), false);
             }
         }
