@@ -22,10 +22,10 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
+import org.jkiss.dbeaver.model.data.DBDResultSetModel;
 import org.jkiss.dbeaver.model.data.DBDValueRow;
 import org.jkiss.dbeaver.model.data.hints.DBDCellHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
-import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
 import org.jkiss.dbeaver.model.data.hints.ValueHintText;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -46,7 +46,7 @@ public class BinaryCellHintProvider implements DBDCellHintProvider {
     @Nullable
     @Override
     public DBDValueHint[] getCellHints(
-        @NotNull DBDValueHintContext context,
+        @NotNull DBDResultSetModel model,
         @NotNull DBDAttributeBinding attribute,
         @NotNull DBDValueRow row,
         @Nullable Object value,

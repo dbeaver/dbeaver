@@ -2748,7 +2748,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             List<IGridHint> gridHints = null;
             for (DBDCellHintProvider hintProvider : controller.getModel().getHintContext().getCellHintProviders(attr)) {
                 DBDValueHint[] valueHints = hintProvider.getCellHints(
-                    controller.getModel().getHintContext(),
+                    controller.getModel(),
                     attr,
                     row,
                     cellValue,
@@ -2778,7 +2778,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             List<IGridHint> gridHints = null;
             for (DBDAttributeHintProvider hintProvider : controller.getModel().getHintContext().getColumnHintProviders(attr)) {
                 DBDValueHint[] valueHints = hintProvider.getAttributeHints(
-                    controller.getModel().getHintContext(),
+                    controller.getModel(),
                     attr,
                     INLINE_HINT_TYPES,
                     hintOptions
@@ -3079,25 +3079,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 if (!CommonUtils.isEmpty(description)) {
                     tip.append("\nDescription: ").append(description);
                 }
-                DBDRowIdentifier rowIdentifier = attributeBinding.getRowIdentifier();
-                if (rowIdentifier != null) {
-                    tip.append("\nTable: ").append(DBUtils.getObjectFullName(rowIdentifier.getEntity(), DBPEvaluationContext.UI));
-                }
-                if (rowIdentifier != null &&
-                    !rowIdentifier.isIncomplete() &&
-                    rowIdentifier != getController().getModel().getDefaultRowIdentifier()
-                ) {
-                    tip.append("\n").append(ResultSetMessages.controls_resultset_results_edit_key).append(": ")
-                        .append(rowIdentifier.getEntity().getName())
-                        .append("(")
-                        .append(rowIdentifier.getAttributes().stream().map(DBDAttributeBinding::getName)
-                            .collect(Collectors.joining(",")))
-                        .append(")");
-                }
                 // Add hints
                 ResultSetHintContext hintContext = controller.getModel().getHintContext();
                 for (DBDAttributeHintProvider ahp : hintContext.getColumnHintProviders(attributeBinding)) {
-                    DBDValueHint[] hints = ahp.getAttributeHints(hintContext, attributeBinding, INLINE_HINT_TYPES, DBDValueHintProvider.OPTION_TOOLTIP);
+                    DBDValueHint[] hints = ahp.getAttributeHints(controller.getModel(), attributeBinding, INLINE_HINT_TYPES, DBDValueHintProvider.OPTION_TOOLTIP);
                     if (hints != null) {
                         for (DBDValueHint hint : hints) {
                             tip.append("\n").append(hint.getHintText());

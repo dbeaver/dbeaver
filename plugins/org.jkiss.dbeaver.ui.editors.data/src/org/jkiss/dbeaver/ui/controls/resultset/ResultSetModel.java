@@ -46,7 +46,7 @@ import java.util.*;
 /**
  * Result set model
  */
-public class ResultSetModel {
+public class ResultSetModel implements DBDResultSetModel {
 
     private static final Log log = Log.getLog(ResultSetModel.class);
 
@@ -131,6 +131,7 @@ public class ResultSetModel {
         this.dataFilter = createDataFilter();
     }
 
+    @Override
     public ResultSetHintContext getHintContext() {
         return hintContext;
     }
@@ -191,6 +192,7 @@ public class ResultSetModel {
         return documentAttribute;
     }
 
+    @Override
     @NotNull
     public DBDAttributeBinding[] getAttributes() {
         return attributes;
@@ -298,6 +300,7 @@ public class ResultSetModel {
         return null;
     }
 
+    @Override
     @Nullable
     public DBDRowIdentifier getDefaultRowIdentifier() {
         for (DBDAttributeBinding column : attributes) {
@@ -351,6 +354,7 @@ public class ResultSetModel {
         return curRows.size();
     }
 
+    @Override
     @NotNull
     public List<ResultSetRow> getAllRows() {
         return curRows;
@@ -387,14 +391,14 @@ public class ResultSetModel {
     @Nullable
     public Object getCellValue(
         @NotNull DBDAttributeBinding attribute,
-        @NotNull ResultSetRow row,
+        @NotNull DBDValueRow row,
         @Nullable int[] rowIndexes,
         boolean retrieveDeepestCollectionElement
     ) {
         return DBUtils.getAttributeValue(
             attribute,
             attributes,
-            row.values,
+            row.getValues(),
             rowIndexes,
             retrieveDeepestCollectionElement
         );

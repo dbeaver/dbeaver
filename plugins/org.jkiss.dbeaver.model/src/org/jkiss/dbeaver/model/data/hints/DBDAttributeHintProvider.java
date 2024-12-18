@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.data.hints;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDResultSetModel;
 
 import java.util.EnumSet;
 
@@ -31,12 +32,13 @@ public interface DBDAttributeHintProvider extends DBDValueHintProvider {
     /**
      * Get all hints available for specified attribute.
      *
+     * @param model
      * @param types   requested hint types
      * @param options flags combined from HINT_ constants
      */
     @Nullable
     DBDValueHint[] getAttributeHints(
-        @NotNull DBDValueHintContext context,
+        @NotNull DBDResultSetModel model,
         @NotNull DBDAttributeBinding attribute,
         @NotNull EnumSet<DBDValueHint.HintType> types,
         int options);

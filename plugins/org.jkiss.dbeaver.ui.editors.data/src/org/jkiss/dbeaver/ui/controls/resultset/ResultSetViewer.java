@@ -1709,7 +1709,7 @@ public class ResultSetViewer extends Viewer
         List<DBDCellHintProvider> hintProviders = model.getHintContext().getCellHintProviders(attr);
         for (DBDCellHintProvider provider : hintProviders) {
             DBDValueHint[] hints = provider.getCellHints(
-                model.getHintContext(),
+                model,
                 attr,
                 row,
                 cellValue,
@@ -3115,7 +3115,7 @@ public class ResultSetViewer extends Viewer
 
             if (hd.getInstance() instanceof DBDCellHintProvider chp) {
                 DBDValueHint[] valueHint = chp.getCellHints(
-                    getModel().getHintContext(),
+                    getModel(),
                     attr,
                     row,
                     cellValue,

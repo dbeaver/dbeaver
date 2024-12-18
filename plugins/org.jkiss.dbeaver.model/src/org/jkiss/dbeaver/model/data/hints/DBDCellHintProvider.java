@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDResultSetModel;
 import org.jkiss.dbeaver.model.data.DBDValueRow;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -35,12 +36,13 @@ public interface DBDCellHintProvider extends DBDValueHintProvider {
     /**
      * Get all hints available for specified cell.
      *
+     * @param model
      * @param types   requested hint types
      * @param options flags combined from HINT_ constants
      */
     @Nullable
     DBDValueHint[] getCellHints(
-        @NotNull DBDValueHintContext context,
+        @NotNull DBDResultSetModel model,
         @NotNull DBDAttributeBinding attribute,
         @NotNull DBDValueRow row,
         @Nullable Object value,

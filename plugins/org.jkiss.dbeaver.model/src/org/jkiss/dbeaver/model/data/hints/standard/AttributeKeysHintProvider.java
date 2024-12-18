@@ -22,10 +22,10 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDResultSetModel;
 import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
 import org.jkiss.dbeaver.model.data.hints.DBDAttributeHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
-import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
 import org.jkiss.dbeaver.model.data.hints.ValueHintText;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
@@ -46,7 +46,7 @@ public class AttributeKeysHintProvider implements DBDAttributeHintProvider {
     @Nullable
     @Override
     public DBDValueHint[] getAttributeHints(
-        @NotNull DBDValueHintContext context,
+        @NotNull DBDResultSetModel model,
         @NotNull DBDAttributeBinding attribute,
         @NotNull EnumSet<DBDValueHint.HintType> types,
         int options
@@ -54,6 +54,23 @@ public class AttributeKeysHintProvider implements DBDAttributeHintProvider {
         List<DBDValueHint> hints = new ArrayList<>();
 
         DBDRowIdentifier rowIdentifier = attribute.getRowIdentifier();
+
+        if (rowIdentifier != null &&
+            !rowIdentifier.isIncomplete() &&
+            rowIdentifier != model.getDefaultRowIdentifier()
+        ) {
+            hints.add(
+                new ValueHintText(
+                    "Unique key: " +
+                        rowIdentifier.getEntity().getName() +
+                        "(" +
+                        rowIdentifier.getAttributes().stream().map(DBDAttributeBinding::getName)
+                            .collect(Collectors.joining(",")) +
+                        ")",
+                    "Unique key which will be used to edit this column's value",
+                    null));
+        }
+
         if (rowIdentifier != null && rowIdentifier.hasAttribute(attribute)) {
             hints.add(
                 new ValueHintText(

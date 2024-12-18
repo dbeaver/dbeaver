@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.data.hints;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.data.DBDResultSetModel;
 import org.jkiss.dbeaver.model.data.DBDValueRow;
 
 import java.util.EnumSet;
@@ -31,12 +32,13 @@ public interface DBDRowHintProvider extends DBDValueHintProvider {
     /**
      * Get all hints available for specified row.
      *
+     * @param model
      * @param types   requested hint types
      * @param options flags combined from HINT_ constants
      */
     @Nullable
     DBDValueHint[] getRowHints(
-        @NotNull DBDValueHintContext context,
+        @NotNull DBDResultSetModel model,
         @NotNull DBDValueRow row,
         @NotNull EnumSet<DBDValueHint.HintType> types,
         int options);
