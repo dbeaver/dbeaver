@@ -29,8 +29,6 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UITextUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
-
 /**
  * Grid column renderer
  */
@@ -90,6 +88,8 @@ class GridColumnRenderer extends AbstractRenderer {
     }
 
     public void paint(GC gc, Rectangle bounds, boolean selected, boolean hovering, GridColumn element) {
+        GridColumn.HintsInfo hintInfo = element.getHintInfo();
+
         gc.setBackground(grid.getLabelProvider().getHeaderBackground(element, selected || hovering));
         gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
 
@@ -106,6 +106,12 @@ class GridColumnRenderer extends AbstractRenderer {
             gc.setForeground(grid.getLabelProvider().getHeaderBorder(element));
             gc.drawLine(bounds.x + bounds.width - 1, bounds.y, bounds.x + bounds.width - 1, bounds.y + bounds.height - 1);
             gc.drawLine(bounds.x, bounds.y + bounds.height - 1, bounds.x + bounds.width - 1, bounds.y + bounds.height - 1);
+        }
+        if (hintInfo.disabled) {
+            gc.setForeground(grid.getLabelProvider().getHeaderDisabled());
+            gc.setLineWidth(1);
+            gc.drawLine(bounds.x + 1, bounds.y + bounds.height - 2, bounds.x + bounds.width - 2, bounds.y + bounds.height - 2);
+            gc.setLineWidth(1);
         }
 
         bounds.x += LEFT_MARGIN;
@@ -130,18 +136,18 @@ class GridColumnRenderer extends AbstractRenderer {
             bounds.x += width;
             bounds.width -= width;
         }
-        List<DBPImage> hintIcons = element.getHintIcons();
-        if (!CommonUtils.isEmpty(hintIcons)) {
+
+        if (!CommonUtils.isEmpty(hintInfo.icons)) {
             int hy = bounds.y;
-            if (hintIcons.size() > 1) {
+            if (hintInfo.icons.size() > 1) {
                 hy -= TOP_MARGIN;
             }
             int maxWidth = 0;
-            for (DBPImage hi : hintIcons) {
+            for (DBPImage hi : hintInfo.icons) {
                 Image hintImage = DBeaverIcons.getImage(hi);
                 Rectangle imageBounds = hintImage.getBounds();
 
-                if (hintIcons.size() == 1) {
+                if (hintInfo.icons.size() == 1) {
                     hy = (bounds.height - imageBounds.height) / 2;
                 }
                 gc.drawImage(hintImage, bounds.x, hy);
@@ -183,7 +189,7 @@ class GridColumnRenderer extends AbstractRenderer {
             final String text = UITextUtils.getShortString(grid.fontMetrics, getColumnText(element), bounds.width);
             gc.setFont(getColumnFont(element));
             gc.setClipping(bounds.x, bounds.y, bounds.width, fontHeight);
-            gc.drawString(text, bounds.x, bounds.y, isTransparent);
+            gc.drawString(text, bounds.x, bounds.y, true);
             gc.setClipping((Rectangle) null);
         }
 
@@ -195,7 +201,7 @@ class GridColumnRenderer extends AbstractRenderer {
                 gc.setForeground(grid.getLabelProvider().getHeaderForeground(element, selected || hovering));
                 gc.setFont(grid.commentFont);
                 gc.setClipping(bounds.x, bounds.y, bounds.width, fontHeight);
-                gc.drawString(text, bounds.x, bounds.y, isTransparent);
+                gc.drawString(text, bounds.x, bounds.y, true);
                 gc.setClipping((Rectangle) null);
             }
         }

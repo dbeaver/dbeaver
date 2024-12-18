@@ -23,12 +23,11 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.trace.DBCTrace;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -134,6 +133,42 @@ public class ResultSetModel implements DBDResultSetModel {
     @Override
     public ResultSetHintContext getHintContext() {
         return hintContext;
+    }
+
+    @Override
+    public String getReadOnlyStatus(DBPDataSourceContainer dataSourceContainer) {
+        if (isUpdateInProgress()) {
+            return "Update in progress";
+        }
+
+        DBPDataSource dataSource = dataSourceContainer.getDataSource();
+        if (dataSource == null || !dataSourceContainer.isConnected()) {
+            return "No connection to database";
+        }
+        if (dataSourceContainer.isConnectionReadOnly()) {
+            return "Connection is in read-only state";
+        }
+        if (dataSource.getInfo().isReadOnlyData()) {
+            return "Read-only data container";
+        }
+        if (!dataSourceContainer.hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_DATA)) {
+            return "Data edit restricted";
+        }
+        if (isUniqueKeyUndefinedButRequired(dataSourceContainer)) {
+            return "No unique key defined";
+        }
+        return null;
+    }
+
+    public boolean isUniqueKeyUndefinedButRequired(@NotNull DBPDataSourceContainer dataSourceContainer) {
+        final DBPPreferenceStore store = dataSourceContainer.getPreferenceStore();
+
+        if (store.getBoolean(ResultSetPreferences.RS_EDIT_DISABLE_IF_KEY_MISSING)) {
+            final DBDRowIdentifier identifier = this.getDefaultRowIdentifier();
+            return identifier == null || !identifier.isValidIdentifier();
+        }
+
+        return false;
     }
 
     @NotNull

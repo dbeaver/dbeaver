@@ -1986,7 +1986,7 @@ public class ResultSetViewer extends Viewer
         if (executionContext != null &&
             (executionContext.getDataSource().getContainer().isConnectionReadOnly() ||
             executionContext.getDataSource().getInfo().isReadOnlyData() ||
-            isUniqueKeyUndefinedButRequired(executionContext)))
+            model.isUniqueKeyUndefinedButRequired(executionContext.getDataSource().getContainer())))
         {
             return true;
         }
@@ -2605,46 +2605,18 @@ public class ResultSetViewer extends Viewer
             !executionContext.isConnected() ||
             !executionContext.getDataSource().getContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_DATA) ||
             executionContext.getDataSource().getInfo().isReadOnlyData() ||
-            isUniqueKeyUndefinedButRequired(executionContext);
+            model.isUniqueKeyUndefinedButRequired(executionContext.getDataSource().getContainer());
     }
 
     @Override
     public String getReadOnlyStatus() {
-        if (model.isUpdateInProgress()) {
-            return "Update in progress";
-        }
         if (!(activePresentation instanceof IResultSetEditor) || (decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_EDIT) == 0) {
             return "Active presentation doesn't support data edit";
         }
 
         DBCExecutionContext executionContext = getExecutionContext();
-        if (executionContext == null || !executionContext.isConnected()) {
-            return "No connection to database";
-        }
-        if (executionContext.getDataSource().getContainer().isConnectionReadOnly()) {
-            return "Connection is in read-only state";
-        }
-        if (executionContext.getDataSource().getInfo().isReadOnlyData()) {
-            return "Read-only data container";
-        }
-        if (!executionContext.getDataSource().getContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_DATA)) {
-            return "Data edit restricted";
-        }
-        if (isUniqueKeyUndefinedButRequired(executionContext)) {
-            return "No unique key defined";
-        }
-        return null;
-    }
-
-    private boolean isUniqueKeyUndefinedButRequired(@NotNull DBCExecutionContext context) {
-        final DBPPreferenceStore store = context.getDataSource().getContainer().getPreferenceStore();
-
-        if (store.getBoolean(ResultSetPreferences.RS_EDIT_DISABLE_IF_KEY_MISSING)) {
-            final DBDRowIdentifier identifier = model.getDefaultRowIdentifier();
-            return identifier == null || !identifier.isValidIdentifier();
-        }
-
-        return false;
+        return model.getReadOnlyStatus(executionContext == null ?
+            null : executionContext.getDataSource().getContainer());
     }
 
     /**

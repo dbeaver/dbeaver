@@ -2929,16 +2929,6 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
             if (item.getElement() instanceof DBDAttributeBinding attr) {
                 DBPImage image = DBValueFormatting.getObjectImage(attr.getAttribute());
-
-                boolean attributeReadOnly = isAttributeReadOnly(attr);
-                if (attributeReadOnly) {
-                    image = new DBIconComposite(image, false,
-                        null,
-                        null,
-                        null,
-                        DBIcon.OVER_LOCK);
-                }
-
                 return DBeaverIcons.getImage(image);
             } else if (item.getElement() instanceof DBSAttributeBase attrBase) {
                 return DBeaverIcons.getImage(
@@ -3004,6 +2994,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
         @Override
         public Color getHeaderBorder(@Nullable IGridItem item) {
             return cellHeaderBorder;
+        }
+
+        @Override
+        public Color getHeaderDisabled() {
+            return foregroundError;
         }
 
         @NotNull
@@ -3088,13 +3083,6 @@ public class SpreadsheetPresentation extends AbstractPresentation
                             tip.append("\n").append(hint.getHintText());
                         }
                     }
-                }
-
-                // Read-only
-                String readOnlyStatus = controller.getAttributeReadOnlyStatus(attributeBinding, true, true);
-                if (readOnlyStatus != null) {
-                    tip.append("\n").append(ResultSetMessages.controls_resultset_results_read_only_status)
-                        .append(": ").append(readOnlyStatus);
                 }
                 return tip.toString();
             }

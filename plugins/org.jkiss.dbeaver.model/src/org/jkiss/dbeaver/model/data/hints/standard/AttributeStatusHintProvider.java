@@ -18,12 +18,13 @@ package org.jkiss.dbeaver.model.data.hints.standard;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDResultSetModel;
 import org.jkiss.dbeaver.model.data.hints.DBDAttributeHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
 import org.jkiss.dbeaver.model.data.hints.ValueHintText;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 
 import java.util.EnumSet;
 
@@ -40,16 +41,31 @@ public class AttributeStatusHintProvider implements DBDAttributeHintProvider {
         @NotNull EnumSet<DBDValueHint.HintType> types,
         int options
     ) {
-        String readOnlyStatus = null;//model.getAttributeReadOnlyStatus(attribute);
+        DBPDataSource dataSource = attribute.getDataSource();
+        String readOnlyStatus = model.getReadOnlyStatus(dataSource == null ? null : dataSource.getContainer());
+        if (readOnlyStatus == null) {
+            readOnlyStatus = DBExecUtils.getAttributeReadOnlyStatus(attribute, true);
+        }
+
         if (readOnlyStatus != null) {
             return new DBDValueHint[] {
-                new ValueHintText(
-                    "Read-only: " + readOnlyStatus,
-                    null,
-                    DBIcon.OVER_LOCK)
+                new ValueHintReadOnly(
+                    "Read-only: " + readOnlyStatus)
             };
         }
 
         return null;
+    }
+
+    static class ValueHintReadOnly extends ValueHintText {
+
+        public ValueHintReadOnly(String text) {
+            super(text, null, null);
+        }
+
+        @Override
+        public int getHintOptions() {
+            return OPTION_DISABLED;
+        }
     }
 }

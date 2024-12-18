@@ -59,6 +59,11 @@ public class GridColumn implements IGridColumn {
     private int height = -1;
     private int pinIndex = -1;
 
+    public static class HintsInfo {
+        List<DBPImage> icons = new ArrayList<>();
+        boolean disabled;
+    }
+
     public GridColumn(LightGrid grid, Object element) {
         this.grid = grid;
         this.element = element;
@@ -219,10 +224,10 @@ public class GridColumn implements IGridColumn {
         if (image != null) {
             x += image.getBounds().width + imageSpacing;
         }
-        List<DBPImage> hintIcons = getHintIcons();
-        if (!hintIcons.isEmpty()) {
+        HintsInfo hint = getHintInfo();
+        if (!hint.icons.isEmpty()) {
             int maxIconWidth = GridColumnRenderer.IMAGE_SPACING;
-            for (DBPImage hi : hintIcons) {
+            for (DBPImage hi : hint.icons) {
                 maxIconWidth = Math.max(maxIconWidth, DBeaverIcons.getImage(hi).getBounds().width);
             }
             x += maxIconWidth;
@@ -387,18 +392,21 @@ public class GridColumn implements IGridColumn {
         return grid.getContentProvider().getColumnHints(this, 0);
     }
 
-    List<DBPImage> getHintIcons() {
+    HintsInfo getHintInfo() {
         List<IGridHint> columnHints = getColumnHints();
-        List<DBPImage> hintIcons = new ArrayList<>();
+        HintsInfo info = new HintsInfo();
         if (columnHints != null) {
             for (IGridHint hint : columnHints) {
                 DBPImage icon = hint.getIcon();
                 if (icon != null) {
-                    hintIcons.add(icon);
+                    info.icons.add(icon);
+                }
+                if (hint.isDisabled()) {
+                    info.disabled = true;
                 }
             }
         }
-        return hintIcons;
+        return info;
     }
 
 

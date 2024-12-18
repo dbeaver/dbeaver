@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
 
 import java.util.List;
@@ -44,4 +45,6 @@ public interface DBDResultSetModel {
     );
 
     DBDValueHintContext getHintContext();
+
+    String getReadOnlyStatus(DBPDataSourceContainer dataSourceContainer);
 }
