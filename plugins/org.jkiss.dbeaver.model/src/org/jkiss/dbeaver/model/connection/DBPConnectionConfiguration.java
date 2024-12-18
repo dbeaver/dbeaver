@@ -60,6 +60,7 @@ public class DBPConnectionConfiguration implements DBPObject {
     public static final String VARIABLE_PREFIX_TAG = "tag.";
 
     public static final String VARIABLE_DATE = "date";
+    public static final String VARIABLE_TIME = "time";
 
     public static final String[][] CONNECT_VARIABLES = new String[][]{
         {VARIABLE_HOST, "target database host"},

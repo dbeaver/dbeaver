@@ -60,6 +60,11 @@ public class SpreadsheetHint implements IGridHint {
     }
 
     @Override
+    public boolean isError() {
+        return valueHint.getHintStyle() == DBDValueHint.HintStyle.ERROR;
+    }
+
+    @Override
     public boolean hasAction() {
         return valueHint instanceof DBDValueHintActionHandler;
     }

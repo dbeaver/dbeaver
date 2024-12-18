@@ -54,9 +54,9 @@ public class ReferenceHintProvider implements DBDValueHintProvider {
         }
         List<DBSEntityReferrer> referrers = attribute.getReferrers();
         if (!CommonUtils.isEmpty(referrers)) {
-            List<DBDValueHint> refHints = new ArrayList<>();
+            List<ValueHintReference> refHints = new ArrayList<>();
             for (DBSEntityReferrer referrer : referrers) {
-                if (referrer instanceof DBSEntityAssociation ea) {
+                if (referrer instanceof DBSEntityAssociation ea && !isTableReferenceExists(ea, refHints)) {
                     DBSEntityConstraint refConstr = ea.getReferencedConstraint();
                     if (refConstr != null) {
                         refHints.add(
@@ -70,6 +70,15 @@ public class ReferenceHintProvider implements DBDValueHintProvider {
             return refHints.toArray(new DBDValueHint[0]);
         }
         return null;
+    }
+
+    private boolean isTableReferenceExists(DBSEntityAssociation assoc, List<ValueHintReference> hints) {
+        for (ValueHintReference hr : hints) {
+            if (assoc.getAssociatedEntity() == hr.getAssociation().getAssociatedEntity()) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

@@ -23,11 +23,9 @@ import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDAttributeBindingMeta;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLGroupingAttribute;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -162,21 +160,20 @@ public class GroupingResultsDecorator extends ResultSetDecoratorBase {
                     return;
                 }
                 List<Object> dropElements = (List<Object>) event.data;
-                List<String> newBindings = new ArrayList<>();
-                List<DBDAttributeBinding> movedBindings = new ArrayList<>();
+                List<SQLGroupingAttribute> newBindings = new ArrayList<>();
+                List<SQLGroupingAttribute> movedBindings = new ArrayList<>();
                 for (Object element : dropElements) {
-                    if (element instanceof DBDAttributeBinding) {
-                        DBDAttributeBinding binding = (DBDAttributeBinding) element;
-                        String attrName = getAttributeBindingName(binding);
-
-                        if (ArrayUtils.contains(container.getResultSetController().getModel().getAttributes(), binding)) {
+                    if (element instanceof DBDAttributeBinding binding) {
+                        int attrBindingIndex = ArrayUtils.indexOf(container.getResultSetController().getModel().getAttributes(), binding);
+                        if (attrBindingIndex >= 0 && binding.getDataContainer() instanceof GroupingDataContainer dataContainer) {
                             // Check for group function - can't move function columns
-                            if (container.getGroupAttributes().contains(attrName)) {
+                            SQLGroupingAttribute[] currAttrs = dataContainer.getGroupingAttributes();
+                            if (currAttrs != null && attrBindingIndex < currAttrs.length) {
                                 // It is column move, not new binding
-                                movedBindings.add(binding);
+                                movedBindings.add(currAttrs[attrBindingIndex]);
                             }
                         } else {
-                            newBindings.add(attrName);
+                            newBindings.add(SQLGroupingAttribute.makeBound(binding));
                         }
                     }
                 }
@@ -184,22 +181,13 @@ public class GroupingResultsDecorator extends ResultSetDecoratorBase {
                     return;
                 }
                 if (!movedBindings.isEmpty()) {
-                    if (gridDropListeners != null) {
-                        // Do visual reordering if needed
-//                        dropElements.clear();
-//                        dropElements.addAll(movedBindings);
-//                        for (DropTargetListener listener : gridDropListeners) {
-//                            listener.drop(event);
-//                        }
-                    }
-
                     // Reorder columns
-                    List<String> curAttributes = new ArrayList<>(container.getGroupAttributes());
+                    List<SQLGroupingAttribute> curAttributes = new ArrayList<>(container.getGroupAttributes());
                     if (!(presentation.getControl() instanceof Spreadsheet)) {
                         return;
                     }
 
-                    int overColumnIndex = ((Spreadsheet)presentationControl).getColumnIndex(event.x, event.y);
+                    int overColumnIndex = ((Spreadsheet) presentationControl).getColumnIndex(event.x, event.y);
                     if (overColumnIndex < 0) {
                         return;
                     }
@@ -207,10 +195,9 @@ public class GroupingResultsDecorator extends ResultSetDecoratorBase {
                         overColumnIndex = curAttributes.size() - 1;
                     }
 
-                    for (DBDAttributeBinding mb : movedBindings) {
-                        String attrName = getAttributeBindingName(mb);
-                        curAttributes.remove(attrName);
-                        curAttributes.add(overColumnIndex, attrName);
+                    for (SQLGroupingAttribute attr : movedBindings) {
+                        curAttributes.remove(attr);
+                        curAttributes.add(overColumnIndex, attr);
                     }
                     container.clearGroupingAttributes();
                     container.addGroupingAttributes(curAttributes);
@@ -236,13 +223,4 @@ public class GroupingResultsDecorator extends ResultSetDecoratorBase {
             }
         });
     }
-
-    private static String getAttributeBindingName(DBDAttributeBinding binding) {
-        if (binding instanceof DBDAttributeBindingMeta && binding.getMetaAttribute() != null) {
-            return DBUtils.getQuotedIdentifier(binding.getDataSource(), binding.getMetaAttribute().getLabel());
-        } else {
-            return binding.getFullyQualifiedName(DBPEvaluationContext.DML);
-        }
-    }
-
 }

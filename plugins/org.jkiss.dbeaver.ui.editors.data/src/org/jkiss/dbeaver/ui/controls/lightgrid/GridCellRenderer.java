@@ -295,7 +295,11 @@ public class GridCellRenderer extends AbstractRenderer {
                     if (textSize.x < bounds.width - LEFT_MARGIN) {
                         final Color disabledForeground = getDisabledForeground(cellInfo);
 
-                        gc.setForeground(disabledForeground);
+                        if (hint.isError()) {
+                            gc.setForeground(grid.getLabelProvider().getErrorForeground());
+                        } else {
+                            gc.setForeground(disabledForeground);
+                        }
                         gc.drawString(
                             hintText,
                             hintLeftPos,
