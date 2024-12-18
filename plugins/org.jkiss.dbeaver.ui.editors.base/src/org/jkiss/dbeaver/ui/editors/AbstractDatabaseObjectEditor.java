@@ -21,6 +21,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
@@ -86,6 +87,7 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
         return getEditorInput().getExecutionContext();
     }
 
+    @Nullable
     public OBJECT_TYPE getDatabaseObject() {
         return (OBJECT_TYPE) getEditorInput().getDatabaseObject();
     }

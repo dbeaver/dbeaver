@@ -1731,13 +1731,22 @@ public class UIUtils {
         asyncExec(() -> display.post(event));
     }
 
-    public static void drawMessageOverControl(Control control, PaintEvent e, String message, int offset) {
-        drawMessageOverControl(control, e.gc, message, offset);
+    public static Point drawMessageOverControl(Control control, PaintEvent e, String message, int offset) {
+        return drawMessageOverControl(control, e.gc, message, offset);
     }
 
-    public static void drawMessageOverControl(Control control, GC gc, String message, int offset) {
+    public static Point drawMessageOverControl(Control control, GC gc, String message, int offset) {
         Rectangle bounds = control.getBounds();
-        final int height = gc.textExtent(message).y;
+        Point textSize = gc.textExtent(message);
+
+        if (textSize.x > bounds.width) {
+            double charsPerLine = (double) bounds.width / gc.getFontMetrics().getAverageCharacterWidth();
+
+            message = UITextUtils.wrap(message, (int) charsPerLine);
+            textSize = gc.textExtent(message);
+        }
+
+        final int height = textSize.y;
         for (String line : message.split("\n")) {
             line = line.trim();
             Point ext = gc.textExtent(line);
@@ -1746,6 +1755,8 @@ public class UIUtils {
                 (bounds.height - height) / 2 + offset);
             offset += ext.y;
         }
+
+        return textSize;
     }
 
     public static SharedTextColors getSharedTextColors() {
