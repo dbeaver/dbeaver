@@ -209,17 +209,17 @@
         <!-- Edit menu -->
         <menuContribution allPopups="false" locationURI="menu:edit">
             <separator name="undoredo" visible="true"/>
-            <command commandId="org.eclipse.ui.edit.undo"/>
-            <command commandId="org.eclipse.ui.edit.redo"/>
-            <command commandId="org.eclipse.ui.edit.cut"/>
-            <command commandId="org.eclipse.ui.edit.copy"/>
-            <command commandId="org.jkiss.dbeaver.core.edit.copy.special">
+            <command commandId="org.eclipse.ui.edit.undo" label="%command.org.jkiss.dbeaver.core.edit.undo.name"/>
+            <command commandId="org.eclipse.ui.edit.redo" label="%command.org.jkiss.dbeaver.core.edit.redo.name"/>
+            <command commandId="org.eclipse.ui.edit.cut" label="%command.org.jkiss.dbeaver.core.edit.cut.name"/>
+            <command commandId="org.eclipse.ui.edit.copy" label="%command.org.jkiss.dbeaver.core.edit.copy.name"/>
+            <command commandId="org.jkiss.dbeaver.core.edit.copy.special" label="%command.org.jkiss.dbeaver.core.edit.copy.special.name">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <command commandId="org.eclipse.ui.edit.paste"/>
-            <command commandId="org.eclipse.ui.edit.delete"/>
+            <command commandId="org.eclipse.ui.edit.paste" label="%command.org.jkiss.dbeaver.core.edit.paste.name"/>
+            <command commandId="org.eclipse.ui.edit.delete" label="%command.org.jkiss.dbeaver.core.edit.delete.name"/>
             <separator name="find.ext" visible="true"/>
-            <command commandId="org.eclipse.ui.edit.findReplace">
+            <command commandId="org.eclipse.ui.edit.findReplace" label="%command.org.jkiss.dbeaver.core.edit.findreplace.name">
                 <visibleWhen checkEnabled="true"/>
             </command>
             <command commandId="org.jkiss.dbeaver.core.navigator.bookmark.add">
@@ -257,43 +257,43 @@
         <!-- File menu-->
 
         <menuContribution allPopups="false" locationURI="menu:file?before=additions">
-            <command commandId="org.eclipse.ui.newWizard"/>
-            <command commandId="org.eclipse.ui.file.save"/>
-            <command commandId="org.eclipse.ui.file.saveAs"/>
+            <command commandId="org.eclipse.ui.newWizard" label="%command.org.jkiss.dbeaver.core.file.new.name"/>
+            <command commandId="org.eclipse.ui.file.save" label="%command.org.jkiss.dbeaver.core.file.save.name"/>
+            <command commandId="org.eclipse.ui.file.saveAs" label="%command.org.jkiss.dbeaver.core.file.saveas.name"/>
             <command commandId="org.eclipse.ui.file.saveAll"/>
-            <command commandId="org.eclipse.ui.file.close"/>
-            <command commandId="org.eclipse.ui.file.print"/>
-            <command commandId="org.eclipse.ui.edit.rename"/>
-            <command commandId="org.eclipse.ui.file.refresh"/>
+            <command commandId="org.eclipse.ui.file.close" label="%command.org.jkiss.dbeaver.core.file.close.name"/>
+            <command commandId="org.eclipse.ui.file.print" label="%command.org.jkiss.dbeaver.core.file.print.name"/>
+            <command commandId="org.eclipse.ui.edit.rename" label="%command.org.jkiss.dbeaver.core.file.rename.name"/>
+            <command commandId="org.eclipse.ui.file.refresh" label="%command.org.jkiss.dbeaver.core.file.refresh.name"/>
 
             <separator name="import-export" visible="true"/>
-            <command commandId="org.eclipse.ui.file.import">
+            <command commandId="org.eclipse.ui.file.import" label="%command.org.jkiss.dbeaver.core.file.import.name">
                 <visibleWhen>
                     <reference definitionId="LocalWorkspace"/>
                 </visibleWhen>
             </command>
-            <command commandId="org.eclipse.ui.file.export">
+            <command commandId="org.eclipse.ui.file.export" label="%command.org.jkiss.dbeaver.core.file.export.name">
                 <visibleWhen>
                     <reference definitionId="LocalWorkspace"/>
                 </visibleWhen>
             </command>
 
             <separator name="properties" visible="true"/>
-            <command commandId="org.eclipse.ui.file.properties"/>
+            <command commandId="org.eclipse.ui.file.properties" label="%command.org.jkiss.dbeaver.core.file.properties.name"/>
         </menuContribution>
         <menuContribution allPopups="false" locationURI="menu:file?after=additions">
             <separator name="exit" visible="true"/>
-            <command commandId="org.eclipse.ui.file.exit"/>
+            <command commandId="org.eclipse.ui.file.exit" label="%command.org.jkiss.dbeaver.core.file.exit.name"/>
         </menuContribution>
 
         <!-- Navigation menu -->
 
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
           <menu id="navigate" label="%menu.navigate">
-            <command commandId="org.eclipse.ui.navigate.openResource"/>
+            <command commandId="org.eclipse.ui.navigate.openResource" label="%command.org.jkiss.dbeaver.core.navigator.openResource.name"/>
             <separator name="nav" visible="true"/>
-            <command commandId="org.eclipse.ui.navigate.backwardHistory"/>
-            <command commandId="org.eclipse.ui.navigate.forwardHistory"/>
+            <command commandId="org.eclipse.ui.navigate.backwardHistory" label="%command.org.jkiss.dbeaver.core.navigator.backwardHistory.name"/>
+            <command commandId="org.eclipse.ui.navigate.forwardHistory" label="%command.org.jkiss.dbeaver.core.navigator.forwardHistory.name"/>
           </menu>
         </menuContribution>
 
@@ -301,21 +301,21 @@
 
         <menuContribution allPopups="false" locationURI="menu:window?before=perspective">
             <separator name="perspective" visible="true"/>
-            <command commandId="org.eclipse.ui.window.customizePerspective"/>
-            <command commandId="org.eclipse.ui.window.resetPerspective"/>
+            <command commandId="org.eclipse.ui.window.customizePerspective" label="%command.org.jkiss.dbeaver.core.window.customizePerspective.name"/>
+            <command commandId="org.eclipse.ui.window.resetPerspective" label="%command.org.jkiss.dbeaver.core.window.resetPerspective.name"/>
             <separator name="tabs" visible="true"/>
             <menu label="%command.org.jkiss.dbeaver.core.window.navigation.name">
-                <command commandId="org.eclipse.ui.navigate.nextTab"/>
-                <command commandId="org.eclipse.ui.navigate.previousTab"/>
-                <command commandId="org.eclipse.ui.navigate.nextSubTab"/>
-                <command commandId="org.eclipse.ui.navigate.previousSubTab"/>
-                <separator name="editors" visible="true"/>
-                <command commandId="org.eclipse.ui.window.nextEditor"/>
-                <command commandId="org.eclipse.ui.window.previousEditor"/>
-                <command commandId="org.eclipse.ui.window.switchToEditor"/>
+            <command commandId="org.eclipse.ui.navigate.nextTab" label="%command.org.jkiss.dbeaver.core.window.navigation.nextTab.name"/>
+            <command commandId="org.eclipse.ui.navigate.previousTab" label="%command.org.jkiss.dbeaver.core.window.navigation.previousTab.name"/>
+            <command commandId="org.eclipse.ui.navigate.nextSubTab" label="%command.org.jkiss.dbeaver.core.window.navigation.nextSubTab.name"/>
+            <command commandId="org.eclipse.ui.navigate.previousSubTab" label="%command.org.jkiss.dbeaver.core.window.navigation.previousSubTab.name"/>
+            <separator name="editors" visible="true"/>
+            <command commandId="org.eclipse.ui.window.nextEditor" label="%command.org.jkiss.dbeaver.core.window.navigation.nextEditor.name"/>
+            <command commandId="org.eclipse.ui.window.previousEditor" label="%command.org.jkiss.dbeaver.core.window.navigation.previousEditor.name"/>
+            <command commandId="org.eclipse.ui.window.switchToEditor" label="%command.org.jkiss.dbeaver.core.window.navigation.switchToEditor.name"/>
             </menu>
             <separator name="settings" visible="true"/>
-            <command commandId="org.eclipse.ui.window.preferences"/>
+            <command commandId="org.eclipse.ui.window.preferences" label="%command.org.jkiss.dbeaver.core.window.preferences.name"/>
         </menuContribution>
 
         <!-- Help menu -->
