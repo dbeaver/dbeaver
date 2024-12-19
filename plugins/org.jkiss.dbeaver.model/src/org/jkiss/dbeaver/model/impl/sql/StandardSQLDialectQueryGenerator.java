@@ -91,7 +91,7 @@ public class StandardSQLDialectQueryGenerator implements SQLQueryGenerator {
         boolean inlineCriteria,
         boolean subQuery
     ) {
-        if (filter.isUseDisjunctiveNormalForm() && !constraints.isEmpty()) {
+        if (filter.isUseDisjunctiveNormalForm() && constraints.size() > 1) {
             // TODO: Would be nice to have some asserts here
 
             var names = constraints.stream()
