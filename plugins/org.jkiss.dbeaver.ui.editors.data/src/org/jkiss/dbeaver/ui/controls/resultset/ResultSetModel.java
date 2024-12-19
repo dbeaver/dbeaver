@@ -141,7 +141,7 @@ public class ResultSetModel implements DBDResultSetModel {
             return "Update in progress";
         }
 
-        DBPDataSource dataSource = dataSourceContainer.getDataSource();
+        DBPDataSource dataSource = dataSourceContainer == null ? null : dataSourceContainer.getDataSource();
         if (dataSource == null || !dataSourceContainer.isConnected()) {
             return "No connection to database";
         }
