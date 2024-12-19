@@ -109,7 +109,7 @@ class GridColumnRenderer extends AbstractRenderer {
             gc.drawLine(bounds.x, bounds.y + bounds.height - 1, bounds.x + bounds.width - 1, bounds.y + bounds.height - 1);
         }
         if (hintInfo.readOnly) {
-            gc.setForeground(grid.getLabelProvider().getHeaderDisabled());
+            gc.setForeground(grid.getLabelProvider().getHeaderReadOnlyColor());
             gc.setLineWidth(1);
             gc.drawLine(isFocused ? bounds.x + 1 : bounds.x, bounds.y + bounds.height - 2, bounds.x + bounds.width - 2, bounds.y + bounds.height - 2);
             gc.setLineWidth(1);

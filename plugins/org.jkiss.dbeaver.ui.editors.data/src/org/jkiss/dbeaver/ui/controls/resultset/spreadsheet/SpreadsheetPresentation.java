@@ -127,6 +127,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
     private Color backgroundNormal;
     private Color backgroundOdd;
     private Color backgroundReadOnly;
+    private Color foregroundReadOnly;
     private Color foregroundDefault;
     private Color foregroundSelected, backgroundSelected;
     private Color foregroundNull;
@@ -1414,6 +1415,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         this.backgroundModified = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_MODIFIED_BACK);
         this.backgroundOdd = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_ODD_BACK);
         this.backgroundReadOnly = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_READ_ONLY);
+        this.foregroundReadOnly = colorRegistry.get(BaseEditorColors.COLOR_READ_ONLY);
         this.foregroundSelected = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_FORE);
         this.foregroundNull = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_NULL_FOREGROUND);
         this.backgroundSelected = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_BACK);
@@ -2997,8 +2999,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
         }
 
         @Override
-        public Color getHeaderDisabled() {
-            return foregroundError;
+        public Color getHeaderReadOnlyColor() {
+            return foregroundReadOnly;
         }
 
         @NotNull

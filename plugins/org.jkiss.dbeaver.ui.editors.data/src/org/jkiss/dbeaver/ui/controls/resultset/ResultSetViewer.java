@@ -473,9 +473,9 @@ public class ResultSetViewer extends Viewer
         UIUtils.applyMainFont(presentationSwitchFolder);
         UIUtils.applyMainFont(panelSwitchFolder);
 
-        if (activePresentation instanceof AbstractPresentation) {
+        if (activePresentation instanceof AbstractPresentation abstractPresentation) {
             ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
-            ((AbstractPresentation) activePresentation).applyThemeSettings(currentTheme);
+            abstractPresentation.applyThemeSettings(currentTheme);
         }
     }
 

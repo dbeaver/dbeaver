@@ -86,7 +86,7 @@ public interface IGridLabelProvider {
     /**
      * Disabled header color
      */
-    Color getHeaderDisabled();
+    Color getHeaderReadOnlyColor();
 
     /**
      * Provides a font for the given element.
