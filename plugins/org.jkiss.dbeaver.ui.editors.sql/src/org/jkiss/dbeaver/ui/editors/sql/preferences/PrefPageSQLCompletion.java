@@ -132,8 +132,8 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             );
             csEnableExperimentalFeatures = UIUtils.createCheckbox(
                 assistGroup,
-                SQLEditorMessages.pref_page_sql_completion_label_enable_experimental_features,
-                SQLEditorMessages.pref_page_sql_completion_label_enable_experimental_features_tip,
+                SQLEditorMessages.pref_page_sql_completion_label_advanced_object_references_analyser,
+                SQLEditorMessages.pref_page_sql_completion_label_advanced_object_references_analyser_tip,
                 true,
                 2
             );
