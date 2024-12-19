@@ -52,7 +52,7 @@ public interface IGridHint {
     /**
      * @return true if hint is a disablement
      */
-    boolean isDisabled();
+    boolean isReadOnly();
 
     /**
      * @return true if hint has action which can be executed by clicking on the icon

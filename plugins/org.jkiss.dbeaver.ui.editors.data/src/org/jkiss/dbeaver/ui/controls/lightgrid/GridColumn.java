@@ -61,7 +61,7 @@ public class GridColumn implements IGridColumn {
 
     public static class HintsInfo {
         List<DBPImage> icons = new ArrayList<>();
-        boolean disabled;
+        boolean readOnly;
     }
 
     public GridColumn(LightGrid grid, Object element) {
@@ -401,8 +401,8 @@ public class GridColumn implements IGridColumn {
                 if (icon != null) {
                     info.icons.add(icon);
                 }
-                if (hint.isDisabled()) {
-                    info.disabled = true;
+                if (hint.isReadOnly()) {
+                    info.readOnly = true;
                 }
             }
         }

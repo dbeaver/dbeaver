@@ -39,7 +39,7 @@ public interface DBDValueHint {
         ERROR
     }
 
-    int OPTION_DISABLED = 1;
+    int OPTION_READ_ONLY = 1;
 
     HintType getHintType();
 

@@ -65,7 +65,7 @@ public class AttributeStatusHintProvider implements DBDAttributeHintProvider {
 
         @Override
         public int getHintOptions() {
-            return OPTION_DISABLED;
+            return OPTION_READ_ONLY;
         }
     }
 }

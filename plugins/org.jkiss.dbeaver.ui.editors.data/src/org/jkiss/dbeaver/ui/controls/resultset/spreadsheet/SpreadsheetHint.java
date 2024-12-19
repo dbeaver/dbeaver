@@ -66,8 +66,8 @@ public class SpreadsheetHint implements IGridHint {
     }
 
     @Override
-    public boolean isDisabled() {
-        return CommonUtils.isBitSet(valueHint.getHintOptions(), DBDValueHint.OPTION_DISABLED);
+    public boolean isReadOnly() {
+        return CommonUtils.isBitSet(valueHint.getHintOptions(), DBDValueHint.OPTION_READ_ONLY);
     }
 
     @Override
