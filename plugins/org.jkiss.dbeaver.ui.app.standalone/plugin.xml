@@ -315,7 +315,7 @@
             <command commandId="org.eclipse.ui.window.switchToEditor" label="%command.org.jkiss.dbeaver.core.window.navigation.switchToEditor.name"/>
             </menu>
             <separator name="settings" visible="true"/>
-            <command commandId="org.eclipse.ui.window.preferences" label="%command.org.jkiss.dbeaver.core.window.preferences.name"/>
+            <command commandId="org.eclipse.ui.window.preferences"/>
         </menuContribution>
 
         <!-- Help menu -->
