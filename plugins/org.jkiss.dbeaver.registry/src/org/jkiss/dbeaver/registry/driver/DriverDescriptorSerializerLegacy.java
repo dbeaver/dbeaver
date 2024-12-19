@@ -180,9 +180,10 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                                 if (!CommonUtils.isEmpty(file.getVersion())) {
                                     xml.addAttribute(RegistryConstants.ATTR_VERSION, file.getVersion());
                                 }
+                                String normalizedFilePath = file.getFile().toString().replace('\\', '/');
                                 xml.addAttribute(
                                     RegistryConstants.ATTR_PATH,
-                                    substitutePathVariables(pathSubstitutions, file.getFile().toString()));
+                                    substitutePathVariables(pathSubstitutions, normalizedFilePath));
                                 if (file.getFileCRC() != 0) {
                                     xml.addAttribute("crc", Long.toHexString(file.getFileCRC()));
                                 }
