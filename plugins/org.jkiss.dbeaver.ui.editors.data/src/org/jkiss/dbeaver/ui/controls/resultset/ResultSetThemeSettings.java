@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.jkiss.dbeaver.ui.BaseEditorColors;
 import org.jkiss.dbeaver.ui.ThemeListener;
 import org.jkiss.dbeaver.ui.ThemeParameter;
@@ -25,7 +26,9 @@ import org.jkiss.dbeaver.ui.ThemeParameter;
  * Theme settings
  */
 public class ResultSetThemeSettings extends ThemeListener {
-    
+
+    @ThemeParameter(ThemeConstants.FONT_SQL_RESULT_SET)
+    public volatile Font resultSetFont;
     @ThemeParameter(ThemeConstants.COLOR_SQL_RESULT_CELL_NEW_BACK)
     public volatile Color backgroundAdded;
     @ThemeParameter(ThemeConstants.COLOR_SQL_RESULT_CELL_DELETED_BACK)

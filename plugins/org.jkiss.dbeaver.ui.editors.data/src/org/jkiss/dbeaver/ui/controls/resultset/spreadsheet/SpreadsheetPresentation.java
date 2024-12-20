@@ -119,11 +119,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
     private final Map<SpreadsheetValueController, IValueEditorStandalone> openEditors = new HashMap<>();
 
     // UI modifiers
-    private Color backgroundAdded;
     private Color backgroundDeleted;
     private Color backgroundModified;
     private Color backgroundNormal;
-    private Color backgroundOdd;
     private Color backgroundReadOnly;
     private Color foregroundDefault;
     private Color foregroundSelected, backgroundSelected;
@@ -1394,10 +1392,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
     @Override
     protected void applyThemeSettings(ITheme currentTheme) {
-        Font rsFont = currentTheme.getFontRegistry().get(ThemeConstants.FONT_SQL_RESULT_SET);
-        if (rsFont != null) {
-            this.spreadsheet.setFont(rsFont);
-        }
+        this.spreadsheet.setFont(ResultSetThemeSettings.instance.resultSetFont);
+
         final ColorRegistry colorRegistry = currentTheme.getColorRegistry();
         Color previewBack = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_SET_PREVIEW_BACK);
         if (previewBack != null) {
@@ -1407,10 +1403,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
 //            }
         }
         //this.foregroundDefault = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_FORE);
-        this.backgroundAdded = ResultSetThemeSettings.instance.backgroundAdded;
         this.backgroundDeleted = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_DELETED_BACK);
         this.backgroundModified = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_MODIFIED_BACK);
-        this.backgroundOdd = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_ODD_BACK);
         this.backgroundReadOnly = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_READ_ONLY);
         this.foregroundSelected = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_FORE);
         this.foregroundNull = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_NULL_FOREGROUND);
@@ -1735,24 +1729,12 @@ public class SpreadsheetPresentation extends AbstractPresentation
         return controller.isRecordMode();
     }
 
-    public Color getBackgroundAdded() {
-        return backgroundAdded;
-    }
-
     public Color getBackgroundDeleted() {
         return backgroundDeleted;
     }
 
     public Color getBackgroundModified() {
         return backgroundModified;
-    }
-
-    public Color getBackgroundNormal() {
-        return backgroundNormal;
-    }
-
-    public Color getBackgroundOdd() {
-        return backgroundOdd;
     }
 
     private DBDAttributeBinding getAttributeFromGrid(IGridColumn colObject, IGridRow rowObject) {
@@ -2629,7 +2611,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
             switch (row.getState()) {
                 case ResultSetRow.STATE_ADDED:
-                    return backgroundAdded;
+                    return ResultSetThemeSettings.instance.backgroundAdded;
                 case ResultSetRow.STATE_REMOVED:
                     return backgroundDeleted;
             }
@@ -2666,7 +2648,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
                 boolean odd = rowRelativeNumber < rowBatchSize;
                 if (odd) {
-                    return backgroundOdd;
+                    return ResultSetThemeSettings.instance.backgroundOdd;
                 }
             }
 
