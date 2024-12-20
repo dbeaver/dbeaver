@@ -2269,6 +2269,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 if ((controller.getDecorator().getDecoratorFeatures() & IResultSetDecorator.FEATURE_LINKS) != 0) {
                     //ResultSetRow row = (ResultSetRow) (recordMode ? colElement.getElement() : rowElement.getElement());
                     if (isShowAsCheckbox(attr)) {
+                        info.state |= STATE_BOOLEAN;
                         info.state |= booleanStyles.getMode() == BooleanMode.TEXT ? STATE_TOGGLE : STATE_LINK;
                     } else if (
                         (cellValue instanceof DBDCollection col && !col.isEmpty()) ||
@@ -2299,7 +2300,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
             }
 
-            if (CommonUtils.isBitSet(info.state, STATE_LINK)) {
+            if (CommonUtils.isBitSet(info.state, STATE_LINK) && !CommonUtils.isBitSet(info.state, STATE_BOOLEAN)) {
                 info.align = ALIGN_LEFT;
             } else {
                 info.align = getCellAlign(attr, row, cellValue);
