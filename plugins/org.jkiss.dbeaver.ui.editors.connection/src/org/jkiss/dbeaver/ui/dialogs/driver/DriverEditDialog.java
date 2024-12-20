@@ -879,6 +879,20 @@ public class DriverEditDialog extends HelpEnabledDialog {
         }
         provider.getRegistry().saveDrivers();
 
+        if (DBWorkbench.isDistributed()) {
+            try {
+                UIUtils.runInProgressDialog(monitor -> {
+                    try {
+                        driver.getDriverInstance(monitor);
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+            } catch (Exception e) {
+                DBWorkbench.getPlatformUI().showError("Error resolving driver files", "Driver cannot be instantiated", e);
+            }
+        }
+
         super.okPressed();
     }
 
