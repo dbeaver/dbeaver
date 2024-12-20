@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.internal;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class UIDashboardMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages"; //$NON-NLS-1$
