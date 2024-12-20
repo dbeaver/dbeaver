@@ -856,6 +856,13 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
     @Override
     protected void okPressed() {
+        saveDriverSettings(this.driver);
+
+        DriverDescriptor oldDriver = provider.getDriverByName(driver.getCategory(), driver.getName());
+        if (oldDriver != null && oldDriver != driver && !oldDriver.isDisabled() && oldDriver.getReplacedBy() == null) {
+            UIUtils.showMessageBox(getShell(), UIConnectionMessages.dialog_edit_driver_dialog_save_exists_title, NLS.bind(UIConnectionMessages.dialog_edit_driver_dialog_save_exists_message, driver.getName()), SWT.ICON_ERROR);
+            return;
+        }
 
         if (DBWorkbench.isDistributed()) {
             try {
@@ -864,14 +871,6 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 DBWorkbench.getPlatformUI().showError("Error saving driver", "Driver libraries sync failed", e);
                 return;
             }
-        }
-
-        saveDriverSettings(this.driver);
-
-        DriverDescriptor oldDriver = provider.getDriverByName(driver.getCategory(), driver.getName());
-        if (oldDriver != null && oldDriver != driver && !oldDriver.isDisabled() && oldDriver.getReplacedBy() == null) {
-            UIUtils.showMessageBox(getShell(), UIConnectionMessages.dialog_edit_driver_dialog_save_exists_title, NLS.bind(UIConnectionMessages.dialog_edit_driver_dialog_save_exists_message, driver.getName()), SWT.ICON_ERROR);
-            return;
         }
 
         // Finish
@@ -926,23 +925,21 @@ public class DriverEditDialog extends HelpEnabledDialog {
             }
         }
         for (DBPDriverLibrary newLib : libraries) {
-            if (!oldLibs.contains(newLib)) {
-                if (!(newLib instanceof DriverLibraryLocal)) {
-                    log.error("Wrong driver library found: " + newLib + ". Must be a local file");
-                    continue;
-                }
-                // Add new library files
-                Path localFilePath = Path.of(newLib.getPath());
-                String shortFileName = localFilePath.getFileName().toString();
-                if (!Files.exists(localFilePath)) {
-                    log.error("Driver library doesn't exist: " + localFilePath + ".");
-                    continue;
-                }
-                if (Files.isDirectory(localFilePath)) {
-                    synAddDriverLibDirectory(newLib, localFilePath, shortFileName);
-                } else {
-                    syncAddDriverLibFile(newLib, localFilePath, shortFileName);
-                }
+            if (!(newLib instanceof DriverLibraryLocal)) {
+                log.error("Wrong driver library found: " + newLib + ". Must be a local file");
+                continue;
+            }
+            // Add new library files
+            Path localFilePath = Path.of(newLib.getPath());
+            String shortFileName = localFilePath.getFileName().toString();
+            if (!Files.exists(localFilePath)) {
+                log.error("Driver library doesn't exist: " + localFilePath + ".");
+                continue;
+            }
+            if (Files.isDirectory(localFilePath)) {
+                synAddDriverLibDirectory(newLib, localFilePath, shortFileName);
+            } else {
+                syncAddDriverLibFile(newLib, localFilePath, shortFileName);
             }
         }
     }
