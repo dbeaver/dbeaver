@@ -25,6 +25,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -36,7 +37,7 @@ import java.util.Map;
 public class ThemeListener {
 
     private static final Log log = Log.getLog(ThemeListener.class);
-    private final Map<String, Field> fieldMap = new HashMap<>();
+    private final Map<String, Field[]> fieldMap = new HashMap<>();
     private final IThemeManager themeManager;
 
     public ThemeListener() {
@@ -53,16 +54,22 @@ public class ThemeListener {
         for (Field field : getClass().getFields()) {
             ThemeParameter annotation = field.getAnnotation(ThemeParameter.class);
             if (annotation != null) {
-                fieldMap.put(annotation.value(), field);
+                Field[] fields = fieldMap.get(annotation.value());
+                if (fields == null) {
+                    fields = new Field[]{field};
+                } else {
+                    fields = ArrayUtils.add(Field.class, fields, field);
+                }
+                fieldMap.put(annotation.value(), fields);
             }
         }
         
         // Fill initial values
         ITheme currentTheme = themeManager.getCurrentTheme();
         try {
-            for (Map.Entry<String, Field> prop : fieldMap.entrySet()) {
-                Field field = prop.getValue();
-                setPropertyValue(field, currentTheme, prop.getKey());
+            for (Map.Entry<String, Field[]> prop : fieldMap.entrySet()) {
+                Field[] fields = prop.getValue();
+                setPropertyValue(fields, currentTheme, prop.getKey());
             }
         } catch (IllegalAccessException e) {
             log.debug("Error filling initial theme properties", e);
@@ -71,22 +78,31 @@ public class ThemeListener {
 
     private void updateThemeProperty(PropertyChangeEvent event) {
         String property = event.getProperty();
-        Field field = fieldMap.get(property);
-        if (field != null) {
+        Field[] fields = fieldMap.get(property);
+        if (fields != null) {
             ITheme currentTheme = themeManager.getCurrentTheme();
             try {
-                setPropertyValue(field, currentTheme, property);
+                setPropertyValue(fields, currentTheme, property);
             } catch (IllegalAccessException e) {
                 log.debug(e);
             }
         }
     }
 
-    private void setPropertyValue(Field field, ITheme currentTheme, String property) throws IllegalAccessException {
-        if (Color.class.isAssignableFrom(field.getType())) {
-            field.set(this, currentTheme.getColorRegistry().get(property));
-        } else if (Font.class.isAssignableFrom(field.getType())) {
-            field.set(this, currentTheme.getFontRegistry().get(property));
+    private void setPropertyValue(Field[] fields, ITheme currentTheme, String property) throws IllegalAccessException {
+        for (Field field : fields) {
+            if (Color.class.isAssignableFrom(field.getType())) {
+                field.set(this, currentTheme.getColorRegistry().get(property));
+            } else if (Font.class.isAssignableFrom(field.getType())) {
+                ThemeParameter param = field.getAnnotation(ThemeParameter.class);
+                if (param != null && param.italic()) {
+                    field.set(this, currentTheme.getFontRegistry().getItalic(property));
+                } else if (param != null && param.bold()) {
+                    field.set(this, currentTheme.getFontRegistry().getBold(property));
+                } else {
+                    field.set(this, currentTheme.getFontRegistry().get(property));
+                }
+            }
         }
     }
 }

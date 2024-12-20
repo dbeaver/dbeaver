@@ -29,4 +29,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ThemeParameter {
     String value();
+
+    boolean bold() default false;
+    boolean italic() default false;
 }

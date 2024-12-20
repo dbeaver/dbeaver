@@ -39,7 +39,6 @@ import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreCommandGrantPrivilege;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
@@ -65,6 +64,7 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorLabelProvider;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
+import org.jkiss.dbeaver.ui.navigator.database.NavigatorThemeSettings;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -450,11 +450,11 @@ abstract class PostgresPermissionsEditor<T extends DBSObject>
                         String schemaPrefix = DBUtils.getQuotedIdentifier(object) + ".";
                         for (String tableName : objectNames) {
                             if (tableName.startsWith(schemaPrefix)) {
-                                return boldFont;
+                                return NavigatorThemeSettings.instance.navFontBold;
                             }
                         }
                     } else if (getObjectPermissions(object) != null) {
-                        return boldFont;
+                        return NavigatorThemeSettings.instance.navFontBold;
                     }
                 }
                 return null;

@@ -57,6 +57,7 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorLabelProvider;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
+import org.jkiss.dbeaver.ui.navigator.database.NavigatorThemeSettings;
 import org.jkiss.dbeaver.ui.navigator.itemlist.ObjectListControl;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -111,11 +112,11 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
                         String schemaPrefix = DBUtils.getQuotedIdentifier(object) + ".";
                         for (String tableName : privilegeMap.keySet()) {
                             if (tableName.startsWith(schemaPrefix)) {
-                                return boldFont;
+                                return NavigatorThemeSettings.instance.navFontBold;
                             }
                         }
                     } else if (getObjectPermissions(object) != null) {
-                        return boldFont;
+                        return NavigatorThemeSettings.instance.navFontBold;
                     }
                 }
                 return null;
