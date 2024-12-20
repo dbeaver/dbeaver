@@ -53,7 +53,9 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
+import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
@@ -71,6 +73,8 @@ import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.*;
 import org.jkiss.dbeaver.registry.BasePolicyDataProvider;
+import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
+import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.registry.data.hints.ValueHintProviderDescriptor;
 import org.jkiss.dbeaver.registry.data.hints.ValueHintRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -1670,7 +1674,76 @@ public class ResultSetViewer extends Viewer
         //this.updateStatusMessage();
     }
 
-    private final Job statusBarLayoutJob = new Job("Pending resultset view status bar relayout") {
+    @Override
+    public boolean updateCellValue(
+        @NotNull DBDAttributeBinding attr,
+        @NotNull ResultSetRow row,
+        @Nullable int[] rowIndexes,
+        @Nullable Object value,
+        boolean refreshHints) throws DBException {
+        boolean updated = model.updateCellValue(attr, row, rowIndexes, value, true);
+        if (updated) {
+            refreshHintCache(attr, row, rowIndexes, refreshHints);
+        }
+        return updated;
+    }
+
+    @Override
+    public void resetCellValue(
+        @NotNull DBDAttributeBinding attr,
+        @NotNull ResultSetRow row,
+        @Nullable int[] rowIndexes
+    ) {
+        model.resetCellValue(attr, row, rowIndexes);
+        refreshHintCache(attr, row, rowIndexes, true);
+    }
+
+    private void refreshHintCache(DBDAttributeBinding attr, ResultSetRow row, int[] rowIndexes, boolean refreshPresentation) {
+        // Refresh cached hints for changed row
+
+        // Check that we could have hints
+        boolean needRefresh = false;
+        Object cellValue = model.getCellValue(attr, row, rowIndexes, false);
+        List<DBDValueHintProvider> hintProviders = model.getHintProviders(attr);
+        for (DBDValueHintProvider provider : hintProviders) {
+            DBDValueHint[] hints = provider.getValueHint(
+                model.getHintContext(),
+                attr,
+                row,
+                cellValue,
+                EnumSet.of(DBDValueHint.HintType.STRING),
+                DBDValueHintProvider.OPTION_INLINE);
+            if (hints != null) {
+                for (DBDValueHint hint : hints) {
+                    if (!CommonUtils.isEmpty(hint.getHintText())) {
+                        needRefresh = true;
+                        break;
+                    }
+                }
+            }
+            if (needRefresh) break;
+        }
+        if (refreshPresentation) {
+            new AbstractJob("Refresh hint cache") {
+                @Override
+                protected IStatus run(DBRProgressMonitor monitor) {
+                    try {
+                        model.getHintContext().cacheRequiredData(
+                            monitor,
+                            Collections.singletonList(attr),
+                            Collections.singletonList(row),
+                            false);
+                        UIUtils.syncExec(() -> redrawData(true, true));
+                    } catch (DBException e) {
+                        log.debug("Error refreshing hint cache");
+                    }
+                    return Status.OK_STATUS;
+                }
+            }.schedule();
+        }
+    }
+
+    private final Job statusBarLayoutJob = new Job("Pending result set view status bar re-layout") {
         @Override
         protected IStatus run(IProgressMonitor monitor) {
             UIUtils.asyncExec(() -> {
@@ -2970,7 +3043,7 @@ public class ResultSetViewer extends Viewer
             viewMenu.add(new Separator());
             MenuManager hintsMenu = new MenuManager(ResultSetMessages.controls_resultset_viewer_action_view_hints);
             hintsMenu.setRemoveAllWhenShown(true);
-            hintsMenu.addMenuListener(manager12 -> fillAttributeHintsMenu(manager12, attr));
+            hintsMenu.addMenuListener(manager12 -> fillAttributeHintsMenu(manager12, attr, row));
             viewMenu.add(hintsMenu);
         }
 
@@ -2999,9 +3072,35 @@ public class ResultSetViewer extends Viewer
         viewMenu.add(new DataFormatsPreferencesAction(this));
     }
 
-    private void fillAttributeHintsMenu(IMenuManager menuManager, DBDAttributeBinding attr) {
+    private void fillAttributeHintsMenu(IMenuManager menuManager, DBDAttributeBinding attr, ResultSetRow row) {
+        Object cellValue = getModel().getCellValue(attr, row);
+        Map<DBDValueHint, UIPropertyConfiguratorDescriptor> configurators = new LinkedHashMap<>();
         for (ValueHintProviderDescriptor hd : ValueHintRegistry.getInstance().getHintDescriptors()) {
             menuManager.add(new HintEnablementAction(this, hd));
+
+            DBDValueHint[] valueHint = hd.getInstance().getValueHint(
+                getModel().getHintContext(),
+                attr,
+                row,
+                cellValue,
+                EnumSet.of(DBDValueHint.HintType.STRING),
+                DBDValueHintProvider.OPTION_APPROXIMATE);
+            if (valueHint == null) {
+                continue;
+            }
+            for (DBDValueHint hint : valueHint) {
+                UIPropertyConfiguratorDescriptor configurator = UIPropertyConfiguratorRegistry.getInstance().getDescriptor(hint);
+                if (configurator != null) {
+                    configurators.put(hint, configurator);
+                }
+            }
+        }
+
+        if (!configurators.isEmpty()) {
+            menuManager.add(new Separator());
+            for (Map.Entry<DBDValueHint, UIPropertyConfiguratorDescriptor> entry : configurators.entrySet()) {
+                menuManager.add(new HintConfigurationAction(this, attr, entry.getKey(), entry.getValue()));
+            }
         }
     }
 

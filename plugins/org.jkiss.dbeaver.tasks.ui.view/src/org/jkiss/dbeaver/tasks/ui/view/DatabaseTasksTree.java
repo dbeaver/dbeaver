@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIViewMessages;
+import org.jkiss.dbeaver.ui.BaseEditorColors;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.DefaultViewerToolTipSupport;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -81,7 +82,7 @@ public class DatabaseTasksTree {
         dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()); //$NON-NLS-1$
         dateFormat.setTimeZone(TimeZone.getTimeZone(TimezoneRegistry.getUserDefaultTimezone()));
         ColorRegistry colorRegistry = UIUtils.getActiveWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
-        colorError = colorRegistry.get("org.jkiss.dbeaver.txn.color.reverted.background");
+        colorError = colorRegistry.get(BaseEditorColors.COLOR_ERROR);
         colorErrorForeground = UIUtils.getContrastColor(colorError);
         
         taskViewer = DialogUtils.createFilteredTree(composite,
