@@ -52,15 +52,33 @@ public class ThemeListener {
         themeManager.addPropertyChangeListener(themeChangeListener);
 
         for (Field field : getClass().getFields()) {
-            ThemeParameter annotation = field.getAnnotation(ThemeParameter.class);
-            if (annotation != null) {
-                Field[] fields = fieldMap.get(annotation.value());
+            String propId = null;
+            ThemeColor colorAnno = field.getAnnotation(ThemeColor.class);
+            if (colorAnno != null) {
+                if (!Color.class.isAssignableFrom(field.getType())) {
+                    log.error("Bad color annotation " + field);
+                } else {
+                    propId = colorAnno.value();
+
+                }
+            } else {
+                ThemeFont fontAnno = field.getAnnotation(ThemeFont.class);
+                if (fontAnno != null) {
+                    if (!Font.class.isAssignableFrom(field.getType())) {
+                        log.error("Bad color annotation " + field);
+                    } else {
+                        propId = fontAnno.value();
+                    }
+                }
+            }
+            if (propId != null) {
+                Field[] fields = fieldMap.get(propId);
                 if (fields == null) {
                     fields = new Field[]{field};
                 } else {
                     fields = ArrayUtils.add(Field.class, fields, field);
                 }
-                fieldMap.put(annotation.value(), fields);
+                fieldMap.put(propId, fields);
             }
         }
         
@@ -94,7 +112,7 @@ public class ThemeListener {
             if (Color.class.isAssignableFrom(field.getType())) {
                 field.set(this, currentTheme.getColorRegistry().get(property));
             } else if (Font.class.isAssignableFrom(field.getType())) {
-                ThemeParameter param = field.getAnnotation(ThemeParameter.class);
+                ThemeFont param = field.getAnnotation(ThemeFont.class);
                 if (param != null && param.italic()) {
                     field.set(this, currentTheme.getFontRegistry().getItalic(property));
                 } else if (param != null && param.bold()) {

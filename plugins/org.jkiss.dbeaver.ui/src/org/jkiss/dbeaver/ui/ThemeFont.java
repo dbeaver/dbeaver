@@ -23,11 +23,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Theme color or font annotation
+ * Theme font annotation
  */
 @Target(value = {ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ThemeParameter {
+public @interface ThemeFont {
     String value();
 
     boolean bold() default false;

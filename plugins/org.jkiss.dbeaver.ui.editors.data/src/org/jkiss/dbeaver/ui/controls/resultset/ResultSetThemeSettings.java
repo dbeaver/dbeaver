@@ -19,44 +19,45 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.jkiss.dbeaver.ui.BaseEditorColors;
+import org.jkiss.dbeaver.ui.ThemeColor;
+import org.jkiss.dbeaver.ui.ThemeFont;
 import org.jkiss.dbeaver.ui.ThemeListener;
-import org.jkiss.dbeaver.ui.ThemeParameter;
 
 /**
  * Theme settings
  */
 public class ResultSetThemeSettings extends ThemeListener {
 
-    @ThemeParameter(ThemeConstants.FONT_SQL_RESULT_SET)
+    @ThemeFont(ThemeConstants.FONT_SQL_RESULT_SET)
     public volatile Font resultSetFont;
-    @ThemeParameter(ThemeConstants.COLOR_SQL_RESULT_CELL_NEW_BACK)
+    @ThemeColor(ThemeConstants.COLOR_SQL_RESULT_CELL_NEW_BACK)
     public volatile Color backgroundAdded;
-    @ThemeParameter(ThemeConstants.COLOR_SQL_RESULT_CELL_DELETED_BACK)
+    @ThemeColor(ThemeConstants.COLOR_SQL_RESULT_CELL_DELETED_BACK)
     public volatile Color backgroundDeleted;
-    @ThemeParameter(ThemeConstants.COLOR_SQL_RESULT_CELL_MODIFIED_BACK)
+    @ThemeColor(ThemeConstants.COLOR_SQL_RESULT_CELL_MODIFIED_BACK)
     public volatile Color backgroundModified;
-    @ThemeParameter(ThemeConstants.COLOR_SQL_RESULT_CELL_ODD_BACK)
+    @ThemeColor(ThemeConstants.COLOR_SQL_RESULT_CELL_ODD_BACK)
     public volatile Color backgroundOdd;
-    @ThemeParameter(ThemeConstants.COLOR_SQL_RESULT_CELL_READ_ONLY)
+    @ThemeColor(ThemeConstants.COLOR_SQL_RESULT_CELL_READ_ONLY)
     public volatile Color backgroundReadOnly;
-    @ThemeParameter(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_FORE)
+    @ThemeColor(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_FORE)
     public volatile Color foregroundSelected;
-    @ThemeParameter(ThemeConstants.COLOR_SQL_RESULT_NULL_FOREGROUND)
+    @ThemeColor(ThemeConstants.COLOR_SQL_RESULT_NULL_FOREGROUND)
     public volatile Color foregroundNull;
-    @ThemeParameter(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_BACK)
+    @ThemeColor(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_BACK)
     public volatile Color backgroundSelected;
-    @ThemeParameter(ThemeConstants.COLOR_SQL_RESULT_CELL_MATCHED)
+    @ThemeColor(ThemeConstants.COLOR_SQL_RESULT_CELL_MATCHED)
     public volatile Color backgroundMatched;
-    @ThemeParameter(ThemeConstants.COLOR_SQL_RESULT_CELL_ERROR_BACK)
+    @ThemeColor(ThemeConstants.COLOR_SQL_RESULT_CELL_ERROR_BACK)
     public volatile Color backgroundError;
-    @ThemeParameter(BaseEditorColors.COLOR_ERROR)
+    @ThemeColor(BaseEditorColors.COLOR_ERROR)
     public volatile Color foregroundError;
 
-    @ThemeParameter(ThemeConstants.COLOR_SQL_RESULT_HEADER_FOREGROUND)
+    @ThemeColor(ThemeConstants.COLOR_SQL_RESULT_HEADER_FOREGROUND)
     public volatile Color cellHeaderForeground;
-    @ThemeParameter(ThemeConstants.COLOR_SQL_RESULT_HEADER_BACKGROUND)
+    @ThemeColor(ThemeConstants.COLOR_SQL_RESULT_HEADER_BACKGROUND)
     public volatile Color cellHeaderBackground;
-    @ThemeParameter(ThemeConstants.COLOR_SQL_RESULT_HEADER_BORDER)
+    @ThemeColor(ThemeConstants.COLOR_SQL_RESULT_HEADER_BORDER)
     public volatile Color cellHeaderBorder;
 
     public static final ResultSetThemeSettings instance = new ResultSetThemeSettings();

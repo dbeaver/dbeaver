@@ -18,8 +18,9 @@ package org.jkiss.dbeaver.ui.navigator.database;
 
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
+import org.jkiss.dbeaver.ui.ThemeColor;
+import org.jkiss.dbeaver.ui.ThemeFont;
 import org.jkiss.dbeaver.ui.ThemeListener;
-import org.jkiss.dbeaver.ui.ThemeParameter;
 import org.jkiss.dbeaver.ui.UIFonts;
 
 /**
@@ -31,17 +32,17 @@ public class NavigatorThemeSettings extends ThemeListener {
     public static final String TABLE_STATISTICS_BACKGROUND_COLOR = "org.jkiss.dbeaver.ui.navigator.node.statistics.background";
     public static final String COLOR_NODE_TRANSIENT_FOREGROUND = "org.jkiss.dbeaver.ui.navigator.node.transient.foreground";
 
-    @ThemeParameter(value = UIFonts.DBEAVER_FONTS_MAIN_FONT)
+    @ThemeFont(value = UIFonts.DBEAVER_FONTS_MAIN_FONT)
     public volatile Font navFont;
-    @ThemeParameter(value = UIFonts.DBEAVER_FONTS_MAIN_FONT, bold = true)
+    @ThemeFont(value = UIFonts.DBEAVER_FONTS_MAIN_FONT, bold = true)
     public volatile Font navFontBold;
-    @ThemeParameter(value = UIFonts.DBEAVER_FONTS_MAIN_FONT, italic = true)
+    @ThemeFont(value = UIFonts.DBEAVER_FONTS_MAIN_FONT, italic = true)
     public volatile Font navFontItalic;
-    @ThemeParameter(HOST_NAME_FOREGROUND_COLOR)
+    @ThemeColor(HOST_NAME_FOREGROUND_COLOR)
     public volatile Color hostNameColor;
-    @ThemeParameter(TABLE_STATISTICS_BACKGROUND_COLOR)
+    @ThemeColor(TABLE_STATISTICS_BACKGROUND_COLOR)
     public volatile Color statisticsFrameColor;
-    @ThemeParameter(COLOR_NODE_TRANSIENT_FOREGROUND)
+    @ThemeColor(COLOR_NODE_TRANSIENT_FOREGROUND)
     public volatile Color transientForeground;
 
     public static final NavigatorThemeSettings instance = new NavigatorThemeSettings();
