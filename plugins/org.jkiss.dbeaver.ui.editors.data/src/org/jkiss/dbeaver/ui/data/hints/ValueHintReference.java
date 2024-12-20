@@ -99,7 +99,7 @@ public class ValueHintReference implements DBDValueHint, DBDValueHintActionHandl
 
     @Override
     public void performAction(@NotNull IResultSetController controller, long state) throws DBException {
-        if (CommonUtils.isBitSet(state, SWT.SHIFT)) {
+        if (CommonUtils.isBitSet(state, SWT.ALT)) {
             EditDictionaryPage editDictionaryPage = new EditDictionaryPage(association.getAssociatedEntity());
             if (editDictionaryPage.edit(controller.getControl().getShell())) {
                 controller.refreshData(null);
