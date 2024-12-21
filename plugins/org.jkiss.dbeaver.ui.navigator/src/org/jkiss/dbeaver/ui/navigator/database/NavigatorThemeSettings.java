@@ -17,11 +17,8 @@
 package org.jkiss.dbeaver.ui.navigator.database;
 
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
 import org.jkiss.dbeaver.ui.ThemeColor;
-import org.jkiss.dbeaver.ui.ThemeFont;
 import org.jkiss.dbeaver.ui.ThemeListener;
-import org.jkiss.dbeaver.ui.UIFonts;
 
 /**
  * Theme settings
@@ -32,12 +29,6 @@ public class NavigatorThemeSettings extends ThemeListener {
     public static final String TABLE_STATISTICS_BACKGROUND_COLOR = "org.jkiss.dbeaver.ui.navigator.node.statistics.background";
     public static final String COLOR_NODE_TRANSIENT_FOREGROUND = "org.jkiss.dbeaver.ui.navigator.node.transient.foreground";
 
-    @ThemeFont(value = UIFonts.DBEAVER_FONTS_MAIN_FONT)
-    public volatile Font navFont;
-    @ThemeFont(value = UIFonts.DBEAVER_FONTS_MAIN_FONT, bold = true)
-    public volatile Font navFontBold;
-    @ThemeFont(value = UIFonts.DBEAVER_FONTS_MAIN_FONT, italic = true)
-    public volatile Font navFontItalic;
     @ThemeColor(HOST_NAME_FOREGROUND_COLOR)
     public volatile Color hostNameColor;
     @ThemeColor(TABLE_STATISTICS_BACKGROUND_COLOR)

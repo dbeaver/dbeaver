@@ -54,7 +54,6 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerFilterConfig;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectCreateNew;
-import org.jkiss.dbeaver.ui.navigator.database.NavigatorThemeSettings;
 import org.jkiss.dbeaver.ui.properties.PropertyEditorUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -87,7 +86,7 @@ public class ItemListControl extends NodeListControl
     {
         super(parent, style, workbenchSite, node, metaNode);
 
-        NavigatorThemeSettings.instance.addPropertyListener(
+        BaseThemeSettings.instance.addPropertyListener(
             UIFonts.DBEAVER_FONTS_MAIN_FONT,
             s -> super.getItemsViewer().refresh(),
             this);
@@ -435,11 +434,11 @@ public class ItemListControl extends NodeListControl
         public Font getFont(Object element)
         {
             if (!(element instanceof DBNNode node)) {
-                return NavigatorThemeSettings.instance.navFont;
+                return BaseThemeSettings.instance.baseFont;
             }
             final Object object = getObjectValue(node);
             return objectColumn.isNameColumn(object) && DBNUtils.isDefaultElement(element) ?
-                NavigatorThemeSettings.instance.navFontBold : NavigatorThemeSettings.instance.navFont;
+                BaseThemeSettings.instance.baseFontBold : BaseThemeSettings.instance.baseFont;
         }
 
         @Override

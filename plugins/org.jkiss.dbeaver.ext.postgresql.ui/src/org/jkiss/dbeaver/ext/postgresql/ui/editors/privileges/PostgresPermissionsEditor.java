@@ -55,6 +55,7 @@ import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
@@ -64,7 +65,6 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorLabelProvider;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
-import org.jkiss.dbeaver.ui.navigator.database.NavigatorThemeSettings;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -450,11 +450,11 @@ abstract class PostgresPermissionsEditor<T extends DBSObject>
                         String schemaPrefix = DBUtils.getQuotedIdentifier(object) + ".";
                         for (String tableName : objectNames) {
                             if (tableName.startsWith(schemaPrefix)) {
-                                return NavigatorThemeSettings.instance.navFontBold;
+                                return BaseThemeSettings.instance.baseFontBold;
                             }
                         }
                     } else if (getObjectPermissions(object) != null) {
-                        return NavigatorThemeSettings.instance.navFontBold;
+                        return BaseThemeSettings.instance.baseFontBold;
                     }
                 }
                 return null;

@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIFonts;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -56,7 +57,7 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
     public DatabaseNavigatorLabelProvider(@NotNull DatabaseNavigatorTree tree) {
         this.lockedForeground = Display.getDefault().getSystemColor(SWT.COLOR_DARK_GRAY);
 
-        NavigatorThemeSettings.instance.addPropertyListener(
+        BaseThemeSettings.instance.addPropertyListener(
             UIFonts.DBEAVER_FONTS_MAIN_FONT,
             s -> setNavigatorFont(tree),
             tree);
@@ -65,7 +66,7 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
     }
 
     private static void setNavigatorFont(@NotNull DatabaseNavigatorTree tree) {
-        Font normalFont = NavigatorThemeSettings.instance.navFont;
+        Font normalFont = BaseThemeSettings.instance.baseFont;
 
         final TreeViewer viewer = tree.getViewer();
         viewer.getControl().setFont(normalFont);
@@ -133,15 +134,15 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
     @Override
     public Font getFont(Object element) {
         if (DBNUtils.isDefaultElement(element)) {
-            return NavigatorThemeSettings.instance.navFontBold;
+            return BaseThemeSettings.instance.baseFontBold;
         } else {
             if (element instanceof DBNDataSource dbnDataSource) {
                 final DBPDataSourceContainer ds = dbnDataSource.getDataSourceContainer();
                 if (ds != null && (ds.isProvided() || ds.isTemporary())) {
-                    return NavigatorThemeSettings.instance.navFontItalic;
+                    return BaseThemeSettings.instance.baseFontItalic;
                 }
             }
-            return NavigatorThemeSettings.instance.navFont;
+            return BaseThemeSettings.instance.baseFont;
         }
     }
 
