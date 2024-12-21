@@ -85,7 +85,7 @@ public class CubridTriggerManager extends GenericTriggerManager<CubridTrigger> {
             @NotNull CubridTrigger trigger,
             boolean create) {
         StringBuilder sb = new StringBuilder();
-        sb.append(create ? "CREATE TRIGGER" : "ALTER TRIGGER ");
+        sb.append(create ? "CREATE TRIGGER " : "ALTER TRIGGER ");
         sb.append(trigger.getFullyQualifiedName(DBPEvaluationContext.DDL));
         sb.append(trigger.getActive() ? "\nSTATUS ACTIVE": "\nSTATUS INACTIVE");
         sb.append("\nPRIORITY ").append(trigger.getPriority());
