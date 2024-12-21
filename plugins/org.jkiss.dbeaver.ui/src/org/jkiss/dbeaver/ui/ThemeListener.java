@@ -28,8 +28,11 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * Theme font annotation
@@ -39,16 +42,12 @@ public class ThemeListener {
     private static final Log log = Log.getLog(ThemeListener.class);
     private final Map<String, Field[]> fieldMap = new HashMap<>();
     private final IThemeManager themeManager;
+    private final Map<String, List<Consumer<String>>> propertyListeners = new HashMap<>();
 
     public ThemeListener() {
         themeManager = PlatformUI.getWorkbench().getThemeManager();
 
-        IPropertyChangeListener themeChangeListener = new IPropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent event) {
-                updateThemeProperty(event);
-            }
-        };
+        IPropertyChangeListener themeChangeListener = this::updateThemeProperty;
         themeManager.addPropertyChangeListener(themeChangeListener);
 
         for (Field field : getClass().getFields()) {
@@ -105,6 +104,13 @@ public class ThemeListener {
                 log.debug(e);
             }
         }
+
+        List<Consumer<String>> listeners = propertyListeners.get(property);
+        if (listeners != null) {
+            for (Consumer<String> listener : listeners) {
+                listener.accept(property);
+            }
+        }
     }
 
     private void setPropertyValue(Field[] fields, ITheme currentTheme, String property) throws IllegalAccessException {
@@ -119,6 +125,25 @@ public class ThemeListener {
                     field.set(this, currentTheme.getFontRegistry().getBold(property));
                 } else {
                     field.set(this, currentTheme.getFontRegistry().get(property));
+                }
+            }
+        }
+    }
+
+    public synchronized void addPropertyListener(String property, Consumer<String> listener) {
+        propertyListeners.computeIfAbsent(property, p -> new ArrayList<>()).add(listener);
+    }
+
+    public synchronized void removePropertyListener(String property, Consumer<String> listener) {
+        List<Consumer<String>> consumers = propertyListeners.get(property);
+        if (consumers == null) {
+            log.debug("No property '" + property + "' consumers");
+        } else {
+            if (!consumers.remove(listener)) {
+                log.debug("Property '" + property + "' consumer '" + listener + "' not found");
+            } else {
+                if (consumers.isEmpty()) {
+                    propertyListeners.remove(property);
                 }
             }
         }

@@ -30,6 +30,9 @@ public class ResultSetThemeSettings extends ThemeListener {
 
     @ThemeFont(ThemeConstants.FONT_SQL_RESULT_SET)
     public volatile Font resultSetFont;
+    @ThemeFont(value = ThemeConstants.FONT_SQL_RESULT_SET, bold = true)
+    public volatile Font resultSetFontBold;
+
     @ThemeColor(ThemeConstants.COLOR_SQL_RESULT_CELL_NEW_BACK)
     public volatile Color backgroundAdded;
     @ThemeColor(ThemeConstants.COLOR_SQL_RESULT_CELL_DELETED_BACK)

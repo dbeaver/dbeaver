@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.navigator.database;
 
-import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -25,9 +24,6 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.themes.ITheme;
-import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -48,6 +44,7 @@ import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 
 import java.util.StringJoiner;
+import java.util.function.Consumer;
 
 /**
  * DatabaseNavigatorLabelProvider
@@ -60,21 +57,16 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
     public DatabaseNavigatorLabelProvider(@NotNull DatabaseNavigatorTree tree) {
         this.lockedForeground = Display.getDefault().getSystemColor(SWT.COLOR_DARK_GRAY);
 
-        IPropertyChangeListener themeChangeListener = e -> {
-            if (UIFonts.DBEAVER_FONTS_MAIN_FONT.equals(e.getProperty())) {
-                UIUtils.asyncExec(() -> setNavigatorFont(tree));
-            }
-        };
-        setNavigatorFont(tree);
+        Consumer<String> listener = s -> setNavigatorFont(tree);
+        NavigatorThemeSettings.instance.addPropertyListener(UIFonts.DBEAVER_FONTS_MAIN_FONT, listener);
+        tree.addDisposeListener(e -> NavigatorThemeSettings.instance.removePropertyListener(
+            UIFonts.DBEAVER_FONTS_MAIN_FONT, listener));
 
-        IThemeManager themeManager = PlatformUI.getWorkbench().getThemeManager();
-        themeManager.addPropertyChangeListener(themeChangeListener);
-        tree.addDisposeListener(e -> themeManager.removePropertyChangeListener(themeChangeListener));
+        setNavigatorFont(tree);
     }
 
     private static void setNavigatorFont(@NotNull DatabaseNavigatorTree tree) {
-        final ITheme theme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
-        Font normalFont = theme.getFontRegistry().get(UIFonts.DBEAVER_FONTS_MAIN_FONT);
+        Font normalFont = NavigatorThemeSettings.instance.navFont;
 
         final TreeViewer viewer = tree.getViewer();
         viewer.getControl().setFont(normalFont);
