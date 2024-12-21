@@ -21,9 +21,12 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.utils.ArrayUtils;
 
@@ -130,8 +133,15 @@ public class ThemeListener {
         }
     }
 
-    public synchronized void addPropertyListener(String property, Consumer<String> listener) {
+    public synchronized void addPropertyListener(
+        @NotNull String property,
+        @NotNull Consumer<String> listener,
+        @Nullable Control control
+    ) {
         propertyListeners.computeIfAbsent(property, p -> new ArrayList<>()).add(listener);
+        if (control != null) {
+            control.addDisposeListener(e -> removePropertyListener(property, listener));
+        }
     }
 
     public synchronized void removePropertyListener(String property, Consumer<String> listener) {

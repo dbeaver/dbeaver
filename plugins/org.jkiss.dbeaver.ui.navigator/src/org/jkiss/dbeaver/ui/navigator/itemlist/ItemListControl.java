@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.navigator.itemlist;
 
 import org.eclipse.jface.action.*;
-import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -30,7 +29,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
-import org.eclipse.ui.themes.ITheme;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPObjectStatisticsCollector;
@@ -56,6 +54,7 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerFilterConfig;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectCreateNew;
+import org.jkiss.dbeaver.ui.navigator.database.NavigatorThemeSettings;
 import org.jkiss.dbeaver.ui.properties.PropertyEditorUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -73,12 +72,8 @@ public class ItemListControl extends NodeListControl
     private static final String COLOR_NEW = "org.jkiss.dbeaver.ui.navigator.node.new.background";
     private static final String COLOR_MODIFIED = "org.jkiss.dbeaver.ui.navigator.node.modified.background";
 
-    private final IPropertyChangeListener themeChangeListener;
     private final ISearchExecutor searcher;
     private final Color searchHighlightColor;
-    //private Color disabledCellColor;
-    private Font normalFont;
-    private Font boldFont;
 
     private final Map<DBNNode, Map<String, Object>> changedProperties = new HashMap<>();
     private CommandContributionItem createObjectCommand;
@@ -91,19 +86,12 @@ public class ItemListControl extends NodeListControl
         DBXTreeNode metaNode)
     {
         super(parent, style, workbenchSite, node, metaNode);
-        this.themeChangeListener = e -> {
-            final ITheme theme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
-            normalFont = theme.getFontRegistry().get(UIFonts.DBEAVER_FONTS_MAIN_FONT);
-            boldFont = theme.getFontRegistry().getBold(UIFonts.DBEAVER_FONTS_MAIN_FONT);
-            super.getItemsViewer().refresh();
-            Viewer navigatorViewer = super.getNavigatorViewer();
-            if (navigatorViewer != null) {
-                navigatorViewer.refresh();
-            }
-        };
-        this.themeChangeListener.propertyChange(null);
 
-        PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
+        NavigatorThemeSettings.instance.addPropertyListener(
+            UIFonts.DBEAVER_FONTS_MAIN_FONT,
+            s -> super.getItemsViewer().refresh(),
+            this);
+
         this.searcher = new SearcherFilter();
         this.searchHighlightColor = new Color(parent.getDisplay(), 170, 255, 170);
         //this.disabledCellColor = UIStyles.getDefaultTextBackground();//parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW);
@@ -237,18 +225,9 @@ public class ItemListControl extends NodeListControl
     }
 
     @Override
-    public void disposeControl()
-    {
-//        if (objectEditorHandler != null) {
-//            objectEditorHandler.dispose();
-//            objectEditorHandler = null;
-//        }
+    public void disposeControl() {
         UIUtils.dispose(searchHighlightColor);
-        //UIUtils.dispose(disabledCellColor);
-        //UIUtils.dispose(boldFont);
 
-        PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeChangeListener);
-        
         super.disposeControl();
     }
 
@@ -455,11 +434,12 @@ public class ItemListControl extends NodeListControl
         @Override
         public Font getFont(Object element)
         {
-            if (!(element instanceof DBNNode)) {
-                return normalFont;
+            if (!(element instanceof DBNNode node)) {
+                return NavigatorThemeSettings.instance.navFont;
             }
-            final Object object = getObjectValue((DBNNode) element);
-            return objectColumn.isNameColumn(object) && DBNUtils.isDefaultElement(element) ? boldFont : normalFont;
+            final Object object = getObjectValue(node);
+            return objectColumn.isNameColumn(object) && DBNUtils.isDefaultElement(element) ?
+                NavigatorThemeSettings.instance.navFontBold : NavigatorThemeSettings.instance.navFont;
         }
 
         @Override

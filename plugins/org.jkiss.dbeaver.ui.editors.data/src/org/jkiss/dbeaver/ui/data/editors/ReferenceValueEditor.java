@@ -63,7 +63,6 @@ import org.jkiss.utils.ReaderWriterLock.ExceptableFunction;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.*;
-import java.util.function.Consumer;
 
 /**
  * ReferenceValueEditor
@@ -441,10 +440,10 @@ public class ReferenceValueEditor {
 
         controller.reset(curValue);
 
-        Consumer<String> listener = s -> showCurrentValue();
-        ResultSetThemeSettings.instance.addPropertyListener(ThemeConstants.FONT_SQL_RESULT_SET, listener);
-        editorSelector.addDisposeListener(e -> ResultSetThemeSettings.instance.removePropertyListener(
-            ThemeConstants.FONT_SQL_RESULT_SET, listener));
+        ResultSetThemeSettings.instance.addPropertyListener(
+            ThemeConstants.FONT_SQL_RESULT_SET,
+            s -> showCurrentValue(),
+            editorSelector);
 
         return true;
     }

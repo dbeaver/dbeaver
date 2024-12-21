@@ -44,7 +44,6 @@ import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 
 import java.util.StringJoiner;
-import java.util.function.Consumer;
 
 /**
  * DatabaseNavigatorLabelProvider
@@ -57,10 +56,10 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
     public DatabaseNavigatorLabelProvider(@NotNull DatabaseNavigatorTree tree) {
         this.lockedForeground = Display.getDefault().getSystemColor(SWT.COLOR_DARK_GRAY);
 
-        Consumer<String> listener = s -> setNavigatorFont(tree);
-        NavigatorThemeSettings.instance.addPropertyListener(UIFonts.DBEAVER_FONTS_MAIN_FONT, listener);
-        tree.addDisposeListener(e -> NavigatorThemeSettings.instance.removePropertyListener(
-            UIFonts.DBEAVER_FONTS_MAIN_FONT, listener));
+        NavigatorThemeSettings.instance.addPropertyListener(
+            UIFonts.DBEAVER_FONTS_MAIN_FONT,
+            s -> setNavigatorFont(tree),
+            tree);
 
         setNavigatorFont(tree);
     }
