@@ -30,6 +30,8 @@ public class BaseThemeSettings extends ThemeListener {
     public volatile Font baseFontBold;
     @ThemeFont(value = UIFonts.DBEAVER_FONTS_MAIN_FONT, italic = true)
     public volatile Font baseFontItalic;
+    @ThemeFont(value = UIFonts.DBEAVER_FONTS_MONOSPACE)
+    public volatile Font monospaceFont;
 
     @ThemeColor(BaseEditorColors.COLOR_SUCCESS)
     public volatile Color colorSuccess;

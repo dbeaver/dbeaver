@@ -2301,7 +2301,7 @@ public class UIUtils {
     }
 
     public static Font getMonospaceFont() {
-        return PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getFontRegistry().get(UIFonts.DBEAVER_FONTS_MONOSPACE);
+        return BaseThemeSettings.instance.monospaceFont;
     }
 
     public static <T extends Control> T getParentOfType(Control control, Class<T> parentType) {
