@@ -1552,7 +1552,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                     }
                 }
                 if (!CommonUtils.isEmpty(nodes)) {
-                    Color color = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_SEARCH_HIGHLIGHTING);
+                    Color color = ERDThemeSettings.instance.searchHighlightColor;
                     DBPNamedObject focusedNode = null;
                     for (DBPNamedObject erdNode : nodes) {
                         if (matchesSearch(erdNode)) {

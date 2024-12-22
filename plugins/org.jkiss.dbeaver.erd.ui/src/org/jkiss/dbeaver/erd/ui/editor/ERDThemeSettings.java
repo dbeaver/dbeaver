@@ -30,6 +30,8 @@ public class ERDThemeSettings extends ThemeListener {
 
     @ThemeFont(ERDUIConstants.PROP_DIAGRAM_FONT)
     public volatile Font diagramFont;
+    @ThemeFont(value = ERDUIConstants.PROP_DIAGRAM_FONT, bold = true)
+    public volatile Font diagramFontBold;
     @ThemeFont(ERDUIConstants.PROP_DIAGRAM_NOTATION_LABEL_FONT)
     public volatile Font notationLabelFont;
 
