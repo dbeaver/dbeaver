@@ -311,7 +311,8 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
             }
             valueEditor.setDirty(false);
         }
-        UIUtils.applyMainFont(viewPlaceholder);
+        // FIXME: applying font breaks ref panel layout??
+        //UIUtils.applyMainFont(viewPlaceholder);
 
         if (valueEditor instanceof BaseValueEditor<?> baseValueEditor) {
             baseValueEditor.setAutoSaveEnabled(true);
