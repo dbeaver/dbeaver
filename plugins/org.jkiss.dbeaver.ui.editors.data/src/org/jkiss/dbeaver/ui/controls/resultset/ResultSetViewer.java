@@ -3487,6 +3487,7 @@ public class ResultSetViewer extends Viewer
                         if (operator.getArgumentCount() > 0) {
                             if (!hasItems) {
                                 filtersMenu.add(new Separator());
+                                filtersMenu.add(new EmptyAction(type.title));
                             }
                             hasItems = true;
                             filtersMenu.add(new FilterByAttributeAction(this, operator, type, attribute));

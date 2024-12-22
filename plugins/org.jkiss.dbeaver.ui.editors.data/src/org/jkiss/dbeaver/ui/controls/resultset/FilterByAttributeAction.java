@@ -33,7 +33,7 @@ class FilterByAttributeAction extends Action {
     private final DBDAttributeBinding attribute;
     FilterByAttributeAction(ResultSetViewer resultSetViewer, DBCLogicalOperator operator, FilterByAttributeType type, DBDAttributeBinding attribute)
     {
-        super(attribute.getName() + " " + translateFilterPattern(resultSetViewer, operator, type, attribute), type.icon);
+        super(attribute.getName() + " " + translateFilterPattern(resultSetViewer, operator, type, attribute), null);
         this.resultSetViewer = resultSetViewer;
         this.operator = operator;
         this.type = type;
