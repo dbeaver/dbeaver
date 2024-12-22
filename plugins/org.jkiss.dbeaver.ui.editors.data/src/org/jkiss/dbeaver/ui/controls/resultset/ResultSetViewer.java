@@ -3478,22 +3478,19 @@ public class ResultSetViewer extends Viewer
                         // Value filters are available only if certain cell is selected
                         continue;
                     }
-                    MenuManager subMenu = null;
-                    //filtersMenu.add(new Separator());
                     if (type.getValue(this, attribute, DBCLogicalOperator.EQUALS, true) == null) {
                         // Null cell value - no operators can be applied
                         continue;
                     }
+                    boolean hasItems = false;
                     for (DBCLogicalOperator operator : operators) {
                         if (operator.getArgumentCount() > 0) {
-                            if (subMenu == null) {
-                                subMenu = new MenuManager(type.title, type.icon, type.name());
+                            if (!hasItems) {
+                                filtersMenu.add(new Separator());
                             }
-                            subMenu.add(new FilterByAttributeAction(this, operator, type, attribute));
+                            hasItems = true;
+                            filtersMenu.add(new FilterByAttributeAction(this, operator, type, attribute));
                         }
-                    }
-                    if (subMenu != null) {
-                        filtersMenu.add(subMenu);
                     }
                 }
                 filtersMenu.add(new Separator());
