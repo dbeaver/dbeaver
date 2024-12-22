@@ -311,6 +311,8 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
             }
             valueEditor.setDirty(false);
         }
+        UIUtils.applyMainFont(viewPlaceholder);
+
         if (valueEditor instanceof BaseValueEditor<?> baseValueEditor) {
             baseValueEditor.setAutoSaveEnabled(true);
         }

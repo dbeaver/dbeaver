@@ -154,7 +154,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             this.filtersTextViewer.setDocument(new Document());
             this.filtersText = this.filtersTextViewer.getTextWidget();
             this.filtersText.setForeground(UIStyles.getDefaultTextForeground());
-            this.filtersText.setFont(ResultSetThemeSettings.instance.resultSetFont);
+            this.filtersText.setFont(BaseThemeSettings.instance.baseFont);
             TextViewerUndoManager undoManager = new TextViewerUndoManager(200);
             undoManager.connect(filtersTextViewer);
             this.filtersTextViewer.setUndoManager(undoManager);
@@ -782,7 +782,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 maxWidth = control.getSize().x / 4;
             }
             GC sizingGC = new GC(this);
-            sizingGC.setFont(ResultSetThemeSettings.instance.resultSetFont);
+            sizingGC.setFont(BaseThemeSettings.instance.baseFont);
             Point textSize = sizingGC.textExtent(activeDisplayName);
             int maxFilterTextWidth = sizingGC.textExtent("X".repeat(24)).x;
             sizingGC.dispose();
@@ -800,7 +800,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         protected void paintPanel(PaintEvent e) {
             Point hintSize = computeSize(SWT.DEFAULT, SWT.DEFAULT);
             int panelHeight = hintSize.y;
-            e.gc.setFont(ResultSetThemeSettings.instance.resultSetFont);
+            e.gc.setFont(BaseThemeSettings.instance.baseFont);
             e.gc.setForeground(shadowColor);
             if (hover) {
                 Color background = e.gc.getBackground();

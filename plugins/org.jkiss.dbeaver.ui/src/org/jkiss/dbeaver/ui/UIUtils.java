@@ -1735,6 +1735,7 @@ public class UIUtils {
     }
 
     public static Point drawMessageOverControl(Control control, GC gc, String message, int offset) {
+        gc.setFont(BaseThemeSettings.instance.baseFont);
         Rectangle bounds = control.getBounds();
         Point textSize = gc.textExtent(message);
 
@@ -2358,26 +2359,6 @@ public class UIUtils {
         }
     }
 
-    public static void installAndUpdateMainFont(@NotNull Control control) {
-        BaseThemeSettings.instance.addPropertyListener(
-            UIFonts.DBEAVER_FONTS_MAIN_FONT,
-            s -> applyMainFont(control),
-            control
-        );
-
-        //applyMainFont(control);
-    }
-
-    public static void applyMainFont(@Nullable Control control) {
-        if (control == null || control.isDisposed() || mainFontIsDefault()) {
-            return;
-        }
-        if (control instanceof Composite comp) {
-            comp.layout();
-        }
-        applyMainFont(control, BaseThemeSettings.instance.baseFont);
-    }
-
     @Nullable
     public static Text recreateTextControl(@Nullable Text original, int style) {
         if (original == null || original.getStyle() == style) {
@@ -2416,7 +2397,27 @@ public class UIUtils {
         }
     }
 
-    private static void applyMainFont(@NotNull Control control, @NotNull Font font) {
+    public static void installAndUpdateMainFont(@NotNull Control control) {
+        BaseThemeSettings.instance.addPropertyListener(
+            UIFonts.DBEAVER_FONTS_MAIN_FONT,
+            s -> applyMainFont(control),
+            control
+        );
+
+        //applyMainFont(control);
+    }
+
+    public static void applyMainFont(@Nullable Control control) {
+        applyMainFont(control, BaseThemeSettings.instance.baseFont);
+    }
+
+    public static void applyMainFont(@Nullable Control control, @NotNull Font font) {
+        if (control == null || control.isDisposed() || mainFontIsDefault()) {
+            return;
+        }
+        if (control instanceof Composite comp) {
+            comp.layout();
+        }
         control.setFont(font);
 
         if (control instanceof Composite) {
