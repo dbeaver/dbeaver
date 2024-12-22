@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui;
 
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 
 /**
@@ -29,6 +30,13 @@ public class BaseThemeSettings extends ThemeListener {
     public volatile Font baseFontBold;
     @ThemeFont(value = UIFonts.DBEAVER_FONTS_MAIN_FONT, italic = true)
     public volatile Font baseFontItalic;
+
+    @ThemeColor(BaseEditorColors.COLOR_SUCCESS)
+    public volatile Color colorSuccess;
+    @ThemeColor(BaseEditorColors.COLOR_ERROR)
+    public volatile Color colorError;
+    @ThemeColor(BaseEditorColors.COLOR_WARNING)
+    public volatile Color colorWarning;
 
     public static final BaseThemeSettings instance = new BaseThemeSettings();
 }
