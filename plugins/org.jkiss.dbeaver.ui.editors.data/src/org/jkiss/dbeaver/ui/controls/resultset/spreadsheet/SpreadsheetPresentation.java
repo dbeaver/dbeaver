@@ -85,6 +85,7 @@ import org.jkiss.dbeaver.ui.data.editors.BaseValueEditor;
 import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
+import org.jkiss.dbeaver.ui.navigator.database.NavigatorThemeSettings;
 import org.jkiss.dbeaver.ui.properties.PropertySourceDelegate;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -2918,6 +2919,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
             return null;
         }
 
+        @Override
+        public Font getMainFontItalic() {
+            return ResultSetThemeSettings.instance.resultSetFontItalic;
+        }
+
         @Nullable
         @Override
         public Color getForeground(IGridItem element) {
@@ -3082,6 +3088,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
         @Override
         public Color getErrorForeground() {
             return foregroundError;
+        }
+
+        @Override
+        public Color getHintForeground() {
+            return NavigatorThemeSettings.instance.hintColor;
         }
     }
 

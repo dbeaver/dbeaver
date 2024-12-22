@@ -25,12 +25,12 @@ import org.jkiss.dbeaver.ui.ThemeListener;
  */
 public class NavigatorThemeSettings extends ThemeListener {
 
-    public static final String HOST_NAME_FOREGROUND_COLOR = "org.jkiss.dbeaver.ui.navigator.node.foreground";
+    public static final String HINT_FOREGROUND_COLOR = "org.jkiss.dbeaver.ui.navigator.node.foreground";
     public static final String TABLE_STATISTICS_BACKGROUND_COLOR = "org.jkiss.dbeaver.ui.navigator.node.statistics.background";
     public static final String COLOR_NODE_TRANSIENT_FOREGROUND = "org.jkiss.dbeaver.ui.navigator.node.transient.foreground";
 
-    @ThemeColor(HOST_NAME_FOREGROUND_COLOR)
-    public volatile Color hostNameColor;
+    @ThemeColor(HINT_FOREGROUND_COLOR)
+    public volatile Color hintColor;
     @ThemeColor(TABLE_STATISTICS_BACKGROUND_COLOR)
     public volatile Color statisticsFrameColor;
     @ThemeColor(COLOR_NODE_TRANSIENT_FOREGROUND)

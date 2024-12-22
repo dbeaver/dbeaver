@@ -242,11 +242,12 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
             return;
         }
 
+        bounds.x += 5;
         Color foreground = gc.getForeground();
         Font font = gc.getFont();
 
         try {
-            gc.setForeground(NavigatorThemeSettings.instance.hostNameColor);
+            gc.setForeground(NavigatorThemeSettings.instance.hintColor);
             gc.setFont(BaseThemeSettings.instance.baseFontItalic);
 
             drawTextClipped(gc, text, bounds);

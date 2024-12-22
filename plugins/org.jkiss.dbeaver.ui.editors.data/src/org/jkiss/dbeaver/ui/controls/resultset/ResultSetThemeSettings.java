@@ -32,6 +32,8 @@ public class ResultSetThemeSettings extends ThemeListener {
     public volatile Font resultSetFont;
     @ThemeFont(value = ThemeConstants.FONT_SQL_RESULT_SET, bold = true)
     public volatile Font resultSetFontBold;
+    @ThemeFont(value = ThemeConstants.FONT_SQL_RESULT_SET, italic = true)
+    public volatile Font resultSetFontItalic;
 
     @ThemeColor(ThemeConstants.COLOR_SQL_RESULT_CELL_NEW_BACK)
     public volatile Color backgroundAdded;
