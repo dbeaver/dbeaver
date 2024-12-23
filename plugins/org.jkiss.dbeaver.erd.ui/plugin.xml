@@ -381,7 +381,7 @@
     </extension>
 
     <extension point="org.eclipse.e4.ui.css.swt.theme">
-        <stylesheet uri="css/e4-dark_erd_prefstyle.css">
+        <stylesheet uri="css/e4-dark-erd-editor.css">
             <themeid refid="org.eclipse.e4.ui.css.theme.e4_dark">
             </themeid>
         </stylesheet>
