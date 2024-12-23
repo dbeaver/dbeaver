@@ -84,6 +84,11 @@ public interface IGridLabelProvider {
     Color getHeaderBorder(@Nullable IGridItem item);
 
     /**
+     * Disabled header color
+     */
+    Color getHeaderReadOnlyColor();
+
+    /**
      * Provides a font for the given element.
      *
      * @param element the element

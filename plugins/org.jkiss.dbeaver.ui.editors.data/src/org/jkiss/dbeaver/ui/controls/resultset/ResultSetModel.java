@@ -23,13 +23,11 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
-import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.trace.DBCTrace;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -47,7 +45,7 @@ import java.util.*;
 /**
  * Result set model
  */
-public class ResultSetModel {
+public class ResultSetModel implements DBDResultSetModel {
 
     private static final Log log = Log.getLog(ResultSetModel.class);
 
@@ -132,12 +130,45 @@ public class ResultSetModel {
         this.dataFilter = createDataFilter();
     }
 
+    @Override
     public ResultSetHintContext getHintContext() {
         return hintContext;
     }
 
-    public List<DBDValueHintProvider> getHintProviders(DBDAttributeBinding attr) {
-        return hintContext.getHintProviders(attr);
+    @Override
+    public String getReadOnlyStatus(DBPDataSourceContainer dataSourceContainer) {
+        if (isUpdateInProgress()) {
+            return "Update in progress";
+        }
+
+        DBPDataSource dataSource = dataSourceContainer == null ? null : dataSourceContainer.getDataSource();
+        if (dataSource == null || !dataSourceContainer.isConnected()) {
+            return "No connection to database";
+        }
+        if (dataSourceContainer.isConnectionReadOnly()) {
+            return "Connection is in read-only state";
+        }
+        if (dataSource.getInfo().isReadOnlyData()) {
+            return "Read-only data container";
+        }
+        if (!dataSourceContainer.hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_DATA)) {
+            return "Data edit restricted";
+        }
+        if (isUniqueKeyUndefinedButRequired(dataSourceContainer)) {
+            return "No unique key defined";
+        }
+        return null;
+    }
+
+    public boolean isUniqueKeyUndefinedButRequired(@NotNull DBPDataSourceContainer dataSourceContainer) {
+        final DBPPreferenceStore store = dataSourceContainer.getPreferenceStore();
+
+        if (store.getBoolean(ResultSetPreferences.RS_EDIT_DISABLE_IF_KEY_MISSING)) {
+            final DBDRowIdentifier identifier = this.getDefaultRowIdentifier();
+            return identifier == null || !identifier.isValidIdentifier();
+        }
+
+        return false;
     }
 
     @NotNull
@@ -196,6 +227,7 @@ public class ResultSetModel {
         return documentAttribute;
     }
 
+    @Override
     @NotNull
     public DBDAttributeBinding[] getAttributes() {
         return attributes;
@@ -303,6 +335,7 @@ public class ResultSetModel {
         return null;
     }
 
+    @Override
     @Nullable
     public DBDRowIdentifier getDefaultRowIdentifier() {
         for (DBDAttributeBinding column : attributes) {
@@ -356,6 +389,7 @@ public class ResultSetModel {
         return curRows.size();
     }
 
+    @Override
     @NotNull
     public List<ResultSetRow> getAllRows() {
         return curRows;
@@ -392,14 +426,14 @@ public class ResultSetModel {
     @Nullable
     public Object getCellValue(
         @NotNull DBDAttributeBinding attribute,
-        @NotNull ResultSetRow row,
+        @NotNull DBDValueRow row,
         @Nullable int[] rowIndexes,
         boolean retrieveDeepestCollectionElement
     ) {
         return DBUtils.getAttributeValue(
             attribute,
             attributes,
-            row.values,
+            row.getValues(),
             rowIndexes,
             retrieveDeepestCollectionElement
         );

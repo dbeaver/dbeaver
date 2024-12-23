@@ -53,6 +53,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.hints.DBDAttributeHintProvider;
+import org.jkiss.dbeaver.model.data.hints.DBDCellHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -125,6 +127,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
     private Color backgroundNormal;
     private Color backgroundOdd;
     private Color backgroundReadOnly;
+    private Color foregroundReadOnly;
     private Color foregroundDefault;
     private Color foregroundSelected, backgroundSelected;
     private Color foregroundNull;
@@ -1412,6 +1415,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         this.backgroundModified = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_MODIFIED_BACK);
         this.backgroundOdd = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_ODD_BACK);
         this.backgroundReadOnly = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_READ_ONLY);
+        this.foregroundReadOnly = colorRegistry.get(BaseEditorColors.COLOR_READ_ONLY);
         this.foregroundSelected = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_FORE);
         this.foregroundNull = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_NULL_FOREGROUND);
         this.backgroundSelected = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_BACK);
@@ -2265,6 +2269,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 if ((controller.getDecorator().getDecoratorFeatures() & IResultSetDecorator.FEATURE_LINKS) != 0) {
                     //ResultSetRow row = (ResultSetRow) (recordMode ? colElement.getElement() : rowElement.getElement());
                     if (isShowAsCheckbox(attr)) {
+                        info.state |= STATE_BOOLEAN;
                         info.state |= booleanStyles.getMode() == BooleanMode.TEXT ? STATE_TOGGLE : STATE_LINK;
                     } else if (
                         (cellValue instanceof DBDCollection col && !col.isEmpty()) ||
@@ -2295,7 +2300,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
             }
 
-            if (CommonUtils.isBitSet(info.state, STATE_LINK)) {
+            if (CommonUtils.isBitSet(info.state, STATE_LINK) && !CommonUtils.isBitSet(info.state, STATE_BOOLEAN)) {
                 info.align = ALIGN_LEFT;
             } else {
                 info.align = getCellAlign(attr, row, cellValue);
@@ -2744,12 +2749,40 @@ public class SpreadsheetPresentation extends AbstractPresentation
             }
 
             List<IGridHint> gridHints = null;
-            for (DBDValueHintProvider hintProvider : controller.getModel().getHintProviders(attr)) {
-                DBDValueHint[] valueHints = hintProvider.getValueHint(
-                    controller.getModel().getHintContext(),
+            for (DBDCellHintProvider hintProvider : controller.getModel().getHintContext().getCellHintProviders(attr)) {
+                DBDValueHint[] valueHints = hintProvider.getCellHints(
+                    controller.getModel(),
                     attr,
                     row,
                     cellValue,
+                    INLINE_HINT_TYPES,
+                    hintOptions
+                );
+                if (valueHints != null) {
+                    for (DBDValueHint hint : valueHints) {
+                        if (gridHints == null) {
+                            gridHints = new ArrayList<>();
+                        }
+                        gridHints.add(new SpreadsheetHint(getController(), hint));
+                    }
+                }
+            }
+            return gridHints;
+        }
+
+        @Override
+        public List<IGridHint> getColumnHints(IGridItem element, int options) {
+            DBDAttributeBinding attr = element instanceof IGridColumn gc ? getAttributeFromGrid(gc, null) : null;
+            if (attr == null) {
+                return null;
+            }
+            int hintOptions = DBDValueHintProvider.OPTION_INLINE;
+
+            List<IGridHint> gridHints = null;
+            for (DBDAttributeHintProvider hintProvider : controller.getModel().getHintContext().getColumnHintProviders(attr)) {
+                DBDValueHint[] valueHints = hintProvider.getAttributeHints(
+                    controller.getModel(),
+                    attr,
                     INLINE_HINT_TYPES,
                     hintOptions
                 );
@@ -2772,7 +2805,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 return 0;
             }
             int hintSize = 0;
-            for (DBDValueHintProvider hintProvider : controller.getModel().getHintProviders(attr)) {
+            for (DBDCellHintProvider hintProvider : controller.getModel().getHintContext().getCellHintProviders(attr)) {
                 hintSize += hintProvider.getAttributeHintSize(
                     controller.getModel().getHintContext(),
                     attr);
@@ -2899,19 +2932,6 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
             if (item.getElement() instanceof DBDAttributeBinding attr) {
                 DBPImage image = DBValueFormatting.getObjectImage(attr.getAttribute());
-
-                boolean attributeReadOnly = isAttributeReadOnly(attr);
-                boolean hasReferences = !CommonUtils.isEmpty(attr.getReferrers());
-                DBDRowIdentifier rowIdentifier = attr.getRowIdentifier();
-                boolean isKey = rowIdentifier != null && rowIdentifier.getAttributes().contains(attr);
-                if (attributeReadOnly || hasReferences || isKey) {
-                    image = new DBIconComposite(image, false,
-                        null,
-                        attributeReadOnly ? DBIcon.OVER_LOCK : null,
-                        isKey ? DBIcon.OVER_KEY : null,
-                        hasReferences ? DBIcon.OVER_REFERENCE : null);
-                }
-
                 return DBeaverIcons.getImage(image);
             } else if (item.getElement() instanceof DBSAttributeBase attrBase) {
                 return DBeaverIcons.getImage(
@@ -2977,6 +2997,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
         @Override
         public Color getHeaderBorder(@Nullable IGridItem item) {
             return cellHeaderBorder;
+        }
+
+        @Override
+        public Color getHeaderReadOnlyColor() {
+            return foregroundReadOnly;
         }
 
         @NotNull
@@ -3048,49 +3073,19 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 final String description = attributeBinding.getDescription();
                 StringBuilder tip = new StringBuilder();
                 tip.append("Column: ");
-                tip.append(name).append(": ").append(typeName);
+                tip.append(name).append(" ").append(typeName);
                 if (!CommonUtils.isEmpty(description)) {
                     tip.append("\nDescription: ").append(description);
                 }
-                DBDRowIdentifier rowIdentifier = attributeBinding.getRowIdentifier();
-                if (rowIdentifier != null) {
-                    tip.append("\nTable: ").append(DBUtils.getObjectFullName(rowIdentifier.getEntity(), DBPEvaluationContext.UI));
-                }
-                if (rowIdentifier != null &&
-                    !rowIdentifier.isIncomplete() &&
-                    rowIdentifier != getController().getModel().getDefaultRowIdentifier()
-                ) {
-                    tip.append("\n").append(ResultSetMessages.controls_resultset_results_edit_key).append(": ")
-                        .append(rowIdentifier.getEntity().getName())
-                        .append("(")
-                        .append(rowIdentifier.getAttributes().stream().map(DBDAttributeBinding::getName)
-                            .collect(Collectors.joining(",")))
-                        .append(")");
-                } else if (rowIdentifier != null && rowIdentifier.hasAttribute(attributeBinding)) {
-                    tip.append("\nPart of key: ")
-                        .append(DBUtils.getObjectFullName(rowIdentifier.getUniqueKey(), DBPEvaluationContext.UI));
-                }
-                if (!CommonUtils.isEmpty(attributeBinding.getReferrers())) {
-                    tip.append("\nRefers to: ").append(attributeBinding.getReferrers().stream()
-                        .map(r -> {
-                            if (r instanceof DBSEntityAssociation assoc) {
-                                DBSEntity entity = assoc.getAssociatedEntity();
-                                if (entity != null) {
-                                    return DBUtils.getObjectFullName(entity, DBPEvaluationContext.UI)
-                                        /* + "(" +
-                                           r.getAttributeReferences(null).stream()
-                                           .map(ar -> ar.getAttribute().getName())+ ")"*/;
-                                }
-                            }
-                            return null;
-                        })
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.joining(",")));
-                }
-                String readOnlyStatus = controller.getAttributeReadOnlyStatus(attributeBinding, true, true);
-                if (readOnlyStatus != null) {
-                    tip.append("\n").append(ResultSetMessages.controls_resultset_results_read_only_status)
-                        .append(": ").append(readOnlyStatus);
+                // Add hints
+                ResultSetHintContext hintContext = controller.getModel().getHintContext();
+                for (DBDAttributeHintProvider ahp : hintContext.getColumnHintProviders(attributeBinding)) {
+                    DBDValueHint[] hints = ahp.getAttributeHints(controller.getModel(), attributeBinding, INLINE_HINT_TYPES, DBDValueHintProvider.OPTION_TOOLTIP);
+                    if (hints != null) {
+                        for (DBDValueHint hint : hints) {
+                            tip.append("\n").append(hint.getHintText());
+                        }
+                    }
                 }
                 return tip.toString();
             }
