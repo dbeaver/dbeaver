@@ -14,36 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.data.hints.standard;
+package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDResultSetModel;
-import org.jkiss.dbeaver.model.data.DBDValueRow;
-import org.jkiss.dbeaver.model.data.hints.DBDCellHintProvider;
-import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
 
-import java.util.EnumSet;
+import java.util.List;
 
 /**
- * Void hint provider. Stub for no hints
+ * Keeps information about entire resultset
  */
-public class VoidHintProvider implements DBDCellHintProvider {
+public interface DBDResultSetModel {
 
-    public static final VoidHintProvider INSTANCE = new VoidHintProvider();
+    @NotNull
+    DBDAttributeBinding[] getAttributes();
+
+    @NotNull
+    List<? extends DBDValueRow> getAllRows();
 
     @Nullable
-    @Override
-    public DBDValueHint[] getCellHints(
-        @NotNull DBDResultSetModel model,
+    DBDRowIdentifier getDefaultRowIdentifier();
+
+    Object getCellValue(
         @NotNull DBDAttributeBinding attribute,
         @NotNull DBDValueRow row,
-        @Nullable Object value,
-        @NotNull EnumSet<DBDValueHint.HintType> types,
-        int options
-    ) {
-        return null;
-    }
+        @Nullable int[] rowIndexes,
+        boolean retrieveDeepestCollectionElement
+    );
 
+    DBDValueHintContext getHintContext();
+
+    String getReadOnlyStatus(DBPDataSourceContainer dataSourceContainer);
 }

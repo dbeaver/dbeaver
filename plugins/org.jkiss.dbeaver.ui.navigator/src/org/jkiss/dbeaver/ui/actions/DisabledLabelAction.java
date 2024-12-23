@@ -15,48 +15,24 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.data.hints;
+package org.jkiss.dbeaver.ui.actions;
 
-import org.jkiss.dbeaver.model.DBPImage;
+import org.eclipse.jface.action.Action;
 
-/**
- * Value hint
- */
-public interface DBDValueHint {
+public class DisabledLabelAction extends Action {
+    private final String label;
 
-    enum HintType {
-        NONE,
-        STRING,
-        IMAGE,
-        SOUND,
-        WEB,
-        ACTION
+    public DisabledLabelAction(String label) {
+        this.label = label;
     }
 
-    enum HintStyle {
-        NORMAL,
-        WARNING,
-        ERROR
+    @Override
+    public String getText() {
+        return label;
     }
 
-    int OPTION_READ_ONLY = 1;
-
-    HintType getHintType();
-
-    String getHintText();
-
-    String getHintDescription();
-
-    default DBPImage getHintIcon() {
-        return null;
+    @Override
+    public boolean isEnabled() {
+        return false;
     }
-
-    default HintStyle getHintStyle() {
-        return HintStyle.NORMAL;
-    }
-
-    default int getHintOptions() {
-        return 0;
-    }
-
 }

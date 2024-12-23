@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.IGridController;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridHint;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.data.DBDValueHintActionHandler;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Spreadsheet cell hint implementation
@@ -62,6 +63,11 @@ public class SpreadsheetHint implements IGridHint {
     @Override
     public boolean isError() {
         return valueHint.getHintStyle() == DBDValueHint.HintStyle.ERROR;
+    }
+
+    @Override
+    public boolean isReadOnly() {
+        return CommonUtils.isBitSet(valueHint.getHintOptions(), DBDValueHint.OPTION_READ_ONLY);
     }
 
     @Override
