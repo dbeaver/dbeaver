@@ -119,15 +119,31 @@ public class ThemeListener {
     private void setPropertyValue(Field[] fields, ITheme currentTheme, String property) throws IllegalAccessException {
         for (Field field : fields) {
             if (Color.class.isAssignableFrom(field.getType())) {
-                field.set(this, currentTheme.getColorRegistry().get(property));
+                Color value = currentTheme.getColorRegistry().get(property);
+                if (value == null) {
+                    log.error("Color '" + property + "' not found in registry");
+                }
+                field.set(this, value);
             } else if (Font.class.isAssignableFrom(field.getType())) {
                 ThemeFont param = field.getAnnotation(ThemeFont.class);
                 if (param != null && param.italic()) {
-                    field.set(this, currentTheme.getFontRegistry().getItalic(property));
+                    Font font = currentTheme.getFontRegistry().getItalic(property);
+                    if (font == null) {
+                        log.error("Font '" + property + "' (italic) not found in registry");
+                    }
+                    field.set(this, font);
                 } else if (param != null && param.bold()) {
-                    field.set(this, currentTheme.getFontRegistry().getBold(property));
+                    Font font = currentTheme.getFontRegistry().getBold(property);
+                    if (font == null) {
+                        log.error("Font '" + property + "' (bold) not found in registry");
+                    }
+                    field.set(this, font);
                 } else {
-                    field.set(this, currentTheme.getFontRegistry().get(property));
+                    Font font = currentTheme.getFontRegistry().get(property);
+                    if (font == null) {
+                        log.error("Font '" + property + "' not found in registry");
+                    }
+                    field.set(this, font);
                 }
             }
         }
