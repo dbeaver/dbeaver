@@ -1086,7 +1086,7 @@
             label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.selection.background.label"
             categoryId="org.jkiss.dbeaver.ui.presentation.results"
             id="org.jkiss.dbeaver.sql.resultset.color.selection.background"
-            value="COLOR_LIST_SELECTION">
+            value="207, 227, 250">
             <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.selection.background.description</description>
         </colorDefinition>
         <colorDefinition
@@ -1242,6 +1242,12 @@
             value="0, 0, 0">
             <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.string.foreground.description</description>
         </colorDefinition>
+    </extension>
+
+    <extension point="org.eclipse.e4.ui.css.swt.theme">
+        <stylesheet uri="css/e4-dark-data-editor.css">
+            <themeid refid="org.eclipse.e4.ui.css.theme.e4_dark"/>
+        </stylesheet>
     </extension>
 
     <extension point="org.jkiss.dbeaver.confirmations">
