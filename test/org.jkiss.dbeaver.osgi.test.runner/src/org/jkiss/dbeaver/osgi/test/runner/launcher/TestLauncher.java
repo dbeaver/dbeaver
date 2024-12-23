@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.test.launcher;
+package org.jkiss.dbeaver.osgi.test.runner.launcher;
 
 import org.eclipse.osgi.internal.framework.BundleContextImpl;
 import org.eclipse.osgi.service.runnable.ApplicationLauncher;
@@ -46,9 +46,9 @@ public class TestLauncher implements ApplicationLauncher {
 
     }
 
-    public Object start() {
+    public Object start(String appID) {
         try {
-            ((BundleContextImpl) context).getContainer().getConfiguration().setConfiguration("eclipse.application", "org.jkiss.dbeaver.headless.application");
+            ((BundleContextImpl) context).getContainer().getConfiguration().setConfiguration("eclipse.application", appID + ".application");
             return runnable.run(context);
         } catch (Exception e) {
             throw new RuntimeException(e);

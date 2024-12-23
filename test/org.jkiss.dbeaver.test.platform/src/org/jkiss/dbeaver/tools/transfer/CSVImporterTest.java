@@ -18,6 +18,9 @@ package org.jkiss.dbeaver.tools.transfer;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.osgi.test.runner.OSGITestRunner;
+import org.jkiss.dbeaver.osgi.test.runner.annotation.RunWithProduct;
+import org.jkiss.dbeaver.osgi.test.runner.annotation.RunnerProxy;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataImporterSite;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamDataImporterColumnInfo;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamEntityMapping;
@@ -37,8 +40,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(OSGITestRunner.class)
+@RunWithProduct("DBeaverTest.product")
 public class CSVImporterTest {
+
+    @RunnerProxy
+    MockitoJUnitRunner runner;
     private static final Path DUMMY_FILE = Path.of("dummy");
 
     private final DataImporterCSV importer = new DataImporterCSV();

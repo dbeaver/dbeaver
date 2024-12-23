@@ -16,14 +16,21 @@
  */
 package org.jkiss.dbeaver.data.transfer;
 
+
+import org.jkiss.dbeaver.osgi.test.runner.OSGITestRunner;
+import org.jkiss.dbeaver.osgi.test.runner.annotation.RunWithProduct;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@RunWith(OSGITestRunner.class)
+@RunWithProduct("DBeaverTest.product")
 public class StreamTransferUtilsTest {
+
     @Test
     public void testDelimiterString() {
         Map<String, Object> props = new HashMap<>();
