@@ -1086,7 +1086,7 @@
             label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.selection.background.label"
             categoryId="org.jkiss.dbeaver.ui.presentation.results"
             id="org.jkiss.dbeaver.sql.resultset.color.selection.background"
-            value="207, 227, 250">
+            value="COLOR_LIST_SELECTION">
             <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.selection.background.description</description>
         </colorDefinition>
         <colorDefinition
