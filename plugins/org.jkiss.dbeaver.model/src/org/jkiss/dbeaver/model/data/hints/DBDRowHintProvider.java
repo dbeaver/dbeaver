@@ -17,25 +17,29 @@
 
 package org.jkiss.dbeaver.model.data.hints;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.data.DBDResultSetModel;
+import org.jkiss.dbeaver.model.data.DBDValueRow;
+
+import java.util.EnumSet;
+
 /**
- * Abstract hint provider
+ * Row hint provider
  */
-public interface DBDValueHintProvider {
+public interface DBDRowHintProvider extends DBDValueHintProvider {
 
     /**
-     * Hint object: cell, column or row
+     * Get all hints available for specified row.
+     *
+     * @param model
+     * @param types   requested hint types
+     * @param options flags combined from HINT_ constants
      */
-    enum HintObject {
-        CELL,
-        COLUMN,
-        ROW,
-    }
-
-    int OPTION_INLINE = 1;          // Default tip for data viewer grid
-    int OPTION_ADVANCED = 1 << 1;   // ?
-    int OPTION_TOOLTIP = 1 << 2;    // Hint for tooltip. Maybe return different hint (extended)
-    int OPTION_ACTION_TOOLTIP = 1 << 3; // Tooltip for hint action button
-    int OPTION_ROW_EXPANDED = 1 << 4; // Passed row is expanded (has sub-rows)
-    int OPTION_APPROXIMATE = 1 << 5; // Return hints ignoring actual row values
-
+    @Nullable
+    DBDValueHint[] getRowHints(
+        @NotNull DBDResultSetModel model,
+        @NotNull DBDValueRow row,
+        @NotNull EnumSet<DBDValueHint.HintType> types,
+        int options);
 }

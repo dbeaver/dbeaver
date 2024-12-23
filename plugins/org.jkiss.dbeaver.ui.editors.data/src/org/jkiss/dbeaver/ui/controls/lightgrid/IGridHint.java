@@ -50,7 +50,12 @@ public interface IGridHint {
     boolean isError();
 
     /**
-     * @return true if hint has actiction which can be executed by clicking on the icon
+     * @return true if hint is a disablement
+     */
+    boolean isReadOnly();
+
+    /**
+     * @return true if hint has action which can be executed by clicking on the icon
      */
     boolean hasAction();
 
