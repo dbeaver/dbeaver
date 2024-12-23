@@ -62,8 +62,26 @@ public class ResultSetThemeSettings extends ThemeListener {
     public volatile Color cellHeaderForeground;
     @ThemeColor(ThemeConstants.COLOR_SQL_RESULT_HEADER_BACKGROUND)
     public volatile Color cellHeaderBackground;
+    @ThemeColor(ThemeConstants.COLOR_SQL_RESULT_HEADER_SELECTED_BACKGROUND)
+    public volatile Color cellHeaderSelectedBackground;
     @ThemeColor(ThemeConstants.COLOR_SQL_RESULT_HEADER_BORDER)
     public volatile Color cellHeaderBorder;
+
+    @ThemeColor(ThemeConstants.COLOR_SQL_RESULT_LINES_NORMAL)
+    public volatile Color lineNormalColor;
+    @ThemeColor(ThemeConstants.COLOR_SQL_RESULT_LINES_SELECTED)
+    public volatile Color lineSelectedColor;
+
+    @ThemeColor(ThemeConstants.COLOR_SQL_RESULT_BINARY_FOREGROUND)
+    public volatile Color dtBinaryColor;
+    @ThemeColor(ThemeConstants.COLOR_SQL_RESULT_BOOLEAN_FOREGROUND)
+    public volatile Color dtBooleanColor;
+    @ThemeColor(ThemeConstants.COLOR_SQL_RESULT_DATETIME_FOREGROUND)
+    public volatile Color dtDateTimeColor;
+    @ThemeColor(ThemeConstants.COLOR_SQL_RESULT_NUMERIC_FOREGROUND)
+    public volatile Color dtNumericColor;
+    @ThemeColor(ThemeConstants.COLOR_SQL_RESULT_STRING_FOREGROUND)
+    public volatile Color dtStringColor;
 
     public static final ResultSetThemeSettings instance = new ResultSetThemeSettings();
 }

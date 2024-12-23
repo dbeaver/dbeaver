@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -122,22 +121,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
     private final Map<SpreadsheetValueController, IValueEditorStandalone> openEditors = new HashMap<>();
 
     // UI modifiers
-    private Color backgroundDeleted;
-    private Color backgroundModified;
-    private Color backgroundNormal;
-    private Color backgroundReadOnly;
-    private Color foregroundReadOnly;
+    private Color backgroundDefault;
     private Color foregroundDefault;
-    private Color foregroundSelected, backgroundSelected;
-    private Color foregroundNull;
-    private Color backgroundMatched;
-    private Color backgroundError;
-    private Color foregroundError;
 
-    private Color cellHeaderForeground;
-    private Color cellHeaderBackground;
     private Color cellHeaderSelectionBackground;
-    private Color cellHeaderBorder;
     private boolean isHighContrastTheme = false;
 
     private boolean showOddRows = true;
@@ -1398,44 +1385,20 @@ public class SpreadsheetPresentation extends AbstractPresentation
     protected void applyThemeSettings(ITheme currentTheme) {
         this.spreadsheet.setFont(ResultSetThemeSettings.instance.resultSetFont);
 
-        final ColorRegistry colorRegistry = currentTheme.getColorRegistry();
-        Color previewBack = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_SET_PREVIEW_BACK);
-        if (previewBack != null) {
-//            this.previewPane.getViewPlaceholder().setBackground(previewBack);
-//            for (Control control : this.previewPane.getViewPlaceholder().getChildren()) {
-//                control.setBackground(previewBack);
-//            }
-        }
-        //this.foregroundDefault = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_FORE);
-        this.backgroundDeleted = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_DELETED_BACK);
-        this.backgroundModified = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_MODIFIED_BACK);
-        this.backgroundReadOnly = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_READ_ONLY);
-        this.foregroundReadOnly = colorRegistry.get(BaseEditorColors.COLOR_READ_ONLY);
-        this.foregroundSelected = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_FORE);
-        this.foregroundNull = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_NULL_FOREGROUND);
-        this.backgroundSelected = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_BACK);
-        this.backgroundMatched = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_MATCHED);
-        this.backgroundError = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_ERROR_BACK);
-        this.foregroundError = colorRegistry.get(BaseEditorColors.COLOR_ERROR);
-
-        this.cellHeaderForeground = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_HEADER_FOREGROUND);
-        this.cellHeaderBackground = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_HEADER_BACKGROUND);
-        this.cellHeaderBorder = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_HEADER_BORDER);
-
         {
             if (this.cellHeaderSelectionBackground != null) {
                 UIUtils.dispose(this.cellHeaderSelectionBackground);
                 this.cellHeaderSelectionBackground = null;
             }
-            Color headerSelectionBackground = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_HEADER_SELECTED_BACKGROUND);
+            Color headerSelectionBackground = ResultSetThemeSettings.instance.cellHeaderSelectedBackground;
             RGB cellSel = UIUtils.blend(
                 headerSelectionBackground.getRGB(),
                 UIStyles.isDarkTheme() ? new RGB(100, 100, 100) : new RGB(255, 255, 255),
                 50);
             this.cellHeaderSelectionBackground = new Color(getSpreadsheet().getDisplay(), cellSel);
         }
-        this.spreadsheet.setLineColor(colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_LINES_NORMAL));
-        this.spreadsheet.setLineSelectedColor(colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_LINES_SELECTED));
+        this.spreadsheet.setLineColor(ResultSetThemeSettings.instance.lineNormalColor);
+        this.spreadsheet.setLineSelectedColor(ResultSetThemeSettings.instance.lineSelectedColor);
 
         this.spreadsheet.recalculateSizes(true);
 
@@ -1443,11 +1406,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         this.colorizeDataTypes = getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES);
 
-        this.dataTypesForegrounds.put(DBPDataKind.BINARY, colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_BINARY_FOREGROUND));
-        this.dataTypesForegrounds.put(DBPDataKind.BOOLEAN, colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_BOOLEAN_FOREGROUND));
-        this.dataTypesForegrounds.put(DBPDataKind.DATETIME, colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_DATETIME_FOREGROUND));
-        this.dataTypesForegrounds.put(DBPDataKind.NUMERIC, colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_NUMERIC_FOREGROUND));
-        this.dataTypesForegrounds.put(DBPDataKind.STRING, colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_STRING_FOREGROUND));
+        this.dataTypesForegrounds.put(DBPDataKind.BINARY, ResultSetThemeSettings.instance.dtBinaryColor);
+        this.dataTypesForegrounds.put(DBPDataKind.BOOLEAN, ResultSetThemeSettings.instance.dtBooleanColor);
+        this.dataTypesForegrounds.put(DBPDataKind.DATETIME, ResultSetThemeSettings.instance.dtDateTimeColor);
+        this.dataTypesForegrounds.put(DBPDataKind.NUMERIC, ResultSetThemeSettings.instance.dtNumericColor);
+        this.dataTypesForegrounds.put(DBPDataKind.STRING, ResultSetThemeSettings.instance.dtStringColor);
     }
 
     ///////////////////////////////////////////////
@@ -1735,11 +1698,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
     }
 
     public Color getBackgroundDeleted() {
-        return backgroundDeleted;
+        return ResultSetThemeSettings.instance.backgroundDeleted;
     }
 
     public Color getBackgroundModified() {
-        return backgroundModified;
+        return ResultSetThemeSettings.instance.backgroundModified;
     }
 
     private DBDAttributeBinding getAttributeFromGrid(IGridColumn colObject, IGridRow rowObject) {
@@ -2475,7 +2438,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         @Nullable
         private Color getCellForeground(DBDAttributeBinding attribute, ResultSetRow row, Object cellValue, Color background, boolean selected) {
             if (selected) {
-                return foregroundSelected;
+                return ResultSetThemeSettings.instance.foregroundSelected;
             }
             if (isShowAsCheckbox(attribute) && booleanStyles.getMode() == BooleanMode.TEXT) {
                 if (cellValue instanceof Number number) {
@@ -2509,7 +2472,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
 
                 if (DBUtils.isNullValue(cellValue)) {
-                    return foregroundNull;
+                    return ResultSetThemeSettings.instance.foregroundNull;
                 } else {
                     if (colorizeDataTypes && isSimpleAttribute(attribute)) {
                         Color color = dataTypesForegrounds.get(attribute.getDataKind());
@@ -2531,7 +2494,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             boolean ignoreRowSelection)
         {
             if (cellValue == DBDVoid.INSTANCE) {
-                return cellHeaderBackground;
+                return ResultSetThemeSettings.instance.cellHeaderBackground;
             }
 
             if (spreadsheet.getCellSelectionSize() == 1 && getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES)) {
@@ -2544,7 +2507,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         final Object sourceValue = spreadsheet.getContentProvider().getCellValue(sourceCell.col, sourceCell.row, false);
 
                         if (CommonUtils.equalObjects(sourceValue, cellValue)) {
-                            return backgroundMatched;
+                            return ResultSetThemeSettings.instance.backgroundMatched;
                         }
                     }
                 }
@@ -2552,12 +2515,12 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
             if (cellSelected) {
                 Color normalColor = getCellBackground(attribute, row, cellValue, rowPosition, false, true);
-                if (normalColor == null || normalColor == backgroundNormal || isHighContrastTheme) {
-                    return backgroundSelected;
+                if (normalColor == null || normalColor == backgroundDefault || isHighContrastTheme) {
+                    return ResultSetThemeSettings.instance.backgroundSelected;
                 }
                 RGB mixRGB = UIUtils.blend(
                     normalColor.getRGB(),
-                    backgroundSelected.getRGB(),
+                    ResultSetThemeSettings.instance.backgroundSelected.getRGB(),
                     50
                 );
                 return UIUtils.getSharedTextColors().getColor(mixRGB);
@@ -2577,24 +2540,24 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     if (searchPattern != null) {
                         String cellText = CommonUtils.toString(cellValue);
                         if (searchPattern.matcher(cellText).find()) {
-                            return backgroundMatched;
+                            return ResultSetThemeSettings.instance.backgroundMatched;
                         }
                     }
                 }
                 if (!controller.isRecordMode() && inScope) {
-                    return highlightScopeColor != null ? highlightScopeColor : backgroundSelected;
+                    return highlightScopeColor != null ? highlightScopeColor : ResultSetThemeSettings.instance.backgroundSelected;
                 }
             }
 
             if (!ignoreRowSelection && highlightRowsWithSelectedCells && spreadsheet.isRowSelected(rowPosition)) {
                 Color normalColor = getCellBackground(attribute, row, cellValue, rowPosition, false, true);
                 Color selectedCellColor;
-                if (normalColor == null || normalColor == backgroundNormal || isHighContrastTheme) {
-                    selectedCellColor = backgroundSelected;
+                if (normalColor == null || normalColor == backgroundDefault || isHighContrastTheme) {
+                    selectedCellColor = ResultSetThemeSettings.instance.backgroundSelected;
                 } else {
                     RGB mixRGB = UIUtils.blend(
                         normalColor.getRGB(),
-                        backgroundSelected.getRGB(),
+                        ResultSetThemeSettings.instance.backgroundSelected.getRGB(),
                         50
                     );
                     selectedCellColor = UIUtils.getSharedTextColors().getColor(mixRGB);
@@ -2619,10 +2582,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 case ResultSetRow.STATE_ADDED:
                     return ResultSetThemeSettings.instance.backgroundAdded;
                 case ResultSetRow.STATE_REMOVED:
-                    return backgroundDeleted;
+                    return ResultSetThemeSettings.instance.backgroundDeleted;
             }
             if (row.isChanged(attribute)) {
-                return backgroundModified;
+                return ResultSetThemeSettings.instance.backgroundModified;
             }
 
             {
@@ -2639,7 +2602,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
 
                 if (cellValue != null && cellValue.getClass() == DBDValueError.class) {
-                    return backgroundError;
+                    return ResultSetThemeSettings.instance.backgroundError;
                 }
             }
 
@@ -2658,10 +2621,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
             }
 
-            if (backgroundNormal == null) {
-                backgroundNormal = controller.getDefaultBackground();
+            if (backgroundDefault == null) {
+                backgroundDefault = controller.getDefaultBackground();
             }
-            return backgroundNormal;
+            return backgroundDefault;
         }
 
         @NotNull
@@ -2798,7 +2761,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         @Override
         public void resetColors() {
-            backgroundNormal = null;
+            backgroundDefault = null;
             foregroundDefault = null;
         }
     }
@@ -2959,11 +2922,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
         @Nullable
         @Override
         public Color getBackground(IGridItem element) {
-            if (backgroundNormal == null) {
-                backgroundNormal = controller.getDefaultBackground();
+            if (backgroundDefault == null) {
+                backgroundDefault = controller.getDefaultBackground();
             }
             if (element == null) {
-                return backgroundNormal;
+                return backgroundDefault;
             }
 
             return null;
@@ -2972,24 +2935,24 @@ public class SpreadsheetPresentation extends AbstractPresentation
         @NotNull
         @Override
         public Color getHeaderForeground(@Nullable IGridItem item, boolean selected) {
-            return cellHeaderForeground;
+            return ResultSetThemeSettings.instance.cellHeaderForeground;
         }
 
         @NotNull
         @Override
         public Color getHeaderBackground(@Nullable IGridItem item, boolean selected) {
-            return selected ? cellHeaderSelectionBackground : cellHeaderBackground;
+            return selected ? cellHeaderSelectionBackground : ResultSetThemeSettings.instance.cellHeaderBackground;
         }
 
         @NotNull
         @Override
         public Color getHeaderBorder(@Nullable IGridItem item) {
-            return cellHeaderBorder;
+            return ResultSetThemeSettings.instance.cellHeaderBorder;
         }
 
         @Override
         public Color getHeaderReadOnlyColor() {
-            return foregroundReadOnly;
+            return ResultSetThemeSettings.instance.backgroundReadOnly;
         }
 
         @NotNull
@@ -3082,7 +3045,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         @Override
         public Color getErrorForeground() {
-            return foregroundError;
+            return ResultSetThemeSettings.instance.foregroundError;
         }
 
         @Override
