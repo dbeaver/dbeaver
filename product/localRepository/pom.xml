@@ -76,6 +76,8 @@
 								<!-- Jetty -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jetty.server:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-jetty-server -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jetty.websocket:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-jetty-websocket -->
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jakarta.jetty.server:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-jakarta-jetty-server -->
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jakarta.jetty.websocket:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-jakarta-jetty-websocket -->
 								<!-- OkHttp -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.okhttp:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
 								<!-- repo:eclipse-bundle-okhttp -->

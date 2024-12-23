@@ -18,20 +18,22 @@ package org.jkiss.dbeaver.model.data.hints.standard;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.data.DBDResultSetModel;
 import org.jkiss.dbeaver.model.data.DBDValueRow;
 import org.jkiss.dbeaver.model.data.hints.DBDCellHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
+import org.jkiss.dbeaver.model.data.hints.ValueHintText;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.EnumSet;
 
 /**
- * Void hint provider. Stub for no hints
+ * Arrays hint provider
  */
-public class VoidHintProvider implements DBDCellHintProvider {
-
-    public static final VoidHintProvider INSTANCE = new VoidHintProvider();
+public class ArrayCellHintProvider implements DBDCellHintProvider {
 
     @Nullable
     @Override
@@ -43,6 +45,18 @@ public class VoidHintProvider implements DBDCellHintProvider {
         @NotNull EnumSet<DBDValueHint.HintType> types,
         int options
     ) {
+        if (!DBUtils.isNullValue(value) &&
+            !CommonUtils.isBitSet(options, OPTION_ROW_EXPANDED) &&
+            value instanceof DBDCollection collection
+        ) {
+            if (collection.size() > 1) {
+                return new DBDValueHint[] {
+                    new ValueHintText(
+                        !CommonUtils.isBitSet(options, OPTION_TOOLTIP) ? "[+" + (collection.size() - 1) + "]" : String.valueOf(collection.size()),
+                        "Size", null)
+                };
+            }
+        }
         return null;
     }
 

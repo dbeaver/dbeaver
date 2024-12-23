@@ -14,36 +14,62 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.data.hints.standard;
+
+package org.jkiss.dbeaver.model.data.hints;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDResultSetModel;
 import org.jkiss.dbeaver.model.data.DBDValueRow;
-import org.jkiss.dbeaver.model.data.hints.DBDCellHintProvider;
-import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.util.Collection;
 import java.util.EnumSet;
 
 /**
- * Void hint provider. Stub for no hints
+ * Value hint provider
  */
-public class VoidHintProvider implements DBDCellHintProvider {
+public interface DBDCellHintProvider extends DBDValueHintProvider {
 
-    public static final VoidHintProvider INSTANCE = new VoidHintProvider();
-
+    /**
+     * Get all hints available for specified cell.
+     *
+     * @param model
+     * @param types   requested hint types
+     * @param options flags combined from HINT_ constants
+     */
     @Nullable
-    @Override
-    public DBDValueHint[] getCellHints(
+    DBDValueHint[] getCellHints(
         @NotNull DBDResultSetModel model,
         @NotNull DBDAttributeBinding attribute,
         @NotNull DBDValueRow row,
         @Nullable Object value,
         @NotNull EnumSet<DBDValueHint.HintType> types,
-        int options
+        int options);
+
+    /**
+     * Calculates approximate length (in characters) of hint text
+     */
+    default int getAttributeHintSize(
+        @NotNull DBDValueHintContext context,
+        @NotNull DBDAttributeBinding attribute
     ) {
-        return null;
+        return 0;
+    }
+
+    /**
+     * Read all necessary data which is needed to render hints.
+     */
+    default void cacheRequiredData(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBDValueHintContext context,
+        @NotNull Collection<DBDAttributeBinding> attributes,
+        @NotNull Collection<? extends DBDValueRow> rows,
+        boolean cleanupCache
+    ) throws DBException {
+
     }
 
 }
