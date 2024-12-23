@@ -20,10 +20,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDResultSetModel;
 import org.jkiss.dbeaver.model.data.DBDValueRow;
+import org.jkiss.dbeaver.model.data.hints.DBDCellHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
-import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
-import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
@@ -37,12 +37,12 @@ import java.util.List;
  * Reference hint provider.
  * It is declared in UI bundle because it provides interaction with data editor
  */
-public class ReferenceHintProvider implements DBDValueHintProvider {
+public class ReferenceCellHintProvider implements DBDCellHintProvider {
 
     @Nullable
     @Override
-    public DBDValueHint[] getValueHint(
-        @NotNull DBDValueHintContext context,
+    public DBDValueHint[] getCellHints(
+        @NotNull DBDResultSetModel model,
         @NotNull DBDAttributeBinding attribute,
         @NotNull DBDValueRow row,
         @Nullable Object value,
