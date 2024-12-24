@@ -30,4 +30,9 @@ public class WSClientEventDescriptor extends WSAbstractEventDescriptor {
     ) {
         super(cfg);
     }
+
+    @NotNull
+    public Class<? extends WSClientEvent> getEventClass() {
+        return implType.getObjectClass(WSClientEvent.class);
+    }
 }

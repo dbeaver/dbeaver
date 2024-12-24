@@ -17,19 +17,22 @@
 package org.jkiss.dbeaver.model.websocket.gson;
 
 import org.jkiss.dbeaver.model.websocket.event.WSClientEvent;
-import org.jkiss.dbeaver.model.websocket.event.WSClientEventType;
+import org.jkiss.dbeaver.model.websocket.registry.WSClientEventDescriptor;
+import org.jkiss.dbeaver.model.websocket.registry.WSEventRegistry;
 
-import java.util.Arrays;
 import java.util.stream.Collectors;
 
 public class WSClientEventDeserializer extends WSAbstractClassByIdDeserializer<WSClientEvent> {
     public WSClientEventDeserializer() {
         super(
-            Arrays.stream(WSClientEventType.values())
-                .collect(Collectors.toMap(
-                    WSClientEventType::getEventId,
-                    WSClientEventType::getEventClass
-                ))
+            WSEventRegistry.getInstance().getClientEvents()
+                .stream()
+                .collect(
+                    Collectors.toMap(
+                        WSClientEventDescriptor::getId,
+                        WSClientEventDescriptor::getEventClass
+                    )
+                )
         );
     }
 }

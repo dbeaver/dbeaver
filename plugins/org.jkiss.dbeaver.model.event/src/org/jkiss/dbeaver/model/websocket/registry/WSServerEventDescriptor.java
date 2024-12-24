@@ -38,4 +38,9 @@ public class WSServerEventDescriptor extends WSAbstractEventDescriptor {
     public String getTopicId() {
         return topicId;
     }
+
+    @NotNull
+    public Class<? extends WSEvent> getEventClass() {
+        return implType.getObjectClass(WSEvent.class);
+    }
 }

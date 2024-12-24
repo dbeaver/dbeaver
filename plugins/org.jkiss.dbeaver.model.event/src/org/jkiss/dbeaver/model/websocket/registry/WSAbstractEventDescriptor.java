@@ -19,37 +19,23 @@ package org.jkiss.dbeaver.model.websocket.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-import org.jkiss.dbeaver.model.websocket.event.WSEvent;
 
 abstract class WSAbstractEventDescriptor extends AbstractDescriptor {
     @NotNull
     private final String id;
     @NotNull
-    private final String topicId;
-    @NotNull
-    private final ObjectType implType;
+    protected final ObjectType implType;
 
     protected WSAbstractEventDescriptor(
         @NotNull IConfigurationElement cfg
     ) {
         super(cfg);
         this.id = cfg.getAttribute("id");
-        this.topicId = cfg.getAttribute("topicId");;
         this.implType = new ObjectType(cfg, "class");
     }
 
     @NotNull
     public String getId() {
         return id;
-    }
-
-    @NotNull
-    public Class<? extends WSEvent> getEventClass() {
-        return implType.getObjectClass(WSEvent.class);
-    }
-
-    @NotNull
-    public String getTopicId() {
-        return topicId;
     }
 }
