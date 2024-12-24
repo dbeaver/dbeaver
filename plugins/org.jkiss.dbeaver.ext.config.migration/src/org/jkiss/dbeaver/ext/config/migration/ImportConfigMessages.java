@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.config.migration;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class ImportConfigMessages extends NLS {
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.config.migration.ImportConfigMessages"; //$NON-NLS-1$

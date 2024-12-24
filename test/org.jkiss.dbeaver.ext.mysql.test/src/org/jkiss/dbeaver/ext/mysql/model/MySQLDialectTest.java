@@ -16,19 +16,51 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import static org.junit.Assert.assertEquals;
+
 @RunWith(MockitoJUnitRunner.class)
 public class MySQLDialectTest {
+
+    private final MySQLDialect dialect = new MySQLDialect();
+
     @Test
     public void quoteStringTest() {
-        final MySQLDialect dialect = new MySQLDialect();
+        assertEquals("`a ' b`", dialect.getQuotedIdentifier("a ' b", false, true));
+        assertEquals("`a `` b`", dialect.getQuotedIdentifier("a ` b", false, true));
+        assertEquals("`a b`", dialect.getQuotedIdentifier("a b", false, true));
+    }
 
-        Assert.assertEquals("`a ' b`", dialect.getQuotedIdentifier("a ' b", false, true));
-        Assert.assertEquals("`a `` b`", dialect.getQuotedIdentifier("a ` b", false, true));
-        Assert.assertEquals("`a b`", dialect.getQuotedIdentifier("a b", false, true));
+    @Test
+    public void escapeString_whenSimpleStringPasses_thenSameStringReturn(){
+        // GIVEN
+        String expected = "There is simple string without any quotes and slashes";
+        // WHEN
+        String actual = dialect.escapeString(expected);
+        // THEN
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void escapeString_whenStringWithQuotes_thenSameStringReturn() {
+        // GIVEN
+        String given = "[\"{\"subjectId\":3,\"levelId\":2,\"isOur\":true}\"]";
+        // WHEN
+        String actual = dialect.escapeString(given);
+        // THEN
+        assertEquals("[\"{\"subjectId\":3,\"levelId\":2,\"isOur\":true}\"]", actual);
+    }
+
+    @Test
+    public void escapeString_whenStringWithinSlash_thenStringEscapedSlashReturn() {
+        // GIVEN
+        String given = "[\"{\\\"subjectId\\\":3,\\\"levelId\\\":2,\\\"isOur\\\":true}\"]";
+        // WHEN
+        String actual = dialect.escapeString(given);
+        // THEN
+        assertEquals("[\"{\\\\\"subjectId\\\\\":3,\\\\\"levelId\\\\\":2,\\\\\"isOur\\\\\":true}\"]", actual);
     }
 }
