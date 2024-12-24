@@ -11,6 +11,6 @@
     </parent>
     <artifactId>org.jkiss.dbeaver.osgi.test.runner</artifactId>
     <version>1.0.102-SNAPSHOT</version>
-    <packaging>eclipse-test-plugin</packaging>
+    <packaging>eclipse-plugin</packaging>
 
 </project>
