@@ -59,6 +59,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
     private static final String PROP_QUOTE_NEVER = "quoteNever";
     private static final String PROP_NULL_STRING = "nullString";
     private static final String PROP_FORMAT_NUMBERS = "formatNumbers";
+    private static final String PROP_LINE_FEED_ESCAPE_STRING = "lineFeedEscapeString";
 
     private static final String DEF_QUOTE_CHAR = "\"";
     private boolean formatNumbers;
@@ -87,6 +88,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
     private HeaderPosition headerPosition;
     private HeaderFormat headerFormat;
     private DBPIdentifierCase headerCase;
+    private String lineFeedEscapeString;
     private DBDAttributeBinding[] columns;
 
     private final StringBuilder buffer = new StringBuilder();
@@ -101,6 +103,10 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
         if (ROW_DELIMITER_DEFAULT.equalsIgnoreCase(this.rowDelimiter.trim())) {
             this.rowDelimiter = GeneralUtils.getDefaultLineSeparator();
         }
+        this.lineFeedEscapeString = CommonUtils.toString(properties.get(PROP_LINE_FEED_ESCAPE_STRING), null)
+            .replace("\\t", "\t")
+            .replace("\\n", "\n")
+            .replace("\\r", "\r");
         Object quoteProp = properties.get(PROP_QUOTE_CHAR);
         String quoteStr = quoteProp == null ? DEF_QUOTE_CHAR : quoteProp.toString();
         if (!CommonUtils.isEmpty(quoteStr)) {
@@ -278,6 +284,10 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
         }
         // check for needed quote
         final boolean hasQuotes = useQuotes && value.indexOf(quoteChar) != -1;
+
+        if (CommonUtils.isNotEmpty(lineFeedEscapeString)) {
+            value = value.replaceAll("\\r\\n|\\r|\\n", lineFeedEscapeString);
+        }
 
         if (quoteStrategy == QuoteStrategy.ALL || (useQuotes && value.isEmpty())) {
             quote = true;
