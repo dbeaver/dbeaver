@@ -17,19 +17,15 @@
 package org.jkiss.dbeaver.data.transfer;
 
 
-import org.jkiss.dbeaver.osgi.test.runner.OSGITestRunner;
-import org.jkiss.dbeaver.osgi.test.runner.annotation.RunWithProduct;
+import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferUtils;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@RunWith(OSGITestRunner.class)
-@RunWithProduct("DBeaverTest.product")
-public class StreamTransferUtilsTest {
+public class StreamTransferUtilsTest extends OSGIMockDataTest {
 
     @Test
     public void testDelimiterString() {

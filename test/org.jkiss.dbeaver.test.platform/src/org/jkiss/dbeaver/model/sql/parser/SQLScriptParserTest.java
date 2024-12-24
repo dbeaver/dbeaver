@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql.parser;
 import org.eclipse.jface.text.Document;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -37,10 +38,8 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,8 +47,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-@RunWith(MockitoJUnitRunner.class)
-public class SQLScriptParserTest {
+public class SQLScriptParserTest extends OSGIMockDataTest {
     @Mock
     private JDBCDataSource dataSource;
     @Mock

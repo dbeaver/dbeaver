@@ -17,23 +17,14 @@
 
 package org.jkiss.dbeaver.test.platform;
 
+import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.osgi.test.runner.OSGITestRunner;
-import org.jkiss.dbeaver.osgi.test.runner.annotation.RunWithProduct;
-import org.jkiss.dbeaver.osgi.test.runner.annotation.RunnerProxy;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
 
-@RunWith(OSGITestRunner.class)
-@RunWithProduct("DBeaverTest.product")
-public class PlatformTest {
-    @RunnerProxy
-    MockitoJUnitRunner runner;
+public class PlatformTest extends OSGIMockDataTest {
     @Before
     public void setUp() throws Exception {
     }

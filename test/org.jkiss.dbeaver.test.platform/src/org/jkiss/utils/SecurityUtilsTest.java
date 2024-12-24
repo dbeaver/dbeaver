@@ -16,10 +16,11 @@
  */
 package org.jkiss.utils;
 
+import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.junit.Test;
 
 //@RunWith(PowerMockRunner.class)
-public class SecurityUtilsTest {
+public class SecurityUtilsTest extends OSGIMockDataTest {
 
     @Test
     public void dummyTest() throws Exception {

@@ -12,4 +12,5 @@ Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.junit,
+ org.jkiss.dbeaver.test.platform,
  org.mockito.mockito-core

@@ -17,13 +17,14 @@
 
 package org.jkiss.dbeaver.model.data.json;
 
+import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.*;
 
-public class JSONUtilsTest {
+public class JSONUtilsTest extends OSGIMockDataTest {
 
 	private Map<String, Object> map;
 	private Map<String, Object> map2;

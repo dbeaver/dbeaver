@@ -16,17 +16,15 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model.plan;
 
+import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+
+import java.util.List;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.List;
-
-@RunWith(MockitoJUnitRunner.class)
-public class AltibaseExplainPlanTest {
+public class AltibaseExplainPlanTest extends OSGIMockDataTest {
     @Test
     public void trcLogDetailMtrNode_1_Test() {
         String plan =

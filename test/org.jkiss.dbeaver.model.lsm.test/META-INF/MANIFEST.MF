@@ -10,6 +10,7 @@ Require-Bundle: org.jkiss.dbeaver.model.sql,
  org.junit,
  org.mockito.mockito-core,
  org.apache.felix.scr,
+ org.jkiss.dbeaver.test.platform,
  net.bytebuddy.byte-buddy,
  net.bytebuddy.byte-buddy-agent
 Bundle-ActivationPolicy: lazy

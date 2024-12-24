@@ -16,13 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.hana.model;
 
+import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
 
-@RunWith(MockitoJUnitRunner.class)
-public class HANADialectTest {
+public class HANADialectTest extends OSGIMockDataTest {
     @Test
     public void quoteStatusStringTest() {
         final HANASQLDialect dialect = new HANASQLDialect();

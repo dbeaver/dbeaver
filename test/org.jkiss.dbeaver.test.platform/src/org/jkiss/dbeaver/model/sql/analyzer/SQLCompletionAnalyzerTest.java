@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.sql.analyzer;
 
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestBuilder;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestResult;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
@@ -31,7 +32,7 @@ import java.util.List;
 
 import static org.jkiss.dbeaver.model.sql.analyzer.builder.Builder.Consumer.empty;
 
-public class SQLCompletionAnalyzerTest {
+public class SQLCompletionAnalyzerTest extends OSGIMockDataTest {
     private static RequestResult modelDataRequest;
     private static final String ENABLE_EXPERIMENTAL_FEATURES = "SQLEditor.ContentAssistant.experimental.enable";
 

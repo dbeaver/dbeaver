@@ -20,7 +20,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class SQLUtilsTest {
+public class SQLUtilsTest extends OSGIMockDataTest {
     @Test
     public void makeRegexFromLikeTest() {
         Assert.assertEquals("^ABC$", SQLUtils.makeRegexFromLike("ABC"));

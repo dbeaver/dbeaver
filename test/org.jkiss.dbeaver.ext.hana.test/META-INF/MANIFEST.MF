@@ -17,4 +17,5 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.registry,
+ org.jkiss.dbeaver.test.platform,
  org.jkiss.dbeaver.ext.generic

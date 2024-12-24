@@ -31,6 +31,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
+import org.osgi.framework.wiring.BundleWiring;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -100,7 +101,6 @@ public class OSGITestRunner extends Runner {
 
     private void launchInExistingOSGI(RunNotifier notifier) {
         try {
-            System.out.println("all good lads");
             for (Field field : testClass.getDeclaredFields()) {
                 if (field.isAnnotationPresent(RunnerProxy.class)) {
                     Constructor<?> constructor = this.getClass()
@@ -132,15 +132,14 @@ public class OSGITestRunner extends Runner {
                 null
             );
             launcher.start(bundle.getSymbolicName());
-            for (Field field : testClass.getDeclaredFields()) {
-                if (field.isAnnotationPresent(RunnerProxy.class)) {
-                    Constructor<?> proxy = testBundle.loadClass(field.getType().getName()).getConstructor(Class.class);
-                    Object o = proxy.newInstance(testBundle.loadClass(testClass.getName()));
-                    o.getClass().getDeclaredMethods()[0].invoke(
-                        o,
-                        testBundle.loadClass(RunNotifier.class.getName()).getConstructor().newInstance()
-                    );
-                }
+            if (testClass.getAnnotation(RunWithProduct.class) != null) {
+                Constructor<?> proxy = testBundle.loadClass(testClass.getAnnotation(RunnerProxy.class).value().getName()).getConstructor(Class.class);
+                Object o = proxy.newInstance(testBundle.loadClass(testClass.getName()));
+                o.getClass().getDeclaredMethods()[0].invoke(
+                    o,
+                    testBundle.loadClass(RunNotifier.class.getName()).getConstructor().newInstance()
+                );
+
             }
         } catch (Throwable throwable) {
             log.error("An error occurred while running the test", throwable);
@@ -189,7 +188,7 @@ public class OSGITestRunner extends Runner {
             if (bundleFile.lastIndexOf('@') >= 0) {
                 bundleFile = bundleFile.substring(0, bundleFile.lastIndexOf('@'));
             }
-            if (installed.contains(bundleFile)) {
+            if (installed.contains(bundleFile) || bundleFile.contains("org.eclipse.osgi_")) {
                 continue;
             }
             try {
@@ -227,6 +226,11 @@ public class OSGITestRunner extends Runner {
                         log.error("Error starting bundle message", e);
                     }
                 }
+            }
+        }
+        for (Pair<Bundle, Integer> bundleIntegerPair : bundlesByStartLevel) {
+            if (bundleIntegerPair.getFirst().adapt(BundleWiring.class) == null) {
+                System.out.println("Bundle not resolved: " + bundleIntegerPair.getFirst().getSymbolicName());
             }
         }
         return appBundle;

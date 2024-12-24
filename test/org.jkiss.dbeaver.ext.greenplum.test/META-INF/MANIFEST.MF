@@ -16,4 +16,5 @@ Require-Bundle: org.junit,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.ext.postgresql,
+ org.jkiss.dbeaver.test.platform,
  org.jkiss.dbeaver.ext.greenplum

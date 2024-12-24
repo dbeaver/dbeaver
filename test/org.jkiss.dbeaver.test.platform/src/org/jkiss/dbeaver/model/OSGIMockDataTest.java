@@ -14,15 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.osgi.test.runner.annotation;
+package org.jkiss.dbeaver.model;
 
-import org.junit.runner.Runner;
+import org.jkiss.dbeaver.osgi.test.runner.OSGITestRunner;
+import org.jkiss.dbeaver.osgi.test.runner.annotation.RunWithProduct;
+import org.jkiss.dbeaver.osgi.test.runner.annotation.RunnerProxy;
+import org.junit.runner.RunWith;
+import org.mockito.junit.MockitoJUnitRunner;
 
-import java.lang.annotation.*;
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-@Inherited
-public @interface RunnerProxy {
-    Class<? extends Runner> value();
+@RunWithProduct("DBeaverTest.product")
+@RunnerProxy(MockitoJUnitRunner.class)
+@RunWith(OSGITestRunner.class)
+public abstract class OSGIMockDataTest {
+    MockitoJUnitRunner runner;
 }
