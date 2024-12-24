@@ -639,10 +639,10 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             String propertyName = BeanUtils.getPropertyNameFromGetter(getter.getName());
             Class<?> propOwner = getter.getDeclaringClass();
             Bundle bundle = FrameworkUtil.getBundle(propOwner);
-            ResourceBundle resourceBundle = getPluginResourceBundle(bundle, propOwner, locale);
             String messageID = "meta." + propOwner.getName() + "." + propertyName + "." + type;
             String result = null;
             try {
+                ResourceBundle resourceBundle = getPluginResourceBundle(bundle, propOwner, locale);
                 result = resourceBundle.getString(messageID);
             } catch (Exception e) {
                 // Try to find the same property in parent classes
