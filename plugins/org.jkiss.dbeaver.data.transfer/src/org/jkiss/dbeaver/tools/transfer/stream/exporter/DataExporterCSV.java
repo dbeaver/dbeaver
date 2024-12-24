@@ -103,7 +103,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
         if (ROW_DELIMITER_DEFAULT.equalsIgnoreCase(this.rowDelimiter.trim())) {
             this.rowDelimiter = GeneralUtils.getDefaultLineSeparator();
         }
-        this.lineFeedEscapeString = CommonUtils.toString(properties.get(PROP_LINE_FEED_ESCAPE_STRING), null)
+        this.lineFeedEscapeString = CommonUtils.toString(properties.get(PROP_LINE_FEED_ESCAPE_STRING), "")
             .replace("\\t", "\t")
             .replace("\\n", "\n")
             .replace("\\r", "\r");
