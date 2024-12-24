@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.internal;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class DTMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.tools.transfer.internal.DTMessages"; //$NON-NLS-1$

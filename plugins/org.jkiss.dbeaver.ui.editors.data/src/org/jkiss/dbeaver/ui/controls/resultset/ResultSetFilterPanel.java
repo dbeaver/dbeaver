@@ -832,7 +832,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 textOffset += iconBounds.width + 2;
             }
             int textHeight = e.gc.getFontMetrics().getHeight();
-            e.gc.drawText(activeDisplayName, textOffset, 0);
+            e.gc.drawText(activeDisplayName, textOffset, (e.height - textHeight) / 2);
             e.gc.setClipping((Rectangle) null);
         }
     }
