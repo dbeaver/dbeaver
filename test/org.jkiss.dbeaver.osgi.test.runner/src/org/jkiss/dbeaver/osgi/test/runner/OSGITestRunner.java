@@ -70,7 +70,7 @@ public class OSGITestRunner extends Runner {
 
     public OSGITestRunner(Class<?> testClass) {
         this.testClass = testClass;
-        if (this.getClass().getClassLoader().getName().equals("app")) {
+        if ("app".equals(this.getClass().getClassLoader().getName())) {
             this.productPath = findProduct();
             this.framework = initializeFramework();
         }
@@ -83,7 +83,7 @@ public class OSGITestRunner extends Runner {
 
     @Override
     public void run(RunNotifier notifier) {
-        if (this.getClass().getClassLoader().getName().equals("app")) {
+        if ("app".equals(this.getClass().getClassLoader().getName())) {
             runInsideOSGI();
         } else {
             launchInExistingOSGI(notifier);
