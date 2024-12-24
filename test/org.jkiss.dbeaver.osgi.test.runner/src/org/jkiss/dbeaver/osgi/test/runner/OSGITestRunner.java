@@ -63,15 +63,17 @@ public class OSGITestRunner extends Runner {
     private static final Log log = Log.getLog(OSGITestRunner.class);
     private static final String WORKSPACE_DIR = "../../../dbeaver-workspace/products";
     private final Class<?> testClass;
-    private final Framework framework;
-    private final Path productPath;
+    private Framework framework;
+    private Path productPath;
 
     private Bundle testBundle;
 
     public OSGITestRunner(Class<?> testClass) {
         this.testClass = testClass;
-        this.productPath = findProduct();
-        this.framework = initializeFramework();
+        if (this.getClass().getClassLoader().getName().equals("app")) {
+            this.productPath = findProduct();
+            this.framework = initializeFramework();
+        }
     }
 
     @Override
