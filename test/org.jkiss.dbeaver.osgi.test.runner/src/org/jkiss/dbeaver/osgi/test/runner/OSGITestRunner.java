@@ -109,7 +109,8 @@ public class OSGITestRunner extends Runner {
                         .getClassLoader()
                         .loadClass(field.getType().getName())
                         .getConstructor(Class.class);
-                    Object o = constructor.newInstance(testBundle.loadClass(testClass.getName()));
+                    Object o = constructor.newInstance(this.getClass()
+                        .getClassLoader().loadClass(testClass.getName()));
                     o.getClass().getDeclaredMethod("run", notifier.getClass()).invoke(
                         o,
                         notifier
