@@ -36,7 +36,6 @@ import org.osgi.framework.wiring.BundleWiring;
 import java.io.File;
 import java.io.FileInputStream;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -103,19 +102,17 @@ public class OSGITestRunner extends Runner {
 
     private void launchInExistingOSGI(RunNotifier notifier) {
         try {
-            for (Field field : testClass.getDeclaredFields()) {
-                if (field.isAnnotationPresent(RunnerProxy.class)) {
-                    Constructor<?> constructor = this.getClass()
-                        .getClassLoader()
-                        .loadClass(field.getType().getName())
-                        .getConstructor(Class.class);
-                    Object o = constructor.newInstance(this.getClass()
-                        .getClassLoader().loadClass(testClass.getName()));
-                    o.getClass().getDeclaredMethod("run", notifier.getClass()).invoke(
-                        o,
-                        notifier
-                    );
-                }
+            if (testClass.getAnnotation(RunnerProxy.class) != null) {
+                Constructor<?> constructor = this.getClass()
+                    .getClassLoader()
+                    .loadClass(testClass.getAnnotation(RunnerProxy.class).value().getName())
+                    .getConstructor(Class.class);
+                Object o = constructor.newInstance(this.getClass()
+                    .getClassLoader().loadClass(testClass.getName()));
+                o.getClass().getDeclaredMethod("run", notifier.getClass()).invoke(
+                    o,
+                    notifier
+                );
             }
         } catch (Throwable throwable) {
             log.error("An error occurred while running the test", throwable);
@@ -135,7 +132,7 @@ public class OSGITestRunner extends Runner {
                 null
             );
             launcher.start(bundle.getSymbolicName());
-            if (testClass.getAnnotation(RunWithProduct.class) != null) {
+            if (testClass.getAnnotation(RunnerProxy.class) != null) {
                 Constructor<?> proxy = testBundle.loadClass(testClass.getAnnotation(RunnerProxy.class).value().getName()).getConstructor(Class.class);
                 Object o = proxy.newInstance(testBundle.loadClass(testClass.getName()));
                 o.getClass().getDeclaredMethods()[0].invoke(
