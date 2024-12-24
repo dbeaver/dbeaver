@@ -116,9 +116,9 @@ public class SQLSemanticProcessor {
         try {
             Statement statement = parseQuery(dialect, query);
             return
-                statement instanceof Select &&
-                ((Select) statement).getSelectBody() instanceof PlainSelect &&
-                CommonUtils.isEmpty(((PlainSelect) ((Select) statement).getSelectBody()).getIntoTables());
+                statement instanceof Select select &&
+                select.getSelectBody() instanceof PlainSelect plainSelect &&
+                CommonUtils.isEmpty(plainSelect.getIntoTables());
         } catch (Throwable e) {
             //log.debug(e);
             return false;
@@ -145,9 +145,8 @@ public class SQLSemanticProcessor {
     public static String injectFiltersToQuery(DBRProgressMonitor monitor, final DBPDataSource dataSource, String sqlQuery, final DBDDataFilter dataFilter) {
         try {
             Statement statement = parseQuery(dataSource.getSQLDialect(), sqlQuery);
-            if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
-                PlainSelect select = (PlainSelect) ((Select) statement).getSelectBody();
-                if (patchSelectQuery(monitor, dataSource, select, dataFilter)) {
+            if (statement instanceof Select select && select.getSelectBody() instanceof PlainSelect plainSelect) {
+                if (patchSelectQuery(monitor, dataSource, plainSelect, dataFilter)) {
                     return statement.toString();
                 }
             }
@@ -166,7 +165,7 @@ public class SQLSemanticProcessor {
         return dataSource.getSQLDialect().getQueryGenerator().getWrappedFilterQuery(dataSource, sqlQuery, dataFilter);
     }
 
-    private static boolean patchSelectQuery(DBRProgressMonitor monitor, DBPDataSource dataSource, PlainSelect select, DBDDataFilter filter) throws JSQLParserException, DBException {
+    private static boolean patchSelectQuery(DBRProgressMonitor monitor, DBPDataSource dataSource, PlainSelect select, DBDDataFilter filter) throws DBException {
         // WHERE
         if (filter.hasConditions()) {
             for (DBDAttributeConstraint co : filter.getConstraints()) {
@@ -228,10 +227,9 @@ public class SQLSemanticProcessor {
     }
 
     private static boolean isDynamicAttribute(@Nullable DBSAttributeBase attribute) {
-        if (!(attribute instanceof DBDAttributeBinding)) {
+        if (!(attribute instanceof DBDAttributeBinding attributeBinding)) {
             return DBUtils.isDynamicAttribute(attribute);
         }
-        DBDAttributeBinding attributeBinding = ((DBDAttributeBinding) attribute);
         return DBUtils.isDynamicAttribute(attributeBinding.getAttribute());
     }
 
@@ -242,13 +240,13 @@ public class SQLSemanticProcessor {
             return true;
         }
 
-        if (attribute instanceof DBDAttributeBinding) {
-            attribute = ((DBDAttributeBinding) attribute).getMetaAttribute();
+        if (attribute instanceof DBDAttributeBinding attributeBinding) {
+            attribute = attributeBinding.getMetaAttribute();
         }
 
-        if (table != null && attribute instanceof DBCAttributeMetaData) {
+        if (table != null && attribute instanceof DBCAttributeMetaData attributeMetaData) {
             DBSEntityAttribute entityAttribute = null;
-            DBCEntityMetaData entityMetaData = ((DBCAttributeMetaData) attribute).getEntityMetaData();
+            DBCEntityMetaData entityMetaData = attributeMetaData.getEntityMetaData();
             if (entityMetaData != null) {
                 DBSEntity entity = DBUtils.getEntityFromMetaData(monitor, DBUtils.getDefaultContext(dataSource, true), entityMetaData);
                 if (entity != null) {
@@ -296,10 +294,11 @@ public class SQLSemanticProcessor {
     public static Table getConstraintTable(DBPDataSource dataSource, PlainSelect select, DBDAttributeConstraint constraint) {
         String constrTable;
         DBSAttributeBase ca = constraint.getAttribute();
-        if (ca instanceof DBDAttributeBinding) {
-            constrTable = ((DBDAttributeBinding) ca).getMetaAttribute().getEntityName();
-        } else if (ca instanceof DBSEntityAttribute) {
-            constrTable = ((DBSEntityAttribute) ca).getParentObject().getName();
+        if (ca instanceof DBDAttributeBinding binding) {
+            DBCAttributeMetaData metaAttribute = binding.getMetaAttribute();
+            constrTable = metaAttribute == null ? null : metaAttribute.getEntityName();
+        } else if (ca instanceof DBSEntityAttribute entityAttribute) {
+            constrTable = entityAttribute.getParentObject().getName();
         } else {
             return null;
         }
@@ -324,10 +323,10 @@ public class SQLSemanticProcessor {
 
     @Nullable
     public static Table getTableFromSelect(Select select) {
-        if (select.getSelectBody() instanceof PlainSelect) {
-            FromItem fromItem = ((PlainSelect) select.getSelectBody()).getFromItem();
-            if (fromItem instanceof Table) {
-                return (Table) fromItem;
+        if (select.getSelectBody() instanceof PlainSelect plainSelect) {
+            FromItem fromItem = plainSelect.getFromItem();
+            if (fromItem instanceof Table table) {
+                return table;
             }
         }
         return null;
@@ -335,9 +334,9 @@ public class SQLSemanticProcessor {
 
     @Nullable
     private static Table findTableInFrom(DBPDataSource dataSource, FromItem fromItem, String tableName) {
-        if (fromItem instanceof Table && 
-            DBUtils.getUnQuotedIdentifier(dataSource, tableName).equals(DBUtils.getUnQuotedIdentifier(dataSource, ((Table) fromItem).getName()))) {
-            return (Table) fromItem;
+        if (fromItem instanceof Table table &&
+            DBUtils.getUnQuotedIdentifier(dataSource, tableName).equals(DBUtils.getUnQuotedIdentifier(dataSource, table.getName()))) {
+            return table;
         }
         return null;
     }
@@ -345,14 +344,14 @@ public class SQLSemanticProcessor {
     @Nullable
     public static Table findTableByNameOrAlias(Select select, String tableName) {
         SelectBody selectBody = select.getSelectBody();
-        if (selectBody instanceof PlainSelect) {
-            FromItem fromItem = ((PlainSelect) selectBody).getFromItem();
-            if (fromItem instanceof Table && equalTables((Table) fromItem, tableName)) {
-                return (Table) fromItem;
+        if (selectBody instanceof PlainSelect plainSelect) {
+            FromItem fromItem = plainSelect.getFromItem();
+            if (fromItem instanceof Table table && equalTables(table, tableName)) {
+                return table;
             }
-            for (Join join : CommonUtils.safeCollection(((PlainSelect) selectBody).getJoins())) {
-                if (join.getRightItem() instanceof Table && equalTables((Table) join.getRightItem(), tableName)) {
-                    return (Table) join.getRightItem();
+            for (Join join : CommonUtils.safeCollection(plainSelect.getJoins())) {
+                if (join.getRightItem() instanceof Table table && equalTables(table, tableName)) {
+                    return table;
                 }
             }
         }

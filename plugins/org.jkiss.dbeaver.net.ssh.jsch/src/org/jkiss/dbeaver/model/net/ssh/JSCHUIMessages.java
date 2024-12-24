@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.model.net.ssh;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class JSCHUIMessages extends NLS {
 	static final String BUNDLE_NAME = "org.jkiss.dbeaver.model.net.ssh.JSCHUIMessages"; //$NON-NLS-1$
