@@ -18,46 +18,54 @@ package org.jkiss.dbeaver.model.data.hints.standard;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDCollection;
-import org.jkiss.dbeaver.model.data.DBDValueRow;
+import org.jkiss.dbeaver.model.data.DBDResultSetModel;
+import org.jkiss.dbeaver.model.data.hints.DBDAttributeHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
-import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
-import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
 import org.jkiss.dbeaver.model.data.hints.ValueHintText;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 
 import java.util.EnumSet;
 
 /**
- * Arrays hint provider
+ * Attribute status hint provider
  */
-public class ArrayHintProvider implements DBDValueHintProvider {
+public class AttributeStatusHintProvider implements DBDAttributeHintProvider {
 
     @Nullable
     @Override
-    public DBDValueHint[] getValueHint(
-        @NotNull DBDValueHintContext context,
+    public DBDValueHint[] getAttributeHints(
+        @NotNull DBDResultSetModel model,
         @NotNull DBDAttributeBinding attribute,
-        @NotNull DBDValueRow row,
-        @Nullable Object value,
         @NotNull EnumSet<DBDValueHint.HintType> types,
         int options
     ) {
-        if (!DBUtils.isNullValue(value) &&
-            !CommonUtils.isBitSet(options, OPTION_ROW_EXPANDED) &&
-            value instanceof DBDCollection collection
-        ) {
-            if (collection.size() > 1) {
-                return new DBDValueHint[] {
-                    new ValueHintText(
-                        !CommonUtils.isBitSet(options, OPTION_TOOLTIP) ? "[+" + (collection.size() - 1) + "]" : String.valueOf(collection.size()),
-                        "Size", null)
-                };
-            }
+        DBPDataSource dataSource = attribute.getDataSource();
+        String readOnlyStatus = model.getReadOnlyStatus(dataSource == null ? null : dataSource.getContainer());
+        if (readOnlyStatus == null) {
+            readOnlyStatus = DBExecUtils.getAttributeReadOnlyStatus(attribute, true);
         }
+
+        if (readOnlyStatus != null) {
+            return new DBDValueHint[] {
+                new ValueHintReadOnly(
+                    "Read-only: " + readOnlyStatus)
+            };
+        }
+
         return null;
     }
 
+    static class ValueHintReadOnly extends ValueHintText {
+
+        public ValueHintReadOnly(String text) {
+            super(text, null, null);
+        }
+
+        @Override
+        public int getHintOptions() {
+            return OPTION_READ_ONLY;
+        }
+    }
 }

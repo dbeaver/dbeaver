@@ -74,6 +74,10 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<DBDValueHint
         return getDescriptors();
     }
 
+    public List<ValueHintProviderDescriptor> getHintDescriptors(@NotNull DBDValueHintProvider.HintObject forObject) {
+        return getDescriptors().stream().filter(d -> d.getForObject() == forObject).toList();
+    }
+
     @NotNull
     @Override
     protected List<ValueHintProviderDescriptor> getDescriptors() {

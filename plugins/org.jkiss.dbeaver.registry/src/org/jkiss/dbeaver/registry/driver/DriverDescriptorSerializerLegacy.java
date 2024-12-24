@@ -49,6 +49,10 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
 
     public static final String DRIVERS_FILE_NAME = "drivers.xml"; //$NON-NLS-1$
 
+    private static final boolean isDistributed = DBWorkbench.isDistributed();
+    // In detached process we usually have just one driver
+    private static final boolean isDetachedProcess = DBWorkbench.getPlatform().getApplication().isDetachedProcess();
+
     private static final Log log = Log.getLog(DriverDescriptorSerializerLegacy.class);
 
     public void serializeDrivers(OutputStream os, List<DataSourceProviderDescriptor> providers) throws IOException {
@@ -180,9 +184,13 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                                 if (!CommonUtils.isEmpty(file.getVersion())) {
                                     xml.addAttribute(RegistryConstants.ATTR_VERSION, file.getVersion());
                                 }
+                                String normalizedFilePath = file.getFile().toString();
+                                if (isDistributed) {
+                                    normalizedFilePath = normalizedFilePath.replace('\\', '/');
+                                }
                                 xml.addAttribute(
                                     RegistryConstants.ATTR_PATH,
-                                    substitutePathVariables(pathSubstitutions, file.getFile().toString()));
+                                    substitutePathVariables(pathSubstitutions, normalizedFilePath));
                                 if (file.getFileCRC() != 0) {
                                     xml.addAttribute("crc", Long.toHexString(file.getFileCRC()));
                                 }
@@ -239,9 +247,6 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
         DriverDescriptor curDriver;
         DBPDriverLibrary curLibrary;
         private boolean isLibraryUpgraded = false;
-        private final boolean isDistributed = DBWorkbench.isDistributed();
-        // In detached process we usually have just one driver
-        private final boolean isDetachedProcess = DBWorkbench.getPlatform().getApplication().isDetachedProcess();
 
         public DriversParser(boolean provided) {
             this.providedDrivers = provided;
