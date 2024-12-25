@@ -36,13 +36,21 @@ public abstract class WSAbstractEvent implements WSEvent {
     private final String topicId;
     private final long timestamp = System.currentTimeMillis();
 
-    protected WSAbstractEvent(@NotNull WSEventType eventType) {
-        this(eventType, null, null);
+    protected WSAbstractEvent(
+        @NotNull String eventId,
+        @NotNull String topicId
+    ) {
+        this(eventId, topicId, null, null);
     }
 
-    protected WSAbstractEvent(@NotNull WSEventType eventType, @Nullable String sessionId, @Nullable String userId) {
-        this.id = eventType.getEventId();
-        this.topicId = eventType.getTopic().getTopicId();
+    protected WSAbstractEvent(
+        @NotNull String eventId,
+        @NotNull String topicId,
+        @Nullable String sessionId,
+        @Nullable String userId
+    ) {
+        this.id = eventId;
+        this.topicId = topicId;
         this.sessionId = sessionId;
         this.userId = userId;
     }

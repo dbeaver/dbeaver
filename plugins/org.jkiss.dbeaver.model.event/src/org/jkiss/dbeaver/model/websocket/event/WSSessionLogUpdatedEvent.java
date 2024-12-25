@@ -18,17 +18,19 @@ package org.jkiss.dbeaver.model.websocket.event;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.websocket.WSConstants;
 
 public class WSSessionLogUpdatedEvent extends WSAbstractEvent {
     private final MessageType messageType;
     private final String message;
 
-    public WSSessionLogUpdatedEvent(@NotNull WSEventType eventType,
-                      @Nullable String sessionId,
-                      @Nullable String userId,
-                      @NotNull MessageType messageType,
-                      @Nullable String message) {
-        super(eventType, sessionId, userId);
+    public WSSessionLogUpdatedEvent(
+        @Nullable String sessionId,
+        @Nullable String userId,
+        @NotNull MessageType messageType,
+        @Nullable String message
+    ) {
+        super("cb_session_log_updated", WSConstants.TOPIC_SESSION_LOG, sessionId, userId);
         this.messageType = messageType;
         this.message = message;
     }

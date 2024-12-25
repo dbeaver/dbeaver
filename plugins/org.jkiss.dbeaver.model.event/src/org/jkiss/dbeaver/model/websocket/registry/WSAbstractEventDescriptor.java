@@ -14,31 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.websocket.event;
+package org.jkiss.dbeaver.model.websocket.registry;
 
-
+import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.websocket.WSConstants;
+import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 
-public class WSTaskFinishedEvent extends WSAbstractEvent implements WSProjectEvent{
+abstract class WSAbstractEventDescriptor extends AbstractDescriptor {
     @NotNull
-    private final String taskId;
+    private final String id;
     @NotNull
-    private final String projectId;
+    protected final ObjectType implType;
 
-    public WSTaskFinishedEvent(@NotNull String taskId, @NotNull String projectId) {
-        super("cb_task_finished", WSConstants.TOPIC_TASK);
-        this.taskId = taskId;
-        this.projectId = projectId;
+    protected WSAbstractEventDescriptor(
+        @NotNull IConfigurationElement cfg
+    ) {
+        super(cfg);
+        this.id = cfg.getAttribute("id");
+        this.implType = new ObjectType(cfg, "class");
     }
 
     @NotNull
-    public String getTaskId() {
-        return taskId;
-    }
-
-    @NotNull
-    public String getProjectId() {
-        return projectId;
+    public String getId() {
+        return id;
     }
 }

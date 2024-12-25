@@ -17,8 +17,7 @@
 package org.jkiss.dbeaver.model.websocket.event.datasource;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.websocket.event.WSAbstractEvent;
-import org.jkiss.dbeaver.model.websocket.event.WSEventType;
+import org.jkiss.dbeaver.model.websocket.WSConstants;
 import org.jkiss.dbeaver.model.websocket.event.WSProjectResourceEvent;
 
 public class WSDataSourceDisconnectEvent extends WSProjectResourceEvent {
@@ -32,7 +31,7 @@ public class WSDataSourceDisconnectEvent extends WSProjectResourceEvent {
         @NotNull String sessionId,
         @NotNull String userId
     ) {
-        super(WSEventType.DATASOURCE_DISCONNECTED, sessionId, userId, projectId);
+        super("cb_datasource_disconnected", WSConstants.TOPIC_DATASOURCE_CONNECTION, sessionId, userId, projectId);
         this.connectionId = connectionId;
     }
 
