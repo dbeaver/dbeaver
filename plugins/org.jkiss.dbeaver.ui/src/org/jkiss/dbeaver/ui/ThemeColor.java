@@ -14,18 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.ui;
 
-public class UIFonts {
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-    /**
-     * Monospace font
-     */
-    public static final String DBEAVER_FONTS_MONOSPACE =  "org.jkiss.dbeaver.dbeaver.ui.fonts.monospace";
-    
-    /**
-     * Main font
-     */
-    public static final String DBEAVER_FONTS_MAIN_FONT =  "org.jkiss.dbeaver.dbeaver.ui.fonts.main";
-
+/**
+ * Theme color annotation
+ */
+@Target(value = {ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface ThemeColor {
+    String value();
 }
