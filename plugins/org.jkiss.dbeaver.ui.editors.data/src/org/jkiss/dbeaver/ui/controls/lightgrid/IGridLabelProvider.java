@@ -109,6 +109,9 @@ public interface IGridLabelProvider {
 
     Color getErrorForeground();
 
+    Color getHintForeground();
+
     Object getGridOption(String option);
 
+    Font getMainFontItalic();
 }

@@ -41,7 +41,6 @@ import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.window.IShellProvider;
@@ -1736,6 +1735,7 @@ public class UIUtils {
     }
 
     public static Point drawMessageOverControl(Control control, GC gc, String message, int offset) {
+        gc.setFont(BaseThemeSettings.instance.baseFont);
         Rectangle bounds = control.getBounds();
         Point textSize = gc.textExtent(message);
 
@@ -2302,7 +2302,7 @@ public class UIUtils {
     }
 
     public static Font getMonospaceFont() {
-        return PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getFontRegistry().get(UIFonts.DBEAVER_FONTS_MONOSPACE);
+        return BaseThemeSettings.instance.monospaceFont;
     }
 
     public static <T extends Control> T getParentOfType(Control control, Class<T> parentType) {
@@ -2359,26 +2359,6 @@ public class UIUtils {
         }
     }
 
-    public static void installAndUpdateMainFont(@NotNull Control control) {
-        final IPropertyChangeListener listener = event -> {
-            if (event.getProperty().equals(UIFonts.DBEAVER_FONTS_MAIN_FONT)) {
-                applyMainFont(control);
-            }
-        };
-
-        PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(listener);
-        control.addDisposeListener(e -> PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(listener));
-
-        applyMainFont(control);
-    }
-
-    public static void applyMainFont(@Nullable Control control) {
-        if (control == null || control.isDisposed() || mainFontIsDefault()) {
-            return;
-        }
-        applyMainFont(control, JFaceResources.getFont(UIFonts.DBEAVER_FONTS_MAIN_FONT));
-    }
-
     @Nullable
     public static Text recreateTextControl(@Nullable Text original, int style) {
         if (original == null || original.getStyle() == style) {
@@ -2417,7 +2397,27 @@ public class UIUtils {
         }
     }
 
-    private static void applyMainFont(@NotNull Control control, @NotNull Font font) {
+    public static void installAndUpdateMainFont(@NotNull Control control) {
+        BaseThemeSettings.instance.addPropertyListener(
+            UIFonts.DBEAVER_FONTS_MAIN_FONT,
+            s -> applyMainFont(control),
+            control
+        );
+
+        //applyMainFont(control);
+    }
+
+    public static void applyMainFont(@Nullable Control control) {
+        applyMainFont(control, BaseThemeSettings.instance.baseFont);
+    }
+
+    public static void applyMainFont(@Nullable Control control, @NotNull Font font) {
+        if (control == null || control.isDisposed() || mainFontIsDefault()) {
+            return;
+        }
+        if (control instanceof Composite comp) {
+            comp.layout();
+        }
         control.setFont(font);
 
         if (control instanceof Composite) {
