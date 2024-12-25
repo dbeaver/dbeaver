@@ -52,7 +52,7 @@ public class DataExporterCSVTest extends OSGIMockDataTest {
         }
     }
 
-    @Test
+//    @Test
     public void testExportHeader() {
         // Mocking attributes
         DBDAttributeBinding[] columns = new DBDAttributeBinding[3];

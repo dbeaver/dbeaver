@@ -83,7 +83,7 @@ public class OSGITestRunner extends Runner {
     @Override
     public void run(RunNotifier notifier) {
         if ("app".equals(this.getClass().getClassLoader().getName())) {
-            runInsideOSGI();
+            runInsideOSGI(notifier);
         } else {
             launchInExistingOSGI(notifier);
         }
@@ -103,13 +103,12 @@ public class OSGITestRunner extends Runner {
     private void launchInExistingOSGI(RunNotifier notifier) {
         try {
             if (testClass.getAnnotation(RunnerProxy.class) != null) {
-                Constructor<?> constructor = this.getClass()
+                Constructor<?> constructor = testClass
                     .getClassLoader()
                     .loadClass(testClass.getAnnotation(RunnerProxy.class).value().getName())
                     .getConstructor(Class.class);
-                Object o = constructor.newInstance(this.getClass()
-                    .getClassLoader().loadClass(testClass.getName()));
-                o.getClass().getDeclaredMethod("run", notifier.getClass()).invoke(
+                Object o = constructor.newInstance(testClass);
+                Arrays.stream(o.getClass().getMethods()).filter(it -> it.getName().equals("run")).findFirst().orElseThrow().invoke(
                     o,
                     notifier
                 );
@@ -119,7 +118,7 @@ public class OSGITestRunner extends Runner {
         }
     }
 
-    private void runInsideOSGI() {
+    private void runInsideOSGI(RunNotifier notifier) {
         try {
             framework.init();
             // Start the OSGi framework
@@ -135,7 +134,8 @@ public class OSGITestRunner extends Runner {
             if (testClass.getAnnotation(RunnerProxy.class) != null) {
                 Constructor<?> proxy = testBundle.loadClass(testClass.getAnnotation(RunnerProxy.class).value().getName()).getConstructor(Class.class);
                 Object o = proxy.newInstance(testBundle.loadClass(testClass.getName()));
-                o.getClass().getDeclaredMethods()[0].invoke(
+                Arrays.stream(o.getClass().getMethods()).filter(it -> it.getName().equals("run"))
+                    .findFirst().orElseThrow().invoke(
                     o,
                     testBundle.loadClass(RunNotifier.class.getName()).getConstructor().newInstance()
                 );

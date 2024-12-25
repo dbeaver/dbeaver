@@ -23,14 +23,13 @@ import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
-
-
 public class ParseSelectStmtTest extends OSGIMockDataTest {
     
     private static final String _selectStatementsSqlTextResourceName = "SelectStatements.sql.txt";

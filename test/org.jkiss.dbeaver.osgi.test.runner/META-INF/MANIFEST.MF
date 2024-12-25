@@ -11,10 +11,13 @@ Export-Package: org.jkiss.dbeaver.osgi.test.runner,
  org.jkiss.dbeaver.osgi.test.runner.annotation
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
- org.junit,
+ org.junit;visibility:=reexport,
  org.jkiss.dbeaver.headless,
- org.mockito.mockito-core,
+ org.mockito.mockito-core;visibility:=reexport,
  org.apache.felix.scr,
  org.jkiss.utils,
  com.google.gson,
- org.jkiss.dbeaver.model
+ org.jkiss.dbeaver.model,
+ org.objenesis;visibility:=reexport,
+ net.bytebuddy.byte-buddy;visibility:=reexport,
+ net.bytebuddy.byte-buddy-agent;visibility:=reexport

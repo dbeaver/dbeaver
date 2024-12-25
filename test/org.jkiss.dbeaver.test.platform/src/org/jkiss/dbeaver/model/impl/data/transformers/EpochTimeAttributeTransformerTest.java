@@ -32,8 +32,10 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.osgi.test.runner.OSGITestRunner;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -42,7 +44,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
-
+@RunWith(OSGITestRunner.class)
 public class EpochTimeAttributeTransformerTest extends OSGIMockDataTest {
     private static final String NANOS = "nanoseconds";
     private static final String MILLIS = "milliseconds";

@@ -115,7 +115,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
         useQuotes = quoteChar != ' ';
         quoteStrategy = QuoteStrategy.fromValue(CommonUtils.toString(properties.get(PROP_QUOTE_ALWAYS)));
 
-        if (headerPosition == null) {
+        if (headerPosition == null && properties.get(PROP_HEADER) != null) {
             headerPosition = CommonUtils.valueOf(HeaderPosition.class, String.valueOf(properties.get(PROP_HEADER)), HeaderPosition.top);
         }
 

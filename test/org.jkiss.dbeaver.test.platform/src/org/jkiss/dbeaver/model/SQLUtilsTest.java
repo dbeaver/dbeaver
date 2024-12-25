@@ -17,9 +17,12 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.osgi.test.runner.OSGITestRunner;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
+@RunWith(OSGITestRunner.class)
 public class SQLUtilsTest extends OSGIMockDataTest {
     @Test
     public void makeRegexFromLikeTest() {
