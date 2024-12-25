@@ -21,8 +21,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.security.user.*;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -105,7 +103,15 @@ public interface SMAdminController extends SMController {
 
     SMTeam findTeam(String teamId) throws DBException;
 
-    void createTeam(String teamId, String name, String description, String grantor) throws DBException;
+    /**
+     * Creates a new team with specified team id that will be in lower-case.
+     */
+    SMTeam createTeam(
+        @NotNull String teamId,
+        @Nullable String name,
+        @Nullable String description,
+        @NotNull String grantor
+    ) throws DBException;
 
     void updateTeam(String teamId, String name, String description) throws DBException;
 
