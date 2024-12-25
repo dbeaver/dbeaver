@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.erd.model.ERDNote;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.command.EntityAddCommand;
 import org.jkiss.dbeaver.erd.ui.command.EntityRemoveCommand;
+import org.jkiss.dbeaver.erd.ui.editor.ERDThemeSettings;
 import org.jkiss.dbeaver.erd.ui.figures.EntityDiagramFigure;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
@@ -82,10 +83,6 @@ public class DiagramPart extends PropertyAwarePart {
         }
     };
     private DelegatingLayoutManager delegatingLayoutManager;
-    private Font normalFont;
-    private Font boldFont;
-    private Font italicFont;
-    private Font boldItalicFont;
 
     public DiagramPart() {
         //default constructor
@@ -111,9 +108,7 @@ public class DiagramPart extends PropertyAwarePart {
      * Removes this EditPart as a command stack listener
      */
     @Override
-    public void deactivate()
-    {
-        resetFonts();
+    public void deactivate() {
         getViewer().getEditDomain().getCommandStack().removeCommandStackEventListener(stackListener);
         super.deactivate();
     }
@@ -121,17 +116,6 @@ public class DiagramPart extends PropertyAwarePart {
     @Override
     public void performRequest(Request request) {
         getDiagram().getModelAdapter().performPartRequest(this, request);
-    }
-
-    public void resetFonts()
-    {
-        UIUtils.dispose(boldFont);
-        UIUtils.dispose(italicFont);
-        UIUtils.dispose(boldItalicFont);
-        normalFont = null;
-        boldFont = null;
-        italicFont = null;
-        boldItalicFont = null;
     }
 
     @Override
@@ -161,36 +145,12 @@ public class DiagramPart extends PropertyAwarePart {
         return (EntityDiagram) getModel();
     }
 
-    public Font getNormalFont()
-    {
-        if (normalFont == null) {
-            normalFont = getViewer().getControl().getFont();
-        }
-        return normalFont;
+    public Font getNormalFont() {
+        return ERDThemeSettings.instance.diagramFont;
     }
 
-    public Font getBoldFont()
-    {
-        if (boldFont == null) {
-            boldFont = UIUtils.makeBoldFont(getNormalFont());
-        }
-        return boldFont;
-    }
-
-    public Font getItalicFont()
-    {
-        if (italicFont == null) {
-            italicFont = UIUtils.modifyFont(getNormalFont(), SWT.ITALIC);
-        }
-        return italicFont;
-    }
-
-    public Font getBoldItalicFont()
-    {
-        if (boldItalicFont == null) {
-            boldItalicFont = UIUtils.modifyFont(getNormalFont(), SWT.BOLD | SWT.ITALIC);
-        }
-        return boldItalicFont;
+    public Font getBoldFont() {
+        return ERDThemeSettings.instance.diagramFontBold;
     }
 
     /**
@@ -293,8 +253,7 @@ public class DiagramPart extends PropertyAwarePart {
         List<?> entityParts = getChildren();
 
         for (Object child : entityParts) {
-            if (child instanceof NodePart) {
-                NodePart entityPart = (NodePart) child;
+            if (child instanceof NodePart entityPart) {
                 IFigure entityFigure = entityPart.getFigure();
 
                 //if we don't find a node for one of the children then we should
@@ -323,8 +282,7 @@ public class DiagramPart extends PropertyAwarePart {
         List<?> nodeParts = getChildren();
 
         for (Object child : nodeParts) {
-            if (child instanceof NodePart) {
-                NodePart entityPart = (NodePart) child;
+            if (child instanceof NodePart entityPart) {
                 //now check whether we can find an entry in the tableToNodesMap
                 Rectangle bounds = entityPart.getBounds();
                 if (bounds == null) {

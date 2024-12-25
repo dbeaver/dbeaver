@@ -27,12 +27,9 @@ import org.eclipse.gef.palette.*;
 import org.eclipse.gef.tools.SelectionTool;
 import org.eclipse.gef.ui.parts.AbstractEditPartViewer;
 import org.eclipse.gef.ui.parts.ScrollingGraphicalViewer;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -41,8 +38,6 @@ import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.part.MultiPageEditorSite;
-import org.eclipse.ui.themes.ITheme;
-import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.*;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
@@ -72,12 +67,11 @@ import java.util.*;
  * error messages to
  * @author Serge Rider
  */
-public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPropertyChangeListener, DBPEventListener {
+public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements DBPEventListener {
     private static final Log log = Log.getLog(ERDGraphicalViewer.class);
 
-    private ERDEditorPart editor;
-	private ValidationMessageHandler messageHandler;
-    private IThemeManager themeManager;
+    private final ERDEditorPart editor;
+	private final ValidationMessageHandler messageHandler;
     private boolean loadContents = false;
 
     private static class DataSourceInfo {
@@ -96,9 +90,6 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
         this.editor = editor;
 		this.messageHandler = messageHandler;
 
-        themeManager = editor.getSite().getWorkbenchWindow().getWorkbench().getThemeManager();
-        themeManager.addPropertyChangeListener(this);
-
         setProperty(MouseWheelHandler.KeyGenerator.getKey(SWT.MOD1), MouseWheelZoomHandler.SINGLETON);
         setProperty(MouseWheelHandler.KeyGenerator.getKey(SWT.MOD2), MouseWheelHorizontalScrollHandler.SINGLETON);
     }
@@ -116,15 +107,19 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
         if (control != null) {
             ERDEditorAdapter.mapControl(control, editor);
             UIUtils.addFocusTracker(editor.getSite(), ERDUIConstants.ERD_CONTROL_ID, control);
+
+            ERDThemeSettings.instance.addPropertyListener(
+                ERDUIConstants.PROP_DIAGRAM_FONT,
+                s -> applyThemeSettings(),
+                control
+            );
+
             applyThemeSettings();
         }
     }
 
     @Override
     protected void handleDispose(DisposeEvent e) {
-        if (themeManager != null) {
-            themeManager.removePropertyChangeListener(this);
-        }
         if (getControl() != null) {
             ERDEditorAdapter.unmapControl(getControl());
         }
@@ -156,23 +151,9 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
 		messageHandler.reset();
 	}
 
-    @Override
-    public void propertyChange(PropertyChangeEvent event)
-    {
-        if (event.getProperty().equals(IThemeManager.CHANGE_CURRENT_THEME)
-            || event.getProperty().equals(ERDUIConstants.PROP_DIAGRAM_FONT))
-        {
-            applyThemeSettings();
-        }
-    }
-
     private void applyThemeSettings()
     {
-        ITheme currentTheme = themeManager.getCurrentTheme();
-        Font erdFont = currentTheme.getFontRegistry().get(ERDUIConstants.PROP_DIAGRAM_FONT);
-        if (erdFont != null) {
-            this.getControl().setFont(erdFont);
-        }
+        this.getControl().setFont(ERDThemeSettings.instance.diagramFont);
         editor.refreshDiagram(true, false);
 /*
         DiagramPart diagramPart = editor.getDiagramPart();
@@ -478,8 +459,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
                             if (erdAssociation != null) {
                                 erdEntity.removeAssociation(erdAssociation, true);
 
-                                if (erdAssociation.getTargetEntity() instanceof ERDEntity) {
-                                    ERDEntity refEntity = (ERDEntity) erdAssociation.getTargetEntity();
+                                if (erdAssociation.getTargetEntity() instanceof ERDEntity refEntity) {
                                     if (refEntity != null) {
                                         refEntity.removeReferenceAssociation(erdAssociation, true);
                                     }
@@ -532,8 +512,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
         //getEditor().getDiagramPart().getE
     }
 
-    private void handleDataSourceContainerChange(DBPEvent event, DBPDataSourceContainer object) {
-        DBPDataSourceContainer container = object;
+    private void handleDataSourceContainerChange(DBPEvent event, DBPDataSourceContainer container) {
         if (usedDataSources.containsKey(container) &&
             event.getAction() == DBPEvent.Action.OBJECT_UPDATE &&
             Boolean.FALSE.equals(event.getEnabled())) {
@@ -584,11 +563,11 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
             DefaultEditDomain editDomain = (DefaultEditDomain) getDomain();
             final ERDEditorPart editorPart = (ERDEditorPart)editDomain.getEditorPart();
             final GraphicalViewer viewer = editorPart.getViewer();
-            for (Object child : editorPart.getDiagramPart().getChildren()) {
+            for (EditPart child : editorPart.getDiagramPart().getChildren()) {
                 if (child instanceof EntityPart) {
                     if (((EntityPart)child).getEntity().getObject() == table) {
-                        viewer.reveal((EditPart) child);
-                        viewer.select((EditPart) child);
+                        viewer.reveal(child);
+                        viewer.select(child);
                         break;
                     }
                 }
@@ -599,11 +578,6 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
 
     /**
      * Handler that provides horizontal scrolling using mouse wheel.
-     *
-     * Copied from {@link org.eclipse.graphiti.ui.internal.util.gef.MouseWheelHorizontalScrollHandler}
-     *
-     * @implNote this implementation differs from the source, since scrolling direction is inverted.
-     * @see org.eclipse.graphiti.ui.internal.util.gef.MouseWheelHorizontalScrollHandler
      */
     private static class MouseWheelHorizontalScrollHandler implements MouseWheelHandler {
         public static final MouseWheelHandler SINGLETON = new MouseWheelHorizontalScrollHandler();
@@ -612,8 +586,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
         public void handleMouseWheel(Event event, EditPartViewer viewer) {
             if (viewer instanceof ScrollingGraphicalViewer) {
                 final Control control = viewer.getControl();
-                if (control instanceof FigureCanvas) {
-                    final FigureCanvas canvas = (FigureCanvas) control;
+                if (control instanceof FigureCanvas canvas) {
                     final ScrollBar hBar = canvas.getHorizontalBar();
 
                     canvas.scrollToX(hBar.getSelection() - (hBar.getIncrement() * event.count));
