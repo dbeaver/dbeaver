@@ -113,17 +113,6 @@ public interface DBPPlatformUI {
      * Asks for user credentials. Returns null if user canceled this action.
      */
     @Nullable
-    default DBPAuthInfo promptUserCredentials(
-        @Nullable String prompt,
-        @Nullable String userName,
-        @Nullable String userPassword,
-        boolean passwordOnly,
-        boolean showSavePassword
-    ) {
-        return promptUserCredentials(prompt, prompt, userName, userPassword, passwordOnly, showSavePassword);
-    }
-
-    @Nullable
     DBPAuthInfo promptUserCredentials(
         @Nullable String prompt,
         @Nullable String description,
@@ -131,19 +120,6 @@ public interface DBPPlatformUI {
         @Nullable String userPassword,
         boolean passwordOnly,
         boolean showSavePassword);
-
-    @Nullable
-    default DBPAuthInfo promptUserCredentials(
-        @Nullable String prompt,
-        @NotNull String userNameLabel,
-        @Nullable String userName,
-        @NotNull String passwordLabel,
-        @Nullable String userPassword,
-        boolean passwordOnly,
-        boolean showSavePassword
-    ) {
-        return promptUserCredentials(prompt, prompt, userNameLabel, userName, passwordLabel, userPassword, passwordOnly, showSavePassword);
-    }
 
     @Nullable
     DBPAuthInfo promptUserCredentials(

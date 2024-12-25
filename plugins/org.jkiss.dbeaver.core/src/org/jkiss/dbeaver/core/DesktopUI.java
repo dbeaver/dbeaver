@@ -452,7 +452,7 @@ public class DesktopUI extends ConsoleUserInterface {
                 final BaseAuthDialog authDialog = new BaseAuthDialog(shell, prompt, passwordOnly, showSavePassword);
                 authDialog.setUserNameLabel(userNameLabel);
                 authDialog.setPasswordLabel(passwordLabel);
-                authDialog.setDescription(description);
+                authDialog.setDescription(description == null ? prompt : description);
                 if (!passwordOnly) {
                     authDialog.setUserName(userName);
                 }
