@@ -104,12 +104,6 @@ public interface DBPPlatformUI {
     UserResponse showErrorStopRetryIgnore(String task, Throwable error, boolean queue);
 
     /**
-     * Notification agent
-     */
-    long getLongOperationTimeout();
-    void notifyAgent(String message, int status);
-
-    /**
      * Asks for user credentials. Returns null if user canceled this action.
      */
     @Nullable
