@@ -984,6 +984,13 @@
                 value="255, 228, 181">
             <description>%colorDefinition.org.jkiss.dbeaver.txn.color.transaction.background.description</description>
         </colorDefinition>
+        <colorDefinition
+                label="Read-only labels"
+                categoryId="org.eclipse.ui.workbenchMisc"
+                id="org.jkiss.dbeaver.color.readOnly.foreground"
+                value="244, 132, 0">
+            <description>Color for read-only notification labels and messages</description>
+        </colorDefinition>
 
         <!-- Colors for connection types -->
         <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.colors.connectionTypes.label" id="org.jkiss.dbeaver.ui.presentation.colors.connectionTypes">
