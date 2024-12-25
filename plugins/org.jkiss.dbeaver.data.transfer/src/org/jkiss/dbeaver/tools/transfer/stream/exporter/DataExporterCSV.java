@@ -43,6 +43,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Date;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * CSV Exporter
@@ -60,6 +62,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
     private static final String PROP_NULL_STRING = "nullString";
     private static final String PROP_FORMAT_NUMBERS = "formatNumbers";
     private static final String PROP_LINE_FEED_ESCAPE_STRING = "lineFeedEscapeString";
+    private final Pattern LINE_BREAK_REGEX = Pattern.compile("\\r\\n|\\r|\\n");
 
     private static final String DEF_QUOTE_CHAR = "\"";
     private boolean formatNumbers;
@@ -286,7 +289,10 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
         final boolean hasQuotes = useQuotes && value.indexOf(quoteChar) != -1;
 
         if (CommonUtils.isNotEmpty(lineFeedEscapeString)) {
-            value = value.replaceAll("\\r\\n|\\r|\\n", lineFeedEscapeString);
+            Matcher matcher = LINE_BREAK_REGEX.matcher(value);
+            if (matcher.find()) {
+                value = matcher.replaceAll(lineFeedEscapeString);
+            }
         }
 
         if (quoteStrategy == QuoteStrategy.ALL || (useQuotes && value.isEmpty())) {
