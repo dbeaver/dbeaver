@@ -22,10 +22,8 @@ package org.jkiss.dbeaver.erd.ui.figures;
 import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Insets;
 import org.eclipse.draw2d.geometry.Rectangle;
-import org.eclipse.jface.resource.ColorRegistry;
 import org.jkiss.dbeaver.erd.model.ERDEntity;
-import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.erd.ui.editor.ERDThemeSettings;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,9 +49,8 @@ public class AttributeListFigure extends Figure {
 */
         setLayoutManager(layout);
         setBorder(new ColumnFigureBorder());
-        ColorRegistry colorRegistry = UIUtils.getColorRegistry();
-        setBackgroundColor(colorRegistry.get(ERDUIConstants.COLOR_ERD_ATTR_BACKGROUND));
-        setForegroundColor(colorRegistry.get(ERDUIConstants.COLOR_ERD_ATTR_FOREGROUND));
+        setBackgroundColor(ERDThemeSettings.instance.attrBackground);
+        setForegroundColor(ERDThemeSettings.instance.attrForeground);
 
         setOpaque(true);
     }

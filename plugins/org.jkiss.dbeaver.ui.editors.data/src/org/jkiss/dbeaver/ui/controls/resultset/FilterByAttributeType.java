@@ -32,22 +32,6 @@ import org.jkiss.dbeaver.ui.controls.resultset.valuefilter.FilterValueEditDialog
 import java.util.Collection;
 
 enum FilterByAttributeType {
-    CLIPBOARD(ResultSetMessages.controls_resultset_viewer_action_filter_clipboard, UIIcon.FILTER_CLIPBOARD) {
-        @Override
-        Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
-        {
-            try {
-                Object value = ResultSetUtils.getAttributeValueFromClipboard(attribute);
-                if (operator == DBCLogicalOperator.LIKE && value instanceof String && ((String) value).indexOf('%') < 0) {
-                    return "%" + value + "%";
-                }
-                return value;
-            } catch (Exception e) {
-                log.debug("Error copying from clipboard", e);
-                return null;
-            }
-        }
-    },
     VALUE(ResultSetMessages.controls_resultset_viewer_action_filter_value, UIIcon.FILTER_VALUE) {
         @Override
         Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
@@ -93,6 +77,22 @@ enum FilterByAttributeType {
                 } else {
                     return null;
                 }
+            }
+        }
+    },
+    CLIPBOARD(ResultSetMessages.controls_resultset_viewer_action_filter_clipboard, UIIcon.FILTER_CLIPBOARD) {
+        @Override
+        Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
+        {
+            try {
+                Object value = ResultSetUtils.getAttributeValueFromClipboard(attribute);
+                if (operator == DBCLogicalOperator.LIKE && value instanceof String && ((String) value).indexOf('%') < 0) {
+                    return "%" + value + "%";
+                }
+                return value;
+            } catch (Exception e) {
+                log.debug("Error copying from clipboard", e);
+                return null;
             }
         }
     },

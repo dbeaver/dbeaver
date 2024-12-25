@@ -14,19 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui;
+package org.jkiss.dbeaver.ui.controls.querylog;
+
+import org.eclipse.swt.graphics.Color;
+import org.jkiss.dbeaver.ui.BaseEditorColors;
+import org.jkiss.dbeaver.ui.ThemeColor;
+import org.jkiss.dbeaver.ui.ThemeListener;
 
 /**
- * Colors for various connection-related objects
+ * Theme settings
  */
-public interface BaseEditorColors {
-    String COLOR_SUCCESS = "org.jkiss.dbeaver.txn.color.committed.background";  //= new RGB(0xBD, 0xFE, 0xBF); //$NON-NLS-1$
-    String COLOR_ERROR = "org.jkiss.dbeaver.txn.color.reverted.background";  // = new RGB(0xFF, 0x63, 0x47); //$NON-NLS-1$
-    String COLOR_WARNING = "org.jkiss.dbeaver.txn.color.transaction.background";  // = new RGB(0xFF, 0xE4, 0xB5); //$NON-NLS-1$
+public class QueryLogThemeSettings extends ThemeListener {
+
+    @ThemeColor(BaseEditorColors.COLOR_UNCOMMITTED)
+    public volatile Color colorUncommitted;
+    @ThemeColor(BaseEditorColors.COLOR_TRANSACTION)
+    public volatile Color colorTransaction;
+    @ThemeColor(BaseEditorColors.COLOR_REVERTED)
+    public volatile Color colorReverted;
 
 
-    String COLOR_UNCOMMITTED = COLOR_SUCCESS;
-    String COLOR_REVERTED = COLOR_ERROR;
-    String COLOR_TRANSACTION = COLOR_WARNING;
-
+    public static final QueryLogThemeSettings instance = new QueryLogThemeSettings();
 }

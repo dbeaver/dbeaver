@@ -19,15 +19,12 @@ package org.jkiss.dbeaver.ui.navigator.database;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -46,6 +43,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -73,9 +71,6 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
     private static final int ELEMENT_MARGIN = 3;
     private static final int PERCENT_FILL_WIDTH = 50;
 
-    private static final String HOST_NAME_FOREGROUND_COLOR = "org.jkiss.dbeaver.ui.navigator.node.foreground";
-    private static final String TABLE_STATISTICS_BACKGROUND_COLOR = "org.jkiss.dbeaver.ui.navigator.node.statistics.background";
-
     // Disabled because of performance and a couple of glitches
     // Sometimes hover bg remains after mouse move
     private static final boolean PAINT_ACTION_HOVER = false;
@@ -88,26 +83,9 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
 
     private static final Map<DBSObject, StatReadJob> statReaders = new IdentityHashMap<>();
 
-    private final IPropertyChangeListener themeChangeListener;
-    private Font fontItalic;
-    private Color hostNameColor;
-    private Color statisticsFrameColor;
 
     public StatisticsNavigatorNodeRenderer(INavigatorModelView view) {
         this.view = view;
-        this.themeChangeListener = e -> {
-            final ITheme theme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
-            fontItalic = theme.getFontRegistry().getItalic(DatabaseNavigatorLabelProvider.TREE_TABLE_FONT);
-            hostNameColor = theme.getColorRegistry().get(HOST_NAME_FOREGROUND_COLOR);
-            statisticsFrameColor = theme.getColorRegistry().get(TABLE_STATISTICS_BACKGROUND_COLOR);
-        };
-        this.themeChangeListener.propertyChange(null);
-
-        PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
-
-        view.getNavigatorViewer().getControl().addDisposeListener(e -> {
-            PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeChangeListener);
-        });
     }
 
     public INavigatorModelView getView() {
@@ -239,12 +217,12 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
         Tree tree = (Tree) event.widget;
 
         // Frame
-        gc.setForeground(statisticsFrameColor);
+        gc.setForeground(NavigatorThemeSettings.instance.statisticsFrameColor);
         gc.drawRectangle(bounds.x + bounds.width - PERCENT_FILL_WIDTH, bounds.y + 1, PERCENT_FILL_WIDTH, bounds.height - 3);
 
         // Bar
         int width = Math.max((int) Math.ceil((PERCENT_FILL_WIDTH - 3) * percentFull / 100.0), 1);
-        gc.setBackground(statisticsFrameColor);
+        gc.setBackground(NavigatorThemeSettings.instance.statisticsFrameColor);
         gc.fillRectangle(bounds.x + bounds.width - PERCENT_FILL_WIDTH, bounds.y + 3, width, bounds.height - 6);
 
         // Text
@@ -264,12 +242,13 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
             return;
         }
 
+        bounds.x += 5;
         Color foreground = gc.getForeground();
         Font font = gc.getFont();
 
         try {
-            gc.setForeground(hostNameColor);
-            gc.setFont(fontItalic);
+            gc.setForeground(NavigatorThemeSettings.instance.hintColor);
+            gc.setFont(BaseThemeSettings.instance.baseFontItalic);
 
             drawTextClipped(gc, text, bounds);
         } finally {

@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.search.internal;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class UISearchMessages extends NLS {
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.search.internal.UISearchMessages"; //$NON-NLS-1$
