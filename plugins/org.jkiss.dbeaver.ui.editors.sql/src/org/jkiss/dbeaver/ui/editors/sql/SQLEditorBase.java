@@ -568,7 +568,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
 
     @Override
     public void doSave(IProgressMonitor progressMonitor) {
-        super.doSave(progressMonitor);
+        try {
+            super.doSave(progressMonitor);
+        } catch (Exception e) {
+            log.error("Error saving SQL editor");
+        }
 
         handleInputChange(getEditorInput());
     }

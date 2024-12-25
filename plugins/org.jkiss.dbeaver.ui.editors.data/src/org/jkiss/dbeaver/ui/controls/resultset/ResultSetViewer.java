@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.hints.DBDCellHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
@@ -83,6 +84,7 @@ import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.actions.DisabledLabelAction;
 import org.jkiss.dbeaver.ui.controls.TabFolderReorder;
 import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
 import org.jkiss.dbeaver.ui.controls.VerticalButton;
@@ -241,7 +243,7 @@ public class ResultSetViewer extends Viewer
     // Theme listener
     private IPropertyChangeListener themeChangeListener;
     private final AbstractJob themeUpdateJob;
-    private long lastThemeUpdateTime;
+    private volatile long lastThemeUpdateTime;
 
     private volatile boolean nextSegmentReadingBlocked;
 
@@ -441,15 +443,15 @@ public class ResultSetViewer extends Viewer
                         if (!getControl().isDisposed()) {
                             applyCurrentPresentationThemeSettings();
                         }
+                        lastThemeUpdateTime = 0;
                     });
-                    lastThemeUpdateTime = System.currentTimeMillis();
                 }
                 return Status.OK_STATUS;
             }
         };
         themeUpdateJob.setSystem(true);
         themeUpdateJob.setUser(false);
-        scheduleThemeUpdate();
+        applyCurrentPresentationThemeSettings();
 
         themeChangeListener = e -> scheduleThemeUpdate();
         PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
@@ -471,24 +473,16 @@ public class ResultSetViewer extends Viewer
         UIUtils.applyMainFont(presentationSwitchFolder);
         UIUtils.applyMainFont(panelSwitchFolder);
 
-        if (activePresentation instanceof AbstractPresentation) {
+        if (activePresentation instanceof AbstractPresentation abstractPresentation) {
             ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
-            ((AbstractPresentation) activePresentation).applyThemeSettings(currentTheme);
+            abstractPresentation.applyThemeSettings(currentTheme);
         }
     }
 
     private void scheduleThemeUpdate() {
-        final long currentTime = System.currentTimeMillis();
-        final long elapsedTime = currentTime - lastThemeUpdateTime;
-
-        if (!themeUpdateJob.isCanceled()) {
-            themeUpdateJob.cancel();
-        }
-
-        if (lastThemeUpdateTime > 0 && elapsedTime < THEME_UPDATE_DELAY_MS) {
-            themeUpdateJob.schedule(THEME_UPDATE_DELAY_MS - elapsedTime);
-        } else {
-            themeUpdateJob.schedule();
+        if (lastThemeUpdateTime == 0) {
+            lastThemeUpdateTime = System.currentTimeMillis();
+            themeUpdateJob.schedule(THEME_UPDATE_DELAY_MS);
         }
     }
 
@@ -1709,10 +1703,10 @@ public class ResultSetViewer extends Viewer
         // Check that we could have hints
         boolean needRefresh = false;
         Object cellValue = model.getCellValue(attr, row, rowIndexes, false);
-        List<DBDValueHintProvider> hintProviders = model.getHintProviders(attr);
-        for (DBDValueHintProvider provider : hintProviders) {
-            DBDValueHint[] hints = provider.getValueHint(
-                model.getHintContext(),
+        List<DBDCellHintProvider> hintProviders = model.getHintContext().getCellHintProviders(attr);
+        for (DBDCellHintProvider provider : hintProviders) {
+            DBDValueHint[] hints = provider.getCellHints(
+                model,
                 attr,
                 row,
                 cellValue,
@@ -1989,7 +1983,7 @@ public class ResultSetViewer extends Viewer
         if (executionContext != null &&
             (executionContext.getDataSource().getContainer().isConnectionReadOnly() ||
             executionContext.getDataSource().getInfo().isReadOnlyData() ||
-            isUniqueKeyUndefinedButRequired(executionContext)))
+            model.isUniqueKeyUndefinedButRequired(executionContext.getDataSource().getContainer())))
         {
             return true;
         }
@@ -2608,46 +2602,18 @@ public class ResultSetViewer extends Viewer
             !executionContext.isConnected() ||
             !executionContext.getDataSource().getContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_DATA) ||
             executionContext.getDataSource().getInfo().isReadOnlyData() ||
-            isUniqueKeyUndefinedButRequired(executionContext);
+            model.isUniqueKeyUndefinedButRequired(executionContext.getDataSource().getContainer());
     }
 
     @Override
     public String getReadOnlyStatus() {
-        if (model.isUpdateInProgress()) {
-            return "Update in progress";
-        }
         if (!(activePresentation instanceof IResultSetEditor) || (decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_EDIT) == 0) {
             return "Active presentation doesn't support data edit";
         }
 
         DBCExecutionContext executionContext = getExecutionContext();
-        if (executionContext == null || !executionContext.isConnected()) {
-            return "No connection to database";
-        }
-        if (executionContext.getDataSource().getContainer().isConnectionReadOnly()) {
-            return "Connection is in read-only state";
-        }
-        if (executionContext.getDataSource().getInfo().isReadOnlyData()) {
-            return "Read-only data container";
-        }
-        if (!executionContext.getDataSource().getContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_DATA)) {
-            return "Data edit restricted";
-        }
-        if (isUniqueKeyUndefinedButRequired(executionContext)) {
-            return "No unique key defined";
-        }
-        return null;
-    }
-
-    private boolean isUniqueKeyUndefinedButRequired(@NotNull DBCExecutionContext context) {
-        final DBPPreferenceStore store = context.getDataSource().getContainer().getPreferenceStore();
-
-        if (store.getBoolean(ResultSetPreferences.RS_EDIT_DISABLE_IF_KEY_MISSING)) {
-            final DBDRowIdentifier identifier = model.getDefaultRowIdentifier();
-            return identifier == null || !identifier.isValidIdentifier();
-        }
-
-        return false;
+        return model.getReadOnlyStatus(executionContext == null ?
+            null : executionContext.getDataSource().getContainer());
     }
 
     /**
@@ -3080,25 +3046,16 @@ public class ResultSetViewer extends Viewer
     private void fillAttributeHintsMenu(IMenuManager menuManager, DBDAttributeBinding attr, ResultSetRow row) {
         Object cellValue = getModel().getCellValue(attr, row);
         Map<DBDValueHint, UIPropertyConfiguratorDescriptor> configurators = new LinkedHashMap<>();
-        for (ValueHintProviderDescriptor hd : ValueHintRegistry.getInstance().getHintDescriptors()) {
-            menuManager.add(new HintEnablementAction(this, hd));
-
-            DBDValueHint[] valueHint = hd.getInstance().getValueHint(
-                getModel().getHintContext(),
+        for (DBDValueHintProvider.HintObject ho : DBDValueHintProvider.HintObject.values()) {
+            menuManager.add(new Separator());
+            fillHintItems(
+                ho,
+                menuManager,
                 attr,
                 row,
+                ValueHintRegistry.getInstance().getHintDescriptors(ho),
                 cellValue,
-                EnumSet.of(DBDValueHint.HintType.STRING),
-                DBDValueHintProvider.OPTION_APPROXIMATE);
-            if (valueHint == null) {
-                continue;
-            }
-            for (DBDValueHint hint : valueHint) {
-                UIPropertyConfiguratorDescriptor configurator = UIPropertyConfiguratorRegistry.getInstance().getDescriptor(hint);
-                if (configurator != null) {
-                    configurators.put(hint, configurator);
-                }
-            }
+                configurators);
         }
 
         if (!configurators.isEmpty()) {
@@ -3107,6 +3064,51 @@ public class ResultSetViewer extends Viewer
                 menuManager.add(new HintConfigurationAction(this, attr, entry.getKey(), entry.getValue()));
             }
         }
+    }
+
+    private void fillHintItems(
+        DBDValueHintProvider.HintObject ho,
+        IMenuManager menuManager,
+        DBDAttributeBinding attr,
+        ResultSetRow row,
+        List<ValueHintProviderDescriptor> hdList,
+        Object cellValue,
+        Map<DBDValueHint, UIPropertyConfiguratorDescriptor> configurators
+    ) {
+        if (hdList.isEmpty()) {
+            return;
+        }
+        menuManager.add(new DisabledLabelAction(getHintObjectLabel(ho) + " hints"));
+        for (ValueHintProviderDescriptor hd : hdList) {
+            menuManager.add(new HintEnablementAction(this, hd));
+
+            if (hd.getInstance() instanceof DBDCellHintProvider chp) {
+                DBDValueHint[] valueHint = chp.getCellHints(
+                    getModel(),
+                    attr,
+                    row,
+                    cellValue,
+                    EnumSet.of(DBDValueHint.HintType.STRING),
+                    DBDValueHintProvider.OPTION_APPROXIMATE);
+                if (valueHint == null) {
+                    continue;
+                }
+                for (DBDValueHint hint : valueHint) {
+                    UIPropertyConfiguratorDescriptor configurator = UIPropertyConfiguratorRegistry.getInstance().getDescriptor(hint);
+                    if (configurator != null) {
+                        configurators.put(hint, configurator);
+                    }
+                }
+            }
+        }
+    }
+
+    private static @NotNull String getHintObjectLabel(DBDValueHintProvider.HintObject ho) {
+        return switch (ho) {
+            case CELL -> "Cell";
+            case COLUMN -> "Column";
+            case ROW -> "Row";
+        };
     }
 
     private void fillVirtualModelMenu(@NotNull IMenuManager vmMenu, @Nullable DBDAttributeBinding attr, @Nullable ResultSetRow row, ResultSetValueController valueController) {
@@ -3483,22 +3485,20 @@ public class ResultSetViewer extends Viewer
                         // Value filters are available only if certain cell is selected
                         continue;
                     }
-                    MenuManager subMenu = null;
-                    //filtersMenu.add(new Separator());
                     if (type.getValue(this, attribute, DBCLogicalOperator.EQUALS, true) == null) {
                         // Null cell value - no operators can be applied
                         continue;
                     }
+                    boolean hasItems = false;
                     for (DBCLogicalOperator operator : operators) {
                         if (operator.getArgumentCount() > 0) {
-                            if (subMenu == null) {
-                                subMenu = new MenuManager(type.title, type.icon, type.name());
+                            if (!hasItems) {
+                                filtersMenu.add(new Separator());
+                                filtersMenu.add(new EmptyAction(type.title));
                             }
-                            subMenu.add(new FilterByAttributeAction(this, operator, type, attribute));
+                            hasItems = true;
+                            filtersMenu.add(new FilterByAttributeAction(this, operator, type, attribute));
                         }
-                    }
-                    if (subMenu != null) {
-                        filtersMenu.add(subMenu);
                     }
                 }
                 filtersMenu.add(new Separator());

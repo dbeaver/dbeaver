@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.debug.internal;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class PostgreDebugCoreMessages extends NLS {
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.postgresql.debug.internal.PostgreDebugCoreMessages"; //$NON-NLS-1$

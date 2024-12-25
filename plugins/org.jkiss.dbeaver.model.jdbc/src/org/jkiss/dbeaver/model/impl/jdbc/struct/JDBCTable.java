@@ -148,8 +148,10 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         // Some criteria doesn't work without alias
         // (e.g. structured attributes in Oracle or composite types in PostgreSQL requires table alias)
         String tableAlias = null;
+        String tableFullName = getTableName();
         if (needAliasInSelect(dataFilter, rowIdAttribute, dataSource)) {
-            tableAlias = DEFAULT_TABLE_ALIAS;
+            SQLDialect sqlDialect = SQLUtils.getDialectFromObject(this);
+            tableAlias = SQLUtils.generateEntityAlias(this, s -> sqlDialect.getKeywordType(s) != null);
         }
 
         if (rowIdAttribute != null && tableAlias == null) {
@@ -160,7 +162,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         StringBuilder query = new StringBuilder(100);
         query.append("SELECT ");
         appendSelectSource(monitor, query, tableAlias, rowIdAttribute);
-        query.append(" FROM ").append(getTableName());
+        query.append(" FROM ").append(tableFullName);
         if (tableAlias != null) {
             if (dataSource.getSQLDialect().supportsAsKeywordBeforeAliasInFromClause()) {
                 query.append(" AS");

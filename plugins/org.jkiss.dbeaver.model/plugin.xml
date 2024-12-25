@@ -204,10 +204,12 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataHintProvider">
-        <hintProvider class="org.jkiss.dbeaver.model.data.hints.standard.ArrayHintProvider" id="array-size" label="%hints.array-size.label" description="%hints.array-size.description">
+        <hintProvider id="attr-keys" for="column" class="org.jkiss.dbeaver.model.data.hints.standard.AttributeKeysHintProvider" label="%hints.attr-keys.label" description="%hints.attr-keys.description"/>
+        <hintProvider id="attr-status" for="column" class="org.jkiss.dbeaver.model.data.hints.standard.AttributeStatusHintProvider" label="%hints.attr-status.label" description="%hints.attr-status.description"/>
+        <hintProvider id="array-size" for="cell" class="org.jkiss.dbeaver.model.data.hints.standard.ArrayCellHintProvider" label="%hints.array-size.label" description="%hints.array-size.description">
             <supports kind="ARRAY"/>
         </hintProvider>
-        <hintProvider class="org.jkiss.dbeaver.model.data.hints.standard.BinaryHintProvider" id="binary-size" label="Binary data" description="Shows size of binary value">
+        <hintProvider id="binary-size" for="cell" class="org.jkiss.dbeaver.model.data.hints.standard.BinaryCellHintProvider" label="Binary data" description="Shows size of binary value">
             <supports kind="BINARY"/>
         </hintProvider>
     </extension>

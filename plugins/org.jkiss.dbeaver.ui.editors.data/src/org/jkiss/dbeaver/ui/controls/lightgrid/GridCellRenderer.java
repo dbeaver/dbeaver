@@ -237,7 +237,7 @@ public class GridCellRenderer extends AbstractRenderer {
                         );
                     }
 
-                    renderHints(gc, bounds, col, row, cellInfo, text, cellInfo.background, x, textTopPos, focus, hover);
+                    renderHints(gc, bounds, col, row, cellInfo, selected, text, cellInfo.background, x, textTopPos, focus, hover);
 
                     break;
                 }
@@ -267,6 +267,7 @@ public class GridCellRenderer extends AbstractRenderer {
         IGridColumn col,
         IGridRow row,
         IGridContentProvider.CellInformation cellInfo,
+        boolean selected,
         String text,
         Color background,
         int x,
@@ -293,12 +294,22 @@ public class GridCellRenderer extends AbstractRenderer {
                 if (!CommonUtils.isEmpty(hintText)) {
                     textHintRendered = true;
                     if (textSize.x < bounds.width - LEFT_MARGIN) {
-                        final Color disabledForeground = getDisabledForeground(cellInfo);
+                        final Color foreground;
 
                         if (hint.isError()) {
-                            gc.setForeground(grid.getLabelProvider().getErrorForeground());
+                            foreground = grid.getLabelProvider().getErrorForeground();
                         } else {
-                            gc.setForeground(disabledForeground);
+                            if (!selected) {
+                                foreground = grid.getLabelProvider().getHintForeground();
+                            } else {
+                                foreground = cellInfo.foreground;
+                            }
+                        }
+                        gc.setForeground(foreground);
+                        if (selected) {
+                            gc.setFont(grid.getLabelProvider().getMainFontItalic());
+                        } else {
+                            //gc.setFont(ResultSetThemeSettings.instance.resultSetFont);
                         }
                         gc.drawString(
                             hintText,
@@ -388,8 +399,8 @@ public class GridCellRenderer extends AbstractRenderer {
             if (hintIcon != null) {
                 Image hintImage = DBeaverIcons.getImage(hintIcon);
                 Rectangle iconSize = hintImage.getBounds();
-                if (y >= cellOrigin.y &&
-                    y <= cellOrigin.y + grid.getItemHeight() &&
+                if (y >= cellOrigin.y + 4 &&
+                    y <= cellOrigin.y + grid.getItemHeight() - 4 &&
                     x >= cellOrigin.x + column.getWidth() - 4 - iconsWidth - iconSize.width &&
                     x <= cellOrigin.x + column.getWidth() - 4) {
                     return true;
