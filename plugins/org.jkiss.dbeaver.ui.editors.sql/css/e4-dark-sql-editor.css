@@ -1,0 +1,29 @@
+ IEclipsePreferences#org-eclipse-ui-workbench:dbeaver-sql-editor {
+        preferences:
+            'org.jkiss.dbeaver.sql.editor.color.schema.foreground=204,155,117'
+            'org.jkiss.dbeaver.sql.editor.color.column.derived.foreground=0,184,184'
+            'org.jkiss.dbeaver.sql.editor.color.column.foreground=0,184,184'
+            'org.jkiss.dbeaver.sql.editor.color.table.alias.foreground=183,136,211'
+            'org.jkiss.dbeaver.sql.editor.color.table.foreground=183,136,211'
+            'org.jkiss.dbeaver.sql.editor.color.composite.field.foreground=215,185,140'
+            'org.jkiss.dbeaver.sql.editor.color.semanticError.foreground=177,155,155'
+
+            'org.jkiss.dbeaver.sql.editor.color.text.foreground=158,158,158'
+            'org.jkiss.dbeaver.sql.editor.color.text.background=0,0,0'
+            'org.jkiss.dbeaver.sql.editor.color.disabled.background=0,0,0'
+            'org.jkiss.dbeaver.sql.editor.color.keyword.foreground=115,158,202'
+            'org.jkiss.dbeaver.sql.editor.color.datatype.foreground=193,170,108'
+            'org.jkiss.dbeaver.sql.editor.color.function.foreground=193,170,108'
+            'org.jkiss.dbeaver.sql.editor.color.string.foreground=202,197,128'
+            'org.jkiss.dbeaver.sql.editor.color.number.foreground=192,192,192'
+            'org.jkiss.dbeaver.sql.editor.color.comment.foreground=102,151,104'
+            'org.jkiss.dbeaver.sql.editor.color.delimiter.foreground=238,204,100'
+            'org.jkiss.dbeaver.sql.editor.color.parameter.foreground=126,186,211'
+            'org.jkiss.dbeaver.sql.editor.color.sqlVariable.foreground=126,186,211'
+            'org.jkiss.dbeaver.sql.editor.color.command.foreground=211,186,211'
+
+            'org.jkiss.dbeaver.sql.plan.view.color.tablescan.background=100,0,0'
+            'org.jkiss.dbeaver.sql.plan.view.color.tablescan.foreground=192,192,192'
+            'org.jkiss.dbeaver.sql.plan.view.color.indexscan.background=0,100,0'
+            'org.jkiss.dbeaver.sql.plan.view.color.indexscan.foreground=192,192,192'
+}

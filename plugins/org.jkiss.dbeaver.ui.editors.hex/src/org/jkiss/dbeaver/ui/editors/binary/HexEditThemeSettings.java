@@ -14,18 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui;
+package org.jkiss.dbeaver.ui.editors.binary;
 
-public class UIFonts {
+import org.eclipse.swt.graphics.Color;
+import org.jkiss.dbeaver.ui.ThemeColor;
+import org.jkiss.dbeaver.ui.ThemeListener;
 
-    /**
-     * Monospace font
-     */
-    public static final String DBEAVER_FONTS_MONOSPACE =  "org.jkiss.dbeaver.dbeaver.ui.fonts.monospace";
-    
-    /**
-     * Main font
-     */
-    public static final String DBEAVER_FONTS_MAIN_FONT =  "org.jkiss.dbeaver.dbeaver.ui.fonts.main";
+/**
+ * Theme settings
+ */
+public class HexEditThemeSettings extends ThemeListener {
 
+    @ThemeColor("org.jkiss.dbeaver.hex.editor.color.caret")
+    public volatile Color colorCaretLine;
+    @ThemeColor("org.jkiss.dbeaver.hex.editor.color.text")
+    public volatile Color colorText;
+
+    public static final HexEditThemeSettings instance = new HexEditThemeSettings();
 }

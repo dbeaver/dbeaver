@@ -29,7 +29,6 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.source.SourceViewer;
-import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -156,6 +155,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -296,20 +296,8 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
     };
-    private final IPropertyChangeListener themeChangeListener = e -> {
-        final Font font = JFaceResources.getFont(UIFonts.DBEAVER_FONTS_MAIN_FONT);
-        if (resultTabs != null) {
-            resultTabs.setFont(font);
-        }
-        if (presentationSwitchFolder != null) {
-            for (VerticalButton button : presentationSwitchFolder.getItems()) {
-                button.setFont(font);
-            }
-        }
-    };
 
     public SQLEditor() {
-        PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
     }
 
     public void setResultSetAutoFocusEnabled(boolean value) {
@@ -1084,7 +1072,23 @@ public class SQLEditor extends SQLEditorBase implements
 
         // Update controls
         UIExecutionQueue.queueExec(this::onDataSourceChange);
-        themeChangeListener.propertyChange(null);
+
+        Consumer<String> fontUpdater = s -> {
+            final Font font = BaseThemeSettings.instance.baseFont;
+            if (resultTabs != null) {
+                resultTabs.setFont(font);
+            }
+            if (presentationSwitchFolder != null) {
+                for (VerticalButton button : presentationSwitchFolder.getItems()) {
+                    button.setFont(font);
+                }
+            }
+        };
+        BaseThemeSettings.instance.addPropertyListener(
+            UIFonts.DBEAVER_FONTS_MAIN_FONT,
+            fontUpdater,
+            parent);
+        fontUpdater.accept(null);
 
         if (transactionStatusUpdateJob == null) {
             synchronized (this) {
@@ -3166,7 +3170,6 @@ public class SQLEditor extends SQLEditorBase implements
             deleteFileIfEmpty(sqlFile);
         }
 
-        PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeChangeListener);
         UIUtils.dispose(editorImage);
         baseEditorImage = null;
         editorImage = null;
