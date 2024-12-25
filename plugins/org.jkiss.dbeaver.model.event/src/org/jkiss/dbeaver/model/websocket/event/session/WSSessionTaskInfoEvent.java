@@ -35,7 +35,7 @@ public class WSSessionTaskInfoEvent extends WSAbstractSessionEvent {
         @Nullable String statusName,
         boolean running
     ) {
-        super("cb_session_task", WSConstants.TOPIC_SESSION_TASK);
+        super("cb_session_task_info_updated", WSConstants.TOPIC_SESSION_TASK);
         this.taskId = taskId;
         this.statusName = statusName;
         this.running = running;
