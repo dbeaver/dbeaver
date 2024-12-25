@@ -62,7 +62,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
     private static final String PROP_NULL_STRING = "nullString";
     private static final String PROP_FORMAT_NUMBERS = "formatNumbers";
     private static final String PROP_LINE_FEED_ESCAPE_STRING = "lineFeedEscapeString";
-    private final Pattern LINE_BREAK_REGEX = Pattern.compile("\\r\\n|\\r|\\n");
+    private static final Pattern LINE_BREAK_REGEX = Pattern.compile("\\r\\n|\\r|\\n");
 
     private static final String DEF_QUOTE_CHAR = "\"";
     private boolean formatNumbers;
