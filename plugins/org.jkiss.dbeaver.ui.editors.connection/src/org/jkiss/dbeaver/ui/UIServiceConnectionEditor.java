@@ -19,10 +19,14 @@ package org.jkiss.dbeaver.ui;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
 /**
- * Connection editor service
+ * Connection editor service.
+ * Provides additional capabilities for connection edit dialogs.
  */
 public interface UIServiceConnectionEditor extends IObjectPropertyConfigurator<DBPDataSourceContainer, DBPDataSourceContainer> {
 
+    /**
+     * @return true if all parameters are provided by some external source.
+     */
     boolean isExternalConfigurationProvided();
 
 }
