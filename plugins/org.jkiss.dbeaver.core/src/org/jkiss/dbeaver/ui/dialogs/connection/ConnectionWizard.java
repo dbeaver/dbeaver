@@ -236,7 +236,7 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
 
                 new ConnectionTestDialog(
                     getShell(),
-                    activeDataSource,
+                    targetDataSource,
                     op.getServerVersion(),
                     op.getClientVersion(),
                     op.getConnectTime()).open();
