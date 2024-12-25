@@ -289,9 +289,8 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
         final boolean hasQuotes = useQuotes && value.indexOf(quoteChar) != -1;
 
         if (CommonUtils.isNotEmpty(lineFeedEscapeString)) {
-            Matcher matcher = LINE_BREAK_REGEX.matcher(value);
-            if (matcher.find()) {
-                value = matcher.replaceAll(lineFeedEscapeString);
+            if (value.indexOf('\n') != -1 || value.indexOf('\r') != -1) {
+                value = LINE_BREAK_REGEX.matcher(value).replaceAll(lineFeedEscapeString);
             }
         }
 
