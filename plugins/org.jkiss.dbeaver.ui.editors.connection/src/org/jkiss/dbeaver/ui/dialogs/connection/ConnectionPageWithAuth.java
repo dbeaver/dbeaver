@@ -62,7 +62,7 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
         // Additional auth controls
         serviceConnectionEditor = DBWorkbench.getService(UIServiceConnectionEditor.class);
         if (serviceConnectionEditor != null) {
-            serviceConnectionEditor.createControl(parent, getSite().getActiveDataSource(), () -> {});
+            serviceConnectionEditor.createControl(parent, getSite().getActiveDataSource(), () -> site.updateButtons());
         }
     }
 
@@ -135,6 +135,11 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
     @Override
     public boolean isComplete() {
         return !isAuthEnabled() || (authModelSelector != null && authModelSelector.isComplete());
+    }
+
+    @Override
+    public boolean isExternalConfigurationProvided() {
+        return serviceConnectionEditor != null && serviceConnectionEditor.isExternalConfigurationProvided();
     }
 
     protected boolean isAuthEnabled() {

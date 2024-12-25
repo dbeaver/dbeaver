@@ -29,6 +29,10 @@ public interface IDataSourceConnectionEditor extends IDialogPage
 
     boolean isComplete();
 
+    default boolean isExternalConfigurationProvided() {
+        return false;
+    }
+
     void loadSettings();
 
     void saveSettings(DBPDataSourceContainer dataSource);

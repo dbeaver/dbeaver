@@ -23,4 +23,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
  */
 public interface UIServiceConnectionEditor extends IObjectPropertyConfigurator<DBPDataSourceContainer, DBPDataSourceContainer> {
 
+    boolean isExternalConfigurationProvided();
+
 }
