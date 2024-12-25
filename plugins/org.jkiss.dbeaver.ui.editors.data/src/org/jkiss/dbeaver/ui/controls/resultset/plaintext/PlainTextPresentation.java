@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.model.DBPAdaptable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.UIFonts;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -126,13 +127,13 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
 
     @Override
     protected void applyThemeSettings(ITheme currentTheme) {
-        text.setFont(currentTheme.getFontRegistry().get(UIFonts.DBEAVER_FONTS_MONOSPACE));
+        text.setFont(BaseThemeSettings.instance.monospaceFont);
         if (UIStyles.isDarkHighContrastTheme()) {
             text.setBackground(UIStyles.getDefaultWidgetBackground());
             text.setForeground(UIUtils.COLOR_WHITE);
             curLineColor = UIUtils.COLOR_GREEN_CONTRAST;
         } else {
-            curLineColor = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_ODD_BACK);
+            curLineColor = ResultSetThemeSettings.instance.backgroundOdd;
         }
     }
 

@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.*;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
+import org.jkiss.dbeaver.erd.ui.editor.ERDThemeSettings;
 import org.jkiss.dbeaver.erd.ui.part.*;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -631,7 +632,7 @@ public class DiagramLoader extends ERDPersistedState {
         return dsMap;
     }
 
-    private static void saveColorAndOrder(List allNodeFigures, XMLBuilder xml, NodePart nodePart) throws IOException {
+    private static void saveColorAndOrder(List<?> allNodeFigures, XMLBuilder xml, NodePart nodePart) throws IOException {
         if (nodePart != null) {
             xml.addAttribute(ATTR_ORDER, allNodeFigures.indexOf(nodePart.getFigure()));
             if (nodePart.getCustomTransparency()) {
@@ -639,14 +640,14 @@ public class DiagramLoader extends ERDPersistedState {
             }
             Color bgColor = nodePart.getCustomBackgroundColor();
             if (bgColor != null) {
-                Color defBgColor = UIUtils.getColorRegistry().get(nodePart instanceof NotePart ? ERDUIConstants.COLOR_ERD_NOTE_BACKGROUND : ERDUIConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND);
+                Color defBgColor = nodePart instanceof NotePart ? ERDThemeSettings.instance.noteBackground : ERDThemeSettings.instance.entityRegularBackground;
                 if (!CommonUtils.equalObjects(bgColor, defBgColor)) {
                     xml.addAttribute(ATTR_COLOR_BG, StringConverter.asString(bgColor.getRGB()));
                 }
             }
             Color fgColor = nodePart.getCustomForegroundColor();
             if (fgColor != null) {
-                Color defFgColor = UIUtils.getColorRegistry().get(nodePart instanceof NotePart ? ERDUIConstants.COLOR_ERD_NOTE_FOREGROUND : ERDUIConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND);
+                Color defFgColor = nodePart instanceof NotePart ? ERDThemeSettings.instance.noteForeground : ERDThemeSettings.instance.entityNameForeground;
                 if (!CommonUtils.equalObjects(fgColor, defFgColor)) {
                     xml.addAttribute(ATTR_COLOR_FG, StringConverter.asString(fgColor.getRGB()));
                 }

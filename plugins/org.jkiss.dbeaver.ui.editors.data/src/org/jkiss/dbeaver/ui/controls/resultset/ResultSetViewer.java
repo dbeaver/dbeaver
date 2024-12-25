@@ -243,7 +243,7 @@ public class ResultSetViewer extends Viewer
     // Theme listener
     private IPropertyChangeListener themeChangeListener;
     private final AbstractJob themeUpdateJob;
-    private long lastThemeUpdateTime;
+    private volatile long lastThemeUpdateTime;
 
     private volatile boolean nextSegmentReadingBlocked;
 
@@ -443,15 +443,15 @@ public class ResultSetViewer extends Viewer
                         if (!getControl().isDisposed()) {
                             applyCurrentPresentationThemeSettings();
                         }
+                        lastThemeUpdateTime = 0;
                     });
-                    lastThemeUpdateTime = System.currentTimeMillis();
                 }
                 return Status.OK_STATUS;
             }
         };
         themeUpdateJob.setSystem(true);
         themeUpdateJob.setUser(false);
-        scheduleThemeUpdate();
+        applyCurrentPresentationThemeSettings();
 
         themeChangeListener = e -> scheduleThemeUpdate();
         PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
@@ -480,17 +480,9 @@ public class ResultSetViewer extends Viewer
     }
 
     private void scheduleThemeUpdate() {
-        final long currentTime = System.currentTimeMillis();
-        final long elapsedTime = currentTime - lastThemeUpdateTime;
-
-        if (!themeUpdateJob.isCanceled()) {
-            themeUpdateJob.cancel();
-        }
-
-        if (lastThemeUpdateTime > 0 && elapsedTime < THEME_UPDATE_DELAY_MS) {
-            themeUpdateJob.schedule(THEME_UPDATE_DELAY_MS - elapsedTime);
-        } else {
-            themeUpdateJob.schedule();
+        if (lastThemeUpdateTime == 0) {
+            lastThemeUpdateTime = System.currentTimeMillis();
+            themeUpdateJob.schedule(THEME_UPDATE_DELAY_MS);
         }
     }
 
