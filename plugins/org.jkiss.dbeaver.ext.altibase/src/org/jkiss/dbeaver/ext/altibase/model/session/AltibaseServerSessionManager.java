@@ -53,7 +53,8 @@ public class AltibaseServerSessionManager implements DBAServerSessionManager<Alt
 
     @NotNull
     @Override
-    public Collection<AltibaseServerSession> getSessions(@NotNull DBCSession session, @NotNull Map<String, Object> options) throws DBException {
+    public Collection<AltibaseServerSession> getSessions(@NotNull DBCSession session, 
+            @NotNull Map<String, Object> options) throws DBException {
         try {
             try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(generateSessionReadQuery(options))) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -70,12 +71,13 @@ public class AltibaseServerSessionManager implements DBAServerSessionManager<Alt
     }
 
     @Override
-    public void alterSession(@NotNull DBCSession session, @NotNull AltibaseServerSession sessionType, @NotNull Map<String, Object> options) throws DBException {
+    public void alterSession(@NotNull DBCSession session, @NotNull String sessionId, 
+            @NotNull Map<String, Object> options) throws DBException {
         try {
 
             String sql = String.format("ALTER DATABASE %s SESSION CLOSE %s",
                     dataSource.getDbName((JDBCSession) session), 
-                    sessionType.getSessionId());
+                    sessionId);
             
             try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(sql)) {
                 dbStat.execute();
@@ -83,6 +85,12 @@ public class AltibaseServerSessionManager implements DBAServerSessionManager<Alt
         } catch (SQLException e) {
             throw new DBDatabaseException(e, session.getDataSource());
         }
+    }
+
+    @NotNull
+    @Override
+    public Map<String, Object> getTerminateOptions() {
+        return Map.of();
     }
 
     @Override

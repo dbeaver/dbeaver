@@ -77,7 +77,7 @@ public class TextViewDialog extends ValueViewDialog {
     {
         Composite dialogGroup = super.createDialogArea(parent);
 
-        ReferenceValueEditor referenceValueEditor = new ReferenceValueEditor(getValueController(), this);
+        ReferenceValueEditor referenceValueEditor = new ReferenceValueEditor(null, getValueController(), this);
         boolean isForeignKey = referenceValueEditor.isReferenceValue();
 
         Label label = new Label(dialogGroup, SWT.NONE);

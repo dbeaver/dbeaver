@@ -14,7 +14,7 @@
                 description="Hive datasource"
                 id="hive"
                 parent="generic"
-                label="Hive"
+                label="Apache Hive"
                 icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/hive_icon.png"
                 dialect="hive">
             <treeInjection path="generic/catalog/schema/table"
@@ -27,7 +27,7 @@
 
                 <driver
                         id="apache_hive2"
-                        label="Apache Hive"
+                        label="Apache Hive 2"
                         icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/hive_icon.png"
                         iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/hive_icon_big.png"
                         class="org.apache.hive.jdbc.HiveDriver"
@@ -46,6 +46,33 @@
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.hive"/>
                     <file type="jar" path="drivers/hive" bundle="drivers.hive"/>
                     <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.hive"/>
+
+                    <parameter name="supports-delimiter-in-views" value="false"/>
+                    <parameter name="supports-limits" value="false"/>
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="query-get-active-db" value="SELECT CURRENT_DATABASE()"/>
+                    <parameter name="query-set-active-db" value="USE ?"/>
+                </driver>
+
+                <driver
+                        id="apache_hive4"
+                        label="Apache Hive 4+"
+                        icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/hive_icon.png"
+                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/hive_icon_big.png"
+                        class="org.apache.hive.jdbc.HiveDriver"
+                        sampleURL="jdbc:hive2://{host}[:{port}][/{database}]"
+                        defaultPort="10000"
+                        description="Apache Hive JDBC"
+                        webURL="https://cwiki.apache.org/confluence/display/Hive/Home"
+                        databaseDocumentationSuffixURL="Apache-Hive"
+                        category="Hadoop"
+                        categories="hadoop">
+                    <replace provider="generic" driver="apache_hive2"/>
+
+                    <file type="jar" path="maven:/org.apache.hive:hive-jdbc:standalone:RELEASE[4.0.1]" bundle="!drivers.hive4"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.hive4"/>
+                    <file type="jar" path="drivers/hive" bundle="drivers.hive4"/>
+                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.hive4"/>
 
                     <parameter name="supports-delimiter-in-views" value="false"/>
                     <parameter name="supports-limits" value="false"/>

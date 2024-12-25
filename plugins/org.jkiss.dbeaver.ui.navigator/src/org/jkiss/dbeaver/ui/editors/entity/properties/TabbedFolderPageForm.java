@@ -21,7 +21,6 @@ import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
@@ -70,7 +69,6 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
 
     private final ObjectEditorPageControl ownerControl;
     private final CustomFormEditor formEditor;
-    private Font boldFont;
     private Composite propertiesGroup;
     private DBPPropertySource curPropertySource;
 
@@ -99,12 +97,11 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
     @Override
     public void createControl(Composite parent)
     {
-        this.boldFont = UIUtils.makeBoldFont(parent.getFont());
-
 //        ScrolledComposite scrolled = new ScrolledComposite(parent, SWT.V_SCROLL);
 //        scrolled.setLayout(new GridLayout(1, false));
 
         propertiesGroup = new Composite(parent, SWT.NONE);
+
         //CSSUtils.setCSSClass(propertiesGroup, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
         curPropertySource = input.getPropertySource();
@@ -167,7 +164,6 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
         if (curPropertySource != null && curPropertySource.getEditableValue() instanceof DBSObject) {
             curPropertySource = null;
         }
-        UIUtils.dispose(boldFont);
 		super.dispose();
 	}
 

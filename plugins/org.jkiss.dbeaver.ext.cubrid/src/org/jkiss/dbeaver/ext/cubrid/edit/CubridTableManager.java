@@ -94,16 +94,16 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
         CubridTable table = (CubridTable) genericTable;
         String suffix = alter ? "," : "\n";
         query.append("\n");
-        if (!table.isReuseOID() && !alter) {
-            query.append("DONT_REUSE_OID").append(suffix);
+        if (!alter || command.hasProperty("reuseOID")) {
+            query.append(table.isReuseOID() ? "REUSE_OID" : "DONT_REUSE_OID").append(suffix);
         }
-        if (command.getProperty("charset") != null || command.getProperty("collation") != null) {
+        if ((!alter && table.getCollation().getName() != null) || (command.getProperty("charset") != null || command.getProperty("collation") != null)) {
             query.append("COLLATE ").append(table.getCollation().getName()).append(suffix);
         }
-        if (command.getProperty("autoIncrement") != null && table.getAutoIncrement() != 0) {
+        if ((!alter || command.getProperty("autoIncrement") != null) && table.getAutoIncrement() > 0) {
             query.append("AUTO_INCREMENT = ").append(table.getAutoIncrement()).append(suffix);
         }
-        if (command.getProperty("description") != null && table.getDescription() != null) {
+        if ((!alter && table.getDescription() != null) || command.hasProperty("description")) {
             query.append("COMMENT = ").append(SQLUtils.quoteString(table, CommonUtils.notEmpty(table.getDescription()))).append(suffix);
         }
         query.deleteCharAt(query.length() - 1);

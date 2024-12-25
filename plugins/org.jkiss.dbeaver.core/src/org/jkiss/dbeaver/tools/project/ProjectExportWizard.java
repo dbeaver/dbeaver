@@ -212,6 +212,9 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
                     Set<String> libFileNames = new HashSet<>();
                     for (String libPath : libPathMap.keySet()) {
                         final Path libFile = libPathMap.get(libPath);
+                        if (Files.isDirectory(libFile)) {
+                            continue;
+                        }
                         // Check for file name duplications
                         final String libFileName = libFile.getFileName().toString();
                         if (libFileNames.contains(libFileName)) {

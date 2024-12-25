@@ -108,7 +108,11 @@ public class ConnectionNameResolver implements IVariableResolver {
             }
             StringTokenizer st = new StringTokenizer(newName, "/\\:,?=%$#@!^&*()"); //$NON-NLS-1$
             while (st.hasMoreTokens()) {
-                newName = st.nextToken();
+                String nextPart = st.nextToken();
+                if (nextPart.matches("[0-9]+")) {
+                    continue;
+                }
+                newName = nextPart;
             }
             //newName = settings.getDriver().getName() + " - " + newName; //$NON-NLS-1$
             newName = CommonUtils.truncateString(newName, 50);
@@ -123,7 +127,7 @@ public class ConnectionNameResolver implements IVariableResolver {
                 case DBPConnectionConfiguration.VARIABLE_HOST:
                     return configuration.getHostName();
                 case DBPConnectionConfiguration.VARIABLE_HOST_TUNNEL:
-                    return DBWUtils.getTargetTunnelHostName(configuration);
+                    return DBWUtils.getTargetTunnelHostName(dataSourceContainer, configuration);
                 case DBPConnectionConfiguration.VARIABLE_PORT:
                     return configuration.getHostPort();
                 case DBPConnectionConfiguration.VARIABLE_SERVER:

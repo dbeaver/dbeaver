@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.NativeClientDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.ui.UIServiceDrivers;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.VersionUtils;
@@ -204,7 +205,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private final List<DBPDriverLibrary> libraries = new ArrayList<>();
     private final List<DBPDriverLibrary> origFiles = new ArrayList<>();
     private final List<ProviderPropertyDescriptor> mainPropertyDescriptors = new ArrayList<>();
-    private final List<ProviderPropertyDescriptor> providerPropertyDescriptors = new ArrayList<>();
+    private final Set<ProviderPropertyDescriptor> providerPropertyDescriptors = new LinkedHashSet<>();
     private final List<OSDescriptor> supportedSystems = new ArrayList<>();
 
     private final List<ReplaceInfo> driverReplacements = new ArrayList<>();
@@ -224,7 +225,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     private Class<?> driverClass;
     private boolean isLoaded;
-    private Object driverInstance;
     private DriverClassLoader classLoader;
 
     private transient boolean isFailed = false;
@@ -781,23 +781,17 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     @Override
     public <T> T getDriverInstance(@NotNull DBRProgressMonitor monitor)
             throws DBException {
-        if (driverInstance == null) {
+        if (driverClass == null) {
             loadDriver(monitor);
         }
-        if (isInternalDriver() && driverInstance == null) {
-            return (T)createDriverInstance();
-        }
-        return (T)driverInstance;
+        return (T) createDriverInstance();
     }
 
     public void resetDriverInstance() {
-        this.driverInstance = null;
         this.driverClass = null;
         this.isLoaded = false;
 
-        if (!DBWorkbench.isDistributed()) {
-            this.resolvedFiles.clear();
-        }
+        this.resolvedFiles.clear();
     }
 
     private Object createDriverInstance()
@@ -1344,12 +1338,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                         ex);
                 }
 
-                // Create driver instance
-                /*if (!this.isInternalDriver())*/
-                {
-                    driverInstance = createDriverInstance();
-                }
-
                 isLoaded = true;
                 isFailed = false;
             }
@@ -1430,12 +1418,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     @Override
-    public boolean needsExternalDependencies() {
+    public boolean needsExternalDependencies(@NotNull DBRProgressMonitor monitor) {
         for (DBPDriverLibrary library : libraries) {
             if (library.isDisabled() || library.isOptional() || !library.matchesCurrentPlatform()) {
                 continue;
             }
-            if (library.getLocalFile() == null || !Files.exists(library.getLocalFile())) {
+            Path localFile = library.getLocalFile(monitor);
+            if (localFile == null || !Files.exists(localFile)) {
                 return true;
             }
         }
@@ -1497,7 +1486,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         boolean downloaded = false;
         if (!downloadCandidates.isEmpty() || (!localLibsExists && !fileSources.isEmpty())) {
             final DriverDependencies dependencies = new DriverDependencies(downloadCandidates);
-            boolean downloadOk = DBWorkbench.getPlatformUI().downloadDriverFiles(this, dependencies);
+            UIServiceDrivers serviceDrivers = DBWorkbench.getService(UIServiceDrivers.class);
+            boolean downloadOk;
+            if (serviceDrivers != null) {
+                downloadOk = serviceDrivers.downloadDriverFiles(monitor, this, dependencies);
+            } else {
+                downloadOk = DriverUtils.downloadDriverFiles(monitor, this, dependencies);
+            }
             if (!downloadOk) {
                 return Collections.emptyList();
             }

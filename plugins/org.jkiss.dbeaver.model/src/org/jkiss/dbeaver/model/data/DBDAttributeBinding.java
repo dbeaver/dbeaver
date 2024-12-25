@@ -141,6 +141,11 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
 
     public abstract String getRowIdentifierStatus();
 
+    public boolean isInRowIdentifier() {
+        DBDRowIdentifier rowIdentifier = getRowIdentifier();
+        return rowIdentifier != null && rowIdentifier.hasAttribute(this);
+    }
+
     @Nullable
     public abstract List<DBSEntityReferrer> getReferrers();
 

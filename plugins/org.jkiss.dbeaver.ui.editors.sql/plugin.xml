@@ -576,7 +576,11 @@
             <enabledWhen>
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
-                        <test property="org.jkiss.dbeaver.ui.editors.sql.canExplain"/>
+                        <and>
+                            <!-- Ensures the command only available in the default SQL presentation - the only one that supports "script" -->
+                            <test property="org.jkiss.dbeaver.ui.editors.sql.canExecute" value="script"/>
+                            <test property="org.jkiss.dbeaver.ui.editors.sql.canExplain"/>
+                        </and>
                     </adapt>
                 </with>
             </enabledWhen>
@@ -585,7 +589,11 @@
             <enabledWhen>
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
-                        <test property="org.jkiss.dbeaver.ui.editors.sql.canExplain"/>
+                        <and>
+                            <!-- Ensures the command only available in the default SQL presentation - the only one that supports "script" -->
+                            <test property="org.jkiss.dbeaver.ui.editors.sql.canExecute" value="script"/>
+                            <test property="org.jkiss.dbeaver.ui.editors.sql.canExplain"/>
+                        </and>
                     </adapt>
                 </with>
             </enabledWhen>
@@ -627,7 +635,10 @@
             <enabledWhen>
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
-                        <test property="org.jkiss.dbeaver.ui.editors.sql.canExport"/>
+                        <and>
+                            <test property="org.jkiss.dbeaver.ui.editors.sql.canExecute" value="script"/>
+                            <test property="org.jkiss.dbeaver.ui.editors.sql.canExport"/>
+                        </and>
                     </adapt>
                 </with>
             </enabledWhen>
@@ -1434,6 +1445,12 @@
             <description>%colorDefinition.org.jkiss.dbeaver.sql.plan.view.tablescan.foreground.description</description>
         </colorDefinition>
 
+    </extension>
+
+    <extension point="org.eclipse.e4.ui.css.swt.theme">
+        <stylesheet uri="css/e4-dark-sql-editor.css">
+            <themeid refid="org.eclipse.e4.ui.css.theme.e4_dark"/>
+        </stylesheet>
     </extension>
 
     <extension point="org.eclipse.ui.propertyPages">

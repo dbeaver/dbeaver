@@ -29,7 +29,6 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.source.SourceViewer;
-import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -108,6 +107,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolbarUtils;
 import org.jkiss.dbeaver.ui.controls.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
@@ -155,6 +155,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -255,6 +256,7 @@ public class SQLEditor extends SQLEditorBase implements
     private boolean isResultSetAutoFocusEnabled = true;
     private Boolean isDisableFetchResultSet = null;
     private boolean datasourceChanged;
+    private volatile boolean isPartControlInitialized = false;
 
     private final ArrayList<SQLEditorAddIn> addIns = new ArrayList<>();
 
@@ -294,20 +296,8 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
     };
-    private final IPropertyChangeListener themeChangeListener = e -> {
-        final Font font = JFaceResources.getFont(UIFonts.DBEAVER_FONTS_MAIN_FONT);
-        if (resultTabs != null) {
-            resultTabs.setFont(font);
-        }
-        if (presentationSwitchFolder != null) {
-            for (VerticalButton button : presentationSwitchFolder.getItems()) {
-                button.setFont(font);
-            }
-        }
-    };
 
     public SQLEditor() {
-        PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
     }
 
     public void setResultSetAutoFocusEnabled(boolean value) {
@@ -341,6 +331,12 @@ public class SQLEditor extends SQLEditorBase implements
             return DBUtils.getDefaultContext(getDataSource(), false);
         }
         return null;
+    }
+
+    @Nullable
+    @Override
+    protected DBPDataSourceContainer getDataSourceContainerForSyntaxRuleReloading() {
+        return dataSourceContainer;
     }
 
     public SQLScriptContext getGlobalScriptContext() {
@@ -890,8 +886,14 @@ public class SQLEditor extends SQLEditorBase implements
         return super.isDirty();
     }
 
+    @Nullable
     public SQLEditorPresentation getActivePresentation() {
         return extraPresentationManager.activePresentation;
+    }
+
+    @Nullable
+    public SQLPresentationDescriptor getActivePresentationDescriptor() {
+        return extraPresentationManager.activePresentationDescriptor;
     }
 
     @Nullable
@@ -947,7 +949,7 @@ public class SQLEditor extends SQLEditorBase implements
         return super.getAdapter(required);
     }
 
-    private boolean checkConnected(boolean forceConnect, DBRProgressListener onFinish)
+    protected boolean checkConnected(boolean forceConnect, DBRProgressListener onFinish)
     {
         // Connect to datasource
         final DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
@@ -1070,7 +1072,23 @@ public class SQLEditor extends SQLEditorBase implements
 
         // Update controls
         UIExecutionQueue.queueExec(this::onDataSourceChange);
-        themeChangeListener.propertyChange(null);
+
+        Consumer<String> fontUpdater = s -> {
+            final Font font = BaseThemeSettings.instance.baseFont;
+            if (resultTabs != null) {
+                resultTabs.setFont(font);
+            }
+            if (presentationSwitchFolder != null) {
+                for (VerticalButton button : presentationSwitchFolder.getItems()) {
+                    button.setFont(font);
+                }
+            }
+        };
+        BaseThemeSettings.instance.addPropertyListener(
+            UIFonts.DBEAVER_FONTS_MAIN_FONT,
+            fontUpdater,
+            parent);
+        fontUpdater.accept(null);
 
         if (transactionStatusUpdateJob == null) {
             synchronized (this) {
@@ -1080,6 +1098,8 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             }
         }
+
+        this.isPartControlInitialized = true;
     }
 
     protected boolean isHideQueryText() {
@@ -1487,12 +1507,14 @@ public class SQLEditor extends SQLEditorBase implements
                             }
                         });
 
-                        manager.add(new Action(SQLEditorMessages.action_result_tabs_detach_tab) {
-                            @Override
-                            public void run() {
-                                container.detach();
-                            }
-                        });
+                        if (!container.isStatistics()) {
+                            manager.add(new Action(SQLEditorMessages.action_result_tabs_detach_tab) {
+                                @Override
+                                public void run() {
+                                    container.detach();
+                                }
+                            });
+                        }
 
                         if (container.getQuery() != null) {
                             manager.add(new Separator());
@@ -2243,32 +2265,19 @@ public class SQLEditor extends SQLEditorBase implements
             log.error("Error loading input SQL file", e);
         }
         syntaxLoaded = false;
-
         IEditorInput finalEditorInput = editorInput;
-        Runnable inputinitializer = () -> {
-            DBPDataSourceContainer oldDataSource = SQLEditor.this.getDataSourceContainer();
-            DBPDataSourceContainer newDataSource = EditorUtils.getInputDataSource(SQLEditor.this.getEditorInput());
-
-            if (oldDataSource != newDataSource) {
-                SQLEditor.this.dataSourceContainer = null;
-                SQLEditor.this.updateDataSourceContainer();
-            } else {
-                SQLEditor.this.reloadSyntaxRules();
-            }
-
-            {
-                DBPDataSourceContainer dataSource = EditorUtils.getInputDataSource(finalEditorInput);
-                SQLEditorFeatures.SQL_EDITOR_OPEN.use(Map.of(
-                    "driver", dataSource == null ? "" : dataSource.getDriver().getPreconfiguredId()
-                ));
+        Runnable inputinitializer = new Runnable() {
+            @Override
+            public void run() {
+                if (SQLEditor.this.isPartControlInitialized) {
+                    accomplishEditorInputInitialization(finalEditorInput);
+                } else {
+                    UIExecutionQueue.queueExec(this);
+                }
             }
         };
-        if (isNonPersistentEditor()) {
-            inputinitializer.run();
-        } else {
-            // Run in queue - for app startup
-            UIExecutionQueue.queueExec(inputinitializer);
-        }
+
+        UIExecutionQueue.queueExec(inputinitializer);
 
         setPartName(getEditorName());
         if (isNonPersistentEditor() && isDetectTitleImageFromInput()) {
@@ -2276,6 +2285,31 @@ public class SQLEditor extends SQLEditorBase implements
         }
         baseEditorImage = getTitleImage();
         editorImage = new Image(Display.getCurrent(), baseEditorImage, SWT.IMAGE_COPY);
+    }
+
+    private void accomplishEditorInputInitialization(@NotNull IEditorInput editorInput) {
+        DBPDataSourceContainer oldDataSource = SQLEditor.this.getDataSourceContainer();
+        DBPDataSourceContainer newDataSource = EditorUtils.getInputDataSource(SQLEditor.this.getEditorInput());
+
+        if (oldDataSource != newDataSource) {
+            SQLEditor.this.dataSourceContainer = null;
+            SQLEditor.this.updateDataSourceContainer();
+        } else {
+            SQLEditor.this.reloadSyntaxRules();
+        }
+
+        DBPDataSourceContainer dataSource = EditorUtils.getInputDataSource(editorInput);
+        SQLEditorFeatures.SQL_EDITOR_OPEN.use(
+            Map.of("driver", dataSource == null ? "" : dataSource.getDriver().getPreconfiguredId())
+        );
+
+        // toolbar refresh triggered on active part change or current datasource change, but:
+        // - initialization accomplishment should occur after part's UI initialization which may include part activation,
+        //      meaning that active part change sometimes happens before this code;
+        // - when editorInput's datasource is already specified and updateDataSourceContainer() just actualizes editor's internal state,
+        //      datasource change event also won't come.
+        // So we need to update toolbar state explicitly after the whole editor is finally initialized for sure.
+        DataSourceToolbarUtils.refreshSelectorToolbar(getSite().getWorkbenchWindow());
     }
 
     private void checkInputFileExistence(IEditorInput editorInput) {
@@ -2575,7 +2609,7 @@ public class SQLEditor extends SQLEditorBase implements
                 elements.add(0, extractActiveQuery());
             } else {
                 // Execute all SQL statements consequently
-                if (selection.getLength() > 1) {
+                if (selection != null && selection.getLength() > 1) {
                     elements = extractScriptQueries(selection.getOffset(), selection.getLength(), true, false, true);
                 } else {
                     elements = extractScriptQueries(0, document.getLength(), true, false, true);
@@ -3136,7 +3170,6 @@ public class SQLEditor extends SQLEditorBase implements
             deleteFileIfEmpty(sqlFile);
         }
 
-        PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeChangeListener);
         UIUtils.dispose(editorImage);
         baseEditorImage = null;
         editorImage = null;
@@ -3222,7 +3255,7 @@ public class SQLEditor extends SQLEditorBase implements
     public void handleDataSourceEvent(final DBPEvent event) {
         final boolean dsEvent = event.getObject() == getDataSourceContainer();
         final boolean objectEvent = event.getObject() != null && event.getObject().getDataSource() == getDataSource();
-        final boolean registryEvent = getDataSourceContainer() != null && event.getData() == getDataSourceContainer().getRegistry(); 
+        final boolean registryEvent = getDataSourceContainer() != null && event.getData() == getDataSourceContainer().getRegistry();
         if (dsEvent || objectEvent || registryEvent) {
             UIUtils.asyncExec(
                 () -> {
@@ -3244,7 +3277,6 @@ public class SQLEditor extends SQLEditorBase implements
                             break;
                     }
                     updateExecutionContext(null);
-
                     boolean contextChanged = isContextChanged(event);
                     onDataSourceChange(contextChanged);
                 }
@@ -3254,17 +3286,19 @@ public class SQLEditor extends SQLEditorBase implements
 
     private boolean isContextChanged(DBPEvent event) {
         DBPEvent.Action eventAction = event.getAction();
-        boolean isEditorContext = event.getData() == this.getExecutionContext();
+        DBSObject eventObject = event.getObject();
+        boolean isEditorContext = eventObject == this.getDataSourceContainer() || event.getData() == this.getExecutionContext();
         boolean contextChanged = isEditorContext && eventAction.equals(DBPEvent.Action.OBJECT_UPDATE);
         if (!contextChanged && isEditorContext && eventAction.equals(DBPEvent.Action.OBJECT_SELECT) && event.getEnabled()) {
             DBCExecutionContext execContext = this.getExecutionContext();
-            DBCExecutionContextDefaults<?, ?> ctxDefault = execContext == null
-                ? null
-                : execContext.getContextDefaults();
-            if (ctxDefault != null
-                && (event.getObject() == ctxDefault.getDefaultCatalog() || event.getObject() == ctxDefault.getDefaultSchema())
-            ) {
-                contextChanged = true;
+            if (execContext != null) {
+                DBCExecutionContextDefaults<?, ?> ctxDefault = execContext.getContextDefaults();
+                if (ctxDefault != null && eventObject != null) {
+                    boolean defaultChanged = eventObject == ctxDefault.getDefaultCatalog() || eventObject == ctxDefault.getDefaultSchema();
+                    if (lastExecutionContext != executionContext || defaultChanged) {
+                        contextChanged = true;
+                    }
+                }
             }
         }
         return contextChanged;
@@ -4256,7 +4290,7 @@ public class SQLEditor extends SQLEditorBase implements
                 job.setFetchSize(fetchSize);
                 job.setFetchFlags(flags);
 
-                job.extractData(session, this.query, resultCounts > 1 ? 0 : resultSetNumber, !detached);
+                job.extractData(session, this.query, resultCounts > 1 ? 0 : resultSetNumber, !detached, !detached);
 
                 lastGoodQuery = job.getLastGoodQuery();
 
@@ -4472,6 +4506,10 @@ public class SQLEditor extends SQLEditorBase implements
                 tabItem.setShowClose(!pinned);
                 tabItem.setImage(pinned ? IMG_DATA_GRID_LOCKED : IMG_DATA_GRID);
             }
+        }
+
+        private boolean isStatistics() {
+            return query != null && query.getData() == SQLQueryJob.STATS_RESULTS;
         }
     }
 
@@ -4716,16 +4754,18 @@ public class SQLEditor extends SQLEditorBase implements
             super.handleExecuteResult(result);
             
             if (this.viewer.getActivePresentation().getControl() instanceof Spreadsheet s) {
-                Point spreadsheetPreferredSize = s.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
-                Point spreadsheetSize = s.getSize();
-                int desiredViewerHeight = rsvConstrainedLayout.heightHint - spreadsheetSize.y + spreadsheetPreferredSize.y;
-                if (desiredViewerHeight < rsvConstrainedLayout.heightHint) {
-                    if (desiredViewerHeight < MIN_VIEWER_HEIGHT) {
-                        desiredViewerHeight = MIN_VIEWER_HEIGHT;
+                UIUtils.syncExec(() -> {
+                    Point spreadsheetPreferredSize = s.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
+                    Point spreadsheetSize = s.getSize();
+                    int desiredViewerHeight = rsvConstrainedLayout.heightHint - spreadsheetSize.y + spreadsheetPreferredSize.y;
+                    if (desiredViewerHeight < rsvConstrainedLayout.heightHint) {
+                        if (desiredViewerHeight < MIN_VIEWER_HEIGHT) {
+                            desiredViewerHeight = MIN_VIEWER_HEIGHT;
+                        }
+                        rsvConstrainedLayout.heightHint = desiredViewerHeight;
+                        queryProcessor.relayoutContents();
                     }
-                    rsvConstrainedLayout.heightHint = desiredViewerHeight;  
-                    queryProcessor.relayoutContents();
-                }
+                });
             }
         }
 
@@ -5061,6 +5101,9 @@ public class SQLEditor extends SQLEditorBase implements
             if (result == SqlJobResult.SUCCESS || result == SqlJobResult.PARTIAL_SUCCESS) {
                 refreshContextDefaults(session);
             }
+            if (extListener != null) {
+                extListener.onEndSqlJob(session, result);
+            }
         }
     }
 
@@ -5208,6 +5251,8 @@ public class SQLEditor extends SQLEditorBase implements
                 activePresentationDescriptor = null;
                 activePresentation = null;
                 activePresentationPanel = null;
+
+                SQLEditorPropertyTester.firePropertyChange(SQLEditorPropertyTester.PROP_CAN_EXECUTE);
                 return true;
             }
 
@@ -5233,6 +5278,7 @@ public class SQLEditor extends SQLEditorBase implements
                     activePresentation.showPresentation(SQLEditor.this, true);
                     presentations.put(descriptor, activePresentation);
 
+                    SQLEditorPropertyTester.firePropertyChange(SQLEditorPropertyTester.PROP_CAN_EXECUTE);
                     return true;
                 }
             } else {
@@ -5244,6 +5290,8 @@ public class SQLEditor extends SQLEditorBase implements
                     activePresentationDescriptor = descriptor;
                     activePresentation = presentation;
                     activePresentation.showPresentation(SQLEditor.this, false);
+
+                    SQLEditorPropertyTester.firePropertyChange(SQLEditorPropertyTester.PROP_CAN_EXECUTE);
                     return true;
                 }
             }
@@ -5673,6 +5721,8 @@ public class SQLEditor extends SQLEditorBase implements
         private Cursor oldCursor;
         protected ConnectVisualizer(DBPDataSourceContainer dataSourceContainer) {
             super("Connect visualizer");
+            setSystem(true);
+            setUser(false);
             StyledText editorControl = getEditorControl();
             if (editorControl != null) {
                 oldCursor = editorControl.getCursor();

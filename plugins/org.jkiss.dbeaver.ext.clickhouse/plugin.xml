@@ -17,7 +17,7 @@
                 id="clickhouse"
                 parent="generic"
                 label="ClickHouse"
-                icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/clickhouse_icon.png"
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.clickhouse/icons/clickhouse_icon.png"
                 dialect="clickhouse">
             <drivers managable="true">
 
@@ -27,8 +27,8 @@
                         class="com.clickhouse.jdbc.ClickHouseDriver"
                         sampleURL="jdbc:clickhouse://{host}:{port}[/{database}]"
                         defaultPort="8123"
-                        icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/clickhouse_icon.png"
-                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/clickhouse_icon_big.png"
+                        icon="platform:/plugin/org.jkiss.dbeaver.ext.clickhouse/icons/clickhouse_icon.png"
+                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.clickhouse/icons/clickhouse_icon_big.png"
                         description="ClickHouse legacy driver (server version &lt; 21.3)"
                         supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://github.com/yandex/clickhouse-jdbc"
@@ -52,8 +52,8 @@
                     class="com.clickhouse.jdbc.ClickHouseDriver"
                     sampleURL="jdbc:clickhouse://{host}:{port}[/{database}]"
                     defaultPort="8123"
-                    icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/clickhouse_icon.png"
-                    iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/clickhouse_icon_big.png"
+                    icon="platform:/plugin/org.jkiss.dbeaver.ext.clickhouse/icons/clickhouse_icon.png"
+                    iconBig="platform:/plugin/org.jkiss.dbeaver.ext.clickhouse/icons/clickhouse_icon_big.png"
                     description="Official ClickHouse driver (server version 21.3+)"
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/ClickHouse/clickhouse-java"
@@ -81,7 +81,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
-        <dialect id="clickhouse" parent="generic" class="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseSQLDialect" label="Clickhouse" description="Clickhouse SQL dialect." icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/clickhouse_icon.png">
+        <dialect id="clickhouse" parent="generic" class="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseSQLDialect" label="Clickhouse" description="Clickhouse SQL dialect." icon="platform:/plugin/org.jkiss.dbeaver.ext.clickhouse/icons/clickhouse_icon.png">
         </dialect>
     </extension>
 

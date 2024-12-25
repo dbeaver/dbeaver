@@ -164,6 +164,11 @@ public interface DBPDataSourceContainer extends
 
     void setObjectFilter(Class<?> type, DBSObject parentObject, DBSObjectFilter filter);
 
+    @Nullable
+    String getClientApplicationName();
+
+    void setClientApplicationName(@NotNull String applicationName);
+
     DBVModel getVirtualModel();
 
     DBPNativeClientLocation getClientHome();

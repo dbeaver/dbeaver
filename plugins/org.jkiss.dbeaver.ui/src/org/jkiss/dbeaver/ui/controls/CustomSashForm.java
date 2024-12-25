@@ -146,7 +146,6 @@ public class CustomSashForm extends SashForm {
         SASH_WIDTH = ARROW_HEIGHT + ARROW_MARGIN;
 
         arrowColor = DEFAULT_BORDER_COLOR;
-        //JFaceResources.getColorRegistry().get(IWorkbenchThemeConstants.ACTIVE_TAB_BG_END);
     }
 
     public boolean isShowBorders() {

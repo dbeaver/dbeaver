@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.DBSQLException;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -47,6 +48,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * SQLServerUtils
@@ -55,6 +58,8 @@ public class SQLServerUtils {
 
     private static final Log log = Log.getLog(SQLServerUtils.class);
 
+    private static final Pattern CROSS_DATABASE_QUERY_ERROR_PATTERN =
+        Pattern.compile("Reference to database and/or server name in '([^']+)' is not supported in this version of SQL Server\\.");
 
     public static boolean isDriverSqlServer(DBPDriver driver) {
         return driver.getSampleURL().contains(":sqlserver");
@@ -403,4 +408,18 @@ public class SQLServerUtils {
         return dbStat;
     }
 
+    @NotNull
+    public static DBException mapException(@NotNull DBException e) {
+        if (e instanceof DBSQLException dbsqlException) {
+            Matcher croosDatabaseMatcher = CROSS_DATABASE_QUERY_ERROR_PATTERN.matcher(dbsqlException.getMessage());
+            if (croosDatabaseMatcher.find()) {
+                return new DBException(
+                    "Cross-database queries are not supported in this version of SQL Server. Create a new connection to the '"
+                    + croosDatabaseMatcher.group(1).split("\\.")[0]
+                    + "' database.");
+            }
+        }
+
+        return e;
+    }
 }

@@ -29,6 +29,9 @@ public class CubridConstants
     public static final String NAME = "name";
     public static final String COMMENT = "comment";
     public static final String DBA = "dba";
+    public static final String[] EVENT_OPTION = {"UPDATE", "UPDATE STATEMENT", "DELETE", "DELETE STATEMENT", "INSERT", "INSERT STATEMENT", "COMMIT", "ROLLBACK"};
+    public static final String[] ACTION_TIME_OPTION = {"BEFORE", "AFTER", "DEFFERED"};
+    public static final String[] ACTION_TYPE_OPTION = {"OTHER STATEMENT", "REJECT", "INVALIDATE_TRANSACTION", "PRINT"};
     public static final String DEFAULT_HOST = "localhost";
     public static final String DEFAULT_PORT = "30000";
     public static final String AUTO_INCREMENT = "auto_increment";

@@ -76,7 +76,7 @@ public class GenericPackage extends GenericObjectContainer implements DBPQualifi
     }
 
     @Override
-    @Property(viewable = true, order = 3)
+    @Property(viewable = true, order = 3, labelProvider = GenericCatalog.CatalogNameTermProvider.class)
     public GenericCatalog getCatalog()
     {
         return container.getCatalog();

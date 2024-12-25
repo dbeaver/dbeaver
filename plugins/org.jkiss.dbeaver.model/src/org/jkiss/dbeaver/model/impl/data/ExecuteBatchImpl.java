@@ -255,7 +255,8 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                         attributes[paramIndex],
                         handlers[paramIndex],
                         rowValues[paramIndex],
-                        DBDDisplayFormat.NATIVE);
+                        DBDDisplayFormat.NATIVE,
+                        false);
                     formatted.append(paramValue);
                     continue;
                 }

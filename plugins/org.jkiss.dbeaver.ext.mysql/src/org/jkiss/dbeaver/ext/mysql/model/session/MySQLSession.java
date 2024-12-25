@@ -142,6 +142,11 @@ public class MySQLSession extends AbstractServerSession {
         return info;
     }
 
+    @Override
+    public String getSessionId() {
+        return String.valueOf(pid);
+    }
+
     @Property(category = CAT_PERFORMANCE, visibleIf = PerformanceReadingValueValidator.class, order = 9)
     public String getStatementLatency() {
         return statementLatency;

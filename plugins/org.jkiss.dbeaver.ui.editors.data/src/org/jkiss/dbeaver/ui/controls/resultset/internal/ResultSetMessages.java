@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.internal;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class ResultSetMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages"; //$NON-NLS-1$
@@ -83,6 +83,7 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_viewer_action_column_view;
     public static String controls_resultset_viewer_action_logical_structure;
     public static String controls_resultset_viewer_action_view_format;
+    public static String controls_resultset_viewer_action_view_hints;
     public static String controls_resultset_viewer_action_view_as;
     public static String controls_resultset_viewer_action_view_column_type;
     public static String controls_resultset_viewer_action_view_column_types;

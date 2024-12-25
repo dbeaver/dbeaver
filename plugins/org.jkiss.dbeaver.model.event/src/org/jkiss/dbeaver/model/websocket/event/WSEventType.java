@@ -17,15 +17,14 @@
 package org.jkiss.dbeaver.model.websocket.event;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.websocket.event.datasource.WSDataSourceConnectEvent;
+import org.jkiss.dbeaver.model.websocket.event.datasource.WSDataSourceDisconnectEvent;
 import org.jkiss.dbeaver.model.websocket.event.datasource.WSDataSourceEvent;
 import org.jkiss.dbeaver.model.websocket.event.datasource.WSDatasourceFolderEvent;
 import org.jkiss.dbeaver.model.websocket.event.permissions.WSObjectPermissionEvent;
 import org.jkiss.dbeaver.model.websocket.event.permissions.WSSubjectPermissionEvent;
 import org.jkiss.dbeaver.model.websocket.event.resource.WSResourceUpdatedEvent;
-import org.jkiss.dbeaver.model.websocket.event.session.WSOutputDBLogEvent;
-import org.jkiss.dbeaver.model.websocket.event.session.WSSessionExpiredEvent;
-import org.jkiss.dbeaver.model.websocket.event.session.WSSessionStateEvent;
-import org.jkiss.dbeaver.model.websocket.event.session.WSSocketConnectedEvent;
+import org.jkiss.dbeaver.model.websocket.event.session.*;
 
 public enum WSEventType {
     CLOSE_USER_SESSIONS("cb_close_user_sessions", WSEventTopic.USER, WSUserCloseSessionsEvent.class),
@@ -68,6 +67,18 @@ public enum WSEventType {
         WSDatasourceFolderEvent.class
     ),
 
+    DATASOURCE_DISCONNECTED(
+        "cb_datasource_disconnected",
+        WSEventTopic.DATASOURCE_CONNECTION,
+        WSDataSourceDisconnectEvent.class
+    ),
+
+    DATASOURCE_CONNECTED(
+        "cb_datasource_connected",
+        WSEventTopic.DATASOURCE_CONNECTION,
+        WSDataSourceConnectEvent.class
+    ),
+
     OBJECT_PERMISSIONS_UPDATED(
         "cb_object_permissions_updated",
         WSEventTopic.OBJECT_PERMISSIONS,
@@ -94,6 +105,8 @@ public enum WSEventType {
     TEMP_FOLDER_DELETED("cb_temp_folder_deleted", WSEventTopic.TEMP_FOLDER, WSDataSourceEvent.class),
 
     DB_LOG_UPDATED("cb_database_output_log_updated", WSEventTopic.DB_OUTPUT_LOG, WSOutputDBLogEvent.class),
+
+    SESSION_TASK_INFO_UPDATED("cb_session_task_info_updated", WSEventTopic.SESSION_TASK, WSSessionTaskInfoEvent.class),
 
     USER_DELETED("cb_user_deleted", WSEventTopic.USER, WSUserDeletedEvent.class);
 

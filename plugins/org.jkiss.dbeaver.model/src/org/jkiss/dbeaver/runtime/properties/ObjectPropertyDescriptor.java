@@ -25,6 +25,8 @@ import org.jkiss.dbeaver.model.dpi.DPIClientObject;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.meta.*;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNNodeReference;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -65,6 +67,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     private IPropertyValueValidator valueValidator;
     private final Class<?> declaringClass;
     private Format displayFormat = null;
+    private IPropertyValueTransformer labelProvider;
 
     public ObjectPropertyDescriptor(
         DBPPropertySource source,
@@ -98,7 +101,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             }
         }
 
-        // Obtain value transformer
+        // Obtain value render
         Class<? extends IPropertyValueTransformer> valueRendererClass = propInfo.valueRenderer();
         if (valueRendererClass != IPropertyValueTransformer.class) {
             try {
@@ -115,6 +118,17 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
                 valueValidator = valueValidatorClass.getConstructor().newInstance();
             } catch (Throwable e) {
                 log.warn("Can't create value validator", e);
+            }
+        }
+
+        // Obtain label provider
+        Class<? extends IPropertyValueTransformer> labelProviderClass = propInfo.labelProvider();
+        labelProvider = null;
+        if (labelProviderClass != IPropertyValueTransformer.class) {
+            try {
+                labelProvider = labelProviderClass.getConstructor().newInstance();
+            } catch (Throwable e) {
+                log.warn("Can't create label provider", e);
             }
         }
 
@@ -362,6 +376,21 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     @Override
     public String getDisplayName()
     {
+        if (labelProvider != null) {
+            Object editableValue = getSource().getEditableValue();
+            if (editableValue == null) {
+                if (getSource() instanceof DBNNodeReference nodeReference &&
+                    nodeReference.getReferencedNode() instanceof DBNDatabaseNode dbNode) {
+                    editableValue = dbNode.getObject();
+                }
+            }
+            if (editableValue != null) {
+                String propLabel = CommonUtils.toString(labelProvider.transform(editableValue, null), null);
+                if (propLabel != null) {
+                    return propLabel;
+                }
+            }
+        }
         return propName;
     }
 
