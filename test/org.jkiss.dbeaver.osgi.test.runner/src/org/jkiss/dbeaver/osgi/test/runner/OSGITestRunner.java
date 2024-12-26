@@ -198,7 +198,6 @@ public class OSGITestRunner extends Runner {
             try {
                 Bundle bundle = context.installBundle(bundleFile);
                 bundlesByStartLevel.add(new Pair<>(bundle, startLevel));
-                System.out.println("Installed bundle: " + bundle.getSymbolicName());
             } catch (BundleException e) {
                 log.error("Error initializing bundle message", e);
             }
@@ -224,7 +223,7 @@ public class OSGITestRunner extends Runner {
                     } catch (ClassNotFoundException e) {
                         // ignore, expected
                     }
-                    log.info("Started bundle: " + bundle.getSymbolicName());
+                    //log.info("Started bundle: " + bundle.getSymbolicName());
                 } catch (BundleException e) {
                     if (!e.getMessage().contains("Invalid operation on a fragment")) {
                         log.error("Error starting bundle message", e);
@@ -234,7 +233,7 @@ public class OSGITestRunner extends Runner {
         }
         for (Pair<Bundle, Integer> bundleIntegerPair : bundlesByStartLevel) {
             if (bundleIntegerPair.getFirst().adapt(BundleWiring.class) == null) {
-                System.out.println("Bundle not resolved: " + bundleIntegerPair.getFirst().getSymbolicName());
+                log.error("Bundle not resolved: " + bundleIntegerPair.getFirst().getSymbolicName());
             }
         }
         return appBundle;

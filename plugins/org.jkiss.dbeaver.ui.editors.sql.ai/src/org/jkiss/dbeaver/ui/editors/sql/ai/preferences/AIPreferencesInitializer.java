@@ -17,18 +17,18 @@
 package org.jkiss.dbeaver.ui.editors.sql.ai.preferences;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.ai.AICompletionConstants;
 import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.openai.GPTModel;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
 public class AIPreferencesInitializer extends AbstractPreferenceInitializer {
 
     @Override
     public void initializeDefaultPreferences() {
-        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        DBPPreferenceStore store = ModelPreferences.getPreferences();
 
         PrefUtils.setDefaultPreferenceValue(store, AICompletionConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY, false);
         PrefUtils.setDefaultPreferenceValue(store, AICompletionConstants.AI_SEND_DESCRIPTION, false);
