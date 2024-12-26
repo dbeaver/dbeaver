@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.osgi.test.runner;
 
+import org.eclipse.osgi.internal.framework.EquinoxBundle;
 import org.eclipse.osgi.service.runnable.ApplicationLauncher;
 import org.eclipse.osgi.util.ManifestElement;
 import org.jkiss.dbeaver.Log;
@@ -36,6 +37,7 @@ import org.osgi.framework.wiring.BundleWiring;
 import java.io.File;
 import java.io.FileInputStream;
 import java.lang.reflect.Constructor;
+import java.net.URL;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -65,11 +67,29 @@ public class OSGITestRunner extends Runner {
     private Framework framework;
     private Path productPath;
 
+    private String testBundleName;
     private Bundle testBundle;
 
     public OSGITestRunner(Class<?> testClass) {
         this.testClass = testClass;
         if (isRunFromIDEA()) {
+            try {
+                // Determine name of test bundle
+                // Analyze classpath, we don't have other way because we are not in OSGI container yet
+                // All test bundles are compiled and classes are in <bundle-path>/target
+                URL resource = testClass.getClassLoader().getResource(testClass.getName().replace('.', '/') + ".class");
+                if (resource != null) {
+                    String testClassPath = resource.toString();
+                    Pattern pluginNamePattern = Pattern.compile(".+/([\\w.]+)/target/");
+                    Matcher matcher = pluginNamePattern.matcher(testClassPath);
+                    if (matcher.find()) {
+                        testBundleName = matcher.group(1);
+                    }
+                }
+            } catch (Exception e) {
+                log.error(e);
+            }
+
             this.productPath = findProduct();
             this.framework = initializeFramework();
         }
@@ -197,7 +217,9 @@ public class OSGITestRunner extends Runner {
             }
             try {
                 Bundle bundle = context.installBundle(bundleFile);
-                bundlesByStartLevel.add(new Pair<>(bundle, startLevel));
+                if (startLevel != 0 || bundle.getSymbolicName().equals(testBundleName)) {
+                    bundlesByStartLevel.add(new Pair<>(bundle, startLevel));
+                }
             } catch (BundleException e) {
                 log.error("Error initializing bundle message", e);
             }
@@ -214,6 +236,29 @@ public class OSGITestRunner extends Runner {
         // Start all installed bundles
         for (Pair<Bundle, Integer> bundleWithStartLevel : bundlesByStartLevel) {
             Bundle bundle = bundleWithStartLevel.getFirst();
+
+            if (bundle instanceof EquinoxBundle eb && eb.isFragment()) {
+                // We need to activate main test bundle (it has to be in the list of auto-activation bundles)
+                // For that we also check that test bundle is a fragment.
+                // In this case we activate fragment host instead of main bundle
+                Bundle hostBundle = null;
+                if (bundle.getSymbolicName().equals(testBundleName)) {
+                    Dictionary<String, String> headers = bundle.getHeaders();
+                    String hostBundleHeader = headers.get("Fragment-Host");
+                    if (hostBundleHeader != null) {
+                        for (Bundle b : context.getBundles()) {
+                            if (b.getSymbolicName().equals(hostBundleHeader)) {
+                                hostBundle = b;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (hostBundle != null) {
+                    bundle = hostBundle;
+                }
+            }
+
             if (bundle.getState() != Bundle.ACTIVE) {
                 try {
                     bundle.start();
@@ -223,7 +268,7 @@ public class OSGITestRunner extends Runner {
                     } catch (ClassNotFoundException e) {
                         // ignore, expected
                     }
-                    //log.info("Started bundle: " + bundle.getSymbolicName());
+                    log.info("Started bundle: " + bundle.getSymbolicName());
                 } catch (BundleException e) {
                     if (!e.getMessage().contains("Invalid operation on a fragment")) {
                         log.error("Error starting bundle message", e);
