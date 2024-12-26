@@ -63,12 +63,15 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryRowsSourceModel left,
         @NotNull SQLQueryRowsSourceModel right,
-        @Nullable List<SQLQuerySymbolEntry> columsToJoin
+        @Nullable List<SQLQuerySymbolEntry> columsToJoin,
+        @NotNull SQLQueryLexicalScope conditionScope
     ) {
         super(range, syntaxNode, left, right);
         this.condition = null;
-        this.conditionScope = null;
+        this.conditionScope = conditionScope;
         this.columsToJoin = columsToJoin;
+
+        this.registerLexicalScope(conditionScope);
     }
 
     @Nullable
@@ -113,8 +116,8 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
         SQLQueryDataContext combinedContext = left.combineForJoin(right);
         if (this.condition != null) {
             this.condition.propagateContext(combinedContext, statistics);
-            this.conditionScope.setContext(combinedContext);
         }
+        this.conditionScope.setContext(combinedContext);
         return combinedContext;
     }
 

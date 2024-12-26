@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SyntaxParserTest;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
@@ -41,10 +42,7 @@ import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
-import org.jkiss.dbeaver.model.stm.LSMInspections;
-import org.jkiss.dbeaver.model.stm.STMTreeNode;
-import org.jkiss.dbeaver.model.stm.STMTreeTermNode;
-import org.jkiss.dbeaver.model.stm.STMUtils;
+import org.jkiss.dbeaver.model.stm.*;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
@@ -183,25 +181,32 @@ public class SQLBackgroundParsingJob {
             CompletableFuture<Long> expectedParsingSessionFinishStamp;
             synchronized (this.syncRoot) {
                 if (scriptItem == null || this.queuedForReparse.size() == 0) {
-                    scriptItem = this.context.findScriptItem(completionRequestPostion.getOffset() - 1);
-                    if (scriptItem != null) { // TODO consider statements separation which is ignored for now
-                        if (scriptItem.item.isDirty()) {
-                            // awaiting reparse, so proceed to release lock and wait for the job to finish, then retry
-                            if (DEBUG) {
-                                log.debug("awaiting reparse");
+                    int requestOffset = completionRequestPostion.getOffset();
+                    // the offset may be covered by adjacent scriptItem but still queued due to actual scriptItem being temporarily dropped
+                    NodesIterator<QueuedRegionInfo> qit = this.queuedForReparse.nodesIteratorAt(requestOffset);
+                    QueuedRegionInfo region = qit.getCurrValue() != null ? qit.getCurrValue() : (qit.prev() ? qit.getCurrValue() : null);
+                    boolean positionIsQueued = region != null && (qit.getCurrOffset() + region.length >= requestOffset || region.length == Integer.MAX_VALUE);
+                    if (!positionIsQueued) {
+                        scriptItem = this.context.findScriptItem(requestOffset - 1);
+                        if (scriptItem != null) { // TODO consider statements separation which is ignored for now
+                            if (scriptItem.item.isDirty()) {
+                                // awaiting reparse, so proceed to release lock and wait for the job to finish, then retry
+                                if (DEBUG) {
+                                    log.debug("awaiting reparse");
+                                }
+                            } else {
+                                if (DEBUG) {
+                                    log.debug("obtained model for " + scriptItem.item.getOriginalText());
+                                }
+                                return this.prepareCompletionContext(scriptItem, completionRequestPostion.getOffset());
                             }
-                        } else {
+                        } else if (this.queuedForReparse.size() <= 0) {
+                            // no script items here, so fallback to offquery context
                             if (DEBUG) {
-                                log.debug("obtained model for " + scriptItem.item.getOriginalText());
+                                log.debug("fallback to offquery context");
                             }
-                            return this.prepareCompletionContext(scriptItem, completionRequestPostion.getOffset());
+                            return SQLQueryCompletionContext.prepareOffquery(0, completionRequestPostion.getOffset());
                         }
-                    } else if (this.queuedForReparse.size() <= 0) {
-                        // no script items here, so fallback to offquery context
-                        if (DEBUG) {
-                            log.debug("fallback to offquery context");
-                        }
-                        return SQLQueryCompletionContext.prepareOffquery(0, completionRequestPostion.getOffset());
                     }
                 }
                 expectedParsingSessionFinishStamp = this.lastParsingFinishStamp;
@@ -239,27 +244,40 @@ public class SQLBackgroundParsingJob {
                     return SQLQueryCompletionContext.prepareOffquery(scriptItem.offset, offset);
                 }
 
-                ArrayDeque<STMTreeTermNode> nameNodes = new ArrayDeque<>();
-                List<STMTreeTermNode> allTerms = LSMInspections.prepareTerms(syntaxNode);
+                ArrayDeque<STMTreeNode> nameNodes = new ArrayDeque<>();
+                List<STMTreeNode> allTerms = LSMInspections.prepareTerms(syntaxNode);
                 int index = STMUtils.binarySearchByKey(allTerms, t -> t.getRealInterval().a, position, Comparator.comparingInt(k -> k));
                 if (index < 0) {
                     index = ~index - 1;
                 }
-                if (index > 0 && LSMInspections.KNOWN_SEPARATOR_TOKENS.contains(allTerms.get(index).getSymbol().getType())) {
-                    position--;
+                int positionToInspect;
+                if (index > 0 && allTerms.get(index) instanceof STMTreeTermNode t && LSMInspections.KNOWN_SEPARATOR_TOKENS.contains(t.getSymbol().getType())) {
+                    positionToInspect = position - 1;
+                } else {
+                    positionToInspect = position;
                 }
 
-                LSMInspections.SyntaxInspectionResult syntaxInspectionResult = LSMInspections.prepareAbstractSyntaxInspection(syntaxNode, position);
-                SQLQueryModel.LexicalContextResolutionResult context = model.findLexicalContext(Math.min(position, model.getSyntaxNode().getRealInterval().b));
+                LSMInspections.SyntaxInspectionResult syntaxInspectionResult = LSMInspections.prepareAbstractSyntaxInspection(syntaxNode, positionToInspect);
+                SQLQueryModel.LexicalContextResolutionResult context = model.findLexicalContext(Math.min(positionToInspect, model.getSyntaxNode().getRealInterval().b));
                 if (context.deepestContext() == null) {
                     return SQLQueryCompletionContext.prepareEmpty(0, offset);
                 }
 
                 boolean hasPeriod = false;
-                STMTreeTermNode currentTerm = null;
+                STMTreeNode currentTerm = null;
                 if (index >= 0) {
-                    STMTreeTermNode immTerm = allTerms.get(index);
-                    if (immTerm.getRealInterval().properlyContains(Interval.of(position - 1, position - 1))) {
+                    STMTreeNode immTerm = allTerms.get(index);
+                    // position is actually considered to be right _after_ the term of interest,
+                    // so use we the previous one on the exact match
+                    if (immTerm.getRealInterval().a >= position) {
+                        if (index > 0) {
+                            immTerm = allTerms.get(index - 1);
+                            index--;
+                        } else  {
+                            immTerm = null;
+                        }
+                    }
+                    if (immTerm != null && immTerm.getRealInterval().properlyContains(Interval.of(position - 1, position - 1))) {
                         if (anyWordPattern.matcher(immTerm.getTextContent()).matches()) {
                             currentTerm = immTerm;
                         }
@@ -267,18 +285,19 @@ public class SQLBackgroundParsingJob {
                         if (dialect.getReservedWords().contains(immTerm.getTextContent().toUpperCase())) {
                             syntaxInspectionResult = LSMInspections.prepareAbstractSyntaxInspection(syntaxNode, immTerm.getRealInterval().a);
                         }
-                        if (immTerm.symbol.getType() == SQLStandardLexer.Period) {
+                        if (immTerm instanceof STMTreeTermNode t && t.symbol.getType() == SQLStandardLexer.Period) {
                             hasPeriod = true;
                             index--; // skip identifier separator immediately before the cursor
                         }
                         for (int i = index; i >= 0; i--) {
-                            STMTreeTermNode term = allTerms.get(i);
-                            if (knownIdentifierPartTerms.contains(term.symbol.getType())
+                            STMTreeNode term = allTerms.get(i);
+                            if (immTerm instanceof STMTreeTermNode t && knownIdentifierPartTerms.contains(t.symbol.getType())
                                 || (term.getParentNode() != null && term.getParentNode().getNodeKindId() == SQLStandardParser.RULE_nonReserved)
+                                || immTerm instanceof STMTreeTermErrorNode
                             ) {
                                 nameNodes.addFirst(term);
                                 i--;
-                                if (i < 0 || allTerms.get(i).symbol.getType() != SQLStandardLexer.Period) {
+                                if (i < 0 || (allTerms.get(i) instanceof STMTreeTermNode t && t.symbol.getType() != SQLStandardLexer.Period  || immTerm instanceof STMTreeTermErrorNode)) {
                                     break; // not followed by an identifier separator part
                                 }
                             } else {
@@ -298,7 +317,7 @@ public class SQLBackgroundParsingJob {
                         syntaxInspectionResult,
                         context,
                         lexicalItem,
-                        nameNodes.toArray(STMTreeTermNode[]::new),
+                        nameNodes.toArray(STMTreeNode[]::new),
                         hasPeriod,
                         currentTerm
                 );

@@ -41,10 +41,24 @@ options {
      */
     package org.jkiss.dbeaver.model.lsm.sql.impl.syntax;
 
+    import java.util.*;
+
     import org.jkiss.dbeaver.model.lsm.*;
 }
 
 @parser::members {
+    private final Set<Integer> nonCorrelationNameTokens = Set.of(
+        SQLStandardLexer.CROSS,
+        SQLStandardLexer.JOIN,
+        SQLStandardLexer.INNER,
+        SQLStandardLexer.OUTER,
+        SQLStandardLexer.UNION,
+        SQLStandardLexer.LEFT,
+        SQLStandardLexer.RIGHT,
+        SQLStandardLexer.FULL,
+        SQLStandardLexer.NATURAL
+    );
+
     private boolean isAnonymousParametersEnabled;
     private boolean isNamedParametersEnabled;
 
@@ -53,6 +67,11 @@ options {
         this.isAnonymousParametersEnabled = parameters.isAnonymousSqlParametersEnabled();
         this.isNamedParametersEnabled = parameters.isSqlParametersEnabled();
     }
+
+    private boolean validCorrelationNameFollows() {
+        int nextToken = this.getInputStream().LA(1);
+        return nextToken == SQLStandardLexer.AS || !this.nonCorrelationNameTokens.contains(nextToken);
+    };
 }
 
 // root rule for script
@@ -120,7 +139,7 @@ referencesSpecification: REFERENCES referencedTableAndColumns (MATCH matchType)?
 referencedTableAndColumns: tableName (LeftParen referenceColumnList RightParen)?;
 tableName: qualifiedName;
 referenceColumnList: columnNameList;
-columnNameList: columnName (Comma columnName)*;
+columnNameList: (columnName|anyUnexpected??) (Comma (columnName|anyUnexpected??))* Comma*;
 matchType: FULL|PARTIAL;
 referentialTriggeredAction: updateRule deleteRule? | deleteRule updateRule?;
 updateRule: ON UPDATE referentialAction;
@@ -204,18 +223,18 @@ queryExpression: (joinedTable|nonJoinQueryTerm) (unionTerm|exceptTerm)*;
 
 // from
 fromClause: FROM tableReference (Comma tableReference)*;
-nonjoinedTableReference: ((tableName (PARTITION anyProperty)?)|derivedTable) correlationSpecification??;
+nonjoinedTableReference: ((tableName (PARTITION anyProperty)?)|derivedTable) correlationSpecification?;
 tableReference: nonjoinedTableReference|joinedTable|tableReferenceHints|anyUnexpected??; // '.*' to handle incomplete queries
 tableReferenceHints: (tableHintKeywords|anyWord)+ anyProperty; // dialect-specific options, should be described and moved to dialects in future
 joinedTable: (nonjoinedTableReference|(LeftParen joinedTable RightParen)) (naturalJoinTerm|crossJoinTerm)+;
-correlationSpecification: (AS)? correlationName (LeftParen derivedColumnList RightParen)?;
+correlationSpecification: { validCorrelationNameFollows() }? (AS)? correlationName (LeftParen derivedColumnList RightParen)?;
 derivedColumnList: columnNameList;
 derivedTable: tableSubquery;
 tableSubquery: subquery;
 
 //joins
 crossJoinTerm: CROSS JOIN tableReference;
-naturalJoinTerm: (NATURAL)? (joinType)? JOIN tableReference (joinSpecification|anyUnexpected)?; // (.*?) - for error recovery
+naturalJoinTerm: (NATURAL)? (joinType)? JOIN tableReference (joinSpecification|anyUnexpected??)?; // (.*?) - for error recovery
 joinType: (INNER|outerJoinType (OUTER)?|UNION);
 outerJoinType: (LEFT|RIGHT|FULL);
 joinSpecification: (joinCondition|namedColumnsJoin);
@@ -380,7 +399,7 @@ selectStatementSingleRow: SELECT (setQuantifier)? selectList INTO selectTargetLi
 selectTargetList: parameterSpecification (Comma parameterSpecification)*;
 deleteStatement: DELETE FROM tableName? ((AS)? correlationName)? whereClause?;
 insertStatement: INSERT INTO (tableName insertColumnsAndSource?)?;
-insertColumnsAndSource: (LeftParen (insertColumnList? | Asterisk) RightParen?)? (queryExpression | DEFAULT VALUES);
+insertColumnsAndSource: LeftParen (insertColumnList? | Asterisk) (RightParen (queryExpression | DEFAULT VALUES)?)?;
 insertColumnList: columnNameList;
 
 // UPDATE

@@ -202,7 +202,7 @@ public class LSMInspections {
             STMTreeNode node = stack.data;
             stack = stack.next;
 
-            if (node instanceof STMTreeTermNode term) {
+            if (node instanceof STMTreeTermNode term && term.symbol.getType() != SQLStandardLexer.EOF) {
                 return term;
             } else {
                 for (STMTreeNode child : node.getChildren()) {
@@ -214,8 +214,8 @@ public class LSMInspections {
     }
 
     @NotNull
-    public static List<STMTreeTermNode> prepareTerms(@NotNull STMTreeNode root) {
-        List<STMTreeTermNode> terms = new ArrayList<>();
+    public static List<STMTreeNode> prepareTerms(@NotNull STMTreeNode root) {
+        List<STMTreeNode> terms = new ArrayList<>();
         ListNode<STMTreeNode> stack = ListNode.of(root);
         while (ListNode.hasAny(stack)) {
             STMTreeNode node = stack.data;
@@ -223,6 +223,8 @@ public class LSMInspections {
 
             if (node instanceof STMTreeTermNode term) {
                 terms.add(term);
+            } else if (node instanceof STMTreeTermErrorNode err) {
+                terms.add(err);
             } else {
                 for (int i = node.getChildCount() - 1; i >= 0; i--) {
                     stack = ListNode.push(stack, node.getChildNode(i));
@@ -260,6 +262,7 @@ public class LSMInspections {
         @NotNull Set<String> predictedWords,
         @NotNull Map<Integer, Boolean> reachabilityTests,
         boolean expectingTableReference,
+        boolean expectingColumnName,
         boolean expectingColumnReference,
         boolean expectingIdentifier,
         boolean expectingTableSourceIntroduction,
@@ -272,6 +275,7 @@ public class LSMInspections {
             Collections.emptySet(),
             Collections.emptySet(),
             Collections.emptyMap(),
+            false,
             false,
             false,
             false,
@@ -332,12 +336,14 @@ public class LSMInspections {
         }
 
         boolean expectingTableName = reachabilityTests.get(SQLStandardParser.RULE_tableName) || presenceTests.get(SQLStandardParser.RULE_tableName);
-        boolean expectingColumnReference = reachabilityTests.get(SQLStandardParser.RULE_columnReference) || reachabilityTests.get(SQLStandardParser.RULE_columnName) || presenceTests.get(SQLStandardParser.RULE_columnReference);
+        boolean expectingColumnName = reachabilityTests.get(SQLStandardParser.RULE_columnName);
+        boolean expectingColumnReference = reachabilityTests.get(SQLStandardParser.RULE_columnReference) || presenceTests.get(SQLStandardParser.RULE_columnReference);
         return new SyntaxInspectionResult(
             predictedTokenIds,
             predictedWords,
             reachabilityTests,
             expectingTableName,
+            expectingColumnName,
             expectingColumnReference,
             reachabilityTests.get(SQLStandardParser.RULE_identifier) || presenceTests.get(SQLStandardParser.RULE_identifier),
             expectingTableName && (reachabilityTests.get(SQLStandardParser.RULE_nonjoinedTableReference) ||

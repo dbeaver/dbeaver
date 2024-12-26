@@ -60,6 +60,8 @@ public class SQLQueryCompletionProposal implements ICompletionProposal, IComplet
 
     private final SQLQueryWordEntry filterString;
 
+    private int proposalScore;
+
     private boolean cachedProposalInfoComputed = false;
     private Object cachedProposalInfo = null;
     private Image cachedSwtImage = null;
@@ -75,7 +77,8 @@ public class SQLQueryCompletionProposal implements ICompletionProposal, IComplet
         @NotNull String replacementString,
         int replacementOffset,
         int replacementLength,
-        @Nullable SQLQueryWordEntry filterString
+        @Nullable SQLQueryWordEntry filterString,
+        int proposalScore
     ) {
         this.proposalContext = proposalContext;
         this.itemKind = itemKind;
@@ -90,6 +93,11 @@ public class SQLQueryCompletionProposal implements ICompletionProposal, IComplet
         this.replacementLength = replacementLength;
 
         this.filterString = filterString;
+        this.proposalScore = proposalScore;
+    }
+
+    public int getProposalScore() {
+        return proposalScore;
     }
 
     @NotNull
@@ -234,7 +242,8 @@ public class SQLQueryCompletionProposal implements ICompletionProposal, IComplet
                     if (DEBUG) {
                         log.debug("validate: " + filterString.string + " vs " + filterKey);
                     }
-                    return filterString.filterString.contains(filterKey.toLowerCase());
+                    this.proposalScore = this.filterString.matches(filterKey);
+                    return this.proposalScore > 0 || CommonUtils.isEmpty(filterKey);
                 }
             } catch (BadLocationException ex) {
                 log.error("Error validating completion proposal", ex);

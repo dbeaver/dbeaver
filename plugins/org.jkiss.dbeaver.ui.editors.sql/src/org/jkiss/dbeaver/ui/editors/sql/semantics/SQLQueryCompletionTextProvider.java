@@ -95,7 +95,7 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
         }
 
         String prefix;
-        if (columnName.sourceInfo != null) {
+        if (columnName.sourceInfo != null && this.queryCompletionContext.getInspectionResult().expectingColumnReference()) {
             if (columnName.sourceInfo.aliasOrNull != null) {
                 prefix = columnName.sourceInfo.aliasOrNull.getName() + this.structSeparator;
             } else if (columnName.sourceInfo.tableOrNull != null && columnName.absolute) {
