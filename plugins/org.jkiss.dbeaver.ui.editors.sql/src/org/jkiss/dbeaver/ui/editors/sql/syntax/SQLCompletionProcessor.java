@@ -45,7 +45,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
-import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants.SQLExperimentalAutocompletionMode;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants.SQLAutocompletionMode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryCompletionAnalyzer;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryCompletionProposal;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContext;
@@ -56,7 +56,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.function.Supplier;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -171,7 +170,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
                     DBPDataSource dataSource = editor.getDataSource();
 
-                    SQLExperimentalAutocompletionMode mode = SQLExperimentalAutocompletionMode.fromPreferences(this.editor.getActivePreferenceStore());
+                    SQLAutocompletionMode mode = SQLAutocompletionMode.fromPreferences(this.editor.getActivePreferenceStore());
 
                     // UIUtils.waitJobCompletion(..) uses job.isFinished() which is not dropped on reschedule,
                     // so we should be able to recreate the whole job object including all its non-reusable dependencies.

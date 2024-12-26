@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.model.websocket.event.session;
 
-import org.jkiss.dbeaver.model.websocket.event.WSEventType;
+import org.jkiss.dbeaver.model.websocket.WSConstants;
 
 import java.util.Map;
 
@@ -36,7 +36,7 @@ public class WSSessionStateEvent extends WSAbstractSessionEvent {
         String locale,
         Map<String, Object> actionParameters
     ) {
-        super(WSEventType.SESSION_STATE);
+        super("cb_session_state", WSConstants.TOPIC_SESSION);
         this.lastAccessTime = lastAccessTime;
         this.remainingTime = remainingTime;
         this.isValid = isValid;

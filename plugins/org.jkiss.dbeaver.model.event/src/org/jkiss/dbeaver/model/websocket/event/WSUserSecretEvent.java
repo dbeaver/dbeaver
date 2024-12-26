@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.websocket.event;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.websocket.WSConstants;
 
 public class WSUserSecretEvent extends WSAbstractEvent {
 
@@ -32,7 +33,7 @@ public class WSUserSecretEvent extends WSAbstractEvent {
         @Nullable String sessionId,
         @Nullable String userId
     ) {
-        super(WSEventType.DATASOURCE_SECRET_UPDATED, sessionId, userId);
+        super("cb_user_secret_updated", WSConstants.TOPIC_USER_SECRET, sessionId, userId);
         this.projectId = projectId;
         this.dataSourceId = dataSourceId;
     }

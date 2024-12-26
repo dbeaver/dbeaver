@@ -16,10 +16,11 @@
  */
 package org.jkiss.utils;
 
+import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class ByteNumberFormatTest {
+public class ByteNumberFormatTest extends OSGIMockDataTest {
 
     private static final long KB = 1024;
     private static final long MB = 1024 * KB;

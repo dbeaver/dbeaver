@@ -12,4 +12,5 @@ Bundle-ActivationPolicy: lazy
 Require-Bundle: org.junit,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql,
+ org.jkiss.dbeaver.test.platform,
  org.mockito.mockito-core
