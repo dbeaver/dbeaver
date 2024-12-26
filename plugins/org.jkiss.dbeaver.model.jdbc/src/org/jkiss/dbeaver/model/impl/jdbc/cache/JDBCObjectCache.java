@@ -95,7 +95,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
             return;
         }
         if (DBWorkbench.getPlatform().isUnitTestMode()) {
-            log.debug("Skip cache read in test mode");
+            log.debug("[TEST] Skip cache read in test mode");
             return;
         }
 

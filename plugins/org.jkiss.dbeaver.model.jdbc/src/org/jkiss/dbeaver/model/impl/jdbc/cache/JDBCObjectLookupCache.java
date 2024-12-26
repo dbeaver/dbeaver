@@ -94,7 +94,7 @@ public abstract class JDBCObjectLookupCache<OWNER extends DBSObject, OBJECT exte
         throws DBException
     {
         if (DBWorkbench.getPlatform().isUnitTestMode()) {
-            log.debug("Skip lookup cache read in test mode");
+            log.debug("[TEST] Skip lookup cache read in test mode");
             return object;
         }
 

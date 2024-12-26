@@ -279,7 +279,7 @@ public abstract class JDBCCompositeCache<
         throws DBException
     {
         if (DBWorkbench.getPlatform().isUnitTestMode()) {
-            log.debug("Skip composite cache read in test mode");
+            log.debug("[TEST] Skip composite cache read in test mode");
             return;
         }
         synchronized (objectCache) {
