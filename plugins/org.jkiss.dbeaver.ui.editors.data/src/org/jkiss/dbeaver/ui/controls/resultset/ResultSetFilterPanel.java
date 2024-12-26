@@ -492,7 +492,18 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         }
         String condition = filtersText.getText();
         StringBuilder currentCondition = new StringBuilder();
-        SQLUtils.appendConditionString(viewer.getModel().getDataFilter(), context.getDataSource(), null, currentCondition, true);
+        try {
+            SQLUtils.appendConditionString(
+                viewer.getModel().getDataFilter(),
+                context.getDataSource(),
+                null,
+                currentCondition,
+                true
+            );
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Can't set filter", "Cannot set custom filter", e);
+            return;
+        }
         if (currentCondition.toString().trim().equals(condition.trim())) {
             // The same
             return;
@@ -1155,7 +1166,18 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 return false;
             }
             StringBuilder currentCondition = new StringBuilder();
-            SQLUtils.appendConditionString(viewer.getModel().getDataFilter(), context.getDataSource(), null, currentCondition, true);
+            try {
+                SQLUtils.appendConditionString(
+                    viewer.getModel().getDataFilter(),
+                    context.getDataSource(),
+                    null,
+                    currentCondition,
+                    true
+                );
+            } catch (DBException e) {
+                log.error(e);
+                return false;
+            }
             return !currentCondition.toString().trim().equals(filtersText.getText().trim());
         }
 

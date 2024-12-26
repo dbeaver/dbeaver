@@ -14,30 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.websocket.event.client;
+package org.jkiss.dbeaver.model.websocket.registry;
 
+import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.websocket.WSConstants;
-import org.jkiss.dbeaver.model.websocket.event.WSClientEvent;
-
-import java.util.Set;
+import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.dbeaver.model.websocket.event.WSEvent;
 
 /**
- * Subscribe on event topic
+ *  Event from the server to the client (browser or desktop)
  */
-public class WSUpdateActiveProjectsClientEvent extends WSClientEvent {
-    public static final String ID = "cb_client_projects_active";
-
+public class WSServerEventDescriptor extends WSAbstractEventDescriptor {
     @NotNull
-    private final Set<String> projectIds;
+    private final String topicId;
 
-    public WSUpdateActiveProjectsClientEvent(@NotNull Set<String> projectIds) {
-        super(ID, WSConstants.TOPIC_PROJECTS);
-        this.projectIds = projectIds;
+    protected WSServerEventDescriptor(
+        @NotNull IConfigurationElement cfg
+    ) {
+        super(cfg);
+        this.topicId = cfg.getAttribute("topicId");;
+    }
+    @NotNull
+    public String getTopicId() {
+        return topicId;
     }
 
     @NotNull
-    public Set<String> getProjectIds() {
-        return projectIds;
+    public Class<? extends WSEvent> getEventClass() {
+        return implType.getObjectClass(WSEvent.class);
     }
 }

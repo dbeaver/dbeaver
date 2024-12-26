@@ -14,31 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.websocket.event;
+package org.jkiss.dbeaver.model.websocket.registry;
 
-
+import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.websocket.WSConstants;
+import org.jkiss.dbeaver.model.websocket.event.WSClientEvent;
+import org.jkiss.dbeaver.model.websocket.event.WSEvent;
 
-public class WSTaskFinishedEvent extends WSAbstractEvent implements WSProjectEvent{
-    @NotNull
-    private final String taskId;
-    @NotNull
-    private final String projectId;
-
-    public WSTaskFinishedEvent(@NotNull String taskId, @NotNull String projectId) {
-        super("cb_task_finished", WSConstants.TOPIC_TASK);
-        this.taskId = taskId;
-        this.projectId = projectId;
+/**
+ * Event from the client (browser or desktop) to the server
+ */
+public class WSClientEventDescriptor extends WSAbstractEventDescriptor {
+    protected WSClientEventDescriptor(
+        @NotNull IConfigurationElement cfg
+    ) {
+        super(cfg);
     }
 
     @NotNull
-    public String getTaskId() {
-        return taskId;
-    }
-
-    @NotNull
-    public String getProjectId() {
-        return projectId;
+    public Class<? extends WSClientEvent> getEventClass() {
+        return implType.getObjectClass(WSClientEvent.class);
     }
 }

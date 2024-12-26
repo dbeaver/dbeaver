@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.websocket.event.datasource;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.websocket.event.WSEventType;
+import org.jkiss.dbeaver.model.websocket.WSConstants;
 import org.jkiss.dbeaver.model.websocket.event.WSProjectResourceEvent;
 
 import java.util.List;
@@ -27,13 +27,13 @@ public class WSDatasourceFolderEvent extends WSProjectResourceEvent {
     private final List<String> nodePaths;
 
     private WSDatasourceFolderEvent(
-        WSEventType eventType,
+        @NotNull String eventId,
         String sessionId,
         String userId,
         String projectId,
         List<String> nodePaths
     ) {
-        super(eventType, sessionId, userId, projectId);
+        super(eventId, WSConstants.TOPIC_DATASOURCE_FOLDER, sessionId, userId, projectId);
         this.nodePaths = nodePaths;
     }
 
@@ -44,7 +44,7 @@ public class WSDatasourceFolderEvent extends WSProjectResourceEvent {
         @NotNull List<String> datasourceIds
     ) {
         return new WSDatasourceFolderEvent(
-            WSEventType.DATASOURCE_FOLDER_CREATED,
+            "cb_datasource_folder_created",
             sessionId,
             userId,
             projectId,
@@ -59,7 +59,7 @@ public class WSDatasourceFolderEvent extends WSProjectResourceEvent {
         @NotNull List<String> datasourceIds
     ) {
         return new WSDatasourceFolderEvent(
-            WSEventType.DATASOURCE_FOLDER_DELETED,
+            "cb_datasource_folder_deleted",
             sessionId,
             userId,
             projectId,
@@ -74,7 +74,7 @@ public class WSDatasourceFolderEvent extends WSProjectResourceEvent {
         @NotNull List<String> datasourceIds
     ) {
         return new WSDatasourceFolderEvent(
-            WSEventType.DATASOURCE_FOLDER_UPDATED,
+            "cb_datasource_folder_updated",
             sessionId,
             userId,
             projectId,
