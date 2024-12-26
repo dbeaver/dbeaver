@@ -19,10 +19,10 @@ package org.jkiss.dbeaver.core;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.LogOutputStream;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.ui.services.ApplicationPolicyService;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMConstants;
 import org.jkiss.dbeaver.model.qm.QMObjectType;
@@ -42,7 +42,7 @@ public class DesktopPreferencesInitializer extends AbstractPreferenceInitializer
     @Override
     public void initializeDefaultPreferences() {
         // Init default preferences
-        DBPPreferenceStore store = ModelPreferences.getPreferences();
+        DBPPreferenceStore store = new BundlePreferenceStore(DBeaverActivator.getInstance().getBundle());
 
         // Resources
         //PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.DEFAULT_RESOURCE_ENCODING, GeneralUtils.UTF8_ENCODING);
