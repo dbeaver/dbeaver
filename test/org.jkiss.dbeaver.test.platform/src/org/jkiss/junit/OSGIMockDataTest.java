@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model;
+package org.jkiss.junit;
 
 import org.jkiss.dbeaver.osgi.test.runner.OSGITestRunner;
 import org.jkiss.dbeaver.osgi.test.runner.annotation.RunWithProduct;

@@ -18,14 +18,12 @@ package org.jkiss.dbeaver.model.sql.analyzer;
 
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestBuilder;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestResult;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
 import org.jkiss.dbeaver.osgi.test.runner.OSGITestRunner;
-import org.jkiss.dbeaver.osgi.test.runner.annotation.RunWithProduct;
 import org.jkiss.dbeaver.osgi.test.runner.annotation.RunnerProxy;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.junit.OSGIMockDataTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;

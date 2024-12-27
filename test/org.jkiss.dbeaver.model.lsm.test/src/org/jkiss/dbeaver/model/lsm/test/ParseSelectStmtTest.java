@@ -18,12 +18,11 @@ package org.jkiss.dbeaver.model.lsm.test;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
+import org.jkiss.junit.OSGIMockDataTest;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import java.io.IOException;
 import java.io.InputStream;

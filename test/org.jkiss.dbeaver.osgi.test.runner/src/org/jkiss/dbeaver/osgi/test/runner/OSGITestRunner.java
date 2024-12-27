@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.osgi.test.runner;
 import org.eclipse.osgi.internal.framework.EquinoxBundle;
 import org.eclipse.osgi.service.runnable.ApplicationLauncher;
 import org.eclipse.osgi.util.ManifestElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.osgi.test.runner.annotation.RunWithProduct;
 import org.jkiss.dbeaver.osgi.test.runner.annotation.RunnerProxy;
@@ -37,6 +38,8 @@ import org.osgi.framework.wiring.BundleWiring;
 import java.io.File;
 import java.io.FileInputStream;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.*;
@@ -155,14 +158,14 @@ public class OSGITestRunner extends Runner {
                 null
             );
             launcher.start(bundle.getSymbolicName());
+
             if (testClass.getAnnotation(RunnerProxy.class) != null) {
                 Constructor<?> proxy = testBundle.loadClass(testClass.getAnnotation(RunnerProxy.class).value().getName()).getConstructor(Class.class);
                 Object o = proxy.newInstance(testBundle.loadClass(testClass.getName()));
-                Arrays.stream(o.getClass().getMethods()).filter(it -> it.getName().equals("run"))
-                    .findFirst().orElseThrow().invoke(
-                    o,
-                    testBundle.loadClass(RunNotifier.class.getName()).getConstructor().newInstance()
-                );
+                Method runMethod = Arrays.stream(o.getClass().getMethods()).filter(it -> it.getName().equals("run"))
+                    .findFirst().orElseThrow();
+                Object proxyNotifier = createProxyNotifier(notifier);
+                runMethod.invoke(o, proxyNotifier);
 
             }
         } catch (Throwable throwable) {
@@ -175,6 +178,23 @@ public class OSGITestRunner extends Runner {
                 log.error("Error stopping framework", e);
             }
         }
+    }
+
+    @NotNull
+    private Object createProxyNotifier(RunNotifier notifier) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException {
+        Object newOsgiNotifier = testBundle.loadClass(RunNotifier.class.getName()).getConstructor().newInstance();
+
+        try {
+            Class<?> osgiListenerClass = testBundle.loadClass(OSGITestRunListener.class.getName());
+            Object osgiListener = osgiListenerClass.getConstructor(Object.class).newInstance(notifier);
+            Method addListenerMethod = Arrays.stream(newOsgiNotifier.getClass().getMethods())
+                .filter(method -> method.getName().equals("addListener")).findFirst().orElseThrow();
+            addListenerMethod.invoke(newOsgiNotifier, osgiListener);
+        } catch (Throwable e) {
+            log.debug(e);
+        }
+
+        return newOsgiNotifier;
     }
 
     private Framework initializeFramework() {
@@ -201,6 +221,9 @@ public class OSGITestRunner extends Runner {
         });
         // Install all bundles from the directory
         for (String bundleFile : ManifestElement.getArrayFromList(props.getProperty("osgi.bundles"))) {
+//            if (bundleFile.contains("junit")) {
+//                continue;
+//            }
             if (bundleFile.contains(".app") && !bundleFile.contains("headless") && !bundleFile.contains("org.eclipse")) {
                 continue;
             }
@@ -267,6 +290,7 @@ public class OSGITestRunner extends Runner {
                         testBundle = bundle;
                     } catch (ClassNotFoundException e) {
                         // ignore, expected
+                        //log.error(e);
                     }
                     log.info("Started bundle: " + bundle.getSymbolicName());
                 } catch (BundleException e) {

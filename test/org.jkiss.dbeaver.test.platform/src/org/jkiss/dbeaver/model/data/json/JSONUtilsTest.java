@@ -17,8 +17,8 @@
 
 package org.jkiss.dbeaver.model.data.json;
 
-import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.jkiss.dbeaver.osgi.test.runner.OSGITestRunner;
+import org.jkiss.junit.OSGIMockDataTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

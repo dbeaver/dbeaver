@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSPackage;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTrigger;
 import org.jkiss.dbeaver.osgi.test.runner.OSGITestRunner;
+import org.jkiss.junit.OSGIMockDataTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

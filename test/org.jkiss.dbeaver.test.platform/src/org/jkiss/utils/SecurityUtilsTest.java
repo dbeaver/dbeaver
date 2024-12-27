@@ -16,7 +16,7 @@
  */
 package org.jkiss.utils;
 
-import org.jkiss.dbeaver.model.OSGIMockDataTest;
+import org.jkiss.junit.OSGIMockDataTest;
 import org.junit.Test;
 
 //@RunWith(PowerMockRunner.class)

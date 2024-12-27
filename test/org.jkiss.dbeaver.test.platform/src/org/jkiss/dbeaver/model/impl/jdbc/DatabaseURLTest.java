@@ -18,8 +18,8 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DatabaseURL;
-import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.jkiss.dbeaver.osgi.test.runner.OSGITestRunner;
+import org.jkiss.junit.OSGIMockDataTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

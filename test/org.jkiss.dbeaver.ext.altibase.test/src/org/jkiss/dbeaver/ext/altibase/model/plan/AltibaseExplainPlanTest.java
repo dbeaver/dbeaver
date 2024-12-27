@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model.plan;
 
-import org.jkiss.dbeaver.model.OSGIMockDataTest;
+import org.jkiss.junit.OSGIMockDataTest;
 import org.junit.Test;
 
 import java.util.List;

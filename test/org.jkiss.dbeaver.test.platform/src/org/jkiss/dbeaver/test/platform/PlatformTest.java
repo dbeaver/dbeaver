@@ -17,9 +17,9 @@
 
 package org.jkiss.dbeaver.test.platform;
 
-import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.junit.OSGIMockDataTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

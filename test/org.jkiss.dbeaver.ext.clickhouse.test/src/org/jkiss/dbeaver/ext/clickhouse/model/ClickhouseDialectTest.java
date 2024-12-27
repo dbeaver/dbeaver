@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.clickhouse.model;
 
-import org.jkiss.dbeaver.model.OSGIMockDataTest;
+import org.jkiss.junit.OSGIMockDataTest;
 import org.junit.Assert;
 import org.junit.Test;
 

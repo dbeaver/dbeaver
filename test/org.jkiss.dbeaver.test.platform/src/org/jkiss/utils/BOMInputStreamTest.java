@@ -17,7 +17,7 @@
 package org.jkiss.utils;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.OSGIMockDataTest;
+import org.jkiss.junit.OSGIMockDataTest;
 import org.jkiss.utils.io.BOMInputStream;
 import org.jkiss.utils.io.ByteOrderMark;
 import org.junit.Assert;

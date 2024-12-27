@@ -16,8 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.snowflake.model;
 
-import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.junit.OSGIMockDataTest;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;

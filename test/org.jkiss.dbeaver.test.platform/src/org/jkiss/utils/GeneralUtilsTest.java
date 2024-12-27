@@ -17,8 +17,8 @@
 package org.jkiss.utils;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.junit.OSGIMockDataTest;
 import org.junit.Test;
 
 import java.text.SimpleDateFormat;

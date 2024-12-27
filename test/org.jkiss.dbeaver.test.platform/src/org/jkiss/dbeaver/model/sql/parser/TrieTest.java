@@ -16,9 +16,9 @@
  */
 package org.jkiss.dbeaver.model.sql.parser;
 
-import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.Trie;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TrieLookupComparator;
+import org.jkiss.junit.OSGIMockDataTest;
 import org.junit.Assert;
 import org.junit.Test;
 

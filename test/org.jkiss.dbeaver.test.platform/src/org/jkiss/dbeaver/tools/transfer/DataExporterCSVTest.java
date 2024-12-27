@@ -16,12 +16,12 @@
  */
 package org.jkiss.dbeaver.tools.transfer;
 
-import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.osgi.test.runner.annotation.RunnerProxy;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterCSV;
+import org.jkiss.junit.OSGIMockDataTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

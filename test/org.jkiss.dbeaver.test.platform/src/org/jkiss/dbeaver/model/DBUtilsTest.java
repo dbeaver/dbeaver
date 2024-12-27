@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.osgi.test.runner.OSGITestRunner;
+import org.jkiss.junit.OSGIMockDataTest;
 import org.jkiss.utils.Pair;
 import org.junit.Assert;
 import org.junit.Before;

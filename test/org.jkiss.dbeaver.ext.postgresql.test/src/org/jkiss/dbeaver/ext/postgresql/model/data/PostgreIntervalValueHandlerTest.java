@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
-import org.jkiss.dbeaver.model.OSGIMockDataTest;
+import org.jkiss.junit.OSGIMockDataTest;
 import org.junit.Assert;
 import org.junit.Test;
 

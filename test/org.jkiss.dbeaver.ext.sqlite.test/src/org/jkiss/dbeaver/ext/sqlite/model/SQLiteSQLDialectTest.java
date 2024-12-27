@@ -16,8 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.sqlite.model;
 
-import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.junit.OSGIMockDataTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mock;

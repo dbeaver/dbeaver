@@ -17,7 +17,7 @@
  */
 package org.jkiss.utils;
 
-import org.jkiss.dbeaver.model.OSGIMockDataTest;
+import org.jkiss.junit.OSGIMockDataTest;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;

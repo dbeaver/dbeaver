@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model;
 
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.osgi.test.runner.OSGITestRunner;
+import org.jkiss.junit.OSGIMockDataTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -31,7 +31,7 @@ public class ClassTransferHandler {
         }
         try {
             if (value instanceof Serializable serializable) {
-                return deserialize(serialize(value), targetClassloader, serializable.getClass().getName());
+                return deserialize(serialize(serializable), targetClassloader, serializable.getClass().getName());
             } else if (value instanceof RunListener) {
                 Class<?> delegateClass = targetClassloader.loadClass(
                     "org.jkiss.dbeaver.osgi.test.runner.delegate.RunListenerDelegate");
@@ -44,15 +44,22 @@ public class ClassTransferHandler {
         }
         return null;
     }
-    private static String serialize(Object description)  {
-        return gson.toJson(description);
+    private static byte[] serialize(Serializable description) throws IOException {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        new ObjectOutputStream(buffer).writeObject(description);
+        return buffer.toByteArray();
     }
 
-    private static Object deserialize(String data, ClassLoader classLoader, String classname) throws IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        Object gson = classLoader.loadClass(ClassTransferHandler.gson.getClass().getName()).getConstructor().newInstance();
-        Object o = gson.getClass().getMethod("fromJson").invoke(gson, data, classLoader.loadClass(classname));
-
-        return o;
+    private static Object deserialize(byte[] data, ClassLoader classLoader, String classname) throws IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        //Object gson = classLoader.loadClass(ClassTransferHandler.gson.getClass().getName()).getConstructor().newInstance();
+        //Object o = gson.getClass().getMethod("fromJson").invoke(gson, data, classLoader.loadClass(classname));
+        ByteArrayInputStream buffer = new ByteArrayInputStream(data);
+        return new ObjectInputStream(buffer) {
+            @Override
+            protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
+                return Class.forName(desc.getName(), false, classLoader);
+            }
+        }.readObject();
     }
 
 

@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ext.greenplum.model;
 
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreServerExtension;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
-import org.jkiss.dbeaver.model.OSGIMockDataTest;
+import org.jkiss.junit.OSGIMockDataTest;
 import org.junit.Test;
 import org.mockito.Mock;
 

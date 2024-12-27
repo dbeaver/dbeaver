@@ -17,8 +17,8 @@
 package org.jkiss.dbeaver.data.transfer;
 
 
-import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferUtils;
+import org.jkiss.junit.OSGIMockDataTest;
 import org.junit.Assert;
 import org.junit.Test;
 
