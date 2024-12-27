@@ -16,14 +16,14 @@
  */
 package org.jkiss.utils;
 
-import org.jkiss.junit.OSGIMockDataTest;
+import org.jkiss.junit.OSGIUnitTest;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ArrayUtilsTest extends OSGIMockDataTest {
+public class ArrayUtilsTest extends OSGIUnitTest {
 
   @Test
   public void testIsEmpty() {

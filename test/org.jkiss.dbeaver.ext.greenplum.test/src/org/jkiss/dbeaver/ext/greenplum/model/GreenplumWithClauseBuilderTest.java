@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ext.greenplum.model;
 
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreServerExtension;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
-import org.jkiss.junit.OSGIMockDataTest;
+import org.jkiss.junit.OSGIUnitTest;
 import org.junit.Test;
 import org.mockito.Mock;
 
@@ -26,7 +26,7 @@ import static org.jkiss.dbeaver.ext.greenplum.model.GreenplumWithClauseBuilder.g
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
-public class GreenplumWithClauseBuilderTest extends OSGIMockDataTest {
+public class GreenplumWithClauseBuilderTest extends OSGIUnitTest {
     @Mock
     private GreenplumTable table;
 

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.osgi.test.runner.delegate;
+package org.jkiss.junit.osgi.delegate;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -34,7 +34,7 @@ public class ClassTransferHandler {
                 return deserialize(serialize(serializable), targetClassloader, serializable.getClass().getName());
             } else if (value instanceof RunListener) {
                 Class<?> delegateClass = targetClassloader.loadClass(
-                    "org.jkiss.dbeaver.osgi.test.runner.delegate.RunListenerDelegate");
+                    "org.jkiss.junit.osgi.delegate.RunListenerDelegate");
                 return delegateClass
                     .getConstructor(Object.class)
                     .newInstance(value);

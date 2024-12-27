@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataImporterSite;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamDataImporterColumnInfo;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamEntityMapping;
 import org.jkiss.dbeaver.tools.transfer.stream.importer.DataImporterCSV;
-import org.jkiss.junit.OSGIMockDataTest;
+import org.jkiss.junit.OSGIUnitTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,7 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CSVImporterTest  extends OSGIMockDataTest {
+public class CSVImporterTest  extends OSGIUnitTest {
 
     private static final Path DUMMY_FILE = Path.of("dummy");
     private final DataImporterCSV importer = new DataImporterCSV();

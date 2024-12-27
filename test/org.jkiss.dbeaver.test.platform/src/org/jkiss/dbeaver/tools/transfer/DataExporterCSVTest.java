@@ -18,10 +18,10 @@ package org.jkiss.dbeaver.tools.transfer;
 
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.osgi.test.runner.annotation.RunnerProxy;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterCSV;
-import org.jkiss.junit.OSGIMockDataTest;
+import org.jkiss.junit.OSGIUnitTest;
+import org.jkiss.junit.osgi.annotation.RunnerProxy;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,7 +33,7 @@ import java.io.StringWriter;
 import java.util.HashMap;
 
 @RunnerProxy(MockitoJUnitRunner.Silent.class)
-public class DataExporterCSVTest extends OSGIMockDataTest {
+public class DataExporterCSVTest extends OSGIUnitTest {
 
     private DataExporterCSV dataExporterCSV;
     private StringWriter stringWriter;

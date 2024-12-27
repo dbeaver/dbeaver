@@ -16,11 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.hana.model;
 
-import org.jkiss.junit.OSGIMockDataTest;
+import org.jkiss.junit.OSGIUnitTest;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class HANADialectTest extends OSGIMockDataTest {
+public class HANADialectTest extends OSGIUnitTest {
     @Test
     public void quoteStatusStringTest() {
         final HANASQLDialect dialect = new HANASQLDialect();

@@ -18,14 +18,14 @@ package org.jkiss.dbeaver.data.transfer;
 
 
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferUtils;
-import org.jkiss.junit.OSGIMockDataTest;
+import org.jkiss.junit.OSGIUnitTest;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class StreamTransferUtilsTest extends OSGIMockDataTest {
+public class StreamTransferUtilsTest extends OSGIUnitTest {
 
     @Test
     public void testDelimiterString() {

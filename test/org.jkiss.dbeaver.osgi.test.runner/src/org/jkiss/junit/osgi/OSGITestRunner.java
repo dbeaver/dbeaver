@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.osgi.test.runner;
+package org.jkiss.junit.osgi;
 
 import org.eclipse.osgi.internal.framework.EquinoxBundle;
 import org.eclipse.osgi.service.runnable.ApplicationLauncher;
 import org.eclipse.osgi.util.ManifestElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.osgi.test.runner.annotation.RunWithProduct;
-import org.jkiss.dbeaver.osgi.test.runner.annotation.RunnerProxy;
-import org.jkiss.dbeaver.osgi.test.runner.launcher.TestLauncher;
+import org.jkiss.junit.osgi.annotation.RunWithProduct;
+import org.jkiss.junit.osgi.annotation.RunnerProxy;
+import org.jkiss.junit.osgi.launcher.TestLauncher;
 import org.jkiss.utils.Pair;
 import org.junit.runner.Description;
 import org.junit.runner.Runner;

@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.junit.OSGIMockDataTest;
+import org.jkiss.junit.OSGIUnitTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,7 +33,7 @@ import org.mockito.Mockito;
 
 import java.sql.SQLException;
 
-public class PostgreServerGreenplumTest extends OSGIMockDataTest {
+public class PostgreServerGreenplumTest extends OSGIUnitTest {
     @Mock
     GreenplumDataSource mockDataSource;
 

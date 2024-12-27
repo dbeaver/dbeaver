@@ -16,13 +16,13 @@
  */
 package org.jkiss.utils;
 
-import org.jkiss.junit.OSGIMockDataTest;
+import org.jkiss.junit.OSGIUnitTest;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-public class MimeTypeTest extends OSGIMockDataTest {
+public class MimeTypeTest extends OSGIUnitTest {
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
   @Test

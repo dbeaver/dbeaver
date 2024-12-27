@@ -16,11 +16,11 @@
  */
 package org.jkiss.utils;
 
-import org.jkiss.junit.OSGIMockDataTest;
+import org.jkiss.junit.OSGIUnitTest;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class ByteNumberFormatTest extends OSGIMockDataTest {
+public class ByteNumberFormatTest extends OSGIUnitTest {
 
     private static final long KB = 1024;
     private static final long MB = 1024 * KB;

@@ -7,8 +7,8 @@ Bundle-Release-Date: 20241223
 Bundle-Vendor: DBeaver Corp
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
-Export-Package: org.jkiss.dbeaver.osgi.test.runner,
- org.jkiss.dbeaver.osgi.test.runner.annotation
+Export-Package: org.jkiss.junit.osgi,
+ org.jkiss.junit.osgi.annotation
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.junit;visibility:=reexport,

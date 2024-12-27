@@ -33,13 +33,11 @@ import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.text.parser.TPRuleBasedScanner;
-import org.jkiss.dbeaver.osgi.test.runner.OSGITestRunner;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.junit.OSGIMockDataTest;
+import org.jkiss.junit.OSGIUnitTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
@@ -49,8 +47,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-@RunWith(OSGITestRunner.class)
-public class SQLScriptParserTest extends OSGIMockDataTest {
+public class SQLScriptParserTest extends OSGIUnitTest {
     @Mock
     private JDBCDataSource dataSource;
     @Mock

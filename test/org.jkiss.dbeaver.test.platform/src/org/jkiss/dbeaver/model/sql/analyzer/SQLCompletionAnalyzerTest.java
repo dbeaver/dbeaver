@@ -21,23 +21,17 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestBuilder;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestResult;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
-import org.jkiss.dbeaver.osgi.test.runner.OSGITestRunner;
-import org.jkiss.dbeaver.osgi.test.runner.annotation.RunnerProxy;
-import org.jkiss.junit.OSGIMockDataTest;
+import org.jkiss.junit.OSGIUnitTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
 
 import static org.jkiss.dbeaver.model.sql.analyzer.builder.Builder.Consumer.empty;
 
-@RunWith(OSGITestRunner.class)
-@RunnerProxy(MockitoJUnitRunner.Silent.class)
-public class SQLCompletionAnalyzerTest extends OSGIMockDataTest {
+public class SQLCompletionAnalyzerTest extends OSGIUnitTest {
     private static RequestResult modelDataRequest;
 
     @Before
