@@ -17,8 +17,8 @@
 package org.jkiss.dbeaver.ui.editors.sql.terminal.internal;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.sql.terminal.SQLTerminalPreferencesConstants;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
@@ -30,7 +30,7 @@ public class SQLTerminalPreferencesInitializer extends AbstractPreferenceInitial
     @Override
     public void initializeDefaultPreferences() {
         // Init default preferences
-        DBPPreferenceStore store = ModelPreferences.getPreferences();
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         PrefUtils.setDefaultPreferenceValue(store, SQLTerminalPreferencesConstants.SHOW_TERMINAL_VIEW_BY_DEFAULT, false);
         PrefUtils.setDefaultPreferenceValue(store, SQLTerminalPreferencesConstants.SHOW_QUERY_TEXT, true);
         PrefUtils.setDefaultPreferenceValue(store, SQLTerminalPreferencesConstants.SHOW_SERVER_OUTPUT, true);

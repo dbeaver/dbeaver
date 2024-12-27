@@ -17,8 +17,8 @@
 package org.jkiss.dbeaver.ui.internal;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
@@ -34,7 +34,7 @@ public class UINavigatorPreferencesInitializer extends AbstractPreferenceInitial
     @Override
     public void initializeDefaultPreferences() {
         // Init default preferences
-        DBPPreferenceStore store = ModelPreferences.getPreferences();
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         // Navigator
         PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_EXPAND_ON_CONNECT, false);

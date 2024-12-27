@@ -17,9 +17,9 @@
 package org.jkiss.dbeaver.ext.altibase.internal;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
 public class AltibasePreferencesInitializer extends AbstractPreferenceInitializer {
@@ -29,7 +29,7 @@ public class AltibasePreferencesInitializer extends AbstractPreferenceInitialize
 
     @Override
     public void initializeDefaultPreferences() {
-        DBPPreferenceStore store = ModelPreferences.getPreferences();
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         PrefUtils.setDefaultPreferenceValue(store, AltibaseConstants.PREF_EXPLAIN_PLAN_TYPE, 0);
         PrefUtils.setDefaultPreferenceValue(store, AltibaseConstants.PREF_DBMS_OUTPUT, true);

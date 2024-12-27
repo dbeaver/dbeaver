@@ -17,9 +17,9 @@
 package org.jkiss.dbeaver.ui.editors.data.internal;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
@@ -34,7 +34,7 @@ public class DataEditorsPreferencesInitializer extends AbstractPreferenceInitial
     @Override
     public void initializeDefaultPreferences() {
         // Init default preferences
-        DBPPreferenceStore store = ModelPreferences.getPreferences();
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         // Common
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.KEEP_STATEMENT_OPEN, false);

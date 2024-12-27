@@ -17,9 +17,9 @@
 package org.jkiss.dbeaver.ext.oracle.internal;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
 public class OraclePreferencesInitializer extends AbstractPreferenceInitializer {
@@ -32,7 +32,7 @@ public class OraclePreferencesInitializer extends AbstractPreferenceInitializer 
     public void initializeDefaultPreferences()
     {
         // Init default preferences
-        DBPPreferenceStore store = ModelPreferences.getPreferences();
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         // Common
         PrefUtils.setDefaultPreferenceValue(store, OracleConstants.PREF_SUPPORT_ROWID, true);
