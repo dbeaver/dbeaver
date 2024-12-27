@@ -311,6 +311,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
             return null;
         }
 
+        @NotNull
         @Override
         public SQLDialect getSQLDialect() {
             return dialect;

@@ -27,7 +27,6 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -48,6 +47,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetThemeSettings;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
@@ -81,10 +81,8 @@ public class ReferenceValueEditor {
     private static volatile boolean sortByValue = true; // It is static to save its value between editors
     private static volatile boolean sortAsc = true;
     private TableColumn prevSortColumn = null;
-    private Font boldFont;
     private LoadingJob<EnumValuesData> dictFilterJob;
     private final ViewController controller;
-    private Font defaultFont;
 
     private class ViewController {
         private final int pageSize;
@@ -327,11 +325,6 @@ public class ReferenceValueEditor {
             return false;
         }
 
-        this.defaultFont = UIUtils.getActiveWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme()
-            .getFontRegistry().get(ThemeConstants.FONT_SQL_RESULT_SET);
-        this.boldFont = UIUtils.makeBoldFont(defaultFont);
-        parent.addDisposeListener(e -> this.boldFont.dispose());
-
         if (refConstraint instanceof DBSEntityAssociation association) {
             if (association.getReferencedConstraint() != null) {
                 final DBSEntity refTable = association.getReferencedConstraint().getParentObject();
@@ -386,7 +379,7 @@ public class ReferenceValueEditor {
         editorSelector = new Table(parent, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);
         editorSelector.setLinesVisible(true);
         editorSelector.setHeaderVisible(true);
-        editorSelector.setFont(defaultFont);
+        editorSelector.setFont(ResultSetThemeSettings.instance.resultSetFont);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 150;
         //gd.widthHint = 300;
@@ -447,6 +440,11 @@ public class ReferenceValueEditor {
 
         controller.reset(curValue);
 
+        ResultSetThemeSettings.instance.addPropertyListener(
+            ThemeConstants.FONT_SQL_RESULT_SET,
+            s -> showCurrentValue(),
+            editorSelector);
+
         return true;
     }
 
@@ -480,16 +478,17 @@ public class ReferenceValueEditor {
             curEditorValue,
             DBDDisplayFormat.EDIT);
         boolean newValueFound = false;
+        editorSelector.setFont(ResultSetThemeSettings.instance.resultSetFont);
         TableItem[] items = editorSelector.getItems();
         for (TableItem item : items) {
             if (curTextValue.equalsIgnoreCase(item.getText(0)) || curTextValue.equalsIgnoreCase(item.getText(1))) {
                 editorSelector.deselectAll();
-                item.setFont(boldFont);
+                item.setFont(ResultSetThemeSettings.instance.resultSetFontBold);
                 editorSelector.setSelection(item);
                 editorSelector.showItem(item);
                 newValueFound = true;
             } else {
-                item.setFont(defaultFont);
+                item.setFont(ResultSetThemeSettings.instance.resultSetFont);
             }
         }
 
@@ -568,12 +567,12 @@ public class ReferenceValueEditor {
                         curItem = item;
                         curItemIndex = i;
                     } else {
-                        item.setFont(defaultFont);
+                        item.setFont(ResultSetThemeSettings.instance.resultSetFont);
                     }
                 }
                 editorSelector.deselectAll();
                 if (curItem != null) {
-                    curItem.setFont(boldFont);
+                    curItem.setFont(ResultSetThemeSettings.instance.resultSetFontBold);
                     editorSelector.setSelection(curItem);
                     editorSelector.showItem(curItem);
                     // Show cur item on top

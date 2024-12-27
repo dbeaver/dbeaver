@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.websocket.event;
 
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.websocket.WSConstants;
 
 public class WSTaskFinishedEvent extends WSAbstractEvent implements WSProjectEvent{
     @NotNull
@@ -26,7 +27,7 @@ public class WSTaskFinishedEvent extends WSAbstractEvent implements WSProjectEve
     private final String projectId;
 
     public WSTaskFinishedEvent(@NotNull String taskId, @NotNull String projectId) {
-        super(WSEventType.TASK_FINISHED);
+        super("cb_task_finished", WSConstants.TOPIC_TASK);
         this.taskId = taskId;
         this.projectId = projectId;
     }

@@ -21,13 +21,10 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.resource.ColorRegistry;
-import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -39,7 +36,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -99,8 +95,6 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     private static final String QUERY_LOG_CONTROL_ID = "org.jkiss.dbeaver.ui.qm.log"; //$NON-NLS-1$
     private static final String VIEWER_ID = "DBeaver.QM.LogViewer"; //$NON-NLS-1$
     private static final int MIN_ENTRIES_PER_PAGE = 1;
-
-    private final IPropertyChangeListener themePropertiesListener;
 
     private static abstract class LogColumn {
         private final String id;
@@ -326,10 +320,6 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     private boolean useDefaultFilter = true;
     private final boolean currentSessionOnly;
 
-    private Color colorLightGreen;
-    private Color colorLightRed;
-    private Color colorLightYellow;
-    private final Font boldFont;
     private DragSource dndSource;
 
     private volatile boolean reloadInProgress = false;
@@ -343,14 +333,6 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         this.currentSessionOnly = currentSessionOnly;
 
         // Prepare colors
-
-        ColorRegistry colorRegistry = site.getWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
-
-        colorLightGreen = colorRegistry.get(BaseEditorColors.COLOR_UNCOMMITTED);
-        colorLightRed = colorRegistry.get(BaseEditorColors.COLOR_REVERTED);
-        colorLightYellow = colorRegistry.get(BaseEditorColors.COLOR_TRANSACTION);
-        boldFont = UIUtils.makeBoldFont(parent.getFont());
-
         boolean inDialog = UIUtils.isInDialog(parent);
         // Search field
         this.searchText = new Text(parent, SWT.BORDER | SWT.SEARCH | SWT.ICON_CANCEL);
@@ -416,22 +398,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             }
         });
 
-
-        this.themePropertiesListener = event -> {
-            switch (event.getProperty()) {
-                case BaseEditorColors.COLOR_UNCOMMITTED:
-                    colorLightGreen = colorRegistry.get(BaseEditorColors.COLOR_UNCOMMITTED);
-                    break;
-                case BaseEditorColors.COLOR_REVERTED:
-                    colorLightRed = colorRegistry.get(BaseEditorColors.COLOR_REVERTED);
-                    break;
-                case BaseEditorColors.COLOR_TRANSACTION:
-                    colorLightYellow = colorRegistry.get(BaseEditorColors.COLOR_TRANSACTION);
-                    break;
-            }
-        };
-        this.site.getWorkbenchWindow().getWorkbench().getThemeManager().addPropertyChangeListener(themePropertiesListener);
-
+        UIUtils.installAndUpdateMainFont(parent);
     }
 
     private synchronized void scheduleLogRefresh() {
@@ -498,15 +465,10 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     }
 
     private void dispose() {
-        IWorkbenchWindow workbenchWindow = this.site.getWorkbenchWindow();
-        if (workbenchWindow != null) {
-            workbenchWindow.getWorkbench().getThemeManager().removePropertyChangeListener(themePropertiesListener);
-        }
         DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(this);
         QMUtils.unregisterMetaListener(this);
         UIUtils.dispose(dndSource);
         UIUtils.dispose(logTable);
-        UIUtils.dispose(boldFont);
     }
 
     public Text getSearchText() {
@@ -570,7 +532,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     private Font getObjectFont(QMEvent event) {
         if (event.getObject() instanceof QMMStatementExecuteInfo exec) {
             if (!exec.isClosed() || exec.isFetching()) {
-                return boldFont;
+                return BaseThemeSettings.instance.baseFontBold;
             }
         }
         return null;
@@ -598,15 +560,16 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     private Color getObjectBackground(QMEvent event) {
         if (event.getObject() instanceof QMMStatementExecuteInfo exec) {
             if (exec.hasError()) {
-                return colorLightRed;
+                return QueryLogThemeSettings.instance.colorReverted;
             }
             QMMTransactionSavepointInfo savepoint = exec.getSavepoint();
             if (savepoint == null) {
                 return null;
             } else if (savepoint.isClosed()) {
-                return savepoint.isCommitted() ? colorLightGreen : colorLightYellow;
+                return savepoint.isCommitted() ?
+                    QueryLogThemeSettings.instance.colorUncommitted : QueryLogThemeSettings.instance.colorTransaction;
             } else {
-                return colorLightGreen;
+                return QueryLogThemeSettings.instance.colorUncommitted;
             }
         } else if (event.getObject() instanceof QMMTransactionInfo || event.getObject() instanceof QMMTransactionSavepointInfo) {
             QMMTransactionSavepointInfo savepoint;
@@ -615,7 +578,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             } else {
                 savepoint = (QMMTransactionSavepointInfo) event.getObject();
             }
-            return savepoint.isCommitted() ? null : colorLightYellow;
+            return savepoint.isCommitted() ? null : QueryLogThemeSettings.instance.colorTransaction;
         }
         return null;
     }
@@ -1008,12 +971,6 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             }
         }
         return tdt.toString();
-    }
-
-    private static String formatMinutes(long ms) {
-        long min = ms / 1000 / 60;
-        long sec = (ms - min * 1000 * 60) / 1000;
-        return NLS.bind(ModelMessages.controls_querylog_format_minutes, String.valueOf(min), String.valueOf(sec));
     }
 
     private LogRefreshJob logRefreshJob = null;

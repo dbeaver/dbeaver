@@ -133,16 +133,31 @@ public class SQLSemanticProcessor {
      * @deprecated Use {@link SQLQueryGenerator#getQueryWithAppliedFilters(DBRProgressMonitor, DBPDataSource, String, DBDDataFilter)} instead
      */
     @Deprecated
-    public static String addFiltersToQuery(DBRProgressMonitor monitor, final DBPDataSource dataSource, String sqlQuery, final DBDDataFilter dataFilter) {
-        return dataSource.getSQLDialect().getQueryGenerator().getQueryWithAppliedFilters(monitor, dataSource, sqlQuery,
-            dataFilter);
+    public static String addFiltersToQuery(
+        @Nullable DBRProgressMonitor monitor,
+        @NotNull DBPDataSource dataSource,
+        @NotNull String sqlQuery,
+        @NotNull DBDDataFilter dataFilter
+    ) throws DBException {
+        return dataSource.getSQLDialect().getQueryGenerator().getQueryWithAppliedFilters(
+            monitor,
+            dataSource,
+            sqlQuery,
+            dataFilter
+        );
     }
 
     public static boolean isForceFilterSubQuery(DBPDataSource dataSource) {
         return dataSource.getSQLDialect().supportsSubqueries() && dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT);
     }
 
-    public static String injectFiltersToQuery(DBRProgressMonitor monitor, final DBPDataSource dataSource, String sqlQuery, final DBDDataFilter dataFilter) {
+    @NotNull
+    public static String injectFiltersToQuery(
+        @Nullable DBRProgressMonitor monitor,
+        @NotNull DBPDataSource dataSource,
+        @NotNull String sqlQuery,
+        @NotNull DBDDataFilter dataFilter
+    ) throws DBException {
         try {
             Statement statement = parseQuery(dataSource.getSQLDialect(), sqlQuery);
             if (statement instanceof Select select && select.getSelectBody() instanceof PlainSelect plainSelect) {
@@ -151,9 +166,9 @@ public class SQLSemanticProcessor {
                 }
             }
         } catch (Throwable e) {
-            log.debug("SQL parse error", e);
+            throw new DBException("Error parsing SQL query", e);
         }
-        return null;
+        throw new DBException("Can't inject filters to a query that is not a plain SELECT statement");
     }
 
 
@@ -161,7 +176,11 @@ public class SQLSemanticProcessor {
      *
      * @deprecated Use {@link SQLQueryGenerator#getWrappedFilterQuery(DBPDataSource, String, DBDDataFilter)} instead
      */
-    public static String wrapQuery(final DBPDataSource dataSource, String sqlQuery, final DBDDataFilter dataFilter) {
+    public static String wrapQuery(
+        @NotNull DBPDataSource dataSource,
+        @NotNull String sqlQuery,
+        @NotNull DBDDataFilter dataFilter
+    ) throws DBException {
         return dataSource.getSQLDialect().getQueryGenerator().getWrappedFilterQuery(dataSource, sqlQuery, dataFilter);
     }
 

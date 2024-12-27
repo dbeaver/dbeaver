@@ -1076,7 +1076,7 @@
 
         <fontDefinition
                 id="org.jkiss.dbeaver.sql.resultset.font"
-                categoryId="org.jkiss.dbeaver.ui.fonts"
+                categoryId="org.jkiss.dbeaver.ui.presentation.results"
                 label="%fontDefinition.org.jkiss.dbeaver.sql.resultset.font.label"
                 defaultsTo="org.jkiss.dbeaver.dbeaver.ui.fonts.main">
             <description>%fontDefinition.org.jkiss.dbeaver.sql.resultset.font.description</description>
@@ -1142,7 +1142,7 @@
             label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.readonly.background.label"
             categoryId="org.jkiss.dbeaver.ui.presentation.results"
             id="org.jkiss.dbeaver.sql.resultset.color.cell.readonly.background"
-            value="245, 245, 245">
+            value="255,99,71">
             <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.readonly.background.description</description>
         </colorDefinition>
         <colorDefinition
@@ -1242,6 +1242,12 @@
             value="0, 0, 0">
             <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.string.foreground.description</description>
         </colorDefinition>
+    </extension>
+
+    <extension point="org.eclipse.e4.ui.css.swt.theme">
+        <stylesheet uri="css/e4-dark-data-editor.css">
+            <themeid refid="org.eclipse.e4.ui.css.theme.e4_dark"/>
+        </stylesheet>
     </extension>
 
     <extension point="org.jkiss.dbeaver.confirmations">

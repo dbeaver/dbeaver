@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -109,7 +110,11 @@ public class GroupingDataContainer implements DBSDataContainer {
         if (dataSource != null && dataFilter.hasConditions()) {
             sqlQuery.setLength(0);
             String gbAlias = "gbq_";
-            SQLUtils.appendQueryConditions(dataSource, sqlQuery, gbAlias, dataFilter);
+            try {
+                SQLUtils.appendQueryConditions(dataSource, sqlQuery, gbAlias, dataFilter);
+            } catch (DBException e) {
+                throw new DBCException("Can't generate query conditions", e, session.getExecutionContext());
+            }
             sql = "SELECT * FROM (" + sql + ") " + gbAlias + " " + sqlQuery;
         }
 

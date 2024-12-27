@@ -16,16 +16,14 @@
  */
 package org.jkiss.dbeaver.ext.snowflake.model;
 
+import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-@RunWith(MockitoJUnitRunner.class)
-public class SnowflakeSQLDialectTest {
+public class SnowflakeSQLDialectTest extends OSGIMockDataTest {
     @Test
     public void quoteStatusStringTest() {
         SQLDialect dialect = new SnowflakeSQLDialect();
