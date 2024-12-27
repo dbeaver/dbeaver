@@ -193,7 +193,6 @@ public class ClickhouseDataSource extends GenericDataSource {
                         } else {
                             catalogsFiltered = true;
                         }
-                        catalogNames.add(catalogName);
                     }
                     return catalogNames;
                 }
