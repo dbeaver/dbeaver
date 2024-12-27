@@ -29,10 +29,12 @@ import java.util.Comparator;
  */
 public class SQLCompletionSorter implements ICompletionProposalSorter {
 
-    private final boolean sortAlphabetically;
+    private final SQLEditorBase editor;
+
+    private boolean sortAlphabetically;
 
     public SQLCompletionSorter(SQLEditorBase editor) {
-        this.sortAlphabetically = editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSAL_SORT_ALPHABETICALLY);
+        this.editor = editor;
     }
 
     @Override
@@ -59,5 +61,9 @@ public class SQLCompletionSorter implements ICompletionProposalSorter {
             return qcp.getProposalScore();
         }
         return 0;
+    }
+
+    public void refreshSettings() {
+        this.sortAlphabetically = this.editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSAL_SORT_ALPHABETICALLY);
     }
 }

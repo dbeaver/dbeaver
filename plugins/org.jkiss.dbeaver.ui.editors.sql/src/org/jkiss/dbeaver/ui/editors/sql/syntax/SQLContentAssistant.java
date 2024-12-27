@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
+import org.eclipse.jface.text.contentassist.ContentAssistEvent;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
+import org.eclipse.jface.text.contentassist.ICompletionProposalSorter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.VerifyEvent;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -28,7 +30,11 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
  * SQL Completion proposal
  */
 public class SQLContentAssistant extends ContentAssistant {
+
     private final SQLEditorBase editor;
+
+    private SQLCompletionSorter sorter;
+
     private int lastCompletionOffset = - 1;
     private volatile boolean restartRequested = false;
 
@@ -43,6 +49,17 @@ public class SQLContentAssistant extends ContentAssistant {
         if (lastCompletionOffset == -1 && restartRequested) {
             restartRequested = false;
             UIUtils.asyncExec(() -> showPossibleCompletions());
+        }
+    }
+
+    public void setSorter(SQLCompletionSorter sorter) {
+        this.sorter = sorter;
+        super.setSorter(sorter);
+    }
+
+    public void assistSessionStarted(ContentAssistEvent event) {
+        if (this.sorter != null) {
+            this.sorter.refreshSettings();
         }
     }
 

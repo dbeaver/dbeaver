@@ -436,6 +436,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         @Override
         public void assistSessionStarted(ContentAssistEvent event) {
             SQLCompletionProcessor.setSimpleMode(event.isAutoActivated);
+            contentAssistant.assistSessionStarted(event);
         }
 
         @Override
