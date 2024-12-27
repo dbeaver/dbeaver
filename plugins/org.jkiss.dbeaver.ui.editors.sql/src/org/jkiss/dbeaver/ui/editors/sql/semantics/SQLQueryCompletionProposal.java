@@ -242,7 +242,7 @@ public class SQLQueryCompletionProposal implements ICompletionProposal, IComplet
                     if (DEBUG) {
                         log.debug("validate: " + filterString.string + " vs " + filterKey);
                     }
-                    this.proposalScore = this.filterString.matches(filterKey);
+                    this.proposalScore = this.filterString.matches(filterKey, this.proposalContext.getCompletionContext().isSearchInsideNames());
                     return this.proposalScore > 0 || CommonUtils.isEmpty(filterKey);
                 }
             } catch (BadLocationException ex) {

@@ -32,28 +32,27 @@ public class SQLQueryWordEntry {
         this.filterString = string.toLowerCase();
     }
 
-    public int matches(SQLQueryWordEntry filterKeyOrNull) {
-        return matches(this.filterString, filterKeyOrNull);
+    public int matches(SQLQueryWordEntry filterKeyOrNull, boolean searchInside) {
+        return matches(this.filterString, filterKeyOrNull, searchInside);
     }
 
-    public int matches(String filterKeyStringOrNull) {
-        return matches(this.filterString, filterKeyStringOrNull);
+    public int matches(String filterKeyStringOrNull, boolean searchInside) {
+        return matches(this.filterString, filterKeyStringOrNull, searchInside);
     }
 
-    public static int matches(String string, SQLQueryWordEntry filterKeyOrNull) {
-        return filterKeyOrNull == null ? Integer.MAX_VALUE : matches(string, filterKeyOrNull.filterString);
+    public static int matches(String string, SQLQueryWordEntry filterKeyOrNull, boolean searchInside) {
+        return filterKeyOrNull == null ? Integer.MAX_VALUE : matches(string, filterKeyOrNull.filterString, searchInside);
     }
 
-    public static int matches(String string, String filterKeyStringOrNull) {
+    public static int matches(String string, String filterKeyStringOrNull, boolean searchInside) {
         if (filterKeyStringOrNull == null) {
             return Integer.MAX_VALUE;
         }
 
-        // TODO use SQLCompletionRequest.getContext().isSearchInsideNames() and beginsWith if not
-        if (USE_FUZZY_COMPARISON) {
+        if (searchInside) {
             return TextUtils.fuzzyScore(string, filterKeyStringOrNull);
         } else {
-            return string.contains(filterKeyStringOrNull) ? Integer.MAX_VALUE : 0;
+            return string.startsWith(filterKeyStringOrNull) ? Integer.MAX_VALUE : 0;
         }
     }
 }

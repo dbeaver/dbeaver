@@ -170,6 +170,8 @@ public abstract class SQLQueryCompletionContext {
     private final int scriptItemOffset;
     private final int requestOffset;
 
+    protected boolean searchInsideWords;
+
     private SQLQueryCompletionContext(int scriptItemOffset, int requestOffset) {
         this.scriptItemOffset = scriptItemOffset;
         this.requestOffset = requestOffset;
@@ -269,6 +271,8 @@ public abstract class SQLQueryCompletionContext {
                 @NotNull DBRProgressMonitor monitor,
                 @NotNull SQLCompletionRequest request
             ) {
+                this.searchInsideWords = request.getContext().isSearchInsideNames();
+
                 int position = this.getRequestOffset() - this.getOffset();
                 
                 SQLQueryWordEntry currentWord = this.obtainCurrentWord(currentTerm, position);
@@ -396,7 +400,11 @@ public abstract class SQLQueryCompletionContext {
 
                     if (prefix.size() == 1) {
                         SQLQueryWordEntry mayBeAliasName = prefix.get(0);
-                        sourcePredicates.add(srr -> srr.aliasOrNull == null ? 0 :SQLQueryWordEntry.matches(srr.aliasOrNull.getName().toLowerCase(), mayBeAliasName));
+                        sourcePredicates.add(srr -> srr.aliasOrNull == null ? 0 : SQLQueryWordEntry.matches(
+                            srr.aliasOrNull.getName().toLowerCase(),
+                            mayBeAliasName,
+                            this.searchInsideWords
+                        ));
                     }
 
                     sourcePredicates.add(srr -> {
@@ -405,7 +413,7 @@ public abstract class SQLQueryCompletionContext {
                             int partsMatched = 0;
                             int totalScore = 0;
                             for (int i = prefix.size() - 1, j = parts.size() - 1; i >= 0 && j >= 0; i--, j--) {
-                                int score = SQLQueryWordEntry.matches(parts.get(j).toLowerCase(), prefix.get(i));
+                                int score = SQLQueryWordEntry.matches(parts.get(j).toLowerCase(), prefix.get(i), this.searchInsideWords);
                                 if (score == Integer.MAX_VALUE) {
                                     partsMatched++;
                                 } else {
@@ -426,7 +434,7 @@ public abstract class SQLQueryCompletionContext {
                         if (prefixScore > 0) {
                             for (SQLQueryResultColumn c : rr.source.getResultDataContext().getColumnsList()) {
                                 SQLQueryWordEntry key = makeFilterInfo(tail, c.symbol.getName());
-                                int nameScore = key.matches(tail);
+                                int nameScore = key.matches(tail, this.searchInsideWords);
                                 if (nameScore > 0) {
                                     int totalScore = prefixScore == Integer.MAX_VALUE ? nameScore : (prefixScore + nameScore);
                                     items.addLast(SQLQueryCompletionItem.forSubsetColumn(totalScore, key, c, rr, isGlobal));
@@ -480,7 +488,7 @@ public abstract class SQLQueryCompletionContext {
                     for (DBSObject o : components) {
                         if (componentTypes.stream().anyMatch(t -> t.isInstance(o))) {
                             SQLQueryWordEntry filter = makeFilterInfo(componentNamePart, o.getName());
-                            int score = filter.matches(componentNamePart);
+                            int score = filter.matches(componentNamePart, this.searchInsideWords);
                             if (score > 0) {
                                 items.addLast(queryCompletionItemProvider.produce(score, filter, (T) o));
                             }
@@ -599,7 +607,7 @@ public abstract class SQLQueryCompletionContext {
                         .collect(Collectors.groupingBy(rc -> rc.realAttr)).entrySet().stream()
                         .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, g -> g.getValue().stream().map(rc -> {
                             SQLQueryWordEntry word = makeFilterInfo(null, rc.symbol.getName());
-                            int score = word.matches(filterOrNull);
+                            int score = word.matches(filterOrNull, searchInsideWords);
                             return SQLQueryCompletionItem.forSubsetColumn(
                                 score, word, rc, knownSources.getResolutionResults().get(rc.source), false
                             );
@@ -698,13 +706,13 @@ public abstract class SQLQueryCompletionContext {
                     for (SourceResolutionResult rr : this.knownSources.getResolutionResults().values()) {
                         if (rr.aliasOrNull != null && !rr.isCteSubquery) {
                             SQLQueryWordEntry sourceAlias = makeFilterInfo(filterOrNull, rr.aliasOrNull.getName());
-                            int score = sourceAlias.matches(filterOrNull);
+                            int score = sourceAlias.matches(filterOrNull, this.searchInsideWords);
                             if (score > 0) {
                                 tableRefs.add(SQLQueryCompletionItem.forRowsSourceAlias(score, sourceAlias, rr.aliasOrNull, rr));
                             }
                         } else if (rr.tableOrNull != null) {
                             SQLQueryWordEntry tableName = makeFilterInfo(filterOrNull, rr.tableOrNull.getName());
-                            int score = tableName.matches(filterOrNull);
+                            int score = tableName.matches(filterOrNull, this.searchInsideWords);
                             if (score > 0) {
                                 tableRefs.add(SQLQueryCompletionItem.forRealTable(score, tableName, null, rr.tableOrNull, true));
                             }
@@ -730,7 +738,7 @@ public abstract class SQLQueryCompletionContext {
                 Stream<? extends SQLQueryCompletionItem> subsetColumns = context.deepestContext().getColumnsList().stream()
                     .map(rc -> {
                         SQLQueryWordEntry filterKey = makeFilterInfo(filterOrNull, rc.symbol.getName());
-                        int score = filterKey.matches(filterOrNull);
+                        int score = filterKey.matches(filterOrNull, this.searchInsideWords);
                         return score <= 0 ? null : SQLQueryCompletionItem.forSubsetColumn(score, filterKey, rc, this.knownSources.getResolutionResults().get(rc.source), false);
                     }).filter(Objects::nonNull);
 
@@ -747,7 +755,7 @@ public abstract class SQLQueryCompletionContext {
                 for (SourceResolutionResult rr : this.knownSources.getResolutionResults().values()) {
                     if (rr.aliasOrNull != null && rr.isCteSubquery) {
                         SQLQueryWordEntry aliasName = makeFilterInfo(filterOrNull, rr.aliasOrNull.getName());
-                        int score = aliasName.matches(filterOrNull);
+                        int score = aliasName.matches(filterOrNull, this.searchInsideWords);
                         if (score > 0) {
                             completions.add(SQLQueryCompletionItem.forRowsSourceAlias(score, aliasName, rr.aliasOrNull, rr));
                         }
@@ -790,7 +798,7 @@ public abstract class SQLQueryCompletionContext {
                     for (DBSObject child : children) {
                         if (child instanceof DBSSchema || child instanceof DBSCatalog) {
                             SQLQueryWordEntry childName = makeFilterInfo(filterOrNull, child.getName());
-                            int score = childName.matches(filterOrNull);
+                            int score = childName.matches(filterOrNull, this.searchInsideWords);
                             if (score > 0) {
                                 completions.addLast(SQLQueryCompletionItem.forDbObject(score, childName, contextObjext, child));
                             }
@@ -853,7 +861,7 @@ public abstract class SQLQueryCompletionContext {
                     if (!DBUtils.isHiddenObject(child)) {
                         if (types.stream().anyMatch(t -> t.isInstance(child))) {
                             SQLQueryWordEntry childName = makeFilterInfo(filterOrNull, child.getName());
-                            int score = childName.matches(filterOrNull);
+                            int score = childName.matches(filterOrNull, this.searchInsideWords);
                             if (alreadyReferencedObjects.add(child) && score > 0) {
                                 accumulator.add(completionItemFabric.produce(score, childName, (T) child));
                             }
@@ -881,7 +889,7 @@ public abstract class SQLQueryCompletionContext {
         LinkedList<SQLQueryCompletionItem> items = new LinkedList<>();
         for (String s : keywords) {
             SQLQueryWordEntry filterWord = makeFilterInfo(filterOrNull, s);
-            int score = filterWord.matches(filterOrNull);
+            int score = filterWord.matches(filterOrNull, this.searchInsideWords);
             if (score > 0) {
                 items.addLast(SQLQueryCompletionItem.forReservedWord(score, filterWord, s));
             }
