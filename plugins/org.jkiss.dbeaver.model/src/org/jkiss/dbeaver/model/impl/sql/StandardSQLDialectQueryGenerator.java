@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.sql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPAttributeReferencePurpose;
@@ -53,11 +54,11 @@ public class StandardSQLDialectQueryGenerator implements SQLQueryGenerator {
 
     @Override
     public void appendQueryConditions(
-        DBPDataSource dataSource,
+        @NotNull DBPDataSource dataSource,
         @NotNull StringBuilder query,
         @Nullable String tableAlias,
         @Nullable DBDDataFilter dataFilter
-    ) {
+    ) throws DBException {
         if (dataFilter != null && dataFilter.hasConditions()) {
             query.append("\nWHERE "); //$NON-NLS-1$
             appendConditionString(dataFilter, dataSource, tableAlias, query, true);
@@ -90,7 +91,7 @@ public class StandardSQLDialectQueryGenerator implements SQLQueryGenerator {
         boolean inlineCriteria,
         boolean subQuery
     ) {
-        if (filter.isUseDisjunctiveNormalForm() && !constraints.isEmpty()) {
+        if (filter.isUseDisjunctiveNormalForm() && constraints.size() > 1) {
             // TODO: Would be nice to have some asserts here
 
             var names = constraints.stream()
@@ -163,35 +164,34 @@ public class StandardSQLDialectQueryGenerator implements SQLQueryGenerator {
         }
     }
 
+    @NotNull
     @Override
-    public @NotNull String getQueryWithAppliedFilters(
+    public String getQueryWithAppliedFilters(
         @Nullable DBRProgressMonitor monitor,
         @NotNull DBPDataSource dataSource,
         @NotNull String sqlQuery,
         @NotNull DBDDataFilter dataFilter
-    ) {
+    ) throws DBException {
         boolean isForceFilterSubQuery = dataSource.getSQLDialect().supportsSubqueries() && dataSource.getContainer()
             .getPreferenceStore()
             .getBoolean(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT);
         if (isForceFilterSubQuery) {
             return getWrappedFilterQuery(dataSource, sqlQuery, dataFilter);
         }
-        String newQuery = SQLSemanticProcessor.injectFiltersToQuery(monitor, dataSource, sqlQuery, dataFilter);
-        if (newQuery == null) {
-            // Let's try subquery though.
+        try {
+            return SQLSemanticProcessor.injectFiltersToQuery(monitor, dataSource, sqlQuery, dataFilter);
+        } catch (DBException ignored) {
             return getWrappedFilterQuery(dataSource, sqlQuery, dataFilter);
         }
-        return newQuery;
     }
 
-
-    @Override
     @NotNull
+    @Override
     public String getWrappedFilterQuery(
         @NotNull DBPDataSource dataSource,
         @NotNull String sqlQuery,
         @NotNull DBDDataFilter dataFilter
-    ) {
+    ) throws DBException {
         StringBuilder modifiedQuery = new StringBuilder(sqlQuery.length() + 100);
         modifiedQuery.append("SELECT * FROM (\n");
         modifiedQuery.append(sqlQuery);

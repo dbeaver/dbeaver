@@ -22,22 +22,20 @@ import org.jkiss.dbeaver.ext.greenplum.model.GreenplumSchema;
 import org.jkiss.dbeaver.ext.greenplum.model.PostgreServerGreenplum;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect;
+import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collections;
 
-@RunWith(MockitoJUnitRunner.class)
-public class GreenplumExternalTableManager2Test {
+public class GreenplumExternalTableManager2Test extends OSGIMockDataTest {
     @Mock
     private GreenplumSchema mockSchema;
 

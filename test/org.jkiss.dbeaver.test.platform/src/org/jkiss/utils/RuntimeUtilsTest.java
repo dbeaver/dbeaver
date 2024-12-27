@@ -16,6 +16,7 @@
  */
 package org.jkiss.utils;
 
+import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -24,7 +25,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 
-public class RuntimeUtilsTest {
+public class RuntimeUtilsTest extends OSGIMockDataTest {
 
     @Test
     public void testSplitCommandLine() {

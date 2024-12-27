@@ -16,13 +16,14 @@
  */
 package org.jkiss.utils;
 
+import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ArrayUtilsTest {
+public class ArrayUtilsTest extends OSGIMockDataTest {
 
   @Test
   public void testIsEmpty() {

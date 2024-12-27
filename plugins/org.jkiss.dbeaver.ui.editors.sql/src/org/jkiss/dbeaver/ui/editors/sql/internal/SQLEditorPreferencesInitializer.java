@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
-import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants.SQLExperimentalAutocompletionMode;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants.SQLAutocompletionMode;
 import org.jkiss.dbeaver.ui.editors.sql.SQLScriptBindingType;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
@@ -79,8 +79,7 @@ public class SQLEditorPreferencesInitializer extends AbstractPreferenceInitializ
 
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.ENABLE_HIPPIE, false);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION, true);
-            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.ENABLE_EXPERIMENTAL_FEATURES, true);
-            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.EXPERIMENTAL_AUTOCOMPLETION_MODE, SQLExperimentalAutocompletionMode.DEFAULT.getName());
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.AUTOCOMPLETION_MODE, SQLAutocompletionMode.DEFAULT.getName());
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.ENABLE_KEYSTROKE_ACTIVATION, true);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.AUTO_ACTIVATION_DELAY, 0);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO, true);

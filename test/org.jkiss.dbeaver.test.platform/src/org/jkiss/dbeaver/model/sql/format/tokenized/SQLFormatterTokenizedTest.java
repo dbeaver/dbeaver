@@ -18,24 +18,24 @@ package org.jkiss.dbeaver.model.sql.format.tokenized;
 
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
+import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
+import org.jkiss.dbeaver.osgi.test.runner.OSGITestRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.junit.Assert.assertEquals;
 
-
-@RunWith(MockitoJUnitRunner.class)
-public class SQLFormatterTokenizedTest {
+@RunWith(OSGITestRunner.class)
+public class SQLFormatterTokenizedTest extends OSGIMockDataTest {
 
     SQLFormatterTokenized formatter = new SQLFormatterTokenized();
     @Mock

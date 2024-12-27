@@ -85,6 +85,7 @@ public interface DBPDataSource extends DBSInstanceContainer, DBPContextWithAttri
      * SQL dialect
      */
     @DPIElement
+    @NotNull
     SQLDialect getSQLDialect();
 
     /**

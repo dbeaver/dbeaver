@@ -16,12 +16,13 @@
  */
 package org.jkiss.utils;
 
+import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-public class MimeTypeTest {
+public class MimeTypeTest extends OSGIMockDataTest {
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
   @Test
