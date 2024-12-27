@@ -185,6 +185,13 @@
                 allowMultiple="false"
                 icon="icons/help.png"
                 name="Help"/-->
+        <view
+            name="%view.outline.title"
+            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/toggle_outline.png"
+            category="org.eclipse.ui"
+            class="org.eclipse.ui.views.contentoutline.ContentOutline"
+            id="org.eclipse.ui.views.ContentOutline">
+        </view>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
