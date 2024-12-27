@@ -100,7 +100,7 @@ public class OSGITestRunner extends Runner {
 
     @Override
     public Description getDescription() {
-        return Description.createTestDescription(testClass, "OSGi Bundle Runner Description");
+        return Description.createTestDescription(testClass, testClass.getName());
     }
 
     @Override
@@ -292,7 +292,7 @@ public class OSGITestRunner extends Runner {
                         // ignore, expected
                         //log.error(e);
                     }
-                    log.info("Started bundle: " + bundle.getSymbolicName());
+                    log.debug("Started bundle: " + bundle.getSymbolicName());
                 } catch (BundleException e) {
                     if (!e.getMessage().contains("Invalid operation on a fragment")) {
                         log.error("Error starting bundle message", e);

@@ -21,7 +21,6 @@ import com.google.gson.GsonBuilder;
 import org.junit.runner.notification.RunListener;
 
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
 
 public class ClassTransferHandler {
     static Gson gson = new GsonBuilder().create();
@@ -31,7 +30,7 @@ public class ClassTransferHandler {
         }
         try {
             if (value instanceof Serializable serializable) {
-                return deserialize(serialize(serializable), targetClassloader, serializable.getClass().getName());
+                return deserialize(serialize(serializable), targetClassloader);
             } else if (value instanceof RunListener) {
                 Class<?> delegateClass = targetClassloader.loadClass(
                     "org.jkiss.junit.osgi.delegate.RunListenerDelegate");
@@ -44,19 +43,19 @@ public class ClassTransferHandler {
         }
         return null;
     }
-    private static byte[] serialize(Serializable description) throws IOException {
+    private static byte[] serialize(Serializable object) throws IOException {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        new ObjectOutputStream(buffer).writeObject(description);
+        new ObjectOutputStream(buffer).writeObject(object);
         return buffer.toByteArray();
     }
 
-    private static Object deserialize(byte[] data, ClassLoader classLoader, String classname) throws IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    private static Object deserialize(byte[] data, ClassLoader classLoader) throws IOException, ClassNotFoundException {
         //Object gson = classLoader.loadClass(ClassTransferHandler.gson.getClass().getName()).getConstructor().newInstance();
         //Object o = gson.getClass().getMethod("fromJson").invoke(gson, data, classLoader.loadClass(classname));
         ByteArrayInputStream buffer = new ByteArrayInputStream(data);
         return new ObjectInputStream(buffer) {
             @Override
-            protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
+            protected Class<?> resolveClass(ObjectStreamClass desc) throws ClassNotFoundException {
                 return Class.forName(desc.getName(), false, classLoader);
             }
         }.readObject();

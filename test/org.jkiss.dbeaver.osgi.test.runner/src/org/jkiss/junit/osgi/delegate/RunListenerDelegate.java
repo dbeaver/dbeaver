@@ -16,6 +16,7 @@
  */
 package org.jkiss.junit.osgi.delegate;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
@@ -35,43 +36,52 @@ public class RunListenerDelegate extends RunListener {
         this.delegate = delegate;
     }
 
-    @Override public void testRunStarted(Description description) throws Exception {
+    @Override
+    public void testRunStarted(Description description) throws Exception {
         invokeMethod("fireTestRunStarted", ClassTransferHandler.transfer(description, delegate.getClass().getClassLoader()));
     }
 
-    @Override public void testRunFinished(Result result) throws Exception {
+    @Override
+    public void testRunFinished(Result result) throws Exception {
         invokeMethod("fireTestRunFinished", ClassTransferHandler.transfer(result, delegate.getClass().getClassLoader()));
     }
 
-    @Override public void testSuiteStarted(Description description) throws Exception {
+    @Override
+    public void testSuiteStarted(Description description) throws Exception {
         invokeMethod("fireTestSuiteStarted", ClassTransferHandler.transfer(description, delegate.getClass().getClassLoader()));
     }
 
-    @Override public void testSuiteFinished(Description description) throws Exception {
+    @Override
+    public void testSuiteFinished(Description description) throws Exception {
         invokeMethod("fireTestSuiteFinished", ClassTransferHandler.transfer(description, delegate.getClass().getClassLoader()));
     }
 
-    @Override public void testStarted(Description description) throws Exception {
+    @Override
+    public void testStarted(Description description) throws Exception {
         invokeMethod("fireTestStarted", ClassTransferHandler.transfer(description, delegate.getClass().getClassLoader()));
     }
 
-    @Override public void testFinished(Description description) throws Exception {
+    @Override
+    public void testFinished(Description description) throws Exception {
         invokeMethod("fireTestFinished", ClassTransferHandler.transfer(description, delegate.getClass().getClassLoader()));
     }
 
-    @Override public void testFailure(Failure failure) throws Exception {
+    @Override
+    public void testFailure(Failure failure) throws Exception {
         invokeMethod("fireTestFailure", ClassTransferHandler.transfer(failure, delegate.getClass().getClassLoader()));
     }
 
-    @Override public void testAssumptionFailure(Failure failure) {
+    @Override
+    public void testAssumptionFailure(Failure failure) {
         invokeMethod("fireTestAssumptionFailure", ClassTransferHandler.transfer(failure, delegate.getClass().getClassLoader()));
     }
 
-    @Override public void testIgnored(Description description) throws Exception {
+    @Override
+    public void testIgnored(Description description) throws Exception {
         invokeMethod("fireTestIgnored", ClassTransferHandler.transfer(description, delegate.getClass().getClassLoader()));
     }
 
-    private void invokeMethod(String methodName, @Nullable Object argument) {
+    private void invokeMethod(@NotNull String methodName, @Nullable Object argument) {
         try {
             Method method;
             if (argument != null) {
@@ -84,6 +94,7 @@ public class RunListenerDelegate extends RunListener {
             throw new RuntimeException("Error invoking method: " + methodName, e);
         }
     }
+
     private void invokeMethod(String methodName) {
         try {
             Method method;
