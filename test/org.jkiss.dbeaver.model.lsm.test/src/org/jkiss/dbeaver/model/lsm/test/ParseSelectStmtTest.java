@@ -18,22 +18,19 @@ package org.jkiss.dbeaver.model.lsm.test;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
-
-
-@RunWith(MockitoJUnitRunner.class)
-public class ParseSelectStmtTest {
+public class ParseSelectStmtTest extends OSGIMockDataTest {
     
     private static final String _selectStatementsSqlTextResourceName = "SelectStatements.sql.txt";
     

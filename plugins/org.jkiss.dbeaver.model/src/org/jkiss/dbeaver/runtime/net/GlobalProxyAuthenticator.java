@@ -142,7 +142,7 @@ public class GlobalProxyAuthenticator extends Authenticator {
     }
 
     private DBPAuthInfo readCredentialsInUI(String prompt, String userName, String userPassword) {
-        return DBWorkbench.getPlatformUI().promptUserCredentials(prompt, userName, userPassword, false, true);
+        return DBWorkbench.getPlatformUI().promptUserCredentials(prompt, null, userName, userPassword, false, true);
     }
 
     @Nullable

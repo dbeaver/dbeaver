@@ -1142,7 +1142,7 @@
             label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.readonly.background.label"
             categoryId="org.jkiss.dbeaver.ui.presentation.results"
             id="org.jkiss.dbeaver.sql.resultset.color.cell.readonly.background"
-            value="245, 245, 245">
+            value="255,99,71">
             <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.readonly.background.description</description>
         </colorDefinition>
         <colorDefinition

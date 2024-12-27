@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreArrayValueHandler;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
@@ -34,18 +35,15 @@ import org.jkiss.dbeaver.registry.formatter.DataFormatterProfile;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.sql.Types;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-@RunWith(MockitoJUnitRunner.class)
-public class PostgreValueParserTest {
+public class PostgreValueParserTest extends OSGIMockDataTest {
 
     private final PostgreDialect sqlDialect = new PostgreDialect();
 

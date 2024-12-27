@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.data.transfer;
 
+
+import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -23,7 +25,8 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-public class StreamTransferUtilsTest {
+public class StreamTransferUtilsTest extends OSGIMockDataTest {
+
     @Test
     public void testDelimiterString() {
         Map<String, Object> props = new HashMap<>();

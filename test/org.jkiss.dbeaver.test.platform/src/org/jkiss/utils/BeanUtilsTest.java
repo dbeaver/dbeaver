@@ -17,6 +17,7 @@
  */
 package org.jkiss.utils;
 
+import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -27,7 +28,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
 
-public class BeanUtilsTest {
+public class BeanUtilsTest extends OSGIMockDataTest {
 
     @Rule
     public final ExpectedException thrown = ExpectedException.none();

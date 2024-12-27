@@ -23,11 +23,21 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 /**
  * IDataSourceConnectionEditor
  */
-public interface IDataSourceConnectionEditor extends IDialogPage
-{
+public interface IDataSourceConnectionEditor extends IDialogPage {
     void setSite(IDataSourceConnectionEditorSite site);
 
+    /**
+     * @return true if all mandatory fields were completed
+     */
     boolean isComplete();
+
+    /**
+     * @return true if all parameters are provided by some external source.
+     *     In this case all mandatory connection parameters become optional (as they could be populated externally).
+     */
+    default boolean isExternalConfigurationProvided() {
+        return false;
+    }
 
     void loadSettings();
 

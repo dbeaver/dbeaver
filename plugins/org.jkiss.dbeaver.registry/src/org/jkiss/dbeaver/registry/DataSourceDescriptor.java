@@ -2147,11 +2147,15 @@ public class DataSourceDescriptor
         boolean canSavePassword)
     {
         DBPAuthInfo authInfo;
-        authInfo = DBWorkbench.getPlatformUI().promptUserCredentials(prompt,
-            RegistryMessages.dialog_connection_auth_username, user,
+        authInfo = DBWorkbench.getPlatformUI().promptUserCredentials(
+            prompt,
+            null,
+            RegistryMessages.dialog_connection_auth_username,
+            user,
             authType == DBWTunnel.AuthCredentials.PASSWORD
                 ? RegistryMessages.dialog_connection_auth_passphrase
-                : RegistryMessages.dialog_connection_auth_password, password,
+                : RegistryMessages.dialog_connection_auth_password,
+            password,
             false,
             canSavePassword
         );

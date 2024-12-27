@@ -16,13 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.clickhouse.model;
 
+import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
 
-@RunWith(MockitoJUnitRunner.class)
-public class ClickhouseDialectTest {
+public class ClickhouseDialectTest extends OSGIMockDataTest {
     @Test
     public void quoteStatusStringTest() {
         final ClickhouseSQLDialect dialect = new ClickhouseSQLDialect();

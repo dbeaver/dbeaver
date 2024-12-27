@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+        id="org.jkiss.dbeaver.test.feature"
+        label="%featureName"
+        version="24.3.1.qualifier"
+        provider-name="%providerName"
+        plugin="org.jkiss.dbeaver.headless.application">
+
+    <description>
+        %description
+    </description>
+
+    <copyright>
+        %copyright
+    </copyright>
+
+    <license url="%licenseURL">
+        %license
+    </license>
+
+    <url>
+        <update label="DBeaver Universal Database Manager" url="https://dbeaver.io/"/>
+    </url>
+    <requires>
+        <import plugin="org.eclipse.core.runtime" version="3.7" match="greaterOrEqual"/>
+        <!-- Equinox -->
+        <import plugin="org.eclipse.equinox.common" version="0.0.0" match="greaterOrEqual"/>
+        <import plugin="org.eclipse.equinox.event" version="0.0.0" match="greaterOrEqual"/>
+        <import plugin="org.eclipse.equinox.preferences" version="0.0.0" match="greaterOrEqual"/>
+        <import plugin="org.eclipse.equinox.registry" version="0.0.0" match="greaterOrEqual"/>
+        <import plugin="org.eclipse.osgi.compatibility.state" version="0.0.0" match="greaterOrEqual"/>
+        <!-- Main Equinox service provider -->
+        <import plugin="org.apache.felix.scr" version="0.0.0" match="greaterOrEqual"/>
+    </requires>
+    <plugin id="org.mockito.mockito-core" version="0.0.0" />
+    <plugin id="org.jkiss.dbeaver.slf4j" version="0.0.0" />
+    <plugin id="org.junit" version="0.0.0" />
+    <plugin id="com.google.gson" version="0.0.0" />
+    <plugin id="org.jkiss.dbeaver.ext.snowflake.test" version = "0.0.0"/>
+    <plugin id="org.jkiss.dbeaver.ext.oracle.test" version = "0.0.0"/>
+    <plugin id="org.jkiss.dbeaver.model.lsm.test" version = "0.0.0"/>
+    <plugin id="org.jkiss.dbeaver.ext.postgresql.test" version = "0.0.0"/>
+    <plugin id="org.jkiss.dbeaver.ext.sqlite.test" version = "0.0.0"/>
+    <plugin id="org.jkiss.dbeaver.ext.mysql.test" version = "0.0.0"/>
+    <plugin id="org.jkiss.dbeaver.ext.hana.test" version = "0.0.0"/>
+    <plugin id="org.jkiss.dbeaver.ext.greenplum.test" version = "0.0.0"/>
+    <plugin id="org.jkiss.dbeaver.ext.altibase.test" version="0.0.0"/>
+    <plugin id="org.jkiss.dbeaver.ext.clickhouse.test" version="0.0.0"/>
+    <plugin id="org.jkiss.dbeaver.headless" version="0.0.0"/>
+    <plugin id="org.jkiss.dbeaver.osgi.test.runner" version="0.0.0"/>
+    <plugin id="org.jkiss.dbeaver.test.platform" version="0.0.0"/>
+    <plugin id="org.jkiss.dbeaver.ext.generic.test" version="0.0.0"/>
+</feature>
