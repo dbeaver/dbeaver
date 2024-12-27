@@ -101,8 +101,6 @@ public class SQLBackgroundParsingJob {
     private volatile int knownRegionStart = 0;
     private volatile int knownRegionEnd = 0;
 
-    private static final Pattern anyWordPattern = Pattern.compile("^\\w+$");
-
     @NotNull
     private final DocumentLifecycleListener documentListener = new DocumentLifecycleListener();
 
@@ -163,12 +161,6 @@ public class SQLBackgroundParsingJob {
         }
         throw new CancellationException();
     }
-
-    private final Set<Integer> knownIdentifierPartTerms = Set.of(
-        SQLStandardLexer.Identifier,
-        SQLStandardLexer.DelimitedIdentifier,
-        SQLStandardLexer.Quotted
-    );
 
     /**
      * Prepare completion context for the specified position in the text
@@ -236,76 +228,26 @@ public class SQLBackgroundParsingJob {
                 return SQLQueryCompletionContext.prepareOffquery(scriptItem.offset, offset);
             } else {
                 STMTreeNode syntaxNode = model.getSyntaxNode();
-                Interval realInterval = syntaxNode.getRealInterval();
                 if (scriptItem.item.getOriginalText().length() <= SQLQueryCompletionContext.getMaxKeywordLength()
-                    && anyWordPattern.matcher(scriptItem.item.getOriginalText()).matches()
+                    && LSMInspections.matchesAnyWord(scriptItem.item.getOriginalText())
                     && position <= scriptItem.item.getOriginalText().length()
                 ) {
                     return SQLQueryCompletionContext.prepareOffquery(scriptItem.offset, offset);
                 }
 
-                ArrayDeque<STMTreeNode> nameNodes = new ArrayDeque<>();
-                List<STMTreeNode> allTerms = LSMInspections.prepareTerms(syntaxNode);
-                int index = STMUtils.binarySearchByKey(allTerms, t -> t.getRealInterval().a, position, Comparator.comparingInt(k -> k));
-                if (index < 0) {
-                    index = ~index - 1;
-                }
-                int positionToInspect;
-                if (index > 0 && allTerms.get(index) instanceof STMTreeTermNode t && LSMInspections.KNOWN_SEPARATOR_TOKENS.contains(t.getSymbol().getType())) {
-                    positionToInspect = position - 1;
-                } else {
-                    positionToInspect = position;
-                }
-
-                LSMInspections.SyntaxInspectionResult syntaxInspectionResult = LSMInspections.prepareAbstractSyntaxInspection(syntaxNode, positionToInspect);
-                SQLQueryModel.LexicalContextResolutionResult context = model.findLexicalContext(Math.min(positionToInspect, model.getSyntaxNode().getRealInterval().b));
+                LSMInspections inspections = new LSMInspections(this.obtainCurrentSqlDialect(this.editor.getExecutionContext()), syntaxNode);
+                LSMInspections.SyntaxInspectionResult syntaxInspectionResult = inspections.prepareAbstractSyntaxInspection(position);
+                SQLQueryModel.LexicalContextResolutionResult context = model.findLexicalContext(Math.min(position, model.getSyntaxNode().getRealInterval().b));
                 if (context.deepestContext() == null) {
                     return SQLQueryCompletionContext.prepareEmpty(0, offset);
                 }
 
-                boolean hasPeriod = false;
-                STMTreeNode currentTerm = null;
-                if (index >= 0) {
-                    STMTreeNode immTerm = allTerms.get(index);
-                    // position is actually considered to be right _after_ the term of interest,
-                    // so use we the previous one on the exact match
-                    if (immTerm.getRealInterval().a >= position) {
-                        if (index > 0) {
-                            immTerm = allTerms.get(index - 1);
-                            index--;
-                        } else  {
-                            immTerm = null;
-                        }
-                    }
-                    if (immTerm != null && immTerm.getRealInterval().properlyContains(Interval.of(position - 1, position - 1))) {
-                        if (anyWordPattern.matcher(immTerm.getTextContent()).matches()) {
-                            currentTerm = immTerm;
-                        }
-                        SQLDialect dialect = this.obtainCurrentSqlDialect(this.editor.getExecutionContext());
-                        if (dialect.getReservedWords().contains(immTerm.getTextContent().toUpperCase())) {
-                            syntaxInspectionResult = LSMInspections.prepareAbstractSyntaxInspection(syntaxNode, immTerm.getRealInterval().a);
-                        }
-                        if (immTerm instanceof STMTreeTermNode t && t.symbol.getType() == SQLStandardLexer.Period) {
-                            hasPeriod = true;
-                            index--; // skip identifier separator immediately before the cursor
-                        }
-                        for (int i = index; i >= 0; i--) {
-                            STMTreeNode term = allTerms.get(i);
-                            if (immTerm instanceof STMTreeTermNode t && knownIdentifierPartTerms.contains(t.symbol.getType())
-                                || (term.getParentNode() != null && term.getParentNode().getNodeKindId() == SQLStandardParser.RULE_nonReserved)
-                                || immTerm instanceof STMTreeTermErrorNode
-                            ) {
-                                nameNodes.addFirst(term);
-                                i--;
-                                if (i < 0 || (allTerms.get(i) instanceof STMTreeTermNode t && t.symbol.getType() != SQLStandardLexer.Period  || immTerm instanceof STMTreeTermErrorNode)) {
-                                    break; // not followed by an identifier separator part
-                                }
-                            } else {
-                                break; // not an identifier part
-                            }
-                        }
-                    }
+                LSMInspections.NameInspectionResult nameInspectionResult = inspections.collectNameNodes(position);
+                if (nameInspectionResult.positionToInspect() != position) {
+                    syntaxInspectionResult = inspections.prepareAbstractSyntaxInspection(nameInspectionResult.positionToInspect());
                 }
+                ArrayDeque<STMTreeNode> nameNodes = nameInspectionResult.nameNodes();
+
                 SQLQueryLexicalScopeItem lexicalItem = context.lexicalItem();
                 if (nameNodes.isEmpty() || (lexicalItem != null && nameNodes.getLast().getRealInterval().b != lexicalItem.getSyntaxNode().getRealInterval().b)) {
                     lexicalItem = null;
@@ -318,8 +260,8 @@ public class SQLBackgroundParsingJob {
                         context,
                         lexicalItem,
                         nameNodes.toArray(STMTreeNode[]::new),
-                        hasPeriod,
-                        currentTerm
+                        nameInspectionResult.hasPeriod(),
+                        nameInspectionResult.currentTerm()
                 );
             }
         } else {
@@ -740,6 +682,7 @@ public class SQLBackgroundParsingJob {
         });
     }
 
+    @NotNull
     private SQLDialect obtainCurrentSqlDialect(@Nullable DBCExecutionContext executionContext) {
         try {
             DBPDataSourceContainer dsContainer = EditorUtils.getInputDataSource(this.editor.getEditorInput());

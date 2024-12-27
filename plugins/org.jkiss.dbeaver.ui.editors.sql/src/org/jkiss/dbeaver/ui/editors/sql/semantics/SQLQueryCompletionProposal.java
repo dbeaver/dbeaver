@@ -233,17 +233,22 @@ public class SQLQueryCompletionProposal implements ICompletionProposal, IComplet
         }
         this.getProposalContext().getActivityTracker().implicitlyTriggered();
         if (this.filterString != null && CommonUtils.isNotEmpty(this.filterString.filterString)) {
+            int filterKeyStart = this.filterString.offset >= 0 ? this.filterString.offset : this.proposalContext.getRequestOffset();
             try {
-                int filterKeyStart = this.filterString.offset >= 0 ? this.filterString.offset : this.proposalContext.getRequestOffset();
                 if (offset > document.getLength()) {
                     return false;
                 } else {
-                    String filterKey = document.get(filterKeyStart, offset - filterKeyStart);
-                    if (DEBUG) {
-                        log.debug("validate: " + filterString.string + " vs " + filterKey);
+                    int filterKeyLength = offset - filterKeyStart;
+                    if (filterKeyLength > 0) {
+                        String filterKey = document.get(filterKeyStart, filterKeyLength);
+                        if (DEBUG) {
+                            log.debug("validate: " + filterString.string + " vs " + filterKey);
+                        }
+                        this.proposalScore = this.filterString.matches(filterKey, this.proposalContext.getCompletionContext().isSearchInsideNames());
+                        return this.proposalScore > 0;
+                    } else {
+                        return true;
                     }
-                    this.proposalScore = this.filterString.matches(filterKey, this.proposalContext.getCompletionContext().isSearchInsideNames());
-                    return this.proposalScore > 0 || CommonUtils.isEmpty(filterKey);
                 }
             } catch (BadLocationException ex) {
                 log.error("Error validating completion proposal", ex);

@@ -22,12 +22,14 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryCompletionProposal;
 
+import java.util.Comparator;
+
 /**
  * Completion sorter
  */
 public class SQLCompletionSorter implements ICompletionProposalSorter {
 
-    private boolean sortAlphabetically;
+    private final boolean sortAlphabetically;
 
     public SQLCompletionSorter(SQLEditorBase editor) {
         this.sortAlphabetically = editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSAL_SORT_ALPHABETICALLY);
