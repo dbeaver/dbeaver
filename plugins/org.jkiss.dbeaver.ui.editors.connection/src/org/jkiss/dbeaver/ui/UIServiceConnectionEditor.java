@@ -14,33 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.jkiss.dbeaver.ui;
 
-import org.eclipse.jface.dialogs.IDialogPage;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
 /**
- * IDataSourceConnectionEditor
+ * Connection editor service.
+ * Provides additional capabilities for connection edit dialogs.
  */
-public interface IDataSourceConnectionEditor extends IDialogPage {
-    void setSite(IDataSourceConnectionEditorSite site);
-
-    /**
-     * @return true if all mandatory fields were completed
-     */
-    boolean isComplete();
+public interface UIServiceConnectionEditor extends IObjectPropertyConfigurator<DBPDataSourceContainer, DBPDataSourceContainer> {
 
     /**
      * @return true if all parameters are provided by some external source.
-     *     In this case all mandatory connection parameters become optional (as they could be populated externally).
      */
-    default boolean isExternalConfigurationProvided() {
-        return false;
-    }
-
-    void loadSettings();
-
-    void saveSettings(DBPDataSourceContainer dataSource);
+    boolean isExternalConfigurationProvided();
 
 }

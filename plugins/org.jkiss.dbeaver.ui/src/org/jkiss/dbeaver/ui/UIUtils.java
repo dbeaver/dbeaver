@@ -1735,7 +1735,6 @@ public class UIUtils {
     }
 
     public static Point drawMessageOverControl(Control control, GC gc, String message, int offset) {
-        gc.setFont(BaseThemeSettings.instance.baseFont);
         Rectangle bounds = control.getBounds();
         Point textSize = gc.textExtent(message);
 
