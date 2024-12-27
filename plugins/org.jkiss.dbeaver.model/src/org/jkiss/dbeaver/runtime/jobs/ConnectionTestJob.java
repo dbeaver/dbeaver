@@ -98,7 +98,6 @@ public class ConnectionTestJob extends ConnectJob {
         Thread.currentThread().setName(ModelMessages.dialog_connection_wizard_start_connection_monitor_thread);
 
         try {
-            container.setName(container.getConnectionConfiguration().getUrl());
             long startTime = System.currentTimeMillis();
             super.run(monitor);
             connectTime = (System.currentTimeMillis() - startTime);

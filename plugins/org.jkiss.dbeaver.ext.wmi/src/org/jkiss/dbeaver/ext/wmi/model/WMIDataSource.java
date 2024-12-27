@@ -205,6 +205,7 @@ public class WMIDataSource extends AbstractDataSource implements DBSInstance, DB
         return null;
     }
 
+    @NotNull
     @Override
     public SQLDialect getSQLDialect() {
         return dialect;

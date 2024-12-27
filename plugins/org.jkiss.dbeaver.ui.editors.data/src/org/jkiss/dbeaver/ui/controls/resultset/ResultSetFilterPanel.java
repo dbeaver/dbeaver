@@ -84,6 +84,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 {
     private static final Log log = Log.getLog(ResultSetFilterPanel.class);
 
+    private static final int MIN_FILTER_TEXT_WIDTH = 50;
     private static final int MIN_FILTER_TEXT_HEIGHT = 20;
     private static final int MAX_HISTORY_PANEL_HEIGHT = 200;
 
@@ -801,6 +802,9 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             if (activeObjectImage != null) {
                 Image image = DBeaverIcons.getImage(activeObjectImage);
                 textSize.x += image.getBounds().width + 4;
+            }
+            if (textSize.x < maxFilterTextWidth) {
+                maxFilterTextWidth = textSize.x;
             }
             return new Point(
                 Math.max(maxFilterTextWidth, Math.min(textSize.x + 10, maxWidth)),

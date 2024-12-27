@@ -125,16 +125,6 @@ public class ConsoleUserInterface implements DBPPlatformUI {
         return UserResponse.IGNORE;
     }
 
-    @Override
-    public long getLongOperationTimeout() {
-        return 0;
-    }
-
-    @Override
-    public void notifyAgent(String message, int status) {
-        // do nothing
-    }
-
     private void printStatus(@NotNull IStatus status, int level) {
         char[] indent = new char[level * 4];
         for (int i = 0; i < indent.length; i++) indent[i] = ' ';

@@ -312,7 +312,7 @@
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.show.output" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/page_output.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.show.log" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/page_error.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.show.variables" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/variable.png"/>
-        <image commandId="org.jkiss.dbeaver.ui.editors.sql.show.outline" icon="platform:/plugin/org.eclipse.ui.views/icons/full/eview16/outline_co.png"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.show.outline" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/toggle_outline.png"/>
 
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.toggleLayout" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/rotate.png"/>
     </extension>
