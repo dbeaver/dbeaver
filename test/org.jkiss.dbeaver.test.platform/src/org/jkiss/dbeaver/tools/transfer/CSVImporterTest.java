@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.tools.transfer;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataImporterSite;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamDataImporterColumnInfo;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamEntityMapping;
@@ -25,10 +26,8 @@ import org.jkiss.dbeaver.tools.transfer.stream.importer.DataImporterCSV;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -37,10 +36,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@RunWith(MockitoJUnitRunner.class)
-public class CSVImporterTest {
-    private static final Path DUMMY_FILE = Path.of("dummy");
+public class CSVImporterTest  extends OSGIMockDataTest {
 
+    private static final Path DUMMY_FILE = Path.of("dummy");
     private final DataImporterCSV importer = new DataImporterCSV();
     private final StreamEntityMapping mapping = new StreamEntityMapping(DUMMY_FILE);
     private final Map<String, Object> properties = new HashMap<>();

@@ -18,12 +18,11 @@ package org.jkiss.dbeaver.model.lsm.test;
 
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.jkiss.dbeaver.model.sql.semantics.OffsetKeyedTreeMap;
 import org.jkiss.dbeaver.model.stm.STMUtils;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.*;
 import java.util.function.*;
@@ -57,8 +56,7 @@ import java.util.stream.*;
  * <p>
  *
  */
-@RunWith(MockitoJUnitRunner.class)
-public class OffsetKeyedTreeMapTest {
+public class OffsetKeyedTreeMapTest extends OSGIMockDataTest {
 
     private static final Supplier<IntStream> SERIES = () -> Stream.of(
         IntStream.range(0, 26),

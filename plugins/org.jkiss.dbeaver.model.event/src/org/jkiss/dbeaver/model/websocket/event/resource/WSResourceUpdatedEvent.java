@@ -18,10 +18,13 @@ package org.jkiss.dbeaver.model.websocket.event.resource;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.websocket.event.WSEventType;
+import org.jkiss.dbeaver.model.websocket.WSConstants;
 import org.jkiss.dbeaver.model.websocket.event.WSProjectResourceEvent;
 
 public class WSResourceUpdatedEvent extends WSProjectResourceEvent {
+    public static final String CREATED = "cb_rm_resource_created";
+    public static final String UPDATED = "cb_rm_resource_updated";
+    public static final String DELETED = "cb_rm_resource_deleted";
     @NotNull
     private final String resourcePath;
     @NotNull
@@ -30,7 +33,7 @@ public class WSResourceUpdatedEvent extends WSProjectResourceEvent {
     private final String details;
 
     private WSResourceUpdatedEvent(
-        @NotNull WSEventType eventType,
+        @NotNull String eventId,
         @Nullable String sessionId,
         @Nullable String userId,
         @NotNull String projectId,
@@ -38,7 +41,7 @@ public class WSResourceUpdatedEvent extends WSProjectResourceEvent {
         @NotNull WSResourceProperty property,
         @Nullable String details
         ) {
-        super(eventType, sessionId, userId, projectId);
+        super(eventId, WSConstants.TOPIC_SCRIPTS, sessionId, userId, projectId);
         this.property = property;
         this.resourcePath = resourcePath;
         this.details = details;
@@ -54,7 +57,7 @@ public class WSResourceUpdatedEvent extends WSProjectResourceEvent {
 
     ) {
         return new WSResourceUpdatedEvent(
-            WSEventType.RM_RESOURCE_CREATED,
+            CREATED,
             sessionId,
             userId,
             projectId,
@@ -73,7 +76,7 @@ public class WSResourceUpdatedEvent extends WSProjectResourceEvent {
         @Nullable String details
     ) {
         return new WSResourceUpdatedEvent(
-            WSEventType.RM_RESOURCE_UPDATED,
+            UPDATED,
             sessionId,
             userId,
             projectId,
@@ -92,7 +95,7 @@ public class WSResourceUpdatedEvent extends WSProjectResourceEvent {
         @Nullable String details
     ) {
         return new WSResourceUpdatedEvent(
-            WSEventType.RM_RESOURCE_DELETED,
+            DELETED,
             sessionId,
             userId,
             projectId,

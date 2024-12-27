@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.websocket.event.session;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.websocket.event.WSEventType;
+import org.jkiss.dbeaver.model.websocket.WSConstants;
 
 /**
  * Async task info event.
@@ -35,7 +35,7 @@ public class WSSessionTaskInfoEvent extends WSAbstractSessionEvent {
         @Nullable String statusName,
         boolean running
     ) {
-        super(WSEventType.SESSION_TASK_INFO_UPDATED);
+        super("cb_session_task_info_updated", WSConstants.TOPIC_SESSION_TASK);
         this.taskId = taskId;
         this.statusName = statusName;
         this.running = running;

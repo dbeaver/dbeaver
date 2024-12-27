@@ -84,6 +84,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 {
     private static final Log log = Log.getLog(ResultSetFilterPanel.class);
 
+    private static final int MIN_FILTER_TEXT_WIDTH = 50;
     private static final int MIN_FILTER_TEXT_HEIGHT = 20;
     private static final int MAX_HISTORY_PANEL_HEIGHT = 200;
 
@@ -492,7 +493,18 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         }
         String condition = filtersText.getText();
         StringBuilder currentCondition = new StringBuilder();
-        SQLUtils.appendConditionString(viewer.getModel().getDataFilter(), context.getDataSource(), null, currentCondition, true);
+        try {
+            SQLUtils.appendConditionString(
+                viewer.getModel().getDataFilter(),
+                context.getDataSource(),
+                null,
+                currentCondition,
+                true
+            );
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Can't set filter", "Cannot set custom filter", e);
+            return;
+        }
         if (currentCondition.toString().trim().equals(condition.trim())) {
             // The same
             return;
@@ -790,6 +802,9 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             if (activeObjectImage != null) {
                 Image image = DBeaverIcons.getImage(activeObjectImage);
                 textSize.x += image.getBounds().width + 4;
+            }
+            if (textSize.x < maxFilterTextWidth) {
+                maxFilterTextWidth = textSize.x;
             }
             return new Point(
                 Math.max(maxFilterTextWidth, Math.min(textSize.x + 10, maxWidth)),
@@ -1155,7 +1170,18 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 return false;
             }
             StringBuilder currentCondition = new StringBuilder();
-            SQLUtils.appendConditionString(viewer.getModel().getDataFilter(), context.getDataSource(), null, currentCondition, true);
+            try {
+                SQLUtils.appendConditionString(
+                    viewer.getModel().getDataFilter(),
+                    context.getDataSource(),
+                    null,
+                    currentCondition,
+                    true
+                );
+            } catch (DBException e) {
+                log.error(e);
+                return false;
+            }
             return !currentCondition.toString().trim().equals(filtersText.getText().trim());
         }
 

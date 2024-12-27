@@ -643,20 +643,25 @@ public class ResultSetViewer extends Viewer
             DBCExecutionContext context = getExecutionContext();
             if (context != null) {
                 if (!(activePresentation instanceof StatisticsPresentation)) {
-                    StringBuilder where = new StringBuilder();
-                    SQLUtils.appendConditionString(
-                        model.getDataFilter(),
-                        context.getDataSource(),
-                        null,
-                        where,
-                        true,
-                        SQLSemanticProcessor.isForceFilterSubQuery(context.getDataSource()));
-                    if (resetFilterValue) {
-                        String whereCondition = where.toString().trim();
-                        filtersPanel.setFilterValue(whereCondition);
-                        if (!whereCondition.isEmpty()) {
-                            filtersPanel.addFiltersHistory(whereCondition);
+                    try {
+                        StringBuilder where = new StringBuilder();
+                        SQLUtils.appendConditionString(
+                            model.getDataFilter(),
+                            context.getDataSource(),
+                            null,
+                            where,
+                            true,
+                            SQLSemanticProcessor.isForceFilterSubQuery(context.getDataSource())
+                        );
+                        if (resetFilterValue) {
+                            String whereCondition = where.toString().trim();
+                            filtersPanel.setFilterValue(whereCondition);
+                            if (!whereCondition.isEmpty()) {
+                                filtersPanel.addFiltersHistory(whereCondition);
+                            }
                         }
+                    } catch (DBException e) {
+                        log.error("Can't generate filter condition", e);
                     }
                 }
             }
@@ -4956,9 +4961,13 @@ public class ResultSetViewer extends Viewer
             DBCExecutionContext context = getExecutionContext();
             String desc = dataContainer.getName();
             if (context != null && filter != null && filter.hasConditions()) {
-                StringBuilder condBuffer = new StringBuilder();
-                SQLUtils.appendConditionString(filter, context.getDataSource(), null, condBuffer, true);
-                desc += " [" + condBuffer + "]";
+                try {
+                    StringBuilder condBuffer = new StringBuilder();
+                    SQLUtils.appendConditionString(filter, context.getDataSource(), null, condBuffer, true);
+                    desc += " [" + condBuffer + "]";
+                } catch (DBException e) {
+                    log.error("Can't describe filter condition", e);
+                }
             }
             if (desc != null && desc.length() > HISTORY_STATE_ITEM_MAXIMAL_LENGTH) {
                 desc = desc.substring(0, HISTORY_STATE_ITEM_MAXIMAL_LENGTH) + "...";

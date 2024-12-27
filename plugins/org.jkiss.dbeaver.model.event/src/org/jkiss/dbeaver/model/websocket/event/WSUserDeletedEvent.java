@@ -17,14 +17,15 @@
 package org.jkiss.dbeaver.model.websocket.event;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.websocket.WSConstants;
 
 public class WSUserDeletedEvent extends WSAbstractEvent {
-
+    public static final String ID = "cb_user_deleted";
     @NotNull
     private final String deletedUserId;
 
     public WSUserDeletedEvent(@NotNull String userId) {
-        super(WSEventType.USER_DELETED);
+        super(ID, WSConstants.TOPIC_USER);
         this.deletedUserId = userId;
     }
 

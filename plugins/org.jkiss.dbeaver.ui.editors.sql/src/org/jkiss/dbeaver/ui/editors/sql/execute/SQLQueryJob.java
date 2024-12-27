@@ -463,9 +463,19 @@ public class SQLQueryJob extends DataSourceJob
         // Modify query (filters + parameters)
         String queryText = originalQuery.getText();//.trim();
         if (dataFilter != null && dataFilter.hasFilters()) {
-            String filteredQueryText = dataSource.getSQLDialect().addFiltersToQuery(
-                session.getProgressMonitor(),
-                dataSource, queryText, dataFilter);
+            String filteredQueryText;
+            try {
+                filteredQueryText = dataSource.getSQLDialect().addFiltersToQuery(
+                    session.getProgressMonitor(),
+                    dataSource,
+                    queryText,
+                    dataFilter
+                );
+            } catch (DBException e) {
+                log.error("Unable to add filters to query", e);
+                lastError = e;
+                return false;
+            }
             sqlQuery = new SQLQuery(executionContext.getDataSource(), filteredQueryText, sqlQuery);
         } else {
             sqlQuery = new SQLQuery(executionContext.getDataSource(), queryText, sqlQuery);
