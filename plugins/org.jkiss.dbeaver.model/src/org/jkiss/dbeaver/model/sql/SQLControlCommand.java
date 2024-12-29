@@ -61,7 +61,7 @@ public class SQLControlCommand implements SQLScriptElement {
     }
 
     public DBPDataSourceContainer getDataSourceContainer() {
-        return dataSource.getContainer();
+        return dataSource == null ? null : dataSource.getContainer();
     }
 
     public DBPDataSource getDataSource() {

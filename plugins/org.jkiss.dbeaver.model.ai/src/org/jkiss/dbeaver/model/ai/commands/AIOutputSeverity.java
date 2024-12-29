@@ -14,12 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.exec.output;
+package org.jkiss.dbeaver.model.ai.commands;
 
-import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.exec.output.DBCOutputSeverity;
 
-public interface DBCOutputSeverity extends DBPNamedObject {
-    default boolean isForced() {
-        return false;
+enum AIOutputSeverity implements DBCOutputSeverity {
+    PROMPT("AI");
+
+    private final String name;
+
+    AIOutputSeverity(@NotNull String name) {
+        this.name = name;
+    }
+
+    @NotNull
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public boolean isForced() {
+        return true;
     }
 }
