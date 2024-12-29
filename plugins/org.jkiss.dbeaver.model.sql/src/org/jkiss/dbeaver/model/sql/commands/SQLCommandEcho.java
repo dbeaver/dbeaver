@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLControlCommand;
 import org.jkiss.dbeaver.model.sql.SQLControlCommandHandler;
+import org.jkiss.dbeaver.model.sql.SQLControlResult;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
 import org.jkiss.dbeaver.model.sql.eval.ScriptVariablesResolver;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -30,15 +31,16 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
  */
 public class SQLCommandEcho implements SQLControlCommandHandler {
 
+    @NotNull
     @Override
-    public boolean handleCommand(@NotNull DBRProgressMonitor monitor, @NotNull SQLControlCommand command, @NotNull SQLScriptContext scriptContext) throws DBException {
+    public SQLControlResult handleCommand(@NotNull DBRProgressMonitor monitor, @NotNull SQLControlCommand command, @NotNull SQLScriptContext scriptContext) throws DBException {
         String parameter = command.getParameter();
         if (parameter != null) {
             parameter = GeneralUtils.replaceVariables(parameter, new ScriptVariablesResolver(scriptContext), true);
         }
         scriptContext.getOutputWriter().println(null, parameter);
 
-        return true;
+        return SQLControlResult.success();
     }
 
 }

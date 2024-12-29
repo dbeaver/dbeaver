@@ -20,10 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLControlCommand;
-import org.jkiss.dbeaver.model.sql.SQLControlCommandHandler;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLScriptContext;
+import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.rules.ScriptParameterRule;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -33,8 +30,9 @@ import org.jkiss.utils.CommonUtils;
  */
 public class SQLCommandSet implements SQLControlCommandHandler {
 
+    @NotNull
     @Override
-    public boolean handleCommand(@NotNull DBRProgressMonitor monitor, @NotNull SQLControlCommand command, @NotNull SQLScriptContext scriptContext) throws DBException {
+    public SQLControlResult handleCommand(@NotNull DBRProgressMonitor monitor, @NotNull SQLControlCommand command, @NotNull SQLScriptContext scriptContext) throws DBException {
         SQLDialect sqlDialect = scriptContext.getExecutionContext().getDataSource().getSQLDialect();
         String parameter = command.getParameter().stripLeading();
         int varNameEnd = ScriptParameterRule.tryConsumeParameterName(sqlDialect, parameter, 0);
@@ -57,7 +55,7 @@ public class SQLCommandSet implements SQLControlCommandHandler {
         varValue = GeneralUtils.replaceVariables(varValue, name -> CommonUtils.toString(scriptContext.getVariable(name)), true);
         scriptContext.setVariable(varName, varValue);
 
-        return true;
+        return SQLControlResult.success();
     }
 
     /*

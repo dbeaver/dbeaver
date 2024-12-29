@@ -3809,12 +3809,15 @@ public class SQLEditor extends SQLEditorBase implements
                     for (SQLScriptElement element : queries) {
                         if (element instanceof SQLControlCommand controlCommand) {
                             try {
-                                scriptContext.executeControlCommand(new LoggingProgressMonitor(log), controlCommand);
+                                SQLControlResult controlResult = scriptContext.executeControlCommand(new LoggingProgressMonitor(log), controlCommand);
+                                if (controlResult.getTransformed() != null) {
+                                    element = controlResult.getTransformed();
+                                }
                             } catch (DBException e) {
                                 DBWorkbench.getPlatformUI().showError("Command error", "Error processing control command", e);
                             }
-                        } else {
-                            SQLQuery query = (SQLQuery) element;
+                        }
+                        if (element instanceof SQLQuery query) {
                             scriptContext.fillQueryParameters(query, () -> null, false);
 
                             SQLQueryDataContainer dataContainer = new SQLQueryDataContainer(SQLEditor.this, query, scriptContext, log);

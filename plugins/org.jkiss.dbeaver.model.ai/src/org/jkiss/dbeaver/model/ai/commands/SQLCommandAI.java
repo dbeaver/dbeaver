@@ -18,14 +18,13 @@ package org.jkiss.dbeaver.model.ai.commands;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.completion.*;
 import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLControlCommand;
-import org.jkiss.dbeaver.model.sql.SQLControlCommandHandler;
-import org.jkiss.dbeaver.model.sql.SQLScriptContext;
+import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -35,8 +34,11 @@ import java.util.List;
  */
 public class SQLCommandAI implements SQLControlCommandHandler {
 
+    private static final Log log = Log.getLog(SQLCommandAI.class);
+
+    @NotNull
     @Override
-    public boolean handleCommand(@NotNull DBRProgressMonitor monitor, @NotNull SQLControlCommand command, @NotNull SQLScriptContext scriptContext) throws DBException {
+    public SQLControlResult handleCommand(@NotNull DBRProgressMonitor monitor, @NotNull SQLControlCommand command, @NotNull SQLScriptContext scriptContext) throws DBException {
         AISettings aiSettings = AISettingsRegistry.getInstance().getSettings();
         DAICompletionEngine<?> engine = AIEngineRegistry.getInstance().getCompletionEngine(
             aiSettings.getActiveEngine());
@@ -68,19 +70,19 @@ public class SQLCommandAI implements SQLControlCommandHandler {
         MessageChunk[] messageChunks = AITextUtils.splitIntoChunks(
             CommonUtils.notEmpty(response.getResultCompletion()));
 
-        if (messageChunks.length == 0) {
-            return false;
-        }
-
         String finalSQL = null;
         for (MessageChunk chunk : messageChunks) {
             if (chunk instanceof MessageChunk.Code code) {
                 finalSQL = code.text();
             }
         }
+        if (finalSQL == null) {
+            log.debug("Empty AI completion");
+            return SQLControlResult.success();
+        }
 
-        System.out.println(finalSQL);
-        return true;
+        return SQLControlResult.transform(
+            new SQLQuery(command.getDataSource(), finalSQL));
     }
 
 }

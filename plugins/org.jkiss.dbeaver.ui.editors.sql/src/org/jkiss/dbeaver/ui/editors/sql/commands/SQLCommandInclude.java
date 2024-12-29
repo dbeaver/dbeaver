@@ -57,8 +57,9 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         return CommonUtils.isEmpty(resourceEncoding) ? GeneralUtils.getDefaultFileEncoding() : resourceEncoding;
     }
 
+    @NotNull
     @Override
-    public boolean handleCommand(@NotNull DBRProgressMonitor monitor, @NotNull SQLControlCommand command, @NotNull final SQLScriptContext scriptContext) throws DBException {
+    public SQLControlResult handleCommand(@NotNull DBRProgressMonitor monitor, @NotNull SQLControlCommand command, @NotNull final SQLScriptContext scriptContext) throws DBException {
         String fileName = command.getParameter();
         if (CommonUtils.isEmpty(fileName)) {
             throw new DBException("Empty input file");
@@ -134,7 +135,7 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
             }
         }
 
-        return true;
+        return SQLControlResult.success();
     }
 
     private static class IncludeScriptListener implements SQLQueryListener {

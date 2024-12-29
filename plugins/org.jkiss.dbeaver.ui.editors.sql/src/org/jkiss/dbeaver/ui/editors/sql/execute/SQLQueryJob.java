@@ -408,7 +408,12 @@ public class SQLQueryJob extends DataSourceJob
         }
         if (element instanceof SQLControlCommand controlCommand) {
             try {
-                return scriptContext.executeControlCommand(session.getProgressMonitor(), controlCommand);
+                SQLControlResult controlResult = scriptContext.executeControlCommand(session.getProgressMonitor(), controlCommand);
+                if (controlResult.getTransformed() != null) {
+                    element = controlResult.getTransformed();
+                } else {
+                    return true;
+                }
             } catch (Throwable e) {
                 if (!(e instanceof DBException)) {
                     log.error("Unexpected error while processing SQL command", e);
@@ -416,11 +421,16 @@ public class SQLQueryJob extends DataSourceJob
                 lastError = e;
                 return false;
             } finally {
-                statistics.addStatementsCount();
-                statistics.addMessage("Command " + ((SQLControlCommand) element).getCommand() + " processed");
+                if (element instanceof SQLControlCommand finalCommand) {
+                    statistics.addStatementsCount();
+                    statistics.addMessage("Command " + finalCommand.getCommand() + " processed");
+                }
             }
         }
-        SQLQuery sqlQuery = (SQLQuery) element;
+        if (!(element instanceof SQLQuery sqlQuery)) {
+            log.error("Unsupported SQL element type: " + element);
+            return false;
+        }
         lastError = null;
 
         if (!skipConfirmation && getDataSourceContainer().getConnectionConfiguration().getConnectionType().isConfirmExecute()) {

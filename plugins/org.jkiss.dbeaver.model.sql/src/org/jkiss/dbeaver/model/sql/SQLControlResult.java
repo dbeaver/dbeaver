@@ -25,35 +25,24 @@ package org.jkiss.dbeaver.model.sql;
  */
 public class SQLControlResult {
 
-    private Throwable error;
-    private String message;
-    private SQLScriptElement[] newElements;
-
-    public String getMessage() {
-        return message;
+    public static SQLControlResult success() {
+        return new SQLControlResult();
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public static SQLControlResult transform(SQLScriptElement element) {
+        return new SQLControlResult(element);
     }
 
-    public Throwable getError() {
-        return error;
+    private SQLScriptElement transformed;
+
+    private SQLControlResult() {
     }
 
-    public void setError(Throwable error) {
-        this.error = error;
+    private SQLControlResult(SQLScriptElement transformed) {
+        this.transformed = transformed;
     }
 
-    public SQLScriptElement[] getNewElements() {
-        return newElements;
-    }
-
-    public void setNewElements(SQLScriptElement[] newElements) {
-        this.newElements = newElements;
-    }
-
-    public boolean isSuccess() {
-        return error == null;
+    public SQLScriptElement getTransformed() {
+        return transformed;
     }
 }

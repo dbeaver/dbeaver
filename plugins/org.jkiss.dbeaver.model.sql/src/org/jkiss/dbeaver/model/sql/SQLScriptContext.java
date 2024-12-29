@@ -268,9 +268,10 @@ public class SQLScriptContext implements DBCScriptContext {
         this.ignoreParameters = ignoreParameters;
     }
 
-    public boolean executeControlCommand(DBRProgressMonitor monitor, SQLControlCommand command) throws DBException {
+    @NotNull
+    public SQLControlResult executeControlCommand(DBRProgressMonitor monitor, SQLControlCommand command) throws DBException {
         if (command.isEmptyCommand()) {
-            return true;
+            return SQLControlResult.success();
         }
         SQLCommandHandlerDescriptor commandHandler = SQLCommandsRegistry.getInstance().getCommandHandler(command.getCommandId());
         if (commandHandler == null) {

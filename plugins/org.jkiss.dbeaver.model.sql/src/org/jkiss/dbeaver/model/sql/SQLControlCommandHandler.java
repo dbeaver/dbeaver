@@ -31,7 +31,8 @@ public interface SQLControlCommandHandler
      * @param scriptContext script context
      * @return false if command failed and execution has to be stopped
      */
-    boolean handleCommand(
+    @NotNull
+    SQLControlResult handleCommand(
         @NotNull DBRProgressMonitor monitor,
         @NotNull SQLControlCommand command,
         @NotNull SQLScriptContext scriptContext)
