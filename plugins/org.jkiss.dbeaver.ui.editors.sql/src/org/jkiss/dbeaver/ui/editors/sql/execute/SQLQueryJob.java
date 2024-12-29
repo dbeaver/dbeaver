@@ -239,6 +239,7 @@ public class SQLQueryJob extends DataSourceJob
 
                     fetchResultSetNumber = resultSetNumber;
                     boolean runNext = executeSingleQuery(session, query, true);
+
                     if (txnManager != null && txnManager.isSupportsTransactions()
                         && !oldAutoCommit && commitType != SQLScriptCommitType.AUTOCOMMIT
                         && query instanceof SQLQuery sqlQuery
@@ -375,8 +376,8 @@ public class SQLQueryJob extends DataSourceJob
     private boolean executeSingleQuery(@NotNull DBCSession session, @NotNull SQLScriptElement element, final boolean fireEvents)
     {
 
-        if (!scriptContext.getPragmas().isEmpty() && element instanceof SQLQuery) {
-            final SQLQueryDataContainer container = new SQLQueryDataContainer(this::getExecutionContext, (SQLQuery) element, scriptContext, log);
+        if (!scriptContext.getPragmas().isEmpty() && element instanceof SQLQuery query) {
+            final SQLQueryDataContainer container = new SQLQueryDataContainer(this::getExecutionContext, query, scriptContext, log);
 
             for (var it = scriptContext.getPragmas().entrySet().iterator(); it.hasNext(); ) {
                 final Map.Entry<String, Map<String, Object>> entry = it.next();
@@ -403,9 +404,9 @@ public class SQLQueryJob extends DataSourceJob
                 }
             }
         }
-        if (element instanceof SQLControlCommand) {
+        if (element instanceof SQLControlCommand controlCommand) {
             try {
-                return scriptContext.executeControlCommand((SQLControlCommand)element);
+                return scriptContext.executeControlCommand(controlCommand);
             } catch (Throwable e) {
                 if (!(e instanceof DBException)) {
                     log.error("Unexpected error while processing SQL command", e);
