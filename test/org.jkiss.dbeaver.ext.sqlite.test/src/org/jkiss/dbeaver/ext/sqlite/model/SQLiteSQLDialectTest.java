@@ -17,12 +17,12 @@
 package org.jkiss.dbeaver.ext.sqlite.model;
 
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.junit.OSGIUnitTest;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mock;
 
-public class SQLiteSQLDialectTest extends OSGIUnitTest {
+public class SQLiteSQLDialectTest extends DBeaverUnitTest {
 
     @Mock
     DBSTypedObject mockAttribute;

@@ -16,11 +16,11 @@
  */
 package org.jkiss.utils;
 
-import org.jkiss.junit.OSGIUnitTest;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class ByteNumberFormatTest extends OSGIUnitTest {
+public class ByteNumberFormatTest extends DBeaverUnitTest {
 
     private static final long KB = 1024;
     private static final long MB = 1024 * KB;

@@ -17,15 +17,13 @@
 package org.jkiss.junit;
 
 import org.jkiss.junit.osgi.OSGITestRunner;
-import org.jkiss.junit.osgi.annotation.RunWithProduct;
 import org.jkiss.junit.osgi.annotation.RunnerProxy;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
 
-@RunWithProduct("DBeaverTest.product")
 @RunnerProxy(MockitoJUnitRunner.class)
 @RunWith(OSGITestRunner.class)
-public abstract class OSGIUnitTest {
+public abstract class ApplicationUnitTest {
     MockitoJUnitRunner runner;
 }

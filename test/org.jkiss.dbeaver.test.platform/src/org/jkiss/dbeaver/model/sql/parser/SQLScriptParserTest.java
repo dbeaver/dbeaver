@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.text.parser.TPRuleBasedScanner;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.junit.OSGIUnitTest;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,7 +47,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class SQLScriptParserTest extends OSGIUnitTest {
+public class SQLScriptParserTest extends DBeaverUnitTest {
     @Mock
     private JDBCDataSource dataSource;
     @Mock

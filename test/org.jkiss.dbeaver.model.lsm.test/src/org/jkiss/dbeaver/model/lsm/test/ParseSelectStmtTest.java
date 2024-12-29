@@ -20,7 +20,7 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
-import org.jkiss.junit.OSGIUnitTest;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -29,7 +29,7 @@ import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
-public class ParseSelectStmtTest extends OSGIUnitTest {
+public class ParseSelectStmtTest extends DBeaverUnitTest {
     
     private static final String _selectStatementsSqlTextResourceName = "SelectStatements.sql.txt";
     

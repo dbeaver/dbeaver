@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.junit.OSGIUnitTest;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,7 +37,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-public class GreenplumExternalTableTest extends OSGIUnitTest {
+public class GreenplumExternalTableTest extends DBeaverUnitTest {
     @Mock
     DBRProgressMonitor monitor;
 

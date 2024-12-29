@@ -18,7 +18,7 @@ package org.jkiss.utils;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.junit.OSGIUnitTest;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.jkiss.utils.rest.RequestMapping;
 import org.jkiss.utils.rest.RequestParameter;
 import org.jkiss.utils.rest.RestClient;
@@ -29,7 +29,7 @@ import org.junit.Test;
 import java.net.URI;
 import java.util.Map;
 
-public class RestTest extends OSGIUnitTest {
+public class RestTest extends DBeaverUnitTest {
     @Test
     public void restClientServerTest() {
         final RestServer<Controller> server = RestServer

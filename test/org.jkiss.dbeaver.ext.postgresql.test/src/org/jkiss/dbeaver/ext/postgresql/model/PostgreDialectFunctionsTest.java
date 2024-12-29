@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.junit.OSGIUnitTest;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,7 +35,7 @@ import org.mockito.Mockito;
 
 import java.sql.Types;
 
-public class PostgreDialectFunctionsTest extends OSGIUnitTest {
+public class PostgreDialectFunctionsTest extends DBeaverUnitTest {
 
     @Mock
     DBRProgressMonitor monitor;

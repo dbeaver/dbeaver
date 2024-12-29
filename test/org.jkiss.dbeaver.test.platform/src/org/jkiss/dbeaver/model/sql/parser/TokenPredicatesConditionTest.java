@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.sql.parser;
 
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TokenPredicateFactory;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TokenPredicateNode;
-import org.jkiss.junit.OSGIUnitTest;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class TokenPredicatesConditionTest extends OSGIUnitTest {
+public class TokenPredicatesConditionTest extends DBeaverUnitTest {
 
     private TokenPredicateNode makeTestPredicateTree() {
         TokenPredicateFactory tt = TokenPredicateFactory.makeDefaultFactory();

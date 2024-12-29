@@ -17,11 +17,11 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.junit.OSGIUnitTest;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class SQLUtilsTest extends OSGIUnitTest {
+public class SQLUtilsTest extends DBeaverUnitTest {
     @Test
     public void makeRegexFromLikeTest() {
         Assert.assertEquals("^ABC$", SQLUtils.makeRegexFromLike("ABC"));

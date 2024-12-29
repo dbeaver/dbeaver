@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.junit.OSGIUnitTest;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,7 +33,7 @@ import org.mockito.Mockito;
 
 import java.sql.SQLException;
 
-public class GreenplumFunctionTest extends OSGIUnitTest {
+public class GreenplumFunctionTest extends DBeaverUnitTest {
     @Mock
     PostgreSchema mockSchema;
 

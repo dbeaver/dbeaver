@@ -18,13 +18,13 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DatabaseURL;
-import org.jkiss.junit.OSGIUnitTest;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.regex.Matcher;
 
-public class DatabaseURLTest extends OSGIUnitTest {
+public class DatabaseURLTest extends DBeaverUnitTest {
     @Test
     public void testMatchPattern() {
         assertMatches(

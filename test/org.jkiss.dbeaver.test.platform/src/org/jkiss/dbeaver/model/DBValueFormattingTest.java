@@ -22,14 +22,14 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSPackage;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTrigger;
-import org.jkiss.junit.OSGIUnitTest;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.mockito.Mockito.mock;
 
-public class DBValueFormattingTest extends OSGIUnitTest {
+public class DBValueFormattingTest extends DBeaverUnitTest {
 	
 	private DBSObject objectAssociation;
 	private DBSObject objectProcedure;

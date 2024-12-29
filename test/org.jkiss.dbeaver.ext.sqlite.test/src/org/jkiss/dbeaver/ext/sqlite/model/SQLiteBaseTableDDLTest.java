@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.junit.OSGIUnitTest;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,7 +39,7 @@ import org.mockito.Mockito;
 import java.util.Collections;
 import java.util.List;
 
-public class SQLiteBaseTableDDLTest extends OSGIUnitTest {
+public class SQLiteBaseTableDDLTest extends DBeaverUnitTest {
 
     private final String lineBreak = System.lineSeparator();
 

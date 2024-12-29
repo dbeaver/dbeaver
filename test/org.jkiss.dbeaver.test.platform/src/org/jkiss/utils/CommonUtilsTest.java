@@ -16,7 +16,7 @@
  */
 package org.jkiss.utils;
 
-import org.jkiss.junit.OSGIUnitTest;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -26,7 +26,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 //@RunWith(PowerMockRunner.class)
-public class CommonUtilsTest extends OSGIUnitTest {
+public class CommonUtilsTest extends DBeaverUnitTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();

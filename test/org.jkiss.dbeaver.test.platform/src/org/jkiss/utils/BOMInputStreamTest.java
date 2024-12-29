@@ -17,7 +17,7 @@
 package org.jkiss.utils;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.junit.OSGIUnitTest;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.jkiss.utils.io.BOMInputStream;
 import org.jkiss.utils.io.ByteOrderMark;
 import org.junit.Assert;
@@ -26,7 +26,7 @@ import org.junit.Test;
 import java.io.*;
 
 // http://www.ltg.ed.ac.uk/~richard/utf-8.cgi
-public class BOMInputStreamTest extends OSGIUnitTest {
+public class BOMInputStreamTest extends DBeaverUnitTest {
     @Test
     public void testUtf8WithoutBom() throws IOException {
         final BOMInputStream is = input(ByteOrderMark.UTF_8, 0xF0, 0x9F, 0x94, 0xA5);

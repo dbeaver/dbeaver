@@ -16,11 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.clickhouse.model;
 
-import org.jkiss.junit.OSGIUnitTest;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class ClickhouseDialectTest extends OSGIUnitTest {
+public class ClickhouseDialectTest extends DBeaverUnitTest {
     @Test
     public void quoteStatusStringTest() {
         final ClickhouseSQLDialect dialect = new ClickhouseSQLDialect();

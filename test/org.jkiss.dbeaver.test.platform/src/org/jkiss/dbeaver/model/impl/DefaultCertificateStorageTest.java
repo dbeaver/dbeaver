@@ -18,14 +18,14 @@ package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
-import org.jkiss.junit.OSGIUnitTest;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.StringReader;
 import java.security.SecureRandom;
 import java.util.Base64;
-public class DefaultCertificateStorageTest extends OSGIUnitTest {
+public class DefaultCertificateStorageTest extends DBeaverUnitTest {
     @Test
     public void loadDerFromPem() throws Exception {
         final var derKey = makeKey();

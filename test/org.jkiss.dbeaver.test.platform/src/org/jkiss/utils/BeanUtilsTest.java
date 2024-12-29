@@ -17,7 +17,7 @@
  */
 package org.jkiss.utils;
 
-import org.jkiss.junit.OSGIUnitTest;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,7 +28,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
 
-public class BeanUtilsTest extends OSGIUnitTest {
+public class BeanUtilsTest extends DBeaverUnitTest {
 
     @Rule
     public final ExpectedException thrown = ExpectedException.none();

@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestBuilder;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestResult;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
-import org.jkiss.junit.OSGIUnitTest;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.jkiss.junit.osgi.annotation.RunnerProxy;
 import org.junit.Assert;
 import org.junit.Before;
@@ -34,7 +34,7 @@ import java.util.List;
 import static org.jkiss.dbeaver.model.sql.analyzer.builder.Builder.Consumer.empty;
 
 @RunnerProxy(MockitoJUnitRunner.Silent.class)
-public class SQLCompletionAnalyzerTest extends OSGIUnitTest {
+public class SQLCompletionAnalyzerTest extends DBeaverUnitTest {
     private static RequestResult modelDataRequest;
 
     @Before

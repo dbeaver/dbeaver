@@ -17,13 +17,13 @@
 package org.jkiss.dbeaver.ext.snowflake.model;
 
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.junit.OSGIUnitTest;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class SnowflakeSQLDialectTest extends OSGIUnitTest {
+public class SnowflakeSQLDialectTest extends DBeaverUnitTest {
     @Test
     public void quoteStatusStringTest() {
         SQLDialect dialect = new SnowflakeSQLDialect();

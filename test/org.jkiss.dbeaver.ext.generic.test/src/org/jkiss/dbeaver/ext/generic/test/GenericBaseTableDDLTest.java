@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.junit.OSGIUnitTest;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.jkiss.utils.StandardConstants;
 import org.junit.Assert;
 import org.junit.Before;
@@ -42,7 +42,7 @@ import org.mockito.Mockito;
 import java.util.Collections;
 import java.util.List;
 
-public class GenericBaseTableDDLTest extends OSGIUnitTest {
+public class GenericBaseTableDDLTest extends DBeaverUnitTest {
 
     private final String lineBreak = System.getProperty(StandardConstants.ENV_LINE_SEPARATOR);
 
