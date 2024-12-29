@@ -50,8 +50,9 @@ public class SQLCommandAI implements SQLControlCommandHandler {
         final DBSLogicalDataSource dataSource = new DBSLogicalDataSource(
             command.getDataSourceContainer(), "AI logical wrapper", null);
 
+        DAICompletionSettings completionSettings = new DAICompletionSettings(dataSource.getDataSourceContainer());
         final DAICompletionContext aiContext = new DAICompletionContext.Builder()
-            .setScope(DAICompletionScope.CURRENT_SCHEMA)
+            .setScope(completionSettings.getScope())
             .setDataSource(dataSource)
             .setExecutionContext(scriptContext.getExecutionContext())
             .build();
