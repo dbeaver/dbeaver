@@ -82,6 +82,7 @@ public class SQLCommandAI implements SQLControlCommandHandler {
             return SQLControlResult.success();
         }
 
+        scriptContext.getOutputWriter().println(null, prompt + " ==> " + finalSQL + "\n");
         return SQLControlResult.transform(
             new SQLQuery(command.getDataSource(), finalSQL));
     }
