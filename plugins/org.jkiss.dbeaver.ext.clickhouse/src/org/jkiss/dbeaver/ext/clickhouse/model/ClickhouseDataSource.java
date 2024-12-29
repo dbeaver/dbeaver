@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.clickhouse.model.jdbc.ClickhouseJdbcFactory;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSourceInfo;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -40,6 +41,7 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
@@ -169,6 +171,36 @@ public class ClickhouseDataSource extends GenericDataSource {
         // So far we turn off indexes
         info.setSupportsIndexes(false);
         return info;
+    }
+
+    @Override
+    public List<String> getCatalogsNames(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCDatabaseMetaData metaData,
+        GenericMetaObject catalogObject,
+        @Nullable DBSObjectFilter catalogFilters
+    ) throws DBException {
+        // We use custom catalog read because of https://github.com/ClickHouse/clickhouse-java/issues/1921
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read Clickhouse databases")) {
+            try (JDBCStatement dbStat = session.createStatement()) {
+                try (JDBCResultSet dbResults = dbStat.executeQuery("SHOW DATABASES")) {
+                    List<String> catalogNames = new ArrayList<>();
+                    while (dbResults.next()) {
+                        String catalogName = dbResults.getString(1);
+                        if (catalogFilters == null || catalogFilters.matches(catalogName)) {
+                            catalogNames.add(catalogName);
+                            monitor.subTask("Extract catalogs - " + catalogName);
+                        } else {
+                            catalogsFiltered = true;
+                        }
+                    }
+                    return catalogNames;
+                }
+            }
+        } catch (SQLException e) {
+            log.debug(e);
+            return super.getCatalogsNames(monitor, metaData, catalogObject, catalogFilters);
+        }
     }
 
     @NotNull
