@@ -16,20 +16,16 @@
  */
 package org.jkiss.dbeaver.model.ai.commands;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.completion.*;
 import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLControlCommand;
 import org.jkiss.dbeaver.model.sql.SQLControlCommandHandler;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -40,32 +36,7 @@ import java.util.List;
 public class SQLCommandAI implements SQLControlCommandHandler {
 
     @Override
-    public boolean handleCommand(SQLControlCommand command, SQLScriptContext scriptContext) throws DBException {
-        try {
-            new AbstractJob("Execute prompt") {
-                @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
-                    try {
-                        performCompletion(monitor, command, scriptContext);
-                    } catch (Exception e) {
-                        return GeneralUtils.makeExceptionStatus(e);
-                    }
-                    return Status.OK_STATUS;
-                }
-            }.schedule();
-        } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("AI error", "Cannot generate completion", e);
-            return false;
-        }
-
-        return true;
-    }
-
-    private static void performCompletion(
-        DBRProgressMonitor monitor,
-        SQLControlCommand command,
-        SQLScriptContext scriptContext
-    ) throws DBException {
+    public boolean handleCommand(@NotNull DBRProgressMonitor monitor, @NotNull SQLControlCommand command, @NotNull SQLScriptContext scriptContext) throws DBException {
         AISettings aiSettings = AISettingsRegistry.getInstance().getSettings();
         DAICompletionEngine<?> engine = AIEngineRegistry.getInstance().getCompletionEngine(
             aiSettings.getActiveEngine());
@@ -98,7 +69,7 @@ public class SQLCommandAI implements SQLControlCommandHandler {
             CommonUtils.notEmpty(response.getResultCompletion()));
 
         if (messageChunks.length == 0) {
-            return;
+            return false;
         }
 
         String finalSQL = null;
@@ -109,6 +80,7 @@ public class SQLCommandAI implements SQLControlCommandHandler {
         }
 
         System.out.println(finalSQL);
+        return true;
     }
 
 }

@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.exec.DBCScriptContextListener;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputWriter;
 import org.jkiss.dbeaver.model.impl.OutputWriterAdapter;
 import org.jkiss.dbeaver.model.impl.sql.AbstractSQLDialect;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandHandlerDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
 import org.jkiss.dbeaver.model.sql.registry.SQLQueryParameterRegistry;
@@ -267,7 +268,7 @@ public class SQLScriptContext implements DBCScriptContext {
         this.ignoreParameters = ignoreParameters;
     }
 
-    public boolean executeControlCommand(SQLControlCommand command) throws DBException {
+    public boolean executeControlCommand(DBRProgressMonitor monitor, SQLControlCommand command) throws DBException {
         if (command.isEmptyCommand()) {
             return true;
         }
@@ -275,7 +276,7 @@ public class SQLScriptContext implements DBCScriptContext {
         if (commandHandler == null) {
             throw new DBException("Command '" + command.getCommand() + "' not supported");
         }
-        return commandHandler.createHandler().handleCommand(command, this);
+        return commandHandler.createHandler().handleCommand(monitor, command, this);
     }
 
     public void copyFrom(SQLScriptContext context) {

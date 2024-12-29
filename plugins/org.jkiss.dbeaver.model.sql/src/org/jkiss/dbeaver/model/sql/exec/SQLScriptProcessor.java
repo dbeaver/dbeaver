@@ -170,10 +170,10 @@ public class SQLScriptProcessor {
     }
 
     private boolean executeSingleQuery(@NotNull DBCSession session, @NotNull SQLScriptElement element) {
-        if (element instanceof SQLControlCommand) {
+        if (element instanceof SQLControlCommand controlCommand) {
             log.debug(STAT_LOG_PREFIX + "Execute command\n" + element.getText());
             try {
-                return scriptContext.executeControlCommand((SQLControlCommand) element);
+                return scriptContext.executeControlCommand(session.getProgressMonitor(), controlCommand);
             } catch (Throwable e) {
                 if (!(e instanceof DBException)) {
                     log.error("Unexpected error while processing SQL command", e);
