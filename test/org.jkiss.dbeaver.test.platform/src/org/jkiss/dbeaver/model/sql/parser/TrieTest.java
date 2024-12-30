@@ -16,16 +16,16 @@
  */
 package org.jkiss.dbeaver.model.sql.parser;
 
-import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.Trie;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TrieLookupComparator;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class TrieTest extends OSGIMockDataTest {
+public class TrieTest extends DBeaverUnitTest {
 
     class TestToken {
         private String key;

@@ -17,8 +17,8 @@
 package org.jkiss.utils;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Test;
 
 import java.text.SimpleDateFormat;
@@ -27,7 +27,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-public class GeneralUtilsTest extends OSGIMockDataTest {
+public class GeneralUtilsTest extends DBeaverUnitTest {
 
     public static final String VARIABLE_YEAR = "year";
     public static final String VARIABLE_MONTH = "month";

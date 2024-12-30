@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.data.aggregate;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.jkiss.dbeaver.model.OSGIMockDataTest;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -32,7 +32,7 @@ import java.util.List;
 
 
 @RunWith(value = Parameterized.class)
-public class FunctionCountNullsTest extends OSGIMockDataTest {
+public class FunctionCountNullsTest extends DBeaverUnitTest {
 
     @Parameter(value = 0)
     public List<Integer> values;
