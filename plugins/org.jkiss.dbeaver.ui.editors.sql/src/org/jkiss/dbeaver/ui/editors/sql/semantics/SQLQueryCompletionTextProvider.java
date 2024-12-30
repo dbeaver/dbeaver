@@ -82,17 +82,17 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
     @Override
     public String visitColumnName(@NotNull SQLColumnNameCompletionItem columnName) {
         String preparedColumnName = this.convertCaseIfNeeded(columnName.columnInfo.symbol.getName());
-        String suffix;
-        if (this.queryCompletionContext.getInspectionResult().expectingColumnIntroduction() &&
-            this.aliasMode != SQLTableAliasInsertMode.NONE && this.localKnownColumnNames.contains(preparedColumnName) &&
-            columnName.sourceInfo != null && columnName.sourceInfo.aliasOrNull != null) {
-            DBPDataSource ds = this.request.getContext().getDataSource();
-            String alias = DBUtils.getUnQuotedIdentifier(ds, columnName.sourceInfo.aliasOrNull.getName())
-                + DBUtils.getUnQuotedIdentifier(ds, preparedColumnName);
-            suffix = this.prepareAliasPrefix() + this.convertCaseIfNeeded(DBUtils.getQuotedIdentifier(ds, alias));
-        } else {
-            suffix = "";
-        }
+//        String suffix;
+//        if (this.queryCompletionContext.getInspectionResult().expectingColumnIntroduction() &&
+//            this.aliasMode != SQLTableAliasInsertMode.NONE && this.localKnownColumnNames.contains(preparedColumnName) &&
+//            columnName.sourceInfo != null && columnName.sourceInfo.aliasOrNull != null) {
+//            DBPDataSource ds = this.request.getContext().getDataSource();
+//            String alias = DBUtils.getUnQuotedIdentifier(ds, columnName.sourceInfo.aliasOrNull.getName())
+//                + DBUtils.getUnQuotedIdentifier(ds, preparedColumnName);
+//            suffix = this.prepareAliasPrefix() + this.convertCaseIfNeeded(DBUtils.getQuotedIdentifier(ds, alias));
+//        } else {
+//            suffix = "";
+//        }
 
         String prefix;
         if (columnName.sourceInfo != null && this.queryCompletionContext.getInspectionResult().expectingColumnReference()) {
@@ -107,7 +107,7 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
             prefix = "";
         }
 
-        return prefix + preparedColumnName + suffix;
+        return prefix + preparedColumnName;
     }
 
     @NotNull
