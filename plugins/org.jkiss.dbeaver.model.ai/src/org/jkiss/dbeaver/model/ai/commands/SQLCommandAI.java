@@ -19,12 +19,14 @@ package org.jkiss.dbeaver.model.ai.commands;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.completion.*;
 import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -39,18 +41,38 @@ public class SQLCommandAI implements SQLControlCommandHandler {
     @NotNull
     @Override
     public SQLControlResult handleCommand(@NotNull DBRProgressMonitor monitor, @NotNull SQLControlCommand command, @NotNull SQLScriptContext scriptContext) throws DBException {
+        if (command.getDataSource() == null) {
+            throw new DBException("Not connected to database");
+        }
         AISettings aiSettings = AISettingsRegistry.getInstance().getSettings();
+        if (aiSettings.isAiDisabled()) {
+            throw new DBException("AI services are disabled");
+        }
         DAICompletionEngine<?> engine = AIEngineRegistry.getInstance().getCompletionEngine(
             aiSettings.getActiveEngine());
 
         String prompt = command.getParameter();
+        if (CommonUtils.isEmptyTrimmed(prompt)) {
+            throw new DBException("Empty AI prompt");
+        }
 
         IAIFormatter formatter = AIFormatterRegistry.getInstance().getFormatter(AIConstants.CORE_FORMATTER);
 
         final DBSLogicalDataSource dataSource = new DBSLogicalDataSource(
             command.getDataSourceContainer(), "AI logical wrapper", null);
 
-        DAICompletionSettings completionSettings = new DAICompletionSettings(dataSource.getDataSourceContainer());
+        DBPDataSourceContainer dataSourceContainer = dataSource.getDataSourceContainer();
+        DAICompletionSettings completionSettings = new DAICompletionSettings(dataSourceContainer);
+        if (!completionSettings.isMetaTransferConfirmed()) {
+            if (DBWorkbench.getPlatformUI().confirmAction("Do you confirm AI usage",
+                "Do you confirm AI usage for '" + dataSourceContainer.getName() + "'?"
+            )) {
+                completionSettings.setMetaTransferConfirmed(true);
+                completionSettings.saveSettings();
+            } else {
+                throw new DBException("AI services restricted for '" + dataSourceContainer.getName() + "'");
+            }
+        }
         final DAICompletionContext aiContext = new DAICompletionContext.Builder()
             .setScope(completionSettings.getScope())
             .setDataSource(dataSource)

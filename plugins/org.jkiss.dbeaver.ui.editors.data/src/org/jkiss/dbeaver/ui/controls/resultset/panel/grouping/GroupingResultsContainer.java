@@ -153,20 +153,26 @@ public class GroupingResultsContainer implements IResultSetContainer {
 
     public void addGroupingFunctions(List<String> functions) {
         for (String func : functions) {
-            func = DBUtils.getUnQuotedIdentifier(getDataContainer().getDataSource(), func);
-            if (!groupFunctions.contains(func)) {
-                groupFunctions.add(func);
+            DBPDataSource dataSource = getDataContainer().getDataSource();
+            if (dataSource != null) {
+                func = DBUtils.getUnQuotedIdentifier(dataSource, func);
+                if (!groupFunctions.contains(func)) {
+                    groupFunctions.add(func);
+                }
             }
         }
     }
 
     public boolean removeGroupingFunction(List<String> attributes) {
         boolean changed = false;
-        for (String func : attributes) {
-            func = DBUtils.getUnQuotedIdentifier(getDataContainer().getDataSource(), func);
-            if (groupFunctions.contains(func)) {
-                groupFunctions.remove(func);
-                changed = true;
+        DBPDataSource dataSource = getDataContainer().getDataSource();
+        if (dataSource != null) {
+            for (String func : attributes) {
+                func = DBUtils.getUnQuotedIdentifier(dataSource, func);
+                if (groupFunctions.contains(func)) {
+                    groupFunctions.remove(func);
+                    changed = true;
+                }
             }
         }
         return changed;
