@@ -29,7 +29,9 @@ import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Control command handler
@@ -73,11 +75,20 @@ public class SQLCommandAI implements SQLControlCommandHandler {
                 throw new DBException("AI services restricted for '" + dataSourceContainer.getName() + "'");
             }
         }
-        final DAICompletionContext aiContext = new DAICompletionContext.Builder()
-            .setScope(completionSettings.getScope())
+        DAICompletionScope scope = completionSettings.getScope();
+        DAICompletionContext.Builder contextBuilder = new DAICompletionContext.Builder()
+            .setScope(scope)
             .setDataSource(dataSource)
-            .setExecutionContext(scriptContext.getExecutionContext())
-            .build();
+            .setExecutionContext(scriptContext.getExecutionContext());
+        if (scope == DAICompletionScope.CUSTOM) {
+            contextBuilder.setCustomEntities(
+                AITextUtils.loadCustomEntities(
+                    monitor,
+                    command.getDataSource(),
+                    Arrays.stream(completionSettings.getCustomObjectIds()).collect(Collectors.toSet()))
+            );
+        }
+        final DAICompletionContext aiContext = contextBuilder.build();
 
         DAICompletionSession aiSession = new DAICompletionSession();
         aiSession.add(new DAICompletionMessage(DAICompletionMessage.Role.USER, prompt));
