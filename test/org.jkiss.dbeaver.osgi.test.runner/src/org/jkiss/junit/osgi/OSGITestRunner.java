@@ -14,14 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.osgi.test.runner;
+package org.jkiss.junit.osgi;
 
+import org.eclipse.osgi.internal.framework.EquinoxBundle;
 import org.eclipse.osgi.service.runnable.ApplicationLauncher;
 import org.eclipse.osgi.util.ManifestElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.osgi.test.runner.annotation.RunWithProduct;
-import org.jkiss.dbeaver.osgi.test.runner.annotation.RunnerProxy;
-import org.jkiss.dbeaver.osgi.test.runner.launcher.TestLauncher;
+import org.jkiss.junit.osgi.annotation.RunWithProduct;
+import org.jkiss.junit.osgi.annotation.RunnerProxy;
+import org.jkiss.junit.osgi.launcher.TestLauncher;
 import org.jkiss.utils.Pair;
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
@@ -36,6 +38,9 @@ import org.osgi.framework.wiring.BundleWiring;
 import java.io.File;
 import java.io.FileInputStream;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URL;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -65,11 +70,29 @@ public class OSGITestRunner extends Runner {
     private Framework framework;
     private Path productPath;
 
+    private String testBundleName;
     private Bundle testBundle;
 
     public OSGITestRunner(Class<?> testClass) {
         this.testClass = testClass;
         if (isRunFromIDEA()) {
+            try {
+                // Determine name of test bundle
+                // Analyze classpath, we don't have other way because we are not in OSGI container yet
+                // All test bundles are compiled and classes are in <bundle-path>/target
+                URL resource = testClass.getClassLoader().getResource(testClass.getName().replace('.', '/') + ".class");
+                if (resource != null) {
+                    String testClassPath = resource.toString();
+                    Pattern pluginNamePattern = Pattern.compile(".+/([\\w.]+)/target/");
+                    Matcher matcher = pluginNamePattern.matcher(testClassPath);
+                    if (matcher.find()) {
+                        testBundleName = matcher.group(1);
+                    }
+                }
+            } catch (Exception e) {
+                log.error(e);
+            }
+
             this.productPath = findProduct();
             this.framework = initializeFramework();
         }
@@ -77,7 +100,7 @@ public class OSGITestRunner extends Runner {
 
     @Override
     public Description getDescription() {
-        return Description.createTestDescription(testClass, "OSGi Bundle Runner Description");
+        return Description.createTestDescription(testClass, testClass.getName());
     }
 
     @Override
@@ -135,14 +158,14 @@ public class OSGITestRunner extends Runner {
                 null
             );
             launcher.start(bundle.getSymbolicName());
+
             if (testClass.getAnnotation(RunnerProxy.class) != null) {
                 Constructor<?> proxy = testBundle.loadClass(testClass.getAnnotation(RunnerProxy.class).value().getName()).getConstructor(Class.class);
                 Object o = proxy.newInstance(testBundle.loadClass(testClass.getName()));
-                Arrays.stream(o.getClass().getMethods()).filter(it -> it.getName().equals("run"))
-                    .findFirst().orElseThrow().invoke(
-                    o,
-                    testBundle.loadClass(RunNotifier.class.getName()).getConstructor().newInstance()
-                );
+                Method runMethod = Arrays.stream(o.getClass().getMethods()).filter(it -> it.getName().equals("run"))
+                    .findFirst().orElseThrow();
+                Object proxyNotifier = createProxyNotifier(notifier);
+                runMethod.invoke(o, proxyNotifier);
 
             }
         } catch (Throwable throwable) {
@@ -155,6 +178,23 @@ public class OSGITestRunner extends Runner {
                 log.error("Error stopping framework", e);
             }
         }
+    }
+
+    @NotNull
+    private Object createProxyNotifier(RunNotifier notifier) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException {
+        Object newOsgiNotifier = testBundle.loadClass(RunNotifier.class.getName()).getConstructor().newInstance();
+
+        try {
+            Class<?> osgiListenerClass = testBundle.loadClass(OSGITestRunListener.class.getName());
+            Object osgiListener = osgiListenerClass.getConstructor(Object.class).newInstance(notifier);
+            Method addListenerMethod = Arrays.stream(newOsgiNotifier.getClass().getMethods())
+                .filter(method -> method.getName().equals("addListener")).findFirst().orElseThrow();
+            addListenerMethod.invoke(newOsgiNotifier, osgiListener);
+        } catch (Throwable e) {
+            log.debug(e);
+        }
+
+        return newOsgiNotifier;
     }
 
     private Framework initializeFramework() {
@@ -181,6 +221,9 @@ public class OSGITestRunner extends Runner {
         });
         // Install all bundles from the directory
         for (String bundleFile : ManifestElement.getArrayFromList(props.getProperty("osgi.bundles"))) {
+//            if (bundleFile.contains("junit")) {
+//                continue;
+//            }
             if (bundleFile.contains(".app") && !bundleFile.contains("headless") && !bundleFile.contains("org.eclipse")) {
                 continue;
             }
@@ -197,8 +240,9 @@ public class OSGITestRunner extends Runner {
             }
             try {
                 Bundle bundle = context.installBundle(bundleFile);
-                bundlesByStartLevel.add(new Pair<>(bundle, startLevel));
-                System.out.println("Installed bundle: " + bundle.getSymbolicName());
+                if (startLevel != 0 || bundle.getSymbolicName().equals(testBundleName)) {
+                    bundlesByStartLevel.add(new Pair<>(bundle, startLevel));
+                }
             } catch (BundleException e) {
                 log.error("Error initializing bundle message", e);
             }
@@ -215,6 +259,29 @@ public class OSGITestRunner extends Runner {
         // Start all installed bundles
         for (Pair<Bundle, Integer> bundleWithStartLevel : bundlesByStartLevel) {
             Bundle bundle = bundleWithStartLevel.getFirst();
+
+            if (bundle instanceof EquinoxBundle eb && eb.isFragment()) {
+                // We need to activate main test bundle (it has to be in the list of auto-activation bundles)
+                // For that we also check that test bundle is a fragment.
+                // In this case we activate fragment host instead of main bundle
+                Bundle hostBundle = null;
+                if (bundle.getSymbolicName().equals(testBundleName)) {
+                    Dictionary<String, String> headers = bundle.getHeaders();
+                    String hostBundleHeader = headers.get("Fragment-Host");
+                    if (hostBundleHeader != null) {
+                        for (Bundle b : context.getBundles()) {
+                            if (b.getSymbolicName().equals(hostBundleHeader)) {
+                                hostBundle = b;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (hostBundle != null) {
+                    bundle = hostBundle;
+                }
+            }
+
             if (bundle.getState() != Bundle.ACTIVE) {
                 try {
                     bundle.start();
@@ -223,8 +290,9 @@ public class OSGITestRunner extends Runner {
                         testBundle = bundle;
                     } catch (ClassNotFoundException e) {
                         // ignore, expected
+                        //log.error(e);
                     }
-                    log.info("Started bundle: " + bundle.getSymbolicName());
+                    log.debug("Started bundle: " + bundle.getSymbolicName());
                 } catch (BundleException e) {
                     if (!e.getMessage().contains("Invalid operation on a fragment")) {
                         log.error("Error starting bundle message", e);
@@ -234,7 +302,7 @@ public class OSGITestRunner extends Runner {
         }
         for (Pair<Bundle, Integer> bundleIntegerPair : bundlesByStartLevel) {
             if (bundleIntegerPair.getFirst().adapt(BundleWiring.class) == null) {
-                System.out.println("Bundle not resolved: " + bundleIntegerPair.getFirst().getSymbolicName());
+                log.error("Bundle not resolved: " + bundleIntegerPair.getFirst().getSymbolicName());
             }
         }
         return appBundle;
