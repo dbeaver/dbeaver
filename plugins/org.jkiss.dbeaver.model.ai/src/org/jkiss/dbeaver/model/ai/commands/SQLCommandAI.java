@@ -72,14 +72,19 @@ public class SQLCommandAI implements SQLControlCommandHandler {
             CommonUtils.notEmpty(response.getResultCompletion()));
 
         String finalSQL = null;
+        StringBuilder messages = new StringBuilder();
         for (MessageChunk chunk : messageChunks) {
             if (chunk instanceof MessageChunk.Code code) {
                 finalSQL = code.text();
+            } else if (chunk instanceof MessageChunk.Text text) {
+                messages.append(text.text());
             }
         }
         if (finalSQL == null) {
-            log.debug("Empty AI completion");
-            return SQLControlResult.success();
+            if (!messages.isEmpty()) {
+                throw new DBException(messages.toString());
+            }
+            throw new DBException("Empty AI completion for '" + prompt + "'");
         }
 
         scriptContext.getOutputWriter().println(AIOutputSeverity.PROMPT, prompt + " ==> " + finalSQL + "\n");
