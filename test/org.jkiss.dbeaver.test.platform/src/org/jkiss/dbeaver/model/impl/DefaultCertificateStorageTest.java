@@ -17,18 +17,15 @@
 package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
-import org.jkiss.dbeaver.osgi.test.runner.OSGITestRunner;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import java.io.StringReader;
 import java.security.SecureRandom;
 import java.util.Base64;
-@RunWith(OSGITestRunner.class)
-public class DefaultCertificateStorageTest extends OSGIMockDataTest {
+public class DefaultCertificateStorageTest extends DBeaverUnitTest {
     @Test
     public void loadDerFromPem() throws Exception {
         final var derKey = makeKey();

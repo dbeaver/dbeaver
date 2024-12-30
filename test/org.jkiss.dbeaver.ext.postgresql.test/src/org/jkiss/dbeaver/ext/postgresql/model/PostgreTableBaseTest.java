@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.dbeaver.ext.postgresql.PostgreTestUtils;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -29,6 +28,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.jkiss.utils.StandardConstants;
 import org.junit.Assert;
 import org.junit.Before;
@@ -40,7 +40,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-public class PostgreTableBaseTest extends OSGIMockDataTest {
+public class PostgreTableBaseTest extends DBeaverUnitTest {
 
     @Mock
     DBRProgressMonitor monitor;

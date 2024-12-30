@@ -14,18 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model;
+package org.jkiss.junit;
 
-import org.jkiss.dbeaver.osgi.test.runner.OSGITestRunner;
-import org.jkiss.dbeaver.osgi.test.runner.annotation.RunWithProduct;
-import org.jkiss.dbeaver.osgi.test.runner.annotation.RunnerProxy;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.jkiss.junit.osgi.annotation.RunWithProduct;
 
 
 @RunWithProduct("DBeaverTest.product")
-@RunnerProxy(MockitoJUnitRunner.class)
-@RunWith(OSGITestRunner.class)
-public abstract class OSGIMockDataTest {
-    MockitoJUnitRunner runner;
+public abstract class DBeaverUnitTest extends ApplicationUnitTest {
+
 }

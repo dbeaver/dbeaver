@@ -7,7 +7,7 @@ Bundle-Release-Date: 20250106
 Bundle-Vendor: DBeaver Corp
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
-Export-Package: org.jkiss.dbeaver.model
+Export-Package: org.jkiss.junit
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.junit,
@@ -19,7 +19,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.ext.postgresql,
- org.jkiss.dbeaver.osgi.test.runner,
+ org.jkiss.dbeaver.osgi.test.runner;visibility:=reexport,
  org.jkiss.dbeaver.ext.oracle,
  org.jkiss.dbeaver.ext.snowflake.core,
  org.jkiss.dbeaver.ext.hana,
