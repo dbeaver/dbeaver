@@ -66,6 +66,13 @@ public class CubridTableColumn extends GenericTableColumn
 
     @NotNull
     @Override
+    @Property(viewable = true, editable = true, order = 10)
+    public String getName() {
+        return super.getName().toLowerCase();
+    }
+
+    @NotNull
+    @Override
     @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = ColumnTypeNameListProvider.class)
     public String getTypeName() {
         return super.getTypeName();
