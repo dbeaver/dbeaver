@@ -70,6 +70,11 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
         return dialogArea;
     }
 
+    @Override
+    protected void initializeBounds() {
+        super.initializeBounds();
+    }
+
     /**
      * Retrieves persisted confirmation state for the given key.
      *
