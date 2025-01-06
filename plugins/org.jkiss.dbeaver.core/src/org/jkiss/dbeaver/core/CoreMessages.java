@@ -391,6 +391,7 @@ public class CoreMessages extends NLS {
     public static String editor_file_copy_path;
     public static String editor_file_copy_object_name;
     public static String editor_file_rename;
+    public static String editor_file_add_bookmark;
 
     // New Connection Wizard
     public static String dialog_setting_connection_wizard_title;

@@ -42,6 +42,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -52,6 +53,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.common.AddBookmarkHandler;
 import org.jkiss.dbeaver.ui.controls.decorations.HolidayDecorations;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
@@ -269,6 +271,21 @@ public class DBeaverStackRenderer extends StackRenderer {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         DBWorkbench.getPlatformUI().copyTextToClipboard(DBUtils.getObjectFullName(object, DBPEvaluationContext.UI), false);
+                    }
+                });
+
+                final MenuItem addBookmarkItem = new MenuItem(menu, SWT.NONE);
+                addBookmarkItem.setText(NLS.bind(CoreMessages.editor_file_add_bookmark, label));
+                addBookmarkItem.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        try {
+                            new AddBookmarkHandler().createBookmarkDialog(node, menu.getShell());
+                        } catch (DBException ex) {
+                            DBWorkbench.getPlatformUI().showError(
+                                CoreMessages.actions_navigator_bookmark_error_title,
+                                CoreMessages.actions_navigator_bookmark_error_message, ex);
+                        }
                     }
                 });
             }

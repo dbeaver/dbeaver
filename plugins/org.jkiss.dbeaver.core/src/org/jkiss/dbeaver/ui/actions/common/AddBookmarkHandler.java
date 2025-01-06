@@ -59,13 +59,9 @@ public class AddBookmarkHandler extends NavigatorHandlerObjectBase {
                     "Connection itself cannot be bookmarked. Choose some element under a connection element.");
                 return null;
             }
-            if (node instanceof DBNDatabaseNode) {
+            if (node instanceof DBNDatabaseNode dbNode) {
                 try {
-                    AddBookmarkDialog dialog = new AddBookmarkDialog(activeShell, (DBNDatabaseNode) node);
-                    final String title = dialog.chooseName();
-                    if (title != null) {
-                        BookmarksHandlerImpl.createBookmark((DBNDatabaseNode) node, title, dialog.getTargetFolder());
-                    }
+                    createBookmarkDialog(dbNode, activeShell);
                 } catch (DBException e) {
                     DBWorkbench.getPlatformUI().showError(
                             CoreMessages.actions_navigator_bookmark_error_title,
@@ -74,6 +70,14 @@ public class AddBookmarkHandler extends NavigatorHandlerObjectBase {
             }
         }
         return null;
+    }
+
+    public void createBookmarkDialog(DBNDatabaseNode node, Shell activeShell) throws DBException {
+        AddBookmarkDialog dialog = new AddBookmarkDialog(activeShell, node);
+        final String title = dialog.chooseName();
+        if (title != null) {
+            BookmarksHandlerImpl.createBookmark(node, title, dialog.getTargetFolder());
+        }
     }
 
     private class AddBookmarkDialog extends EnterNameDialog {
