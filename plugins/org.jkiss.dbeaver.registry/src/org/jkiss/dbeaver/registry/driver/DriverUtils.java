@@ -241,6 +241,9 @@ public class DriverUtils {
         return true;
     }
 
+    /**
+     * Returns relative driver library path if application is distributed.
+     */
     @NotNull
     public static String getDistributedLibraryPath(@NotNull Path path) {
         if (DBWorkbench.isDistributed() && path.isAbsolute()) {

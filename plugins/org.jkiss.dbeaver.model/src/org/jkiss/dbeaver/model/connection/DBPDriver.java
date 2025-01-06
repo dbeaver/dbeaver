@@ -204,6 +204,9 @@ public interface DBPDriver extends DBPNamedObject
     @NotNull
     List<? extends DBPDriverFileSource> getDriverFileSources();
 
+    /**
+     * Flag that shows if a driver needs external dependencies (f.e. not all files are present).
+     */
     boolean needsExternalDependencies();
 
     @NotNull

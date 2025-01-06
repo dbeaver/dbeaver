@@ -1413,6 +1413,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         validateFilesPresence(new LoggingProgressMonitor(log), true);
     }
 
+    @Override
     public void validateFilesPresence(@NotNull DBRProgressMonitor monitor) {
         validateFilesPresence(monitor, false);
     }
@@ -1515,6 +1516,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return getDriverDependencies(false) == null;
     }
 
+    /**
+     * Returns driver dependencies if some driver files are not found and can be downloaded.
+     */
     @Nullable
     public DriverDependencies getDriverDependencies(boolean resetVersions) {
         boolean localLibsExists = false;
