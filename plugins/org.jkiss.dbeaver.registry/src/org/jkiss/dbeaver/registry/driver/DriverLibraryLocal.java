@@ -184,11 +184,12 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
             log.warn("Error getting platform location", e);
         }
         if (file == null || !Files.exists(file)) {
-            if (DBWorkbench.isDistributed() || DBWorkbench.getPlatform().getApplication().isMultiuser()) {
-                return DriverDescriptor.getWorkspaceDriversStorageFolder().resolve(localPath);
-            }
             // Use custom drivers path
             file = DriverDescriptor.getCustomDriversHome().resolve(localPath);
+        }
+        if (!Files.exists(file) && (DBWorkbench.isDistributed() || DBWorkbench.getPlatform().getApplication().isMultiuser())) {
+            // driver file can be in workspace folder for multiuser applications
+            return DriverDescriptor.getWorkspaceDriversStorageFolder().resolve(localPath);
         }
         return file;
     }
