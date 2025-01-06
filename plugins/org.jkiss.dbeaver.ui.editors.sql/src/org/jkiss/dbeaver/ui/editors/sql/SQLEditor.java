@@ -87,10 +87,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMTransactionState;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.rm.RMConstants;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
-import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.data.SQLQueryDataContainer;
 import org.jkiss.dbeaver.model.sql.transformers.SQLQueryTransformerCount;
@@ -3769,8 +3766,15 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
-        boolean processQueries(SQLScriptContext scriptContext, final List<SQLScriptElement> queries, boolean forceScript, final boolean fetchResults, boolean export, boolean closeTabOnError, SQLQueryListener queryListener)
-        {
+        boolean processQueries(
+            SQLScriptContext scriptContext,
+            final List<SQLScriptElement> queries,
+            boolean forceScript,
+            final boolean fetchResults,
+            boolean export,
+            boolean closeTabOnError,
+            SQLQueryListener queryListener
+        ) {
             if (queries.isEmpty()) {
                 // Nothing to process
                 return false;
@@ -3805,12 +3809,15 @@ public class SQLEditor extends SQLEditorBase implements
                     for (SQLScriptElement element : queries) {
                         if (element instanceof SQLControlCommand controlCommand) {
                             try {
-                                scriptContext.executeControlCommand(controlCommand);
+                                SQLControlResult controlResult = scriptContext.executeControlCommand(new LoggingProgressMonitor(log), controlCommand);
+                                if (controlResult.getTransformed() != null) {
+                                    element = controlResult.getTransformed();
+                                }
                             } catch (DBException e) {
                                 DBWorkbench.getPlatformUI().showError("Command error", "Error processing control command", e);
                             }
-                        } else {
-                            SQLQuery query = (SQLQuery) element;
+                        }
+                        if (element instanceof SQLQuery query) {
                             scriptContext.fillQueryParameters(query, () -> null, false);
 
                             SQLQueryDataContainer dataContainer = new SQLQueryDataContainer(SQLEditor.this, query, scriptContext, log);

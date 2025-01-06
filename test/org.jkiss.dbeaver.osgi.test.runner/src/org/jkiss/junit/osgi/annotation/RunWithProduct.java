@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.osgi.test.runner.annotation;
+package org.jkiss.junit.osgi.annotation;
 
-import org.jkiss.dbeaver.osgi.test.runner.OSGITestRunner;
+import org.jkiss.junit.osgi.OSGITestRunner;
 
 import java.lang.annotation.*;
 

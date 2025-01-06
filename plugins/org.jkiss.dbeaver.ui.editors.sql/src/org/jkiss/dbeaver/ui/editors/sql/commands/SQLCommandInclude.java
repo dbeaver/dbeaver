@@ -18,11 +18,13 @@ package org.jkiss.dbeaver.ui.editors.sql.commands;
 
 import org.eclipse.ui.*;
 import org.eclipse.ui.ide.IDEEncoding;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.eval.ScriptVariablesResolver;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -55,8 +57,9 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         return CommonUtils.isEmpty(resourceEncoding) ? GeneralUtils.getDefaultFileEncoding() : resourceEncoding;
     }
 
+    @NotNull
     @Override
-    public boolean handleCommand(SQLControlCommand command, final SQLScriptContext scriptContext) throws DBException {
+    public SQLControlResult handleCommand(@NotNull DBRProgressMonitor monitor, @NotNull SQLControlCommand command, @NotNull final SQLScriptContext scriptContext) throws DBException {
         String fileName = command.getParameter();
         if (CommonUtils.isEmpty(fileName)) {
             throw new DBException("Empty input file");
@@ -132,7 +135,7 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
             }
         }
 
-        return true;
+        return SQLControlResult.success();
     }
 
     private static class IncludeScriptListener implements SQLQueryListener {

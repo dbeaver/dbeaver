@@ -17,14 +17,14 @@
 
 package org.jkiss.dbeaver.test.platform;
 
-import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class PlatformTest extends OSGIMockDataTest {
+public class PlatformTest extends DBeaverUnitTest {
     @Before
     public void setUp() throws Exception {
     }

@@ -14,15 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.osgi.test.runner.annotation;
+package org.jkiss.dbeaver.model.ai.commands;
 
-import org.junit.runner.Runner;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.exec.output.DBCOutputSeverity;
 
-import java.lang.annotation.*;
+enum AIOutputSeverity implements DBCOutputSeverity {
+    PROMPT("AI");
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-@Inherited
-public @interface RunnerProxy {
-    Class<? extends Runner> value();
+    private final String name;
+
+    AIOutputSeverity(@NotNull String name) {
+        this.name = name;
+    }
+
+    @NotNull
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public boolean isForced() {
+        return true;
+    }
 }

@@ -72,7 +72,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     private SimpleObjectCache<GenericStructContainer, GenericSchema> schemas;
     private final GenericMetaModel metaModel;
     private GenericObjectContainer structureContainer;
-    boolean catalogsFiltered;
+    protected boolean catalogsFiltered;
 
     private String queryGetActiveDB;
     private String querySetActiveDB;
@@ -534,7 +534,12 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         }
     }
 
-    public List<String> getCatalogsNames(@NotNull DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData, GenericMetaObject catalogObject, @Nullable DBSObjectFilter catalogFilters) throws DBException {
+    public List<String> getCatalogsNames(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCDatabaseMetaData metaData,
+        GenericMetaObject catalogObject,
+        @Nullable DBSObjectFilter catalogFilters
+    ) throws DBException {
         final List<String> catalogNames = new ArrayList<>();
         try {
             try (JDBCResultSet dbResult = metaData.getCatalogs()) {

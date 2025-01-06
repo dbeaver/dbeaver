@@ -403,7 +403,7 @@
                 <property id="ssl.ca.cert.value" label="CA Certificate" type="file" description="Choose CA certificate file" features="secured" length="MULTILINE"/>
                 <property id="ssl.client.cert.value" label="Client Certificate" type="file" description="Choose client certificate file" features="secured" length="MULTILINE"/>
                 <property id="ssl.client.key.value" label="Client Private Key" type="file" description="Choose client private key file" features="secured,password" length="MULTILINE"/>
-                <property id="ssl.cipher.suites" label="Cipher suites (optional)" type="string" features="secured,password"/>
+                <property id="ssl.cipher.suites" label="Cipher Suites (optional)" description="Specify a comma-separated list of cipher suites" type="string" features="secured,password"/>
             </propertyGroup>
             <propertyGroup label="Additional SSL Settings">
                 <property id="ssl.require" label="Require SSL" type="boolean" description="Require server support of SSL connection."/>
