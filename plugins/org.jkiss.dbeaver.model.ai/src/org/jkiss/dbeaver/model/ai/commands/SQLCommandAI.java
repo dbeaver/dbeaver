@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.model.ai.commands;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.*;
@@ -38,8 +37,6 @@ import java.util.stream.Collectors;
  * Control command handler
  */
 public class SQLCommandAI implements SQLControlCommandHandler {
-
-    private static final Log log = Log.getLog(SQLCommandAI.class);
 
     @NotNull
     @Override
@@ -121,6 +118,11 @@ public class SQLCommandAI implements SQLControlCommandHandler {
                 throw new DBException(messages.toString());
             }
             throw new DBException("Empty AI completion for '" + prompt + "'");
+        }
+
+        SQLDialect dialect = SQLUtils.getDialectFromObject(dataSource);
+        if (!finalSQL.contains("\n") && SQLUtils.isCommentLine(dialect, finalSQL)) {
+            throw new DBException(finalSQL);
         }
 
         scriptContext.getOutputWriter().println(AIOutputSeverity.PROMPT, prompt + " ==> " + finalSQL + "\n");

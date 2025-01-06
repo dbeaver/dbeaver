@@ -4247,7 +4247,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
             features.add(FEATURE_DATA_COUNT);
 
-            if (getQueryResultCounts() <= 1) {
+            if (getQueryResultCounts() <= 1 && lastGoodQuery instanceof SQLQuery) {
                 features.add(FEATURE_DATA_FILTER);
             }
             return features.toArray(new String[0]);
@@ -4298,9 +4298,11 @@ public class SQLEditor extends SQLEditorBase implements
                 job.setFetchSize(fetchSize);
                 job.setFetchFlags(flags);
 
-                job.extractData(session, this.query, resultCounts > 1 ? 0 : resultSetNumber, !detached, !detached);
-
-                lastGoodQuery = job.getLastGoodQuery();
+                try {
+                    job.extractData(session, this.query, resultCounts > 1 ? 0 : resultSetNumber, !detached, !detached);
+                } finally {
+                    lastGoodQuery = job.getLastGoodQuery();
+                }
 
                 return job.getStatistics();
             } finally {
