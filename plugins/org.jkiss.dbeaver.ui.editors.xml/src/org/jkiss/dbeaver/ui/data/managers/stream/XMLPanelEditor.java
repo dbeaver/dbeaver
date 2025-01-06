@@ -71,6 +71,11 @@ public class XMLPanelEditor extends AbstractTextPanelEditor<XMLEditor> {
     }
 
     @Override
+    public boolean supportMinify() {
+        return true;
+    }
+
+    @Override
     public String minify(String value) {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();

@@ -58,6 +58,11 @@ public class JSONPanelEditor extends AbstractTextPanelEditor<JSONTextEditor> {
     }
 
     @Override
+    public boolean supportMinify() {
+        return true;
+    }
+
+    @Override
     public String minify(String value) {
         JsonElement jsonElement;
         try {

@@ -192,9 +192,11 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
             final Action afAction = new AutoFormatAction();
             afAction.setChecked(getPanelSettings().getBoolean(PREF_TEXT_EDITOR_AUTO_FORMAT));
             manager.add(afAction);
-            final Action msAction = new SaveMinifyValue();
-            msAction.setChecked(getPanelSettings().getBoolean(PREF_TEXT_EDITOR_MINIFY));
-            manager.add(msAction);
+            if (supportMinify()) {
+                final Action msAction = new SaveMinifyValue();
+                msAction.setChecked(getPanelSettings().getBoolean(PREF_TEXT_EDITOR_MINIFY));
+                manager.add(msAction);
+            }
         }
 
         if (textEditor != null) {
@@ -609,6 +611,10 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
             UIUtils.setControlVisible(this, false);
             getParent().layout(true, true);
         }
+    }
+
+    public boolean supportMinify() {
+        return false;
     }
 
     public String minify(String value) {
