@@ -345,8 +345,15 @@ public class GBase8sMetaModel extends GenericMetaModel {
         boolean isOracleMode = GBase8sUtils.isOracleSqlMode(owner.getDataSource().getContainer());
 
         String sql = "SELECT t.tabid, t.tabname AS TABLE_NAME, t.owner AS "
-                + (isOracleMode ? "TABLE_SCHEM" : "TABLE_CATALOG")
-                + ", CASE WHEN t.tabtype = 'V' THEN 'VIEW' WHEN t.tabtype = 'S' THEN 'SYNONYM' WHEN t.tabid <= (SELECT tabid FROM systables WHERE trim(tabname) = 'VERSION') THEN 'SYSTEM TABLE' ELSE 'TABLE' END AS TABLE_TYPE, c.comments AS REMARKS FROM systables t LEFT JOIN syscomms c ON t.tabid = c.tabid"
+                + (isOracleMode ? "TABLE_SCHEM" : "TABLE_CATALOG") + ","
+                + " CASE WHEN t.tabtype = 'T' AND t.tabid <= (SELECT tabid FROM systables WHERE trim(tabname) = 'VERSION') THEN 'SYSTEM TABLE'"
+                + " WHEN t.tabtype = 'V' AND t.tabid <= (SELECT tabid FROM systables WHERE trim(tabname) = 'VERSION') THEN 'SYSTEM VIEW'"
+                + " WHEN t.tabtype = 'T' THEN 'TABLE'"
+                + " WHEN t.tabtype = 'V' THEN 'VIEW'"
+                + " ELSE 'SYNONYM'"
+                + " END AS TABLE_TYPE,"
+                + " c.comments AS REMARKS"
+                + " FROM systables t LEFT JOIN syscomms c ON t.tabid = c.tabid"
                 + " WHERE t.tabname LIKE ?"
                 + (types != null ? " AND t.tabtype IN (" + String.join(", ", Collections.nCopies(types.length, "?")) + ")" : "");
         JDBCPreparedStatement dbStat = session.prepareStatement(sql);
