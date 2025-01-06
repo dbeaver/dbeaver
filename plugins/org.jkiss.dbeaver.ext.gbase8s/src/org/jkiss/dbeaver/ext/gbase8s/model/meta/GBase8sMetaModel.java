@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.gbase8s.model.meta;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,8 +79,11 @@ public class GBase8sMetaModel extends GenericMetaModel {
 
     private static final Log log = Log.getLog(GBase8sMetaModel.class);
 
-    private static final String[] VALID_TABLE_TYPES = { "TABLE", "VIEW", "SYSTEM TABLE" };
-
+    // TABLE_TYPE: String {@code =>} table type. ('TABLE', 'VIEW', 'SYSTEM TABLE')
+    private static final String[] VALID_TABLE_TYPES = { "T", "V" };
+    // TABLE_TYPE: String {@code =>} table type. ('SYNONYM')
+    private static final String[] VALID_SYNONYM_TYPES = { "S" };
+    
     public GBase8sMetaModel() {
         super();
     }
@@ -292,7 +296,7 @@ public class GBase8sMetaModel extends GenericMetaModel {
     @Override
     public JDBCStatement prepareSynonymsLoadStatement(@NotNull JDBCSession session,
             @NotNull GenericStructContainer container) throws SQLException {
-        return prepareTSObjectLoadStatement(session, container, null, "%", new String[] { "SYNONYM" });
+        return prepareTSObjectLoadStatement(session, container, null, "%", VALID_SYNONYM_TYPES);
     }
 
     @Override
@@ -335,13 +339,28 @@ public class GBase8sMetaModel extends GenericMetaModel {
             tableNamePattern = JDBCUtils.escapeWildCards(session, (object != null ? object.getName() : objectName));
         }
 
-        String catalog = owner.getCatalog() == null ? null : owner.getCatalog().getName();
-        String schemaPattern = owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null
-                : JDBCUtils.escapeWildCards(session, owner.getSchema().getName());
+//        String catalog = owner.getCatalog() == null ? null : owner.getCatalog().getName();
+//        String schemaPattern = owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null
+//                : JDBCUtils.escapeWildCards(session, owner.getSchema().getName());
         boolean isOracleMode = GBase8sUtils.isOracleSqlMode(owner.getDataSource().getContainer());
 
-        return session.getMetaData().getTables(isOracleMode ? catalog : schemaPattern,
-                isOracleMode ? schemaPattern : catalog, tableNamePattern, types).getSourceStatement();
+        String sql = "SELECT t.tabid, t.tabname AS TABLE_NAME, t.owner AS "
+                + (isOracleMode ? "TABLE_SCHEM" : "TABLE_CATALOG")
+                + ", CASE WHEN t.tabtype = 'V' THEN 'VIEW' WHEN t.tabtype = 'S' THEN 'SYNONYM' WHEN t.tabid <= (SELECT tabid FROM systables WHERE trim(tabname) = 'VERSION') THEN 'SYSTEM TABLE' ELSE 'TABLE' END AS TABLE_TYPE, c.comments AS REMARKS FROM systables t LEFT JOIN syscomms c ON t.tabid = c.tabid"
+                + " WHERE t.tabname LIKE ?"
+                + (types != null ? " AND t.tabtype IN (" + String.join(", ", Collections.nCopies(types.length, "?")) + ")" : "");
+        JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+        int paramIndex = 1;
+        dbStat.setString(paramIndex++, tableNamePattern);
+        if (types != null) {
+            for (String type : types) {
+                dbStat.setString(paramIndex++, type);
+            }
+        }
+        return dbStat;
+        // The getTables(...) interface returns a result that does not include information about table comments.
+//        return session.getMetaData().getTables(isOracleMode ? catalog : schemaPattern,
+//                isOracleMode ? schemaPattern : catalog, tableNamePattern, types).getSourceStatement();
     }
 
     @Override
@@ -361,6 +380,11 @@ public class GBase8sMetaModel extends GenericMetaModel {
 
     @Override
     public boolean hasFunctionSupport() {
+        return true;
+    }
+
+    @Override
+    public boolean isTableCommentEditable() {
         return true;
     }
 
