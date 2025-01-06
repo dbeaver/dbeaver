@@ -163,8 +163,10 @@ public class PostgreConstants {
     public static final String COLLATION_DEFAULT = "default";
     public static final String DEFAULT_ARRAY_DELIMITER = " ";
     public static final String PG_PASS_HOSTNAME = "overriddenUsername";
-    public static final String LEGACY_UA_TIMEZONE = "Europe/Kiev";
-    public static final String NEW_UA_TIMEZONE = "Europe/Kyiv";
+    public static final Map<String, String> REPLACING_TIMEZONE = Map.of(
+        "Europe/Kyiv", "Europe/Kiev",
+        "Asia/Calcutta", "Asia/Kolkata"
+    );
 
     static {
         DATA_TYPE_ALIASES.put("boolean", TYPE_BOOL);

@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver HANA Tests
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.hana.test
-Bundle-Version: 1.0.28.qualifier
-Bundle-Release-Date: 20250106
+Bundle-Version: 1.0.29.qualifier
+Bundle-Release-Date: 20250120
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp
 Bundle-ClassPath: .
