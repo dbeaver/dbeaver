@@ -1220,6 +1220,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
             );
         }
 
+
         @Override
         protected PostgreTablespace fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException {
@@ -1228,7 +1229,8 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
         @Override
         protected boolean handleCacheReadError(Exception error) {
-            return handlePermissionDeniedError(error);
+            log.debug("Error reading tablespaces", error);
+            return true;
         }
     }
 

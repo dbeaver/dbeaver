@@ -1159,6 +1159,7 @@
         <service name="org.jkiss.dbeaver.runtime.ui.UIServiceSQL" class="org.jkiss.dbeaver.ui.editors.sql.UIServiceSQLImpl"/>
         <service name="org.jkiss.dbeaver.runtime.ui.UIServiceConnections" class="org.jkiss.dbeaver.ui.actions.datasource.UIServiceConnectionsImpl"/>
         <service name="org.jkiss.dbeaver.runtime.ui.UIServiceDrivers" class="org.jkiss.dbeaver.ui.actions.datasource.UIServiceDriversImpl"/>
+        <service name="org.jkiss.dbeaver.runtime.ui.UIServiceSystemAgent" class="org.jkiss.dbeaver.ui.actions.datasource.UIServiceSystemAgentImpl"/>
         <service name="org.jkiss.dbeaver.runtime.DBServiceConnections" class="org.jkiss.dbeaver.ui.actions.datasource.UIServiceConnectionsImpl"/>
     </extension>
 

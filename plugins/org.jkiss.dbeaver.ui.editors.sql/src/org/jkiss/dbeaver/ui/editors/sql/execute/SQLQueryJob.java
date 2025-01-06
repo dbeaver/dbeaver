@@ -239,6 +239,7 @@ public class SQLQueryJob extends DataSourceJob
 
                     fetchResultSetNumber = resultSetNumber;
                     boolean runNext = executeSingleQuery(session, query, true);
+
                     if (txnManager != null && txnManager.isSupportsTransactions()
                         && !oldAutoCommit && commitType != SQLScriptCommitType.AUTOCOMMIT
                         && query instanceof SQLQuery sqlQuery
@@ -372,11 +373,13 @@ public class SQLQueryJob extends DataSourceJob
         }
     }
 
-    private boolean executeSingleQuery(@NotNull DBCSession session, @NotNull SQLScriptElement element, final boolean fireEvents)
-    {
-
-        if (!scriptContext.getPragmas().isEmpty() && element instanceof SQLQuery) {
-            final SQLQueryDataContainer container = new SQLQueryDataContainer(this::getExecutionContext, (SQLQuery) element, scriptContext, log);
+    private boolean executeSingleQuery(
+        @NotNull DBCSession session,
+        @NotNull SQLScriptElement element,
+        final boolean fireEvents
+    ) {
+        if (!scriptContext.getPragmas().isEmpty() && element instanceof SQLQuery query) {
+            final SQLQueryDataContainer container = new SQLQueryDataContainer(this::getExecutionContext, query, scriptContext, log);
 
             for (var it = scriptContext.getPragmas().entrySet().iterator(); it.hasNext(); ) {
                 final Map.Entry<String, Map<String, Object>> entry = it.next();
@@ -403,9 +406,14 @@ public class SQLQueryJob extends DataSourceJob
                 }
             }
         }
-        if (element instanceof SQLControlCommand) {
+        if (element instanceof SQLControlCommand controlCommand) {
             try {
-                return scriptContext.executeControlCommand((SQLControlCommand)element);
+                SQLControlResult controlResult = scriptContext.executeControlCommand(session.getProgressMonitor(), controlCommand);
+                if (controlResult.getTransformed() != null) {
+                    element = controlResult.getTransformed();
+                } else {
+                    return true;
+                }
             } catch (Throwable e) {
                 if (!(e instanceof DBException)) {
                     log.error("Unexpected error while processing SQL command", e);
@@ -413,11 +421,16 @@ public class SQLQueryJob extends DataSourceJob
                 lastError = e;
                 return false;
             } finally {
-                statistics.addStatementsCount();
-                statistics.addMessage("Command " + ((SQLControlCommand) element).getCommand() + " processed");
+                if (element instanceof SQLControlCommand finalCommand) {
+                    statistics.addStatementsCount();
+                    statistics.addMessage("Command " + finalCommand.getCommand() + " processed");
+                }
             }
         }
-        SQLQuery sqlQuery = (SQLQuery) element;
+        if (!(element instanceof SQLQuery sqlQuery)) {
+            log.error("Unsupported SQL element type: " + element);
+            return false;
+        }
         lastError = null;
 
         if (!skipConfirmation && getDataSourceContainer().getConnectionConfiguration().getConnectionType().isConfirmExecute()) {

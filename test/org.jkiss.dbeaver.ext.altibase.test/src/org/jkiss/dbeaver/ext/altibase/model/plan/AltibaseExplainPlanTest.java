@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model.plan;
 
-import org.jkiss.dbeaver.model.OSGIMockDataTest;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Test;
 
 import java.util.List;
@@ -24,7 +24,7 @@ import java.util.List;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class AltibaseExplainPlanTest extends OSGIMockDataTest {
+public class AltibaseExplainPlanTest extends DBeaverUnitTest {
     @Test
     public void trcLogDetailMtrNode_1_Test() {
         String plan =

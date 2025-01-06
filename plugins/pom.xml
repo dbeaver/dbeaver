@@ -141,7 +141,6 @@
                 <module>org.jkiss.dbeaver.ui.editors.acl</module>
                 <module>org.jkiss.dbeaver.ui.editors.base</module>
                 <module>org.jkiss.dbeaver.ui.editors.connection</module>
-                <module>org.jkiss.dbeaver.ui.editors.content</module>
                 <module>org.jkiss.dbeaver.ui.editors.data</module>
                 <module>org.jkiss.dbeaver.ui.editors.entity</module>
                 <module>org.jkiss.dbeaver.ui.editors.hex</module>

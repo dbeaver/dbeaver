@@ -520,15 +520,15 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         if (instance != null) {
             log.debug("Initiate connection to " + getServerType().getServerTypeName() + " database [" + instance.getName() + "@" + conConfig.getHostName() + "] for " + purpose);
         }
-        boolean timezoneOverridden = false;
+        String currentTimezoneId = ZoneId.systemDefault().getId();
+        String legacyTimezoneOverridden = PostgreConstants.REPLACING_TIMEZONE.get(currentTimezoneId);
 
         try {
             // Old versions of postgres and some linux distributions, on which docker images are made, may not contain
             // new timezone, which will lead to the error while connecting, there is no way to know before connecting
             // so to be sure we will use the old name
-            if (PostgreConstants.NEW_UA_TIMEZONE.equals(TimeZone.getDefault().getID())) {
-                TimezoneRegistry.setDefaultZone(ZoneId.of(PostgreConstants.LEGACY_UA_TIMEZONE), false);
-                timezoneOverridden = true;
+            if (legacyTimezoneOverridden != null) {
+                TimezoneRegistry.setDefaultZone(ZoneId.of(legacyTimezoneOverridden), false);
             }
 
             if (isReadDatabaseList(conConfig) || !CommonUtils.isEmpty(conConfig.getBootstrap().getDefaultCatalogName())) {
@@ -580,8 +580,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
             throw e;
         } finally {
-            if (timezoneOverridden && PostgreConstants.LEGACY_UA_TIMEZONE.equals(TimeZone.getDefault().getID())) {
-                TimezoneRegistry.setDefaultZone(ZoneId.of(PostgreConstants.NEW_UA_TIMEZONE), false);
+            if (legacyTimezoneOverridden != null) {
+                TimezoneRegistry.setDefaultZone(ZoneId.of(currentTimezoneId), false);
             }
         }
 
