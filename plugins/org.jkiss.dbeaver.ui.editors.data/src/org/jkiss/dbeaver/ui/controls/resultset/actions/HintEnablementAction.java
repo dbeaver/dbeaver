@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.actions;
 
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.registry.data.hints.ValueHintProviderConfiguration;
 import org.jkiss.dbeaver.registry.data.hints.ValueHintProviderDescriptor;
 import org.jkiss.dbeaver.registry.data.hints.ValueHintRegistry;
@@ -23,16 +24,18 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 
 public class HintEnablementAction extends AbstractResultSetViewerAction {
     private final ValueHintProviderDescriptor descriptor;
+    private final DBDAttributeBinding attribute;
 
-    public HintEnablementAction(ResultSetViewer resultSetViewer, ValueHintProviderDescriptor hd) {
+    public HintEnablementAction(ResultSetViewer resultSetViewer, ValueHintProviderDescriptor hd, DBDAttributeBinding attribute) {
         super(resultSetViewer, hd.getLabel(), AS_CHECK_BOX);
         this.descriptor = hd;
+        this.attribute = attribute;
         setToolTipText(hd.getDescription());
     }
 
     @Override
     public boolean isChecked() {
-        return descriptor.isEnabled();
+        return descriptor.isEnabled(null);
     }
 
     @Override

@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.registry.data.hints;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -34,6 +36,7 @@ public class ValueHintProviderDescriptor extends AbstractValueBindingDescriptor<
     @NotNull
     private final DBDValueHintProvider.HintObject forObject;
     private final boolean visibleByDefault;
+    private final boolean association;
     @NotNull
     private final String label;
 
@@ -46,6 +49,7 @@ public class ValueHintProviderDescriptor extends AbstractValueBindingDescriptor<
             forAttr,
             DBDValueHintProvider.HintObject.CELL);
         this.visibleByDefault = CommonUtils.getBoolean(config.getAttribute("visibleByDefault"), true);
+        this.association = CommonUtils.getBoolean(config.getAttribute("association"));
         this.label = config.getAttribute("label");
     }
 
@@ -65,8 +69,15 @@ public class ValueHintProviderDescriptor extends AbstractValueBindingDescriptor<
     }
 
     @Override
-    public boolean isEnabled() {
-        return ValueHintRegistry.getInstance().isHintEnabled(this);
+    public boolean isEnabled(DBSTypedObject typedObject) {
+        if (!ValueHintRegistry.getInstance().isHintEnabled(this)) {
+            return false;
+        }
+        if (association) {
+            return typedObject instanceof DBDAttributeBinding binding &&
+               !CommonUtils.isEmpty(binding.getReferrers());
+        }
+        return true;
     }
 
     public boolean isVisibleByDefault() {

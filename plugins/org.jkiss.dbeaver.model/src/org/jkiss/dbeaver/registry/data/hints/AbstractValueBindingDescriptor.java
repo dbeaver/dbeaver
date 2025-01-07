@@ -136,7 +136,7 @@ public abstract class AbstractValueBindingDescriptor<TYPE> extends AbstractDescr
         return instance;
     }
 
-    public boolean isEnabled() {
+    public boolean isEnabled(DBSTypedObject typedObject) {
         return true;
     }
 
@@ -147,7 +147,7 @@ public abstract class AbstractValueBindingDescriptor<TYPE> extends AbstractDescr
         boolean checkDataSource,
         boolean checkType
     ) {
-        if (!isEnabled()) {
+        if (!isEnabled(typedObject)) {
             return false;
         }
         final DBPDataKind dataKind = typedObject.getDataKind();
@@ -204,7 +204,7 @@ public abstract class AbstractValueBindingDescriptor<TYPE> extends AbstractDescr
         DBSTypedObject typedObject,
         Class<?> valueType
     ) {
-        if (!isEnabled()) {
+        if (!isEnabled(typedObject)) {
             return false;
         }
         if (supportInfos.isEmpty()) {

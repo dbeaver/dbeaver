@@ -3086,7 +3086,7 @@ public class ResultSetViewer extends Viewer
         }
         menuManager.add(new DisabledLabelAction(getHintObjectLabel(ho) + " hints"));
         for (ValueHintProviderDescriptor hd : hdList) {
-            menuManager.add(new HintEnablementAction(this, hd));
+            menuManager.add(new HintEnablementAction(this, hd, attr));
 
             if (hd.getInstance() instanceof DBDCellHintProvider chp) {
                 DBDValueHint[] valueHint = chp.getCellHints(

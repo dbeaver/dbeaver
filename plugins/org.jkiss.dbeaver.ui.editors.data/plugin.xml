@@ -72,7 +72,13 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataHintProvider">
-        <hintProvider id="references" for="cell" class="org.jkiss.dbeaver.ui.data.hints.ReferenceCellHintProvider" label="%hints.references.label" description="%hints.references.description"/>
+        <hintProvider
+            id="references"
+            for="cell"
+            class="org.jkiss.dbeaver.ui.data.hints.ReferenceCellHintProvider"
+            label="%hints.references.label"
+            description="%hints.references.description"
+            association="true"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.aggregateFunction">
