@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
@@ -42,6 +43,7 @@ import java.util.StringJoiner;
 public class PrefPageDataViewer extends TargetPrefPage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.dataviewer";
 
+    private Button enableDictionaryViewCheck;
     private List refPanelDescColumnKeywords;
     private Text maxAmountText;
 
@@ -53,7 +55,8 @@ public class PrefPageDataViewer extends TargetPrefPage {
     protected boolean hasDataSourceSpecificOptions(DBPDataSourceContainer container) {
         final DBPPreferenceStore store = container.getPreferenceStore();
         return store.contains(ModelPreferences.RESULT_REFERENCE_DESCRIPTION_COLUMN_PATTERNS)
-            || store.contains(ModelPreferences.DICTIONARY_MAX_ROWS);
+            || store.contains(ModelPreferences.DICTIONARY_MAX_ROWS)
+            || store.contains(ModelPreferences.DICTIONARY_VIEW_ENABLE);
     }
 
     @Override
@@ -65,7 +68,31 @@ public class PrefPageDataViewer extends TargetPrefPage {
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
         final Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
+        {
+            final Group group = UIUtils.createControlGroup(
+                composite,
+                ResultSetMessages.pref_page_data_viewer_dictionary_panel_group,
+                2,
+                GridData.HORIZONTAL_ALIGN_BEGINNING,
+                0
+            );
+            enableDictionaryViewCheck = UIUtils.createLabelCheckbox(group,
+                "Enable dictionary view",
+                "Enable dictionary view",
+                true
+            );
+            maxAmountText = UIUtils.createLabelText(
+                group,
+                ResultSetMessages.getPref_page_data_viewer_dictionary_panel_results_max_size,
+                "200"
+            );
+            maxAmountText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
+            maxAmountText.addModifyListener((event) -> {
+                updateApplyButton();
+                getContainer().updateButtons();
+            });
 
+        }
         {
             final Group group = UIUtils.createControlGroup(composite, ResultSetMessages.pref_page_data_viewer_reference_panel_group, 2, GridData.FILL_HORIZONTAL, 0);
 
@@ -118,17 +145,6 @@ public class PrefPageDataViewer extends TargetPrefPage {
                 }
             });
         }
-        {
-            final Group group = UIUtils.createControlGroup(composite,
-                ResultSetMessages.pref_page_data_viewer_dictionary_panel_group, 1, GridData.FILL_HORIZONTAL, 0);
-            maxAmountText = UIUtils.createLabelText(group,
-                ResultSetMessages.getPref_page_data_viewer_dictionary_panel_results_max_size, "200");
-            maxAmountText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
-            maxAmountText.addModifyListener((event) -> {
-                updateApplyButton();
-                getContainer().updateButtons();
-            });
-        }
         return composite;
     }
 
@@ -139,6 +155,7 @@ public class PrefPageDataViewer extends TargetPrefPage {
 
     @Override
     protected void loadPreferences(DBPPreferenceStore store) {
+        enableDictionaryViewCheck.setSelection(store.getBoolean(ModelPreferences.DICTIONARY_VIEW_ENABLE));
         refPanelDescColumnKeywords.removeAll();
         for (String pattern : DBVEntity.getDescriptionColumnPatterns(store)) {
             refPanelDescColumnKeywords.add(pattern);
@@ -155,12 +172,14 @@ public class PrefPageDataViewer extends TargetPrefPage {
         }
         store.setValue(ModelPreferences.RESULT_REFERENCE_DESCRIPTION_COLUMN_PATTERNS, buffer.toString());
         store.setValue(ModelPreferences.DICTIONARY_MAX_ROWS, maxAmountText.getText());
+        store.setValue(ModelPreferences.DICTIONARY_VIEW_ENABLE, enableDictionaryViewCheck.getSelection());
     }
 
     @Override
     protected void clearPreferences(DBPPreferenceStore store) {
         store.setToDefault(ModelPreferences.RESULT_REFERENCE_DESCRIPTION_COLUMN_PATTERNS);
         store.setToDefault(ModelPreferences.DICTIONARY_MAX_ROWS);
+        store.setToDefault(ModelPreferences.DICTIONARY_VIEW_ENABLE);
     }
 
     @Override
@@ -170,6 +189,8 @@ public class PrefPageDataViewer extends TargetPrefPage {
         for (String pattern : DBVEntity.DEFAULT_DESCRIPTION_COLUMN_PATTERNS) {
             refPanelDescColumnKeywords.add(pattern);
         }
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        enableDictionaryViewCheck.setSelection(store.getDefaultBoolean(ModelPreferences.DICTIONARY_VIEW_ENABLE));
     }
 
     @Override

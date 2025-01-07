@@ -34,6 +34,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPAdaptable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDValue;
@@ -216,8 +217,9 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
             cleanupPanel();
 
             referenceValueEditor = new ReferenceValueEditor(presentation.getController(), previewController, valueEditor);
-            final boolean referenceValue = referenceValueEditor.isReferenceValue();
-            if (referenceValue) {
+            final boolean showDictionaryView = presentation.getController().getPreferenceStore().getBoolean(ModelPreferences.DICTIONARY_VIEW_ENABLE)
+                && referenceValueEditor.isReferenceValue();
+            if (showDictionaryView) {
                 previewController.setEditType(IValueController.EditType.INLINE);
             } else {
                 previewController.setEditType(IValueController.EditType.PANEL);
@@ -233,7 +235,7 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
             }
             if (valueEditor != null) {
                 try {
-                    if (referenceValue) {
+                    if (showDictionaryView) {
                         Label valueLabel = new Label(viewPlaceholder, SWT.NONE);
                         valueLabel.setText(ResultSetMessages.reference_value_editor_value_label);
                         valueLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -256,7 +258,7 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
                     control.addTraverseListener(this::handleTraverseEvent);
                 }
 
-                if (referenceValue || singleLineEditor) {
+                if (showDictionaryView || singleLineEditor) {
                     GridLayout gl = new GridLayout(1, false);
                     viewPlaceholder.setLayout(gl);
                     valueEditor.getControl().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
