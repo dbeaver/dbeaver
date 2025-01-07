@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Apache HIVE Model
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.hive;singleton:=true
-Bundle-Version: 1.0.152.qualifier
-Bundle-Release-Date: 20250106
+Bundle-Version: 1.0.153.qualifier
+Bundle-Release-Date: 20250120
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.ext.generic

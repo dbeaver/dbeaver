@@ -19,10 +19,8 @@ package org.jkiss.dbeaver.model.sql.commands;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.sql.SQLControlCommand;
-import org.jkiss.dbeaver.model.sql.SQLControlCommandHandler;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLScriptContext;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.rules.ScriptParameterRule;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -32,8 +30,9 @@ import org.jkiss.utils.CommonUtils;
  */
 public class SQLCommandSet implements SQLControlCommandHandler {
 
+    @NotNull
     @Override
-    public boolean handleCommand(SQLControlCommand command, SQLScriptContext scriptContext) throws DBException {
+    public SQLControlResult handleCommand(@NotNull DBRProgressMonitor monitor, @NotNull SQLControlCommand command, @NotNull SQLScriptContext scriptContext) throws DBException {
         SQLDialect sqlDialect = scriptContext.getExecutionContext().getDataSource().getSQLDialect();
         String parameter = command.getParameter().stripLeading();
         int varNameEnd = ScriptParameterRule.tryConsumeParameterName(sqlDialect, parameter, 0);
@@ -46,7 +45,7 @@ public class SQLCommandSet implements SQLControlCommandHandler {
             throw new DBCException("Bad set syntax. Expected syntax:\n@set varName = value or expression");
         }
         String shouldBeEmpty = parameter.substring(varNameEnd, divPos).trim();
-        if (shouldBeEmpty.length() > 0) {
+        if (!shouldBeEmpty.isEmpty()) {
             throw new DBCException(
                 "Unexpected characters " + shouldBeEmpty + " after the variable name " + varName + ". " +
                 "Expected syntax:\n@set varName = value or expression"
@@ -56,7 +55,7 @@ public class SQLCommandSet implements SQLControlCommandHandler {
         varValue = GeneralUtils.replaceVariables(varValue, name -> CommonUtils.toString(scriptContext.getVariable(name)), true);
         scriptContext.setVariable(varName, varValue);
 
-        return true;
+        return SQLControlResult.success();
     }
 
     /*

@@ -60,6 +60,8 @@ public class SQLQueryCompletionProposal implements ICompletionProposal, IComplet
 
     private final SQLQueryWordEntry filterString;
 
+    private int proposalScore;
+
     private boolean cachedProposalInfoComputed = false;
     private Object cachedProposalInfo = null;
     private Image cachedSwtImage = null;
@@ -75,7 +77,8 @@ public class SQLQueryCompletionProposal implements ICompletionProposal, IComplet
         @NotNull String replacementString,
         int replacementOffset,
         int replacementLength,
-        @Nullable SQLQueryWordEntry filterString
+        @Nullable SQLQueryWordEntry filterString,
+        int proposalScore
     ) {
         this.proposalContext = proposalContext;
         this.itemKind = itemKind;
@@ -90,6 +93,11 @@ public class SQLQueryCompletionProposal implements ICompletionProposal, IComplet
         this.replacementLength = replacementLength;
 
         this.filterString = filterString;
+        this.proposalScore = proposalScore;
+    }
+
+    public int getProposalScore() {
+        return proposalScore;
     }
 
     @NotNull
@@ -225,16 +233,22 @@ public class SQLQueryCompletionProposal implements ICompletionProposal, IComplet
         }
         this.getProposalContext().getActivityTracker().implicitlyTriggered();
         if (this.filterString != null && CommonUtils.isNotEmpty(this.filterString.filterString)) {
+            int filterKeyStart = this.filterString.offset >= 0 ? this.filterString.offset : this.proposalContext.getRequestOffset();
             try {
-                int filterKeyStart = this.filterString.offset >= 0 ? this.filterString.offset : this.proposalContext.getRequestOffset();
                 if (offset > document.getLength()) {
                     return false;
                 } else {
-                    String filterKey = document.get(filterKeyStart, offset - filterKeyStart);
-                    if (DEBUG) {
-                        log.debug("validate: " + filterString.string + " vs " + filterKey);
+                    int filterKeyLength = offset - filterKeyStart;
+                    if (filterKeyLength > 0) {
+                        String filterKey = document.get(filterKeyStart, filterKeyLength);
+                        if (DEBUG) {
+                            log.debug("validate: " + filterString.string + " vs " + filterKey);
+                        }
+                        this.proposalScore = this.filterString.matches(filterKey, this.proposalContext.getCompletionContext().isSearchInsideNames());
+                        return this.proposalScore > 0;
+                    } else {
+                        return true;
                     }
-                    return filterString.filterString.contains(filterKey.toLowerCase());
                 }
             } catch (BadLocationException ex) {
                 log.error("Error validating completion proposal", ex);

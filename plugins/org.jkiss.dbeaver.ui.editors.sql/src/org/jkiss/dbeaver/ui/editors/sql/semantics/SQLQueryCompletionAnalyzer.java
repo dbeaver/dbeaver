@@ -142,7 +142,8 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
             columnListString,
             completionContext.getRequestOffset() - 1,
             1,
-            null
+            null,
+            Integer.MAX_VALUE
         );
 
         return List.of(proposal);
@@ -176,7 +177,8 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
                         replacementString,
                         completionSet.getReplacementPosition(),
                         completionSet.getReplacementLength(),
-                        item.getFilterInfo()
+                        item.getFilterInfo(),
+                        item.getScore()
                     ));
                 }
             }
@@ -191,7 +193,7 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
         boolean whitespaceNeeded = item.getKind() == SQLQueryCompletionItemKind.RESERVED ||
             (!text.endsWith(" ") && this.proposalContext.isInsertSpaceAfterProposal() && (
                 (inspectionResult.expectingTableReference() && item.getKind().isTableName) ||
-                (inspectionResult.expectingColumnReference() && item.getKind().isColumnName)
+                ((inspectionResult.expectingColumnReference() || inspectionResult.expectingColumnName()) && item.getKind().isColumnName)
             ));
         return whitespaceNeeded ? text + " " : text;
     }
