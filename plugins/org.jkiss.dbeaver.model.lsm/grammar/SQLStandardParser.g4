@@ -396,7 +396,8 @@ ifExistsSpec: IF EXISTS ;
 
 // data statements
 selectStatementSingleRow: SELECT (setQuantifier)? selectList INTO selectTargetList tableExpression;
-selectTargetList: parameterSpecification (Comma parameterSpecification)*;
+selectTargetList: selectTargetItem (Comma selectTargetItem)* Comma*;
+selectTargetItem: parameterSpecification|tableName|anyUnexpected??;
 deleteStatement: DELETE FROM tableName? ((AS)? correlationName)? whereClause?;
 insertStatement: INSERT INTO (tableName insertColumnsAndSource?)?;
 insertColumnsAndSource: LeftParen (insertColumnList? | Asterisk) (RightParen (queryExpression | DEFAULT VALUES)?)?;

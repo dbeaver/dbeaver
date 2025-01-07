@@ -16,16 +16,20 @@
  */
 package org.jkiss.dbeaver.model.sql.semantics.model.select;
 
+import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.SQLDialect.ProjectionAliasVisibilityScope;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryLexicalScope;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
+import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultPseudoColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
+import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueTupleReferenceExpression;
+import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.Collections;
@@ -38,6 +42,8 @@ import java.util.stream.Stream;
  * Describes SELECT clause
  */
 public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
+
+    private static final Log log = Log.getLog(SQLQueryRowsProjectionModel.class);
 
     public static class FiltersData<T> {
 
@@ -78,15 +84,6 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
     private final FiltersData<SQLQueryValueExpression> filterExprs;
     @NotNull
     private final FiltersData<SQLQueryLexicalScope> filterScopes;
-
-    public SQLQueryRowsProjectionModel(
-        @NotNull STMTreeNode syntaxNode,
-        @NotNull SQLQueryLexicalScope selectListScope,
-        @NotNull SQLQueryRowsSourceModel fromSource,
-        @NotNull SQLQuerySelectionResultModel result
-    ) {
-        this(syntaxNode, selectListScope, fromSource, null, FiltersData.empty(), FiltersData.empty(), result);
-    }
 
     public SQLQueryRowsProjectionModel(
         @NotNull STMTreeNode syntaxNode,
@@ -184,5 +181,147 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
     @Override
     protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg) {
         return visitor.visitRowsProjection(this, arg);
+    }
+
+    public static SQLQueryRowsSourceModel recognize(
+        @NotNull STMTreeNode n,
+        @NotNull List<SQLQueryRowsSourceModel> sourceModels,
+        @NotNull SQLQueryModelRecognizer recognizer
+    ) {
+        return recognize(n, sourceModels, recognizer, SQLQueryRowsProjectionModel::new);
+    }
+
+    @FunctionalInterface
+    public interface ProjectionModelCtor {
+        SQLQueryRowsSourceModel apply(
+            @NotNull STMTreeNode syntaxNode,
+            @NotNull SQLQueryLexicalScope selectListScope,
+            @NotNull SQLQueryRowsSourceModel fromSource,
+            @Nullable SQLQueryLexicalScope fromScope,
+            @NotNull FiltersData<SQLQueryValueExpression> filterExprs,
+            @NotNull FiltersData<SQLQueryLexicalScope> filterScopes,
+            @NotNull SQLQuerySelectionResultModel result
+        );
+    }
+
+    @NotNull
+    public static SQLQueryRowsSourceModel recognize(
+        @NotNull STMTreeNode syntaxNode,
+        @NotNull List<SQLQueryRowsSourceModel> sourceModels,
+        @NotNull  SQLQueryModelRecognizer recognizer,
+        @NotNull ProjectionModelCtor ctor
+    ) {
+        STMTreeNode selectListNode = syntaxNode.findFirstChildOfName(STMKnownRuleNames.selectList);
+        if (selectListNode == null) {
+            log.debug("Invalid querySpecification: missing selectList");
+            return SQLQueryExpressionMapper.makeEmptyRowsModel(syntaxNode);
+        }
+
+        List<STMTreeNode> selectSublists = selectListNode.findChildrenOfName(STMKnownRuleNames.selectSublist);
+        SQLQuerySelectionResultModel resultModel = new SQLQuerySelectionResultModel(selectListNode, selectSublists.size());
+
+        SQLQueryLexicalScope selectListScope;
+        STMTreeNode selectKeywordNode;
+        try (SQLQueryModelRecognizer.LexicalScopeHolder selectListScopeHolder = recognizer.openScope()) {
+            selectListScope = selectListScopeHolder.lexicalScope;
+            selectKeywordNode = syntaxNode.findFirstChildOfName(STMKnownRuleNames.SELECT_TERM);
+            if (selectKeywordNode == null) {
+                log.debug("SELECT keyword is missing in projection model");
+                return SQLQueryExpressionMapper.makeEmptyRowsModel(syntaxNode);
+            }
+
+            for (STMTreeNode selectSublist : selectSublists) {
+                STMTreeNode sublistNode = selectSublist.findFirstNonErrorChild();
+                if (sublistNode != null) {
+                    switch (sublistNode.getNodeKindId()) { // selectSublist: (Asterisk|derivedColumn|qualifier Period Asterisk
+                        case SQLStandardParser.RULE_derivedColumn -> {
+                            // derivedColumn: valueExpression (asClause)?; asClause: (AS)? columnName;
+                            STMTreeNode exprNode = sublistNode.findFirstChildOfName(STMKnownRuleNames.valueExpression);
+                            SQLQueryValueExpression expr = exprNode == null ? null : recognizer.collectValueExpression(exprNode);
+                            if (expr instanceof SQLQueryValueTupleReferenceExpression tupleRef) {
+                                resultModel.addTupleSpec(sublistNode, tupleRef);
+                            } else {
+                                STMTreeNode asClauseNode = sublistNode.findLastChildOfName(STMKnownRuleNames.asClause);
+                                if (asClauseNode != null) {
+                                    STMTreeNode columnNameNode = asClauseNode.findLastChildOfName(STMKnownRuleNames.columnName);
+                                    SQLQuerySymbolEntry asColumnName = columnNameNode == null
+                                        ? null
+                                        : recognizer.collectIdentifier(columnNameNode);
+                                    resultModel.addColumnSpec(sublistNode, expr, asColumnName);
+                                } else {
+                                    resultModel.addColumnSpec(sublistNode, expr);
+                                }
+                            }
+                        }
+                        case SQLStandardParser.RULE_anyUnexpected -> {
+                            // TODO register these pieces in the lexical scope?
+                            // error in query text, ignoring it
+                        }
+                        default -> {
+                            resultModel.addCompleteTupleSpec(sublistNode);
+                        }
+                    }
+                }
+            }
+        }
+
+        SQLQueryRowsSourceModel source = sourceModels.isEmpty()
+            ? SQLQueryExpressionMapper.makeEmptyRowsModel(syntaxNode)
+            : sourceModels.get(0);
+        STMTreeNode tableExpr = syntaxNode.findFirstChildOfName(STMKnownRuleNames.tableExpression);
+        SQLQueryRowsSourceModel projectionModel;
+        if (tableExpr != null) {
+            selectListScope.setInterval(Interval.of(selectKeywordNode.getRealInterval().a, tableExpr.getRealInterval().a));
+            SQLQueryLexicalScope fromScope = new SQLQueryLexicalScope();
+            STMTreeNode[] filterNodes = new STMTreeNode[]{
+                tableExpr.findFirstChildOfName(STMKnownRuleNames.whereClause),
+                tableExpr.findFirstChildOfName(STMKnownRuleNames.groupByClause),
+                tableExpr.findFirstChildOfName(STMKnownRuleNames.havingClause),
+                tableExpr.findFirstChildOfName(STMKnownRuleNames.orderByClause)
+            };
+            SQLQueryValueExpression[] filterExprs = new SQLQueryValueExpression[filterNodes.length];
+            SQLQueryLexicalScope[] scopes = new SQLQueryLexicalScope[filterNodes.length + 1];
+            SQLQueryLexicalScope[] prevScopes = new SQLQueryLexicalScope[filterNodes.length + 1];
+            STMTreeNode[] nextScopeNodes = new STMTreeNode[filterNodes.length + 1];
+            {
+                scopes[0] = fromScope;
+                prevScopes[0] = selectListScope;
+                int prevScopeIndex = 0;
+                for (int i = 0; i < filterNodes.length; i++) {
+                    STMTreeNode filterNode = filterNodes[i];
+                    int scopeIndex = i + 1;
+                    if (filterNode != null) {
+                        try (SQLQueryModelRecognizer.LexicalScopeHolder exprScope = recognizer.openScope()) {
+                            filterExprs[i] = recognizer.collectValueExpression(filterNode);
+                            nextScopeNodes[prevScopeIndex] = filterNode;
+                            scopes[scopeIndex] = exprScope.lexicalScope;
+                            prevScopes[scopeIndex] = scopes[prevScopeIndex];
+                            prevScopeIndex = scopeIndex;
+                        }
+                    }
+                }
+            }
+            for (int i = 0; i < scopes.length; i++) {
+                SQLQueryLexicalScope scope = scopes[i];
+                if (scope != null) {
+                    int from = prevScopes[i].getInterval().b;
+                    int to = nextScopeNodes[i] != null ? nextScopeNodes[i].getRealInterval().a : Integer.MAX_VALUE;
+                    scope.setInterval(Interval.of(from, to));
+                }
+            }
+
+            projectionModel = ctor.apply(
+                syntaxNode, selectListScope, source, fromScope,
+                SQLQueryRowsProjectionModel.FiltersData.of(filterExprs[0], filterExprs[1], filterExprs[2], filterExprs[3]),
+                SQLQueryRowsProjectionModel.FiltersData.of(scopes[1], scopes[2], scopes[3], scopes[4]),
+                resultModel
+            );
+        } else {
+            projectionModel = ctor.apply(
+                syntaxNode, selectListScope, source, null, FiltersData.empty(), FiltersData.empty(), resultModel
+            );
+        }
+
+        return projectionModel;
     }
 }

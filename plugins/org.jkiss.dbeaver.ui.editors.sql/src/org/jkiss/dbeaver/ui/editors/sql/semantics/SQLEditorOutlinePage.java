@@ -45,10 +45,7 @@ import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.*;
-import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryDeleteModel;
-import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryInsertModel;
-import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryUpdateModel;
-import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryUpdateSetClauseModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.dml.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.*;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -1004,9 +1001,22 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             action.accept(op, result);
         }
 
+        @Override
+        public Object visitRowsProjectionInto(@NotNull SQLQuerySelectIntoModel selectIntoStatement, @NotNull OutlineQueryNode node) {
+            return this.visitRowsProjectionImpl(selectIntoStatement, node, selectIntoStatement.getTargets());
+        }
+
         @Nullable
         @Override
         public Object visitRowsProjection(@NotNull SQLQueryRowsProjectionModel projection, @NotNull OutlineQueryNode node) {
+            return this.visitRowsProjectionImpl(projection, node, null);
+        }
+
+        private Object visitRowsProjectionImpl(
+            @NotNull SQLQueryRowsProjectionModel projection,
+            @NotNull OutlineQueryNode node,
+            @Nullable SQLQuerySelectIntoModel.SQLQuerySelectIntoTargetsList targetsList
+        ) {
             if (node.kind == OutlineQueryNodeKind.PROJECTION_SUBROOT || node instanceof OutlineScriptElementNode) {
                 String suffix = projection.getResultDataContext().getColumnsList().stream()
                     .map(c -> c.symbol.getName())
@@ -1016,6 +1026,15 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
                     SQLConstants.KEYWORD_SELECT + " " + suffix,
                     DBIcon.TREE_COLUMNS, projection.getResult()
                 );
+                if (targetsList != null) {
+                    this.makeNode(
+                        node,
+                        targetsList,
+                        SQLConstants.KEYWORD_INTO,
+                        DBIcon.TREE_FOLDER_TABLE,
+                        targetsList
+                    );
+                }
                 this.makeNode(
                     node,
                     projection.getFromSource(),
@@ -1058,6 +1077,14 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
                 String text = prepareQueryPreview(projection.getSyntaxNode().getTextContent());
                 this.makeNode(node, projection, OutlineQueryNodeKind.PROJECTION_SUBROOT, text, DBIcon.TREE_TABLE_LINK, projection);
             }
+            return null;
+        }
+
+        public Object visitRowsProjectionIntoTargetsList(
+            @NotNull SQLQuerySelectIntoModel.SQLQuerySelectIntoTargetsList targetsList,
+            @NotNull OutlineQueryNode arg
+        ) {
+            targetsList.getTargetNodes().forEach(t -> t.apply(this, arg));
             return null;
         }
 
