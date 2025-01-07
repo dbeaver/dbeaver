@@ -45,7 +45,7 @@ public class ResultSetHintContext implements DBDValueHintContext {
 
     private final Map<DBDValueHintProvider, HintProviderInfo> hintProviders = new IdentityHashMap<>();
 
-    private static class HintProviderInfo {
+    static class HintProviderInfo {
         final DBDValueHintProvider provider;
         boolean enabled;
         final Set<DBDAttributeBinding> attributes = new LinkedHashSet<>();

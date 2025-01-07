@@ -3049,6 +3049,7 @@ public class ResultSetViewer extends Viewer
     }
 
     private void fillAttributeHintsMenu(IMenuManager menuManager, DBDAttributeBinding attr, ResultSetRow row) {
+        ResultSetHintContext hintContext = getModel().getHintContext();
         Object cellValue = getModel().getCellValue(attr, row);
         Map<DBDValueHint, UIPropertyConfiguratorDescriptor> configurators = new LinkedHashMap<>();
         for (DBDValueHintProvider.HintObject ho : DBDValueHintProvider.HintObject.values()) {

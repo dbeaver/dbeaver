@@ -144,6 +144,9 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<DBDValueHint
 
     public boolean isHintEnabled(ValueHintProviderDescriptor descriptor) {
         ValueHintProviderConfiguration configuration = configurationMap.get(descriptor.getId());
-        return configuration == null || configuration.isEnabled();
+        if (configuration == null) {
+            return descriptor.isVisibleByDefault();
+        }
+        return configuration.isEnabled();
     }
 }
