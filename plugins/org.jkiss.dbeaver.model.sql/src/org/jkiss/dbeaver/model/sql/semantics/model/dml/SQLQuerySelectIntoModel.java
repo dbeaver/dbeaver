@@ -96,7 +96,7 @@ public class SQLQuerySelectIntoModel extends SQLQueryRowsProjectionModel {
                 if (targetContext != null) {
                     int selectedColumns = sourceContext.getColumnsList().size();
                     int expectedColumns = targetContext.getColumnsList().size();
-                    if (selectedColumns != expectedColumns) {
+                    if (selectedColumns != expectedColumns && expectedColumns != 0) {
                         statistics.appendWarning(
                             Objects.requireNonNullElse(this.intoKeywordSyntaxNode, this.getSyntaxNode()),
                             "Selected result set has " + selectedColumns + " columns while target expected " + expectedColumns + " columns."
