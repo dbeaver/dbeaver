@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -112,8 +111,9 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
         String table = column.getTable().getSchema().getName() + "." + column.getTable().getName();
         String query;
         if (column.isForeignKey()) {
-            if (!CommonUtils.isEmpty(column.getDescription())) {
-                query = "ALTER TABLE " + table + " COMMENT ON COLUMN " + column.getName() + " = " + SQLUtils.quoteString(column, column.getDescription());
+            if (command.hasProperty("description")) {
+                query = "ALTER TABLE " + table + " COMMENT ON COLUMN " + column.getName() + " = "
+                       + SQLUtils.quoteString(column, CommonUtils.notEmpty(column.getDescription()));
                 actionList.add(new SQLDatabasePersistAction("Modify column", query));
             }
         } else {
