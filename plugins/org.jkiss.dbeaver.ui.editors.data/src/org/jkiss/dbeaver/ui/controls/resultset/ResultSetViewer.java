@@ -3049,17 +3049,25 @@ public class ResultSetViewer extends Viewer
     }
 
     private void fillAttributeHintsMenu(IMenuManager menuManager, DBDAttributeBinding attr, ResultSetRow row) {
-        ResultSetHintContext hintContext = getModel().getHintContext();
+        // Collect all potentially applicable hints
+        Set<DBDValueHintProvider> applicableHintProviders = getModel().getHintContext().getApplicableHintProviders();
+        List<ValueHintProviderDescriptor> applicableHints = ValueHintRegistry.getInstance().getHintDescriptors()
+            .stream().filter(hd -> applicableHintProviders.contains(hd.getInstance())).toList();
+
         Object cellValue = getModel().getCellValue(attr, row);
         Map<DBDValueHint, UIPropertyConfiguratorDescriptor> configurators = new LinkedHashMap<>();
         for (DBDValueHintProvider.HintObject ho : DBDValueHintProvider.HintObject.values()) {
             menuManager.add(new Separator());
+            // Get filtered hint types
+            List<ValueHintProviderDescriptor> allHints = ValueHintRegistry.getInstance().getHintDescriptors(ho).stream()
+                .filter(applicableHints::contains).toList();
+
             fillHintItems(
                 ho,
                 menuManager,
                 attr,
                 row,
-                ValueHintRegistry.getInstance().getHintDescriptors(ho),
+                allHints,
                 cellValue,
                 configurators);
         }
@@ -3077,7 +3085,7 @@ public class ResultSetViewer extends Viewer
         IMenuManager menuManager,
         DBDAttributeBinding attr,
         ResultSetRow row,
-        List<ValueHintProviderDescriptor> hdList,
+        Collection<ValueHintProviderDescriptor> hdList,
         Object cellValue,
         Map<DBDValueHint, UIPropertyConfiguratorDescriptor> configurators
     ) {

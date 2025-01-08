@@ -69,11 +69,11 @@ public class ValueHintProviderDescriptor extends AbstractValueBindingDescriptor<
     }
 
     @Override
-    public boolean isEnabled(DBSTypedObject typedObject) {
-        if (!ValueHintRegistry.getInstance().isHintEnabled(this)) {
+    public boolean isEnabled(DBSTypedObject typedObject, boolean checkConfigDisable) {
+        if (checkConfigDisable && !ValueHintRegistry.getInstance().isHintEnabled(this)) {
             return false;
         }
-        if (association) {
+        if (association && typedObject != null) {
             return typedObject instanceof DBDAttributeBinding binding &&
                !CommonUtils.isEmpty(binding.getReferrers());
         }

@@ -35,7 +35,7 @@ public class HintEnablementAction extends AbstractResultSetViewerAction {
 
     @Override
     public boolean isChecked() {
-        return descriptor.isEnabled(null);
+        return descriptor.isEnabled(null, true);
     }
 
     @Override

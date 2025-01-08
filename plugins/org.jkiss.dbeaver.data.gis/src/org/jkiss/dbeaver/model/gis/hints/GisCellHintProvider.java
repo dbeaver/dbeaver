@@ -48,7 +48,7 @@ public class GisCellHintProvider implements DBDCellHintProvider {
             if (srid > 0) {
                 return new DBDValueHint[]{
                     new ValueHintText(
-                        String.valueOf(srid),
+                        "SRS:" + srid,
                         "SRID", null)
                 };
             }

@@ -28,7 +28,7 @@
 
     <extension point="org.jkiss.dbeaver.dataHintProvider">
         <hintProvider id="gis-srid" for="cell" class="org.jkiss.dbeaver.model.gis.hints.GisCellHintProvider" label="%hints.gis-srid.label" description="%hints.gis-srid.description" visibleByDefault="false">
-            <supports valueType="org.jkiss.dbeaver.model.gis.DBGeometry"/>
+            <supports type="org.jkiss.dbeaver.model.gis.DBGeometry"/>
         </hintProvider>
     </extension>
 

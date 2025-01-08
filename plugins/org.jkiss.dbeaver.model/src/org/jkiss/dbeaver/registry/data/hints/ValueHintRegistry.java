@@ -142,6 +142,11 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<DBDValueHint
         }
     }
 
+    public boolean isHintEnabled(DBDValueHintProvider provider) {
+        ValueHintProviderDescriptor descriptor = getDescriptorByInstance(provider);
+        return descriptor != null && isHintEnabled(descriptor);
+    }
+
     public boolean isHintEnabled(ValueHintProviderDescriptor descriptor) {
         ValueHintProviderConfiguration configuration = configurationMap.get(descriptor.getId());
         if (configuration == null) {
@@ -149,4 +154,14 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<DBDValueHint
         }
         return configuration.isEnabled();
     }
+
+    private ValueHintProviderDescriptor getDescriptorByInstance(DBDValueHintProvider provider) {
+        for (ValueHintProviderDescriptor descriptor : descriptors) {
+            if (descriptor.getInstance() == provider) {
+                return descriptor;
+            }
+        }
+        return null;
+    }
+
 }

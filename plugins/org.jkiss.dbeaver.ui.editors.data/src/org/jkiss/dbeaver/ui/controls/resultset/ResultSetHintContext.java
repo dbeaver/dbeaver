@@ -80,6 +80,10 @@ public class ResultSetHintContext implements DBDValueHintContext {
         }
     }
 
+    public Set<DBDValueHintProvider> getApplicableHintProviders() {
+        return hintProviders.keySet();
+    }
+
     public List<DBDCellHintProvider> getCellHintProviders(DBDAttributeBinding attr) {
         List<DBDCellHintProvider> result = new ArrayList<>();
         for (HintProviderInfo pi : hintProviders.values()) {
@@ -110,10 +114,13 @@ public class ResultSetHintContext implements DBDValueHintContext {
             DBSDataContainer dataContainer = getDataContainer();
             DBPDataSource ds = dataContainer == null ? null : dataContainer.getDataSource();
             for (DBDAttributeBinding attr : attributes) {
-                List<DBDValueHintProvider> attrHintProviders = ValueHintRegistry.getInstance().getAllValueBindings(ds, attr, null);
+                List<DBDValueHintProvider> attrHintProviders = ValueHintRegistry.getInstance().getAllValueBindings(
+                    ds,
+                    attr,
+                    attr.getValueHandler().getValueObjectType(attr));
                 for (DBDValueHintProvider provider : attrHintProviders) {
                     HintProviderInfo providerInfo = hintProviders.computeIfAbsent(provider, HintProviderInfo::new);
-                    providerInfo.enabled = true;
+                    providerInfo.enabled = ValueHintRegistry.getInstance().isHintEnabled(provider);
                     providerInfo.attributes.add(attr);
                 }
             }

@@ -136,7 +136,11 @@ public abstract class AbstractValueBindingDescriptor<TYPE> extends AbstractDescr
         return instance;
     }
 
-    public boolean isEnabled(DBSTypedObject typedObject) {
+    /**
+     * @param typedObject        optional attribute. If null then verify potential enablement
+     * @param checkConfigDisable if true then also verify that this binding wasn't disabled by user configuration
+     */
+    public boolean isEnabled(DBSTypedObject typedObject, boolean checkConfigDisable) {
         return true;
     }
 
@@ -147,7 +151,7 @@ public abstract class AbstractValueBindingDescriptor<TYPE> extends AbstractDescr
         boolean checkDataSource,
         boolean checkType
     ) {
-        if (!isEnabled(typedObject)) {
+        if (!isEnabled(typedObject, true)) {
             return false;
         }
         final DBPDataKind dataKind = typedObject.getDataKind();
@@ -204,7 +208,7 @@ public abstract class AbstractValueBindingDescriptor<TYPE> extends AbstractDescr
         DBSTypedObject typedObject,
         Class<?> valueType
     ) {
-        if (!isEnabled(typedObject)) {
+        if (!isEnabled(typedObject, false)) {
             return false;
         }
         if (supportInfos.isEmpty()) {
