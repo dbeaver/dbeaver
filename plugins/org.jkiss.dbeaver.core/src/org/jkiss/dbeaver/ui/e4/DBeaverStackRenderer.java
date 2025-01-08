@@ -280,7 +280,7 @@ public class DBeaverStackRenderer extends StackRenderer {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         try {
-                            new AddBookmarkHandler().createBookmarkDialog(node, menu.getShell());
+                            AddBookmarkHandler.createBookmarkDialog(node, menu.getShell());
                         } catch (DBException ex) {
                             DBWorkbench.getPlatformUI().showError(
                                 CoreMessages.actions_navigator_bookmark_error_title,

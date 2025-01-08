@@ -41,8 +41,6 @@ import org.jkiss.dbeaver.ui.resources.bookmarks.BookmarksHandlerImpl;
 
 public class AddBookmarkHandler extends NavigatorHandlerObjectBase {
 
-    private IFolder targetFolder;
-
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final Shell activeShell = HandlerUtil.getActiveShell(event);
@@ -72,7 +70,7 @@ public class AddBookmarkHandler extends NavigatorHandlerObjectBase {
         return null;
     }
 
-    public void createBookmarkDialog(DBNDatabaseNode node, Shell activeShell) throws DBException {
+    public static void createBookmarkDialog(DBNDatabaseNode node, Shell activeShell) throws DBException {
         AddBookmarkDialog dialog = new AddBookmarkDialog(activeShell, node);
         final String title = dialog.chooseName();
         if (title != null) {
@@ -80,7 +78,8 @@ public class AddBookmarkHandler extends NavigatorHandlerObjectBase {
         }
     }
 
-    private class AddBookmarkDialog extends EnterNameDialog {
+    private static class AddBookmarkDialog extends EnterNameDialog {
+        private IFolder targetFolder;
         private DBNDatabaseNode node;
 
         public AddBookmarkDialog(Shell parentShell, DBNDatabaseNode node) {
