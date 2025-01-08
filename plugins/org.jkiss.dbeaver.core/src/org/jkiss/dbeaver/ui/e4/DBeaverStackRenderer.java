@@ -57,6 +57,7 @@ import org.jkiss.dbeaver.ui.actions.common.AddBookmarkHandler;
 import org.jkiss.dbeaver.ui.controls.decorations.HolidayDecorations;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
@@ -143,8 +144,8 @@ public class DBeaverStackRenderer extends StackRenderer {
             }
 
             IEditorInput editorInput = ((IEditorPart) workbenchPart).getEditorInput();
-            if (editorInput instanceof IDatabaseEditorInput) {
-                populateEditorMenu(menu, (IDatabaseEditorInput) editorInput);
+            if (editorInput instanceof IDatabaseEditorInput databaseEditorInput) {
+                populateEditorMenu(menu, workbenchPart, databaseEditorInput);
             }
 
             IFile file = EditorUtils.getFileFromInput(editorInput);
@@ -255,7 +256,7 @@ public class DBeaverStackRenderer extends StackRenderer {
         }
     }
 
-    private void populateEditorMenu(@NotNull Menu menu, @NotNull IDatabaseEditorInput input) {
+    private void populateEditorMenu(@NotNull Menu menu, @NotNull IWorkbenchPart workbenchPart, @NotNull IDatabaseEditorInput input) {
         final DBSObject object = input.getDatabaseObject();
         final DBNDatabaseNode node = input.getNavigatorNode();
 
@@ -273,21 +274,22 @@ public class DBeaverStackRenderer extends StackRenderer {
                         DBWorkbench.getPlatformUI().copyTextToClipboard(DBUtils.getObjectFullName(object, DBPEvaluationContext.UI), false);
                     }
                 });
-
-                final MenuItem addBookmarkItem = new MenuItem(menu, SWT.NONE);
-                addBookmarkItem.setText(NLS.bind(CoreMessages.editor_file_add_bookmark, label));
-                addBookmarkItem.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        try {
-                            AddBookmarkHandler.createBookmarkDialog(node, menu.getShell());
-                        } catch (DBException ex) {
-                            DBWorkbench.getPlatformUI().showError(
-                                CoreMessages.actions_navigator_bookmark_error_title,
-                                CoreMessages.actions_navigator_bookmark_error_message, ex);
+                if (workbenchPart instanceof EntityEditor) {
+                    final MenuItem addBookmarkItem = new MenuItem(menu, SWT.NONE);
+                    addBookmarkItem.setText(NLS.bind(CoreMessages.editor_file_add_bookmark, label));
+                    addBookmarkItem.addSelectionListener(new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            try {
+                                AddBookmarkHandler.createBookmarkDialog(node, menu.getShell());
+                            } catch (DBException ex) {
+                                DBWorkbench.getPlatformUI().showError(
+                                    CoreMessages.actions_navigator_bookmark_error_title,
+                                    CoreMessages.actions_navigator_bookmark_error_message, ex);
+                            }
                         }
-                    }
-                });
+                    });
+                }
             }
         }
     }
