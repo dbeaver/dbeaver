@@ -128,7 +128,7 @@ public class SQLContextInformer
         SQLWordPartDetector wordDetector = new SQLWordPartDetector(document, syntaxManager, region.getOffset());
         wordRegion = wordDetector.extractIdentifier(document, region, editor.getRuleManager());
 
-        if (wordRegion.word.length() == 0) {
+        if (wordRegion.word.isEmpty()) {
             return;
         }
 
@@ -193,7 +193,7 @@ public class SQLContextInformer
             tlc = new ObjectLookupCache();
             contextCache.put(fullName, tlc);
 
-            DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, editor.getDataSource());
+            DBSStructureAssistant<?> structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, editor.getDataSource());
             TablesFinderJob job = new TablesFinderJob(executionContext, structureAssistant, containerNames, tableName, caseSensitive, tlc);
             job.schedule();
         }
@@ -296,7 +296,6 @@ public class SQLContextInformer
             return Status.OK_STATUS;
         }
 
-        @Nullable
         private boolean findTables(DBRProgressMonitor monitor) throws DBException {
             monitor.beginTask("Read metadata information", 1);
             cache.references = new ArrayList<>();
