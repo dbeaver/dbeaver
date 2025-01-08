@@ -215,20 +215,14 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
             case RESERVED -> UIIcon.SQL_TEXT;
             case SUBQUERY_ALIAS -> DBIcon.TREE_TABLE_ALIAS;
             case DERIVED_COLUMN_NAME -> DBIcon.TREE_FOREIGN_KEY_COLUMN;
-            case NEW_TABLE_NAME -> this.prepareTableProposalIcon(item.getObject(), false);
-            case USED_TABLE_NAME -> this.prepareTableProposalIcon(item.getObject(), true);
+            case NEW_TABLE_NAME, USED_TABLE_NAME -> {
+                DBPObject object = item.getObject();
+                yield object == null ? DBIcon.TREE_TABLE : DBValueFormatting.getObjectImage(object);
+            }
             case TABLE_COLUMN_NAME -> DBIcon.TREE_COLUMN;
             case JOIN_CONDITION -> DBIcon.TREE_CONSTRAINT;
             default -> throw new IllegalStateException("Unexpected completion item kind " + item.getKind());
         };
         return image;
-    }
-
-    private DBPImage prepareTableProposalIcon(DBPObject object, boolean used) {
-        DBPImage icon = object == null ? DBIcon.TREE_TABLE : DBValueFormatting.getObjectImage(object);
-        if (used) {
-            icon = new DBIconComposite(icon, false, null, DBIcon.OVER_SUCCESS, null, null);
-        }
-        return icon;
     }
 }
