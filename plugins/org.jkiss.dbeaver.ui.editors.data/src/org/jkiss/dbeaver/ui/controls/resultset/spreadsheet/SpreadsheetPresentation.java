@@ -2438,7 +2438,16 @@ public class SpreadsheetPresentation extends AbstractPresentation
         @Nullable
         private Color getCellForeground(DBDAttributeBinding attribute, ResultSetRow row, Object cellValue, Color background, boolean selected) {
             if (selected) {
-                return ResultSetThemeSettings.instance.foregroundSelected;
+                Color normalColor = getCellForeground(attribute, row, cellValue, background, false);
+                if (normalColor == null) {
+                    return ResultSetThemeSettings.instance.foregroundSelected;
+                }
+                RGB mixRGB = UIUtils.blend(
+                    normalColor.getRGB(),
+                    ResultSetThemeSettings.instance.foregroundSelected.getRGB(),
+                    50
+                );
+                return UIUtils.getSharedTextColors().getColor(mixRGB);
             }
             if (isShowAsCheckbox(attribute) && booleanStyles.getMode() == BooleanMode.TEXT) {
                 if (cellValue instanceof Number number) {
