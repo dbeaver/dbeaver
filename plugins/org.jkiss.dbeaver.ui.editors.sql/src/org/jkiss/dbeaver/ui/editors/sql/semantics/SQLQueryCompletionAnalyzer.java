@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.stm.LSMInspections;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.utils.Pair;
@@ -214,12 +215,20 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
             case RESERVED -> UIIcon.SQL_TEXT;
             case SUBQUERY_ALIAS -> DBIcon.TREE_TABLE_ALIAS;
             case DERIVED_COLUMN_NAME -> DBIcon.TREE_FOREIGN_KEY_COLUMN;
-            case NEW_TABLE_NAME -> DBIcon.TREE_TABLE;
-            case USED_TABLE_NAME -> UIIcon.EDIT_TABLE;
+            case NEW_TABLE_NAME -> this.prepareTableProposalIcon(item.getObject(), false);
+            case USED_TABLE_NAME -> this.prepareTableProposalIcon(item.getObject(), true);
             case TABLE_COLUMN_NAME -> DBIcon.TREE_COLUMN;
             case JOIN_CONDITION -> DBIcon.TREE_CONSTRAINT;
             default -> throw new IllegalStateException("Unexpected completion item kind " + item.getKind());
         };
         return image;
+    }
+
+    private DBPImage prepareTableProposalIcon(DBPObject object, boolean used) {
+        DBPImage icon = object == null ? DBIcon.TREE_TABLE : DBValueFormatting.getObjectImage(object);
+        if (used) {
+            icon = new DBIconComposite(icon, false, null, DBIcon.OVER_SUCCESS, null, null);
+        }
+        return icon;
     }
 }
