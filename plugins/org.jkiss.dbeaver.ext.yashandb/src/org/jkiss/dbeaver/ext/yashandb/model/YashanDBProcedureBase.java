@@ -78,11 +78,16 @@ public abstract class YashanDBProcedureBase<PARENT extends DBSObjectContainer> e
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull YashanDBProcedureBase procedure) throws SQLException {
+            boolean isPackage = false;
+            if (procedure instanceof  YashanDBProcedurePackaged) {
+                isPackage = true;
+            }
             JDBCPreparedStatement dbStat = session.prepareStatement(
                     "SELECT * FROM ALL_ARGUMENTS " +
                             "WHERE " +
                             (procedure.getObjectId() <= 0 ? "OWNER=? AND OBJECT_NAME=? " : "OBJECT_ID=? ") +
                             (procedure.getOverloadNumber() != null ? "AND OVERLOAD=? " : "AND OVERLOAD IS NULL ") +
+                            (isPackage ? "AND SUBPROGRAM_NAME = ?":"AND 1 = 1") +
                             "\nORDER BY SEQUENCE");
             int paramNum = 1;
             if (procedure.getObjectId() <= 0) {
@@ -92,7 +97,10 @@ public abstract class YashanDBProcedureBase<PARENT extends DBSObjectContainer> e
                 dbStat.setLong(paramNum++, procedure.getObjectId());
             }
             if (procedure.getOverloadNumber() != null) {
-                dbStat.setInt(paramNum, procedure.getOverloadNumber());
+                dbStat.setInt(paramNum++, procedure.getOverloadNumber());
+            }
+            if (isPackage) {
+                dbStat.setString(paramNum, procedure.getName());
             }
             return dbStat;
         }
