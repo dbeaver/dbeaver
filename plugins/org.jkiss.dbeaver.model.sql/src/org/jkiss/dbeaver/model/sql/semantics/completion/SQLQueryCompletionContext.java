@@ -865,6 +865,8 @@ public abstract class SQLQueryCompletionContext {
                             if (alreadyReferencedObjects.add(child) && score > 0) {
                                 accumulator.add(completionItemFabric.produce(score, childName, (T) child));
                             }
+                        } else if (child instanceof DBSPackage) {
+                            // don't expose packages, do nothing
                         } else if (child instanceof DBSObjectContainer sc && DBStructUtils.isConnectedContainer(child)) {
                             collectObjectsRecursively(monitor, sc, alreadyReferencedObjects, accumulator, filterOrNull, types, completionItemFabric);
                         }
