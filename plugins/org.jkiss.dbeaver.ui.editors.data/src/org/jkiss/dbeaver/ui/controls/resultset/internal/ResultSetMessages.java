@@ -416,6 +416,7 @@ public class ResultSetMessages extends NLS {
     public static String panel_editor_text_loading_placeholder_label;
     public static String panel_editor_text_word_wrap_name;
     public static String panel_editor_text_auto_format_name;
+    public static String panel_editor_text_minify_name;
     public static String panel_editor_text_encoding_name;
     public static String panel_editor_text_encoding_title;
     public static String panel_editor_text_content_limitation_lbl;

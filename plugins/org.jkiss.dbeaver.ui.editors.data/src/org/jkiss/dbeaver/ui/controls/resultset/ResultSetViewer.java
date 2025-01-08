@@ -629,6 +629,11 @@ public class ResultSetViewer extends Viewer
     public void updateFiltersText(boolean resetFilterValue)
     {
         boolean enableFilters = getExecutionContext() != null && container.isReadyToRun() && !model.isUpdateInProgress();
+        if (enableFilters) {
+            DBSDataContainer dataContainer = container.getDataContainer();
+            enableFilters = dataContainer != null && dataContainer.isFeatureSupported(DBSDataContainer.FEATURE_DATA_FILTER);
+
+        }
         getAutoRefresh().enableControls(enableFilters);
 
         if (filtersPanel == null || this.viewerPanel.isDisposed()) {

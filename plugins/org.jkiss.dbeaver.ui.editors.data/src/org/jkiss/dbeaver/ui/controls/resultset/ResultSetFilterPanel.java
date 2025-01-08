@@ -381,12 +381,13 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         setRedraw(false);
         try {
             if (filterToolbar != null) {
-                filterToolbar.setEnabled(enable);
+                filterToolbar.setVisible(enable);
             }
-            this.filterExpandPanel.setEnabled(enable);
-            historyPanel.setEnabled(enable);
+            this.filterExpandPanel.setVisible(enable);
+            historyPanel.setVisible(enable);
             filtersText.setEditable(viewer.supportsDataFilter());
-            executePanel.setEnabled(enable);
+            filtersText.setVisible(enable);
+            executePanel.setVisible(enable);
         } finally {
             setRedraw(true);
         }

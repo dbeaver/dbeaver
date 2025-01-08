@@ -117,7 +117,7 @@ public class SQLQueryJob extends DataSourceJob
     private DBCStatistics statistics;
     private int fetchResultSetNumber;
     private int resultSetNumber;
-    private SQLQuery lastGoodQuery;
+    private SQLScriptElement lastGoodQuery;
 
     private boolean skipConfirmation;
     private int fetchSize;
@@ -418,6 +418,7 @@ public class SQLQueryJob extends DataSourceJob
                 if (!(e instanceof DBException)) {
                     log.error("Unexpected error while processing SQL command", e);
                 }
+                lastGoodQuery = element;
                 lastError = e;
                 return false;
             } finally {
@@ -593,11 +594,12 @@ public class SQLQueryJob extends DataSourceJob
             monitor.done();
         }
 
+        lastGoodQuery = originalQuery;
+
         if (curResult.getError() != null && errorHandling != SQLScriptErrorHandling.IGNORE) {
             return false;
         }
         // Success
-        lastGoodQuery = originalQuery;
         return true;
     }
 
