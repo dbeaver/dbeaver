@@ -85,16 +85,16 @@ public class DataTypeProviderRegistry implements DBDRegistry
         ValueHandlerDescriptor genericValueHandler = null;
         // First try to find type provider for specific datasource type
         for (ValueHandlerDescriptor dtProvider : dataTypeProviders) {
-            if (dtProvider.getId().contains("generic")) {
-                genericValueHandler = dtProvider;
-            } else if (!dtProvider.isGlobal() && dtProvider.supportsDataSource(dataSource) && dtProvider.supportsType(typedObject)) {
+            if (!dtProvider.isGlobal() && dtProvider.isSpecifyForDataSource(dataSource) && dtProvider.supportsType(typedObject)) {
                 return dtProvider.getInstance();
             }
         }
 
-        if (genericValueHandler != null && genericValueHandler.supportsDataSource(dataSource)
-            && genericValueHandler.supportsType(typedObject)) {
-            return genericValueHandler.getInstance();
+        // Then check their parents
+        for (ValueHandlerDescriptor dtProvider : dataTypeProviders) {
+            if (!dtProvider.isGlobal() && dtProvider.supportsDataSource(dataSource) && dtProvider.supportsType(typedObject)) {
+                return dtProvider.getInstance();
+            }
         }
 
         // Find in global providers

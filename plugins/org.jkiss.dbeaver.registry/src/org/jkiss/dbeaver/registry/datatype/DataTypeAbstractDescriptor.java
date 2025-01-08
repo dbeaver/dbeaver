@@ -165,6 +165,10 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
         return supportedDataSources.isEmpty();
     }
 
+    public boolean isSpecifyForDataSource(DBPDataSource dataSource) {
+        return supportedDataSources.contains(dataSource.getContainer().getDriver().getProviderDescriptor().getId());
+    }
+
     public boolean supportsDataSource(DBPDataSource dataSource) {
         for (DBPDataSourceProviderDescriptor provider = dataSource.getContainer().getDriver().getProviderDescriptor(); provider != null; provider = provider.getParentProvider()) {
             if (supportedDataSources.contains(provider.getId())) {
