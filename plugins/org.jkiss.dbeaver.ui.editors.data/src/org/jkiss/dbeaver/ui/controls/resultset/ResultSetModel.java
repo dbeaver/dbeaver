@@ -126,7 +126,7 @@ public class ResultSetModel implements DBDResultSetModel {
     private final Map<DBDAttributeBinding, List<AttributeColorSettings>> colorMapping = new TreeMap<>(POSITION_SORTER);
 
     public ResultSetModel() {
-        this.hintContext = new ResultSetHintContext(this::getDataContainer);
+        this.hintContext = new ResultSetHintContext(this::getDataContainer, this::getSingleSource);
         this.dataFilter = createDataFilter();
     }
 

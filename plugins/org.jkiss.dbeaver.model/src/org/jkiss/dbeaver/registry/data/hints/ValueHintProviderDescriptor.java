@@ -70,7 +70,7 @@ public class ValueHintProviderDescriptor extends AbstractValueBindingDescriptor<
 
     @Override
     public boolean isEnabled(DBSTypedObject typedObject, boolean checkConfigDisable) {
-        if (checkConfigDisable && !ValueHintRegistry.getInstance().isHintEnabled(this)) {
+        if (checkConfigDisable && !ValueHintRegistry.getInstance().isHintEnabled(this, null, null)) {
             return false;
         }
         if (association && typedObject != null) {

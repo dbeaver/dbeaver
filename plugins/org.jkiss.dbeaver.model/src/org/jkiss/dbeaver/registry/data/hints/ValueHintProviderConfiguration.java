@@ -16,15 +16,12 @@
  */
 package org.jkiss.dbeaver.registry.data.hints;
 
-import org.jkiss.dbeaver.Log;
-
 import java.util.Map;
 
 /**
  * ValueHintProviderConfiguration
  */
 public class ValueHintProviderConfiguration {
-    private static final Log log = Log.getLog(ValueHintProviderConfiguration.class);
 
     private transient final String hintProviderDescriptor;
     private boolean enabled;

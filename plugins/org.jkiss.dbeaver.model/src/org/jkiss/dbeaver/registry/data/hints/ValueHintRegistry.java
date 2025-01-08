@@ -27,9 +27,16 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
 import org.jkiss.dbeaver.model.data.hints.standard.VoidHintProvider;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.virtual.DBVObject;
+import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -45,6 +52,7 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<DBDValueHint
     public static final String CONFIG_FILE_NAME = "data-hints.json";
 
     private static final Gson gson = new GsonBuilder().create();
+    private static final String HINT_CONFIG_PROPERTY = "data.hints.configuration";
 
     private static ValueHintRegistry instance = null;
 
@@ -90,16 +98,98 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<DBDValueHint
         return VoidHintProvider.INSTANCE;
     }
 
-    @NotNull
-    public ValueHintProviderConfiguration getConfiguration(ValueHintProviderDescriptor descriptor) {
-        ValueHintProviderConfiguration configuration = configurationMap.get(descriptor.getId());
+    public ValueHintProviderConfiguration getConfiguration(
+        @NotNull ValueHintProviderDescriptor descriptor,
+        @Nullable DBPDataSourceContainer ds,
+        @Nullable DBSEntity entity
+    ) {
+        ValueHintProviderConfiguration configuration;
+        if (entity != null) {
+            // Try virt model
+            configuration = findHintConfigFromVirtualObject(descriptor, DBVUtils.getVirtualEntity(entity, false));
+            if (configuration != null) {
+                return configuration;
+            }
+        }
+        if (ds != null) {
+            configuration = findHintConfigFromVirtualObject(descriptor, ds.getVirtualModel());
+            if (configuration != null) {
+                return configuration;
+            }
+        }
+
+        // Fallback to global
+        configuration = configurationMap.get(descriptor.getId());
         if (configuration == null) {
             configuration = new ValueHintProviderConfiguration(descriptor.getId());
             configuration.setEnabled(descriptor.isVisibleByDefault());
-            return configuration;
         }
         return configuration;
     }
+
+    public boolean isHintEnabled(
+        @NotNull ValueHintProviderDescriptor descriptor,
+        @Nullable DBPDataSourceContainer ds,
+        @Nullable DBSEntity entity
+    ) {
+        Boolean isEnabled;
+        if (entity != null) {
+            isEnabled = isHintEnabledInVirtualObject(descriptor, DBVUtils.getVirtualEntity(entity, false));
+            if (isEnabled != null) {
+                return isEnabled;
+            }
+        }
+        if (ds != null) {
+            isEnabled = isHintEnabledInVirtualObject(descriptor, ds.getVirtualModel());
+            if (isEnabled != null) {
+                return isEnabled;
+            }
+        }
+
+        // Fallback to global
+        ValueHintProviderConfiguration configuration = configurationMap.get(descriptor.getId());
+        if (configuration == null) {
+            return descriptor.isVisibleByDefault();
+        }
+        return configuration.isEnabled();
+    }
+
+    private Boolean isHintEnabledInVirtualObject(ValueHintProviderDescriptor descriptor, DBVObject vObject) {
+        if (vObject != null) {
+            Map<String, Object> dataHintsConfig = vObject.getProperty(HINT_CONFIG_PROPERTY);
+            if (dataHintsConfig != null) {
+                Map<String, Object>  provConfig = JSONUtils.getObjectOrNull(dataHintsConfig, descriptor.getId());
+                if (provConfig != null) {
+                    Object isEnabled = provConfig.get("enabled");
+                    if (isEnabled != null) {
+                        return CommonUtils.toBoolean(isEnabled);
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private static ValueHintProviderConfiguration findHintConfigFromVirtualObject(
+        @NotNull ValueHintProviderDescriptor descriptor,
+        @Nullable DBVObject vObject
+    ) {
+        if (vObject != null) {
+            Map<String, Object> dataHintsConfig = vObject.getProperty(HINT_CONFIG_PROPERTY);
+            if (dataHintsConfig != null) {
+                Map<String, Object>  provConfig = JSONUtils.getObjectOrNull(dataHintsConfig, descriptor.getId());
+                if (provConfig != null) {
+                    try {
+                        return JSONUtils.deserializeObject(provConfig, ValueHintProviderConfiguration.class);
+                    } catch (DBCException e) {
+                        log.error("Error reading virtual hint configuration from saved JSON configuration", e);
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
 
     public void setConfiguration(
         @NotNull ValueHintProviderDescriptor descriptor,
@@ -142,20 +232,7 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<DBDValueHint
         }
     }
 
-    public boolean isHintEnabled(DBDValueHintProvider provider) {
-        ValueHintProviderDescriptor descriptor = getDescriptorByInstance(provider);
-        return descriptor != null && isHintEnabled(descriptor);
-    }
-
-    public boolean isHintEnabled(ValueHintProviderDescriptor descriptor) {
-        ValueHintProviderConfiguration configuration = configurationMap.get(descriptor.getId());
-        if (configuration == null) {
-            return descriptor.isVisibleByDefault();
-        }
-        return configuration.isEnabled();
-    }
-
-    private ValueHintProviderDescriptor getDescriptorByInstance(DBDValueHintProvider provider) {
+    public ValueHintProviderDescriptor getDescriptorByInstance(DBDValueHintProvider provider) {
         for (ValueHintProviderDescriptor descriptor : descriptors) {
             if (descriptor.getInstance() == provider) {
                 return descriptor;
