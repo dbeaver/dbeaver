@@ -18,16 +18,22 @@ package org.jkiss.dbeaver.model.sql.generator;
 
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SQLGeneratorJoin extends SQLGenerator<DBSEntity> {
+    private SQLDialect sqlDialect;
+    private final List<String> aliases = new ArrayList<>();
 
     @Override
     public void run(DBRProgressMonitor monitor) throws InvocationTargetException {
         StringBuilder sql = new StringBuilder(100);
+        sqlDialect = objects.get(0).getDataSource().getSQLDialect();
         try {
             sql.append("SELECT ");
             for (int i = 0; i < objects.size(); i++) {
@@ -37,8 +43,9 @@ public class SQLGeneratorJoin extends SQLGenerator<DBSEntity> {
             sql.append(getLineSeparator()).append("FROM ");
             for (int i = 0; i < objects.size(); i++) {
                 DBSEntity entity = objects.get(i);
+
                 if (i > 0) sql.append(", ");
-                sql.append(getEntityName(entity)).append(" ").append(SQLUtils.getTableAlias(entity));
+                sql.append(getEntityName(entity)).append(" ").append(generateTableAlias(entity));
             }
             sql.append(getLineSeparator()).append("WHERE ");
             boolean hasCond = false;
@@ -46,7 +53,7 @@ public class SQLGeneratorJoin extends SQLGenerator<DBSEntity> {
                 boolean foundJoin = false;
                 for (int k = 0; k < i; k++) {
                     String tableJoin = SQLUtils.generateTableJoin(
-                        monitor, objects.get(k), SQLUtils.getTableAlias(objects.get(k)), objects.get(i), SQLUtils.getTableAlias(objects.get(i)));
+                        monitor, objects.get(k), aliases.get(k), objects.get(i), aliases.get(i));
                     if (tableJoin != null) {
                         sql.append(getLineSeparator()).append("\t");
                         if (hasCond) sql.append("AND ");
@@ -64,6 +71,12 @@ public class SQLGeneratorJoin extends SQLGenerator<DBSEntity> {
             throw new InvocationTargetException(e);
         }
         result = sql.toString();
+    }
+
+    private String generateTableAlias(DBSEntity entity) {
+        String alias = SQLUtils.generateEntityAlias(entity, s -> sqlDialect.getKeywordType(s) != null || aliases.contains(s));
+        aliases.add(alias);
+        return alias;
     }
 
     @Override
