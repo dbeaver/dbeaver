@@ -2521,7 +2521,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 RGB mixRGB = UIUtils.blend(
                     normalColor.getRGB(),
                     ResultSetThemeSettings.instance.backgroundSelected.getRGB(),
-                    50
+                    15
                 );
                 return UIUtils.getSharedTextColors().getColor(mixRGB);
             }
