@@ -14,25 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.syntax;
+package org.jkiss.dbeaver.ext.greenplum.model;
 
-import org.eclipse.jface.text.rules.IWordDetector;
+
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 
 /**
- * Determines whether a given character is valid as part of an SQL keyword in
- * the current context.
+ * PostgreServerCloudberry
  */
-public class SQLKeywordDetector implements IWordDetector
-{
+public class PostgreServerCloudberry extends PostgreServerGreenplum {
 
-    @Override
-    public boolean isWordStart(char c) {
-        return Character.isLetter(c) || c == '_';
+    public PostgreServerCloudberry(PostgreDataSource dataSource) {
+        super(dataSource);
     }
 
     @Override
-    public boolean isWordPart(char c) {
-        return Character.isLetterOrDigit(c) || c == '_';
+    public String getServerTypeName() {
+        return "Cloudberry";
     }
-
 }

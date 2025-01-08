@@ -106,7 +106,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         this.preferenceStore = preferenceStore;
         this.ruleManager = editor.getRuleScanner();
         this.contextInformer = new SQLContextInformer(editor, editor.getSyntaxManager());
-        this.hyperlinkDetector = new SQLHyperlinkDetector(editor, this.contextInformer);
+        this.hyperlinkDetector = new SQLHyperlinkDetector(this.contextInformer);
         this.reconcilingStrategy = reconcilingStrategy;
     }
 
