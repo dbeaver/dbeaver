@@ -63,7 +63,7 @@ public class SQLPreferenceConstants {
 
     }
     
-    public enum SQLExperimentalAutocompletionMode {
+    public enum SQLAutocompletionMode {
         DEFAULT(true, false, SQLEditorMessages.pref_page_sql_completion_label_completion_mode_default),
         NEW(false, true, SQLEditorMessages.pref_page_sql_completion_label_completion_mode_new_engine),
         COMBINED(true, true, SQLEditorMessages.pref_page_sql_completion_label_completion_mode_combined);
@@ -73,7 +73,7 @@ public class SQLPreferenceConstants {
 
         public final String title;
     
-        SQLExperimentalAutocompletionMode(boolean useOldAnalyzer, boolean useNewAnalyzer, String title) {
+        SQLAutocompletionMode(boolean useOldAnalyzer, boolean useNewAnalyzer, String title) {
             this.useOldAnalyzer = useOldAnalyzer;
             this.useNewAnalyzer = useNewAnalyzer;
             this.title = title;
@@ -83,21 +83,21 @@ public class SQLPreferenceConstants {
             return this.toString();
         }
 
-        public static SQLExperimentalAutocompletionMode valueByName(String name) {
+        public static SQLAutocompletionMode valueByName(String name) {
             if (name == null) {
                 return DEFAULT;
             }  else {
                 try {
-                    return SQLExperimentalAutocompletionMode.valueOf(name);
+                    return SQLAutocompletionMode.valueOf(name);
                 } catch (IllegalArgumentException e) {
-                    return SQLExperimentalAutocompletionMode.DEFAULT;
+                    return SQLAutocompletionMode.DEFAULT;
                 }
             }
         }
 
         @NotNull
-        public static SQLExperimentalAutocompletionMode fromPreferences(@NotNull DBPPreferenceStore preferenceStore) {
-            return valueByName(preferenceStore.getString(SQLModelPreferences.EXPERIMENTAL_AUTOCOMPLETION_MODE));	        
+        public static SQLAutocompletionMode fromPreferences(@NotNull DBPPreferenceStore preferenceStore) {
+            return valueByName(preferenceStore.getString(SQLModelPreferences.AUTOCOMPLETION_MODE));
         }
     }
 
@@ -160,8 +160,7 @@ public class SQLPreferenceConstants {
     public static final String INSERT_SINGLE_PROPOSALS_AUTO            = "SQLEditor.ContentAssistant.insert.single.proposal";
     public static final String ENABLE_HIPPIE                           = "SQLEditor.ContentAssistant.activate.hippie";
     public static final String ENABLE_AUTO_ACTIVATION                  = "SQLEditor.ContentAssistant.auto.activation.enable";
-    public static final String ENABLE_EXPERIMENTAL_FEATURES            = SQLModelPreferences.EXPERIMENTAL_AUTOCOMPLETION_ENABLE;
-    public static final String EXPERIMENTAL_AUTOCOMPLETION_MODE        = SQLModelPreferences.EXPERIMENTAL_AUTOCOMPLETION_MODE;
+    public static final String AUTOCOMPLETION_MODE                     = SQLModelPreferences.AUTOCOMPLETION_MODE;
     public static final String ADVANCED_HIGHLIGHTING_ENABLE            = SQLModelPreferences.ADVANCED_HIGHLIGHTING_ENABLE;
     public static final String READ_METADATA_FOR_SEMANTIC_ANALYSIS     = SQLModelPreferences.READ_METADATA_FOR_SEMANTIC_ANALYSIS;
     public static final String ENABLE_KEYSTROKE_ACTIVATION             = "SQLEditor.ContentAssistant.auto.keystrokes.activation";

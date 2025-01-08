@@ -134,13 +134,12 @@ public class TrayIconHandler {
                     return;
                 }
             }
-            TrayIcon.MessageType type;
-            switch (status) {
-                case IStatus.INFO: type = TrayIcon.MessageType.INFO; break;
-                case IStatus.ERROR: type = TrayIcon.MessageType.ERROR; break;
-                case IStatus.WARNING: type = TrayIcon.MessageType.WARNING; break;
-                default: type = TrayIcon.MessageType.NONE; break;
-            }
+            TrayIcon.MessageType type = switch (status) {
+                case IStatus.INFO -> TrayIcon.MessageType.INFO;
+                case IStatus.ERROR -> TrayIcon.MessageType.ERROR;
+                case IStatus.WARNING -> TrayIcon.MessageType.WARNING;
+                default -> TrayIcon.MessageType.NONE;
+            };
             trayItem.displayMessage(GeneralUtils.getProductTitle(), message, type);
         } catch (Throwable e) {
             log.error("Error showing tray notification", e);

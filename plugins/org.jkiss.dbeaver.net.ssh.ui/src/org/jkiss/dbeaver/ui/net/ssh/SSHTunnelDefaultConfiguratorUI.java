@@ -400,6 +400,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
         try {
             return DBWorkbench.getPlatformUI().promptUserCredentials(
                 SSHUIMessages.model_ssh_dialog_credentials,
+                null,
                 SSHUIMessages.model_ssh_dialog_credentials_username,
                 CommonUtils.notEmpty(username),
                 type.equals(SSHConstants.AuthType.PUBLIC_KEY)

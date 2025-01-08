@@ -18,7 +18,7 @@
 
 package org.jkiss.dbeaver.erd.ui.internal;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class ERDUIMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages"; //$NON-NLS-1$

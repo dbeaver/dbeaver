@@ -20,12 +20,19 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.sql.SQLGroupingAttribute;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.controls.StringEditorTable;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,29 +41,25 @@ import java.util.List;
 /**
  * Grouping configuration dialog
  */
-class GroupingConfigDialog extends BaseDialog
-{
-    private static final String DIALOG_ID = "DBeaver.GroupingConfigDialog";//$NON-NLS-1$
+class GroupingConfigDialog extends BaseDialog {
+    private static final String DIALOG_ID = "DBeaver.GroupingConfigDialog"; //$NON-NLS-1$
 
     private final GroupingResultsContainer resultsContainer;
     private Table columnsTable;
     private Table functionsTable;
 
-    public GroupingConfigDialog(Shell parentShell, GroupingResultsContainer resultsContainer)
-    {
+    public GroupingConfigDialog(Shell parentShell, GroupingResultsContainer resultsContainer) {
         super(parentShell, "Grouping configuration", null);
         this.resultsContainer = resultsContainer;
     }
 
     @Override
-    protected IDialogSettings getDialogBoundsSettings()
-    {
+    protected IDialogSettings getDialogBoundsSettings() {
         return UIUtils.getDialogSettings(DIALOG_ID);
     }
 
     @Override
-    protected Composite createDialogArea(Composite parent)
-    {
+    protected Composite createDialogArea(Composite parent) {
         Composite composite = super.createDialogArea(parent);
 
         List<String> proposals = new ArrayList<>();
@@ -65,9 +68,9 @@ class GroupingConfigDialog extends BaseDialog
         }
         StringContentProposalProvider proposalProvider = new StringContentProposalProvider(new String[0]);
         proposalProvider.setProposals(proposals.toArray(new String[0]));
-        columnsTable = StringEditorTable.createEditableList(composite, "Columns", resultsContainer.getGroupAttributes(), DBIcon.TREE_ATTRIBUTE, proposalProvider);
+        columnsTable = StringEditorTable.createCustomEditableList(composite, "Columns", resultsContainer.getGroupAttributes(), new GroupingAttributeValueManager(), proposalProvider, true);
 
-        Collections.addAll(proposals,"COUNT", "AVG", "MAX", "MIN", "SUM");
+        Collections.addAll(proposals, "COUNT", "AVG", "MAX", "MIN", "SUM");
         proposalProvider.setProposals(proposals.toArray(new String[0]));
         functionsTable = StringEditorTable.createEditableList(composite, "Functions", resultsContainer.getGroupFunctions(), DBIcon.TREE_FUNCTION, proposalProvider);
 
@@ -76,10 +79,44 @@ class GroupingConfigDialog extends BaseDialog
 
     @Override
     protected void okPressed() {
-        List<String> columns = StringEditorTable.collectValues(columnsTable);
-        List<String> functions = StringEditorTable.collectValues(functionsTable);
-        resultsContainer.setGrouping(columns, functions);
+        List<SQLGroupingAttribute> attributes = StringEditorTable.collectCustomValues(columnsTable);
+        List<String> functions = StringEditorTable.collectStringValues(functionsTable);
+        resultsContainer.setGrouping(attributes, functions);
         super.okPressed();
     }
 
+    private class GroupingAttributeValueManager implements StringEditorTable.TableValuesManager<SQLGroupingAttribute> {
+        @NotNull
+        @Override
+        public DBPImage getIcon(@Nullable SQLGroupingAttribute value) {
+            if (value instanceof SQLGroupingAttribute.BoundAttribute bound) {
+                DBSDataType type = bound.getBinding().getDataType();
+                return type == null ? DBIcon.TYPE_UNKNOWN : DBValueFormatting.getTypeImage(type);
+            } else {
+                return DBIcon.TREE_ATTRIBUTE;
+            }
+        }
+
+        @NotNull
+        @Override
+        public String getString(@Nullable SQLGroupingAttribute value) {
+            return value == null ? "" : value.getDisplayName();
+        }
+
+        @NotNull
+        @Override
+        public Boolean isEditable(@Nullable SQLGroupingAttribute value) {
+            return value == null || value instanceof SQLGroupingAttribute.CustomAttribute;
+        }
+
+        @Nullable
+        @Override
+        public SQLGroupingAttribute prepareNewValue(@Nullable SQLGroupingAttribute originalValue, @Nullable String string) {
+            if (CommonUtils.isNotEmpty(string)) {
+                return SQLGroupingAttribute.makeCustom(resultsContainer.getDataContainer().getDataSource(), string);
+            } else {
+                return null;
+            }
+        }
+    }
 }

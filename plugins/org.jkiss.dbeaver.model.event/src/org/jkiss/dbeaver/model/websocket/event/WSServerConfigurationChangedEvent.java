@@ -17,13 +17,16 @@
 package org.jkiss.dbeaver.model.websocket.event;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.websocket.WSConstants;
 
 public class WSServerConfigurationChangedEvent extends WSAbstractEvent {
+    private static final String ID = "cb_config_changed";
+
     public WSServerConfigurationChangedEvent() {
-        super(WSEventType.SERVER_CONFIG_CHANGED);
+        super(ID, WSConstants.TOPIC_SERVER_CONFIG);
     }
 
     public WSServerConfigurationChangedEvent(@Nullable String sessionId, @Nullable String userId) {
-        super(WSEventType.SERVER_CONFIG_CHANGED, sessionId, userId);
+        super(ID, WSConstants.TOPIC_SERVER_CONFIG, sessionId, userId);
     }
 }

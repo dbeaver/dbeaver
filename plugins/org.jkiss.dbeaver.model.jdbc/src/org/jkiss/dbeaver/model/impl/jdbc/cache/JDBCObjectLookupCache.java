@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -28,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.sql.SQLException;
 import java.util.HashSet;
@@ -40,6 +42,8 @@ import java.util.Set;
 public abstract class JDBCObjectLookupCache<OWNER extends DBSObject, OBJECT extends DBSObject>
     extends JDBCObjectCache<OWNER, OBJECT> implements JDBCObjectLookup<OWNER, OBJECT>
 {
+    private static final Log log = Log.getLog(JDBCObjectLookupCache.class);
+
     private final Set<String> missingNames = new HashSet<>();
 
     protected JDBCObjectLookupCache() {
@@ -89,6 +93,11 @@ public abstract class JDBCObjectLookupCache<OWNER extends DBSObject, OBJECT exte
     protected OBJECT reloadObject(@NotNull DBRProgressMonitor monitor, @NotNull OWNER owner, @Nullable OBJECT object, @Nullable String objectName)
         throws DBException
     {
+        if (DBWorkbench.getPlatform().isUnitTestMode()) {
+            log.debug("[TEST] Skip lookup cache read in test mode");
+            return object;
+        }
+
         DBPDataSource dataSource = owner.getDataSource();
         if (dataSource == null) {
             throw new DBException(ModelMessages.error_not_connected_to_database);

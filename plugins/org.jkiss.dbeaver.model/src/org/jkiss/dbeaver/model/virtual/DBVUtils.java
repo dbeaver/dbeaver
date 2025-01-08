@@ -262,7 +262,10 @@ public abstract class DBVUtils {
                     if (!keyLabel2.isEmpty()) {
                         keyLabel2.append(columnDivider);
                     }
-                    keyLabel2.append(colHandlers.get(i).getValueDisplayString(metaColumns.get(i), descValue, DBDDisplayFormat.NATIVE));
+                    keyLabel2.append(colHandlers.get(i).getValueDisplayString(
+                        metaColumns.get(i),
+                        descValue,
+                        formatValues ? DBDDisplayFormat.UI : DBDDisplayFormat.NATIVE));
                 }
                 keyLabel = keyLabel2.toString();
             }
