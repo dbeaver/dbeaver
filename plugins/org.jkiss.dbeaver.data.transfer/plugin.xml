@@ -107,8 +107,12 @@
                     label="%dataTransfer.processor.json.name"
                     contentType="text/json">
                 <propertyGroup label="%dataTransfer.processor.json.propertyGroup.general.label">
-                    <property id="printTableName" label="%dataTransfer.processor.json.property.printTableName.label" type="boolean" defaultValue="true"/>
-                    <property id="formatDateISO" label="%dataTransfer.processor.json.property.formatDateISO.label" type="boolean" defaultValue="true"/>
+                    <property id="printTableName" label="%dataTransfer.processor.json.property.printTableName.label"
+                              type="boolean" defaultValue="true" validValues="true,false"/>
+                    <property id="formatDateISO" label="%dataTransfer.processor.json.property.formatDateISO.label"
+                              type="boolean" defaultValue="true" validValues="true,false"/>
+                    <property id="exportJsonValues" label="%dataTransfer.processor.json.property.exportJsonValues.label"
+                              type="string" defaultValue="string" validValues="string,json"/>
                     <property id="extension" label="%dataTransfer.processor.json.property.extension.label" defaultValue="json"/>
                 </propertyGroup>
             </processor>
@@ -150,6 +154,7 @@
                     <property id="quoteNever" label="%dataTransfer.processor.csv.property.quoteNever.name" type="boolean" description="%dataTransfer.processor.csv.property.quoteNever.description" defaultValue="false" required="false"/>
                     <property id="nullString" label="%dataTransfer.processor.csv.property.nullString.name" type="string" description="%dataTransfer.processor.csv.property.nullString.description" defaultValue="" required="false"/>
                     <property id="formatNumbers" label="%dataTransfer.processor.csv.property.formatNumbers.name" type="boolean" description="%dataTransfer.processor.csv.property.formatNumbers.description" defaultValue="false" required="false"/>
+                    <property id="lineFeedEscapeString" label="%dataTransfer.producer.stream.processor.csv.property.lineFeedEscapeString.name" type="string" description="%dataTransfer.producer.stream.processor.csv.property.lineFeedEscapeString.description" defaultValue="" validValues="\n,¶" allowCustomValues="true" required="false"/>
                 </propertyGroup>
             </processor>
             <processor
@@ -261,6 +266,13 @@
                 label="%dataTransfer.eventProcessor.executeCommand.label"
                 description="%dataTransfer.eventProcessor.executeCommand.description"
                 class="org.jkiss.dbeaver.tools.transfer.processor.ExecuteCommandEventProcessor"
+                nodes="streamTransferConsumer"/>
+
+        <eventProcessor
+                id="failedExportFileCleaner"
+                label="%dataTransfer.eventProcessor.failedExportFileCleaner.label"
+                description="%dataTransfer.eventProcessor.failedExportFileCleaner.description"
+                class="org.jkiss.dbeaver.tools.transfer.processor.FailedExportFileCleanerProcessor"
                 nodes="streamTransferConsumer"/>
 
     </extension>

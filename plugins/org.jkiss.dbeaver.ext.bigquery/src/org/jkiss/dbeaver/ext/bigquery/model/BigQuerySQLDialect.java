@@ -18,16 +18,33 @@ package org.jkiss.dbeaver.ext.bigquery.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 
 /**
  * BigQuery SQL dialect
  */
 public class BigQuerySQLDialect extends GenericSQLDialect {
 
-    private static String[] EXEC_KEYWORDS = {"CALL"};
+    private static final String[] EXEC_KEYWORDS = {"CALL"};
+
+    private static final String[][] BIGQUERY_BEGIN_END_BLOCK = new String[][]{
+        {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END},
+        {SQLConstants.KEYWORD_CASE, SQLConstants.BLOCK_END + SQLConstants.KEYWORD_CASE},
+        {"IF", SQLConstants.BLOCK_END + " IF"},
+        {"LOOP", SQLConstants.BLOCK_END + " LOOP"},
+        {"WHILE", SQLConstants.BLOCK_END + " WHILE"},
+        {"FOR", SQLConstants.BLOCK_END + " FOR"},
+        {"REPEAT", SQLConstants.BLOCK_END + " REPEAT"}
+    };
 
     public BigQuerySQLDialect() {
         super("BigQuery", "google_bigquery");
+    }
+
+    @NotNull
+    @Override
+    public MultiValueInsertMode getDefaultMultiValueInsertMode() {
+        return MultiValueInsertMode.GROUP_ROWS;
     }
 
     @Override
@@ -39,5 +56,10 @@ public class BigQuerySQLDialect extends GenericSQLDialect {
     @Override
     public String[] getExecuteKeywords() {
         return EXEC_KEYWORDS;
+    }
+
+    @Override
+    public String[][] getBlockBoundStrings() {
+        return BIGQUERY_BEGIN_END_BLOCK;
     }
 }

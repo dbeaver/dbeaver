@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -53,7 +54,6 @@ import org.jkiss.dbeaver.model.struct.cache.SimpleObjectCache;
 import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.net.DefaultCallbackHandler;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -94,10 +94,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     private SettingCache settingCache;
     private String activeDatabaseName;
     private PostgreServerExtension serverExtension;
-    private String serverVersion;
+    protected String serverVersion;
     private volatile boolean hasStatistics;
     private boolean supportsEnumTable;
     private boolean supportsReltypeColumn = true;
+    private volatile boolean isConnectionRefreshing = false;
 
     public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -169,7 +170,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         }
         databaseCache.setCache(dbList);
         // Initiate default context
-        getDefaultInstance().checkInstanceConnection(monitor, false);
+        if (!this.isConnectionRefreshing()) {
+            getDefaultInstance().checkInstanceConnection(monitor, false);
+        }
         try {
             // Preload some settings, if available
             settingCache.getObject(monitor, this, PostgreConstants.OPTION_STANDARD_CONFORMING_STRINGS);
@@ -467,15 +470,18 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         super.refreshObject(monitor);
         shutdown(monitor);
 
-        this.databaseCache.clearCache();
-        this.activeDatabaseName = null;
-
-        this.initializeRemoteInstance(monitor);
+        try {
+            this.isConnectionRefreshing = true;
+            this.databaseCache.clearCache();
+            this.activeDatabaseName = null;
+            this.initializeRemoteInstance(monitor);
+        } finally {
+            this.isConnectionRefreshing = false;
+        }
         this.initialize(monitor);
 
         return this;
@@ -514,21 +520,27 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         if (instance != null) {
             log.debug("Initiate connection to " + getServerType().getServerTypeName() + " database [" + instance.getName() + "@" + conConfig.getHostName() + "] for " + purpose);
         }
-        boolean timezoneOverridden = false;
+        String currentTimezoneId = ZoneId.systemDefault().getId();
+        String legacyTimezoneOverridden = PostgreConstants.REPLACING_TIMEZONE.get(currentTimezoneId);
 
         try {
             // Old versions of postgres and some linux distributions, on which docker images are made, may not contain
             // new timezone, which will lead to the error while connecting, there is no way to know before connecting
             // so to be sure we will use the old name
-            if (PostgreConstants.NEW_UA_TIMEZONE.equals(TimeZone.getDefault().getID())) {
-                TimezoneRegistry.setDefaultZone(ZoneId.of(PostgreConstants.LEGACY_UA_TIMEZONE), false);
-                timezoneOverridden = true;
+            if (legacyTimezoneOverridden != null) {
+                TimezoneRegistry.setDefaultZone(ZoneId.of(legacyTimezoneOverridden), false);
             }
 
-            if (instance instanceof PostgreDatabase && !CommonUtils.equalObjects(instance.getName(), PostgreUtils.getDatabaseNameFromConfiguration(conConfig))) {
+            if (isReadDatabaseList(conConfig) || !CommonUtils.isEmpty(conConfig.getBootstrap().getDefaultCatalogName())) {
                 // If database was changed then use new name for connection
+                String databaseName;
+                if (instance != null) {
+                    databaseName = instance.getName();
+                } else {
+                    databaseName = PostgreUtils.getDatabaseNameFromConfiguration(conConfig);
+                }
                 DBPConnectionConfiguration newConfig = new DBPConnectionConfiguration(conConfig);
-                newConfig.setDatabaseName(instance.getName());
+                newConfig.setDatabaseName(databaseName);
                 String newURL = newConfig.getUrl();
                 if (newConfig.getConfigurationType() == DBPDriverConfigurationType.MANUAL) {
                     // Generate URL with new database name
@@ -538,7 +550,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                     }
                 } else {
                     // Patch connection URL with new database name
-                    newURL = PostgreUtils.updateDatabaseNameInURL(newConfig.getUrl(), instance.getName());
+                    newURL = PostgreUtils.updateDatabaseNameInURL(newConfig.getUrl(), databaseName);
                 }
                 newConfig.setUrl(newURL);
                 pgConnection = super.openConnection(monitor, context, newConfig, purpose);
@@ -546,7 +558,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                 pgConnection = super.openConnection(monitor, context, purpose);
             }
         } catch (DBCException e) {
-            final Throwable cause = GeneralUtils.getRootCause(e);
+            final Throwable cause = CommonUtils.getRootCause(e);
             final StackTraceElement element = cause.getStackTrace()[0];
 
             final DBWHandlerConfiguration handler = conConfig.getHandler(PostgreConstants.HANDLER_SSL);
@@ -568,8 +580,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
             throw e;
         } finally {
-            if (timezoneOverridden && PostgreConstants.LEGACY_UA_TIMEZONE.equals(TimeZone.getDefault().getID())) {
-                TimezoneRegistry.setDefaultZone(ZoneId.of(PostgreConstants.NEW_UA_TIMEZONE), false);
+            if (legacyTimezoneOverridden != null) {
+                TimezoneRegistry.setDefaultZone(ZoneId.of(currentTimezoneId), false);
             }
         }
 
@@ -607,6 +619,17 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             }
         }
         return super.getAdapter(adapter);
+    }
+
+    @Override
+    public boolean cancelCurrentExecution(@NotNull Connection connection, @Nullable Thread connectionThread) throws DBException {
+        try {
+            BeanUtils.invokeObjectMethod(connection, "cancelQuery");
+            return true;
+        } catch (Throwable e) {
+            throw new DBDatabaseException("Can't cancel connection query", e, this);
+        }
+
     }
 
     @Nullable
@@ -766,6 +789,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         }
     }
 
+    @Override
+    public boolean isConnectionRefreshing() {
+        return isConnectionRefreshing;
+    }
+
     private static class DatabaseCache extends SimpleObjectCache<PostgreDataSource, PostgreDatabase> {
     }
 
@@ -795,7 +823,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     @Nullable
     @Override
     public ErrorPosition[] getErrorPosition(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, @NotNull String query, @NotNull Throwable error) {
-        Throwable rootCause = GeneralUtils.getRootCause(error);
+        Throwable rootCause = CommonUtils.getRootCause(error);
         if (PostgreConstants.PSQL_EXCEPTION_CLASS_NAME.equals(rootCause.getClass().getName())) {
             try {
                 Object serverErrorMessage = BeanUtils.readObjectProperty(rootCause, "serverErrorMessage");

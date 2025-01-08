@@ -408,11 +408,11 @@
                     sampleURL="jdbc:IRIS://{host}:{port}/{database}"
                     defaultPort="1972"
                     webURL="http://www.intersystems.com/iris/"
-                    description="InterSystems IRIS. Replaces Cache driver."
+                    description="InterSystems IRIS."
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,object">
 <!--                    <replace provider="generic" driver="cache"/>-->
-                    <file type="jar" path="https://github.com/intersystems-community/iris-driver-distribution/raw/main/JDBC/JDK18/intersystems-jdbc-3.8.4.jar" bundle="!drivers.intersystem"/>
+                    <file type="jar" path="maven:/com.intersystems:intersystems-jdbc:RELEASE" bundle="!drivers.intersystem"/>
                     <file type="license" path="https://raw.githubusercontent.com/intersystems-community/iris-driver-distribution/main/LICENSE" bundle="!drivers.intersystem"/>
                     <file type="jar" path="drivers/intersystem" bundle="drivers.intersystem"/>
                     <file type="license" path="drivers/mit_lic/LICENSE.txt" bundle="drivers.intersystem"/>
@@ -428,7 +428,8 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     iconBig="icons/ingres_icon_big.png"
                     categories="sql">
-                    <file type="jar" path="maven:/com.ingres.jdbc:iijdbc:RELEASE" bundle="!drivers.ingres"/>
+                    <!-- We use direct jar path because Ingres metadata is broken #36021 -->
+                    <file type="jar" path="https://repo1.maven.org/maven2/com/ingres/jdbc/iijdbc/10.0-4.0.6/iijdbc-10.0-4.0.6.jar" bundle="!drivers.ingres"/>
                     <file type="license" path="https://www.gnu.org/licenses/lgpl-3.0.txt" bundle="!drivers.ingres"/>
                     <file type="jar" path="drivers/ingres" bundle="drivers.ingres"/>
                     <file type="license" path="drivers/ingres/LICENSE.txt" bundle="drivers.ingres"/>
@@ -479,13 +480,14 @@
 
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="supports-multiple-results" value="true"/>
+                    <parameter name="multiple-results-fails-on-max-rows" value="true"/>
                     <parameter name="query-get-active-db" value="SELECT DATABASE"/>
                     <parameter name="query-set-active-db" value="DATABASE &quot;?&quot;"/>
                 </driver>
 
                 <driver
                     id="csvjdbc"
-                    label="CSV"
+                    label="CSV Basic"
                     icon="icons/csv_icon.png"
                     iconBig="icons/csv_icon_big.png"
                     category="Flat files"
@@ -493,7 +495,7 @@
                     sampleURL="jdbc:relique:csv:{folder}"
                     embedded="true"
                     anonymous="true"
-                    description="CsvJdbc driver for CSV files"
+                    description="CsvJdbc driver for handling CSV files. Included in DBeaver Community Edition."
                     supportedConfigurationTypes="MANUAL,URL"
                     supportsDistributedMode="false"
                     webURL="http://csvjdbc.sourceforge.net/"
@@ -871,7 +873,7 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/orientechnologies/orientdb-jdbc"
                     categories="graph">
-                    <file type="jar" path="maven:/com.orientechnologies:orientdb-jdbc:RELEASE[1.7]"/>
+                    <file type="jar" path="maven:/com.orientechnologies:orientdb-jdbc:RELEASE"/>
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
 
                     <parameter name="supports-truncate" value="false"/>
@@ -1015,8 +1017,10 @@
                         supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://documentation.progress.com/output/ua/OpenEdge_latest/dmsdv/connecting-from-a-java-application-using-a-url.html#"
                         categories="sql">
-<!--                    <file type="jar" path="maven:/org.apache.solr:solr-solrj:RELEASE"/>-->
                     <parameter name="omit-single-catalog" value="true"/>
+                    <parameter name="supports-schema-selection" value="false"/>
+                    <parameter name="stored-quoted-case" value="mixed"/>
+                    <parameter name="stored-unquoted-case" value="mixed"/>
                 </driver>
 
                 <!-- MonetDB -->
@@ -1245,8 +1249,8 @@
                 <driver
                         id="db2_luw_old"
                         label="Db2 for LUW (Old 8.x)"
-                        icon="icons/db2_icon.png"
-                        iconBig="icons/db2_icon_big.png"
+                        icon="platform:/plugin/org.jkiss.dbeaver.ext.db2/icons/db2_icon.png"
+                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.db2/icons/db2_icon_big.png"
                         category="Db2"
                         class="com.ibm.db2.jcc.DB2Driver"
                         sampleURL="jdbc:db2://{host}[:{port}]/{database}"
@@ -1267,11 +1271,7 @@
                     <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
 
-                    <fileSource url="https://www-304.ibm.com/support/docview.wss?rs=4020&amp;uid=swg21385217"
-                                name="DB2 drivers"
-                                instruction="Download JDBC (JCC) client driver. Extract downloaded archive and copy db2jcc4.jar in some directory. Then add db2jcc4.jar as a library in DBeaver driver editor dialog.">
-                        <file name="db2jcc4.jar" description="JDBC driver"/>
-                    </fileSource>
+                    <file type="jar" path="maven:/com.ibm.db2:jcc:RELEASE[11.5.9.0]" bundle="!drivers.db2"/>
                     <file type="license" path="drivers/db2/LICENSE.txt" bundle="drivers.db2"/>
                     <file type="jar" path="drivers/db2" bundle="drivers.db2"/>
                 </driver>
@@ -1337,24 +1337,42 @@
                     <parameter name="use-search-string-escape" value="true"/>
                 </driver>
 
-                <!-- Salesforce CDP-->
+                <!-- Salesforce Data Cloud (Legacy) -->
                 <driver
                         id="salesforce_datacloud_jdbc"
-                        label="Salesforce Data Cloud"
+                        label="Salesforce Data Cloud (Legacy)"
                         class="com.salesforce.cdp.queryservice.QueryServiceDriver"
                         icon="icons/salesforce_icon.png"
                         iconBig="icons/salesforce_icon_big.png"
                         sampleURL="jdbc:queryService-jdbc:{database}"
                         defaultDatabase="https://login.salesforce.com"
-                        description="Salesforce Data Cloud JDBC driver"
+                        description="Legacy Salesforce Data Cloud JDBC driver"
                         webURL="https://github.com/forcedotcom/Salesforce-CDP-jdbc"
                         databaseDocumentationSuffixURL="Database-driver-Salesforce"
                         categories="sql">
                     <replace provider="generic" driver="salesforce_jdbc"/>
-                    <file type="jar" path="https://github.com/forcedotcom/Salesforce-CDP-jdbc/releases/download/release_2024.4B/Salesforce-cdp-1.19.4.jar" bundle="!drivers.salesforce"/>
-                    <file type="jar" path="drivers/salesforce" bundle="drivers.salesforce"/>
-                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.salesforce"/>
-                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.salesforce"/>
+                    <file type="jar" path="https://github.com/forcedotcom/Salesforce-CDP-jdbc/releases/download/release_2024.4B/Salesforce-cdp-1.19.4.jar"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
+                </driver>
+
+                <!-- Salesforce Data Cloud -->
+                <driver
+                        id="salesforce_datacloud"
+                        label="Salesforce Data Cloud"
+                        class="com.salesforce.datacloud.jdbc.DataCloudJDBCDriver"
+                        icon="icons/salesforce_icon.png"
+                        iconBig="icons/salesforce_icon_big.png"
+                        sampleURL="jdbc:salesforce-datacloud://{database}"
+                        defaultDatabase="login.salesforce.com"
+                        description="Salesforce Data Cloud JDBC driver"
+                        webURL="https://github.com/forcedotcom/datacloud-jdbc"
+                        databaseDocumentationSuffixURL="Database-driver-Salesforce"
+                        categories="sql">
+                    <replace provider="generic" driver="salesforce_jdbc"/>
+                    <file type="jar" path="maven:/com.salesforce.datacloud:jdbc:RELEASE[0.20.0]" bundle="!drivers.salesforce_datacloud"/>
+                    <file type="jar" path="drivers/salesforce_datacloud" bundle="drivers.salesforce_datacloud"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.salesforce_datacloud"/>
+                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.salesforce_datacloud"/>
                 </driver>
 
                 <!--
@@ -1423,15 +1441,6 @@
                     <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.cassandra.reason"/>
                 </driver>
                 <driver
-                        id="dynamodb-ce"
-                        label="DynamoDB"
-                        description="AWS DynamoDB Driver"
-                        iconBig="icons/dynamodb_pro_icon.png"
-                        supportsDistributedMode="false"
-                        categories="nosql,aws">
-                    <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.dynamodb.reason"/>
-                </driver>
-                <driver
                         id="salesforce-ce"
                         label="Salesforce"
                         description="Salesforce JDBC driver"
@@ -1439,15 +1448,6 @@
                         supportsDistributedMode="false"
                         categories="sql">
                     <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.salesforce.reason"/>
-                </driver>
-                <driver
-                        id="firestore-ce"
-                        label="Firestore"
-                        description="Google FireStore Driver"
-                        iconBig="icons/firestore_pro_icon.png"
-                        supportsDistributedMode="false"
-                        categories="nosql,bigdata,document,gcp">
-                    <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.firestore.reason"/>
                 </driver>
                 <driver
                         id="couchbase-ce"

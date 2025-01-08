@@ -312,7 +312,7 @@
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.show.output" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/page_output.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.show.log" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/page_error.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.show.variables" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/variable.png"/>
-        <image commandId="org.jkiss.dbeaver.ui.editors.sql.show.outline" icon="platform:/plugin/org.eclipse.ui.views/icons/full/eview16/outline_co.png"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.show.outline" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/toggle_outline.png"/>
 
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.toggleLayout" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/rotate.png"/>
     </extension>
@@ -576,7 +576,11 @@
             <enabledWhen>
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
-                        <test property="org.jkiss.dbeaver.ui.editors.sql.canExplain"/>
+                        <and>
+                            <!-- Ensures the command only available in the default SQL presentation - the only one that supports "script" -->
+                            <test property="org.jkiss.dbeaver.ui.editors.sql.canExecute" value="script"/>
+                            <test property="org.jkiss.dbeaver.ui.editors.sql.canExplain"/>
+                        </and>
                     </adapt>
                 </with>
             </enabledWhen>
@@ -585,7 +589,11 @@
             <enabledWhen>
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
-                        <test property="org.jkiss.dbeaver.ui.editors.sql.canExplain"/>
+                        <and>
+                            <!-- Ensures the command only available in the default SQL presentation - the only one that supports "script" -->
+                            <test property="org.jkiss.dbeaver.ui.editors.sql.canExecute" value="script"/>
+                            <test property="org.jkiss.dbeaver.ui.editors.sql.canExplain"/>
+                        </and>
                     </adapt>
                 </with>
             </enabledWhen>
@@ -627,7 +635,10 @@
             <enabledWhen>
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
-                        <test property="org.jkiss.dbeaver.ui.editors.sql.canExport"/>
+                        <and>
+                            <test property="org.jkiss.dbeaver.ui.editors.sql.canExecute" value="script"/>
+                            <test property="org.jkiss.dbeaver.ui.editors.sql.canExport"/>
+                        </and>
                     </adapt>
                 </with>
             </enabledWhen>
@@ -1434,6 +1445,12 @@
             <description>%colorDefinition.org.jkiss.dbeaver.sql.plan.view.tablescan.foreground.description</description>
         </colorDefinition>
 
+    </extension>
+
+    <extension point="org.eclipse.e4.ui.css.swt.theme">
+        <stylesheet uri="css/e4-dark-sql-editor.css">
+            <themeid refid="org.eclipse.e4.ui.css.theme.e4_dark"/>
+        </stylesheet>
     </extension>
 
     <extension point="org.eclipse.ui.propertyPages">

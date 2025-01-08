@@ -90,7 +90,7 @@ public abstract class SQLGeneratorResultSet extends SQLGeneratorBase<IResultSetC
             sql.append(" IS NULL");
         } else {
             sql.append("=");
-            appendAttributeValue(rsv, sql, binding, firstRow);
+            appendAttributeValue(rsv, sql, binding, firstRow, true);
         }
     }
 
@@ -113,14 +113,16 @@ public abstract class SQLGeneratorResultSet extends SQLGeneratorBase<IResultSetC
         return null;
     }
 
-    protected void appendAttributeValue(IResultSetController rsv, StringBuilder sql, DBDAttributeBinding binding, ResultSetRow row)
+    protected void appendAttributeValue(IResultSetController rsv, StringBuilder sql, DBDAttributeBinding binding, ResultSetRow row, boolean isInCondition)
     {
         DBPDataSource dataSource = binding.getDataSource();
         Object value = rsv.getModel().getCellValue(binding, row);
         DBSAttributeBase attribute = binding.getAttribute();
         if (attribute != null && attribute.getDataKind() == DBPDataKind.DATETIME && isUseCustomDataFormat()) {
             sql.append(
-                    SQLUtils.quoteString(dataSource, SQLUtils.convertValueToSQL(dataSource, attribute, DBUtils.findValueHandler(dataSource, attribute), value, DBDDisplayFormat.UI)));
+                SQLUtils.quoteString(dataSource,
+                    SQLUtils.convertValueToSQL(
+                        dataSource, attribute, DBUtils.findValueHandler(dataSource, attribute), value, DBDDisplayFormat.UI, isInCondition)));
         } else {
             sql.append(
                     SQLUtils.convertValueToSQL(dataSource, attribute, value));

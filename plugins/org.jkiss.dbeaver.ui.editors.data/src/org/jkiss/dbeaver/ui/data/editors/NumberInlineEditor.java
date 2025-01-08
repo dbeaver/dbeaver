@@ -114,7 +114,7 @@ public class NumberInlineEditor extends BaseValueEditor<Text> {
                 formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER, valueController.getValueType()),
                 true);
         } catch (Exception e) {
-            log.debug(e);
+            log.debug("Error parsing numeric: " + e.getMessage());
             return null;
         }
     }

@@ -77,7 +77,8 @@ public class CubridSQLDialect extends GenericSQLDialect
         super.initDriverSettings(session, dataSource, metaData);
         CubridDataSource source = (CubridDataSource) dataSource;
         source.setSupportMultiSchema(isSupportMultiSchema(session));
-        
+        source.setEOLVersion(isEOLVersion(session));
+
         for(String removeKeyWord: REMOVE_KEYWORD) {
             this.removeSQLKeyword(removeKeyWord);
         }
@@ -90,6 +91,19 @@ public class CubridSQLDialect extends GenericSQLDialect
             int major = session.getMetaData().getDatabaseMajorVersion();
             int minor = session.getMetaData().getDatabaseMinorVersion();
             if (major > 11 || (major == 11 && minor >= 2)) {
+                return true;
+            }
+        } catch (SQLException e) {
+            log.error("Can't get database version", e);
+        }
+        return false;
+    }
+
+    @NotNull
+    public boolean isEOLVersion(@NotNull JDBCSession session) {
+        try {
+            int major = session.getMetaData().getDatabaseMajorVersion();
+            if (major <= 9) {
                 return true;
             }
         } catch (SQLException e) {

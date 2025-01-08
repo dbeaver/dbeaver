@@ -16,12 +16,13 @@
  */
 package org.jkiss.utils;
 
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-public class MimeTypeTest {
+public class MimeTypeTest extends DBeaverUnitTest {
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
   @Test

@@ -158,7 +158,7 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage {
             UIUtils.createPreferenceLink(
                 behaviorGroup,
                 "<a>" + DataEditorsMessages.pref_page_database_resultsets_label_show_boolean_config_link + "  - ''{0}''</a>",
-                "org.jkiss.dbeaver.preferences.editors",
+                "org.jkiss.dbeaver.preferences.main.misc",
                 (IWorkbenchPreferenceContainer) getContainer(), null
             ).setLayoutData(GridDataFactory.fillDefaults().span(2, 1).create());
 

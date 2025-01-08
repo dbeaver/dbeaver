@@ -102,7 +102,9 @@ public class DBSObjectFilter {
         if (include == null) {
             include = new ArrayList<>();
         }
-        include.add(name);
+        if (!include.contains(name)) {
+            include.add(name);
+        }
         this.includePatterns = null;
     }
 
@@ -119,7 +121,9 @@ public class DBSObjectFilter {
         if (exclude == null) {
             exclude = new ArrayList<>();
         }
-        exclude.add(name);
+        if (!exclude.contains(name)) {
+            exclude.add(name);
+        }
         this.excludePatterns = null;
     }
 

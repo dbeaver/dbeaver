@@ -184,9 +184,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                             options.put(SQLObjectEditor.OPTION_SKIP_CONFIGURATION, true);
                             DBSObject newColumn = objectManager.createNewObject(monitor, commandContext, entity, null, options);
                             if (newColumn instanceof DBSEntityAttribute attr) {
-                                if (newColumn instanceof DBSTypedObjectExt2 toe) {
-                                    toe.setRequired(customNotNull);
-                                }
+                                setNewColumnDataType(newColumn);
                                 if (newColumn instanceof DBPNamedObject2 no) {
                                     no.setName(customName);
                                     ownColumn = attr;
@@ -198,6 +196,34 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                 }
             }
             throw new DBException("Cannot create new column in table '" + DBUtils.getObjectFullName(entity, DBPEvaluationContext.UI) + "'");
+        }
+
+        private void setNewColumnDataType(DBSObject newColumn) throws DBException {
+            if (newColumn instanceof DBSTypedObjectExt2 toe) {
+                toe.setRequired(customNotNull);
+                toe.setMaxLength(refColumn.getMaxLength());
+                toe.setScale(refColumn.getScale());
+                toe.setPrecision(refColumn.getPrecision());
+            }
+            if (refColumn != null) {
+                // Set new column data type
+                if (newColumn instanceof DBSTypedObjectExt4 toe4 && refColumn instanceof DBSTypedObjectEx refTO) {
+                    DBSDataType refDataType = refTO.getDataType();
+                    if (refDataType instanceof DBSDataTypeSerial dts && dts.isSerialDataType()) {
+                        DBSDataType sbDataType = dts.getBaseDataType();
+                        if (sbDataType == null) {
+                            log.debug("Base data type for serial data type '" + dts.getFullTypeName() + "'");
+                        } else {
+                            refDataType = sbDataType;
+                        }
+                    }
+                    toe4.setDataType(refDataType);
+                } else if (newColumn instanceof DBSTypedObjectExt3 toe3) {
+                    toe3.setFullTypeName(refColumn.getFullTypeName());
+                } else if (newColumn instanceof DBSTypedObjectExt2 toe) {
+                    toe.setTypeName(refColumn.getTypeName());
+                }
+            }
         }
 
         public String getCustomName() {
@@ -538,6 +564,8 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         if (dialog.open() == IDialogConstants.OK_ID) {
             fkColumnInfo.customName = dialog.columnName;
             fkColumnInfo.customNotNull = dialog.columnRequired;
+            TableItem item = columnsTable.getSelection()[0];
+            item.setText(0, "<" + fkColumnInfo.customName + ">");
         }
     }
 
@@ -818,15 +846,15 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                             }
                         }
 
-                        if (refTable instanceof DBSTable) {
+                        if (refTable instanceof DBSTable dbsTable) {
                             // Get indexes
-                            final Collection<? extends DBSTableIndex> indexes = ((DBSTable) refTable).getIndexes(monitor);
+                            final Collection<? extends DBSTableIndex> indexes = dbsTable.getIndexes(monitor);
                             if (!CommonUtils.isEmpty(indexes)) {
-                                for (DBSTableIndex constraint : indexes) {
-                                    if (constraint.isUnique() &&
-                                        isConstraintIndex(monitor, curConstraints, constraint) &&
-                                        isValidRefConstraint(monitor, constraint)) {
-                                        curConstraints.add(constraint);
+                                for (DBSTableIndex index : indexes) {
+                                    if (index.isUnique() &&
+                                        !isConstraintIndex(monitor, curConstraints, index) &&
+                                        isValidRefConstraint(monitor, index)) {
+                                        curConstraints.add(index);
                                     }
                                 }
                             }
@@ -906,11 +934,13 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     }
 
     private boolean isConstraintIndex(DBRProgressMonitor monitor, List<DBSEntityConstraint> constraints, DBSTableIndex index) throws DBException {
-        List<? extends DBSTableIndexColumn> iAttrs = index.getAttributeReferences(monitor);
+        List<? extends DBSEntityAttribute> iAttrs = Objects.requireNonNull(index.getAttributeReferences(monitor))
+            .stream().map(DBSEntityAttributeRef::getAttribute).toList();
 
         for (DBSEntityConstraint constraint : constraints) {
-            if (constraint instanceof DBSEntityReferrer) {
-                List<? extends DBSEntityAttributeRef> cAttrs = ((DBSEntityReferrer) constraint).getAttributeReferences(monitor);
+            if (constraint instanceof DBSEntityReferrer referrer) {
+                List<? extends DBSEntityAttribute> cAttrs = Objects.requireNonNull(referrer.getAttributeReferences(monitor))
+                    .stream().map(DBSEntityAttributeRef::getAttribute).toList();
                 if (CommonUtils.equalObjects(iAttrs, cAttrs)) {
                     return true;
                 }

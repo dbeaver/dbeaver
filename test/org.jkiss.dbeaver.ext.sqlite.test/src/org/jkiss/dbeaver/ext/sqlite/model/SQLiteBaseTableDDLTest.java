@@ -29,22 +29,19 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.utils.StandardConstants;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Collections;
 import java.util.List;
 
-@RunWith(MockitoJUnitRunner.class)
-public class SQLiteBaseTableDDLTest {
+public class SQLiteBaseTableDDLTest extends DBeaverUnitTest {
 
-    private final String lineBreak = System.getProperty(StandardConstants.ENV_LINE_SEPARATOR);
+    private final String lineBreak = System.lineSeparator();
 
     @Mock
     private DBRProgressMonitor mockMonitor;

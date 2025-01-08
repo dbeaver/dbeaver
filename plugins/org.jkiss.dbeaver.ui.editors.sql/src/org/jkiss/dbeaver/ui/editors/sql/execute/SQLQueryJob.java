@@ -117,7 +117,7 @@ public class SQLQueryJob extends DataSourceJob
     private DBCStatistics statistics;
     private int fetchResultSetNumber;
     private int resultSetNumber;
-    private SQLQuery lastGoodQuery;
+    private SQLScriptElement lastGoodQuery;
 
     private boolean skipConfirmation;
     private int fetchSize;
@@ -239,6 +239,7 @@ public class SQLQueryJob extends DataSourceJob
 
                     fetchResultSetNumber = resultSetNumber;
                     boolean runNext = executeSingleQuery(session, query, true);
+
                     if (txnManager != null && txnManager.isSupportsTransactions()
                         && !oldAutoCommit && commitType != SQLScriptCommitType.AUTOCOMMIT
                         && query instanceof SQLQuery sqlQuery
@@ -372,11 +373,13 @@ public class SQLQueryJob extends DataSourceJob
         }
     }
 
-    private boolean executeSingleQuery(@NotNull DBCSession session, @NotNull SQLScriptElement element, final boolean fireEvents)
-    {
-
-        if (!scriptContext.getPragmas().isEmpty() && element instanceof SQLQuery) {
-            final SQLQueryDataContainer container = new SQLQueryDataContainer(this::getExecutionContext, (SQLQuery) element, scriptContext, log);
+    private boolean executeSingleQuery(
+        @NotNull DBCSession session,
+        @NotNull SQLScriptElement element,
+        final boolean fireEvents
+    ) {
+        if (!scriptContext.getPragmas().isEmpty() && element instanceof SQLQuery query) {
+            final SQLQueryDataContainer container = new SQLQueryDataContainer(this::getExecutionContext, query, scriptContext, log);
 
             for (var it = scriptContext.getPragmas().entrySet().iterator(); it.hasNext(); ) {
                 final Map.Entry<String, Map<String, Object>> entry = it.next();
@@ -403,21 +406,32 @@ public class SQLQueryJob extends DataSourceJob
                 }
             }
         }
-        if (element instanceof SQLControlCommand) {
+        if (element instanceof SQLControlCommand controlCommand) {
             try {
-                return scriptContext.executeControlCommand((SQLControlCommand)element);
+                SQLControlResult controlResult = scriptContext.executeControlCommand(session.getProgressMonitor(), controlCommand);
+                if (controlResult.getTransformed() != null) {
+                    element = controlResult.getTransformed();
+                } else {
+                    return true;
+                }
             } catch (Throwable e) {
                 if (!(e instanceof DBException)) {
                     log.error("Unexpected error while processing SQL command", e);
                 }
+                lastGoodQuery = element;
                 lastError = e;
                 return false;
             } finally {
-                statistics.addStatementsCount();
-                statistics.addMessage("Command " + ((SQLControlCommand) element).getCommand() + " processed");
+                if (element instanceof SQLControlCommand finalCommand) {
+                    statistics.addStatementsCount();
+                    statistics.addMessage("Command " + finalCommand.getCommand() + " processed");
+                }
             }
         }
-        SQLQuery sqlQuery = (SQLQuery) element;
+        if (!(element instanceof SQLQuery sqlQuery)) {
+            log.error("Unsupported SQL element type: " + element);
+            return false;
+        }
         lastError = null;
 
         if (!skipConfirmation && getDataSourceContainer().getConnectionConfiguration().getConnectionType().isConfirmExecute()) {
@@ -463,9 +477,19 @@ public class SQLQueryJob extends DataSourceJob
         // Modify query (filters + parameters)
         String queryText = originalQuery.getText();//.trim();
         if (dataFilter != null && dataFilter.hasFilters()) {
-            String filteredQueryText = dataSource.getSQLDialect().addFiltersToQuery(
-                session.getProgressMonitor(),
-                dataSource, queryText, dataFilter);
+            String filteredQueryText;
+            try {
+                filteredQueryText = dataSource.getSQLDialect().addFiltersToQuery(
+                    session.getProgressMonitor(),
+                    dataSource,
+                    queryText,
+                    dataFilter
+                );
+            } catch (DBException e) {
+                log.error("Unable to add filters to query", e);
+                lastError = e;
+                return false;
+            }
             sqlQuery = new SQLQuery(executionContext.getDataSource(), filteredQueryText, sqlQuery);
         } else {
             sqlQuery = new SQLQuery(executionContext.getDataSource(), queryText, sqlQuery);
@@ -570,11 +594,12 @@ public class SQLQueryJob extends DataSourceJob
             monitor.done();
         }
 
+        lastGoodQuery = originalQuery;
+
         if (curResult.getError() != null && errorHandling != SQLScriptErrorHandling.IGNORE) {
             return false;
         }
         // Success
-        lastGoodQuery = originalQuery;
         return true;
     }
 
@@ -726,18 +751,24 @@ public class SQLQueryJob extends DataSourceJob
                     }
                 }
 
-                if (session.getDataSource().getInfo().supportsMultipleResults()) {
-                    try {
-                        hasResultSet = dbcStatement.nextResults();
-                    } catch (DBCException e) {
-                        if (session.getDataSource().getInfo().isMultipleResultsFetchBroken()) {
-                            statistics.addWarning(e);
-                            statistics.setError(e);
-                            // #2792: Check this twice. Some drivers (e.g. Sybase jConnect)
-                            // throw error on n'th result fetch - but it still can keep fetching next results
+                DBPDataSourceInfo dataSourceInfo = session.getDataSource().getInfo();
+                if (dataSourceInfo.supportsMultipleResults()) {
+                    if (hasLimits() && rowsFetched >= rsMaxRows && dataSourceInfo.isMultipleResultsFailsOnMaxRows()) {
+                        log.trace("Max rows exceeded. Additional resultsets extraction is disabled");
+                        hasResultSet = false;
+                    } else {
+                        try {
                             hasResultSet = dbcStatement.nextResults();
-                        } else {
-                            throw e;
+                        } catch (DBCException e) {
+                            if (dataSourceInfo.isMultipleResultsFetchBroken()) {
+                                statistics.addWarning(e);
+                                statistics.setError(e);
+                                // #2792: Check this twice. Some drivers (e.g. Sybase jConnect)
+                                // throw error on n'th result fetch - but it still can keep fetching next results
+                                hasResultSet = dbcStatement.nextResults();
+                            } else {
+                                throw e;
+                            }
                         }
                     }
                     updateCount = hasResultSet ? -1 : 0;
@@ -831,12 +862,17 @@ public class SQLQueryJob extends DataSourceJob
         } else {
             // Single statement
             long updateCount = statistics.getRowsUpdated();
-            fakeResultSet.addColumn("Updated Rows", DBPDataKind.NUMERIC);
             fakeResultSet.addColumn("Query", DBPDataKind.STRING);
+            fakeResultSet.addColumn("Updated Rows", DBPDataKind.NUMERIC);
+            fakeResultSet.addColumn("Execute time", DBPDataKind.NUMERIC);
             fakeResultSet.addColumn("Start time", DBPDataKind.DATETIME);
             fakeResultSet.addColumn("Finish time", DBPDataKind.DATETIME);
-            fakeResultSet.addRow(updateCount, query.getText(), new Date(statistics.getStartTime()), new Date());
-
+            fakeResultSet.addRow(
+                query.getText(),
+                updateCount,
+                RuntimeUtils.formatExecutionTime(statistics.getExecuteTime()),
+                new Date(statistics.getStartTime()),
+                new Date());
             executeResult.setResultSetName(SQLEditorMessages.editors_sql_data_grid);
         }
         fetchQueryData(session, fakeResultSet, resultInfo, executeResult, dataReceiver, false);
@@ -987,9 +1023,13 @@ public class SQLQueryJob extends DataSourceJob
     }
 */
 
-    public void extractData(@NotNull DBCSession session, @NotNull SQLScriptElement query, int resultNumber, boolean fireEvents)
-        throws DBCException
-    {
+    public void extractData(
+        @NotNull DBCSession session,
+        @NotNull SQLScriptElement query,
+        int resultNumber,
+        boolean fireEvents,
+        boolean allowStatistics
+    ) throws DBCException {
         // Reset query to original. Otherwise multiple filters will corrupt it
         query.reset();
 
@@ -1010,7 +1050,7 @@ public class SQLQueryJob extends DataSourceJob
             } else {
                 throw new DBCException(lastError, getExecutionContext());
             }
-        } else if (result && statistics.getStatementsCount() > 0) {
+        } else if (allowStatistics && result && statistics.getStatementsCount() > 0) {
             showExecutionResult(session);
         }
     }

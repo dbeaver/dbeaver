@@ -31,13 +31,12 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.rules.ScriptParameterRule;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -46,8 +45,7 @@ import java.util.List;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
-@RunWith(MockitoJUnitRunner.class)
-public class SQLScriptParserGenericsTest {
+public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
     @Mock
     private DBPDriver driver;
     @Mock

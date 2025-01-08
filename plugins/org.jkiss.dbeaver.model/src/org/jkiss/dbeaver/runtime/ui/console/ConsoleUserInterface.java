@@ -26,8 +26,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.*;
@@ -127,16 +125,6 @@ public class ConsoleUserInterface implements DBPPlatformUI {
         return UserResponse.IGNORE;
     }
 
-    @Override
-    public long getLongOperationTimeout() {
-        return 0;
-    }
-
-    @Override
-    public void notifyAgent(String message, int status) {
-        // do nothing
-    }
-
     private void printStatus(@NotNull IStatus status, int level) {
         char[] indent = new char[level * 4];
         for (int i = 0; i < indent.length; i++) indent[i] = ' ';
@@ -189,11 +177,6 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     @Override
     public boolean acceptLicense(String message, String licenseText) {
         return true;
-    }
-
-    @Override
-    public boolean downloadDriverFiles(DBPDriver driverDescriptor, DBPDriverDependencies dependencies) {
-        return false;
     }
 
     @Override

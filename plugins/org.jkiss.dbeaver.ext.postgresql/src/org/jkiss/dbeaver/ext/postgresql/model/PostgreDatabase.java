@@ -853,7 +853,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     @NotNull
     @Override
     public DBSObjectState getObjectState() {
-        if (this == dataSource.getDefaultInstance() || this.isSharedDatabase()) {
+        if ((!dataSource.isConnectionRefreshing() && this == dataSource.getDefaultInstance()) || this.isSharedDatabase()) {
             return DBSObjectState.NORMAL;
         } else {
             return PostgreConstants.STATE_UNAVAILABLE;
@@ -1220,6 +1220,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
             );
         }
 
+
         @Override
         protected PostgreTablespace fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException {
@@ -1228,7 +1229,8 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
         @Override
         protected boolean handleCacheReadError(Exception error) {
-            return handlePermissionDeniedError(error);
+            log.debug("Error reading tablespaces", error);
+            return true;
         }
     }
 
@@ -1364,6 +1366,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         protected PostgreSchema fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             String name = JDBCUtils.safeGetString(resultSet, "nspname");
             if (name == null) {
+                log.debug("Skipping schema with NULL name");
                 return null;
             }
             if (PostgreSchema.isUtilitySchema(name) && !owner.getDataSource().getContainer().getNavigatorSettings().isShowUtilityObjects()) {

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.sql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPAttributeReferencePurpose;
@@ -38,7 +39,6 @@ import org.jkiss.utils.Pair;
 import java.lang.reflect.Array;
 import java.util.List;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class StandardSQLDialectQueryGenerator implements SQLQueryGenerator {
     private static final Log log = Log.getLog(StandardSQLDialectQueryGenerator.class);
@@ -54,11 +54,11 @@ public class StandardSQLDialectQueryGenerator implements SQLQueryGenerator {
 
     @Override
     public void appendQueryConditions(
-        DBPDataSource dataSource,
+        @NotNull DBPDataSource dataSource,
         @NotNull StringBuilder query,
         @Nullable String tableAlias,
         @Nullable DBDDataFilter dataFilter
-    ) {
+    ) throws DBException {
         if (dataFilter != null && dataFilter.hasConditions()) {
             query.append("\nWHERE "); //$NON-NLS-1$
             appendConditionString(dataFilter, dataSource, tableAlias, query, true);
@@ -81,33 +81,6 @@ public class StandardSQLDialectQueryGenerator implements SQLQueryGenerator {
         }
     }
 
-
-    @Override
-    public void appendConditionString(
-        @NotNull DBDDataFilter filter,
-        @NotNull DBPDataSource dataSource,
-        @Nullable String conditionTable,
-        @NotNull StringBuilder query,
-        boolean inlineCriteria
-    ) {
-        appendConditionString(filter, dataSource, conditionTable, query, inlineCriteria, false);
-    }
-
-    @Override
-    public void appendConditionString(
-        @NotNull DBDDataFilter filter,
-        @NotNull DBPDataSource dataSource,
-        @Nullable String conditionTable,
-        @NotNull StringBuilder query,
-        boolean inlineCriteria,
-        boolean subQuery
-    ) {
-        final List<DBDAttributeConstraint> constraints = filter.getConstraints().stream()
-            .filter(x -> x.getCriteria() != null || x.getOperator() != null)
-            .collect(Collectors.toList());
-        appendConditionString(filter, constraints, dataSource, conditionTable, query, inlineCriteria, subQuery);
-    }
-
     @Override
     public void appendConditionString(
         @NotNull DBDDataFilter filter,
@@ -118,109 +91,107 @@ public class StandardSQLDialectQueryGenerator implements SQLQueryGenerator {
         boolean inlineCriteria,
         boolean subQuery
     ) {
-        final String operator = filter.isAnyConstraint() ? " OR " : " AND ";  //$NON-NLS-1$ $NON-NLS-2$
+        if (filter.isUseDisjunctiveNormalForm() && constraints.size() > 1) {
+            // TODO: Would be nice to have some asserts here
 
-        for (int index = 0; index < constraints.size(); index++) {
-            final DBDAttributeConstraint constraint = constraints.get(index);
-            if (index > 0) {
-                query.append(operator);
-            }
-            if (constraints.size() > 1) {
-                // Add parenthesis for the sake of sanity
-                // Constraint may consist of several conditions and we don't want to break operator precedence
-                query.append('(');
-            }
+            var names = constraints.stream()
+                .map(constraint -> getConstraintAttributeName(dataSource, conditionTable, constraint, subQuery, true))
+                .toList();
 
-            // Attribute name could be an expression. So check if this is a real attribute
-            // and generate full/quoted name for it.
-            String attrName;
-            DBSAttributeBase cAttr = constraint.getAttribute();
-            if (cAttr instanceof DBDAttributeBinding binding) {
-                if (binding.getEntityAttribute() != null &&
-                    binding.getMetaAttribute() != null &&
-                    binding.getEntityAttribute().getName().equals(binding.getMetaAttribute().getName()) ||
-                    binding instanceof DBDAttributeBindingType) {
-                    if (binding.getEntityAttribute() instanceof DBSContextBoundAttribute entityAttribute) {
-                        attrName = entityAttribute.formatMemberReference(true, conditionTable, DBPAttributeReferencePurpose.DATA_SELECTION);
-                    } else {
-                        attrName = DBUtils.getObjectFullName(
-                            dataSource, binding, DBPEvaluationContext.DML, DBPAttributeReferencePurpose.DATA_SELECTION
-                        );
-                    }
-                } else {
-                    if (binding.getMetaAttribute() == null || binding.getEntityAttribute() != null) {
-                        // Seems to a reference on a table column.
-                        // It is better to use real table column in expressions because aliases may not work
-                        attrName = DBUtils.getQuotedIdentifier(dataSource,
-                            subQuery ? constraint.getAttributeLabel() : constraint.getAttributeName()
-                        );
-                    } else {
-                        // Most likely it is an expression so we don't want to quote it
-                        String metaName = binding.getMetaAttribute().getName();
-                        if (CommonUtils.isNotEmpty(metaName)) {
-                            attrName = binding.getMetaAttribute().getName();
-                        } else {
-                            // Second option for some databases (like Firebird)
-                            attrName = binding.getMetaAttribute().getLabel();
-                        }
-                        // We must quote it because aliases/column names may contain spaces
-                        attrName = DBUtils.getQuotedIdentifier(dataSource, attrName);
-                    }
+            var values = constraints.stream()
+                .map(DBDAttributeConstraintBase::getValue)
+                .map(Object[].class::cast)
+                .toList();
+
+            var count = values.get(0).length;
+            for (int i = 0; i < count; i++) {
+                if (i > 0) {
+                    query.append(" OR ");
                 }
-            } else if (cAttr != null) {
-                attrName = DBUtils.getObjectFullName(
-                    dataSource, cAttr, DBPEvaluationContext.DML, DBPAttributeReferencePurpose.DATA_SELECTION
-                );
-            } else {
-                attrName = DBUtils.getQuotedIdentifier(dataSource, constraint.getAttributeName());
-            }
-
-            query.append(attrName)
-                .append(' ')
-                .append(getConstraintCondition(dataSource, constraint, conditionTable, inlineCriteria));
-            if (constraints.size() > 1) {
+                query.append('(');
+                for (int j = 0; j < constraints.size(); j++) {
+                    if (j > 0) {
+                        query.append(" AND ");
+                    }
+                    query.append(names.get(j)).append(" = ");
+                    query.append(getStringValue(dataSource, constraints.get(j), inlineCriteria, values.get(j)[i]));
+                }
                 query.append(')');
             }
-        }
+            if (count == 0) {
+                // Special care for cases when we have no values. Reflects behavior in the else branch
+                for (int i = 0; i < constraints.size(); i++) {
+                    if (i > 0) {
+                        query.append(" AND ");
+                    }
+                    query.append(names.get(i)).append(" IS NULL");
+                }
+            }
+        } else {
+            final String operator = filter.isAnyConstraint() ? " OR " : " AND ";  //$NON-NLS-1$ $NON-NLS-2$
 
-        if (!CommonUtils.isEmpty(filter.getWhere())) {
-            if (!constraints.isEmpty()) {
-                query.append(operator).append('(').append(filter.getWhere()).append(')');
-            } else {
-                query.append(filter.getWhere());
+            for (int index = 0; index < constraints.size(); index++) {
+                final DBDAttributeConstraint constraint = constraints.get(index);
+                if (index > 0) {
+                    query.append(operator);
+                }
+                if (constraints.size() > 1) {
+                    // Add parenthesis for the sake of sanity
+                    // Constraint may consist of several conditions and we don't want to break operator precedence
+                    query.append('(');
+                }
+
+                String attrName = getConstraintAttributeName(dataSource, conditionTable, constraint, subQuery, true);
+                if (constraint.getAttribute() != null) {
+                    attrName = dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(), attrName, true);
+                }
+                query
+                    .append(attrName)
+                    .append(' ')
+                    .append(getConstraintCondition(dataSource, constraint, conditionTable, inlineCriteria));
+                if (constraints.size() > 1) {
+                    query.append(')');
+                }
+            }
+
+            if (!CommonUtils.isEmpty(filter.getWhere())) {
+                if (!constraints.isEmpty()) {
+                    query.append(operator).append('(').append(filter.getWhere()).append(')');
+                } else {
+                    query.append(filter.getWhere());
+                }
             }
         }
     }
 
+    @NotNull
     @Override
-    public @NotNull String getQueryWithAppliedFilters(
+    public String getQueryWithAppliedFilters(
         @Nullable DBRProgressMonitor monitor,
         @NotNull DBPDataSource dataSource,
         @NotNull String sqlQuery,
         @NotNull DBDDataFilter dataFilter
-    ) {
+    ) throws DBException {
         boolean isForceFilterSubQuery = dataSource.getSQLDialect().supportsSubqueries() && dataSource.getContainer()
             .getPreferenceStore()
             .getBoolean(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT);
         if (isForceFilterSubQuery) {
             return getWrappedFilterQuery(dataSource, sqlQuery, dataFilter);
         }
-        String newQuery = SQLSemanticProcessor.injectFiltersToQuery(monitor, dataSource, sqlQuery, dataFilter);
-        if (newQuery == null) {
-            // Let's try subquery though.
+        try {
+            return SQLSemanticProcessor.injectFiltersToQuery(monitor, dataSource, sqlQuery, dataFilter);
+        } catch (DBException ignored) {
             return getWrappedFilterQuery(dataSource, sqlQuery, dataFilter);
         }
-        return newQuery;
     }
 
-
-    @Override
     @NotNull
+    @Override
     public String getWrappedFilterQuery(
         @NotNull DBPDataSource dataSource,
         @NotNull String sqlQuery,
         @NotNull DBDDataFilter dataFilter
-    ) {
+    ) throws DBException {
         StringBuilder modifiedQuery = new StringBuilder(sqlQuery.length() + 100);
         modifiedQuery.append("SELECT * FROM (\n");
         modifiedQuery.append(sqlQuery);
@@ -456,11 +427,67 @@ public class StandardSQLDialectQueryGenerator implements SQLQueryGenerator {
                 strValue = CommonUtils.toString(value);
             }
         } else if (inlineCriteria) {
-            strValue = SQLUtils.convertValueToSQL(dataSource, constraint.getAttribute(), value);
+            DBDValueHandler valueHandler = DBUtils.findValueHandler(dataSource, constraint.getAttribute());
+            strValue = SQLUtils.convertValueToSQL(dataSource, constraint.getAttribute(), valueHandler, value, DBDDisplayFormat.NATIVE, true);
         } else {
             strValue = dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(), "?", true);
         }
         return strValue;
+    }
+
+    @NotNull
+    public static String getConstraintAttributeName(
+        @NotNull DBPDataSource dataSource,
+        @Nullable String conditionTable,
+        @NotNull DBDAttributeConstraint constraint,
+        boolean subQuery,
+        boolean includeContainerName
+    ) {
+        // Attribute name could be an expression. So check if this is a real attribute
+        // and generate full/quoted name for it.
+        DBSAttributeBase cAttr = constraint.getAttribute();
+        if (cAttr instanceof DBDAttributeBinding binding) {
+            if (binding.getEntityAttribute() != null &&
+                binding.getMetaAttribute() != null &&
+                binding.getEntityAttribute().getName().equals(binding.getMetaAttribute().getName()) ||
+                binding instanceof DBDAttributeBindingType) {
+                if (binding.getEntityAttribute() instanceof DBSContextBoundAttribute entityAttribute) {
+                    return entityAttribute.formatMemberReference(includeContainerName, conditionTable, DBPAttributeReferencePurpose.DATA_SELECTION);
+                } else {
+                    return DBUtils.getObjectFullName(
+                        dataSource,
+                        binding,
+                        DBPEvaluationContext.DML,
+                        DBPAttributeReferencePurpose.DATA_SELECTION
+                    );
+                }
+            } else {
+                if (binding.getMetaAttribute() == null || binding.getEntityAttribute() != null) {
+                    // Seems to a reference on a table column.
+                    // It is better to use real table column in expressions because aliases may not work
+                    return DBUtils.getQuotedIdentifier(
+                        dataSource,
+                        subQuery ? constraint.getAttributeLabel() : constraint.getAttributeName()
+                    );
+                } else {
+                    // Most likely it is an expression so we don't want to quote it
+                    String metaName = binding.getMetaAttribute().getName();
+                    String attrName;
+                    if (CommonUtils.isNotEmpty(metaName)) {
+                        attrName = binding.getMetaAttribute().getName();
+                    } else {
+                        // Second option for some databases (like Firebird)
+                        attrName = binding.getMetaAttribute().getLabel();
+                    }
+                    // We must quote it because aliases/column names may contain spaces
+                    return DBUtils.getQuotedIdentifier(dataSource, attrName);
+                }
+            }
+        } else if (cAttr != null) {
+            return DBUtils.getObjectFullName(dataSource, cAttr, DBPEvaluationContext.DML, DBPAttributeReferencePurpose.DATA_SELECTION);
+        } else {
+            return DBUtils.getQuotedIdentifier(dataSource, constraint.getAttributeName());
+        }
     }
 
     private StandardSQLDialectQueryGenerator() {

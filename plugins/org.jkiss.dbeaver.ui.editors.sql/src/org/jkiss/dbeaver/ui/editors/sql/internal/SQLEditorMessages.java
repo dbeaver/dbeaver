@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.internal;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class SQLEditorMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages"; //$NON-NLS-1$
@@ -212,8 +212,6 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_completion_group_sql_assistant;
     public static String pref_page_sql_completion_label_enable_auto_activation;
     public static String pref_page_sql_completion_label_enable_auto_activation_tip;
-    public static String pref_page_sql_completion_label_enable_experimental_features;
-    public static String pref_page_sql_completion_label_enable_experimental_features_tip;
     public static String pref_page_sql_completion_label_completion_mode;
     public static String pref_page_sql_completion_label_completion_mode_default;
     public static String pref_page_sql_completion_label_completion_mode_new_engine;

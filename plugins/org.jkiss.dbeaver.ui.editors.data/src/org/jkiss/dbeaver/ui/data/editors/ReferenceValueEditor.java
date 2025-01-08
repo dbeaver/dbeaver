@@ -27,7 +27,6 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -47,7 +46,10 @@ import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetThemeSettings;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -70,6 +72,7 @@ import java.util.*;
 public class ReferenceValueEditor {
     private static final Log log = Log.getLog(ReferenceValueEditor.class);
 
+    private final IResultSetController rsController;
     private final IValueController valueController;
     private IValueEditor valueEditor;
     private DBSEntityReferrer refConstraint;
@@ -78,9 +81,8 @@ public class ReferenceValueEditor {
     private static volatile boolean sortByValue = true; // It is static to save its value between editors
     private static volatile boolean sortAsc = true;
     private TableColumn prevSortColumn = null;
-    private Font boldFont;
     private LoadingJob<EnumValuesData> dictFilterJob;
-    private ViewController controller;
+    private final ViewController controller;
 
     private class ViewController {
         private final int pageSize;
@@ -157,11 +159,14 @@ public class ReferenceValueEditor {
             this.lastPageFound = false;
         }
 
-        public void reload() {
+        public void reload(boolean refreshMainData) {
             if (searchText == null) {
                 this.reset(this.keyValue);
             } else {
                 this.applyFilter(this.keyValue, this.searchText);
+            }
+            if (refreshMainData && rsController != null) {
+                rsController.refreshData(null);
             }
         }
 
@@ -170,7 +175,7 @@ public class ReferenceValueEditor {
                 if (accessor.isKeyComparable() && keyValue != null) {
                     return loadComparableKeyValues(accessor);
                 } else {
-                    return loadNoncomparableKeyValues(accessor);
+                    return loadNonComparableKeyValues(accessor);
                 }
             });
             if (dictFilterJob != null) {
@@ -180,7 +185,7 @@ public class ReferenceValueEditor {
             dictFilterJob.schedule(250);
         }
         
-        private List<DBDLabelValuePair> loadNoncomparableKeyValues(DBSDictionaryAccessor accessor) throws DBException {
+        private List<DBDLabelValuePair> loadNonComparableKeyValues(DBSDictionaryAccessor accessor) throws DBException {
             List<DBDLabelValuePair> data;
             if (searchText == null && keyValue != null) { 
                 data = accessor.getValueEntry(keyValue);
@@ -275,7 +280,8 @@ public class ReferenceValueEditor {
         }
     }
 
-    public ReferenceValueEditor(IValueController valueController, IValueEditor valueEditor) {
+    public ReferenceValueEditor(@Nullable IResultSetController rsController, IValueController valueController, IValueEditor valueEditor) {
+        this.rsController = rsController;
         this.valueController = valueController;
         this.valueEditor = valueEditor;
         DBCExecutionContext executionContext = valueController.getExecutionContext();
@@ -319,11 +325,7 @@ public class ReferenceValueEditor {
             return false;
         }
 
-        this.boldFont = UIUtils.makeBoldFont(parent.getFont());
-        parent.addDisposeListener(e -> this.boldFont.dispose());
-
-        if (refConstraint instanceof DBSEntityAssociation) {
-            final DBSEntityAssociation association = (DBSEntityAssociation)refConstraint;
+        if (refConstraint instanceof DBSEntityAssociation association) {
             if (association.getReferencedConstraint() != null) {
                 final DBSEntity refTable = association.getReferencedConstraint().getParentObject();
                 Composite labelGroup = UIUtils.createPlaceholder(parent, 2);
@@ -357,7 +359,7 @@ public class ReferenceValueEditor {
                         public void widgetSelected(SelectionEvent e) {
                             EditDictionaryPage editDictionaryPage = new EditDictionaryPage(refTable);
                             if (editDictionaryPage.edit(parent.getShell())) {
-                                controller.reload();
+                                controller.reload(true);
                             }
                         }
                     }
@@ -377,6 +379,7 @@ public class ReferenceValueEditor {
         editorSelector = new Table(parent, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);
         editorSelector.setLinesVisible(true);
         editorSelector.setHeaderVisible(true);
+        editorSelector.setFont(ResultSetThemeSettings.instance.resultSetFont);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 150;
         //gd.widthHint = 300;
@@ -437,6 +440,11 @@ public class ReferenceValueEditor {
 
         controller.reset(curValue);
 
+        ResultSetThemeSettings.instance.addPropertyListener(
+            ThemeConstants.FONT_SQL_RESULT_SET,
+            s -> showCurrentValue(),
+            editorSelector);
+
         return true;
     }
 
@@ -470,16 +478,17 @@ public class ReferenceValueEditor {
             curEditorValue,
             DBDDisplayFormat.EDIT);
         boolean newValueFound = false;
+        editorSelector.setFont(ResultSetThemeSettings.instance.resultSetFont);
         TableItem[] items = editorSelector.getItems();
         for (TableItem item : items) {
             if (curTextValue.equalsIgnoreCase(item.getText(0)) || curTextValue.equalsIgnoreCase(item.getText(1))) {
                 editorSelector.deselectAll();
-                item.setFont(boldFont);
+                item.setFont(ResultSetThemeSettings.instance.resultSetFontBold);
                 editorSelector.setSelection(item);
                 editorSelector.showItem(item);
                 newValueFound = true;
             } else {
-                item.setFont(null);
+                item.setFont(ResultSetThemeSettings.instance.resultSetFont);
             }
         }
 
@@ -514,13 +523,13 @@ public class ReferenceValueEditor {
         }
     }
     
-    private Action actionGoBackward = new Action("Move Backward", DBeaverIcons.getImageDescriptor(UIIcon.ARROW_LEFT)) {
+    private final Action actionGoBackward = new Action("Move Backward", DBeaverIcons.getImageDescriptor(UIIcon.ARROW_LEFT)) {
         @Override
         public void run() {
             controller.goToPrevPage();
         }
     }; 
-    private Action actionGoForward = new Action("Move Forward", DBeaverIcons.getImageDescriptor(UIIcon.ARROW_RIGHT)) {
+    private final Action actionGoForward = new Action("Move Forward", DBeaverIcons.getImageDescriptor(UIIcon.ARROW_RIGHT)) {
         @Override
         public void run() {
             controller.goToNextPage();
@@ -558,12 +567,12 @@ public class ReferenceValueEditor {
                         curItem = item;
                         curItemIndex = i;
                     } else {
-                        item.setFont(null);
+                        item.setFont(ResultSetThemeSettings.instance.resultSetFont);
                     }
                 }
                 editorSelector.deselectAll();
                 if (curItem != null) {
-                    curItem.setFont(boldFont);
+                    curItem.setFont(ResultSetThemeSettings.instance.resultSetFontBold);
                     editorSelector.setSelection(curItem);
                     editorSelector.showItem(curItem);
                     // Show cur item on top
@@ -585,7 +594,7 @@ public class ReferenceValueEditor {
         public void run() {
             StringBuilder result = new StringBuilder();
             for (TableItem item : editorSelector.getSelection()) {
-                if (result.length() > 0) result.append("\n");
+                if (!result.isEmpty()) result.append("\n");
                 result.append(item.getText(0));
             }
             UIUtils.setClipboardContents(editorSelector.getDisplay(), TextTransfer.getInstance(), result.toString());
@@ -610,7 +619,7 @@ public class ReferenceValueEditor {
             sortAsc = sortDirection == SWT.DOWN;
             editorSelector.setSortColumn(column);
             editorSelector.setSortDirection(sortDirection);
-            controller.reload();
+            controller.reload(false);
         }
     }
 
@@ -627,7 +636,7 @@ public class ReferenceValueEditor {
     }
 
     class SelectorLoaderService extends AbstractLoadService<EnumValuesData> {
-        private ExceptableFunction<DBSDictionaryAccessor, List<DBDLabelValuePair>, DBException> action;
+        private final ExceptableFunction<DBSDictionaryAccessor, List<DBDLabelValuePair>, DBException> action;
 
         private SelectorLoaderService(ExceptableFunction<DBSDictionaryAccessor, List<DBDLabelValuePair>, DBException> action) {
             super(ResultSetMessages.dialog_value_view_job_selector_name + valueController.getValueName() + " possible values");

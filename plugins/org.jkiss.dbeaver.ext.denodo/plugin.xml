@@ -17,7 +17,7 @@
                 parent="generic"
                 label="Denodo"
                 icon="icons/denodo_icon.png"
-                dialect="basic">
+                dialect="generic">
             <drivers managable="true">
                 <driver
                         id="denodo8_jdbc"

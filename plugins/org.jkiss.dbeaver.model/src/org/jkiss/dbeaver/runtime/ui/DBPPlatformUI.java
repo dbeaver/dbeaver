@@ -24,8 +24,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
@@ -106,25 +104,8 @@ public interface DBPPlatformUI {
     UserResponse showErrorStopRetryIgnore(String task, Throwable error, boolean queue);
 
     /**
-     * Notification agent
-     */
-    long getLongOperationTimeout();
-    void notifyAgent(String message, int status);
-
-    /**
      * Asks for user credentials. Returns null if user canceled this action.
      */
-    @Nullable
-    default DBPAuthInfo promptUserCredentials(
-        @Nullable String prompt,
-        @Nullable String userName,
-        @Nullable String userPassword,
-        boolean passwordOnly,
-        boolean showSavePassword
-    ) {
-        return promptUserCredentials(prompt, prompt, userName, userPassword, passwordOnly, showSavePassword);
-    }
-
     @Nullable
     DBPAuthInfo promptUserCredentials(
         @Nullable String prompt,
@@ -133,19 +114,6 @@ public interface DBPPlatformUI {
         @Nullable String userPassword,
         boolean passwordOnly,
         boolean showSavePassword);
-
-    @Nullable
-    default DBPAuthInfo promptUserCredentials(
-        @Nullable String prompt,
-        @NotNull String userNameLabel,
-        @Nullable String userName,
-        @NotNull String passwordLabel,
-        @Nullable String userPassword,
-        boolean passwordOnly,
-        boolean showSavePassword
-    ) {
-        return promptUserCredentials(prompt, prompt, userNameLabel, userName, passwordLabel, userPassword, passwordOnly, showSavePassword);
-    }
 
     @Nullable
     DBPAuthInfo promptUserCredentials(
@@ -172,8 +140,6 @@ public interface DBPPlatformUI {
      * Ask user to accept license agreement
      */
     boolean acceptLicense(String message, String licenseText);
-
-    boolean downloadDriverFiles(DBPDriver driverDescriptor, DBPDriverDependencies dependencies);
 
     /**
      * UI utilities

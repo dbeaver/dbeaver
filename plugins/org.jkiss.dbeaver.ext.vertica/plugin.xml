@@ -178,4 +178,16 @@
         </dialect>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <provider
+          id="org.jkiss.dbeaver.ext.vertica.model.data.VerticaValueHandlerProvider"
+          class="org.jkiss.dbeaver.ext.vertica.model.data.VerticaValueHandlerProvider"
+          label="Vertica data types provider"
+          description="Vertica data types provider">
+
+            <datasource id="vertica"/>
+            <type name="UUID"/>
+        </provider>
+    </extension>
+
 </plugin>

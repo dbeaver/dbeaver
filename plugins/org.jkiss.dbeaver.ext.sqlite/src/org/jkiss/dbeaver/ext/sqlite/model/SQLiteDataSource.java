@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.generic.model.GenericDataSourceInfo;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
@@ -63,9 +62,7 @@ public class SQLiteDataSource extends GenericDataSource {
 
     @Override
     protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
-        GenericDataSourceInfo info = (GenericDataSourceInfo) super.createDataSourceInfo(monitor, metaData);
-        info.setSupportsNullableUniqueConstraints(true);
-        return info;
+        return new SQLiteDataSourceInfo(container.getDriver(), metaData);
     }
 
     @Override
@@ -74,7 +71,10 @@ public class SQLiteDataSource extends GenericDataSource {
     }
 
     @Override
-    public DBSDataType getLocalDataType(String typeName) {
+    public DBSDataType getLocalDataType(@Nullable String typeName) {
+        if (typeName == null) {
+            return super.getLocalDataType(defaultAffinity().name());
+        }
         // Resolve type name according to https://www.sqlite.org/datatype3.html
         typeName = typeName.toUpperCase(Locale.ENGLISH);
         SQLiteAffinity affinity;
@@ -90,10 +90,14 @@ public class SQLiteDataSource extends GenericDataSource {
             typeName.contains("BOOL") || typeName.contains("GUID")) {
             affinity = SQLiteAffinity.NUMERIC;
         } else {
-            // If type is unknown, let's assume it's a text. Otherwise, search and data editor doesn't work right.
-            affinity = SQLiteAffinity.TEXT;
+            affinity = defaultAffinity();
         }
         return super.getLocalDataType(affinity.name());
+    }
+
+    private static SQLiteAffinity defaultAffinity() {
+        // If type is unknown, let's assume it's a text. Otherwise, search and data editor doesn't work right.
+        return SQLiteAffinity.TEXT;
     }
 
     @Override

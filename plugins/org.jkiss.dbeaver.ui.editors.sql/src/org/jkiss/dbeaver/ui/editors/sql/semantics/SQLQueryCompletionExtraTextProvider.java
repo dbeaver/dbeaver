@@ -25,13 +25,19 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.utils.CommonUtils;
 
 public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionItemVisitor<String> {
 
+    public static SQLQueryCompletionExtraTextProvider INSTANCE = new SQLQueryCompletionExtraTextProvider();
+
+    private SQLQueryCompletionExtraTextProvider() {
+    }
+
     @NotNull
     @Override
-    public String visitSubqueryAlias(@Nullable SQLSubqueryAliasCompletionItem subqueryAlias) {
-        return " - Subquery alias";
+    public String visitSubqueryAlias(@NotNull SQLRowsSourceAliasCompletionItem rowsSourceAlias) {
+        return rowsSourceAlias.sourceInfo.tableOrNull != null ? " - Table alias" : " - Subquery alias";
     }
 
     @NotNull
@@ -45,7 +51,7 @@ public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionIt
     @NotNull
     @Override
     public String visitTableName(@NotNull SQLTableNameCompletionItem tableName) {
-        return (DBUtils.isView(tableName.table) ? " - View " : " - Table ");
+        return (DBUtils.isView(tableName.object) ? " - View " : " - Table ");
     }
 
     @Nullable
@@ -68,6 +74,12 @@ public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionIt
                 typeName = "";
             }
         }
-        return " - " + typeName;
+        return CommonUtils.isEmpty(typeName) ? null : (" - " + typeName);
+    }
+
+    @Nullable
+    @Override
+    public String visitJoinCondition(@NotNull SQLJoinConditionCompletionItem joinCondition) {
+        return " - Known foreign key relation";
     }
 }

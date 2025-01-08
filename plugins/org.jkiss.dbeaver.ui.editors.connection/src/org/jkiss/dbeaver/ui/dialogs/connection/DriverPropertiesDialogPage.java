@@ -72,11 +72,12 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
             }
 
             final DBPConnectionConfiguration tmpConnectionInfo = new DBPConnectionConfiguration();
-            final DataSourceDescriptor tempDataSource = new DataSourceDescriptor(
-                site.getDataSourceRegistry(),
-                activeDataSource.getId(),
-                activeDataSource.getDriver(),
-                tmpConnectionInfo);
+            final DataSourceDescriptor tempDataSource = site.getDataSourceRegistry()
+                .createDataSource(
+                    activeDataSource.getId(),
+                    activeDataSource.getDriver(),
+                    tmpConnectionInfo
+                );
 
             hostPage.saveSettings(tempDataSource);
             tmpConnectionInfo.getProperties().putAll(activeDataSource.getConnectionConfiguration().getProperties());

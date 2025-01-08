@@ -44,7 +44,6 @@ import org.jkiss.dbeaver.model.runtime.LocalCacheProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.analyzer.TableReferencesAnalyzer;
 import org.jkiss.dbeaver.model.sql.analyzer.TableReferencesAnalyzerImpl;
-import org.jkiss.dbeaver.model.sql.analyzer.TableReferencesAnalyzerOld;
 import org.jkiss.dbeaver.model.sql.completion.hippie.HippieProposalProcessor;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
@@ -91,11 +90,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             prefStore = DBWorkbench.getPlatform().getPreferenceStore();
         }
 
-        if (prefStore.getBoolean(SQLModelPreferences.EXPERIMENTAL_AUTOCOMPLETION_ENABLE)) {
-            tableRefsAnalyzer = new TableReferencesAnalyzerImpl(request);
-        } else {
-            tableRefsAnalyzer = new TableReferencesAnalyzerOld(request);
-        }
+        tableRefsAnalyzer = new TableReferencesAnalyzerImpl(request);
     }
 
     @Override
@@ -609,13 +604,13 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         DBDValueHandler valueHandler = DBUtils.findValueHandler(session, attribute);
                         DBPImage attrImage = null;
                         for (DBDLabelValuePair valuePair : valueEnumeration) {
-                            String displayString = SQLUtils.convertValueToSQL(session.getDataSource(), attribute, valueHandler, valuePair.getValue(), DBDDisplayFormat.UI);
+                            String displayString = SQLUtils.convertValueToSQL(session.getDataSource(), attribute, valueHandler, valuePair.getValue(), DBDDisplayFormat.UI, false);
                             if (!CommonUtils.isEmpty(valuePair.getLabel()) && !CommonUtils.equalObjects(valuePair.getLabel(), valuePair.getValue())) {
                                 displayString += " - " + valuePair.getLabel() + "";
                             }
                             String sqlValue = isInLiteral ?
                                 valueHandler.getValueDisplayString(attribute, valuePair.getValue(), DBDDisplayFormat.NATIVE) :
-                                SQLUtils.convertValueToSQL(dataSource.getDataSource(), attribute, valueHandler, valuePair.getValue(), DBDDisplayFormat.NATIVE);
+                                SQLUtils.convertValueToSQL(dataSource.getDataSource(), attribute, valueHandler, valuePair.getValue(), DBDDisplayFormat.NATIVE, false);
                             proposals.add(request.getContext().createProposal(
                                 request,
                                 displayString,

@@ -201,12 +201,12 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         if (!connectionInfo.getNetworkHandlers().isEmpty()) {
             config.setHandlers(connectionInfo.getNetworkHandlers());
         }
-        
-        DataSourceDescriptor dataSource = new DataSourceDescriptor(
-            dataSourceRegistry,
+
+        DataSourceDescriptor dataSource = dataSourceRegistry.createDataSource(
             DataSourceDescriptor.generateNewId(connectionInfo.getDriver()),
             connectionInfo.getDriver(),
-            config);
+            config
+        );
         dataSource.setName(name);
         dataSource.setSavePassword(!CommonUtils.isEmpty(config.getUserPassword()));
         dataSource.setFolder(importData.getDataSourceFolder());

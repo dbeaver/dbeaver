@@ -25,19 +25,18 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.graphics.Color;
 import org.jkiss.dbeaver.erd.model.*;
-import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.ERDUIUtils;
 import org.jkiss.dbeaver.erd.ui.command.AttributeCheckCommand;
 import org.jkiss.dbeaver.erd.ui.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.erd.ui.editor.ERDHighlightingHandle;
 import org.jkiss.dbeaver.erd.ui.editor.ERDHighlightingManager;
+import org.jkiss.dbeaver.erd.ui.editor.ERDThemeSettings;
 import org.jkiss.dbeaver.erd.ui.figures.AttributeItemFigure;
 import org.jkiss.dbeaver.erd.ui.figures.EditableLabel;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.policy.AttributeConnectionEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.AttributeDragAndDropEditPolicy;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ListNode;
 
 import java.beans.PropertyChangeEvent;
@@ -207,10 +206,10 @@ public class AttributePart extends NodePart {
         columnLabel.repaint();
 
         if (value != EditPart.SELECTED_NONE) {
-            if (this.getViewer() instanceof ERDGraphicalViewer && associatedRelationsHighlighing == null) {
-                Color attributeColor = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_FK_HIGHLIGHTING);
-                Color associationColor = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_FK_HIGHLIGHTING);
-                ERDHighlightingManager highlightingManager = ((ERDGraphicalViewer) this.getViewer()).getEditor().getHighlightingManager();
+            if (this.getViewer() instanceof ERDGraphicalViewer erdViewer && associatedRelationsHighlighing == null) {
+                Color attributeColor = ERDThemeSettings.instance.fkHighlightColor;
+                Color associationColor = ERDThemeSettings.instance.fkHighlightColor;
+                ERDHighlightingManager highlightingManager = erdViewer.getEditor().getHighlightingManager();
                 ListNode<ERDHighlightingHandle> nodes = highlightingManager.highlightRelatedAttributes(this, attributeColor);
                 nodes = highlightingManager.highlightAssociation(nodes, this, associationColor);
                 associatedRelationsHighlighing = highlightingManager.makeHighlightingGroupHandle(nodes);

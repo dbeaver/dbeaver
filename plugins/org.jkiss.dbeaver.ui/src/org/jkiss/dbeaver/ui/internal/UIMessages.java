@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.internal;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class UIMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.internal.UIMessages"; //$NON-NLS-1$
@@ -119,6 +119,8 @@ public class UIMessages extends NLS {
 
     public static String link_external_label;
     public static String link_external_tip;
+    public static String label_catalog_schema;
+    public static String label_choose;
 
     static {
         // initialize resource bundle

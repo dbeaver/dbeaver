@@ -63,12 +63,15 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryRowsSourceModel left,
         @NotNull SQLQueryRowsSourceModel right,
-        @Nullable List<SQLQuerySymbolEntry> columsToJoin
+        @Nullable List<SQLQuerySymbolEntry> columsToJoin,
+        @NotNull SQLQueryLexicalScope conditionScope
     ) {
         super(range, syntaxNode, left, right);
         this.condition = null;
-        this.conditionScope = null;
+        this.conditionScope = conditionScope;
         this.columsToJoin = columsToJoin;
+
+        this.registerLexicalScope(conditionScope);
     }
 
     @Nullable
@@ -96,8 +99,8 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
                     SQLQueryResultColumn leftColumnDef = left.resolveColumn(statistics.getMonitor(), column.getName());
                     SQLQueryResultColumn rightColumnDef = right.resolveColumn(statistics.getMonitor(), column.getName());
                     if (leftColumnDef != null && rightColumnDef != null) {
-                        symbol.setSymbolClass(SQLQuerySymbolClass.COLUMN);
                         symbol.setDefinition(column); // TODO multiple definitions per symbol
+                        symbol.setSymbolClass(SQLQuerySymbolClass.COLUMN);
                     } else {
                         if (leftColumnDef != null) {
                             statistics.appendError(column, "Column " + column.getName() + " not found to the left of join");
@@ -110,11 +113,11 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
             }
         }
 
-        SQLQueryDataContext combinedContext = left.combine(right);
+        SQLQueryDataContext combinedContext = left.combineForJoin(right);
         if (this.condition != null) {
             this.condition.propagateContext(combinedContext, statistics);
-            this.conditionScope.setContext(combinedContext);
         }
+        this.conditionScope.setContext(combinedContext);
         return combinedContext;
     }
 

@@ -37,6 +37,7 @@
                 <module>org.jkiss.dbeaver.app.base.feature</module>
                 <module>org.jkiss.dbeaver.app.local.feature</module>
                 <module>org.jkiss.dbeaver.standalone.feature</module>
+                <module>org.jkiss.dbeaver.test.feature</module>
                 <module>org.jkiss.dbeaver.appstore.feature</module>
                 <module>org.jkiss.dbeaver.ce.feature</module>
             </modules>

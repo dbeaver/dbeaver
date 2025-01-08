@@ -497,7 +497,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         viewer.createControl(parent);
 
         // configure the viewer
-        viewer.getControl().setBackground(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
+        viewer.getControl().setBackground(ERDThemeSettings.instance.diagramBackground);
         viewer.setRootEditPart(rootPart);
         installKeyHandler(viewer);
 
@@ -522,7 +522,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     protected void configureGraphicalViewer()
     {
         super.configureGraphicalViewer();
-        this.getGraphicalViewer().getControl().setBackground(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
+        this.getGraphicalViewer().getControl().setBackground(ERDThemeSettings.instance.diagramBackground);
 
         GraphicalViewer graphicalViewer = getGraphicalViewer();
 
@@ -699,7 +699,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             this.getSite().getPage(),
             this.getPaletteViewerProvider(),
             this.getPalettePreferences());
-        paletteComposite.setBackground(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
+        paletteComposite.setBackground(ERDThemeSettings.instance.diagramBackground);
         return paletteComposite;
     }
 
@@ -1325,7 +1325,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         public ProgressVisualizer<EntityDiagram> createLoadVisualizer()
         {
-            getGraphicalControl().setBackground(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
+            Control graphicalControl = getGraphicalControl();
+            if (graphicalControl != null) {
+                graphicalControl.setBackground(ERDThemeSettings.instance.diagramBackground);
+            }
             return new LoadVisualizer();
         }
 
@@ -1411,7 +1414,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         if (graphicalControl == null) {
             return entityDiagram;
         }
-        UIUtils.syncExec(() -> graphicalControl.setBackground(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_DIAGRAM_BACKGROUND)));
+        UIUtils.syncExec(() -> graphicalControl.setBackground(ERDThemeSettings.instance.diagramBackground));
         isLoaded = true;
         Control control = getGraphicalViewer().getControl();
         if (control == null || control.isDisposed()) {
@@ -1549,7 +1552,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                     }
                 }
                 if (!CommonUtils.isEmpty(nodes)) {
-                    Color color = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_SEARCH_HIGHLIGHTING);
+                    Color color = ERDThemeSettings.instance.searchHighlightColor;
                     DBPNamedObject focusedNode = null;
                     for (DBPNamedObject erdNode : nodes) {
                         if (matchesSearch(erdNode)) {

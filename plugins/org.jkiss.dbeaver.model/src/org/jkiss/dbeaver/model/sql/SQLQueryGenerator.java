@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
@@ -25,6 +26,7 @@ import org.jkiss.dbeaver.model.dpi.DPIObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Contains methods used for query generation
@@ -40,10 +42,12 @@ public interface SQLQueryGenerator {
      * @param tableAlias alias of the table
      * @param dataFilter filter containing conditions
      */
-    void appendQueryConditions(DBPDataSource dataSource,
+    void appendQueryConditions(
+        @NotNull DBPDataSource dataSource,
         @NotNull StringBuilder query,
         @Nullable String tableAlias,
-        @Nullable DBDDataFilter dataFilter);
+        @Nullable DBDDataFilter dataFilter
+    ) throws DBException;
 
     /**
      * Appends order statement to query
@@ -67,12 +71,15 @@ public interface SQLQueryGenerator {
      * @param query query to append conditions to
      * @param inlineCriteria does query has inlineCriteria
      */
-    void appendConditionString(@NotNull DBDDataFilter filter,
+    default void appendConditionString(
+        @NotNull DBDDataFilter filter,
         @NotNull DBPDataSource dataSource,
         @Nullable String conditionTable,
         @NotNull StringBuilder query,
-        boolean inlineCriteria);
-
+        boolean inlineCriteria
+    ) throws DBException {
+        appendConditionString(filter, dataSource, conditionTable, query, inlineCriteria, false);
+    }
 
     /**
      * Appends filter conditions to query
@@ -84,12 +91,19 @@ public interface SQLQueryGenerator {
      * @param inlineCriteria does query has inlineCriteria
      * @param subQuery is query part of another query
      */
-    void appendConditionString(@NotNull DBDDataFilter filter,
+    default void appendConditionString(
+        @NotNull DBDDataFilter filter,
         @NotNull DBPDataSource dataSource,
         @Nullable String conditionTable,
         @NotNull StringBuilder query,
         boolean inlineCriteria,
-        boolean subQuery);
+        boolean subQuery
+    ) throws DBException {
+        List<DBDAttributeConstraint> constraints = filter.getConstraints().stream()
+            .filter(x -> x.getCriteria() != null || x.getOperator() != null)
+            .collect(Collectors.toList());
+        appendConditionString(filter, constraints, dataSource, conditionTable, query, inlineCriteria, subQuery);
+    }
 
     /**
      * Appends filter conditions to query
@@ -102,13 +116,15 @@ public interface SQLQueryGenerator {
      * @param inlineCriteria does query has inlineCriteria
      * @param subQuery is query part of another query
      */
-    void appendConditionString(@NotNull DBDDataFilter filter,
+    void appendConditionString(
+        @NotNull DBDDataFilter filter,
         @NotNull List<DBDAttributeConstraint> constraints,
         @NotNull DBPDataSource dataSource,
         @Nullable String conditionTable,
         @NotNull StringBuilder query,
         boolean inlineCriteria,
-        boolean subQuery);
+        boolean subQuery
+    ) throws DBException;
 
     /**
      * Applies filters to the existing user queries
@@ -124,7 +140,7 @@ public interface SQLQueryGenerator {
         @NotNull DBPDataSource dataSource,
         @NotNull String sqlQuery,
         @NotNull DBDDataFilter dataFilter
-    );
+    ) throws DBException;
 
     /**
      * returns user query with filter and order
@@ -135,7 +151,11 @@ public interface SQLQueryGenerator {
      * @return modified query
      */
     @NotNull
-    String getWrappedFilterQuery(@NotNull DBPDataSource dataSource, @NotNull String sqlQuery, @NotNull DBDDataFilter dataFilter);
+    String getWrappedFilterQuery(
+        @NotNull DBPDataSource dataSource,
+        @NotNull String sqlQuery,
+        @NotNull DBDDataFilter dataFilter
+    ) throws DBException;
 
     /**
      * Appends order conditions to query

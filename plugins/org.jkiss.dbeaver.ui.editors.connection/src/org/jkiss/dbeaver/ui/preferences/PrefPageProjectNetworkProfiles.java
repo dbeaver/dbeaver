@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
@@ -52,6 +53,19 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
     private DBPProject projectMeta;
 
     public PrefPageProjectNetworkProfiles() {
+    }
+
+    @Override
+    public void saveSettings(DBWNetworkProfile profile) {
+        super.saveSettings(profile);
+        if (projectMeta.isUseSecretStorage()) {
+            try {
+                DBSSecretController secretController = DBSSecretController.getProjectSecretController(projectMeta);
+                profile.persistSecrets(secretController);
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError("Save error", "Cannot save network profile credentials", e);
+            }
+        }
     }
 
     @Override

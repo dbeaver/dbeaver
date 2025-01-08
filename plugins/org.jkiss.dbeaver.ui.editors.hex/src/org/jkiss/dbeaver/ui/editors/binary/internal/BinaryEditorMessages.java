@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.binary.internal;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class BinaryEditorMessages extends NLS {
 	static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.binary.internal.BinaryEditorMessages"; //$NON-NLS-1$

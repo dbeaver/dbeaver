@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.internal;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class UINavigatorMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.internal.UINavigatorMessages"; //$NON-NLS-1$
@@ -231,7 +231,6 @@ public class UINavigatorMessages extends NLS {
     public static String pref_page_target_link_show_global_settings;
 
     public static String label_active_service_instance;
-    public static String label_choose_catalog;
     public static String label_error_list;
     public static String label_instance;
 

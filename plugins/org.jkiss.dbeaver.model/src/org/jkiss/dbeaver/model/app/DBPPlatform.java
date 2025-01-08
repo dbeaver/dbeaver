@@ -137,4 +137,7 @@ public interface DBPPlatform {
 
     boolean isShuttingDown();
 
+    default boolean isUnitTestMode() {
+        return false;
+    }
 }

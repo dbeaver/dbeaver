@@ -251,6 +251,7 @@ ALL: A L L ;
 ALTER: A L T E R ;
 AND: A N D ;
 ANY: A N Y ;
+ARRAY: A R R A Y;
 AS: A S ;
 ASC: A S C ;
 AUTHORIZATION: A U T H O R I Z A T I O N ;
@@ -470,7 +471,7 @@ Space: [ \t]+;
 
 Identifier: IdentifierBody;
 fragment IdentifierBody: IdentifierStart ((Underscore|IdentifierPart)+)?;
-fragment IdentifierStart: SimpleLatinLetter;
+fragment IdentifierStart: SimpleLatinLetter|Underscore;
 fragment IdentifierPart: (IdentifierStart|Digit);
 
 
