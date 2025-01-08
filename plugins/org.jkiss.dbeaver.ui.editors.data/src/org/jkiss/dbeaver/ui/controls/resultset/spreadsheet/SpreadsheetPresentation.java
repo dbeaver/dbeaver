@@ -2438,22 +2438,19 @@ public class SpreadsheetPresentation extends AbstractPresentation
         @Nullable
         private Color getCellForeground(DBDAttributeBinding attribute, ResultSetRow row, Object cellValue, Color background, boolean selected) {
             if (selected) {
-                return ResultSetThemeSettings.instance.foregroundSelected;
-//                Color normalColor = getCellForeground(
-//                    attribute,
-//                    row,
-//                    cellValue,
-//                    getCellBackground(attribute, row, cellValue, 0, false, true),
-//                    false);
-//                if (normalColor == null) {
-//                    return ResultSetThemeSettings.instance.foregroundSelected;
-//                }
-//                RGB mixRGB = UIUtils.blend(
-//                    normalColor.getRGB(),
-//                    ResultSetThemeSettings.instance.foregroundSelected.getRGB(),
-//                    15
-//                );
-//                return UIUtils.getSharedTextColors().getColor(mixRGB);
+                Color fg = ResultSetThemeSettings.instance.foregroundSelected;
+                if (colorizeDataTypes && isSimpleAttribute(attribute) && !DBUtils.isNullValue(cellValue)) {
+                    Color color = dataTypesForegrounds.get(attribute.getDataKind());
+                    if (color != null) {
+                        RGB mixRGB = UIUtils.blend(
+                            fg.getRGB(),
+                            color.getRGB(),
+                            15
+                        );
+                        return UIUtils.getSharedTextColors().getColor(mixRGB);
+                    }
+                }
+                return fg;
             }
             if (isShowAsCheckbox(attribute) && booleanStyles.getMode() == BooleanMode.TEXT) {
                 if (cellValue instanceof Number number) {
