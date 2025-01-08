@@ -213,7 +213,7 @@ public class BasicSQLDialect extends AbstractSQLDialect implements SQLDialectRel
     @NotNull
     @Override
     public String escapeString(String string) {
-        return string.replace("'", "''");
+        return string.replace("'", "''").replaceAll("\\\\(?![_%?])", "\\\\\\\\");
     }
 
     @NotNull
