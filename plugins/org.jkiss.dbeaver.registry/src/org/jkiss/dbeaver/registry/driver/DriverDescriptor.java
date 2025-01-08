@@ -1541,6 +1541,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                     if (files == null) {
                         allExists = false;
                     } else {
+                        if (DBWorkbench.isDistributed()) {
+                            break;
+                        }
                         for (DriverFileInfo file : files) {
                             if (file.file == null || !Files.exists(getDriverFilePath(file))) {
                                 allExists = false;
