@@ -29,8 +29,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCDateTimeValueHandler;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
+import java.util.Date;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 
 /**
  * PostgreDateTimeValueHandler.
@@ -51,10 +51,10 @@ public class PostgreDateTimeValueHandler extends JDBCDateTimeValueHandler {
 
     @Override
     public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException {
-        if (!(object instanceof Timestamp)) {
+        if (!(object instanceof Date date)) {
             return super.getValueFromObject(session, type, object, copy, validateValue);
         }
-        final long time = ((Timestamp) object).getTime();
+        final long time = date.getTime();
         if (time == NEGATIVE_INFINITY || time == NEGATIVE_SMALLER_INFINITY) {
             return NEGATIVE_INFINITY_STRING_REPRESENTATION;
         }
@@ -62,6 +62,11 @@ public class PostgreDateTimeValueHandler extends JDBCDateTimeValueHandler {
             return POSITIVE_INFINITY_STRING_REPRESENTATION;
         }
         return super.getValueFromObject(session, type, object, copy, validateValue);
+    }
+
+    @Override
+    protected boolean isReadDateAsObject() {
+        return true;
     }
 
     @Override
