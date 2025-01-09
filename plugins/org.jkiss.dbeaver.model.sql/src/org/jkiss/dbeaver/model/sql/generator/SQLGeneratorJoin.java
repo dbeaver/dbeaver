@@ -27,13 +27,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SQLGeneratorJoin extends SQLGenerator<DBSEntity> {
-    private SQLDialect sqlDialect;
-    private final List<String> aliases = new ArrayList<>();
-
     @Override
     public void run(DBRProgressMonitor monitor) throws InvocationTargetException {
         StringBuilder sql = new StringBuilder(100);
-        sqlDialect = objects.get(0).getDataSource().getSQLDialect();
+        SQLDialect sqlDialect = objects.get(0).getDataSource().getSQLDialect();
+        final List<String> aliases = new ArrayList<>();
         try {
             sql.append("SELECT ");
             for (int i = 0; i < objects.size(); i++) {
@@ -45,7 +43,7 @@ public class SQLGeneratorJoin extends SQLGenerator<DBSEntity> {
                 DBSEntity entity = objects.get(i);
 
                 if (i > 0) sql.append(", ");
-                sql.append(getEntityName(entity)).append(" ").append(generateTableAlias(entity));
+                sql.append(getEntityName(entity)).append(" ").append(generateTableAlias(entity, aliases, sqlDialect));
             }
             sql.append(getLineSeparator()).append("WHERE ");
             boolean hasCond = false;
@@ -73,7 +71,7 @@ public class SQLGeneratorJoin extends SQLGenerator<DBSEntity> {
         result = sql.toString();
     }
 
-    private String generateTableAlias(DBSEntity entity) {
+    private String generateTableAlias(DBSEntity entity, List<String> aliases, SQLDialect sqlDialect) {
         String alias = SQLUtils.generateEntityAlias(entity, s -> sqlDialect.getKeywordType(s) != null || aliases.contains(s));
         aliases.add(alias);
         return alias;
