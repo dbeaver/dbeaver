@@ -105,7 +105,14 @@ public class SQLGroupingQueryGenerator {
             }
         }
         String subqueryAlias;
-        if (!(container instanceof DBSEntity) && dialect.supportsSubqueries()) {
+        Statement statement = null;
+        try {
+            statement = SQLSemanticProcessor.parseQuery(dataSource.getSQLDialect(), queryText);
+        } catch (Throwable e) {
+            log.debug("SQL parse error", e);
+        }
+        boolean isCTE = statement instanceof Select select && !select.getWithItemsList().isEmpty();
+        if (!(container instanceof DBSEntity) && dialect.supportsSubqueries() && !isCTE) {
             subqueryAlias = "src";
             sql.append("SELECT ");
             for (int i = 0; i < groupAttributes.size(); i++) {
@@ -126,40 +133,36 @@ public class SQLGroupingQueryGenerator {
             sql.append("\n) ").append(subqueryAlias);
         } else {
             subqueryAlias = null;
-            try {
-                Statement statement = SQLSemanticProcessor.parseQuery(dataSource.getSQLDialect(), queryText);
-                if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect select) {
-                    select.setOrderByElements(null);
-
-                    SQLDialect sqlDialect = dataSource.getSQLDialect();
-                    if (select.getFromItem() instanceof Table table) {
-                        FormattedTable formattedTable = new FormattedTable(table, sqlDialect);
-                        // implicitly parsed where-conditions might have use table alias if presented,
-                        // so don't forget it while replacing the table reference
-                        formattedTable.setAlias(table.getAlias());
-                        select.setFromItem(formattedTable);
-                    }
-
-                    List<SelectItem> selectItems = new ArrayList<>();
-                    select.setSelectItems(selectItems);
-                    for (SQLGroupingAttribute groupAttribute : groupAttributes) {
-                        selectItems.add(new SelectExpressionItem(groupAttribute.prepareExpression()));
-                    }
-                    for (int i = 0; i < groupFunctions.size(); i++) {
-                        String func = groupFunctions.get(i);
-                        Expression expression = SQLSemanticProcessor.parseExpression(func);
-                        SelectExpressionItem sei = new SelectExpressionItem(expression);
-                        if (useAliasForColumns) {
-                            sei.setAlias(new Alias(funcAliases[i]));
-                        }
-                        selectItems.add(sei);
-                    }
+            if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect select) {
+                select.setOrderByElements(null);
+                SQLDialect sqlDialect = dataSource.getSQLDialect();
+                if (select.getFromItem() instanceof Table table) {
+                    FormattedTable formattedTable = new FormattedTable(table, sqlDialect);
+                    // implicitly parsed where-conditions might have use table alias if presented,
+                    // so don't forget it while replacing the table reference
+                    formattedTable.setAlias(table.getAlias());
+                    select.setFromItem(formattedTable);
                 }
-                queryText = statement.toString();
-            } catch (Throwable e) {
-                log.debug("SQL parse error", e);
+
+                List<SelectItem> selectItems = new ArrayList<>();
+                select.setSelectItems(selectItems);
+                for (SQLGroupingAttribute groupAttribute : groupAttributes) {
+                    selectItems.add(new SelectExpressionItem(groupAttribute.prepareExpression()));
+                }
+                for (int i = 0; i < groupFunctions.size(); i++) {
+                    String func = groupFunctions.get(i);
+                    Expression expression = SQLSemanticProcessor.parseExpression(func);
+                    SelectExpressionItem sei = new SelectExpressionItem(expression);
+                    if (useAliasForColumns) {
+                        sei.setAlias(new Alias(funcAliases[i]));
+                    }
+                    selectItems.add(sei);
+                }
             }
-            sql.append(queryText);
+            if (statement != null) {
+                queryText = statement.toString();
+                sql.append(queryText);
+            }
         }
 
         sql.append("\nGROUP BY ");
