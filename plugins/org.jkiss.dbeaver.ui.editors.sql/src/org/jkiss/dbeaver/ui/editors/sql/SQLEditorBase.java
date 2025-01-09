@@ -1223,10 +1223,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
             if (field != null) {
                 StringBuilder txt = new StringBuilder("Sel: ");
                 ISelection selection = getSelectionProvider().getSelection();
-                if (selection instanceof ITextSelection) {
-                    ITextSelection textSelection = (ITextSelection) selection;
+                if (selection instanceof ITextSelection textSelection) {
                     txt.append(textSelection.getLength()).append(" | ");
-                    if (((ITextSelection) selection).getLength() <= 0) {
+                    if (textSelection.getLength() <= 0) {
                         txt.append(0);
                     } else {
                         txt.append(textSelection.getEndLine() - textSelection.getStartLine() + 1);

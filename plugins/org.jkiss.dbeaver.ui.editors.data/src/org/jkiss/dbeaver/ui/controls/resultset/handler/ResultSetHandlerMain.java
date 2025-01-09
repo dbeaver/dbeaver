@@ -137,8 +137,8 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
     public static final String CMD_COPY_ROW_NAMES = "org.jkiss.dbeaver.core.resultset.grid.copyRowNames";
     public static final String CMD_EXPORT = "org.jkiss.dbeaver.core.resultset.export";
 
-    public static final String CMD_ZOOM_IN = "org.eclipse.ui.edit.text.zoomIn";
-    public static final String CMD_ZOOM_OUT = "org.eclipse.ui.edit.text.zoomOut";
+    public static final String CMD_ZOOM_IN = "org.jkiss.dbeaver.core.resultset.zoomIn";
+    public static final String CMD_ZOOM_OUT = "org.jkiss.dbeaver.core.resultset.zoomOut";
 
     public static final String CMD_TOGGLE_ORDER = "org.jkiss.dbeaver.core.resultset.toggleOrder";
     public static final String CMD_SELECT_ROW_COLOR = "org.jkiss.dbeaver.core.resultset.grid.selectRowColor";
