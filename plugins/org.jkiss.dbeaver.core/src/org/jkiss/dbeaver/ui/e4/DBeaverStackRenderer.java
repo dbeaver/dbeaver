@@ -279,12 +279,7 @@ public class DBeaverStackRenderer extends StackRenderer {
                 });
                 if (workbenchPart instanceof EntityEditor) {
                     final MenuItem addBookmarkItem = new MenuItem(menu, SWT.NONE);
-                    String actionText = ActionUtils.findCommandName(CoreCommands.CMD_ADD_BOOKMARK);
-                    String shortcut = ActionUtils.findCommandDescription(CoreCommands.CMD_ADD_BOOKMARK, workbenchPart.getSite(), true);
-                    if (shortcut != null) {
-                        actionText += "\t" + shortcut;
-                    }
-                    addBookmarkItem.setText(actionText);
+                    addBookmarkItem.setText(ActionUtils.findCommandName(CoreCommands.CMD_ADD_BOOKMARK));
                     addBookmarkItem.setImage(ActionUtils.findCommandImage(CoreCommands.CMD_ADD_BOOKMARK).createImage());
                     addBookmarkItem.addSelectionListener(new SelectionAdapter() {
                         @Override
