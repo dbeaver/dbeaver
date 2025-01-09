@@ -729,6 +729,11 @@ public class ResultSetModel implements DBDResultSetModel {
             }
         }
 
+        if (singleSourceEntity == null) {
+            singleSourceEntity = DBExecUtils.detectSingleSourceTable(
+                visibleAttributes.toArray(new DBDAttributeBinding[0]));
+        }
+
         // Add new data
         updateDataFilter();
         updateColorMapping(false);
@@ -736,11 +741,6 @@ public class ResultSetModel implements DBDResultSetModel {
         updateDataFilter();
 
         this.visibleAttributes.sort(POSITION_SORTER);
-
-        if (singleSourceEntity == null) {
-            singleSourceEntity = DBExecUtils.detectSingleSourceTable(
-                visibleAttributes.toArray(new DBDAttributeBinding[0]));
-        }
 
         hasData = true;
     }

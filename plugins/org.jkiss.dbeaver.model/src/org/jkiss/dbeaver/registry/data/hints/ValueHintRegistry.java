@@ -28,11 +28,13 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
 import org.jkiss.dbeaver.model.data.hints.standard.VoidHintProvider;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.virtual.DBVContainer;
+import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVObject;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -64,7 +66,7 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<DBDValueHint
     }
 
     private final List<ValueHintProviderDescriptor> descriptors = new ArrayList<>();
-    private Map<String, ValueHintProviderConfiguration> configurationMap = new LinkedHashMap<>();
+    private final ValueHintContextConfiguration globalContextConfiguration;
 
     private ValueHintRegistry(IExtensionRegistry registry) {
         // Load datasource providers from external plugins
@@ -75,7 +77,7 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<DBDValueHint
             }
         }
 
-        loadConfiguration();
+        this.globalContextConfiguration = new GlobalHintContextConfiguration();
     }
 
     public List<ValueHintProviderDescriptor> getHintDescriptors() {
@@ -98,33 +100,26 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<DBDValueHint
         return VoidHintProvider.INSTANCE;
     }
 
-    public ValueHintProviderConfiguration getConfiguration(
-        @NotNull ValueHintProviderDescriptor descriptor,
+    public ValueHintContextConfiguration getContextConfiguration(
         @Nullable DBPDataSourceContainer ds,
         @Nullable DBSEntity entity
     ) {
-        ValueHintProviderConfiguration configuration;
         if (entity != null) {
             // Try virt model
-            configuration = findHintConfigFromVirtualObject(descriptor, DBVUtils.getVirtualEntity(entity, false));
+            ValueHintContextConfiguration configuration = findHintConfigFromVirtualObject(DBVUtils.getVirtualEntity(entity, false));
             if (configuration != null) {
                 return configuration;
             }
         }
         if (ds != null) {
-            configuration = findHintConfigFromVirtualObject(descriptor, ds.getVirtualModel());
+            ValueHintContextConfiguration configuration = findHintConfigFromVirtualObject(ds.getVirtualModel());
             if (configuration != null) {
                 return configuration;
             }
         }
 
         // Fallback to global
-        configuration = configurationMap.get(descriptor.getId());
-        if (configuration == null) {
-            configuration = new ValueHintProviderConfiguration(descriptor.getId());
-            configuration.setEnabled(descriptor.isVisibleByDefault());
-        }
-        return configuration;
+        return globalContextConfiguration;
     }
 
     public boolean isHintEnabled(
@@ -147,7 +142,7 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<DBDValueHint
         }
 
         // Fallback to global
-        ValueHintProviderConfiguration configuration = configurationMap.get(descriptor.getId());
+        ValueHintProviderConfiguration configuration = globalContextConfiguration.getProviderConfiguration(descriptor);
         if (configuration == null) {
             return descriptor.isVisibleByDefault();
         }
@@ -170,66 +165,17 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<DBDValueHint
         return null;
     }
 
-    private static ValueHintProviderConfiguration findHintConfigFromVirtualObject(
-        @NotNull ValueHintProviderDescriptor descriptor,
-        @Nullable DBVObject vObject
-    ) {
+    private ValueHintContextConfiguration findHintConfigFromVirtualObject(@Nullable DBVObject vObject) {
         if (vObject != null) {
             Map<String, Object> dataHintsConfig = vObject.getProperty(HINT_CONFIG_PROPERTY);
             if (dataHintsConfig != null) {
-                Map<String, Object>  provConfig = JSONUtils.getObjectOrNull(dataHintsConfig, descriptor.getId());
-                if (provConfig != null) {
-                    try {
-                        return JSONUtils.deserializeObject(provConfig, ValueHintProviderConfiguration.class);
-                    } catch (DBCException e) {
-                        log.error("Error reading virtual hint configuration from saved JSON configuration", e);
-                    }
-                }
+                return new VirtualHintContextConfiguration(
+                    vObject,
+                    vObject instanceof DBVEntity ? DBDValueHintContext.HintConfigurationLevel.ENTITY : DBDValueHintContext.HintConfigurationLevel.DATASOURCE,
+                    dataHintsConfig);
             }
         }
         return null;
-    }
-
-
-    public void setConfiguration(
-        @NotNull ValueHintProviderDescriptor descriptor,
-        @Nullable ValueHintProviderConfiguration configuration
-    ) {
-        if (configuration == null) {
-            configurationMap.remove(descriptor.getId());
-        } else {
-            configurationMap.put(descriptor.getId(), configuration);
-        }
-    }
-
-    public void saveConfiguration() {
-        try {
-            String json = gson.toJson(configurationMap);
-            DBWorkbench.getPlatform()
-                .getConfigurationController()
-                .saveConfigurationFile(CONFIG_FILE_NAME, json);
-        } catch (DBException e) {
-            log.error("Error saving hint providers configuration", e);
-        }
-    }
-
-    private void loadConfiguration() {
-        try {
-            String configContent = DBWorkbench.getPlatform()
-                .getConfigurationController()
-                .loadConfigurationFile(CONFIG_FILE_NAME);
-            if (configContent != null) {
-                configurationMap = gson.fromJson(
-                    configContent,
-                    new TypeToken<Map<String, ValueHintProviderConfiguration>>() {}.getType());
-                if (configurationMap == null) {
-                    // May happen if json deserializes to null
-                    configurationMap = new LinkedHashMap<>();
-                }
-            }
-        } catch (Exception e) {
-            log.error("Error loading hint providers configuration", e);
-        }
     }
 
     public ValueHintProviderDescriptor getDescriptorByInstance(DBDValueHintProvider provider) {
@@ -241,4 +187,86 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<DBDValueHint
         return null;
     }
 
+    private static class GlobalHintContextConfiguration extends ValueHintContextConfiguration {
+        public GlobalHintContextConfiguration() {
+            super(DBDValueHintContext.HintConfigurationLevel.GLOBAL);
+
+            try {
+                String configContent = DBWorkbench.getPlatform()
+                    .getConfigurationController()
+                    .loadConfigurationFile(CONFIG_FILE_NAME);
+                if (configContent != null) {
+                    Map<String, ValueHintProviderConfiguration> configurationMap = gson.fromJson(
+                        configContent,
+                        new TypeToken<Map<String, ValueHintProviderConfiguration>>() {}.getType());
+                    if (configurationMap == null) {
+                        // May happen if json deserializes to null
+                        configurationMap = new LinkedHashMap<>();
+                    }
+                    this.setConfigurationMap(configurationMap);
+                }
+            } catch (Exception e) {
+                log.error("Error loading hint providers configuration", e);
+            }
+        }
+
+        @Override
+        public ValueHintContextConfiguration getParent() {
+            return null;
+        }
+
+        @Override
+        public void saveConfiguration() {
+            try {
+                String json = gson.toJson(this.getConfigurationMap());
+                DBWorkbench.getPlatform()
+                    .getConfigurationController()
+                    .saveConfigurationFile(CONFIG_FILE_NAME, json);
+            } catch (DBException e) {
+                log.error("Error saving hint providers configuration", e);
+            }
+        }
+    }
+
+    private static class VirtualHintContextConfiguration extends ValueHintContextConfiguration {
+
+        private final DBVObject vObject;
+        public VirtualHintContextConfiguration(
+            @NotNull DBVObject vObject,
+            @NotNull DBDValueHintContext.HintConfigurationLevel level,
+            @NotNull Map<String, Object> dataHintsConfig
+        ) {
+            super(level);
+            this.vObject = vObject;
+
+            try {
+                for (Map.Entry<String, Object> pc : dataHintsConfig.entrySet()) {
+                    if (pc.getValue() instanceof Map map) {
+                        ValueHintProviderConfiguration configuration = JSONUtils.deserializeObject(map, ValueHintProviderConfiguration.class);
+                        configurationMap.put(pc.getKey(), configuration);
+                    }
+                }
+            } catch (Exception e) {
+                log.debug("Error reading hints configuration", e);
+            }
+        }
+
+        @Override
+        public ValueHintContextConfiguration getParent() {
+            if (vObject instanceof DBVContainer) {
+                return getInstance().globalContextConfiguration;
+            }
+            return getInstance().getContextConfiguration(vObject.getDataSourceContainer(), null);
+        }
+
+        @Override
+        public void saveConfiguration() {
+            DBPDataSourceContainer dataSourceContainer = vObject.getDataSourceContainer();
+            if (dataSourceContainer == null) {
+                log.error("?Error saving virtual config for hints: not datasource container");
+            } else {
+                dataSourceContainer.persistConfiguration();
+            }
+        }
+    }
 }

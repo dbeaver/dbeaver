@@ -39,12 +39,6 @@ public interface DBDValueHint {
         ERROR
     }
 
-    enum HintConfigurationLevel {
-        GLOBAL,
-        DATASOURCE,
-        ENTITY
-    }
-
     int OPTION_READ_ONLY = 1;
 
     HintType getHintType();

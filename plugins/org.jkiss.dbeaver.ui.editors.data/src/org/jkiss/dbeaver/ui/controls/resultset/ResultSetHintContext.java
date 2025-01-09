@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.registry.data.hints.ValueHintContextConfiguration;
 import org.jkiss.dbeaver.registry.data.hints.ValueHintProviderDescriptor;
 import org.jkiss.dbeaver.registry.data.hints.ValueHintRegistry;
 import org.jkiss.utils.CommonUtils;
@@ -47,6 +48,7 @@ public class ResultSetHintContext implements DBDValueHintContext {
     private final Map<String, Object> contextAttributes = new HashMap<>();
 
     private final Map<DBDValueHintProvider, HintProviderInfo> hintProviders = new IdentityHashMap<>();
+    private ValueHintContextConfiguration contextConfiguration;
 
     static class HintProviderInfo {
         final DBDValueHintProvider provider;
@@ -84,6 +86,20 @@ public class ResultSetHintContext implements DBDValueHintContext {
         }
     }
 
+    @Override
+    public HintConfigurationLevel getConfigurationLevel() {
+        return contextConfiguration.getLevel();
+    }
+
+    @Override
+    public void setConfigurationLevel(HintConfigurationLevel level) {
+
+    }
+
+    public ValueHintContextConfiguration getContextConfiguration() {
+        return contextConfiguration;
+    }
+
     public Set<DBDValueHintProvider> getApplicableHintProviders() {
         return hintProviders.keySet();
     }
@@ -114,9 +130,12 @@ public class ResultSetHintContext implements DBDValueHintContext {
     }
 
     void initProviders(DBDAttributeBinding[] attributes) {
+        DBSDataContainer dataContainer = getDataContainer();
+        DBPDataSource ds = dataContainer == null ? null : dataContainer.getDataSource();
+        DBSEntity entity = ds == null ? null : entitySupplier.get();
+
+        contextConfiguration = ValueHintRegistry.getInstance().getContextConfiguration(ds == null ? null : ds.getContainer(), entity);
         try {
-            DBSDataContainer dataContainer = getDataContainer();
-            DBPDataSource ds = dataContainer == null ? null : dataContainer.getDataSource();
             for (DBDAttributeBinding attr : attributes) {
                 ValueHintRegistry hintRegistry = ValueHintRegistry.getInstance();
                 List<DBDValueHintProvider> attrHintProviders = hintRegistry.getAllValueBindings(

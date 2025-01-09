@@ -18,12 +18,10 @@ package org.jkiss.dbeaver.ui.controls.resultset.actions;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.registry.data.hints.ValueHintContextConfiguration;
 import org.jkiss.dbeaver.registry.data.hints.ValueHintProviderConfiguration;
 import org.jkiss.dbeaver.registry.data.hints.ValueHintProviderDescriptor;
-import org.jkiss.dbeaver.registry.data.hints.ValueHintRegistry;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 
 public class HintEnablementAction extends AbstractResultSetViewerAction {
@@ -48,17 +46,11 @@ public class HintEnablementAction extends AbstractResultSetViewerAction {
 
     @Override
     public void run() {
-        DBPDataSource dataSource = getResultSetViewer().getDataSource();
-        DBSEntity entity = dataSource == null ? null : getResultSetViewer().getModel().getSingleSource();
+        ValueHintContextConfiguration contextConfiguration = getResultSetViewer().getModel().getHintContext().getContextConfiguration();
 
-        ValueHintRegistry registry = ValueHintRegistry.getInstance();
-        ValueHintProviderConfiguration configuration = registry.getConfiguration(
-            descriptor,
-            dataSource == null ? null : dataSource.getContainer(),
-            entity);
+        ValueHintProviderConfiguration configuration = contextConfiguration.getProviderConfiguration(descriptor);
         configuration.setEnabled(!configuration.isEnabled());
-        registry.setConfiguration(descriptor, configuration);
-        registry.saveConfiguration();
+        contextConfiguration.saveConfiguration();
         getResultSetViewer().refreshData(null);
     }
 

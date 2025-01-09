@@ -30,6 +30,12 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
  */
 public interface DBDValueHintContext {
 
+    enum HintConfigurationLevel {
+        GLOBAL,
+        DATASOURCE,
+        ENTITY
+    }
+
     @Nullable
     DBSDataContainer getDataContainer();
 
@@ -43,5 +49,9 @@ public interface DBDValueHintContext {
      * Set context attribute value
      */
     void setHintContextAttribute(@NotNull String name, @Nullable Object value);
+
+    HintConfigurationLevel getConfigurationLevel();
+
+    void setConfigurationLevel(HintConfigurationLevel level);
 
 }

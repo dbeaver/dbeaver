@@ -23,7 +23,7 @@ import java.util.Map;
  */
 public class ValueHintProviderConfiguration {
 
-    private transient final String hintProviderDescriptor;
+    private final transient String hintProviderDescriptor;
     private boolean enabled;
     private Map<String, Object> parameters;
 
@@ -50,4 +50,5 @@ public class ValueHintProviderConfiguration {
     public void setParameters(Map<String, Object> parameters) {
         this.parameters = parameters;
     }
+
 }

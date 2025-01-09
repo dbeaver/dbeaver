@@ -3083,8 +3083,8 @@ public class ResultSetViewer extends Viewer
 
     private void fillAttributeHintsConfigLevelMenu(IMenuManager menuManager) {
         boolean singleSource = getModel().isSingleSource();
-        for (DBDValueHint.HintConfigurationLevel cl : DBDValueHint.HintConfigurationLevel.values()) {
-            if (cl == DBDValueHint.HintConfigurationLevel.ENTITY && !singleSource) {
+        for (DBDValueHintContext.HintConfigurationLevel cl : DBDValueHintContext.HintConfigurationLevel.values()) {
+            if (cl == DBDValueHintContext.HintConfigurationLevel.ENTITY && !singleSource) {
                 continue;
             }
             menuManager.add(new HintConfigurationLevelAction(this, cl));

@@ -21,18 +21,18 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
+import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 
 public class HintConfigurationLevelAction extends AbstractResultSetViewerAction {
 
     @NotNull
-    private final DBDValueHint.HintConfigurationLevel configurationLevel;
+    private final DBDValueHintContext.HintConfigurationLevel configurationLevel;
 
     public HintConfigurationLevelAction(
         @NotNull ResultSetViewer resultSetViewer,
-        @NotNull DBDValueHint.HintConfigurationLevel cl
+        @NotNull DBDValueHintContext.HintConfigurationLevel cl
     ) {
         super(resultSetViewer, getLevelTitle(resultSetViewer, cl), IAction.AS_RADIO_BUTTON);
         this.configurationLevel = cl;
@@ -40,7 +40,7 @@ public class HintConfigurationLevelAction extends AbstractResultSetViewerAction 
 
     @Override
     public boolean isChecked() {
-        return configurationLevel == DBDValueHint.HintConfigurationLevel.GLOBAL;
+        return configurationLevel == DBDValueHintContext.HintConfigurationLevel.GLOBAL;
     }
 
     @Override
@@ -48,7 +48,7 @@ public class HintConfigurationLevelAction extends AbstractResultSetViewerAction 
     }
 
 
-    private static String getLevelTitle(ResultSetViewer viewer, DBDValueHint.HintConfigurationLevel level) {
+    private static String getLevelTitle(ResultSetViewer viewer, DBDValueHintContext.HintConfigurationLevel level) {
         return switch (level) {
             case GLOBAL -> "Global";
             case DATASOURCE -> {
