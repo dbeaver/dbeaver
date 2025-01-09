@@ -250,9 +250,9 @@ public interface DBPDriver extends DBPNamedObject
 
 
     /**
-     * Indicates whether the driver library files are available for download.
+     * Indicates whether the driver library files are installed.
      */
-    boolean canDownloadDriverLibraries();
+    boolean isDriverInstalled();
 
     /**
      * Downloads driver library files from external resources if it is possible.

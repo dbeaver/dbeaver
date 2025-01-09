@@ -1512,7 +1512,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     @Override
-    public boolean canDownloadDriverLibraries() {
+    public boolean isDriverInstalled() {
         return getDriverDependencies(false) == null;
     }
 
