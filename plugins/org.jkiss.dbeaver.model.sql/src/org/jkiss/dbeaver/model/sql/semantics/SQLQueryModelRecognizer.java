@@ -147,6 +147,10 @@ public class SQLQueryModelRecognizer {
                     default -> null;
                 };
             }
+            case SQLStandardParser.RULE_selectStatementSingleRow -> {
+                STMTreeNode stmtBodyNode = queryNode.findFirstNonErrorChild();
+                yield stmtBodyNode == null ? null : this.collectQueryExpression(tree);
+            }
             default -> null;
         };
 
@@ -446,6 +450,7 @@ public class SQLQueryModelRecognizer {
     }
 
     private static final Set<String> tableNameContainers = Set.of(
+        STMKnownRuleNames.selectTargetItem,
         STMKnownRuleNames.referencedTableAndColumns,
         STMKnownRuleNames.nonjoinedTableReference,
         STMKnownRuleNames.explicitTable,
@@ -633,7 +638,7 @@ public class SQLQueryModelRecognizer {
                             if (knownRecognizableValueExpressionNames.contains(rn.getNodeName())
                                 || rn.getNodeName().equals(STMKnownRuleNames.valueExpressionPrimary)
                             ) {
-                                childLists.peek().add(collectKnownValueExpression(rn));
+                                childLists.peek().add(this.collectKnownValueExpression(rn));
                             } else {
                                 stack.push(n);
                                 stack.push(null);
