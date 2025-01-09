@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.data.hints;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 
 /**
  * Value hint context.
@@ -38,6 +39,9 @@ public interface DBDValueHintContext {
 
     @Nullable
     DBSDataContainer getDataContainer();
+
+    @Nullable
+    DBSEntity getContextEntity();
 
     /**
      * Get context attribute value

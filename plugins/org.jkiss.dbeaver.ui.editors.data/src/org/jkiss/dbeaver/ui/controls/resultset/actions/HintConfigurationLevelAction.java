@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.controls.resultset.actions;
 
 import org.eclipse.jface.action.IAction;
+import org.eclipse.swt.widgets.Event;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -36,15 +37,21 @@ public class HintConfigurationLevelAction extends AbstractResultSetViewerAction 
     ) {
         super(resultSetViewer, getLevelTitle(resultSetViewer, cl), IAction.AS_RADIO_BUTTON);
         this.configurationLevel = cl;
+        setChecked(configurationLevel == getResultSetViewer().getHintContext().getConfigurationLevel());
     }
 
     @Override
-    public boolean isChecked() {
-        return configurationLevel == DBDValueHintContext.HintConfigurationLevel.GLOBAL;
+    public void setChecked(boolean checked) {
+        super.setChecked(checked);
     }
 
     @Override
-    public void run() {
+    public void runWithEvent(Event event) {
+        if (isChecked()) {
+            DBDValueHintContext hintContext = getResultSetViewer().getHintContext();
+            hintContext.setConfigurationLevel(configurationLevel);
+            getResultSetViewer().refreshData(null);
+        }
     }
 
 

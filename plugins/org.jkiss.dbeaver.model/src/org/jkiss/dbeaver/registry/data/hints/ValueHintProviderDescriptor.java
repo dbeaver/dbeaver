@@ -19,9 +19,12 @@ package org.jkiss.dbeaver.registry.data.hints;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
 
@@ -71,8 +74,17 @@ public class ValueHintProviderDescriptor extends AbstractValueBindingDescriptor<
 
     @Override
     public boolean isEnabled(DBSTypedObject typedObject, DBDValueHintContext context, boolean checkConfigDisable) {
-        if (checkConfigDisable && !ValueHintRegistry.getInstance().isHintEnabled(this, null, null)) {
-            return false;
+        if (checkConfigDisable) {
+            DBSDataContainer dataContainer = context.getDataContainer();
+            DBPDataSource dataSource = dataContainer == null ? null : dataContainer.getDataSource();
+            DBSEntity contextEntity = dataSource == null ? null : context.getContextEntity();
+            if (!ValueHintRegistry.getInstance().isHintEnabled(
+                this,
+                dataSource == null ? null : dataSource.getContainer(),
+                contextEntity)
+            ) {
+                return false;
+            }
         }
         if (association && typedObject != null) {
             return typedObject instanceof DBDAttributeBinding binding &&

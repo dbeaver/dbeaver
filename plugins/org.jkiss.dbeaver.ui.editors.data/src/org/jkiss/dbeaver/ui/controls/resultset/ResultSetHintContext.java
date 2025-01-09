@@ -73,6 +73,12 @@ public class ResultSetHintContext implements DBDValueHintContext {
 
     @Nullable
     @Override
+    public DBSEntity getContextEntity() {
+        return entitySupplier.get();
+    }
+
+    @Nullable
+    @Override
     public Object getHintContextAttribute(@NotNull String name) {
         return contextAttributes.get(name);
     }
@@ -93,7 +99,26 @@ public class ResultSetHintContext implements DBDValueHintContext {
 
     @Override
     public void setConfigurationLevel(HintConfigurationLevel level) {
+        HintConfigurationLevel oldLevel = getConfigurationLevel();
+        if (oldLevel == level) {
+            return;
+        }
+        if (level.ordinal() < oldLevel.ordinal()) {
+            // Delete old configuration
+            contextConfiguration.deleteConfiguration();
+        }
 
+        // Detect new config
+        DBSDataContainer dataContainer = getDataContainer();
+        DBPDataSource ds = dataContainer == null || level == HintConfigurationLevel.GLOBAL ? null : dataContainer.getDataSource();
+        DBSEntity entity = ds == null || level != HintConfigurationLevel.ENTITY ? null : entitySupplier.get();
+        contextConfiguration = ValueHintRegistry.getInstance().getContextConfiguration(
+            ds == null ? null : ds.getContainer(),
+            entity,
+            true);
+
+        // Save new configuration
+        contextConfiguration.saveConfiguration();
     }
 
     public ValueHintContextConfiguration getContextConfiguration() {

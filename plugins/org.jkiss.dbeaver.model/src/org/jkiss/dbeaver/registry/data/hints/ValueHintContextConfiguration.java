@@ -81,9 +81,11 @@ public abstract class ValueHintContextConfiguration {
         }
     }
 
-    public abstract void saveConfiguration();
-
     public boolean isHintEnabled(ValueHintProviderDescriptor descriptor) {
         return getProviderConfiguration(descriptor).isEnabled();
     }
+
+    public abstract void saveConfiguration();
+
+    public abstract void deleteConfiguration();
 }

@@ -40,7 +40,10 @@ import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * ValueHintRegistry
@@ -124,26 +127,9 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<DBDValueHint
         return globalContextConfiguration;
     }
 
-    public boolean removeContextConfiguration(
-        @NotNull DBPDataSourceContainer ds,
-        @Nullable DBSEntity entity
-    ) {
-        DBVObject vObject;
-        if (entity != null) {
-            vObject = DBVUtils.getVirtualEntity(entity, false);
-        } else {
-            vObject = ds.getVirtualModel();
-        }
-        if (vObject != null) {
-            vObject.setProperty(HINT_CONFIG_PROPERTY, null);
-            return true;
-        }
-        return false;
-    }
-
     /**
-         * Optimized check. It doesn't deserialize entire providers config but checks virtual model internal state.
-         */
+     * Optimized check. It doesn't deserialize entire providers config but checks virtual model internal state.
+     */
     public boolean isHintEnabled(
         @NotNull ValueHintProviderDescriptor descriptor,
         @Nullable DBPDataSourceContainer ds,
@@ -171,7 +157,7 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<DBDValueHint
         if (vObject != null) {
             Map<String, Object> dataHintsConfig = vObject.getProperty(HINT_CONFIG_PROPERTY);
             if (dataHintsConfig != null) {
-                Map<String, Object>  provConfig = JSONUtils.getObjectOrNull(dataHintsConfig, descriptor.getId());
+                Map<String, Object> provConfig = JSONUtils.getObjectOrNull(dataHintsConfig, descriptor.getId());
                 if (provConfig != null) {
                     Object isEnabled = provConfig.get("enabled");
                     if (isEnabled != null) {
@@ -186,14 +172,10 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<DBDValueHint
     private ValueHintContextConfiguration findHintConfigFromVirtualObject(@Nullable DBVObject vObject, boolean forceCreate) {
         if (vObject != null) {
             Map<String, Object> dataHintsConfig = vObject.getProperty(HINT_CONFIG_PROPERTY);
-            if (dataHintsConfig == null && forceCreate) {
-                dataHintsConfig = Collections.emptyMap();
-            }
-            if (dataHintsConfig != null) {
+            if (dataHintsConfig != null || forceCreate) {
                 return new VirtualHintContextConfiguration(
                     vObject,
-                    vObject instanceof DBVEntity ? DBDValueHintContext.HintConfigurationLevel.ENTITY : DBDValueHintContext.HintConfigurationLevel.DATASOURCE,
-                    dataHintsConfig);
+                    vObject instanceof DBVEntity ? DBDValueHintContext.HintConfigurationLevel.ENTITY : DBDValueHintContext.HintConfigurationLevel.DATASOURCE);
             }
         }
         return null;
@@ -219,7 +201,8 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<DBDValueHint
                 if (configContent != null) {
                     Map<String, ValueHintProviderConfiguration> configurationMap = gson.fromJson(
                         configContent,
-                        new TypeToken<Map<String, ValueHintProviderConfiguration>>() {}.getType());
+                        new TypeToken<Map<String, ValueHintProviderConfiguration>>() {
+                        }.getType());
                     if (configurationMap == null) {
                         // May happen if json deserializes to null
                         configurationMap = new LinkedHashMap<>();
@@ -247,25 +230,35 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<DBDValueHint
                 log.error("Error saving hint providers configuration", e);
             }
         }
+
+        @Override
+        public void deleteConfiguration() {
+            log.error("Global configuration cannot be deleted");
+        }
     }
 
     private static class VirtualHintContextConfiguration extends ValueHintContextConfiguration {
 
         private final DBVObject vObject;
+
         public VirtualHintContextConfiguration(
             @NotNull DBVObject vObject,
-            @NotNull DBDValueHintContext.HintConfigurationLevel level,
-            @NotNull Map<String, Object> dataHintsConfig
+            @NotNull DBDValueHintContext.HintConfigurationLevel level
         ) {
             super(level);
             this.vObject = vObject;
 
             try {
-                for (Map.Entry<String, Object> pc : dataHintsConfig.entrySet()) {
-                    if (pc.getValue() instanceof Map map) {
-                        ValueHintProviderConfiguration configuration = JSONUtils.deserializeObject(map, ValueHintProviderConfiguration.class);
-                        configurationMap.put(pc.getKey(), configuration);
+                Map<String, Object> dataHintsConfig = vObject.getProperty(HINT_CONFIG_PROPERTY);
+                if (dataHintsConfig != null) {
+                    for (Map.Entry<String, Object> pc : dataHintsConfig.entrySet()) {
+                        if (pc.getValue() instanceof Map map) {
+                            ValueHintProviderConfiguration configuration = JSONUtils.deserializeObject(map, ValueHintProviderConfiguration.class);
+                            configurationMap.put(pc.getKey(), configuration);
+                        }
                     }
+                } else {
+                    vObject.setProperty(HINT_CONFIG_PROPERTY, new LinkedHashMap<>());
                 }
             } catch (Exception e) {
                 log.debug("Error reading hints configuration", e);
@@ -282,9 +275,27 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<DBDValueHint
 
         @Override
         public void saveConfiguration() {
+            Map<String, Object> dataHintsConfig = new LinkedHashMap<>();
+            for (Map.Entry<String, ValueHintProviderConfiguration> hpc : configurationMap.entrySet()) {
+                Map<String, Object> hpMap = new LinkedHashMap<>();
+                hpMap.put("enabled", hpc.getValue().isEnabled());
+                hpMap.put("parameters", hpc.getValue().getParameters());
+                dataHintsConfig.put(hpc.getKey(), hpMap);
+            }
+            vObject.setProperty(HINT_CONFIG_PROPERTY, dataHintsConfig);
+            persistConfiguration();
+        }
+
+        @Override
+        public void deleteConfiguration() {
+            vObject.setProperty(HINT_CONFIG_PROPERTY, null);
+            persistConfiguration();
+        }
+
+        private void persistConfiguration() {
             DBPDataSourceContainer dataSourceContainer = vObject.getDataSourceContainer();
             if (dataSourceContainer == null) {
-                log.error("?Error saving virtual config for hints: not datasource container");
+                log.error("Error saving virtual config for hints: not datasource container");
             } else {
                 dataSourceContainer.persistConfiguration();
             }
