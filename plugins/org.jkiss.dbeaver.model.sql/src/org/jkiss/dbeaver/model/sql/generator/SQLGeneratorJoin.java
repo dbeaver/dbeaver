@@ -43,7 +43,9 @@ public class SQLGeneratorJoin extends SQLGenerator<DBSEntity> {
                 DBSEntity entity = objects.get(i);
 
                 if (i > 0) sql.append(", ");
-                sql.append(getEntityName(entity)).append(" ").append(generateTableAlias(entity, aliases, sqlDialect));
+                String alias = SQLUtils.generateEntityAlias(entity, s -> sqlDialect.getKeywordType(s) != null || aliases.contains(s));
+                aliases.add(alias);
+                sql.append(getEntityName(entity)).append(" ").append(alias);
             }
             sql.append(getLineSeparator()).append("WHERE ");
             boolean hasCond = false;
@@ -69,12 +71,6 @@ public class SQLGeneratorJoin extends SQLGenerator<DBSEntity> {
             throw new InvocationTargetException(e);
         }
         result = sql.toString();
-    }
-
-    private String generateTableAlias(DBSEntity entity, List<String> aliases, SQLDialect sqlDialect) {
-        String alias = SQLUtils.generateEntityAlias(entity, s -> sqlDialect.getKeywordType(s) != null || aliases.contains(s));
-        aliases.add(alias);
-        return alias;
     }
 
     @Override
