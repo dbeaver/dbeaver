@@ -128,7 +128,11 @@ public class PrefPageSQLCompletion extends TargetPrefPage
                 true,
                 2
             );
-            csCompletionMode = UIUtils.createLabelCombo(assistGroup, SQLEditorMessages.pref_page_sql_completion_label_completion_mode, SWT.READ_ONLY | SWT.DROP_DOWN);
+            csCompletionMode = UIUtils.createLabelCombo(
+                assistGroup,
+                SQLEditorMessages.pref_page_sql_completion_label_completion_mode,
+                SQLEditorMessages.pref_page_sql_completion_label_completion_mode_tip,
+                SWT.READ_ONLY | SWT.DROP_DOWN);
             for (SQLAutocompletionMode mode : SQLAutocompletionMode.values()) {
                 csCompletionMode.add(mode.title);
             }
