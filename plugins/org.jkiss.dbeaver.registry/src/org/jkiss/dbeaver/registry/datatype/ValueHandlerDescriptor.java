@@ -18,15 +18,22 @@ package org.jkiss.dbeaver.registry.datatype;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 
 /**
  * ValueHandlerDescriptor
  */
 public class ValueHandlerDescriptor extends DataTypeAbstractDescriptor<DBDValueHandlerProvider>
 {
+    private final String parentProvider;
+
     public ValueHandlerDescriptor(IConfigurationElement config)
     {
         super(config, DBDValueHandlerProvider.class);
+        this.parentProvider = config.getAttribute(RegistryConstants.ATTR_PARENT);
     }
 
+    public String getParentProvider() {
+        return parentProvider;
+    }
 }
