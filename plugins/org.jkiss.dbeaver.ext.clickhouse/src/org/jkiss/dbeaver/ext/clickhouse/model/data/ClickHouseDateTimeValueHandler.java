@@ -26,7 +26,7 @@ public class ClickHouseDateTimeValueHandler extends JDBCDateTimeValueHandler {
     }
 
     @Override
-    protected boolean isReadDateAsObject(Object object) {
+    protected boolean isReadDateAsObject() {
         return true;
     }
 
