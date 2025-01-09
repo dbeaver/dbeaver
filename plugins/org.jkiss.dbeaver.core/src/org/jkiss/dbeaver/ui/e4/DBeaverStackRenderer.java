@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.e4;
 
+import org.eclipse.core.commands.Command;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.e4.core.contexts.IEclipseContext;
@@ -44,6 +45,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -72,7 +74,7 @@ public class DBeaverStackRenderer extends StackRenderer {
 
     private static final Log log = Log.getLog(DBeaverStackRenderer.class);
 
-    private static final String ADD_BOOKMARK_COMMAND_NAME = ActionUtils.findCommandName("org.jkiss.dbeaver.core.navigator.bookmark.add");
+    private static final String ADD_BOOKMARK_COMMAND_NAME = ActionUtils.findCommandName(CoreCommands.CMD_ADD_BOOKMARK);
     private static final String ONBOARDING_CONTAINER = "EditorStack.OnboardingContainer"; //$NON-NLS-1$
     private static final String ONBOARDING_COMPOSITE = "EditorStack.OnboardingComposite"; //$NON-NLS-1$
     private static final String EDITOR_STACK_ID = "EditorStack"; //$NON-NLS-1$
@@ -277,7 +279,13 @@ public class DBeaverStackRenderer extends StackRenderer {
                 });
                 if (workbenchPart instanceof EntityEditor) {
                     final MenuItem addBookmarkItem = new MenuItem(menu, SWT.NONE);
-                    addBookmarkItem.setText(NLS.bind(ADD_BOOKMARK_COMMAND_NAME, label));
+                    String actionText = ActionUtils.findCommandName(CoreCommands.CMD_ADD_BOOKMARK);
+                    String shortcut = ActionUtils.findCommandDescription(CoreCommands.CMD_ADD_BOOKMARK, workbenchPart.getSite(), true);
+                    if (shortcut != null) {
+                        actionText += "\t" + shortcut;
+                    }
+                    addBookmarkItem.setText(actionText);
+                    addBookmarkItem.setImage(ActionUtils.findCommandImage(CoreCommands.CMD_ADD_BOOKMARK).createImage());
                     addBookmarkItem.addSelectionListener(new SelectionAdapter() {
                         @Override
                         public void widgetSelected(SelectionEvent e) {
