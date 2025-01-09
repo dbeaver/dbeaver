@@ -287,7 +287,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         if (!getModel().isNodeVisible(newNode)) {
             return null;
         }
-        if (dataSources.stream().anyMatch(node -> node.getDataSourceContainer().equals(descriptor))) {
+        if (dataSources.stream().anyMatch(node -> node.getDataSourceContainer() == descriptor)) {
             // current node already contains provided data source
             return null;
         }
