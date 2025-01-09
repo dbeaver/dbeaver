@@ -17,14 +17,15 @@
 package org.jkiss.dbeaver.registry.datatype;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 
 /**
  * ValueHandlerDescriptor
  */
-public class ValueHandlerDescriptor extends DataTypeAbstractDescriptor<DBDValueHandlerProvider>
-{
+public class ValueHandlerDescriptor extends DataTypeAbstractDescriptor<DBDValueHandlerProvider> {
+    @Nullable
     private final String parentProvider;
 
     public ValueHandlerDescriptor(IConfigurationElement config)
@@ -33,7 +34,12 @@ public class ValueHandlerDescriptor extends DataTypeAbstractDescriptor<DBDValueH
         this.parentProvider = config.getAttribute(RegistryConstants.ATTR_PARENT);
     }
 
+    @Nullable
     public String getParentProvider() {
         return parentProvider;
+    }
+
+    public boolean isChildOf(ValueHandlerDescriptor descriptor) {
+        return parentProvider != null && parentProvider.equals(descriptor.getId());
     }
 }
