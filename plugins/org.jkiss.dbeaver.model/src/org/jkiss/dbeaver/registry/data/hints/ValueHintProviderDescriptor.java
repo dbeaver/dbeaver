@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
@@ -27,7 +28,7 @@ import org.jkiss.utils.CommonUtils;
 /**
  * ValueHintProviderDescriptor
  */
-public class ValueHintProviderDescriptor extends AbstractValueBindingDescriptor<DBDValueHintProvider> {
+public class ValueHintProviderDescriptor extends AbstractValueBindingDescriptor<DBDValueHintProvider, DBDValueHintContext> {
     private static final Log log = Log.getLog(ValueHintProviderDescriptor.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataHintProvider"; //$NON-NLS-1$
@@ -69,7 +70,7 @@ public class ValueHintProviderDescriptor extends AbstractValueBindingDescriptor<
     }
 
     @Override
-    public boolean isEnabled(DBSTypedObject typedObject, boolean checkConfigDisable) {
+    public boolean isEnabled(DBSTypedObject typedObject, DBDValueHintContext context, boolean checkConfigDisable) {
         if (checkConfigDisable && !ValueHintRegistry.getInstance().isHintEnabled(this, null, null)) {
             return false;
         }

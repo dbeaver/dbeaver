@@ -134,11 +134,15 @@ public class ResultSetHintContext implements DBDValueHintContext {
         DBPDataSource ds = dataContainer == null ? null : dataContainer.getDataSource();
         DBSEntity entity = ds == null ? null : entitySupplier.get();
 
-        contextConfiguration = ValueHintRegistry.getInstance().getContextConfiguration(ds == null ? null : ds.getContainer(), entity);
+        contextConfiguration = ValueHintRegistry.getInstance().getContextConfiguration(
+            ds == null ? null : ds.getContainer(),
+            entity,
+            false);
         try {
             for (DBDAttributeBinding attr : attributes) {
                 ValueHintRegistry hintRegistry = ValueHintRegistry.getInstance();
                 List<DBDValueHintProvider> attrHintProviders = hintRegistry.getAllValueBindings(
+                    this,
                     ds,
                     attr,
                     attr.getValueHandler().getValueObjectType(attr));
@@ -146,11 +150,7 @@ public class ResultSetHintContext implements DBDValueHintContext {
                     HintProviderInfo providerInfo = hintProviders.computeIfAbsent(provider, p -> {
                         HintProviderInfo pi = new HintProviderInfo(p);
                         ValueHintProviderDescriptor providerDescriptor = hintRegistry.getDescriptorByInstance(provider);
-                        pi.enabled = hintRegistry.isHintEnabled(
-                            providerDescriptor,
-                            ds == null ? null : ds.getContainer(),
-                            ds == null ? null : entitySupplier.get()
-                            );
+                        pi.enabled = contextConfiguration.isHintEnabled(providerDescriptor);
                         return pi;
                     });
                     providerInfo.attributes.add(attr);

@@ -40,15 +40,12 @@ import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * ValueHintRegistry
  */
-public class ValueHintRegistry extends AbstractValueBindingRegistry<DBDValueHintProvider, ValueHintProviderDescriptor> {
+public class ValueHintRegistry extends AbstractValueBindingRegistry<DBDValueHintProvider, DBDValueHintContext, ValueHintProviderDescriptor> {
 
     private static final Log log = Log.getLog(ValueHintRegistry.class);
     public static final String CONFIG_FILE_NAME = "data-hints.json";
@@ -102,17 +99,22 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<DBDValueHint
 
     public ValueHintContextConfiguration getContextConfiguration(
         @Nullable DBPDataSourceContainer ds,
-        @Nullable DBSEntity entity
+        @Nullable DBSEntity entity,
+        boolean forceCreate
     ) {
         if (entity != null) {
             // Try virt model
-            ValueHintContextConfiguration configuration = findHintConfigFromVirtualObject(DBVUtils.getVirtualEntity(entity, false));
+            ValueHintContextConfiguration configuration = findHintConfigFromVirtualObject(
+                DBVUtils.getVirtualEntity(entity, forceCreate),
+                forceCreate);
             if (configuration != null) {
                 return configuration;
             }
         }
         if (ds != null) {
-            ValueHintContextConfiguration configuration = findHintConfigFromVirtualObject(ds.getVirtualModel());
+            ValueHintContextConfiguration configuration = findHintConfigFromVirtualObject(
+                ds.getVirtualModel(),
+                forceCreate);
             if (configuration != null) {
                 return configuration;
             }
@@ -122,6 +124,26 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<DBDValueHint
         return globalContextConfiguration;
     }
 
+    public boolean removeContextConfiguration(
+        @NotNull DBPDataSourceContainer ds,
+        @Nullable DBSEntity entity
+    ) {
+        DBVObject vObject;
+        if (entity != null) {
+            vObject = DBVUtils.getVirtualEntity(entity, false);
+        } else {
+            vObject = ds.getVirtualModel();
+        }
+        if (vObject != null) {
+            vObject.setProperty(HINT_CONFIG_PROPERTY, null);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+         * Optimized check. It doesn't deserialize entire providers config but checks virtual model internal state.
+         */
     public boolean isHintEnabled(
         @NotNull ValueHintProviderDescriptor descriptor,
         @Nullable DBPDataSourceContainer ds,
@@ -142,11 +164,7 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<DBDValueHint
         }
 
         // Fallback to global
-        ValueHintProviderConfiguration configuration = globalContextConfiguration.getProviderConfiguration(descriptor);
-        if (configuration == null) {
-            return descriptor.isVisibleByDefault();
-        }
-        return configuration.isEnabled();
+        return globalContextConfiguration.isHintEnabled(descriptor);
     }
 
     private Boolean isHintEnabledInVirtualObject(ValueHintProviderDescriptor descriptor, DBVObject vObject) {
@@ -165,9 +183,12 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<DBDValueHint
         return null;
     }
 
-    private ValueHintContextConfiguration findHintConfigFromVirtualObject(@Nullable DBVObject vObject) {
+    private ValueHintContextConfiguration findHintConfigFromVirtualObject(@Nullable DBVObject vObject, boolean forceCreate) {
         if (vObject != null) {
             Map<String, Object> dataHintsConfig = vObject.getProperty(HINT_CONFIG_PROPERTY);
+            if (dataHintsConfig == null && forceCreate) {
+                dataHintsConfig = Collections.emptyMap();
+            }
             if (dataHintsConfig != null) {
                 return new VirtualHintContextConfiguration(
                     vObject,
@@ -256,7 +277,7 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<DBDValueHint
             if (vObject instanceof DBVContainer) {
                 return getInstance().globalContextConfiguration;
             }
-            return getInstance().getContextConfiguration(vObject.getDataSourceContainer(), null);
+            return getInstance().getContextConfiguration(vObject.getDataSourceContainer(), null, false);
         }
 
         @Override

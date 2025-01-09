@@ -52,20 +52,23 @@ public abstract class ValueHintContextConfiguration {
         this.configurationMap.putAll(configurationMap);
     }
 
+    @NotNull
     public ValueHintProviderConfiguration getProviderConfiguration(@NotNull ValueHintProviderDescriptor descriptor) {
         ValueHintProviderConfiguration configuration = configurationMap.get(descriptor.getId());
         if (configuration == null) {
+            configuration = new ValueHintProviderConfiguration(descriptor.getId());
             ValueHintContextConfiguration parent = getParent();
             if (parent == null) {
-                configuration = new ValueHintProviderConfiguration(descriptor.getId());
                 configuration.setEnabled(descriptor.isVisibleByDefault());
             } else {
-                return parent.getProviderConfiguration(descriptor);
+                ValueHintProviderConfiguration pConfig = parent.getProviderConfiguration(descriptor);
+                configuration.setEnabled(pConfig.isEnabled());
+                configuration.setParameters(pConfig.getParameters());
             }
+            configurationMap.put(descriptor.getId(), configuration);
         }
         return configuration;
     }
-
 
     public void setConfiguration(
         @NotNull ValueHintProviderDescriptor descriptor,
@@ -80,4 +83,7 @@ public abstract class ValueHintContextConfiguration {
 
     public abstract void saveConfiguration();
 
+    public boolean isHintEnabled(ValueHintProviderDescriptor descriptor) {
+        return getProviderConfiguration(descriptor).isEnabled();
+    }
 }
