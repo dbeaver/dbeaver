@@ -497,7 +497,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             }
         }
         return wizard.getPageSettings() != this ||
-            this.connectionEditor != null && this.connectionEditor.isComplete();
+            this.connectionEditor != null &&
+                (this.connectionEditor.isExternalConfigurationProvided() || this.connectionEditor.isComplete());
     }
 
     @Override

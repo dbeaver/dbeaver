@@ -171,24 +171,22 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
     }
 
     private void loadHandlerConfiguration(DBPDataSourceContainer dataSource) {
-        DBPConnectionConfiguration connectionConfiguration = dataSource.getConnectionConfiguration();
+        DBPConnectionConfiguration cfg = dataSource.getConnectionConfiguration();
 
-        if (!CommonUtils.isEmpty(connectionConfiguration.getConfigProfileName())) {
+        if (!CommonUtils.isEmpty(cfg.getConfigProfileName())) {
             // Update config from profile
-            DBWNetworkProfile profile = dataSource.getRegistry().getNetworkProfile(
-                connectionConfiguration.getConfigProfileSource(),
-                connectionConfiguration.getConfigProfileName());
+            DBWNetworkProfile profile = dataSource.getRegistry().getNetworkProfile(cfg.getConfigProfileSource(), cfg.getConfigProfileName());
             if (profile != null) {
                 handlerConfiguration = profile.getConfiguration(handlerDescriptor);
             }
         }
         if (handlerConfiguration == null) {
-            handlerConfiguration = connectionConfiguration.getHandler(handlerDescriptor.getId());
+            handlerConfiguration = cfg.getHandler(handlerDescriptor.getId());
         }
 
         if (handlerConfiguration == null) {
             handlerConfiguration = new DBWHandlerConfiguration(handlerDescriptor, dataSource);
-            connectionConfiguration.updateHandler(handlerConfiguration);
+            cfg.updateHandler(handlerConfiguration);
         }
     }
 
@@ -305,9 +303,20 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
 
     @Override
     public void saveSettings(DBPDataSourceContainer dataSource) {
+        if (activeProfile == null) {
+            if (handlerConfiguration != null) {
+                // Just copy handler config prom profile
+                handlerConfiguration = new DBWHandlerConfiguration(handlerConfiguration);
+            }
+        } else {
+            handlerConfiguration = activeProfile.getConfiguration(handlerDescriptor.getId());
+        }
+
         if (handlerConfiguration != null) {
-            handlerConfiguration.setProperties(Collections.emptyMap());
-            configurator.saveSettings(handlerConfiguration);
+            if (activeProfile == null) {
+                handlerConfiguration.setProperties(Collections.emptyMap());
+                configurator.saveSettings(handlerConfiguration);
+            }
             dataSource.getConnectionConfiguration().setConfigProfile(activeProfile);
             dataSource.getConnectionConfiguration().updateHandler(handlerConfiguration);
         }

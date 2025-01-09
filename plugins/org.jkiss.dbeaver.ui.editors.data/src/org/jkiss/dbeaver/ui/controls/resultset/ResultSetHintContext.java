@@ -22,11 +22,14 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.hints.DBDAttributeHintProvider;
+import org.jkiss.dbeaver.model.data.hints.DBDCellHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.registry.data.hints.ValueHintRegistry;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -34,7 +37,7 @@ import java.util.function.Supplier;
 /**
  * Result set hint context
  */
-class ResultSetHintContext implements DBDValueHintContext {
+public class ResultSetHintContext implements DBDValueHintContext {
     private static final Log log = Log.getLog(ResultSetHintContext.class);
 
     private final Supplier<DBSDataContainer> dataContainerSupplier;
@@ -77,11 +80,21 @@ class ResultSetHintContext implements DBDValueHintContext {
         }
     }
 
-    List<DBDValueHintProvider> getHintProviders(DBDAttributeBinding attr) {
-        List<DBDValueHintProvider> result = new ArrayList<>();
+    public List<DBDCellHintProvider> getCellHintProviders(DBDAttributeBinding attr) {
+        List<DBDCellHintProvider> result = new ArrayList<>();
         for (HintProviderInfo pi : hintProviders.values()) {
-            if (pi.enabled && pi.attributes.contains(attr)) {
-                result.add(pi.provider);
+            if (pi.enabled && pi.provider instanceof DBDCellHintProvider chp && pi.attributes.contains(attr)) {
+                result.add(chp);
+            }
+        }
+        return result;
+    }
+
+    public List<DBDAttributeHintProvider> getColumnHintProviders(DBDAttributeBinding attr) {
+        List<DBDAttributeHintProvider> result = new ArrayList<>();
+        for (HintProviderInfo pi : hintProviders.values()) {
+            if (pi.enabled && pi.provider instanceof DBDAttributeHintProvider ahp && pi.attributes.contains(attr)) {
+                result.add(ahp);
             }
         }
         return result;
@@ -109,13 +122,18 @@ class ResultSetHintContext implements DBDValueHintContext {
         }
     }
 
-    public void cacheRequiredData(@NotNull DBRProgressMonitor monitor, @NotNull List<ResultSetRow> rows, boolean cleanupCache) throws DBException {
+    public void cacheRequiredData(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable List<DBDAttributeBinding> attributes,
+        @NotNull List<ResultSetRow> rows,
+        boolean cleanupCache
+    ) throws DBException {
         for (HintProviderInfo pi : hintProviders.values()) {
-            if (pi.enabled) {
-                pi.provider.cacheRequiredData(
+            if (pi.enabled && pi.provider instanceof DBDCellHintProvider chp) {
+                chp.cacheRequiredData(
                     monitor,
                     this,
-                    pi.attributes,
+                    !CommonUtils.isEmpty(attributes) ? attributes : pi.attributes,
                     rows,
                     cleanupCache);
             }

@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.internal;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class ResultSetMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages"; //$NON-NLS-1$
@@ -416,6 +416,7 @@ public class ResultSetMessages extends NLS {
     public static String panel_editor_text_loading_placeholder_label;
     public static String panel_editor_text_word_wrap_name;
     public static String panel_editor_text_auto_format_name;
+    public static String panel_editor_text_minify_name;
     public static String panel_editor_text_encoding_name;
     public static String panel_editor_text_encoding_title;
     public static String panel_editor_text_content_limitation_lbl;

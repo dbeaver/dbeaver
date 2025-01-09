@@ -74,6 +74,10 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<DBDValueHint
         return getDescriptors();
     }
 
+    public List<ValueHintProviderDescriptor> getHintDescriptors(@NotNull DBDValueHintProvider.HintObject forObject) {
+        return getDescriptors().stream().filter(d -> d.getForObject() == forObject).toList();
+    }
+
     @NotNull
     @Override
     protected List<ValueHintProviderDescriptor> getDescriptors() {
@@ -128,6 +132,10 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<DBDValueHint
                 configurationMap = gson.fromJson(
                     configContent,
                     new TypeToken<Map<String, ValueHintProviderConfiguration>>() {}.getType());
+                if (configurationMap == null) {
+                    // May happen if json deserializes to null
+                    configurationMap = new LinkedHashMap<>();
+                }
             }
         } catch (Exception e) {
             log.error("Error loading hint providers configuration", e);

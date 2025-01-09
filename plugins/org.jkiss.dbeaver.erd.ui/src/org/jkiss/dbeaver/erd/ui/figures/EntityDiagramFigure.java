@@ -27,10 +27,9 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw2d.text.FlowPage;
 import org.eclipse.draw2d.text.TextFlow;
 import org.eclipse.jface.resource.JFaceResources;
-import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.editor.ERDGraphicalViewer;
+import org.jkiss.dbeaver.erd.ui.editor.ERDThemeSettings;
 import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -57,7 +56,7 @@ public class EntityDiagramFigure extends FreeformLayer {
 
         //setOpaque(true);
         //setChildrenOrientation(Orientable.HORIZONTAL);
-        setBackgroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
+        setBackgroundColor(ERDThemeSettings.instance.diagramBackground);
 
         addFigureListener(new FigureListener() {
             @Override

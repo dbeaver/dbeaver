@@ -24,8 +24,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.jkiss.dbeaver.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.erd.model.ERDElement;
-import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.erd.ui.editor.ERDThemeSettings;
 
 import java.util.List;
 
@@ -134,7 +133,7 @@ public abstract class NodePart extends PropertyAwarePart implements NodeEditPart
             newBorder = new MarginBorder(5);
         } else {
             newBorder = new CompoundBorder(
-                new LineBorder(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_LINES_FOREGROUND), borderWidth),
+                new LineBorder(ERDThemeSettings.instance.linesForeground, borderWidth),
                 new MarginBorder(5)
             );
         }
@@ -153,7 +152,7 @@ public abstract class NodePart extends PropertyAwarePart implements NodeEditPart
         if (figure != null) {
             figure.setBackgroundColor(
                 color == null ?
-                    UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_NOTE_BACKGROUND) :
+                    ERDThemeSettings.instance.noteBackground :
                     color);
         }
     }
@@ -170,7 +169,7 @@ public abstract class NodePart extends PropertyAwarePart implements NodeEditPart
         if (figure != null) {
             figure.setForegroundColor(
                 color == null ?
-                    UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_NOTE_FOREGROUND) :
+                    ERDThemeSettings.instance.noteForeground :
                     color);
         }
     }

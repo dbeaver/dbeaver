@@ -23,14 +23,13 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -38,8 +37,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-@RunWith(MockitoJUnitRunner.class)
-public class GreenplumExternalTableTest {
+public class GreenplumExternalTableTest extends DBeaverUnitTest {
     @Mock
     DBRProgressMonitor monitor;
 

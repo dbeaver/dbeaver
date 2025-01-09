@@ -42,9 +42,9 @@ import java.util.List;
 public class SQLHyperlinkDetector extends AbstractHyperlinkDetector {
     static protected final Log log = Log.getLog(SQLHyperlinkDetector.class);
 
-    private SQLContextInformer contextInformer;
+    private final SQLContextInformer contextInformer;
 
-    public SQLHyperlinkDetector(SQLEditorBase editor, SQLContextInformer contextInformer) {
+    public SQLHyperlinkDetector(SQLContextInformer contextInformer) {
         this.contextInformer = contextInformer;
     }
 

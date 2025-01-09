@@ -1337,24 +1337,42 @@
                     <parameter name="use-search-string-escape" value="true"/>
                 </driver>
 
-                <!-- Salesforce CDP-->
+                <!-- Salesforce Data Cloud (Legacy) -->
                 <driver
                         id="salesforce_datacloud_jdbc"
-                        label="Salesforce Data Cloud"
+                        label="Salesforce Data Cloud (Legacy)"
                         class="com.salesforce.cdp.queryservice.QueryServiceDriver"
                         icon="icons/salesforce_icon.png"
                         iconBig="icons/salesforce_icon_big.png"
                         sampleURL="jdbc:queryService-jdbc:{database}"
                         defaultDatabase="https://login.salesforce.com"
-                        description="Salesforce Data Cloud JDBC driver"
+                        description="Legacy Salesforce Data Cloud JDBC driver"
                         webURL="https://github.com/forcedotcom/Salesforce-CDP-jdbc"
                         databaseDocumentationSuffixURL="Database-driver-Salesforce"
                         categories="sql">
                     <replace provider="generic" driver="salesforce_jdbc"/>
-                    <file type="jar" path="https://github.com/forcedotcom/Salesforce-CDP-jdbc/releases/download/release_2024.4B/Salesforce-cdp-1.19.4.jar" bundle="!drivers.salesforce"/>
-                    <file type="jar" path="drivers/salesforce" bundle="drivers.salesforce"/>
-                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.salesforce"/>
-                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.salesforce"/>
+                    <file type="jar" path="https://github.com/forcedotcom/Salesforce-CDP-jdbc/releases/download/release_2024.4B/Salesforce-cdp-1.19.4.jar"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
+                </driver>
+
+                <!-- Salesforce Data Cloud -->
+                <driver
+                        id="salesforce_datacloud"
+                        label="Salesforce Data Cloud"
+                        class="com.salesforce.datacloud.jdbc.DataCloudJDBCDriver"
+                        icon="icons/salesforce_icon.png"
+                        iconBig="icons/salesforce_icon_big.png"
+                        sampleURL="jdbc:salesforce-datacloud://{database}"
+                        defaultDatabase="login.salesforce.com"
+                        description="Salesforce Data Cloud JDBC driver"
+                        webURL="https://github.com/forcedotcom/datacloud-jdbc"
+                        databaseDocumentationSuffixURL="Database-driver-Salesforce"
+                        categories="sql">
+                    <replace provider="generic" driver="salesforce_jdbc"/>
+                    <file type="jar" path="maven:/com.salesforce.datacloud:jdbc:RELEASE[0.20.0]" bundle="!drivers.salesforce_datacloud"/>
+                    <file type="jar" path="drivers/salesforce_datacloud" bundle="drivers.salesforce_datacloud"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.salesforce_datacloud"/>
+                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.salesforce_datacloud"/>
                 </driver>
 
                 <!--

@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.AbstractObjectCache;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -91,6 +92,10 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
         throws DBException
     {
         if (isFullyCached() || monitor.isForceCacheUsage() || monitor.isCanceled()) {
+            return;
+        }
+        if (DBWorkbench.getPlatform().isUnitTestMode()) {
+            log.debug("[TEST] Skip cache read in test mode");
             return;
         }
 

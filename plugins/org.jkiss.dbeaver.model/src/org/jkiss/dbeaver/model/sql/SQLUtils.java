@@ -468,8 +468,8 @@ public final class SQLUtils {
         @NotNull DBPDataSource dataSource,
         @Nullable String conditionTable,
         @NotNull StringBuilder query,
-        boolean inlineCriteria)
-    {
+        boolean inlineCriteria
+    ) throws DBException {
         appendConditionString(filter, dataSource, conditionTable, query, inlineCriteria, false);
     }
 
@@ -480,9 +480,15 @@ public final class SQLUtils {
         @NotNull StringBuilder query,
         boolean inlineCriteria,
         boolean subQuery
-    ) {
-        dataSource.getSQLDialect().getQueryGenerator().appendConditionString(filter, dataSource, conditionTable, query, inlineCriteria,
-            subQuery);
+    ) throws DBException {
+        dataSource.getSQLDialect().getQueryGenerator().appendConditionString(
+            filter,
+            dataSource,
+            conditionTable,
+            query,
+            inlineCriteria,
+            subQuery
+        );
     }
 
     public static void appendConditionString(
@@ -492,9 +498,17 @@ public final class SQLUtils {
         @Nullable String conditionTable,
         @NotNull StringBuilder query,
         boolean inlineCriteria,
-        boolean subQuery) {
-        dataSource.getSQLDialect().getQueryGenerator().appendConditionString(filter, constraints, dataSource,
-            conditionTable, query, inlineCriteria, subQuery);
+        boolean subQuery
+    ) throws DBException {
+        dataSource.getSQLDialect().getQueryGenerator().appendConditionString(
+            filter,
+            constraints,
+            dataSource,
+            conditionTable,
+            query,
+            inlineCriteria,
+            subQuery
+        );
     }
 
     public static void appendOrderString(
@@ -1027,11 +1041,11 @@ public final class SQLUtils {
     }
 
     public static void appendQueryConditions(
-        DBPDataSource dataSource,
+        @NotNull DBPDataSource dataSource,
         @NotNull StringBuilder query,
         @Nullable String tableAlias,
         @Nullable DBDDataFilter dataFilter
-    ) {
+    ) throws DBException {
         dataSource.getSQLDialect().getQueryGenerator().appendQueryConditions(dataSource, query, tableAlias, dataFilter);
     }
 

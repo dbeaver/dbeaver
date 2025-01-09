@@ -86,6 +86,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     private SQLDialectMetadata scriptDialect;
     private boolean inheritClients;
     private boolean inheritAuthModels = true;
+    private boolean inheritProviderProperties;
 
     public DataSourceProviderDescriptor(DataSourceProviderRegistry registry, IConfigurationElement config) {
         super(config);
@@ -197,6 +198,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
 
                 // Load provider properties
                 {
+                    inheritProviderProperties = CommonUtils.getBoolean(config.getAttribute("inheritProviderProperties"), false);
                     for (IConfigurationElement propsElement : driversElement.getChildren(RegistryConstants.TAG_PROVIDER_PROPERTIES)) {
                         String driversSpec = propsElement.getAttribute("drivers");
                         List<ProviderPropertyDescriptor> providerProperties = new ArrayList<>();
@@ -204,6 +206,9 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
                             providerProperties.addAll(ProviderPropertyDescriptor.extractProviderProperties(prop));
                         }
                         this.providerProperties.add(new ProviderPropertiesInto(driversSpec, providerProperties));
+                    }
+                    if (inheritProviderProperties && parentProvider != null) {
+                        this.providerProperties.addAll(parentProvider.providerProperties);
                     }
                 }
             }
