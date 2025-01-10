@@ -22,8 +22,6 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ResourceLocator;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
@@ -96,7 +94,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     }
 
     @Override
-    public void setSite(IDataSourceConnectionEditorSite site)
+    public void setSite(@NotNull IDataSourceConnectionEditorSite site)
     {
         this.site = site;
     }
@@ -209,12 +207,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         if (site.isNew()) {
             Button advSettingsButton = UIUtils.createDialogButton(panel,
                 UIConnectionMessages.dialog_connection_edit_wizard_conn_conf_general_link,
-                new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        site.openSettingsPage("ConnectionPageGeneral");
-                    }
-                });
+                SelectionListener.widgetSelectedAdapter(e -> site.openSettingsPage("ConnectionPageGeneral")));
             advSettingsButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         } else {
             UIUtils.createEmptyLabel(panel, 1, 1);
@@ -243,23 +236,20 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
             driverText.setLayoutData(gd);
 
             if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_DRIVER_MANAGER)) {
-                Button driverButton = UIUtils.createDialogButton(driverInfoComp, UIConnectionMessages.dialog_connection_edit_driver_button, new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                Button driverButton = UIUtils.createDialogButton(driverInfoComp, UIConnectionMessages.dialog_connection_edit_driver_button,
+                    SelectionListener.widgetSelectedAdapter(e -> {
                         if (site.openDriverEditor()) {
                             updateDriverInfo(site.getDriver());
                         }
-                    }
-                });
+                }));
                 driverButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             } else {
                 UIUtils.createEmptyLabel(driverInfoComp, 1, 1);
             }
 
             {
-                licenseButton = UIUtils.createDialogButton(driverInfoComp, UIConnectionMessages.dialog_edit_driver_text_driver_license, new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                licenseButton = UIUtils.createDialogButton(driverInfoComp, UIConnectionMessages.dialog_edit_driver_text_driver_license,
+                    SelectionListener.widgetSelectedAdapter(e -> {
                         String driverLicense = site.getDriver().getLicense();
                         if (CommonUtils.isEmpty(driverLicense)) {
                             driverLicense = "N/A";
@@ -267,8 +257,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
                         AcceptLicenseDialog licenseDialog = new AcceptLicenseDialog(getShell(), site.getDriver().getFullName(), driverLicense);
                         licenseDialog.setViewMode(true);
                         licenseDialog.open();
-                    }
-                });
+                    }));
                 licenseButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             }
         }
@@ -340,12 +329,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
             ToolItem showPasswordLabel = new ToolItem(userManagementToolbar, SWT.NONE);
             showPasswordLabel.setToolTipText("Show password on screen");
             showPasswordLabel.setImage(DBeaverIcons.getImage(UIIcon.SHOW_ALL_DETAILS));
-            showPasswordLabel.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    showPasswordText(serviceSecurity);
-                }
-            });
+            showPasswordLabel.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> showPasswordText(serviceSecurity)));
         }
 
     }
