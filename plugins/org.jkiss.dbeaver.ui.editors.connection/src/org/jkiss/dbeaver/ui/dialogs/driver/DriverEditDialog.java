@@ -331,15 +331,19 @@ public class DriverEditDialog extends HelpEnabledDialog {
         {
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 3;
-            Text idText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.dialog_edit_driver_label_id, driver.getId(), SWT.BORDER | SWT.READ_ONLY);
-            idText.setLayoutData(gd);
+            Text idText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.dialog_edit_driver_label_id, driver.getId(), SWT.BORDER | SWT.READ_ONLY, gd);
             idText.setToolTipText(UIConnectionMessages.dialog_edit_driver_label_id_tip);
         }
 
-        driverDescText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.dialog_edit_driver_label_description, CommonUtils.notEmpty(driver.getDescription()), SWT.BORDER | advStyle);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 3;
-        driverDescText.setLayoutData(gd);
+        gd.heightHint = 3 * UIUtils.getFontHeight(infoGroup);
+        driverDescText = UIUtils.createLabelText(
+            infoGroup,
+            UIConnectionMessages.dialog_edit_driver_label_description,
+            CommonUtils.notEmpty(driver.getDescription()),
+            SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP | advStyle,
+            gd);
 
         if (!CommonUtils.isEmpty(driver.getWebURL())) {
             UIUtils.createControlLabel(infoGroup, UIConnectionMessages.dialog_edit_driver_label_website);
