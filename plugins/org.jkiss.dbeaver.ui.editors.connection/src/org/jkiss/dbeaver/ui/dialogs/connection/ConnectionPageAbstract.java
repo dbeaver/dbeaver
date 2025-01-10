@@ -375,7 +375,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         return imageDescriptor == null ? null : imageDescriptor.createImage();
     }
 
-    protected void createConnectionModeSwitcher(Composite parent, SelectionAdapter typeSwitcher) {
+    protected void createConnectionModeSwitcher(Composite parent, SelectionListener typeSwitcher) {
         Label cnnTypeLabel = UIUtils.createControlLabel(parent, UIConnectionMessages.dialog_connection_mode_label);
         cnnTypeLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         Composite modeGroup = UIUtils.createComposite(parent, 3);
