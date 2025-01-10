@@ -2959,7 +2959,8 @@ public class SQLEditor extends SQLEditorBase implements
             if (tabsToClose.get(0).getData() instanceof SingleTabQueryProcessor sqp) {
                 // to avoid concurrent modification exception
                 List<QueryResultsContainer> results = new ArrayList<>(sqp.getResultContainers());
-                results.stream().skip(1).forEach(QueryResultsContainer::dispose);
+                results.forEach(QueryResultsContainer::dispose);
+                tabsToClose.get(0).dispose();
             }
         }
         // No need to close anything

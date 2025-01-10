@@ -60,7 +60,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
 
     private static final Log log = Log.getLog(ConnectionPageInitialization.class);
 
-    private static final String PAGE_DOCS_LINK = "https://dbeaver.com/docs/dbeaver/Configure-Connection-Initialization-Settings/";
+    private static final String PAGE_DOCS_LINK = "Configure-Connection-Initialization-Settings";
 
     private DataSourceDescriptor dataSourceDescriptor;
 
