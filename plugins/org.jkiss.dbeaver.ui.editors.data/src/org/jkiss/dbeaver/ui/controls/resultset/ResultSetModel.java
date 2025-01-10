@@ -729,13 +729,14 @@ public class ResultSetModel implements DBDResultSetModel {
             }
         }
 
+        // Add new data
+        updateDataFilter();
+
         if (singleSourceEntity == null) {
             singleSourceEntity = DBExecUtils.detectSingleSourceTable(
                 visibleAttributes.toArray(new DBDAttributeBinding[0]));
         }
 
-        // Add new data
-        updateDataFilter();
         updateColorMapping(false);
         appendData(monitor, rows, true);
         updateDataFilter();
