@@ -237,39 +237,47 @@ public class DriverEditDialog extends HelpEnabledDialog {
         driverNameText.setEnabled(driver == null || driver.isCustom());
         driverNameText.addModifyListener(e -> onChangeProperty());
 
-        Label typeLabel = UIUtils.createControlLabel(propsGroup, UIConnectionMessages.dialog_edit_driver_type_label);
-        ((GridData)typeLabel.getLayoutData()).horizontalAlignment = GridData.END;
-        final CSmartCombo<DataSourceProviderDescriptor> providerCombo = new CSmartCombo<>(propsGroup, SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN, new LabelProvider() {
-            @Override
-            public Image getImage(Object element) {
-                return DBeaverIcons.getImage(((DataSourceProviderDescriptor) element).getIcon());
-            }
+        {
+            Composite driverTypeGroup = UIUtils.createComposite(propsGroup, 2);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 2;
+            driverTypeGroup.setLayoutData(gd);
+            UIUtils.createControlLabel(driverTypeGroup, UIConnectionMessages.dialog_edit_driver_type_label);
+            final CSmartCombo<DataSourceProviderDescriptor> providerCombo = new CSmartCombo<>(
+                driverTypeGroup,
+                SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN,
+                new LabelProvider() {
+                    @Override
+                    public Image getImage(Object element) {
+                        return DBeaverIcons.getImage(((DataSourceProviderDescriptor) element).getIcon());
+                    }
 
-            @Override
-            public String getText(Object element) {
-                return ((DataSourceProviderDescriptor) element).getName();
-            }
-        });
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.widthHint = UIUtils.getFontHeight(propsGroup) * 20;
-        providerCombo.setLayoutData(gd);
-        if (newDriver) {
-            for (DataSourceProviderDescriptor provider : DataSourceProviderRegistry.getInstance().getDataSourceProviders()) {
-                if (provider.isDriversManagable()) {
-                    providerCombo.addItem(provider);
+                    @Override
+                    public String getText(Object element) {
+                        return ((DataSourceProviderDescriptor) element).getName();
+                    }
+                });
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.minimumWidth = UIUtils.getFontHeight(propsGroup) * 20;
+            providerCombo.setLayoutData(gd);
+            if (newDriver) {
+                for (DataSourceProviderDescriptor provider : DataSourceProviderRegistry.getInstance().getDataSourceProviders()) {
+                    if (provider.isDriversManagable()) {
+                        providerCombo.addItem(provider);
+                    }
                 }
+                providerCombo.select(provider);
+                providerCombo.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        provider = providerCombo.getItem(providerCombo.getSelectionIndex());
+                        driver = provider.createDriver();
+                    }
+                });
+            } else {
+                providerCombo.addItem(provider);
+                providerCombo.select(provider);
             }
-            providerCombo.select(provider);
-            providerCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    provider = providerCombo.getItem(providerCombo.getSelectionIndex());
-                    driver = provider.createDriver();
-                }
-            });
-        } else {
-            providerCombo.addItem(provider);
-            providerCombo.select(provider);
         }
 
         gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -362,6 +370,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
         CTabItem paramsTab = new CTabItem(group, SWT.NONE);
         paramsTab.setText(UIConnectionMessages.dialog_edit_driver_setting);
         paramsTab.setControl(propsGroup);
+
+        UIUtils.asyncExec(() -> propsGroup.layout(true, true));
     }
 
     private void createLibrariesTab(CTabFolder group) {
