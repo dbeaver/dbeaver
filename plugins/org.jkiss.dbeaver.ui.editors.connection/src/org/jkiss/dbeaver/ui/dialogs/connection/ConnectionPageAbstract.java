@@ -64,6 +64,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     protected static final String GROUP_CONNECTION = "connection"; //$NON-NLS-1$
     protected static final String GROUP_URL = "url"; //$NON-NLS-1$
     protected static final List<String> GROUP_CONNECTION_ARR = List.of(GROUP_CONNECTION);
+    protected static final List<String> GROUP_URL_ARR = List.of(GROUP_URL);
     @NotNull
     protected final Map<String, Set<Control>> propGroupMap = new HashMap<>();
 
