@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ui.controls.resultset.actions;
 
 import org.eclipse.jface.action.Action;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 
 public abstract class AbstractResultSetViewerAction extends Action {
@@ -24,6 +26,11 @@ public abstract class AbstractResultSetViewerAction extends Action {
 
     public AbstractResultSetViewerAction(ResultSetViewer resultSetViewer, String text, int style) {
         super(text, style);
+        this.resultSetViewer = resultSetViewer;
+    }
+
+    public AbstractResultSetViewerAction(ResultSetViewer resultSetViewer, String text, DBPImage icon) {
+        super(text, DBeaverIcons.getImageDescriptor(icon));
         this.resultSetViewer = resultSetViewer;
     }
 

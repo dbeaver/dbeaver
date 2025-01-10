@@ -16,17 +16,14 @@
  */
 package org.jkiss.dbeaver.registry.data.hints;
 
-import org.jkiss.dbeaver.Log;
-
 import java.util.Map;
 
 /**
  * ValueHintProviderConfiguration
  */
 public class ValueHintProviderConfiguration {
-    private static final Log log = Log.getLog(ValueHintProviderConfiguration.class);
 
-    private transient final String hintProviderDescriptor;
+    private final transient String hintProviderDescriptor;
     private boolean enabled;
     private Map<String, Object> parameters;
 
@@ -53,4 +50,5 @@ public class ValueHintProviderConfiguration {
     public void setParameters(Map<String, Object> parameters) {
         this.parameters = parameters;
     }
+
 }

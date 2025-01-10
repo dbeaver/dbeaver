@@ -21,8 +21,8 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-
-import org.jkiss.dbeaver.Log;import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -48,7 +48,8 @@ import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryDeleteModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryInsertModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryUpdateModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.*;
-import org.jkiss.dbeaver.model.sql.semantics.model.select.*;
+import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
 import org.jkiss.dbeaver.model.stm.*;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -917,9 +918,10 @@ public class SQLQueryModelRecognizer {
     
     public class LexicalScopeHolder implements AutoCloseable {
 
+        @NotNull
         public final SQLQueryLexicalScope lexicalScope;
         
-        public LexicalScopeHolder(SQLQueryLexicalScope scope) {
+        public LexicalScopeHolder(@NotNull SQLQueryLexicalScope scope) {
             this.lexicalScope = scope;
         }
 
