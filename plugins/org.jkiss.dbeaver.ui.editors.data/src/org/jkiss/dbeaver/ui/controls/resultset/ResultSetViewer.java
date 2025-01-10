@@ -2903,7 +2903,7 @@ public class ResultSetViewer extends Viewer
             manager.add(viewMenu);
         }
 
-        if (activePresentationDescriptor.supportsHints()) {
+        if (activePresentationDescriptor.supportsHints() && row != null && attr != null) {
             // Hints
             MenuManager hintsMenu = new MenuManager(ResultSetMessages.controls_resultset_viewer_action_view_hints);
             hintsMenu.setRemoveAllWhenShown(true);
