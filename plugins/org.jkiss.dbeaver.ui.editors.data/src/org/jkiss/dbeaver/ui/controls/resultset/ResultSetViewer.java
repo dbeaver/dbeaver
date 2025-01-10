@@ -127,13 +127,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 /**
  * ResultSetViewer
- *
- * TODO: not-editable cells (struct owners in record mode)
- * TODO: PROBLEM. Multiple occurrences of the same struct type in a single table.
- * Need to make wrapper over DBSAttributeBase or something. Or maybe it is not a problem
- * because we search for binding by attribute only in constraints and for unique key columns which are unique?
- * But what PK has struct type?
- *
  */
 public class ResultSetViewer extends Viewer
     implements DBPContextProvider, IResultSetController, ISaveablePart2, DBPAdaptable, DBPEventListener
@@ -2910,6 +2903,14 @@ public class ResultSetViewer extends Viewer
             manager.add(viewMenu);
         }
 
+        if (activePresentationDescriptor.supportsHints() && row != null && attr != null) {
+            // Hints
+            MenuManager hintsMenu = new MenuManager(ResultSetMessages.controls_resultset_viewer_action_view_hints);
+            hintsMenu.setRemoveAllWhenShown(true);
+            hintsMenu.addMenuListener(manager12 -> fillAttributeHintsMenu(manager12, attr, row));
+            manager.add(hintsMenu);
+        }
+
         if (dataSource != null && !dataSource.getContainer().getNavigatorSettings().isHideVirtualModel()) {
             MenuManager viewMenu = new MenuManager(
                 ResultSetMessages.controls_resultset_viewer_action_logical_structure,
@@ -3014,14 +3015,6 @@ public class ResultSetViewer extends Viewer
             binaryFormatMenu.addMenuListener(manager12 -> fillBinaryFormatMenu(manager12, attr));
             viewMenu.add(binaryFormatMenu);
         }
-        if (activePresentationDescriptor.supportsHints()) {
-            // Hints
-            viewMenu.add(new Separator());
-            MenuManager hintsMenu = new MenuManager(ResultSetMessages.controls_resultset_viewer_action_view_hints);
-            hintsMenu.setRemoveAllWhenShown(true);
-            hintsMenu.addMenuListener(manager12 -> fillAttributeHintsMenu(manager12, attr, row));
-            viewMenu.add(hintsMenu);
-        }
 
         // Row colors
         viewMenu.add(new Separator());
@@ -3049,16 +3042,25 @@ public class ResultSetViewer extends Viewer
     }
 
     private void fillAttributeHintsMenu(IMenuManager menuManager, DBDAttributeBinding attr, ResultSetRow row) {
+        // Collect all potentially applicable hints
+        Set<DBDValueHintProvider> applicableHintProviders = getModel().getHintContext().getApplicableHintProviders();
+        List<ValueHintProviderDescriptor> applicableHints = ValueHintRegistry.getInstance().getHintDescriptors()
+            .stream().filter(hd -> applicableHintProviders.contains(hd.getInstance())).toList();
+
         Object cellValue = getModel().getCellValue(attr, row);
         Map<DBDValueHint, UIPropertyConfiguratorDescriptor> configurators = new LinkedHashMap<>();
         for (DBDValueHintProvider.HintObject ho : DBDValueHintProvider.HintObject.values()) {
             menuManager.add(new Separator());
+            // Get filtered hint types
+            List<ValueHintProviderDescriptor> allHints = ValueHintRegistry.getInstance().getHintDescriptors(ho).stream()
+                .filter(applicableHints::contains).toList();
+
             fillHintItems(
                 ho,
                 menuManager,
                 attr,
                 row,
-                ValueHintRegistry.getInstance().getHintDescriptors(ho),
+                allHints,
                 cellValue,
                 configurators);
         }
@@ -3069,6 +3071,24 @@ public class ResultSetViewer extends Viewer
                 menuManager.add(new HintConfigurationAction(this, attr, entry.getKey(), entry.getValue()));
             }
         }
+
+        {
+            menuManager.add(new Separator());
+            MenuManager configLevelMenu = new MenuManager("Configure for");
+            configLevelMenu.setRemoveAllWhenShown(true);
+            configLevelMenu.addMenuListener(this::fillAttributeHintsConfigLevelMenu);
+            menuManager.add(configLevelMenu);
+        }
+    }
+
+    private void fillAttributeHintsConfigLevelMenu(IMenuManager menuManager) {
+        boolean singleSource = getModel().isSingleSource();
+        for (DBDValueHintContext.HintConfigurationLevel cl : DBDValueHintContext.HintConfigurationLevel.values()) {
+            if (cl == DBDValueHintContext.HintConfigurationLevel.ENTITY && !singleSource) {
+                continue;
+            }
+            menuManager.add(new HintConfigurationLevelAction(this, cl));
+        }
     }
 
     private void fillHintItems(
@@ -3076,7 +3096,7 @@ public class ResultSetViewer extends Viewer
         IMenuManager menuManager,
         DBDAttributeBinding attr,
         ResultSetRow row,
-        List<ValueHintProviderDescriptor> hdList,
+        Collection<ValueHintProviderDescriptor> hdList,
         Object cellValue,
         Map<DBDValueHint, UIPropertyConfiguratorDescriptor> configurators
     ) {
@@ -3085,7 +3105,7 @@ public class ResultSetViewer extends Viewer
         }
         menuManager.add(new DisabledLabelAction(getHintObjectLabel(ho) + " hints"));
         for (ValueHintProviderDescriptor hd : hdList) {
-            menuManager.add(new HintEnablementAction(this, hd));
+            menuManager.add(new HintEnablementAction(this, hd, attr));
 
             if (hd.getInstance() instanceof DBDCellHintProvider chp) {
                 DBDValueHint[] valueHint = chp.getCellHints(
@@ -3316,7 +3336,7 @@ public class ResultSetViewer extends Viewer
             .collect(Collectors.toList());
     }
 
-    boolean hasColorOverrides() {
+    public boolean hasColorOverrides() {
         final DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer == null) {
             return false;
@@ -3328,7 +3348,7 @@ public class ResultSetViewer extends Viewer
         return !virtualEntity.getColorOverrides().isEmpty();
     }
 
-    boolean hasColumnTransformers() {
+    public boolean hasColumnTransformers() {
         final DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer == null) {
             return false;
@@ -3499,7 +3519,7 @@ public class ResultSetViewer extends Viewer
                         if (operator.getArgumentCount() > 0) {
                             if (!hasItems) {
                                 filtersMenu.add(new Separator());
-                                filtersMenu.add(new EmptyAction(type.title));
+                                filtersMenu.add(new EmptyAction(type.getTitle()));
                             }
                             hasItems = true;
                             filtersMenu.add(new FilterByAttributeAction(this, operator, type, attribute));

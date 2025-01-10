@@ -29,6 +29,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
@@ -175,13 +176,16 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
                     DBPDataSource dataSource = editor.getDataSource();
 
-                    SQLAutocompletionMode mode = SQLAutocompletionMode.fromPreferences(this.editor.getActivePreferenceStore());
+                    DBPPreferenceStore store = this.editor.getActivePreferenceStore();
+                    SQLAutocompletionMode mode = SQLAutocompletionMode.fromPreferences(store);
+                    boolean useNewCompletionEngine = mode.useNewAnalyzer && store.getBoolean(SQLPreferenceConstants.ADVANCED_HIGHLIGHTING_ENABLE)
+                        && store.getBoolean(SQLPreferenceConstants.READ_METADATA_FOR_SEMANTIC_ANALYSIS);
 
                     // UIUtils.waitJobCompletion(..) uses job.isFinished() which is not dropped on reschedule,
                     // so we should be able to recreate the whole job object including all its non-reusable dependencies.
                     List<Supplier<ProposalsComputationJobHolder>> completionJobSuppliers = new ArrayList<>();
 
-                    if (request.getWordPart() != null && mode.useOldAnalyzer) {
+                    if (request.getWordPart() != null && mode.useOldAnalyzer || !useNewCompletionEngine) {
                         if (dataSource != null) {
                             completionJobSuppliers.add(() -> {
                                 // old analyzer is not reusable, but it doesn't matter because see the next comment below
@@ -206,7 +210,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                         }
                     }
 
-                    if (mode.useNewAnalyzer) {
+                    if (useNewCompletionEngine) {
                         // new analyzer is reusable
                         SQLQueryCompletionAnalyzer newAnalyzer = new SQLQueryCompletionAnalyzer(this.editor, request, completionRequestPosition);
                         completionJobSuppliers.add(() -> new ProposalsComputationJobHolder(new NewProposalSearchJob(newAnalyzer)) {

@@ -26,10 +26,9 @@ import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * DataTypeProviderRegistry
@@ -50,6 +49,7 @@ public class DataTypeProviderRegistry implements DBDRegistry
     }
 
     private final List<ValueHandlerDescriptor> dataTypeProviders = new ArrayList<>();
+    private final Map<String, ValueHandlerDescriptor> dataTypeProvidersMap = new HashMap<>();
     private final List<AttributeTransformerDescriptor> dataTypeTransformers = new ArrayList<>();
 
     private DataTypeProviderRegistry()
@@ -65,11 +65,49 @@ public class DataTypeProviderRegistry implements DBDRegistry
                 if ("provider".equals(ext.getName())) {
                     ValueHandlerDescriptor provider = new ValueHandlerDescriptor(ext);
                     dataTypeProviders.add(provider);
+                    dataTypeProvidersMap.put(provider.getId(), provider);
                 } else if ("transformer".equals(ext.getName())) {
                     dataTypeTransformers.add(new AttributeTransformerDescriptor(ext));
                 }
             }
         }
+        // Order providers. More precise come first
+        dataTypeProviders.sort((o1, o2) -> {
+            if (o1.isGlobal()) {
+                return o2.isGlobal() ? -1 : 0;
+            } else if (o2.isGlobal()) {
+                return 1;
+            }
+            String p1 = o1.getParentProvider();
+            String p2 = o2.getParentProvider();
+            if (p1 == null) {
+                return p2 == null ? 0 : 1;
+            } else if (p2 == null) {
+                return -1;
+            }
+
+            ValueHandlerDescriptor parent1 = getValueHandler(p1);
+            ValueHandlerDescriptor parent2 = getValueHandler(p2);
+            if (parent1.isChildOf(parent2)) {
+                return -1;
+            } else if (parent2.isChildOf(parent1)) {
+                return 1;
+            }
+            return 0;
+        });
+    }
+
+    private static boolean isChildOfAnyProvider(List<DataSourceProviderDescriptor> dsList1, List<DataSourceProviderDescriptor> dsList2) {
+        for (DataSourceProviderDescriptor ds1 : dsList1) {
+            for (DataSourceProviderDescriptor ds2 : dsList2) {
+                for (DataSourceProviderDescriptor parent = ds2.getParentProvider(); parent != null; parent = parent.getParentProvider()) {
+                    if (parent == ds1) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     public void dispose()
@@ -79,6 +117,10 @@ public class DataTypeProviderRegistry implements DBDRegistry
 
     ////////////////////////////////////////////////////
     // DataType providers
+
+    ValueHandlerDescriptor getValueHandler(@NotNull String id) {
+        return dataTypeProvidersMap.get(id);
+    }
 
     @Nullable
     public DBDValueHandlerProvider getValueHandlerProvider(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject typedObject)
