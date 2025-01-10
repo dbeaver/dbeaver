@@ -54,19 +54,19 @@ import java.util.*;
  */
 public class ClientHomesPanel extends Composite {
     private static final Log log = Log.getLog(ClientHomesPanel.class);
-    public static final String WIKI_CONFIGURE_CLIENT = "https://dbeaver.com/docs/dbeaver/Local-Client-Configuration/";
+    public static final String WIKI_CONFIGURE_CLIENT = "Local-Client-Configuration";
 
     private static String lastHomeDirectory;
 
-    private Table homesTable;
-    private Text idText;
-    private Text pathText;
-    private Text nameText;
-    private Text productNameText;
-    private Text productVersionText;
-    private Button removeButton;
-    private Font fontBold;
-    private Font fontItalic;
+    private final Table homesTable;
+    private final Text idText;
+    private final Text pathText;
+    private final Text nameText;
+    private final Text productNameText;
+    private final Text productVersionText;
+    private final Button removeButton;
+    private final Font fontBold;
+    private final Font fontItalic;
 
     private DBPDriver driver;
 
@@ -257,12 +257,10 @@ public class ClientHomesPanel extends Composite {
 
         for (DBPNativeClientLocation home : allHomes) {
             TableItem item = createHomeItem(clientManager, home, home instanceof RemoteNativeClientLocation || providedHomes.contains(home));
-            if (item != null) {
-                HomeInfo homeInfo = (HomeInfo) item.getData();
-                if (homeInfo.isDefault) {
-                    homesTable.setSelection(homesTable.indexOf(item));
-                    selectHome(homeInfo);
-                }
+            HomeInfo homeInfo = (HomeInfo) item.getData();
+            if (homeInfo.isDefault) {
+                homesTable.setSelection(homesTable.indexOf(item));
+                selectHome(homeInfo);
             }
         }
     }
@@ -302,7 +300,7 @@ public class ClientHomesPanel extends Composite {
     }
 
     private static class ChooserDialog extends org.eclipse.jface.dialogs.Dialog {
-        private DBPDriver driver;
+        private final DBPDriver driver;
         private ClientHomesPanel panel;
         private String selectedHome;
 
