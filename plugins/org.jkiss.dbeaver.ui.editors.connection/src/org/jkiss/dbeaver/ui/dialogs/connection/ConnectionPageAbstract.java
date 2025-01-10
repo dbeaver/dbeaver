@@ -62,9 +62,10 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
 
     protected static final String GROUP_CONNECTION_MODE = "connectionMode"; //$NON-NLS-1$
     protected static final String GROUP_CONNECTION = "connection"; //$NON-NLS-1$
+    protected static final String GROUP_URL = "url"; //$NON-NLS-1$
     protected static final List<String> GROUP_CONNECTION_ARR = List.of(GROUP_CONNECTION);
     @NotNull
-    protected final Map<String, List<Control>> propGroupMap = new HashMap<>();
+    protected final Map<String, Set<Control>> propGroupMap = new HashMap<>();
 
     protected IDataSourceConnectionEditorSite site;
     // Driver name
@@ -419,30 +420,58 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         }
     }
 
-    protected void setupConnectionModeSelection(@NotNull Text urlText, boolean useUrl, @NotNull Collection<String> nonUrlPropGroups) {
+    protected boolean isHideNonApplicableControls() {
+        return false;
+    }
+
+    protected void setupConnectionModeSelection(
+        @NotNull Text urlText,
+        boolean useUrl,
+        @NotNull Collection<String> nonUrlPropGroups
+    ) {
+        addControlToGroup(GROUP_URL, urlText);
+        setupConnectionModeSelection(useUrl, Collections.singleton(GROUP_URL), nonUrlPropGroups);
+    }
+
+    protected void setupConnectionModeSelection(
+        boolean useUrl,
+        @NotNull Collection<String> urlPropGroups,
+        @NotNull Collection<String> nonUrlPropGroups
+    ) {
         if (typeURLRadio != null) typeURLRadio.setSelection(useUrl);
         if (typeManualRadio != null) typeManualRadio.setSelection(!useUrl);
-        urlText.setEditable(useUrl);
-        urlText.setEnabled(useUrl);
 
-        boolean nonUrl = !useUrl;
+        updateConnectionModeControlsVisibility(urlPropGroups, useUrl);
+        updateConnectionModeControlsVisibility(nonUrlPropGroups, !useUrl);
+        if (isHideNonApplicableControls()) {
+            Control shellControl = getControl();
+            if (shellControl instanceof Composite shc) {
+                shc.layout(true, true);
+            }
+        }
+    }
+
+    private void updateConnectionModeControlsVisibility(@NotNull Collection<String> nonUrlPropGroups, boolean enable) {
         for (String groupName : nonUrlPropGroups) {
-            List<Control> controls = propGroupMap.get(groupName);
+            Set<Control> controls = propGroupMap.get(groupName);
             if (controls != null) {
                 for (Control control : controls) {
-                    control.setEnabled(nonUrl);
-                    if (control instanceof Text) {
-                        ((Text) control).setEditable(nonUrl);
+                    control.setEnabled(enable);
+                    if (control instanceof Text text) {
+                        text.setEditable(enable);
+                    }
+                    if (isHideNonApplicableControls()) {
+                        UIUtils.setControlVisible(control, enable);
                     }
                 }
             }
         }
     }
 
-    protected void addControlToGroup(@NotNull String group, @NotNull Control control) {
-        propGroupMap
-            .computeIfAbsent(group, k -> new ArrayList<>())
-            .add(control);
+    protected void addControlToGroup(@NotNull String group, @NotNull Control ... list) {
+        Set<Control> controls = propGroupMap
+            .computeIfAbsent(group, k -> new HashSet<>());
+        Collections.addAll(controls, list);
     }
 
     protected void updateUrlFromSettings(Text urlText) {
