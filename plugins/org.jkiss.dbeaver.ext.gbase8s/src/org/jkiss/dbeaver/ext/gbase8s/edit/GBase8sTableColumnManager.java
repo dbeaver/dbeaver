@@ -22,7 +22,6 @@ import java.util.Map;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sTableColumn;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
@@ -58,17 +57,5 @@ public class GBase8sTableColumnManager extends GenericTableColumnManager
     public void renameObject(DBECommandContext commandContext, GenericTableColumn object, Map<String, Object> options,
             String newName) throws DBException {
         processObjectRename(commandContext, object, options, newName);
-    }
-
-    @Override
-    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList,
-            @NotNull SQLObjectEditor<GenericTableColumn, GenericTableBase>.ObjectChangeCommand command,
-            @NotNull Map<String, Object> options) throws DBException {
-        final GBase8sTableColumn column = (GBase8sTableColumn) command.getObject();
-        actionList.add(new SQLDatabasePersistAction("Modify column",
-                "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " MODIFY "
-                        + getNestedDeclaration(monitor, column.getTable(), command, options)));
-
     }
 }

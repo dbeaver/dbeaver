@@ -306,6 +306,59 @@ public class GBase8sMetaModel extends GenericMetaModel {
     }
 
     @Override
+    public JDBCStatement prepareTableColumnLoadStatement(@NotNull JDBCSession session,
+            @NotNull GenericStructContainer owner, @Nullable GenericTableBase forTable) throws SQLException {
+        String tableName = forTable == null ? owner.getDataSource().getAllObjectsPattern()
+                : JDBCUtils.escapeWildCards(session, forTable.getName());
+        String sql = "SELECT"
+                + " t.tabname::VARCHAR(128) AS TABLE_NAME,"
+                + " c.colname::VARCHAR(128) AS COLUMN_NAME,"
+                + " get_data_type(c.coltype, c.extended_id, 0)::SMALLINT AS DATA_TYPE,"
+                + " 0::SMALLINT AS SOURCE_DATA_TYPE,"
+                + " schema_coltypename(c.coltype, c.extended_id)::VARCHAR(128) AS TYPE_NAME,"
+                + " schema_precision(c.coltype, c.extended_id, c.collength)::INTEGER AS COLUMN_SIZE,"
+                + " schema_numscale(c.coltype, c.collength)::INTEGER AS DECIMAL_DIGITS,"
+                + " schema_numprecradix(c.coltype)::INTEGER AS NUM_PREC_RADIX,"
+                + " CASE d.type"
+                + " WHEN 'L' THEN get_default_value(c.coltype, c.extended_id, c.collength, d.default::lvarchar(256))::VARCHAR(254)"
+                + " WHEN 'E' THEN read_defaultstr(c.tabid, c.colno, c.coltype, c.collength, c.extended_id)::VARCHAR(32731)"
+                + " WHEN 'C' THEN 'current' || replace(get_colname(c.coltype, c.collength, c.extended_id, 1), schema_coltypename(c.coltype, c.extended_id), '')::VARCHAR(254)"
+                + " WHEN 'S' THEN 'dbservername'::VARCHAR(254)"
+                + " WHEN 'U' THEN 'user'::VARCHAR(254)"
+                + " WHEN 'T' THEN 'today'::VARCHAR(254)"
+                + " WHEN 'N' THEN 'null'::VARCHAR(10)"
+                + " ELSE null::VARCHAR(254)"
+                + " END AS COLUMN_DEF,"
+                + " cc.comments AS REMARKS,"
+                + " schema_isnullable(c.coltype)::INTEGER AS NULLABLE,"
+                + " schema_nullable(c.coltype)::VARCHAR(3) AS ISNULLABLE,"
+                + " c.coltype::INTEGER AS SQL_DATA_TYPE,"
+                + " schema_datetype(c.coltype, c.collength)::INTEGER AS DB_DATA_TYPE,"
+                + " schema_charlen(c.coltype, c.extended_id, c.collength)::INTEGER AS CHAR_OCTET_LENGTH,"
+                + " c.colno::integer AS ORDINAL_POSITION,"
+                + " schema_isautoincr(c.coltype)::VARCHAR(3) AS IS_AUTOINCREMENT,"
+                + " null::VARCHAR(254) AS IS_GENERATEDCOLUMN,"
+                + " c.extended_id::INTEGER AS EXTENDED_ID,"
+                + " c.colattr::INTEGER AS COLATTR,"
+                + " c.coltype"
+                + " FROM"
+                + " systables t,"
+                + " OUTER sysdefaults d,"
+                + " syscolumns c,"
+                + " OUTER syscolcomms cc"
+                + " WHERE"
+                + " t.tabid = c.tabid"
+                + " AND d.tabid = t.tabid"
+                + " AND c.colno = d.colno"
+                + " AND t.tabid = cc.tabid"
+                + " AND c.colno = cc.colno"
+                + " AND t.tabname = ?";
+        JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+        dbStat.setString(1, tableName);
+        return dbStat;
+    }
+
+    @Override
     public JDBCStatement prepareTableTriggersLoadStatement(@NotNull JDBCSession session,
             @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws SQLException {
         String query = "SELECT T1.trigname as TRIGGER_NAME, T1.*, T2.tabname AS OWNER FROM systriggers AS T1, systables AS T2 "
@@ -392,6 +445,11 @@ public class GBase8sMetaModel extends GenericMetaModel {
 
     @Override
     public boolean isTableCommentEditable() {
+        return true;
+    }
+
+    @Override
+    public boolean isTableColumnCommentEditable() {
         return true;
     }
 
