@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.security;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.model.auth.AuthPropertyDescriptor;
+import org.jkiss.dbeaver.model.impl.LocalizedPropertyDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;

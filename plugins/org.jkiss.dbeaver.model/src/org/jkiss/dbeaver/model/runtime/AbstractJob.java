@@ -264,7 +264,7 @@ public abstract class AbstractJob extends Job
                         return GeneralUtils.makeExceptionStatus(e);
                     }
                 } catch (Throwable e) {
-                    log.debug("Block cancel internal error", e); //$NON-N LS-1$
+                    log.debug("Block cancel internal error: " + e.getMessage()); //$NON-N LS-1$
                     return Status.CANCEL_STATUS;
                 }
                 blockCanceled = true;

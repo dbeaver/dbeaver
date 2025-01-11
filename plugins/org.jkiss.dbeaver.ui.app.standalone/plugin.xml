@@ -185,6 +185,13 @@
                 allowMultiple="false"
                 icon="icons/help.png"
                 name="Help"/-->
+        <view
+            name="%view.outline.title"
+            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/toggle_outline.png"
+            category="org.eclipse.ui"
+            class="org.eclipse.ui.views.contentoutline.ContentOutline"
+            id="org.eclipse.ui.views.ContentOutline">
+        </view>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
@@ -396,6 +403,7 @@
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
         </page>
         <page category="org.jkiss.dbeaver.preferences.main.connections" id="org.jkiss.dbeaver.preferences.main.meta" class="org.jkiss.dbeaver.ui.preferences.PrefPageMetaData" name="%pref.page.name.meta">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.main.meta"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
         </page>
         <page category="org.eclipse.ui.preferencePages.Workbench" id="org.jkiss.dbeaver.preferences.misc.qm" class="org.jkiss.dbeaver.ui.preferences.PrefPageQueryManager" name="%pref.page.name.query.manager">

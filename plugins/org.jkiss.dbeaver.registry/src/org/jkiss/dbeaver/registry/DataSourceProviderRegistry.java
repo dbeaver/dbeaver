@@ -66,6 +66,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     }
 
     private final List<DataSourceProviderDescriptor> dataSourceProviders = new ArrayList<>();
+    private final Map<String, DataSourceProviderDescriptor> dataSourceProvidersMap = new HashMap<>();
     private final List<DBPRegistryListener> registryListeners = new ArrayList<>();
     private final List<DataSourceHandlerDescriptor> dataSourceHandlers = new ArrayList<>();
     private final Map<String, DBPConnectionType> connectionTypes = new LinkedHashMap<>();
@@ -128,6 +129,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                     case RegistryConstants.TAG_DATASOURCE: {
                         DataSourceProviderDescriptor provider = new DataSourceProviderDescriptor(this, ext);
                         dataSourceProviders.add(provider);
+                        dataSourceProvidersMap.put(provider.getId(), provider);
                         break;
                     }
                     case RegistryConstants.TAG_DATASOURCE_ORIGIN: {
@@ -334,18 +336,14 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     @Override
     @Nullable
     public DataSourceProviderDescriptor getDataSourceProvider(String id) {
-        for (DataSourceProviderDescriptor provider : dataSourceProviders) {
-            if (provider.getId().equals(id)) {
-                return provider;
-            }
-        }
-        return null;
+        return dataSourceProvidersMap.get(id);
     }
 
     @Override
     public DBPDataSourceProviderDescriptor makeFakeProvider(String providerID) {
         DataSourceProviderDescriptor provider = new DataSourceProviderDescriptor(this, providerID);
         dataSourceProviders.add(provider);
+        dataSourceProvidersMap.put(providerID, provider);
         return provider;
     }
 

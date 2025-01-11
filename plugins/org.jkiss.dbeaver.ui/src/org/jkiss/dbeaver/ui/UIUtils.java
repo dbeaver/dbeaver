@@ -41,7 +41,6 @@ import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.window.IShellProvider;
@@ -72,10 +71,11 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DummyRunnableContext;
@@ -1730,13 +1730,22 @@ public class UIUtils {
         asyncExec(() -> display.post(event));
     }
 
-    public static void drawMessageOverControl(Control control, PaintEvent e, String message, int offset) {
-        drawMessageOverControl(control, e.gc, message, offset);
+    public static Point drawMessageOverControl(Control control, PaintEvent e, String message, int offset) {
+        return drawMessageOverControl(control, e.gc, message, offset);
     }
 
-    public static void drawMessageOverControl(Control control, GC gc, String message, int offset) {
+    public static Point drawMessageOverControl(Control control, GC gc, String message, int offset) {
         Rectangle bounds = control.getBounds();
-        final int height = gc.textExtent(message).y;
+        Point textSize = gc.textExtent(message);
+
+        if (textSize.x > bounds.width) {
+            double charsPerLine = (double) bounds.width / gc.getFontMetrics().getAverageCharacterWidth();
+
+            message = UITextUtils.wrap(message, (int) charsPerLine);
+            textSize = gc.textExtent(message);
+        }
+
+        final int height = textSize.y;
         for (String line : message.split("\n")) {
             line = line.trim();
             Point ext = gc.textExtent(line);
@@ -1745,6 +1754,8 @@ public class UIUtils {
                 (bounds.height - height) / 2 + offset);
             offset += ext.y;
         }
+
+        return textSize;
     }
 
     public static SharedTextColors getSharedTextColors() {
@@ -2290,7 +2301,7 @@ public class UIUtils {
     }
 
     public static Font getMonospaceFont() {
-        return PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getFontRegistry().get(UIFonts.DBEAVER_FONTS_MONOSPACE);
+        return BaseThemeSettings.instance.monospaceFont;
     }
 
     public static <T extends Control> T getParentOfType(Control control, Class<T> parentType) {
@@ -2347,26 +2358,6 @@ public class UIUtils {
         }
     }
 
-    public static void installAndUpdateMainFont(@NotNull Control control) {
-        final IPropertyChangeListener listener = event -> {
-            if (event.getProperty().equals(UIFonts.DBEAVER_FONTS_MAIN_FONT)) {
-                applyMainFont(control);
-            }
-        };
-
-        PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(listener);
-        control.addDisposeListener(e -> PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(listener));
-
-        applyMainFont(control);
-    }
-
-    public static void applyMainFont(@Nullable Control control) {
-        if (control == null || control.isDisposed() || mainFontIsDefault()) {
-            return;
-        }
-        applyMainFont(control, JFaceResources.getFont(UIFonts.DBEAVER_FONTS_MAIN_FONT));
-    }
-
     @Nullable
     public static Text recreateTextControl(@Nullable Text original, int style) {
         if (original == null || original.getStyle() == style) {
@@ -2405,7 +2396,27 @@ public class UIUtils {
         }
     }
 
-    private static void applyMainFont(@NotNull Control control, @NotNull Font font) {
+    public static void installAndUpdateMainFont(@NotNull Control control) {
+        BaseThemeSettings.instance.addPropertyListener(
+            UIFonts.DBEAVER_FONTS_MAIN_FONT,
+            s -> applyMainFont(control),
+            control
+        );
+
+        //applyMainFont(control);
+    }
+
+    public static void applyMainFont(@Nullable Control control) {
+        applyMainFont(control, BaseThemeSettings.instance.baseFont);
+    }
+
+    public static void applyMainFont(@Nullable Control control, @NotNull Font font) {
+        if (control == null || control.isDisposed() || mainFontIsDefault()) {
+            return;
+        }
+        if (control instanceof Composite comp) {
+            comp.layout();
+        }
         control.setFont(font);
 
         if (control instanceof Composite) {
@@ -2432,7 +2443,7 @@ public class UIUtils {
                 }
             } else if (data instanceof HandledContributionItem) {
                 MHandledItem model = ((HandledContributionItem) data).getModel();
-                if (model != null ) {
+                if (model != null) {
                     ParameterizedCommand cmd = model.getWbCommand();
                     if (cmd != null && commandId.equals(cmd.getId())) {
                         return item;
@@ -2478,5 +2489,35 @@ public class UIUtils {
         } catch (Exception e) {
             log.error("Unable to enable double buffering", e.getCause());
         }
+    }
+
+    public static String getCatalogSchemaTerms(@Nullable DBPDataSourceContainer dataSourceContainer, boolean checkChangePossibility) {
+        DBPDataSource dataSource = dataSourceContainer == null ? null : dataSourceContainer.getDataSource();
+        if (dataSource != null) {
+            DBPDataSourceInfo dataSourceInfo = dataSource.getInfo();
+            boolean showCatalog = true;
+            boolean showSchema = true;
+            if (checkChangePossibility) {
+                DBCExecutionContext defaultContext = DBUtils.getDefaultContext(dataSource, false);
+                DBCExecutionContextDefaults<?, ?> contextDefaults = defaultContext.getContextDefaults();
+                if (contextDefaults != null) {
+                    showCatalog = contextDefaults.getDefaultCatalog() != null || contextDefaults.supportsCatalogChange();
+                    showSchema = contextDefaults.getDefaultSchema() != null || contextDefaults.supportsSchemaChange();
+                }
+            }
+
+            String catalogTerm = showCatalog ? dataSourceInfo.getCatalogTerm() : null;
+            String schemaTerm = showSchema ? dataSourceInfo.getSchemaTerm() : null;
+            if (CommonUtils.isEmpty(catalogTerm)) {
+                if (!CommonUtils.isEmpty(schemaTerm)) {
+                    return schemaTerm;
+                }
+            } else if (CommonUtils.isEmpty(schemaTerm)) {
+                return catalogTerm;
+            } else {
+                return catalogTerm + "/" + schemaTerm;
+            }
+        }
+        return UIMessages.label_catalog_schema;
     }
 }

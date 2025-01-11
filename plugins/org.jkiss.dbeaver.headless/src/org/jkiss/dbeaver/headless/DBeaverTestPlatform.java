@@ -219,4 +219,8 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
         return isClosing();
     }
 
+    @Override
+    public boolean isUnitTestMode() {
+        return true;
+    }
 }

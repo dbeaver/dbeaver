@@ -190,6 +190,7 @@ public class SQLGeneratorContributor extends CompoundContributionItem {
                             activePage.getActivePart().getSite(),
                             executionContext,
                             generator);
+                        dialog.setWordWrap(true);
                         dialog.open();
                     }
                 }

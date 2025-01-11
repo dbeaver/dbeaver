@@ -213,6 +213,17 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
 
     }
 
+    @Nullable
+    @Override
+    public String getClientApplicationName() {
+        return null;
+    }
+
+    @Override
+    public void setClientApplicationName(@NotNull String applicationName) {
+        // noop
+    }
+
     @Override
     public DBVModel getVirtualModel() {
         return virtualModel;

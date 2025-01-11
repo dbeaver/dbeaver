@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
-import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -51,7 +50,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
     private final IResultSetPresentation presentation;
     private final GroupingDataContainer dataContainer;
     private final ResultSetViewer groupingViewer;
-    private final List<String> groupAttributes = new ArrayList<>();
+    private final List<SQLGroupingAttribute> groupAttributes = new ArrayList<>();
     private final List<String> groupFunctions = new ArrayList<>();
 
     public GroupingResultsContainer(Composite parent, IResultSetPresentation presentation) {
@@ -79,7 +78,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         return presentation;
     }
 
-    public List<String> getGroupAttributes() {
+    public List<SQLGroupingAttribute> getGroupAttributes() {
         return groupAttributes;
     }
 
@@ -105,6 +104,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         return groupingViewer;
     }
 
+    @NotNull
     @Override
     public DBSDataContainer getDataContainer() {
         return this.dataContainer;
@@ -129,21 +129,19 @@ public class GroupingResultsContainer implements IResultSetContainer {
         groupAttributes.clear();
     }
 
-    void addGroupingAttributes(List<String> attributes) {
-        for (String attrName : attributes) {
-            attrName = cleanupObjectName(attrName);
-            if (!groupAttributes.contains(attrName)) {
-                groupAttributes.add(attrName);
+    void addGroupingAttributes(List<SQLGroupingAttribute> attributes) {
+        for (SQLGroupingAttribute attr : attributes) {
+            if (!groupAttributes.contains(attr)) {
+                groupAttributes.add(attr);
             }
         }
     }
 
-    boolean removeGroupingAttribute(List<String> attributes) {
+    boolean removeGroupingAttribute(List<SQLGroupingAttribute> attributes) {
         boolean changed = false;
-        for (String attrName : attributes) {
-            attrName = cleanupObjectName(attrName);
-            if (groupAttributes.contains(attrName)) {
-                groupAttributes.remove(attrName);
+        for (SQLGroupingAttribute attr : attributes) {
+            if (groupAttributes.contains(attr)) {
+                groupAttributes.remove(attr);
                 changed = true;
             }
         }
@@ -153,32 +151,28 @@ public class GroupingResultsContainer implements IResultSetContainer {
         return changed;
     }
 
-    private String cleanupObjectName(String attrName) {
-        DBPDataSource dataSource = getDataContainer().getDataSource();
-        if (DBUtils.isQuotedIdentifier(dataSource, attrName)) {
-            attrName = DBUtils.getUnQuotedIdentifier(dataSource, attrName);
-        } else {
-            attrName = DBObjectNameCaseTransformer.transformName(dataSource, attrName);
-        }
-        return attrName;
-    }
-
     public void addGroupingFunctions(List<String> functions) {
         for (String func : functions) {
-            func = DBUtils.getUnQuotedIdentifier(getDataContainer().getDataSource(), func);
-            if (!groupFunctions.contains(func)) {
-                groupFunctions.add(func);
+            DBPDataSource dataSource = getDataContainer().getDataSource();
+            if (dataSource != null) {
+                func = DBUtils.getUnQuotedIdentifier(dataSource, func);
+                if (!groupFunctions.contains(func)) {
+                    groupFunctions.add(func);
+                }
             }
         }
     }
 
     public boolean removeGroupingFunction(List<String> attributes) {
         boolean changed = false;
-        for (String func : attributes) {
-            func = DBUtils.getUnQuotedIdentifier(getDataContainer().getDataSource(), func);
-            if (groupFunctions.contains(func)) {
-                groupFunctions.remove(func);
-                changed = true;
+        DBPDataSource dataSource = getDataContainer().getDataSource();
+        if (dataSource != null) {
+            for (String func : attributes) {
+                func = DBUtils.getUnQuotedIdentifier(dataSource, func);
+                if (groupFunctions.contains(func)) {
+                    groupFunctions.remove(func);
+                    changed = true;
+                }
             }
         }
         return changed;
@@ -220,7 +214,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
 
         var groupingQueryGenerator = new SQLGroupingQueryGenerator(dataSource, dbsDataContainer, dialect, syntaxManager, groupAttributes, groupFunctions, isShowDuplicatesOnly);
         dataContainer.setGroupingQuery(groupingQueryGenerator.generateGroupingQuery(queryText));
-        dataContainer.setGroupingAttributes(groupAttributes.toArray(String[]::new));
+        dataContainer.setGroupingAttributes(groupAttributes.toArray(SQLGroupingAttribute[]::new));
         DBDDataFilter dataFilter;
         if (presentation.getController().getModel().isMetadataChanged()) {
             dataFilter = new DBDDataFilter();
@@ -253,7 +247,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         //groupingViewer.refresh();
     }
 
-    void setGrouping(List<String> attributes, List<String> functions) {
+    void setGrouping(List<SQLGroupingAttribute> attributes, List<String> functions) {
         groupAttributes.clear();
         addGroupingAttributes(attributes);
 

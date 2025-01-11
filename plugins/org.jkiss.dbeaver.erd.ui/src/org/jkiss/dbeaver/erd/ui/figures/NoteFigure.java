@@ -28,7 +28,7 @@ import org.eclipse.draw2d.text.FlowPage;
 import org.eclipse.draw2d.text.TextFlow;
 import org.jkiss.dbeaver.erd.model.ERDNote;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.erd.ui.editor.ERDThemeSettings;
 
 /**
  * Figure used to represent a note
@@ -44,11 +44,11 @@ public class NoteFigure extends FlowPage {
         textFlow = new TextFlow(note.getObject());
         add(textFlow);
 
-        setBackgroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_NOTE_BACKGROUND));
-        setForegroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_NOTE_FOREGROUND));
+        setBackgroundColor(ERDThemeSettings.instance.noteBackground);
+        setForegroundColor(ERDThemeSettings.instance.noteForeground);
         setOpaque(true);
         setBorder(new CompoundBorder(
-            new LineBorder(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_LINES_FOREGROUND), ERDUIConstants.DEFAULT_NOTE_BORDER_WIDTH),
+            new LineBorder(ERDThemeSettings.instance.linesForeground, ERDUIConstants.DEFAULT_NOTE_BORDER_WIDTH),
             new MarginBorder(5)
         ));
     }

@@ -18,21 +18,52 @@ package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalSorter;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryCompletionProposal;
+
+import java.util.Comparator;
 
 /**
  * Completion sorter
  */
 public class SQLCompletionSorter implements ICompletionProposalSorter {
 
+    private final SQLEditorBase editor;
+
+    private boolean sortAlphabetically;
+
+    public SQLCompletionSorter(SQLEditorBase editor) {
+        this.editor = editor;
+    }
+
     @Override
     public int compare(ICompletionProposal p1, ICompletionProposal p2) {
-        if (p1 instanceof SQLCompletionProposal && p2 instanceof SQLCompletionProposal) {
-            int score1 = ((SQLCompletionProposal) p1).getProposalScore();
-            int score2 = ((SQLCompletionProposal) p2).getProposalScore();
-            if (score1 > 0 && score2 > 0) {
-                return score2 - score1;
+        int a = getScore(p1);
+        int b = getScore(p2);
+        if (a > 0 || b > 0) {
+            int rc = a - b;
+            if (rc != 0) {
+                return rc;
             }
         }
+        if (sortAlphabetically) {
+            return p1.getDisplayString().compareToIgnoreCase(p2.getDisplayString());
+        } else {
+            return 0;
+        }
+    }
+
+    private static int getScore(ICompletionProposal p) {
+        if (p instanceof SQLCompletionProposal cp) {
+            return cp.getProposalScore();
+        } else if (p instanceof SQLQueryCompletionProposal qcp) {
+            return qcp.getProposalScore();
+        }
         return 0;
+    }
+
+    public void refreshSettings() {
+        this.sortAlphabetically = this.editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSAL_SORT_ALPHABETICALLY);
     }
 }

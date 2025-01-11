@@ -27,7 +27,7 @@ import org.eclipse.swt.graphics.Font;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
-import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
+import org.jkiss.dbeaver.erd.ui.editor.ERDThemeSettings;
 import org.jkiss.dbeaver.erd.ui.editor.ERDViewStyle;
 import org.jkiss.dbeaver.erd.ui.model.ERDDecorator;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.erd.ui.part.AttributePart;
 import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.List;
 
@@ -105,7 +104,7 @@ public class AttributeItemFigure extends Figure
 	}
 
     protected Color getColumnForegroundColor() {
-        return UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_ATTR_FOREGROUND);
+        return ERDThemeSettings.instance.attrForeground;
         //return part.getDiagramPart().getContentPane().getForegroundColor();
     }
 

@@ -23,12 +23,12 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.trace.DBCTrace;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVColorOverride;
@@ -45,7 +45,7 @@ import java.util.*;
 /**
  * Result set model
  */
-public class ResultSetModel {
+public class ResultSetModel implements DBDResultSetModel {
 
     private static final Log log = Log.getLog(ResultSetModel.class);
 
@@ -56,6 +56,8 @@ public class ResultSetModel {
     private DBDDataFilter dataFilter;
     private DBSEntity singleSourceEntity;
     private DBCExecutionSource executionSource;
+
+    private final ResultSetHintContext hintContext;
 
     // Data
     private List<ResultSetRow> curRows = new ArrayList<>();
@@ -71,12 +73,14 @@ public class ResultSetModel {
     private transient boolean metadataDynamic;
 
     public static class AttributeColorSettings {
-        private DBCLogicalOperator operator;
-        private boolean rangeCheck;
-        private boolean singleColumn;
-        private Object[] attributeValues;
-        private Color colorForeground, colorForeground2;
-        private Color colorBackground, colorBackground2;
+        private final DBCLogicalOperator operator;
+        private final boolean rangeCheck;
+        private final boolean singleColumn;
+        private final Object[] attributeValues;
+        private final Color colorForeground;
+        private final Color colorForeground2;
+        private final Color colorBackground;
+        private final Color colorBackground2;
 
         AttributeColorSettings(DBVColorOverride co) {
             this.operator = co.getOperator();
@@ -101,7 +105,7 @@ public class ResultSetModel {
         }
     }
 
-    private final Comparator<DBDAttributeBinding> POSITION_SORTER = new Comparator<DBDAttributeBinding>() {
+    private final Comparator<DBDAttributeBinding> POSITION_SORTER = new Comparator<>() {
         @Override
         public int compare(DBDAttributeBinding o1, DBDAttributeBinding o2) {
             final DBDAttributeConstraint c1 = dataFilter.getConstraint(o1);
@@ -122,7 +126,49 @@ public class ResultSetModel {
     private final Map<DBDAttributeBinding, List<AttributeColorSettings>> colorMapping = new TreeMap<>(POSITION_SORTER);
 
     public ResultSetModel() {
-        dataFilter = createDataFilter();
+        this.hintContext = new ResultSetHintContext(this::getDataContainer, this::getSingleSource);
+        this.dataFilter = createDataFilter();
+    }
+
+    @Override
+    public ResultSetHintContext getHintContext() {
+        return hintContext;
+    }
+
+    @Override
+    public String getReadOnlyStatus(DBPDataSourceContainer dataSourceContainer) {
+        if (isUpdateInProgress()) {
+            return "Update in progress";
+        }
+
+        DBPDataSource dataSource = dataSourceContainer == null ? null : dataSourceContainer.getDataSource();
+        if (dataSource == null || !dataSourceContainer.isConnected()) {
+            return "No connection to database";
+        }
+        if (dataSourceContainer.isConnectionReadOnly()) {
+            return "Connection is in read-only state";
+        }
+        if (dataSource.getInfo().isReadOnlyData()) {
+            return "Read-only data container";
+        }
+        if (!dataSourceContainer.hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_DATA)) {
+            return "Data edit restricted";
+        }
+        if (isUniqueKeyUndefinedButRequired(dataSourceContainer)) {
+            return "No unique key defined";
+        }
+        return null;
+    }
+
+    public boolean isUniqueKeyUndefinedButRequired(@NotNull DBPDataSourceContainer dataSourceContainer) {
+        final DBPPreferenceStore store = dataSourceContainer.getPreferenceStore();
+
+        if (store.getBoolean(ResultSetPreferences.RS_EDIT_DISABLE_IF_KEY_MISSING)) {
+            final DBDRowIdentifier identifier = this.getDefaultRowIdentifier();
+            return identifier == null || !identifier.isValidIdentifier();
+        }
+
+        return false;
     }
 
     @NotNull
@@ -166,37 +212,6 @@ public class ResultSetModel {
         return singleSourceEntity;
     }
 
-    public void resetCellValue(ResultSetCellLocation cellLocation) {
-        ResultSetRow row = cellLocation.getRow();
-        DBDAttributeBinding attr = cellLocation.getAttribute();
-        if (row.getState() == ResultSetRow.STATE_REMOVED) {
-            row.setState(ResultSetRow.STATE_NORMAL);
-        } else if (row.changes != null && row.changes.containsKey(attr)) {
-            DBUtils.resetValue(getCellValue(cellLocation));
-            try {
-                Object origValue = row.changes.get(attr);
-                if (origValue instanceof DBDAttributeBinding refAttr) {
-                    // We reset entire row changes. Cleanup all references on the same top attribute + reset top attribute value
-                    for (var changedValues = row.changes.entrySet().iterator(); changedValues.hasNext(); ) {
-                        if (changedValues.next().getValue() == origValue) {
-                            changedValues.remove();
-                        }
-                    }
-                    attr = refAttr;
-                    origValue = row.changes.get(attr);
-                    cellLocation = new ResultSetCellLocation(attr, cellLocation.getRow(), null);
-                }
-                updateCellValue(cellLocation, origValue, false);
-            } catch (DBException e) {
-                log.error(e);
-            }
-            row.resetChange(attr);
-            if (row.getState() == ResultSetRow.STATE_NORMAL) {
-                changesCount--;
-            }
-        }
-    }
-
     public void refreshChangeCount() {
         changesCount = 0;
         for (ResultSetRow row : curRows) {
@@ -212,6 +227,7 @@ public class ResultSetModel {
         return documentAttribute;
     }
 
+    @Override
     @NotNull
     public DBDAttributeBinding[] getAttributes() {
         return attributes;
@@ -319,6 +335,7 @@ public class ResultSetModel {
         return null;
     }
 
+    @Override
     @Nullable
     public DBDRowIdentifier getDefaultRowIdentifier() {
         for (DBDAttributeBinding column : attributes) {
@@ -372,6 +389,7 @@ public class ResultSetModel {
         return curRows.size();
     }
 
+    @Override
     @NotNull
     public List<ResultSetRow> getAllRows() {
         return curRows;
@@ -408,14 +426,14 @@ public class ResultSetModel {
     @Nullable
     public Object getCellValue(
         @NotNull DBDAttributeBinding attribute,
-        @NotNull ResultSetRow row,
+        @NotNull DBDValueRow row,
         @Nullable int[] rowIndexes,
         boolean retrieveDeepestCollectionElement
     ) {
         return DBUtils.getAttributeValue(
             attribute,
             attributes,
-            row.values,
+            row.getValues(),
             rowIndexes,
             retrieveDeepestCollectionElement
         );
@@ -424,30 +442,10 @@ public class ResultSetModel {
     /**
      * Updates cell value. Saves previous value.
      *
-     * @param cellLocation cell location
      * @param value new value
      * @return true on success
      */
-    public boolean updateCellValue(
-        @NotNull ResultSetCellLocation cellLocation,
-        @Nullable Object value) throws DBException {
-        return updateCellValue(cellLocation, value, true);
-    }
-
-    public boolean updateCellValue(
-        @NotNull ResultSetCellLocation cellLocation,
-        @Nullable Object value,
-        boolean updateChanges
-    ) throws DBException {
-        return updateCellValue(
-            cellLocation.getAttribute(),
-            cellLocation.getRow(),
-            cellLocation.getRowIndexes(),
-            value,
-            updateChanges);
-    }
-
-    public boolean updateCellValue(
+    boolean updateCellValue(
         @NotNull DBDAttributeBinding attr,
         @NotNull ResultSetRow row,
         @Nullable int[] rowIndexes,
@@ -505,7 +503,7 @@ public class ResultSetModel {
             row.changes.put(attr, topAttribute);
         }
 
-        if (value instanceof DBDValue dbValue) {
+        if (value instanceof DBDValue) {
             // New value if also a complex value. Probably DBDContent
             // In this case it must be root attribute
             if (attr != topAttribute && valueToEdit instanceof DBDValue ownerValue) {
@@ -523,7 +521,42 @@ public class ResultSetModel {
         if (updateChanges && row.getState() == ResultSetRow.STATE_NORMAL) {
             changesCount++;
         }
+
         return true;
+    }
+
+    void resetCellValue(@NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, @Nullable int[] rowIndexes) {
+        if (row.getState() == ResultSetRow.STATE_REMOVED) {
+            row.setState(ResultSetRow.STATE_NORMAL);
+        } else if (row.changes != null && row.changes.containsKey(attr)) {
+            DBUtils.resetValue(getCellValue(attr, row, rowIndexes, false));
+            try {
+                Object origValue = row.changes.get(attr);
+                if (origValue instanceof DBDAttributeBinding refAttr) {
+                    // We reset entire row changes. Cleanup all references on the same top attribute + reset top attribute value
+                    for (var changedValues = row.changes.entrySet().iterator(); changedValues.hasNext(); ) {
+                        if (changedValues.next().getValue() == origValue) {
+                            changedValues.remove();
+                        }
+                    }
+                    attr = refAttr;
+                    origValue = row.changes.get(attr);
+                    rowIndexes = null;
+                }
+                updateCellValue(
+                    attr,
+                    row,
+                    rowIndexes,
+                    origValue,
+                    false);
+            } catch (DBException e) {
+                log.error(e);
+            }
+            row.resetChange(attr);
+            if (row.getState() == ResultSetRow.STATE_NORMAL) {
+                changesCount--;
+            }
+        }
     }
 
     boolean isDynamicMetadata() {
@@ -628,6 +661,10 @@ public class ResultSetModel {
                 }
             }
         }
+
+        if (metadataChanged) {
+            hintContext.resetCache();
+        }
     }
 
     private boolean isSameSource(DBDAttributeBinding attr1, DBDAttributeBinding attr2) {
@@ -663,7 +700,7 @@ public class ResultSetModel {
         }
     }
 
-    public void setData(@NotNull List<Object[]> rows) {
+    public void setData(@NotNull DBRProgressMonitor monitor, @NotNull List<Object[]> rows) {
         // Clear previous data
         this.releaseAllData();
         this.clearData();
@@ -694,15 +731,17 @@ public class ResultSetModel {
 
         // Add new data
         updateDataFilter();
-        updateColorMapping(false);
-        appendData(rows, true);
-
-        this.visibleAttributes.sort(POSITION_SORTER);
 
         if (singleSourceEntity == null) {
             singleSourceEntity = DBExecUtils.detectSingleSourceTable(
                 visibleAttributes.toArray(new DBDAttributeBinding[0]));
         }
+
+        updateColorMapping(false);
+        appendData(monitor, rows, true);
+        updateDataFilter();
+
+        this.visibleAttributes.sort(POSITION_SORTER);
 
         hasData = true;
     }
@@ -825,7 +864,7 @@ public class ResultSetModel {
         }
     }
 
-    void appendData(@NotNull List<Object[]> rows, boolean resetOldRows) {
+    void appendData(@NotNull DBRProgressMonitor monitor, @NotNull List<Object[]> rows, boolean resetOldRows) {
         if (resetOldRows) {
             curRows.clear();
         }
@@ -839,6 +878,18 @@ public class ResultSetModel {
         curRows.addAll(newRows);
 
         updateRowColors(resetOldRows, newRows);
+
+        refreshHintsInfo(monitor, newRows);
+    }
+
+    void refreshHintsInfo(@NotNull DBRProgressMonitor monitor, List<ResultSetRow> newRows) {
+        try {
+            hintContext.resetCache();
+            hintContext.initProviders(attributes);
+            hintContext.cacheRequiredData(monitor, null, newRows, true);
+        } catch (Exception e) {
+            log.debug("Error caching data for column hints", e);
+        }
     }
 
     void clearData() {

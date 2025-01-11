@@ -17,6 +17,7 @@
 package org.jkiss.utils;
 
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -24,7 +25,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 
-public class RuntimeUtilsTest {
+public class RuntimeUtilsTest extends DBeaverUnitTest {
 
     @Test
     public void testSplitCommandLine() {

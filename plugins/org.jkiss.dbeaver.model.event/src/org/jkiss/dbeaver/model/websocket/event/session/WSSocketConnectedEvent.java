@@ -17,14 +17,14 @@
 package org.jkiss.dbeaver.model.websocket.event.session;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.websocket.event.WSEventType;
+import org.jkiss.dbeaver.model.websocket.WSConstants;
 
 public class WSSocketConnectedEvent extends WSAbstractSessionEvent {
 
     private final String applicationRunId;
 
     public WSSocketConnectedEvent(@NotNull String applicationRunId) {
-        super(WSEventType.SESSION_WEBSOCKET_CONNECTED);
+        super("cb_session_websocket_connected", WSConstants.TOPIC_SESSION);
         this.applicationRunId = applicationRunId;
     }
 

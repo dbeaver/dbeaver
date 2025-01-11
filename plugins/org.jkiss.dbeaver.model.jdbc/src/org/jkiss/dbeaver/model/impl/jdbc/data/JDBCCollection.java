@@ -125,7 +125,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
         if (isNull()) {
             return DBConstants.NULL_VALUE_LABEL;
         } else {
-            return makeArrayString();
+            return makeArrayString('{', '}');
         }
     }
 

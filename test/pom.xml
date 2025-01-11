@@ -26,6 +26,7 @@
         <module>org.jkiss.dbeaver.ext.snowflake.test</module>
         <module>org.jkiss.dbeaver.ext.sqlite.test</module>
         <module>org.jkiss.dbeaver.model.lsm.test</module>
+        <module>org.jkiss.dbeaver.osgi.test.runner</module>
     </modules>
 
     <build>
