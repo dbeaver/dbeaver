@@ -165,7 +165,11 @@ public class QMUtils {
                     for (QMMStatementExecuteInfo exec = execInfo; exec != null && exec.getSavepoint() == sp; exec = exec.getPrevious()) {
                         execCount++;
                         DBCExecutionPurpose purpose = exec.getStatement().getPurpose();
-                        if (!exec.hasError() && purpose != DBCExecutionPurpose.META && purpose != DBCExecutionPurpose.UTIL) {
+                        if (!exec.hasError()
+                            && purpose != DBCExecutionPurpose.META
+                            && purpose != DBCExecutionPurpose.UTIL
+                            && exec.getUpdateRowCount() > 0
+                        ) {
                             txnStartTime = exec.getOpenTime();
                             updateCount++;
                         }
