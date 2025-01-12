@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.websocket.WSConstants;
 public class WSTransactionalCountEvent extends WSProjectResourceEvent {
 
     private final String contextId;
+    private final String connectionId;
     private final int transactionalCount;
 
     public WSTransactionalCountEvent(
@@ -30,9 +31,11 @@ public class WSTransactionalCountEvent extends WSProjectResourceEvent {
         @Nullable String userId,
         @NotNull String projectId,
         @NotNull String contextId,
+        @NotNull String connectionId,
         int transactionalCount
     ) {
         super("cb_transactional_count", WSConstants.TOPIC_TRANSACTION_COUNT, sessionId, userId, projectId);
+        this.connectionId = connectionId;
         this.transactionalCount = transactionalCount;
         this.contextId = contextId;
     }
