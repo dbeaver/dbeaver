@@ -16,18 +16,24 @@
  */
 package org.jkiss.dbeaver.model.websocket.event;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.websocket.WSConstants;
 
-public class WSTransactionalCountEvent extends WSAbstractEvent {
+public class WSTransactionalCountEvent extends WSProjectResourceEvent {
 
-    private final String projectId;
     private final String contextId;
     private final int transactionalCount;
 
-    public WSTransactionalCountEvent(String projectId, String contextId, int transactionalCount) {
-        super("cb_transactional_count", WSConstants.TOPIC_TRANSACTION_COUNT);
+    public WSTransactionalCountEvent(
+        @Nullable String sessionId,
+        @Nullable String userId,
+        @NotNull String projectId,
+        @NotNull String contextId,
+        int transactionalCount
+    ) {
+        super("cb_transactional_count", WSConstants.TOPIC_TRANSACTION_COUNT, sessionId, userId, projectId);
         this.transactionalCount = transactionalCount;
-        this.projectId = projectId;
         this.contextId = contextId;
     }
 }
