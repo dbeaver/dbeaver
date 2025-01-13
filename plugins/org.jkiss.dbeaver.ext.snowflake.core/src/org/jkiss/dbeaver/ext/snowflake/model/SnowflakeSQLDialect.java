@@ -443,4 +443,9 @@ public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProv
     public boolean supportsAliasInSelect() {
         return true;
     }
+
+    @Override
+    public boolean isEscapeBackslash() {
+        return true;
+    }
 }

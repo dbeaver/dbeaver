@@ -34,8 +34,6 @@ import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionSet;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDummyDataSourceContext;
 import org.jkiss.dbeaver.model.stm.LSMInspections;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
-import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.utils.Pair;
@@ -214,8 +212,10 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
             case RESERVED -> UIIcon.SQL_TEXT;
             case SUBQUERY_ALIAS -> DBIcon.TREE_TABLE_ALIAS;
             case DERIVED_COLUMN_NAME -> DBIcon.TREE_FOREIGN_KEY_COLUMN;
-            case NEW_TABLE_NAME -> DBIcon.TREE_TABLE;
-            case USED_TABLE_NAME -> UIIcon.EDIT_TABLE;
+            case NEW_TABLE_NAME, USED_TABLE_NAME -> {
+                DBPObject object = item.getObject();
+                yield object == null ? DBIcon.TREE_TABLE : DBValueFormatting.getObjectImage(object);
+            }
             case TABLE_COLUMN_NAME -> DBIcon.TREE_COLUMN;
             case JOIN_CONDITION -> DBIcon.TREE_CONSTRAINT;
             default -> throw new IllegalStateException("Unexpected completion item kind " + item.getKind());
