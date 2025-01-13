@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.resultset;
+package org.jkiss.dbeaver.ui.controls.resultset.actions;
 
-import org.eclipse.jface.action.Action;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.controls.resultset.colors.ResetAllColorAction;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetCommandHandler;
 
-class FilterResetAllSettingsAction extends Action {
-    private final ResultSetViewer viewer;
+public class FilterResetAllSettingsAction extends AbstractResultSetViewerAction {
 
-    FilterResetAllSettingsAction(ResultSetViewer resultSetViewer) {
-        super(ResultSetMessages.controls_resultset_viewer_action_reset_all_settings);
-        this.viewer = resultSetViewer;
+    public FilterResetAllSettingsAction(ResultSetViewer resultSetViewer) {
+        super(resultSetViewer, ResultSetMessages.controls_resultset_viewer_action_reset_all_settings);
     }
 
     @Override
     public void run() {
+        ResultSetViewer viewer = getResultSetViewer();
         ActionUtils.runCommand(ResultSetHandlerMain.CMD_FILTER_CLEAR_SETTING, viewer.getSite());
         if (viewer.getDataFilter().hasHiddenAttributes()) {
             ActionUtils.runCommand(SpreadsheetCommandHandler.CMD_SHOW_COLUMNS, viewer.getSite());

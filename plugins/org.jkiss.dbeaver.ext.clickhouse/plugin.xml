@@ -114,7 +114,8 @@
     </extension>
     <extension point="org.jkiss.dbeaver.dataTypeProvider">
         <provider
-                id="org.jkiss.dbeaver.ext.clickhouse.model.data.ClickhouseValueHandlerProvider"
+                id="ClickhouseValueHandlerProvider"
+                parent="GenericValueHandlerProvider"
                 class="org.jkiss.dbeaver.ext.clickhouse.model.data.ClickhouseValueHandlerProvider"
                 label="ClickHouse data types provider"
                 description="ClickHouse data types provider">

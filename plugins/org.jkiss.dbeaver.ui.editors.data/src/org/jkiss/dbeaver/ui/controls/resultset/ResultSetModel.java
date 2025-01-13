@@ -126,7 +126,7 @@ public class ResultSetModel implements DBDResultSetModel {
     private final Map<DBDAttributeBinding, List<AttributeColorSettings>> colorMapping = new TreeMap<>(POSITION_SORTER);
 
     public ResultSetModel() {
-        this.hintContext = new ResultSetHintContext(this::getDataContainer);
+        this.hintContext = new ResultSetHintContext(this::getDataContainer, this::getSingleSource);
         this.dataFilter = createDataFilter();
     }
 
@@ -731,16 +731,17 @@ public class ResultSetModel implements DBDResultSetModel {
 
         // Add new data
         updateDataFilter();
-        updateColorMapping(false);
-        appendData(monitor, rows, true);
-        updateDataFilter();
-
-        this.visibleAttributes.sort(POSITION_SORTER);
 
         if (singleSourceEntity == null) {
             singleSourceEntity = DBExecUtils.detectSingleSourceTable(
                 visibleAttributes.toArray(new DBDAttributeBinding[0]));
         }
+
+        updateColorMapping(false);
+        appendData(monitor, rows, true);
+        updateDataFilter();
+
+        this.visibleAttributes.sort(POSITION_SORTER);
 
         hasData = true;
     }

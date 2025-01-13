@@ -14,25 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.syntax;
+package org.jkiss.dbeaver.ui.controls.resultset.handler;
 
-import org.eclipse.jface.text.rules.IWordDetector;
+import org.eclipse.ui.commands.IElementUpdater;
+import org.eclipse.ui.menus.UIElement;
+import org.jkiss.dbeaver.ui.ActionUtils;
+
+import java.util.Map;
 
 /**
- * Determines whether a given character is valid as part of an SQL keyword in
- * the current context.
+ * ResultSetHandlerZoomOut
  */
-public class SQLKeywordDetector implements IWordDetector
-{
+public class ResultSetHandlerZoomOut extends ResultSetHandlerMain implements IElementUpdater {
 
     @Override
-    public boolean isWordStart(char c) {
-        return Character.isLetter(c) || c == '_';
+    public void updateElement(UIElement element, Map parameters) {
+        element.setText(ActionUtils.findCommandName("org.eclipse.ui.edit.text.zoomOut")); //  //$NON-NLS-1$
     }
-
-    @Override
-    public boolean isWordPart(char c) {
-        return Character.isLetterOrDigit(c) || c == '_';
-    }
-
 }

@@ -16,7 +16,12 @@
  */
 package org.jkiss.dbeaver.model.sql.semantics.completion;
 
+import org.jkiss.dbeaver.model.text.TextUtils;
+
 public class SQLQueryWordEntry {
+
+    public static final boolean USE_FUZZY_COMPARISON = true;
+
     public final int offset;
     public final String string;
     public final String filterString;
@@ -25,5 +30,29 @@ public class SQLQueryWordEntry {
         this.offset = offset;
         this.string = string;
         this.filterString = string.toLowerCase();
+    }
+
+    public int matches(SQLQueryWordEntry filterKeyOrNull, boolean searchInside) {
+        return matches(this.filterString, filterKeyOrNull, searchInside);
+    }
+
+    public int matches(String filterKeyStringOrNull, boolean searchInside) {
+        return matches(this.filterString, filterKeyStringOrNull, searchInside);
+    }
+
+    public static int matches(String string, SQLQueryWordEntry filterKeyOrNull, boolean searchInside) {
+        return filterKeyOrNull == null ? Integer.MAX_VALUE : matches(string, filterKeyOrNull.filterString, searchInside);
+    }
+
+    public static int matches(String string, String filterKeyStringOrNull, boolean searchInside) {
+        if (filterKeyStringOrNull == null) {
+            return Integer.MAX_VALUE;
+        }
+
+        if (searchInside) {
+            return TextUtils.fuzzyScore(string, filterKeyStringOrNull);
+        } else {
+            return string.startsWith(filterKeyStringOrNull) ? Integer.MAX_VALUE : 0;
+        }
     }
 }
