@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -115,9 +116,8 @@ public class JDBCContentXML extends JDBCContentLOB {
             } else if (storage != null) {
                 try {
                     preparedStatement.setSQLXML(paramIndex, new JDBCSQLXMLImpl(storage));
-                }
-                catch (Throwable e) {
-                    if (e instanceof SQLException && !(e instanceof SQLFeatureNotSupportedException)) {
+                } catch (Throwable e) {
+                    if (e instanceof SQLException && !JDBCUtils.isFeatureNotSupportedError(session.getDataSource(), e)) {
                         throw (SQLException) e;
                     }
                     // Try 3 jdbc methods to set character stream
@@ -127,7 +127,7 @@ public class JDBCContentXML extends JDBCContentLOB {
                             paramIndex,
                             streamReader);
                     } catch (Throwable e0) {
-                        if (e0 instanceof SQLException && !(e0 instanceof SQLFeatureNotSupportedException)) {
+                        if (e0 instanceof SQLException && !JDBCUtils.isFeatureNotSupportedError(session.getDataSource(), e0)) {
                             throw (SQLException) e0;
                         }
                         long streamLength = ContentUtils.calculateContentLength(storage.getContentReader());
@@ -137,7 +137,7 @@ public class JDBCContentXML extends JDBCContentLOB {
                                 streamReader,
                                 streamLength);
                         } catch (Throwable e1) {
-                            if (e1 instanceof SQLException && !(e instanceof SQLFeatureNotSupportedException)) {
+                            if (e1 instanceof SQLException && !JDBCUtils.isFeatureNotSupportedError(session.getDataSource(), e1)) {
                                 throw (SQLException) e1;
                             }
                             preparedStatement.setCharacterStream(
@@ -150,11 +150,9 @@ public class JDBCContentXML extends JDBCContentLOB {
             } else {
                 preparedStatement.setNull(paramIndex, java.sql.Types.SQLXML);
             }
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DBCException(e, session.getExecutionContext());
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new DBCException("IO error while reading content", e, session.getExecutionContext());
         }
     }

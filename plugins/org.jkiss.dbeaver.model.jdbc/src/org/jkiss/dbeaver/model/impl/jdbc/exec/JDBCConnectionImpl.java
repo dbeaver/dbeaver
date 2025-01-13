@@ -120,7 +120,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                     return prepareCall(sqlQuery);
                 }
                 catch (SQLException e) {
-                    if (DBExecUtils.discoverErrorType(getDataSource(), e) == DBPErrorAssistant.ErrorType.FEATURE_UNSUPPORTED) {
+                    if (JDBCUtils.isFeatureNotSupportedError(getDataSource(), e)) {
                         return prepareCall(sqlQuery);
                     } else {
                         throw e;
@@ -182,7 +182,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                     return prepareStatement(sqlQuery);
                 }
                 catch (SQLException e) {
-                    if (DBExecUtils.discoverErrorType(getDataSource(), e) == DBPErrorAssistant.ErrorType.FEATURE_UNSUPPORTED) {
+                    if (JDBCUtils.isFeatureNotSupportedError(getDataSource(), e)) {
                         return prepareStatement(sqlQuery);
                     } else {
                         throw e;
@@ -201,7 +201,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                     dbStat =  prepareStatement(sqlQuery);
                 }
                 catch (SQLException e) {
-                    if (DBExecUtils.discoverErrorType(getDataSource(), e) == DBPErrorAssistant.ErrorType.FEATURE_UNSUPPORTED) {
+                    if (JDBCUtils.isFeatureNotSupportedError(getDataSource(), e)) {
                         dbStat = prepareStatement(sqlQuery);
                     } else {
                         throw e;
