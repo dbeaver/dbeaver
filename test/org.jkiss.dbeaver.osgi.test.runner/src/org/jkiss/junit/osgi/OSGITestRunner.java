@@ -41,7 +41,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -65,7 +67,7 @@ import java.util.stream.Collectors;
 public class OSGITestRunner extends Runner {
     public static final Pattern startLevel = Pattern.compile("@(\\d+):start");
     private static final Log log = Log.getLog(OSGITestRunner.class);
-    private static final String WORKSPACE_DIR = "../../../dbeaver-workspace/products";
+    private static final String WORKSPACE_DIR = findWorkspaceDir().toString();
     private final Class<?> testClass;
     private Framework framework;
     private Path productPath;
@@ -76,6 +78,7 @@ public class OSGITestRunner extends Runner {
     public OSGITestRunner(Class<?> testClass) {
         this.testClass = testClass;
         if (isRunFromIDEA()) {
+            //use UTF-8 for run
             try {
                 // Determine name of test bundle
                 // Analyze classpath, we don't have other way because we are not in OSGI container yet
@@ -127,6 +130,18 @@ public class OSGITestRunner extends Runner {
         }
     }
 
+    private static Path findWorkspaceDir() {
+        Path workPath = Paths.get("").toAbsolutePath();
+        Path currentPath = workPath.toAbsolutePath();
+        while (currentPath != null) {
+            Path potentialWorkspaceDir = currentPath.resolve("dbeaver-workspace/products");
+            if (Files.exists(potentialWorkspaceDir)) {
+                return workPath.relativize(potentialWorkspaceDir);
+            }
+            currentPath = currentPath.getParent();
+        }
+        throw new IllegalStateException("dbeaver-workspace/products directory not found");
+    }
     private void launchInExistingOSGI(RunNotifier notifier) {
         try {
             if (testClass.getAnnotation(RunnerProxy.class) != null) {
@@ -202,6 +217,11 @@ public class OSGITestRunner extends Runner {
         config.put("org.osgi.framework.storage", "osgi-cache");
         config.put("org.osgi.framework.storage.clean", "onFirstInit");
         config.put("osgi.dev", "file:" + productPath.toAbsolutePath().resolve("dev.properties").normalize());
+        config.put("osgi.debug", "file:" + productPath.toAbsolutePath().resolve("debug_config").normalize());
+        config.put("org.osgi.framework.debug", "true");
+        config.put("org.osgi.framework.debug.loader", "true");
+        config.put("org.osgi.framework.debug.resolver", "true");
+
         FrameworkFactory frameworkFactory = ServiceLoader.load(FrameworkFactory.class).iterator().next();
         return frameworkFactory.newFramework(config);
     }
