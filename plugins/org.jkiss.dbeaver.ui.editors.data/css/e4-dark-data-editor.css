@@ -1,12 +1,13 @@
  IEclipsePreferences#org-eclipse-ui-workbench:dbeaver-data-editor {
         preferences:
             'org.jkiss.dbeaver.sql.resultset.color.cell.odd.background=37,37,37'
-            'org.jkiss.dbeaver.sql.resultset.color.cell.modified.background=210,68,0'
+            'org.jkiss.dbeaver.sql.resultset.color.cell.modified.background=150,48,0'
             'org.jkiss.dbeaver.sql.resultset.color.cell.error.background=128,0,0'
-            'org.jkiss.dbeaver.sql.resultset.color.cell.new.background=0,115,0'
-            'org.jkiss.dbeaver.sql.resultset.color.cell.deleted.background=140,0,0'
+            'org.jkiss.dbeaver.sql.resultset.color.cell.new.background=0,48,0'
+            'org.jkiss.dbeaver.sql.resultset.color.cell.deleted.background=48,0,0'
             'org.jkiss.dbeaver.sql.resultset.color.cell.matched.background=139,69,19'
-            'org.jkiss.dbeaver.sql.resultset.color.selection.background=128,128,128'
+            'org.jkiss.dbeaver.sql.resultset.color.selection.background=96,96,96'
+            'org.jkiss.dbeaver.sql.resultset.color.selection.foreground=224,224,224'
             'org.jkiss.dbeaver.sql.resultset.color.lines.normal=30,30,30'
             'org.jkiss.dbeaver.sql.resultset.color.lines.selected=105,105,105'
             'org.jkiss.dbeaver.sql.resultset.color.header.background=57,66,72'

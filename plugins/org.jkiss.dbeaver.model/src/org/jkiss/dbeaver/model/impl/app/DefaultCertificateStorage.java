@@ -97,6 +97,7 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
     @NotNull
     @Override
     public Path getStorageFolder() {
+        checkConfigFolderExists();
         return this.localPath;
     }
 

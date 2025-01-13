@@ -883,7 +883,7 @@
         <key commandId="org.jkiss.dbeaver.core.edit.copy.special" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+C"/>
         <key commandId="org.jkiss.dbeaver.core.edit.copy.special.with.last.settings" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+ALT+C"/>
         <key commandId="org.jkiss.dbeaver.core.edit.paste.special" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+V"/>
-        <key commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" contextId="org.jkiss.dbeaver.ui.context.navigator.view" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+SHIFT+D"/>
+        <key commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+SHIFT+D"/>
 
         <key commandId="org.jkiss.dbeaver.core.new.connection" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+N"/>
         <key commandId="org.jkiss.dbeaver.core.commit" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="cocoa" sequence="CTRL+4"/>
