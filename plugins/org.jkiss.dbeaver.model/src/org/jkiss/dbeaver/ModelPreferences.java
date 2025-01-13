@@ -172,7 +172,6 @@ public final class ModelPreferences
     public static final String NOTIFICATIONS_SOUND_ENABLED = "notifications.soundEnabled"; //$NON-NLS-1$
     public static final String NOTIFICATIONS_SOUND_VOLUME = "notifications.soundVolume"; //$NON-NLS-1$
 
-    public static final String DICTIONARY_VIEW_ENABLE = "dictionary.enable";
     public static final String DICTIONARY_MAX_ROWS = "dictionary.max.rows";
 
     public static final String QUERY_ROLLBACK_ON_ERROR = "query.rollback-on-error"; //$NON-NLS-1$
@@ -303,7 +302,6 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.NOTIFICATIONS_SOUND_ENABLED, true);
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.NOTIFICATIONS_SOUND_VOLUME, 100);
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.DICTIONARY_MAX_ROWS, 200);
-        PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.DICTIONARY_VIEW_ENABLE, true);
         // Common
         PrefUtils.setDefaultPreferenceValue(store, QUERY_ROLLBACK_ON_ERROR, false);
         PrefUtils.setDefaultPreferenceValue(store, EXECUTE_RECOVER_ENABLED, true);

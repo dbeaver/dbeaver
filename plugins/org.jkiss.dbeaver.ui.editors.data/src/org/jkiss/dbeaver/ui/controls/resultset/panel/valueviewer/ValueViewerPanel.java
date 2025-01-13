@@ -215,9 +215,10 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
         }
         if (forceRefresh) {
             cleanupPanel();
+            IResultSetController controller = presentation.getController();
 
-            referenceValueEditor = new ReferenceValueEditor(presentation.getController(), previewController, valueEditor);
-            final boolean showDictionaryView = presentation.getController().getPreferenceStore().getBoolean(ModelPreferences.DICTIONARY_VIEW_ENABLE)
+            referenceValueEditor = new ReferenceValueEditor(controller, previewController, valueEditor);
+            final boolean showDictionaryView = controller.getPreferenceStore().getInt(ModelPreferences.DICTIONARY_MAX_ROWS) > 0
                 && referenceValueEditor.isReferenceValue();
             if (showDictionaryView) {
                 previewController.setEditType(IValueController.EditType.INLINE);
@@ -252,8 +253,8 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
                         control instanceof CCombo ||
                         control instanceof Button ||
                         (control instanceof Text && (control.getStyle() & SWT.MULTI) == 0);
-                    UIUtils.addFocusTracker(presentation.getController().getSite(), VALUE_VIEW_CONTROL_ID, control);
-                    presentation.getController().lockActionsByFocus(control);
+                    UIUtils.addFocusTracker(controller.getSite(), VALUE_VIEW_CONTROL_ID, control);
+                    controller.lockActionsByFocus(control);
 
                     control.addTraverseListener(this::handleTraverseEvent);
                 }
