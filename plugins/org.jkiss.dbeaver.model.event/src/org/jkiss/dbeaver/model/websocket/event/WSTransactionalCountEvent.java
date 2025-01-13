@@ -34,7 +34,7 @@ public class WSTransactionalCountEvent extends WSProjectResourceEvent {
         @NotNull String connectionId,
         int transactionalCount
     ) {
-        super("cb_transactional_count", WSConstants.TOPIC_TRANSACTION_COUNT, sessionId, userId, projectId);
+        super("cb_transaction_count", WSConstants.TOPIC_TRANSACTION_COUNT, sessionId, userId, projectId);
         this.connectionId = connectionId;
         this.transactionalCount = transactionalCount;
         this.contextId = contextId;
