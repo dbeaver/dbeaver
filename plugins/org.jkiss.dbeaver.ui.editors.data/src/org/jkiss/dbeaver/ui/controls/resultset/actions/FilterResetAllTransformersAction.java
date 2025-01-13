@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.resultset;
+package org.jkiss.dbeaver.ui.controls.resultset.actions;
 
-import org.eclipse.jface.action.Action;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 
 import java.util.List;
 
-class FilterResetAllTransformersAction extends Action {
-    private final ResultSetViewer resultSetViewer;
-
-    FilterResetAllTransformersAction(ResultSetViewer resultSetViewer) {
-        super(ResultSetMessages.controls_resultset_viewer_action_reset_all_transformers);
-        this.resultSetViewer = resultSetViewer;
+public class FilterResetAllTransformersAction extends AbstractResultSetViewerAction {
+    public FilterResetAllTransformersAction(ResultSetViewer resultSetViewer) {
+        super(resultSetViewer, ResultSetMessages.controls_resultset_viewer_action_reset_all_transformers);
     }
 
     @Override
@@ -38,7 +35,7 @@ class FilterResetAllTransformersAction extends Action {
     }
 
     void execute(boolean refresh) {
-        final DBVEntity virtualEntity = DBVUtils.getVirtualEntity(resultSetViewer.getDataContainer(), false);
+        final DBVEntity virtualEntity = DBVUtils.getVirtualEntity(getResultSetViewer().getDataContainer(), false);
         if (virtualEntity == null) {
             return;
         }
@@ -52,7 +49,7 @@ class FilterResetAllTransformersAction extends Action {
             }
         }
         if (refresh) {
-            resultSetViewer.refreshData(null);
+            getResultSetViewer().refreshData(null);
         }
     }
 }

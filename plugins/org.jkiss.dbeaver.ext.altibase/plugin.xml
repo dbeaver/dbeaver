@@ -362,7 +362,8 @@
         <provider
             class="org.jkiss.dbeaver.ext.altibase.data.AltibaseValueHandlerProvider"
             description="Altibase data types provider"
-            id="org.jkiss.dbeaver.ext.altibase.data.AltibaseValueHandlerProvider"
+            id="AltibaseValueHandlerProvider"
+            parent="GenericValueHandlerProvider"
             label="Altibase data types provider">
 
             <datasource id="altibase"/>
