@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDValueRow;
 import org.jkiss.dbeaver.model.data.hints.DBDAttributeHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDCellHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
@@ -188,8 +189,8 @@ public class ResultSetHintContext implements DBDValueHintContext {
 
     public void cacheRequiredData(
         @NotNull DBRProgressMonitor monitor,
-        @Nullable List<DBDAttributeBinding> attributes,
-        @NotNull List<ResultSetRow> rows,
+        @Nullable Collection<DBDAttributeBinding> attributes,
+        @NotNull Collection<? extends DBDValueRow> rows,
         boolean cleanupCache
     ) throws DBException {
         for (HintProviderInfo pi : hintProviders.values()) {
