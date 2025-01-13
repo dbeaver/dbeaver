@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model.dml;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryLexicalScope;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
+import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
@@ -109,11 +106,12 @@ public class SQLQueryInsertModel extends SQLQueryDMLStatementModel {
             this.columnsScope.setContext(context);
         }
         if (this.columnNames != null) {
+            SQLQuerySymbolOrigin origin = new SQLQuerySymbolOrigin.ColumnNameFromContext(context);
             for (SQLQuerySymbolEntry columnName : this.columnNames) {
                 if (columnName.isNotClassified()) {
                     SQLQueryResultColumn column = context.resolveColumn(statistics.getMonitor(), columnName.getName());
-                    if (column != null || !context.hasUndresolvedSource()) {
-                        SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(columnName, column, statistics);
+                    if (column != null || !context.hasUnresolvedSource()) {
+                        SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(columnName, column, statistics, origin);
                     }
                 }
             }

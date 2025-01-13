@@ -97,7 +97,7 @@ public class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSou
 
                         for (STMTreeNode cteSubqueryNode : cteListNode.findChildrenOfName(STMKnownRuleNames.with_list_element)) {
                             STMTreeNode subqueryNameNode = cteSubqueryNode.findFirstChildOfName(STMKnownRuleNames.queryName);
-                            SQLQuerySymbolEntry subqueryName = subqueryNameNode == null ? null : r.collectIdentifier(subqueryNameNode);
+                            SQLQuerySymbolEntry subqueryName = subqueryNameNode == null ? null : r.collectIdentifier(subqueryNameNode, null);
 
                             STMTreeNode columnListNode = cteSubqueryNode.findFirstChildOfName(STMKnownRuleNames.columnNameList);
                             List<SQLQuerySymbolEntry> columnList = columnListNode == null
@@ -242,11 +242,12 @@ public class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSou
             STMTreeNode correlationSpecNode = n.findLastChildOfName(STMKnownRuleNames.correlationSpecification);
             if (correlationSpecNode != null) {
                 STMTreeNode correlationNameNode = correlationSpecNode.findFirstChildOfName(STMKnownRuleNames.correlationName);
-                SQLQuerySymbolEntry correlationName = correlationNameNode == null ? null : r.collectIdentifier(correlationNameNode);
+                SQLQuerySymbolEntry correlationName = correlationNameNode == null ? null : r.collectIdentifier(correlationNameNode, null);
                 if (correlationName != null) {
                     List<SQLQuerySymbolEntry> correlationColumNames = r.collectColumnNameList(correlationSpecNode);
                     source = new SQLQueryRowsCorrelatedSourceModel(n, source, correlationName, correlationColumNames);
                     SQLQueryLexicalScope aliasesScope = new SQLQueryLexicalScope(correlationColumNames.size() + 1);
+                    // TODO use r.openScope() instead?
                     aliasesScope.registerItem(correlationName);
                     correlationColumNames.forEach(aliasesScope::registerItem);
                     source.registerLexicalScope(aliasesScope);
