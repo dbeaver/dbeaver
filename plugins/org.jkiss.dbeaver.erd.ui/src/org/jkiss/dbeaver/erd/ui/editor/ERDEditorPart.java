@@ -95,7 +95,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceTask;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -1777,7 +1776,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 .applyTo(this);
 
             placeholder = CompositeFactory.newComposite(SWT.NONE)
-                .background(UIUtils.getConnectionTypeColor(DBPConnectionType.PROD))
+                .background(ERDThemeSettings.instance.linesForeground)
                 .layout(new FillLayout())
                 .layoutData(GridDataFactory.fillDefaults().grab(true, true).create())
                 .create(this);
