@@ -141,37 +141,34 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
 
         Label hostLabel = UIUtils.createControlLabel(serverGroup,
             needsPort ? MySQLUIMessages.dialog_connection_host : MySQLUIMessages.dialog_connection_instance);
-        addControlToGroup(GROUP_CONNECTION, hostLabel);
 
         hostText = new Text(serverGroup, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
         hostText.setLayoutData(gd);
         hostText.addModifyListener(textListener);
-        addControlToGroup(GROUP_CONNECTION, hostText);
+        addControlToGroup(GROUP_CONNECTION, hostLabel, hostText);
 
         if (needsPort) {
             Label portLabel = UIUtils.createControlLabel(serverGroup, MySQLUIMessages.dialog_connection_port);
-            addControlToGroup(GROUP_CONNECTION, portLabel);
             portText = new Text(serverGroup, SWT.BORDER);
             gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
             gd.widthHint = UIUtils.getFontHeight(portText) * 10;
             portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
             portText.addModifyListener(textListener);
-            addControlToGroup(GROUP_CONNECTION, portText);
+            addControlToGroup(GROUP_CONNECTION, portLabel, portText);
         } else {
             gd.horizontalSpan = 3;
         }
 
         Label dbLabel = UIUtils.createControlLabel(serverGroup, MySQLUIMessages.dialog_connection_database);
-        addControlToGroup(GROUP_CONNECTION, dbLabel);
         dbText = new Text(serverGroup, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
         gd.horizontalSpan = 3;
         dbText.setLayoutData(gd);
         dbText.addModifyListener(textListener);
-        addControlToGroup(GROUP_CONNECTION, dbText);
+        addControlToGroup(GROUP_CONNECTION, dbLabel, dbText);
 
         createAuthPanel(addrGroup, 1);
 
