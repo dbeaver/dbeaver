@@ -357,7 +357,7 @@
         <provider
             class="org.jkiss.dbeaver.ext.mysql.data.MySQLValueHandlerProvider"
             description="MySQL data types provider"
-            id="org.jkiss.dbeaver.ext.mysql.data.MySQLValueHandlerProvider"
+            id="MySQLValueHandlerProvider"
             label="MySQL data types provider">
 
             <datasource id="mysql"/>

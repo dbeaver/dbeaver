@@ -72,7 +72,13 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataHintProvider">
-        <hintProvider id="references" for="cell" class="org.jkiss.dbeaver.ui.data.hints.ReferenceCellHintProvider" label="%hints.references.label" description="%hints.references.description"/>
+        <hintProvider
+            id="references"
+            for="cell"
+            class="org.jkiss.dbeaver.ui.data.hints.ReferenceCellHintProvider"
+            label="%hints.references.label"
+            description="%hints.references.description"
+            association="true"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.aggregateFunction">
@@ -1093,14 +1099,14 @@
             label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.selection.background.label"
             categoryId="org.jkiss.dbeaver.ui.presentation.results"
             id="org.jkiss.dbeaver.sql.resultset.color.selection.background"
-            value="COLOR_LIST_SELECTION">
+            value="175, 215, 255">
             <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.selection.background.description</description>
         </colorDefinition>
         <colorDefinition
             label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.selection.foreground.label"
             categoryId="org.jkiss.dbeaver.ui.presentation.results"
             id="org.jkiss.dbeaver.sql.resultset.color.selection.foreground"
-            value="COLOR_LIST_SELECTION_TEXT">
+            value="0, 0, 0">
             <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.selection.foreground.description</description>
         </colorDefinition>
         <colorDefinition

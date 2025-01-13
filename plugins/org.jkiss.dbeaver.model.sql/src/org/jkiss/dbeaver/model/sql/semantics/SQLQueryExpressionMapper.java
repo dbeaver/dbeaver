@@ -20,6 +20,7 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
+import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQuerySelectIntoModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueTupleReferenceExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.*;
@@ -29,7 +30,7 @@ import org.jkiss.dbeaver.model.stm.STMTreeTermNode;
 
 import java.util.*;
 
-class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceModel, SQLQueryModelRecognizer> {
+public class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceModel, SQLQueryModelRecognizer> {
 
     private static final Log log = Log.getLog(SQLQueryExpressionMapper.class);
 
@@ -227,113 +228,10 @@ class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSourceMode
             }
         },
         STMKnownRuleNames.querySpecification, (n, cc, r) -> {
-            STMTreeNode selectListNode = n.findFirstChildOfName(STMKnownRuleNames.selectList);
-            if (selectListNode == null) {
-                log.debug("Invalid querySpecification: missing selectList");
-                return makeEmptyRowsModel(n);
-            }
-
-            List<STMTreeNode> selectSublists = selectListNode.findChildrenOfName(STMKnownRuleNames.selectSublist);
-            SQLQuerySelectionResultModel resultModel = new SQLQuerySelectionResultModel(selectListNode, selectSublists.size());
-
-            SQLQueryLexicalScope selectListScope;
-            STMTreeNode selectKeywordNode;
-            try (SQLQueryModelRecognizer.LexicalScopeHolder selectListScopeHolder = r.openScope()) {
-                selectListScope = selectListScopeHolder.lexicalScope;
-                selectKeywordNode = n.findFirstChildOfName(STMKnownRuleNames.SELECT_TERM);
-                if (selectKeywordNode == null) {
-                    log.debug("SELECT keyword is missing");
-                    return makeEmptyRowsModel(n);
-                }
-
-                for (STMTreeNode selectSublist : selectSublists) {
-                    STMTreeNode sublistNode = selectSublist.findFirstNonErrorChild();
-                    if (sublistNode != null) {
-                        switch (sublistNode.getNodeKindId()) { // selectSublist: (Asterisk|derivedColumn|qualifier Period Asterisk
-                            case SQLStandardParser.RULE_derivedColumn -> {
-                                // derivedColumn: valueExpression (asClause)?; asClause: (AS)? columnName;
-                                STMTreeNode exprNode = sublistNode.findFirstChildOfName(STMKnownRuleNames.valueExpression);
-                                SQLQueryValueExpression expr = exprNode == null ? null : r.collectValueExpression(exprNode);
-                                if (expr instanceof SQLQueryValueTupleReferenceExpression tupleRef) {
-                                    resultModel.addTupleSpec(sublistNode, tupleRef);
-                                } else {
-                                    STMTreeNode asClauseNode = sublistNode.findLastChildOfName(STMKnownRuleNames.asClause);
-                                    if (asClauseNode != null) {
-                                        STMTreeNode columnNameNode = asClauseNode.findLastChildOfName(STMKnownRuleNames.columnName);
-                                        SQLQuerySymbolEntry asColumnName = columnNameNode == null ? null : r.collectIdentifier(columnNameNode);
-                                        resultModel.addColumnSpec(sublistNode, expr, asColumnName);
-                                    } else {
-                                        resultModel.addColumnSpec(sublistNode, expr);
-                                    }
-                                }
-                            }
-                            case SQLStandardParser.RULE_anyUnexpected -> {
-                                // TODO register these pieces in the lexical scope
-                                // error in query text, ignoring it
-                            }
-                            default -> {
-                                resultModel.addCompleteTupleSpec(sublistNode);
-                            }
-                        }
-                    }
-                }
-            }
-
-            SQLQueryRowsSourceModel source = cc.isEmpty() ? makeEmptyRowsModel(n) : cc.get(0);
-            STMTreeNode tableExpr = n.findFirstChildOfName(STMKnownRuleNames.tableExpression);
-            SQLQueryRowsProjectionModel projectionModel;
-            if (tableExpr != null) {
-                selectListScope.setInterval(Interval.of(selectKeywordNode.getRealInterval().a, tableExpr.getRealInterval().a));
-
-                SQLQueryLexicalScope fromScope = new SQLQueryLexicalScope();
-
-                STMTreeNode[] filterNodes = new STMTreeNode[]{
-                    tableExpr.findFirstChildOfName(STMKnownRuleNames.whereClause),
-                    tableExpr.findFirstChildOfName(STMKnownRuleNames.groupByClause),
-                    tableExpr.findFirstChildOfName(STMKnownRuleNames.havingClause),
-                    tableExpr.findFirstChildOfName(STMKnownRuleNames.orderByClause)
-                };
-                SQLQueryValueExpression[] filterExprs = new SQLQueryValueExpression[filterNodes.length];
-                SQLQueryLexicalScope[] scopes = new SQLQueryLexicalScope[filterNodes.length + 1];
-                SQLQueryLexicalScope[] prevScopes = new SQLQueryLexicalScope[filterNodes.length + 1];
-                STMTreeNode[] nextScopeNodes = new STMTreeNode[filterNodes.length + 1];
-                {
-                    scopes[0] = fromScope;
-                    prevScopes[0] = selectListScope;
-                    int prevScopeIndex = 0;
-                    for (int i = 0; i < filterNodes.length; i++) {
-                        STMTreeNode filterNode = filterNodes[i];
-                        int scopeIndex = i + 1;
-                        if (filterNode != null) {
-                            try (SQLQueryModelRecognizer.LexicalScopeHolder exprScope = r.openScope()) {
-                                filterExprs[i] = r.collectValueExpression(filterNode);
-                                nextScopeNodes[prevScopeIndex] = filterNode;
-                                scopes[scopeIndex] = exprScope.lexicalScope;
-                                prevScopes[scopeIndex] = scopes[prevScopeIndex];
-                                prevScopeIndex = scopeIndex;
-                            }
-                        }
-                    }
-                }
-                for (int i = 0; i < scopes.length; i++) {
-                    SQLQueryLexicalScope scope = scopes[i];
-                    if (scope != null) {
-                        int from = prevScopes[i].getInterval().b;
-                        int to = nextScopeNodes[i] != null ? nextScopeNodes[i].getRealInterval().a : Integer.MAX_VALUE;
-                        scope.setInterval(Interval.of(from, to));
-                    }
-                }
-
-                projectionModel = new SQLQueryRowsProjectionModel(
-                    n, selectListScope, source, fromScope,
-                    SQLQueryRowsProjectionModel.FiltersData.of(filterExprs[0], filterExprs[1], filterExprs[2], filterExprs[3]),
-                    SQLQueryRowsProjectionModel.FiltersData.of(scopes[1], scopes[2], scopes[3], scopes[4]),
-                    resultModel
-                );
-            } else {
-                projectionModel = new SQLQueryRowsProjectionModel(n, selectListScope, source, resultModel);
-            }
-            return projectionModel;
+            return SQLQueryRowsProjectionModel.recognize(n, cc, r);
+        },
+        STMKnownRuleNames.selectStatementSingleRow, (n, cc, r) -> {
+            return SQLQuerySelectIntoModel.recognize(n, cc, r);
         },
         STMKnownRuleNames.nonjoinedTableReference, (n, cc, r) -> {
             // can they both be missing?

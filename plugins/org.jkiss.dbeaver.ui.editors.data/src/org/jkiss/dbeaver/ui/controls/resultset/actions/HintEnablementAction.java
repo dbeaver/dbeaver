@@ -16,32 +16,41 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.actions;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.registry.data.hints.ValueHintContextConfiguration;
 import org.jkiss.dbeaver.registry.data.hints.ValueHintProviderConfiguration;
 import org.jkiss.dbeaver.registry.data.hints.ValueHintProviderDescriptor;
-import org.jkiss.dbeaver.registry.data.hints.ValueHintRegistry;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 
 public class HintEnablementAction extends AbstractResultSetViewerAction {
     private final ValueHintProviderDescriptor descriptor;
+    private final DBDAttributeBinding attribute;
 
-    public HintEnablementAction(ResultSetViewer resultSetViewer, ValueHintProviderDescriptor hd) {
+    public HintEnablementAction(
+        @NotNull ResultSetViewer resultSetViewer,
+        @NotNull ValueHintProviderDescriptor hd,
+        @Nullable DBDAttributeBinding attribute
+    ) {
         super(resultSetViewer, hd.getLabel(), AS_CHECK_BOX);
         this.descriptor = hd;
+        this.attribute = attribute;
         setToolTipText(hd.getDescription());
     }
 
     @Override
     public boolean isChecked() {
-        return descriptor.isEnabled();
+        return descriptor.isEnabled(null, getResultSetViewer().getModel().getHintContext(), true);
     }
 
     @Override
     public void run() {
-        ValueHintRegistry registry = ValueHintRegistry.getInstance();
-        ValueHintProviderConfiguration configuration = registry.getConfiguration(descriptor);
+        ValueHintContextConfiguration contextConfiguration = getResultSetViewer().getModel().getHintContext().getContextConfiguration();
+
+        ValueHintProviderConfiguration configuration = contextConfiguration.getProviderConfiguration(descriptor);
         configuration.setEnabled(!configuration.isEnabled());
-        registry.setConfiguration(descriptor, configuration);
-        registry.saveConfiguration();
+        contextConfiguration.saveConfiguration();
         getResultSetViewer().refreshData(null);
     }
 

@@ -88,7 +88,9 @@ public class SQLQueryInsertModel extends SQLQueryDMLStatementModel {
         this.columnNames = columnNames;
         this.valuesRows = valuesRows;
         this.columnsScope = columnsScope;
-        this.registerLexicalScope(columnsScope);
+        if (columnsScope != null) {
+            this.registerLexicalScope(columnsScope);
+        }
     }
 
     @Nullable

@@ -310,6 +310,7 @@ public class STMKnownRuleNames {
     // data statements
     public static final String selectStatementSingleRow = SQLStandardParser.ruleNames[SQLStandardParser.RULE_selectStatementSingleRow];
     public static final String selectTargetList = SQLStandardParser.ruleNames[SQLStandardParser.RULE_selectTargetList];
+    public static final String selectTargetItem = SQLStandardParser.ruleNames[SQLStandardParser.RULE_selectTargetItem];
     public static final String deleteStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_deleteStatement];
     public static final String insertStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_insertStatement];
     public static final String insertColumnsAndSource = SQLStandardParser.ruleNames[SQLStandardParser.RULE_insertColumnsAndSource];
@@ -357,5 +358,6 @@ public class STMKnownRuleNames {
 
     public static final String RECURSIVE_TERM = SQLStandardLexer.VOCABULARY.getSymbolicName(SQLStandardLexer.RECURSIVE);
     public static final String SELECT_TERM = SQLStandardLexer.VOCABULARY.getSymbolicName(SQLStandardLexer.SELECT);
+    public static final String INTO_TERM = SQLStandardLexer.VOCABULARY.getSymbolicName(SQLStandardLexer.INTO);
     public static final String PERIOD_TERM = SQLStandardParser.VOCABULARY.getSymbolicName(SQLStandardParser.Period);
 }

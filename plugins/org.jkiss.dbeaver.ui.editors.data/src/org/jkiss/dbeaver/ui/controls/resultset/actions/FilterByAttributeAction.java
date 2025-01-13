@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.resultset;
+package org.jkiss.dbeaver.ui.controls.resultset.actions;
 
-import org.eclipse.jface.action.Action;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
@@ -25,16 +24,15 @@ import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.ui.UITextUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 
-class FilterByAttributeAction extends Action {
-    private final ResultSetViewer resultSetViewer;
+public class FilterByAttributeAction extends AbstractResultSetViewerAction {
     private final DBCLogicalOperator operator;
     private final FilterByAttributeType type;
     private final DBDAttributeBinding attribute;
-    FilterByAttributeAction(ResultSetViewer resultSetViewer, DBCLogicalOperator operator, FilterByAttributeType type, DBDAttributeBinding attribute)
+    public FilterByAttributeAction(ResultSetViewer resultSetViewer, DBCLogicalOperator operator, FilterByAttributeType type, DBDAttributeBinding attribute)
     {
-        super(attribute.getName() + " " + translateFilterPattern(resultSetViewer, operator, type, attribute), null);
-        this.resultSetViewer = resultSetViewer;
+        super(resultSetViewer, attribute.getName() + " " + translateFilterPattern(resultSetViewer, operator, type, attribute));
         this.operator = operator;
         this.type = type;
         this.attribute = attribute;
@@ -43,16 +41,16 @@ class FilterByAttributeAction extends Action {
     @Override
     public void run()
     {
-        Object value = type.getValue(resultSetViewer, attribute, operator, false);
+        Object value = type.getValue(getResultSetViewer(), attribute, operator, false);
         if (operator.getArgumentCount() != 0 && value == null) {
             return;
         }
-        DBDDataFilter filter = new DBDDataFilter(resultSetViewer.getModel().getDataFilter());
+        DBDDataFilter filter = new DBDDataFilter(getResultSetViewer().getModel().getDataFilter());
         DBDAttributeConstraint constraint = filter.getConstraint(attribute);
         if (constraint != null) {
             constraint.setOperator(operator);
             constraint.setValue(value);
-            resultSetViewer.setDataFilter(filter, true);
+            getResultSetViewer().setDataFilter(filter, true);
         }
     }
 
