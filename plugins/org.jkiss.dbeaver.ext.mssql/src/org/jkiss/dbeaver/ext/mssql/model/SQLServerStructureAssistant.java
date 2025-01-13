@@ -22,9 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -40,10 +38,7 @@ import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * SQLServerStructureAssistant
@@ -84,6 +79,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
             RelationalObjectType.TYPE_VIEW,
             SQLServerObjectType.SN,
             RelationalObjectType.TYPE_PROCEDURE,
+            RelationalObjectType.TYPE_SCHEMA
         };
     }
 
@@ -139,7 +135,9 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
         Collection<SQLServerDatabase> databases;
         SQLServerSchema schema = null;
 
-        if (parentObject == null || parentObject instanceof SQLServerDataSource) {
+        if (parentObject == null
+            || parentObject instanceof SQLServerDataSource
+            || parentObject.getDataSource() instanceof SQLServerDataSource) {
             if (globalSearch) {
                 databases = executionContext.getDataSource().getDatabases(monitor);
             } else {
@@ -184,7 +182,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
             return Collections.emptyList();
         }
 
-        Collection<SQLServerObjectType> supObjectTypes = new ArrayList<>(params.getObjectTypes().length + 2);
+        Collection<ISQLServerObjectType> supObjectTypes = new ArrayList<>(params.getObjectTypes().length + 2);
         for (DBSObjectType objectType : params.getObjectTypes()) {
             if (objectType instanceof SQLServerObjectType) {
                 supObjectTypes.add((SQLServerObjectType) objectType);
@@ -197,13 +195,15 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
                 supObjectTypes.addAll(SQLServerObjectType.getTypesForClass(SQLServerTableForeignKey.class));
             } else if (objectType == RelationalObjectType.TYPE_VIEW) {
                 supObjectTypes.addAll(SQLServerObjectType.getTypesForClass(SQLServerView.class));
+            } else if (objectType == RelationalObjectType.TYPE_SCHEMA) {
+                supObjectTypes.add(SQLServerSchemaType.INSTANCE);
             }
         }
         if (supObjectTypes.isEmpty()) {
             return Collections.emptyList();
         }
         StringBuilder objectTypeClause = new StringBuilder(100);
-        for (SQLServerObjectType objectType : supObjectTypes) {
+        for (ISQLServerObjectType objectType : supObjectTypes) {
             if (objectTypeClause.length() > 0) objectTypeClause.append(",");
             objectTypeClause.append("'").append(objectType.getTypeID()).append("'");
         }
@@ -212,7 +212,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
         }
         boolean hasMask = !CommonUtils.isEmpty(params.getMask()) && !params.getMask().equals("%");
 
-        StringBuilder sqlBuilder = new StringBuilder("SELECT TOP %d * FROM %s o");
+        StringBuilder sqlBuilder = new StringBuilder("SELECT TOP %d schema_id, name, type FROM %s o");
         if (params.isSearchInComments()) {
             sqlBuilder.append(" LEFT JOIN sys.extended_properties ep ON ((o.parent_object_id = 0 AND ep.minor_id = 0 AND o.object_id = ep.major_id) OR (o.parent_object_id <> 0 AND ep.minor_id = o.parent_object_id AND ep.major_id = o.object_id)) ");
         }
@@ -237,10 +237,15 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
                 sqlBuilder.append(") ");
             }
         }
+        boolean isNeedSchemaSearch = supObjectTypes.contains(SQLServerSchemaType.INSTANCE);
         if (schema != null) {
             sqlBuilder.append("AND o.schema_id = ? ");
+        } else if (isNeedSchemaSearch) {
+            sqlBuilder.append(" UNION ALL\nSELECT TOP %d schema_id, name, 'SCHEMA'\n");
+            sqlBuilder.append("FROM %s\n");
+            sqlBuilder.append("WHERE name LIKE ? \n");
+            sqlBuilder.append("ORDER BY o.name");
         }
-        sqlBuilder.append("ORDER BY o.name");
         String template = sqlBuilder.toString();
 
         List<DBSObjectReference> objects = new ArrayList<>();
@@ -250,7 +255,11 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
                 if (rowsToFetch < 1) {
                     break;
                 }
-                String sql = String.format(template, rowsToFetch, SQLServerUtils.getSystemTableName(database, "all_objects"));
+                String sql = String.format(template,
+                    rowsToFetch,
+                    SQLServerUtils.getSystemTableName(database, "all_objects"),
+                    rowsToFetch,
+                    SQLServerUtils.getSystemTableName(database, "schemas"));
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
                     int idx = 1;
                     if (hasMask) {
@@ -267,6 +276,8 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
                     }
                     if (schema != null) {
                         dbStat.setLong(idx, schema.getObjectId());
+                    } else if (isNeedSchemaSearch) {
+                        dbStat.setString(idx++, params.getMask());
                     }
                     dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
 
@@ -275,7 +286,12 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
                             final long schemaId = JDBCUtils.safeGetLong(dbResult, "schema_id");
                             final String objectName = JDBCUtils.safeGetString(dbResult, "name");
                             final String objectTypeName = JDBCUtils.safeGetStringTrimmed(dbResult, "type");
-                            final SQLServerObjectType objectType = SQLServerObjectType.valueOf(objectTypeName);
+                            final ISQLServerObjectType objectType;
+                            if(SQLServerSchemaType.INSTANCE.getTypeName().equals(objectTypeName)){
+                                objectType = SQLServerSchemaType.INSTANCE;
+                            } else {
+                                objectType = SQLServerObjectType.valueOf(objectTypeName);
+                            }
                             SQLServerSchema objectSchema = schemaId == 0 ? null : database.getSchema(session.getProgressMonitor(), schemaId);
                             objects.add(new AbstractObjectReference<DBSObject>(
                                 objectName,
@@ -286,7 +302,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
                             {
                                 @Override
                                 public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
-                                    DBSObject object = objectType.findObject(session.getProgressMonitor(), database, objectSchema, objectName);
+                                    DBSObject object = objectType.findObject(session.getProgressMonitor(), objectSchema, objectName);
                                     if (object == null) {
                                         throw new DBException(objectTypeName + " '" + objectName + "' not found");
                                     }
@@ -382,5 +398,39 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
             }
         }
         return name;
+    }
+
+    public static class SQLServerSchemaType implements ISQLServerObjectType {
+        public static final ISQLServerObjectType INSTANCE = new SQLServerSchemaType();
+
+        @Override
+        public String getTypeID() {
+            return "";
+        }
+
+        @Override
+        public DBSObject findObject(DBRProgressMonitor monitor, SQLServerSchema schema, String objectName) throws DBException {
+            return schema;
+        }
+
+        @Override
+        public String getTypeName() {
+            return "SCHEMA";
+        }
+
+        @Override
+        public String getDescription() {
+            return "";
+        }
+
+        @Override
+        public DBPImage getImage() {
+            return DBIcon.TREE_SCHEMA;
+        }
+
+        @Override
+        public Class<? extends DBSObject> getTypeClass() {
+            return SQLServerSchema.class;
+        }
     }
 }

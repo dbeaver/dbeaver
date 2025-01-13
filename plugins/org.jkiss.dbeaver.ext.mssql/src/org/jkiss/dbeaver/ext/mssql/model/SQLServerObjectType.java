@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +29,7 @@ import java.util.List;
 /**
  * Object type
  */
-public enum SQLServerObjectType implements DBSObjectType {
+public enum SQLServerObjectType implements ISQLServerObjectType {
 
 	AF ("AF", null, DBIcon.TREE_FUNCTION, "Aggregate function (CLR)"),
 	C ("C", SQLServerTableCheckConstraint.class, DBIcon.TREE_CONSTRAINT, "CHECK constraint"),
@@ -94,6 +93,7 @@ public enum SQLServerObjectType implements DBSObjectType {
         return theClass;
     }
 
+    @Override
     public String getTypeID() {
         return type;
     }
@@ -103,7 +103,8 @@ public enum SQLServerObjectType implements DBSObjectType {
         return type;
     }
 
-    public DBSObject findObject(DBRProgressMonitor monitor, SQLServerDatabase database, SQLServerSchema schema, String objectName) throws DBException {
+    @Override
+    public DBSObject findObject(DBRProgressMonitor monitor, SQLServerSchema schema, String objectName) throws DBException {
         if (schema == null) {
             log.debug("Null schema in table " + objectName + " search (" + name() + ")");
             return null;
