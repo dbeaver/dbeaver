@@ -76,26 +76,28 @@ public class DataTypeProviderRegistry implements DBDRegistry {
             // Order providers. More precise come first
             dataTypeProviders.sort((o1, o2) -> {
                 if (o1.isGlobal()) {
-                    return o2.isGlobal() ? -1 : 0;
+                    return o2.isGlobal() ? 0 : -1;
                 } else if (o2.isGlobal()) {
                     return 1;
                 }
                 String p1 = o1.getParentProvider();
                 String p2 = o2.getParentProvider();
                 if (p1 == null) {
-                    return p2 == null ? 0 : 1;
+                    return p2 == null ? o1.getId().compareTo(o2.getId()) : 1;
                 } else if (p2 == null) {
                     return -1;
                 }
 
                 ValueHandlerDescriptor parent1 = getValueHandler(p1);
                 ValueHandlerDescriptor parent2 = getValueHandler(p2);
-                if (parent1.isChildOf(parent2)) {
-                    return 1;
-                } else if (parent2.isChildOf(parent1)) {
+                if (parent1 == parent2) {
+                    return o1.getId().compareTo(o2.getId());
+                } else if (parent1.isChildOf(parent2)) {
                     return -1;
+                } else if (parent2.isChildOf(parent1)) {
+                    return 1;
                 }
-                return 0;
+                return o1.getId().compareTo(o2.getId());
             });
         } catch (Exception e) {
             log.debug("Internal error during providers sort", e);
