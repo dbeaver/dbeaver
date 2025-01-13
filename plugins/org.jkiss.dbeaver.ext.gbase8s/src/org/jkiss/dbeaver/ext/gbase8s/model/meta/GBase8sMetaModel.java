@@ -310,6 +310,11 @@ public class GBase8sMetaModel extends GenericMetaModel {
             @NotNull GenericStructContainer owner, @Nullable GenericTableBase forTable) throws SQLException {
         String tableName = forTable == null ? owner.getDataSource().getAllObjectsPattern()
                 : JDBCUtils.escapeWildCards(session, forTable.getName());
+        String catalog = owner.getCatalog() == null ? null : owner.getCatalog().getName();
+        String schema = owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null
+                : JDBCUtils.escapeWildCards(session, owner.getSchema().getName());
+        boolean isOracleMode = GBase8sUtils.isOracleSqlMode(owner.getDataSource().getContainer());
+        String ownerPattern = isOracleMode ? schema + "." : catalog + ":";
         String sql = "SELECT"
                 + " t.tabname::VARCHAR(128) AS TABLE_NAME,"
                 + " c.colname::VARCHAR(128) AS COLUMN_NAME,"
@@ -342,10 +347,10 @@ public class GBase8sMetaModel extends GenericMetaModel {
                 + " c.colattr::INTEGER AS COLATTR,"
                 + " c.coltype"
                 + " FROM"
-                + " systables t,"
-                + " OUTER sysdefaults d,"
-                + " syscolumns c,"
-                + " OUTER syscolcomms cc"
+                + " " + ownerPattern + "systables t,"
+                + " OUTER " + ownerPattern + "sysdefaults d,"
+                + " " + ownerPattern + "syscolumns c,"
+                + " OUTER " + ownerPattern + "syscolcomms cc"
                 + " WHERE"
                 + " t.tabid = c.tabid"
                 + " AND d.tabid = t.tabid"
@@ -392,11 +397,12 @@ public class GBase8sMetaModel extends GenericMetaModel {
             tableNamePattern = JDBCUtils.escapeWildCards(session, (object != null ? object.getName() : objectName));
         }
 
-//        String catalog = owner.getCatalog() == null ? null : owner.getCatalog().getName();
-//        String schemaPattern = owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null
-//                : JDBCUtils.escapeWildCards(session, owner.getSchema().getName());
+        String catalog = owner.getCatalog() == null ? null : owner.getCatalog().getName();
+        String schema = owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null
+                : JDBCUtils.escapeWildCards(session, owner.getSchema().getName());
         boolean isOracleMode = GBase8sUtils.isOracleSqlMode(owner.getDataSource().getContainer());
-
+        String ownerPattern = isOracleMode ? schema + "." : catalog + ":";
+        
         String sql = "SELECT t.tabid, t.tabname AS TABLE_NAME, t.owner AS "
                 + (isOracleMode ? "TABLE_SCHEM" : "TABLE_CATALOG") + ","
                 + " CASE WHEN t.tabtype = 'T' AND t.tabid <= (SELECT tabid FROM systables WHERE trim(tabname) = 'VERSION') THEN 'SYSTEM TABLE'"
@@ -406,8 +412,8 @@ public class GBase8sMetaModel extends GenericMetaModel {
                 + " ELSE 'SYNONYM'"
                 + " END AS TABLE_TYPE,"
                 + " c.comments AS REMARKS"
-                + " FROM systables t LEFT JOIN syscomms c ON t.tabid = c.tabid"
-                + " WHERE t.tabname LIKE ?"
+                + " FROM " + ownerPattern + "systables t"
+                + " LEFT JOIN " + ownerPattern + "syscomms c ON t.tabid = c.tabid" + " WHERE t.tabname LIKE ?"
                 + (types != null ? " AND t.tabtype IN (" + String.join(", ", Collections.nCopies(types.length, "?")) + ")" : "");
         JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         int paramIndex = 1;
