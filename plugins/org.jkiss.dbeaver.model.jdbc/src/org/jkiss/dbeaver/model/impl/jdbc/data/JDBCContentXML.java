@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.utils.MimeTypes;
 import java.io.IOException;
 import java.io.Reader;
 import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLXML;
 
 /**
