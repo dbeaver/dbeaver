@@ -40,11 +40,21 @@ public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionIt
         return rowsSourceAlias.sourceInfo.tableOrNull != null ? " - Table alias" : " - Subquery alias";
     }
 
+    @Nullable
+    public static String prepareTypeNameString(@NotNull SQLQueryExprType type) {
+        return type == null || type == SQLQueryExprType.UNKNOWN ? null : type.getDisplayName();
+    }
+
+    @NotNull
+    public String visitCompositeField(@NotNull SQLCompositeFieldCompletionItem compositeField) {
+        String typeName = this.prepareTypeNameString(compositeField.memberInfo.type());
+        return typeName == null ? " - Composite attribute" : (" : " + typeName);
+    }
+
     @NotNull
     @Override
     public String visitColumnName(@NotNull SQLColumnNameCompletionItem columnName) {
-        SQLQueryExprType type = columnName.columnInfo.type;
-        String typeName = type == null || type == SQLQueryExprType.UNKNOWN ? null : type.getDisplayName();
+        String typeName = this.prepareTypeNameString(columnName.columnInfo.type);
         return typeName == null ? " - Column" : (" : " + typeName);
     }
 

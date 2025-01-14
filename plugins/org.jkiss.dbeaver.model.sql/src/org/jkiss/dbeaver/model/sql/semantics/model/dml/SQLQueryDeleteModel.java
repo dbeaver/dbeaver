@@ -49,7 +49,7 @@ public class SQLQueryDeleteModel extends SQLQueryDMLStatementModel {
         SQLQueryRowsTableDataModel tableModel = tableNameNode == null ? null : recognizer.collectTableReference(tableNameNode, false);
 
         STMTreeNode aliasNode = node.findFirstChildOfName(STMKnownRuleNames.correlationName);
-        SQLQuerySymbolEntry alias = aliasNode == null ? null : recognizer.collectIdentifier(aliasNode);
+        SQLQuerySymbolEntry alias = aliasNode == null ? null : recognizer.collectIdentifier(aliasNode, null);
 
         STMTreeNode whereClauseNode = node.findFirstChildOfName(STMKnownRuleNames.whereClause);
         SQLQueryValueExpression whereClauseExpr = whereClauseNode == null ? null : recognizer.collectValueExpression(whereClauseNode);

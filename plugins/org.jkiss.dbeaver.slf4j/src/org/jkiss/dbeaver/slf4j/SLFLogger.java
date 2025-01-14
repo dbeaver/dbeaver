@@ -101,27 +101,37 @@ public class SLFLogger implements Logger {
 
     @Override
     public void debug(String s) {
-        //log.debug(s);
+        if (isDebugEnabled()) {
+            log.debug(s);
+        }
     }
 
     @Override
     public void debug(String s, Object o) {
-        //log.debug(s);
+        if (isDebugEnabled()) {
+            log.debug(formatMessage(s, o));
+        }
     }
 
     @Override
     public void debug(String s, Object o, Object o1) {
-        //log.debug(s);
+        if (isDebugEnabled()) {
+            log.debug(log.getName() + ": " + formatMessage(s, o, o1));
+        }
     }
 
     @Override
     public void debug(String s, Object... objects) {
-        //log.debug(s);
+        if (isDebugEnabled()) {
+            log.debug(log.getName() + ":" + formatMessage(s, objects));
+        }
     }
 
     @Override
     public void debug(String s, Throwable throwable) {
-        //log.debug(s, throwable);
+        if (isDebugEnabled()) {
+            log.debug(log.getName() + ":" + s, throwable);
+        }
     }
 
     @Override
@@ -317,5 +327,4 @@ public class SLFLogger implements Logger {
     private Object formatMessage(String message, Object... params) {
         return MessageFormatter.arrayFormat(message, params).getMessage();
     }
-
 }

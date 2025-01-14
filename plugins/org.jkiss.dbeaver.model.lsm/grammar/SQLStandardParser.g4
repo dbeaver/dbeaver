@@ -192,7 +192,7 @@ valueRefNestedExpr: LeftParen valueReference RightParen;
 valueRefIndexingStep: LeftBracket (valueRefIndexingStepDirect|valueRefIndexingStepSlice) RightBracket;
 valueRefIndexingStepDirect: signedNumericLiteral;
 valueRefIndexingStepSlice: signedNumericLiteral? Colon signedNumericLiteral?;
-valueRefMemberStep: Period identifier;
+valueRefMemberStep: Period identifier?;
 correlationName: identifier;
 
 withClause: WITH RECURSIVE? cteList;
