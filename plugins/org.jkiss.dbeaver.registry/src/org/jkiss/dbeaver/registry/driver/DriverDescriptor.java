@@ -1889,6 +1889,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         if (libraries.isEmpty()) {
             return false;
         }
+        // we need to check resolved files from config for remove or maven libraries
+        Map<DBPDriverLibrary, List<DriverFileInfo>> tempResolvedFiles = new HashMap<>(resolvedFiles);
         resolvedFiles.clear();
         for (DBPDriverLibrary library : libraries) {
             // We need to sync resolved files with real files of library
@@ -1957,7 +1959,22 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 }
 
             } else {
-                // Ignore all non-local libraries for now
+                // we need to check that resolved files from drivers.xml are exist
+                // we don't want to resolve maven artifact from maven registry (it takes a long time)
+                List<DriverFileInfo> libraryResolvedFiles = tempResolvedFiles.get(library);
+                if (libraryResolvedFiles == null || libraryResolvedFiles.isEmpty()) {
+                    continue;
+                }
+                List<DriverFileInfo> libraryFiles = new ArrayList<>();
+                for (DriverFileInfo fileInfo : libraryResolvedFiles) {
+                    Path targetFile = targetFileLocation.resolve(fileInfo.getFile());
+                    if (Files.exists(targetFile)) {
+                        libraryFiles.add(fileInfo);
+                    }
+                }
+                if (!libraryFiles.isEmpty()) {
+                    resolvedFiles.put(library, libraryFiles);
+                }
             }
         }
         if (resolvedFiles.isEmpty()) {
