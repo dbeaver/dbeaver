@@ -879,14 +879,16 @@ public class ResultSetModel implements DBDResultSetModel {
 
         updateRowColors(resetOldRows, newRows);
 
-        refreshHintsInfo(monitor, newRows);
+        refreshHintsInfo(monitor, newRows, resetOldRows);
     }
 
-    void refreshHintsInfo(@NotNull DBRProgressMonitor monitor, List<ResultSetRow> newRows) {
+    void refreshHintsInfo(@NotNull DBRProgressMonitor monitor, List<? extends DBDValueRow> newRows, boolean cleanupOldCache) {
         try {
-            hintContext.resetCache();
-            hintContext.initProviders(attributes);
-            hintContext.cacheRequiredData(monitor, null, newRows, true);
+            if (cleanupOldCache) {
+                hintContext.resetCache();
+                hintContext.initProviders(attributes);
+            }
+            hintContext.cacheRequiredData(monitor, null, newRows, cleanupOldCache);
         } catch (Exception e) {
             log.debug("Error caching data for column hints", e);
         }

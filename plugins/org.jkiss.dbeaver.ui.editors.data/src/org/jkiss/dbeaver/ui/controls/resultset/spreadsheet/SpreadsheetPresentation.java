@@ -612,6 +612,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
     @Override
     public void pasteFromClipboard(@Nullable ResultSetPasteSettings settings) {
         try {
+            List<DBDValueRow> updatedRows = new ArrayList<>();
+            Set<DBDAttributeBinding> updatedAttrs = new HashSet<>();
             if (settings != null) {
                 String strValue;
                 Clipboard clipboard = new Clipboard(Display.getCurrent());
@@ -673,6 +675,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
                             ) {
                                 continue;
                             }
+                            updatedAttrs.add(attr);
+                            updatedRows.add(row);
                             final Object newValue;
                             if (settings.isInsertNulls() && settings.getNullValueMark().equalsIgnoreCase(value)) {
                                 newValue = null;
@@ -756,6 +760,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             controller.redrawData(false, true);
             controller.updateEditControls();
             controller.updatePanelsContent(false);
+            controller.refreshHintCache(updatedAttrs, updatedRows, null);
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError("Cannot replace cell value", null, e);
         }
