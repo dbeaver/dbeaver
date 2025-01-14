@@ -29,7 +29,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -77,8 +76,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
     private final ListenerList<IPageChangedListener> pageChangedListeners = new ListenerList<>();
     private Composite leftBottomPanel;
-    private Font boldFont;
-    private Set<IWizardPage> resizedPages = new HashSet<>();
+    private final Set<IWizardPage> resizedPages = new HashSet<>();
 
     public MultiPageWizardDialog(IWorkbenchWindow window, IWizard wizard) {
         this(window, wizard, null);
@@ -183,8 +181,6 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         Composite leftPane = UIUtils.createComposite(wizardSash, 1);
         pagesTree = new Tree(leftPane, SWT.SINGLE);
         pagesTree.setLayoutData(new GridData(GridData.FILL_BOTH));
-        this.boldFont = UIUtils.makeBoldFont(pagesTree.getFont());
-        pagesTree.addDisposeListener(e -> UIUtils.dispose(boldFont));
 
         leftPane.setBackground(pagesTree.getBackground());
         leftBottomPanel = UIUtils.createComposite(leftPane, 1);
