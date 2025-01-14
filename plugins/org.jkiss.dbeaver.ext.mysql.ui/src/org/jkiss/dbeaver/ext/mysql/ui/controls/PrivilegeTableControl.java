@@ -206,6 +206,8 @@ public class PrivilegeTableControl extends Composite {
                 "To give to other users those privileges you possess",
                 MySQLPrivilege.Kind.DDL));
         }
+        // Remove the "Usage" privilege - it has no real privileges.
+        privileges.removeIf(p -> p.getName().equals(MySQLConstants.PRIVILEGE_USAGE_NAME));
     }
 
     public void fillGrants(List<MySQLGrant> grants, boolean editable) {
