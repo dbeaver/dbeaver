@@ -79,6 +79,11 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
     }
 
     @NotNull
+    public String visitCompositeField(@NotNull SQLCompositeFieldCompletionItem compositeField) {
+        return compositeField.memberInfo.name();
+    }
+
+    @NotNull
     @Override
     public String visitColumnName(@NotNull SQLColumnNameCompletionItem columnName) {
         String preparedColumnName = this.convertCaseIfNeeded(columnName.columnInfo.symbol.getName());
@@ -95,10 +100,10 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
 //        }
 
         String prefix;
-        if (columnName.sourceInfo != null && this.queryCompletionContext.getInspectionResult().expectingColumnReference()) {
+        if (columnName.sourceInfo != null && this.queryCompletionContext.getInspectionResult().expectingColumnReference() && columnName.absolute) {
             if (columnName.sourceInfo.aliasOrNull != null) {
                 prefix = columnName.sourceInfo.aliasOrNull.getName() + this.structSeparator;
-            } else if (columnName.sourceInfo.tableOrNull != null && columnName.absolute) {
+            } else if (columnName.sourceInfo.tableOrNull != null) {
                 prefix = this.prepareObjectName(columnName.sourceInfo.tableOrNull) + this.structSeparator;
             } else {
                 prefix = "";
@@ -157,10 +162,15 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
         return joinCondition.left.apply(this) + " = " + joinCondition.right.apply(this);
     }
 
-    private <T extends DBSObject> String prepareObjectName(@NotNull SQLDbObjectCompletionItem<?> objectCompletionItem) {
+    private String prepareObjectName(@NotNull SQLDbObjectCompletionItem<?> objectCompletionItem) {
         String name;
         if (objectCompletionItem.resolvedContext != null) {
-            String accomplishedPart = this.prepareQualifiedName(objectCompletionItem.object, objectCompletionItem.resolvedContext.object());
+            String accomplishedPart;
+            if (objectCompletionItem.resolvedContext.preventFullName()) {
+                accomplishedPart = this.convertCaseIfNeeded(DBUtils.getQuotedIdentifier(objectCompletionItem.getObject()));
+            } else {
+                accomplishedPart = this.prepareQualifiedName(objectCompletionItem.object, objectCompletionItem.resolvedContext.object());
+            }
             name = objectCompletionItem.resolvedContext.string() + this.convertCaseIfNeeded(accomplishedPart);
         } else {
             name = this.prepareObjectName(objectCompletionItem.object);
