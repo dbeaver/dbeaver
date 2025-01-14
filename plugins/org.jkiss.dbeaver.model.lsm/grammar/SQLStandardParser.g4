@@ -192,7 +192,7 @@ valueRefNestedExpr: LeftParen valueReference RightParen;
 valueRefIndexingStep: LeftBracket (valueRefIndexingStepDirect|valueRefIndexingStepSlice) RightBracket;
 valueRefIndexingStepDirect: signedNumericLiteral;
 valueRefIndexingStepSlice: signedNumericLiteral? Colon signedNumericLiteral?;
-valueRefMemberStep: Period identifier;
+valueRefMemberStep: Period identifier?;
 correlationName: identifier;
 
 withClause: WITH RECURSIVE? cteList;
@@ -224,7 +224,7 @@ queryExpression: (joinedTable|nonJoinQueryTerm) (unionTerm|exceptTerm)*;
 // from
 fromClause: FROM tableReference (Comma tableReference)*;
 nonjoinedTableReference: ((tableName (PARTITION anyProperty)?)|derivedTable) correlationSpecification?;
-tableReference: nonjoinedTableReference|joinedTable|tableReferenceHints|anyUnexpected??; // '.*' to handle incomplete queries
+tableReference: (nonjoinedTableReference|joinedTable) tableReferenceHints?? anyUnexpected??;
 tableReferenceHints: (tableHintKeywords|anyWord)+ anyProperty; // dialect-specific options, should be described and moved to dialects in future
 joinedTable: (nonjoinedTableReference|(LeftParen joinedTable RightParen)) (naturalJoinTerm|crossJoinTerm)+;
 correlationSpecification: { validCorrelationNameFollows() }? (AS)? correlationName (LeftParen derivedColumnList RightParen)?;
@@ -396,7 +396,8 @@ ifExistsSpec: IF EXISTS ;
 
 // data statements
 selectStatementSingleRow: SELECT (setQuantifier)? selectList INTO selectTargetList tableExpression;
-selectTargetList: parameterSpecification (Comma parameterSpecification)*;
+selectTargetList: selectTargetItem (Comma selectTargetItem)* Comma*;
+selectTargetItem: parameterSpecification|tableName|anyUnexpected??;
 deleteStatement: DELETE FROM tableName? ((AS)? correlationName)? whereClause?;
 insertStatement: INSERT INTO (tableName insertColumnsAndSource?)?;
 insertColumnsAndSource: LeftParen (insertColumnList? | Asterisk) (RightParen (queryExpression | DEFAULT VALUES)?)?;

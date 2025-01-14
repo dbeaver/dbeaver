@@ -238,6 +238,7 @@ public class MySQLConstants {
     public static final String EXTRA_INFO_VIRTUAL_GENERATED = "VIRTUAL GENERATED";
     public static final String EXTRA_INFO_DEFAULT_GENERATED = "DEFAULT_GENERATED";
 
+    public static final String PRIVILEGE_USAGE_NAME = "Usage";
     public static final String PRIVILEGE_GRANT_OPTION_NAME = "Grant option";
 
     // https://dev.mysql.com/doc/mysql-errors/8.4/en/server-error-reference.html

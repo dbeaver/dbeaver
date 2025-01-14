@@ -444,7 +444,7 @@
         <provider
             class="org.jkiss.dbeaver.ext.oracle.data.OracleValueHandlerProvider"
             description="Oracle data types provider"
-            id="org.jkiss.dbeaver.ext.oracle.data.OracleValueHandlerProvider"
+            id="OracleValueHandlerProvider"
             label="Oracle data types provider">
 
             <datasource id="oracle"/>

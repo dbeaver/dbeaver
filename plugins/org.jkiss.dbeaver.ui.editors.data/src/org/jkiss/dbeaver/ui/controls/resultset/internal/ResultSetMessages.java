@@ -299,6 +299,7 @@ public class ResultSetMessages extends NLS {
 
     public static String pref_page_data_viewer_dictionary_panel_group;
     public static String getPref_page_data_viewer_dictionary_panel_results_max_size;
+    public static String getPref_page_data_viewer_dictionary_panel_results_max_size_tip;
 
 
     public static String dialog_data_format_profiles_button_delete_profile;

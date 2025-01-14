@@ -22,7 +22,6 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -36,10 +35,7 @@ import org.jkiss.dbeaver.model.connection.LocalNativeClientLocation;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.driver.RemoteNativeClientLocation;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.ShellUtils;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -54,19 +50,17 @@ import java.util.*;
  */
 public class ClientHomesPanel extends Composite {
     private static final Log log = Log.getLog(ClientHomesPanel.class);
-    public static final String WIKI_CONFIGURE_CLIENT = "https://dbeaver.com/docs/dbeaver/Local-Client-Configuration/";
+    public static final String WIKI_CONFIGURE_CLIENT = "Local-Client-Configuration";
 
     private static String lastHomeDirectory;
 
-    private Table homesTable;
-    private Text idText;
-    private Text pathText;
-    private Text nameText;
-    private Text productNameText;
-    private Text productVersionText;
-    private Button removeButton;
-    private Font fontBold;
-    private Font fontItalic;
+    private final Table homesTable;
+    private final Text idText;
+    private final Text pathText;
+    private final Text nameText;
+    private final Text productNameText;
+    private final Text productVersionText;
+    private final Button removeButton;
 
     private DBPDriver driver;
 
@@ -85,13 +79,6 @@ public class ClientHomesPanel extends Composite {
         Composite parent,
         int style) {
         super(parent, style);
-
-        fontBold = UIUtils.makeBoldFont(parent.getFont());
-        fontItalic = UIUtils.modifyFont(parent.getFont(), SWT.ITALIC);
-        addDisposeListener(e -> {
-            UIUtils.dispose(fontBold);
-            UIUtils.dispose(fontItalic);
-        });
 
         GridLayout layout = new GridLayout(2, false);
         setLayout(layout);
@@ -257,12 +244,10 @@ public class ClientHomesPanel extends Composite {
 
         for (DBPNativeClientLocation home : allHomes) {
             TableItem item = createHomeItem(clientManager, home, home instanceof RemoteNativeClientLocation || providedHomes.contains(home));
-            if (item != null) {
-                HomeInfo homeInfo = (HomeInfo) item.getData();
-                if (homeInfo.isDefault) {
-                    homesTable.setSelection(homesTable.indexOf(item));
-                    selectHome(homeInfo);
-                }
+            HomeInfo homeInfo = (HomeInfo) item.getData();
+            if (homeInfo.isDefault) {
+                homesTable.setSelection(homesTable.indexOf(item));
+                selectHome(homeInfo);
             }
         }
     }
@@ -283,10 +268,10 @@ public class ClientHomesPanel extends Composite {
         homeItem.setImage(DBeaverIcons.getImage(UIIcon.HOME));
         homeItem.setData(homeInfo);
         if (!homeInfo.isProvided) {
-            homeItem.setFont(fontItalic);
+            homeItem.setFont(BaseThemeSettings.instance.baseFontItalic);
         } else {
             if (homeInfo.isDefault) {
-                homeItem.setFont(fontBold);
+                homeItem.setFont(BaseThemeSettings.instance.baseFontBold);
             }
         }
         return homeItem;
@@ -302,7 +287,7 @@ public class ClientHomesPanel extends Composite {
     }
 
     private static class ChooserDialog extends org.eclipse.jface.dialogs.Dialog {
-        private DBPDriver driver;
+        private final DBPDriver driver;
         private ClientHomesPanel panel;
         private String selectedHome;
 

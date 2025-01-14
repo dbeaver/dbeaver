@@ -469,18 +469,6 @@
         <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.app.standalone.WorkbenchInitializerNewConnection" priority="2"/>
     </extension>
 
-    <extension point="org.eclipse.ui.activities">
-        <activity id="hideE4Activity" name="%activity.hideE4Activity.name">
-          <enabledWhen>
-            <with variable="activePartId">
-              <equals value="nonExistentPartId"/>
-            </with>
-          </enabledWhen>
-        </activity>
-        <!-- Hide Eclipse userstorage activities -->
-        <activityPatternBinding activityId="hideE4Activity" pattern="org.eclipse.userstorage.*"/>
-    </extension>
-
     <extension point="org.eclipse.core.runtime.preferences">
         <initializer class="org.jkiss.dbeaver.ui.app.standalone.DBeaverApplicationPreferenceInitializer"/>
     </extension>
@@ -502,6 +490,21 @@
 
     <!-- Disable Eclipse debug and refactoring in standalone applications -->
     <extension point="org.eclipse.ui.activities">
+        <activity id="hideE4Activity" name="%activity.hideE4Activity.name">
+            <enabledWhen>
+                <with variable="activePartId">
+                    <equals value="nonExistentPartId"/>
+                </with>
+            </enabledWhen>
+        </activity>
+        <!-- Hide Eclipse userstorage activities -->
+        <activityPatternBinding activityId="hideE4Activity" pattern="org.eclipse.userstorage.*"/>
+        <!-- Hide E4 view: Welcome, Bookmarks, Palette, Thumbnail -->
+        <activityPatternBinding activityId="hideE4Activity" pattern=".*/org.eclipse.ui.internal.introview"/>
+        <activityPatternBinding activityId="hideE4Activity" pattern=".*/org.eclipse.ui.views.BookmarkView"/>
+        <activityPatternBinding activityId="hideE4Activity" pattern=".*/org.eclipse.gef.ui.palette_view"/>
+        <activityPatternBinding activityId="hideE4Activity" pattern=".*/org.eclipse.graphiti.ui.internal.editor.thumbnailview"/>
+
         <activity id="dbeaver.app.StandaloneActivity" name="DBeaver standalone application activity"/>
         <category id="dbeaver.app.StandaloneCategory" name="DBeaver standalone application activity category"/>
 

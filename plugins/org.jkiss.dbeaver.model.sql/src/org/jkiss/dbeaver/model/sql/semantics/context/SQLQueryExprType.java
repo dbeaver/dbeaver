@@ -34,9 +34,7 @@ import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.struct.*;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -98,6 +96,19 @@ public abstract class SQLQueryExprType {
     @Nullable
     public SQLQueryExprType findNamedMemberType(@NotNull DBRProgressMonitor monitor, @NotNull String memberName) throws DBException {
         return null;
+    }
+
+    public record SQLQueryExprTypeMemberInfo(
+        @NotNull SQLQueryExprType declaratorType,
+        @NotNull String name,
+        @NotNull SQLQueryExprType type,
+        @Nullable DBSEntityAttribute attribute,
+        @Nullable SQLQueryResultColumn column) {
+    }
+
+    @NotNull
+    public List<SQLQueryExprTypeMemberInfo> getNamedMembers(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return Collections.emptyList();
     }
 
     /**
@@ -188,7 +199,7 @@ public abstract class SQLQueryExprType {
                 SQLDialect dialect = dataSource == null ? BasicSQLDialect.INSTANCE : dataSource.getSQLDialect();
                 List<? extends DBSEntityAttribute> attrs = complexType.getAttributes(monitor);
                 if (attrs != null) {
-                    Map<String, DBSAttributeBase> attrsByName = attrs.stream().collect(Collectors.toMap(
+                    Map<String, DBSEntityAttribute> attrsByName = attrs.stream().collect(Collectors.toMap(
                         a -> SQLUtils.identifierToCanonicalForm(dialect, a.getName(), false, true),
                         a -> a,
                         (a, b) -> a)
@@ -285,6 +296,13 @@ public abstract class SQLQueryExprType {
         }
 
         @Override
+        public @NotNull List<SQLQueryExprTypeMemberInfo> getNamedMembers(@NotNull DBRProgressMonitor monitor) throws DBException {
+            return this.referencedSource.source.getResultDataContext().getColumnsList().stream().map(
+                c -> new SQLQueryExprTypeMemberInfo(this, c.symbol.getName(), c.type, c.realAttr, c)
+            ).toList();
+        }
+
+        @Override
         public SQLQueryExprType findNamedMemberType(@NotNull DBRProgressMonitor monitor, @NotNull String memberName) throws DBException {
             SQLQueryResultColumn column = this.referencedSource.source.getResultDataContext().resolveColumn(monitor, memberName);
             return column == null ? null : column.type;
@@ -298,12 +316,12 @@ public abstract class SQLQueryExprType {
 
     private static class SQLQueryExprComplexType<T extends DBSEntity & DBSTypedObject> extends SQLQueryExprType {
         private final T complexType;
-        private final Map<String, DBSAttributeBase> attrs;
+        private final Map<String, DBSEntityAttribute> attrs;
 
         public SQLQueryExprComplexType(
             @Nullable SQLQuerySymbolDefinition declaratorDefinition,
             @NotNull T complexType,
-            @NotNull Map<String, DBSAttributeBase> attrs
+            @NotNull Map<String, DBSEntityAttribute> attrs
         ) {
             super(declaratorDefinition, complexType);
             this.complexType = complexType;
@@ -315,7 +333,20 @@ public abstract class SQLQueryExprType {
         public String getDisplayName() {
             return this.complexType.getFullTypeName();
         }
-        
+
+        @Override
+        public @NotNull List<SQLQueryExprTypeMemberInfo> getNamedMembers(@NotNull DBRProgressMonitor monitor) throws DBException {
+            if (attrs != null) {
+                List<SQLQueryExprTypeMemberInfo> result = new ArrayList<>(attrs.size());
+                for (DBSEntityAttribute attr : this.attrs.values()) {
+                    result.add(new SQLQueryExprTypeMemberInfo(this, attr.getName(), forTypedObject(monitor, attr, SQLQuerySymbolClass.COMPOSITE_FIELD), attr, null));
+                }
+                return result;
+            } else {
+                return Collections.emptyList();
+            }
+        }
+
         @Override
         public SQLQueryExprType findNamedMemberType(@NotNull DBRProgressMonitor monitor, @NotNull String memberName) throws DBException {
             DBSAttributeBase attr = attrs.get(memberName);

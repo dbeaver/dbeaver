@@ -35,7 +35,7 @@ import java.util.List;
 /**
  * AbstractValueBindingDescriptor
  */
-public abstract class AbstractValueBindingDescriptor<TYPE> extends AbstractDescriptor {
+public abstract class AbstractValueBindingDescriptor<TYPE, CONTEXT> extends AbstractDescriptor {
     private static final Log log = Log.getLog(AbstractValueBindingDescriptor.class);
 
     public static final String TAG_SUPPORTS = "supports"; //$NON-NLS-1$
@@ -136,18 +136,23 @@ public abstract class AbstractValueBindingDescriptor<TYPE> extends AbstractDescr
         return instance;
     }
 
-    public boolean isEnabled() {
+    /**
+     * @param typedObject        optional attribute. If null then verify potential enablement
+     * @param checkConfigDisable if true then also verify that this binding wasn't disabled by user configuration
+     */
+    public boolean isEnabled(DBSTypedObject typedObject, CONTEXT context, boolean checkConfigDisable) {
         return true;
     }
 
     public boolean supportsType(
+        @NotNull CONTEXT context,
         @Nullable DBPDataSource dataSource,
         DBSTypedObject typedObject,
         Class<?> valueType,
         boolean checkDataSource,
         boolean checkType
     ) {
-        if (!isEnabled()) {
+        if (!isEnabled(typedObject, context, true)) {
             return false;
         }
         final DBPDataKind dataKind = typedObject.getDataKind();
@@ -200,11 +205,12 @@ public abstract class AbstractValueBindingDescriptor<TYPE> extends AbstractDescr
     }
 
     public boolean supportsAnyType(
+        @NotNull CONTEXT context,
         @Nullable DBPDataSource dataSource,
         DBSTypedObject typedObject,
         Class<?> valueType
     ) {
-        if (!isEnabled()) {
+        if (!isEnabled(typedObject, context, false)) {
             return false;
         }
         if (supportInfos.isEmpty()) {
