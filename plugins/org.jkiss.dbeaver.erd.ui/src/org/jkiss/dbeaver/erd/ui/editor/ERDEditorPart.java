@@ -43,7 +43,6 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.widgets.CompositeFactory;
-import org.eclipse.jface.widgets.LabelFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.graphics.Color;
@@ -1765,7 +1764,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         private static final int EDIT_MODE_BORDER_SIZE = 2;
 
         private final Composite placeholder;
-        private final Label separator;
         private final CLabel label;
 
         public EditModeComposite(@NotNull Composite parent) {
@@ -1776,14 +1774,14 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 .applyTo(this);
 
             placeholder = CompositeFactory.newComposite(SWT.NONE)
-                .background(ERDThemeSettings.instance.linesForeground)
                 .layout(new FillLayout())
                 .layoutData(GridDataFactory.fillDefaults().grab(true, true).create())
                 .create(this);
 
-            separator = LabelFactory.newLabel(SWT.SEPARATOR | SWT.HORIZONTAL)
-                .layoutData(GridDataFactory.fillDefaults().grab(true, false).create())
-                .create(this);
+            placeholder.addPaintListener(e -> {
+                e.gc.setBackground(ERDThemeSettings.instance.linesForeground);
+                e.gc.fillRectangle(e.x, e.y, e.width, e.height);
+            });
 
             label = new CLabel(this, SWT.LEFT);
             label.setImage(DBeaverIcons.getImage(DBIcon.SMALL_WARNING));
@@ -1798,7 +1796,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             layout.marginWidth = margin;
             layout.marginHeight = margin;
 
-            UIUtils.setControlVisible(separator, editMode);
             UIUtils.setControlVisible(label, editMode);
 
             layout(true, true);
