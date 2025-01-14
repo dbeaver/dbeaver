@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -3037,6 +3037,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 StringBuilder tip = new StringBuilder();
                 tip.append("Column: ");
                 tip.append(name).append(" ").append(typeName);
+                if (attributeBinding.isRequired()) {
+                    tip.append(" NOT NULL");
+                }
                 if (!CommonUtils.isEmpty(description)) {
                     tip.append("\nDescription: ").append(description);
                 }

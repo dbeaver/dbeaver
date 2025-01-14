@@ -287,6 +287,10 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         if (!getModel().isNodeVisible(newNode)) {
             return null;
         }
+        if (dataSources.stream().anyMatch(node -> node.getDataSourceContainer() == descriptor)) {
+            // current node already contains provided data source
+            return null;
+        }
         dataSources.add(newNode);
 
         DBPDataSourceFolder dsFolder = descriptor.getFolder();
@@ -330,8 +334,8 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         DBNModel model = getModel();
         switch (event.getAction()) {
             case OBJECT_ADD:
-                if (event.getObject() instanceof DBPDataSourceContainer) {
-                    addDataSource((DBPDataSourceContainer) event.getObject(), true, event.getEnabled() != null && event.getEnabled());
+                if (event.getObject() instanceof DBPDataSourceContainer container) {
+                    addDataSource(container, true, event.getEnabled() != null && event.getEnabled());
                 } else if (model.getNodeByObject(event.getObject()) == null) {
                     DBNDatabaseNode parentNode = null;
                     {

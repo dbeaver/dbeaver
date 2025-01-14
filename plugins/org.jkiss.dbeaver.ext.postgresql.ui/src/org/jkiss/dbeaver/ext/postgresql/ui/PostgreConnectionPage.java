@@ -127,37 +127,34 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
                 ? PostgreMessages.dialog_setting_connection_cloud_instance
                 : PostgreMessages.dialog_setting_connection_host
         );
-        addControlToGroup(GROUP_CONNECTION, hostLabel);
         hostText = new Text(addrGroup, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
         hostText.setLayoutData(gd);
         hostText.addModifyListener(textListener);
-        addControlToGroup(GROUP_CONNECTION, hostText);
+        addControlToGroup(GROUP_CONNECTION, hostLabel, hostText);
 
         if (serverType.needsPort()) {
             Label portLabel = UIUtils.createControlLabel(addrGroup, PostgreMessages.dialog_setting_connection_port);
-            addControlToGroup(GROUP_CONNECTION, portLabel);
             portText = new Text(addrGroup, SWT.BORDER);
             gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
             gd.widthHint = UIUtils.getFontHeight(portText) * 7;
             portText.setLayoutData(gd);
             portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
             portText.addModifyListener(textListener);
-            addControlToGroup(GROUP_CONNECTION, portText);
+            addControlToGroup(GROUP_CONNECTION, portLabel, portText);
         } else {
             gd.horizontalSpan = 3;
         }
 
         Label dbLabel = UIUtils.createControlLabel(addrGroup, PostgreMessages.dialog_setting_connection_database);
-        addControlToGroup(GROUP_CONNECTION, dbLabel);
         dbText = new Text(addrGroup, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
         dbText.setLayoutData(gd);
         dbText.addModifyListener(textListener);
         dbText.setMessage(PostgreMessages.dialog_database_name_hint);
-        addControlToGroup(GROUP_CONNECTION, dbText);
+        addControlToGroup(GROUP_CONNECTION, dbLabel, dbText);
 
         showNonDefault = UIUtils.createCheckbox(
             addrGroup,
