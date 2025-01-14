@@ -85,7 +85,7 @@ public class SQLQueryObjectDataModel extends SQLQueryRowsSourceModel implements 
             this.object = context.findRealObject(statistics.getMonitor(), objectType, nameStrings);
 
             if (this.object != null) {
-                this.name.setDefinition(object);
+                this.name.setDefinition(object, new SQLQuerySymbolOrigin.DbObjectFromContext(context));
             } else {
                 statistics.appendError(getSyntaxNode(), "Object " + this.name.toIdentifierString() + " not found in the database");
             }

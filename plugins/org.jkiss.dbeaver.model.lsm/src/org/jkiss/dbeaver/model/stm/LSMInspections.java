@@ -185,13 +185,15 @@ public class LSMInspections {
                     index = ~index - 1;
                 }
 
+                // TODO consider when to take previous term to get correct inspected keywords
+
                 node = this.allNonErrorTerms.get(index);
                 subroot = node.getParentNode();
                 Interval nodeRange = node.getRealInterval();
                 if (nodeRange.a <= position) {
                     if (nodeRange.b >= position) {
                         // containing term found
-                        if (KNOWN_SEPARATOR_TOKENS.contains(node.symbol.getType())) {
+                        if (KNOWN_SEPARATOR_TOKENS.contains(node.symbol.getType()) || (nodeRange.a == position && index > 0)) {
                             // we need target state of the previous term
                             node = this.allNonErrorTerms.get(index - 1);
                             initialState = atn.states.get(node.getAtnState()).getTransitions()[0].target;

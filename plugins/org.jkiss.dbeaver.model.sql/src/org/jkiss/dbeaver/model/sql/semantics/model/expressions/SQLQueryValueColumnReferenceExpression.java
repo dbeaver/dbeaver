@@ -81,7 +81,8 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
     public static void propagateColumnDefinition(
         @NotNull SQLQuerySymbolEntry columnName,
         @Nullable SQLQueryResultColumn resultColumn,
-        @NotNull SQLQueryRecognitionContext statistics
+        @NotNull SQLQueryRecognitionContext statistics,
+        @Nullable SQLQuerySymbolOrigin columnNameOrigin
     ) {
         // TODO consider ambiguity
         if (resultColumn != null) {
@@ -90,6 +91,7 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
             columnName.getSymbol().setSymbolClass(SQLQuerySymbolClass.ERROR);
             statistics.appendError(columnName, "Column " + columnName.getName() + " not found");
         }
+        columnName.setOrigin(columnNameOrigin);
     }
 
     @Override
@@ -97,21 +99,28 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
         SQLQueryExprType type;
         SQLQueryResultColumn resultColumn;
 
+        SQLQuerySymbolOrigin columnRefOrigin = new SQLQuerySymbolOrigin.ValueRefFromContext(context);
         if (this.tableName != null && this.tableName.isNotClassified()) {
             if (this.tableName.invalidPartsCount == 0) {
                 SourceResolutionResult rr = context.resolveSource(statistics.getMonitor(), this.tableName.toListOfStrings());
                 if (rr != null) {
-                    this.tableName.setDefinition(rr);
+                    this.tableName.setDefinition(rr, columnRefOrigin);
+                    SQLQuerySymbolOrigin columnNameOrigin = new SQLQuerySymbolOrigin.ColumnRefFromReferencedContext(rr);
                     if (this.columnName != null) {
                         resultColumn = rr.source.getResultDataContext().resolveColumn(statistics.getMonitor(), this.columnName.getName());
-                        if (resultColumn != null || !rr.source.getResultDataContext().hasUndresolvedSource()) {
-                            propagateColumnDefinition(this.columnName, resultColumn, statistics);
+                        if (resultColumn != null || !rr.source.getResultDataContext().hasUnresolvedSource()) {
+                            propagateColumnDefinition(this.columnName, resultColumn, statistics, columnNameOrigin);
+                        } else {
+                            this.columnName.setOrigin(columnNameOrigin);
                         }
                         type = resultColumn != null ? resultColumn.type : SQLQueryExprType.UNKNOWN;
                     } else {
                         resultColumn = null;
                         type = SQLQueryExprType.UNKNOWN;
                         statistics.appendError(this.tableName.getSyntaxNode(), "Expected column name after the table reference");
+                        if (this.tableName.endingPeriodNode != null) {
+                            this.tableName.endingPeriodNode.setOrigin(columnNameOrigin);
+                        }
                     }
                 } else {
                     resultColumn = null; // try to treat it a member-access sequence starting with a tuple's column name
@@ -125,8 +134,11 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
                     Pair<SQLQueryResultColumn, SQLQueryExprType> columnAndType = resolveColumn(context, statistics, fullName.get(0), true);
                     SQLQueryExprType memberType = columnAndType.getSecond();
                     if (memberType != null) {
-                        for (int i = 1; i < fullName.size() && memberType != null; i++) {
-                            memberType = SQLQueryValueMemberExpression.tryResolveMemberReference(statistics, memberType, fullName.get(i));
+                        SQLQuerySymbolOrigin memberOrigin = new SQLQuerySymbolOrigin.MemberOfType(memberType);
+                        int i = 1;
+                        for (; i < fullName.size() && memberType != null && fullName.get(i) != null; i++) {
+                            memberType = SQLQueryValueMemberExpression.tryResolveMemberReference(statistics, memberType, fullName.get(i), memberOrigin);
+                            memberOrigin = new SQLQuerySymbolOrigin.MemberOfType(memberType);
                         }
                         type = memberType != null ? memberType : SQLQueryExprType.UNKNOWN;
                     } else {
@@ -162,6 +174,7 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
         SQLQueryResultColumn resultColumn;
         SQLQueryExprType type;
 
+        SQLQuerySymbolOrigin columnRefOrigin = new SQLQuerySymbolOrigin.ValueRefFromContext(context);
         // TODO consider resolution order ?
         SQLQueryResultPseudoColumn pseudoColumn = context.resolveGlobalPseudoColumn(statistics.getMonitor(), columnName.getName());
         if (pseudoColumn == null) {
@@ -171,6 +184,7 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
             resultColumn = null; // not a real column, so we don't need to propagate its source and don't have real entity attribute
             type = pseudoColumn.type;
             columnName.setDefinition(pseudoColumn);
+            columnName.setOrigin(columnRefOrigin);
         } else {
             resultColumn = context.resolveColumn(statistics.getMonitor(), columnName.getName());
 
@@ -206,13 +220,14 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
 
             if (rowsSourceDef != null) {
                 columnName.setDefinition(rowsSourceDef);
+                columnName.setOrigin(columnRefOrigin);
                 type = SQLQueryExprType.forReferencedRow(columnName, rowsSourceIfAllowed);
             } else if (forcedClass != null) {
                 columnName.getSymbol().setSymbolClass(forcedClass);
                 type = forcedClass == SQLQuerySymbolClass.STRING ? SQLQueryExprType.STRING : null;
             } else {
-                if (resultColumn != null || !context.hasUndresolvedSource()) {
-                    propagateColumnDefinition(columnName, resultColumn, statistics);
+                if (resultColumn != null || !context.hasUnresolvedSource()) {
+                    propagateColumnDefinition(columnName, resultColumn, statistics, columnRefOrigin);
                 }
                 type = resultColumn != null ? resultColumn.type : null;
             }

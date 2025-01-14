@@ -20,14 +20,31 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryMemberAccessEntry;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
+import org.jkiss.utils.Pair;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class SQLQueryLexicalScope {
+
+    private static final Comparator<Pair<SQLQueryLexicalScopeItem, Interval>> scopeItemsComparator = (a , b) -> {
+        int rc = Integer.compare(a.getSecond().length(), b.getSecond().length());
+        if (rc != 0) {
+            return rc;
+        }
+        rc = Integer.compare(a.getSecond().a, b.getSecond().a);
+        if (rc != 0) {
+            return -rc;
+        }
+        rc = Integer.compare(getLexicalItemPriority(a.getFirst()), getLexicalItemPriority(b.getFirst()));
+        if (rc != 0) {
+            return rc;
+        }
+        return 0;
+    };
+
     @Nullable
     private SQLQueryDataContext context = null;
     @NotNull
@@ -113,9 +130,30 @@ public class SQLQueryLexicalScope {
 
     @Nullable
     public SQLQueryLexicalScopeItem findNearestItem(int position) {
-        return this.items.stream()
-            .filter(t -> t.getSyntaxNode().getRealInterval().b <= position)
-            .max(Comparator.comparingInt(t -> t.getSyntaxNode().getRealInterval().b))
-            .orElse(null);
+        ArrayList<Pair<SQLQueryLexicalScopeItem, Interval>> candidates = new ArrayList<>(this.items.size());
+        for (SQLQueryLexicalScopeItem item : this.items) {
+            Interval interval = item.getSyntaxNode().getRealInterval();
+            if (interval.a < position && interval.b + 1 >= position) {
+                candidates.add(Pair.of(item, interval));
+            }
+        }
+        if (candidates.isEmpty()) {
+            return null;
+        } else {
+            candidates.sort(scopeItemsComparator);
+            return candidates.get(0).getFirst();
+        }
+    }
+
+    private static int getLexicalItemPriority(@NotNull SQLQueryLexicalScopeItem item) {
+        if (item instanceof SQLQueryMemberAccessEntry) {
+            return 0;
+        } else if (item instanceof SQLQuerySymbolEntry) {
+            return 1;
+        } else if (item instanceof SQLQueryQualifiedName) {
+            return 2;
+        } else {
+            return Integer.MAX_VALUE;
+        }
     }
 }
