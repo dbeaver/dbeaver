@@ -111,7 +111,7 @@ public class SQLGroupingQueryGenerator {
         } catch (Throwable e) {
             log.debug("SQL parse error", e);
         }
-        boolean isCTE = statement instanceof Select select && !select.getWithItemsList().isEmpty();
+        boolean isCTE = statement instanceof Select select && select.getWithItemsList() != null && !select.getWithItemsList().isEmpty();
         if (!(container instanceof DBSEntity) && dialect.supportsSubqueries() && !isCTE) {
             subqueryAlias = "src";
             sql.append("SELECT ");
