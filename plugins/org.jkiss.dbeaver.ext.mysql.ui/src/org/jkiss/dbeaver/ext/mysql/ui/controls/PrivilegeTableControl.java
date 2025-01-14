@@ -25,6 +25,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Table;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLGrant;
@@ -183,8 +184,8 @@ public class PrivilegeTableControl extends Composite {
         super.notifyListeners(SWT.Modify, event);
     }
 
-    public void fillPrivileges(List<MySQLPrivilege> privs) {
-        this.privileges = privs;
+    public void fillPrivileges(@NotNull List<MySQLPrivilege> privs) {
+        this.privileges = new ArrayList<>(privs);
         boolean hasGrantOption = false;
         for (MySQLPrivilege privilege : privileges) {
             if (privilege.getName().equalsIgnoreCase(MySQLConstants.PRIVILEGE_GRANT_OPTION_NAME)) {
