@@ -20,6 +20,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPQualifiedObject;
+import org.jkiss.dbeaver.model.DBPSaveableObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -29,6 +33,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -37,12 +42,12 @@ import java.util.Collection;
 /**
  * OracleUser
  */
-public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<OracleDataSource>
+public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<OracleDataSource>, DBPSaveableObject
 {
     private static final Log log = Log.getLog(OracleUser.class);
 
     private long id;
-    private String name;
+    private String userName;
     private String externalName;
     private String status;
     private Timestamp createDate;
@@ -53,45 +58,50 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
     private Object profile;
     private String consumerGroup;
     private transient String password;
+    private boolean persisted;
+    private OracleDataSource dataSource;
 
-    public OracleUser(OracleDataSource dataSource)
-    {
+    public OracleUser(OracleDataSource dataSource) {
         super(dataSource);
+        this.dataSource = dataSource;
     }
 
     public OracleUser(OracleDataSource dataSource, ResultSet resultSet) {
         super(dataSource);
-        this.id = JDBCUtils.safeGetLong(resultSet, "USER_ID");
-        this.name = JDBCUtils.safeGetString(resultSet, "USERNAME");
-        this.externalName = JDBCUtils.safeGetString(resultSet, "EXTERNAL_NAME");
-        this.status = JDBCUtils.safeGetString(resultSet, "ACCOUNT_STATUS");
+        this.dataSource = dataSource;
+        if (resultSet != null) {
+            this.id = JDBCUtils.safeGetLong(resultSet, "USER_ID");
+            this.userName = JDBCUtils.safeGetString(resultSet, "USERNAME");
+            this.externalName = JDBCUtils.safeGetString(resultSet, "EXTERNAL_NAME");
+            this.status = JDBCUtils.safeGetString(resultSet, "ACCOUNT_STATUS");
 
-        this.createDate = JDBCUtils.safeGetTimestamp(resultSet, "CREATED");
-        this.lockDate = JDBCUtils.safeGetTimestamp(resultSet, "LOCK_DATE");
-        this.expiryDate = JDBCUtils.safeGetTimestamp(resultSet, "EXPIRY_DATE");
-        this.defaultTablespace = JDBCUtils.safeGetString(resultSet, "DEFAULT_TABLESPACE");
-        this.tempTablespace = JDBCUtils.safeGetString(resultSet, "TEMPORARY_TABLESPACE");
+            this.createDate = JDBCUtils.safeGetTimestamp(resultSet, "CREATED");
+            this.lockDate = JDBCUtils.safeGetTimestamp(resultSet, "LOCK_DATE");
+            this.expiryDate = JDBCUtils.safeGetTimestamp(resultSet, "EXPIRY_DATE");
+            this.defaultTablespace = JDBCUtils.safeGetString(resultSet, "DEFAULT_TABLESPACE");
+            this.tempTablespace = JDBCUtils.safeGetString(resultSet, "TEMPORARY_TABLESPACE");
 
-        this.profile = JDBCUtils.safeGetString(resultSet, "PROFILE");
-        this.consumerGroup = JDBCUtils.safeGetString(resultSet, "INITIAL_RSRC_CONSUMER_GROUP");
+            this.profile = JDBCUtils.safeGetString(resultSet, "PROFILE");
+            this.consumerGroup = JDBCUtils.safeGetString(resultSet, "INITIAL_RSRC_CONSUMER_GROUP");
+            this.persisted = true;
+        } else {
+            this.persisted = false;
+        }
     }
 
     @Property(order = 1)
-    public long getId()
-    {
+    public long getId() {
         return id;
     }
 
     @NotNull
-    @Override
     @Property(viewable = true, order = 2)
-    public String getName() {
-        return name;
+    public String getUserName() {
+        return userName;
     }
 
-    public void setName(String name)
-    {
-        this.name = name;
+    public void setUserName(String name) {
+        this.userName = name;
     }
 
     @Property(order = 3)
@@ -193,6 +203,15 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
         return super.refreshObject(monitor);
     }
 
+    @NotNull
+    @Override
+    public String getName() {
+        if (CommonUtils.isEmpty(userName)) {
+            return "new_user";
+        }
+        return userName;
+    }
+
     public static class ProfileReferenceValidator implements IPropertyCacheValidator<OracleUser> {
         @Override
         public boolean isPropertyCached(OracleUser object, Object propertyId)
@@ -203,5 +222,19 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
                 object.getDataSource().profileCache.isFullyCached();
         }
     }
+
+    @Override
+    public boolean isPersisted()
+    {
+        return persisted;
+    }
+
+    @Override
+    public void setPersisted(boolean persisted)
+    {
+        this.persisted = persisted;
+        DBUtils.fireObjectUpdate(this);
+    }
+
 
 }
