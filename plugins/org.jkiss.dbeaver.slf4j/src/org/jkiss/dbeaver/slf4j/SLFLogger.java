@@ -101,35 +101,35 @@ public class SLFLogger implements Logger {
 
     @Override
     public void debug(String s) {
-        if (isDebugEnabled()) {
+        if (Log.DEV_DEBUG_ENABLED) {
             log.debug(s);
         }
     }
 
     @Override
     public void debug(String s, Object o) {
-        if (isDebugEnabled()) {
+        if (Log.DEV_DEBUG_ENABLED) {
             log.debug(formatMessage(s, o));
         }
     }
 
     @Override
     public void debug(String s, Object o, Object o1) {
-        if (isDebugEnabled()) {
+        if (Log.DEV_DEBUG_ENABLED) {
             log.debug(log.getName() + ": " + formatMessage(s, o, o1));
         }
     }
 
     @Override
     public void debug(String s, Object... objects) {
-        if (isDebugEnabled()) {
+        if (Log.DEV_DEBUG_ENABLED) {
             log.debug(log.getName() + ":" + formatMessage(s, objects));
         }
     }
 
     @Override
     public void debug(String s, Throwable throwable) {
-        if (isDebugEnabled()) {
+        if (Log.DEV_DEBUG_ENABLED) {
             log.debug(log.getName() + ":" + s, throwable);
         }
     }
