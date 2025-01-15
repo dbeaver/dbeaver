@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.junit;
+package org.jkiss.junit.osgi.annotation;
 
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.junit.osgi.OSGITestRunner;
-import org.jkiss.junit.osgi.annotation.RunWithApplication;
-import org.jkiss.junit.osgi.annotation.RunnerProxy;
-import org.jkiss.junit.osgi.behaviors.IApplicationTest;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
 
+import java.lang.annotation.*;
+import java.util.concurrent.Callable;
 
-@RunnerProxy(MockitoJUnitRunner.class)
-@RunWith(OSGITestRunner.class)
-@RunWithApplication(bundleName = "org.jkiss.dbeaver.headless", registryName = "org.jkiss.dbeaver.headless.application")
-public abstract class ApplicationUnitTest implements IApplicationTest {
-        @Override
-        public boolean verifyLaunched() {
-            return Platform.isRunning();
-        }
+/**
+ *  Run with product used for @{@link OSGITestRunner}
+ * Annotation to provide an application parameters for OSGI tests
+ * @lbundleName
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+@Inherited
+public @interface RunWithApplication {
+    /**
+     * Bundle name with application
+     */
+    String bundleName();
+
+    /**
+     Application classname
+     */
+    String registryName();
+
+    String[] args() default {};
+
 }

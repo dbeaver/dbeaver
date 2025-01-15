@@ -16,13 +16,18 @@
  */
 package org.jkiss.junit.osgi;
 
+import org.eclipse.equinox.internal.app.CommandLineArgs;
 import org.eclipse.osgi.internal.framework.EquinoxBundle;
+import org.eclipse.osgi.internal.framework.EquinoxConfiguration;
+import org.eclipse.osgi.service.environment.EnvironmentInfo;
 import org.eclipse.osgi.service.runnable.ApplicationLauncher;
 import org.eclipse.osgi.util.ManifestElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.junit.osgi.annotation.RunWithApplication;
 import org.jkiss.junit.osgi.annotation.RunWithProduct;
 import org.jkiss.junit.osgi.annotation.RunnerProxy;
+import org.jkiss.junit.osgi.behaviors.IApplicationTest;
 import org.jkiss.junit.osgi.launcher.TestLauncher;
 import org.jkiss.utils.Pair;
 import org.junit.runner.Description;
@@ -31,6 +36,7 @@ import org.junit.runner.notification.RunNotifier;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
+import org.osgi.framework.ServiceReference;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
 import org.osgi.framework.wiring.BundleWiring;
@@ -68,14 +74,17 @@ public class OSGITestRunner extends Runner {
     public static final Pattern startLevel = Pattern.compile("@(\\d+):start");
     private static final Log log = Log.getLog(OSGITestRunner.class);
     private static final String WORKSPACE_DIR = findWorkspaceDir().toString();
-    private final Class<?> testClass;
+    private final Class<? extends IApplicationTest> testClass;
     private Framework framework;
     private Path productPath;
 
     private String testBundleName;
     private Bundle testBundle;
+    private String appRegistryName;
+    private String appBundleName;
+    private String[] args;
 
-    public OSGITestRunner(Class<?> testClass) {
+    public OSGITestRunner(Class<? extends IApplicationTest> testClass) {
         this.testClass = testClass;
         if (isRunFromIDEA()) {
             //use UTF-8 for run
@@ -97,7 +106,19 @@ public class OSGITestRunner extends Runner {
             }
 
             this.productPath = findProduct();
+            getAppBundleFromAnnotation();
             this.framework = initializeFramework();
+        }
+    }
+
+    private void getAppBundleFromAnnotation() {
+        if (testClass.getAnnotation(RunWithApplication.class) != null) {
+            RunWithApplication annotation = testClass.getAnnotation(RunWithApplication.class);
+            this.appRegistryName = annotation.registryName();
+            this.appBundleName = annotation.bundleName();
+            this.args = annotation.args();
+        } else {
+            throw new IllegalArgumentException("Application not found");
         }
     }
 
@@ -167,21 +188,39 @@ public class OSGITestRunner extends Runner {
             BundleContext context = framework.getBundleContext();
             // Load and start all bundles
             Bundle bundle = loadAndStartBundles(context);
+            ServiceReference<EnvironmentInfo> configRef = context.getServiceReference(EnvironmentInfo.class);
+            EquinoxConfiguration equinoxConfig = (EquinoxConfiguration) context.getService(configRef);
+            equinoxConfig.setAllArgs(args);
+            equinoxConfig.setAppArgs(args);
             framework.start();
+            Method processCommandLine = CommandLineArgs.class.getDeclaredMethod(
+                "processCommandLine",
+                EnvironmentInfo.class
+            );
+            processCommandLine.setAccessible(true);
+            processCommandLine.invoke(null, equinoxConfig);
             TestLauncher launcher = new TestLauncher(context);
             context.registerService(ApplicationLauncher.class.getName(), launcher,
                 null
             );
-            launcher.start(bundle.getSymbolicName());
+            Thread thread = new Thread(() -> launcher.start(appRegistryName, args));
+            thread.start();
 
             if (testClass.getAnnotation(RunnerProxy.class) != null) {
                 Constructor<?> proxy = testBundle.loadClass(testClass.getAnnotation(RunnerProxy.class).value().getName()).getConstructor(Class.class);
-                Object o = proxy.newInstance(testBundle.loadClass(testClass.getName()));
+                Class<?> runningClass = testBundle.loadClass(testClass.getName());
+                long startTime = System.currentTimeMillis();
+                long endTime = 0;
+                boolean setUpIsDone = false;
+                while (!setUpIsDone && endTime < 300000) {
+                    setUpIsDone = (boolean) runningClass.getMethod("verifyLaunched").invoke(runningClass.getConstructor().newInstance());
+                    endTime = System.currentTimeMillis() - startTime;
+                }
+                Object o = proxy.newInstance(runningClass);
                 Method runMethod = Arrays.stream(o.getClass().getMethods()).filter(it -> it.getName().equals("run"))
                     .findFirst().orElseThrow();
                 Object proxyNotifier = createProxyNotifier(notifier);
                 runMethod.invoke(o, proxyNotifier);
-
             }
         } catch (Throwable throwable) {
             log.error("An error occurred while running the test", throwable);
@@ -221,7 +260,7 @@ public class OSGITestRunner extends Runner {
         config.put("org.osgi.framework.debug", "true");
         config.put("org.osgi.framework.debug.loader", "true");
         config.put("org.osgi.framework.debug.resolver", "true");
-
+        config.put("osgi.compatibility.bootdelegation", "true");
         FrameworkFactory frameworkFactory = ServiceLoader.load(FrameworkFactory.class).iterator().next();
         return frameworkFactory.newFramework(config);
     }
@@ -244,7 +283,7 @@ public class OSGITestRunner extends Runner {
 //            if (bundleFile.contains("junit")) {
 //                continue;
 //            }
-            if (bundleFile.contains(".app") && !bundleFile.contains("headless") && !bundleFile.contains("org.eclipse")) {
+            if (bundleFile.contains(".app") && !bundleFile.contains(appBundleName) && !bundleFile.contains("org.eclipse")) {
                 continue;
             }
             Matcher matcher = startLevel.matcher(bundleFile);
@@ -269,9 +308,9 @@ public class OSGITestRunner extends Runner {
         }
 
         Bundle appBundle = null;
-        // find headless app bundle
+        // find appBundleContainingClassname app bundle
         for (Bundle bundle : context.getBundles()) {
-            if (bundle.getSymbolicName().contains("headless")) {
+            if (bundle.getSymbolicName().contains(this.appBundleName)) {
                 appBundle = bundle;
                 break;
             }
