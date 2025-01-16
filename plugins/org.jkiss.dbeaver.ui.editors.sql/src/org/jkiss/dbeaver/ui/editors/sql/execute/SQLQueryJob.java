@@ -860,7 +860,9 @@ public class SQLQueryJob extends DataSourceJob
                 new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT).format(new Date()));
             executeResult.setResultSetName(SQLEditorMessages.editors_sql_statistics);
         } else {
-            // Single statement
+            // Single statement - reorder fields to prioritize the important ones
+            // Important fields like "Updated Rows" and "Execute time" are now displayed before the query text for easier access.
+
             long updateCount = statistics.getRowsUpdated();
             fakeResultSet.addColumn("Updated Rows", DBPDataKind.NUMERIC);
             fakeResultSet.addColumn("Execute time", DBPDataKind.NUMERIC);
