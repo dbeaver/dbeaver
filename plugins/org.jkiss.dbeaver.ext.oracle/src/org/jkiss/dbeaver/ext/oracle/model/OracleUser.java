@@ -55,16 +55,13 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
     protected transient String password;
     protected transient String confirmPassword;
     private boolean persisted;
-    private OracleDataSource dataSource;
 
     public OracleUser(OracleDataSource dataSource) {
         super(dataSource);
-        this.dataSource = dataSource;
     }
 
     public OracleUser(OracleDataSource dataSource, ResultSet resultSet) {
         super(dataSource);
-        this.dataSource = dataSource;
         if (resultSet != null) {
             this.id = JDBCUtils.safeGetLong(resultSet, "USER_ID");
             this.name = JDBCUtils.safeGetString(resultSet, "USERNAME");
