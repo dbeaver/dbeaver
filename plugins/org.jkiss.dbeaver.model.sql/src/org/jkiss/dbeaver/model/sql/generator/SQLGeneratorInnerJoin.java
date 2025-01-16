@@ -36,7 +36,8 @@ public class SQLGeneratorInnerJoin extends SQLGenerator<DBSEntity> {
             sql.append("SELECT ");
             for (int i = 0; i < objects.size(); i++) {
                 if (i > 0) sql.append(", ");
-                String alias = SQLUtils.generateEntityAlias(objects.get(i), s -> sqlDialect.getKeywordType(s) != null || aliases.contains(s));
+                String alias = SQLUtils.generateEntityAlias(objects.get(i), s -> sqlDialect.getKeywordType(s) != null
+                    || aliases.contains(s));
                 sql.append(alias).append(".*");
                 aliases.add(alias);
             }
@@ -48,7 +49,8 @@ public class SQLGeneratorInnerJoin extends SQLGenerator<DBSEntity> {
                     String tableJoin = SQLUtils.generateTableJoin(
                         monitor, objects.get(k), aliases.get(k), objects.get(i), aliases.get(i));
                     if (tableJoin != null) {
-                        sql.append(getLineSeparator()).append("\tJOIN ").append(objects.get(i)).append(" ").append(aliases.get(i)).append(" ON ");
+                        sql.append(getLineSeparator()).append("\tJOIN ").append(objects.get(i)).append(" ")
+                            .append(aliases.get(i)).append(" ON ");
                         sql.append(tableJoin);
                         foundJoin = true;
                         break;
